@@ -1,0 +1,178 @@
+package cli
+
+import (
+	"fmt"
+	"path/filepath"
+
+	"github.com/spf13/cobra"
+
+	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/rollup"
+	"github.com/jamesonstone/kit/internal/templates"
+)
+
+var tasksForce bool
+
+var tasksCmd = &cobra.Command{
+	Use:   "tasks <feature>",
+	Short: "Create or open feature tasks",
+	Long: `Create a new task list for a feature.
+
+Creates:
+  - TASKS.md with required sections, task table, and placeholder comments
+
+Prerequisites:
+  - PLAN.md must exist (unless --force)
+
+Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
+	Args: cobra.ExactArgs(1),
+	RunE: runTasks,
+}
+
+func init() {
+	tasksCmd.Flags().BoolVar(&tasksForce, "force", false, "create missing SPEC.md and PLAN.md with headers if they don't exist")
+	rootCmd.AddCommand(tasksCmd)
+}
+
+func runTasks(cmd *cobra.Command, args []string) error {
+	featureRef := args[0]
+
+	// find project root
+	projectRoot, err := config.FindProjectRoot()
+	if err != nil {
+		return err
+	}
+
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		return err
+	}
+
+	specsDir := cfg.SpecsPath(projectRoot)
+
+	// resolve feature
+	feat, err := feature.Resolve(specsDir, featureRef)
+	if err != nil {
+		return fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first to create it", featureRef, featureRef)
+	}
+
+	fmt.Printf("📝 Creating tasks for feature: %s\n", feat.DirName)
+
+	// check prerequisites
+	specPath := filepath.Join(feat.Path, "SPEC.md")
+	planPath := filepath.Join(feat.Path, "PLAN.md")
+
+	if !document.Exists(planPath) {
+		if tasksForce || cfg.AllowOutOfOrder {
+			// create SPEC.md if missing
+			if !document.Exists(specPath) {
+				if err := document.Write(specPath, templates.Spec); err != nil {
+					return fmt.Errorf("failed to create SPEC.md: %w", err)
+				}
+				fmt.Println("  ✓ Created SPEC.md (--force)")
+			}
+			// create PLAN.md
+			if err := document.Write(planPath, templates.Plan); err != nil {
+				return fmt.Errorf("failed to create PLAN.md: %w", err)
+			}
+			fmt.Println("  ✓ Created PLAN.md (--force)")
+		} else {
+			return fmt.Errorf("PLAN.md not found. Run 'kit plan %s' first or use --force", feat.Slug)
+		}
+	}
+
+	// create TASKS.md if it doesn't exist
+	tasksPath := filepath.Join(feat.Path, "TASKS.md")
+	if !document.Exists(tasksPath) {
+		if err := document.Write(tasksPath, templates.Tasks); err != nil {
+			return fmt.Errorf("failed to create TASKS.md: %w", err)
+		}
+		fmt.Println("  ✓ Created TASKS.md")
+	} else {
+		fmt.Println("  ✓ TASKS.md already exists")
+	}
+
+	// update PROJECT_PROGRESS_SUMMARY.md
+	if err := rollup.Update(projectRoot, cfg); err != nil {
+		fmt.Printf("  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
+	} else {
+		fmt.Println("  ✓ Updated PROJECT_PROGRESS_SUMMARY.md")
+	}
+
+	fmt.Printf("\n✅ Tasks for '%s' ready!\n", feat.Slug)
+	fmt.Printf("\nNext steps:\n")
+	fmt.Printf("  1. Edit %s to define atomic tasks\n", tasksPath)
+	fmt.Printf("  2. Link tasks to plan items using [PLAN-XX] syntax\n")
+	fmt.Printf("  3. Begin implementation!\n")
+
+	// output easy-to-copy instruction for coding agents
+	goalPct := cfg.GoalPercentage
+	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Printf(`
+Please review and complete the task plan at %s.
+
+This task plan corresponds to:
+- SPEC: %s
+- PLAN: %s
+
+Feature: %s
+
+Your task:
+1. Read SPEC.md and PLAN.md fully and treat them as fixed inputs
+2. Review the TASKS.md template and required sections
+3. Derive an atomic, ordered task list that can be executed without ambiguity
+4. Identify missing decisions that block task generation
+5. Ask focused clarification questions until tasks can be made deterministic
+
+After each batch of questions:
+- state your current understanding percentage of the task plan
+- do NOT proceed to writing or updating TASKS.md until understanding >= %d%%
+
+TASKS.md requirements:
+
+A) PROGRESS TABLE (ALWAYS FIRST)
+- Fill the top table with one row per task
+- Use stable IDs (T001, T002, …)
+- STATUS ∈ todo | doing | blocked | done
+- DEPENDENCIES lists task IDs (comma-separated) or empty
+
+Table columns:
+| ID | TASK | STATUS | OWNER | DEPENDENCIES |
+
+B) TASKS SECTION
+For each task ID, include a short block:
+
+- ID: T00X
+- GOAL: one sentence outcome
+- SCOPE: tight bullets, no fluff
+- ACCEPTANCE: concrete checks (what must be true)
+- NOTES: only if necessary
+
+C) DEPENDENCIES SECTION
+- list any cross-task or external blockers
+- include the exact missing decision if applicable
+
+D) NOTES SECTION
+- only if required to prevent ambiguity
+
+Rules:
+- focus on executable steps, not prose
+- do not invent new requirements or scope
+- tasks must map back to PLAN items
+- tasks must imply an unambiguous implementation order
+- avoid code unless strictly necessary
+- keep language dense and factual
+- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
+
+Output goal:
+- a task list that a coding agent can execute linearly with minimal back-and-forth
+
+`, tasksPath, specPath, planPath, feat.DirName, goalPct)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+
+	return nil
+}
