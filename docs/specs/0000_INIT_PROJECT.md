@@ -61,7 +61,7 @@ Kit's responsibility ends once tasks are clear and validated.
 
 Each feature lives in its own directory:
 
-```
+```bash
 docs/specs/<feature>/
   SPEC.md
   PLAN.md
@@ -92,7 +92,6 @@ Examples:
 
 - `AGENTS.md`
 - `CLAUDE.md`
-- `WARP.md`
 
 These files:
 
@@ -103,10 +102,10 @@ These files:
 
 If canonical paths change, Kit can update pointers.
 
-#### Example: `WARP.md`
+#### Example: `AGENTS.md`
 
 ```markdown
-# WARP.md
+# AGENTS.md
 
 ## Kit is the source of truth
 
@@ -314,11 +313,10 @@ allow_out_of_order: false # if true, kit plan/tasks create missing prerequisites
 
 ### 7.2 Agents
 
-```
+```yaml
 agents:
   - AGENTS.md
   - CLAUDE.md
-  - WARP.md
 ```
 
 ### 7.3 Branching

@@ -16,7 +16,7 @@ var scaffoldAgentsCmd = &cobra.Command{
 	Short: "Create or update agent pointer files",
 	Long: `Create missing agent pointer files and update document links.
 
-Agent pointer files (e.g., AGENTS.md, CLAUDE.md, WARP.md) contain:
+Agent pointer files (e.g., AGENTS.md, CLAUDE.md) contain:
   - Links to canonical documents
   - Workflow contracts for each agent
   - Multi-feature rules

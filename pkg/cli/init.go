@@ -20,7 +20,7 @@ var initCmd = &cobra.Command{
 Creates:
   - .kit.yaml configuration file
   - docs/CONSTITUTION.md
-  - Agent pointer files (AGENTS.md, CLAUDE.md, WARP.md)
+  - Agent pointer files (AGENTS.md, CLAUDE.md)
 
 If files already exist, Kit attempts to merge by preserving existing
 content and adding any missing required sections.`,

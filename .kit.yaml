@@ -5,7 +5,6 @@ allow_out_of_order: false
 agents:
     - AGENTS.md
     - CLAUDE.md
-    - WARP.md
 branching:
     enabled: true
     base_branch: main

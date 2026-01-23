@@ -42,7 +42,7 @@ func Default() *Config {
 		SpecsDir:         "docs/specs",
 		ConstitutionPath: "docs/CONSTITUTION.md",
 		AllowOutOfOrder:  false,
-		Agents:           []string{"AGENTS.md", "CLAUDE.md", "WARP.md"},
+		Agents:           []string{"AGENTS.md", "CLAUDE.md"},
 		Branching: BranchingConfig{
 			Enabled:      true,
 			BaseBranch:   "main",
