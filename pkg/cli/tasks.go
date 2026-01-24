@@ -143,20 +143,25 @@ A) PROGRESS TABLE (ALWAYS FIRST)
 Table columns:
 | ID | TASK | STATUS | OWNER | DEPENDENCIES |
 
-B) TASKS SECTION
+B) TASK LIST (MANDATORY - uses markdown checkboxes)
+- Use markdown checkboxes for tracking: - [ ] incomplete, - [x] complete
+- Format: - [ ] T001: task description
+- This enables 'kit status' to parse progress automatically
+
+C) TASK DETAILS SECTION
 For each task ID, include a short block:
 
-- ID: T00X
+### T00X
 - GOAL: one sentence outcome
 - SCOPE: tight bullets, no fluff
 - ACCEPTANCE: concrete checks (what must be true)
 - NOTES: only if necessary
 
-C) DEPENDENCIES SECTION
+D) DEPENDENCIES SECTION
 - list any cross-task or external blockers
 - include the exact missing decision if applicable
 
-D) NOTES SECTION
+E) NOTES SECTION
 - only if required to prevent ambiguity
 
 Rules:

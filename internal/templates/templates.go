@@ -24,6 +24,10 @@ const Constitution = `# CONSTITUTION
 // Spec template per spec section 6.2
 const Spec = `# SPEC
 
+## SUMMARY
+
+<!-- TODO: 1-2 sentence business summary of this feature -->
+
 ## PROBLEM
 
 <!-- TODO: describe the problem being solved -->
@@ -90,15 +94,32 @@ const Plan = `# PLAN
 `
 
 // Tasks template per spec section 6.4
+// IMPORTANT: tasks use markdown checkboxes for progress tracking:
+//   - [ ] incomplete task
+//   - [x] completed task
 const Tasks = `# TASKS
+
+## PROGRESS TABLE
 
 | ID | TASK | STATUS | OWNER | DEPENDENCIES |
 | -- | ---- | ------ | ----- | ------------ |
-| T-01 | <!-- TODO: task description --> | pending | <!-- owner --> | <!-- deps --> |
+| T001 | <!-- task description --> | todo | <!-- owner --> | <!-- deps --> |
 
-## TASKS
+## TASK LIST
 
-<!-- TODO: detailed task descriptions linking to [PLAN-XX] items -->
+Use markdown checkboxes to track completion:
+
+- [ ] T001: <!-- task description -->
+
+## TASK DETAILS
+
+For each task, provide:
+
+### T001
+- **GOAL**: <!-- one sentence outcome -->
+- **SCOPE**: <!-- tight bullets, no fluff -->
+- **ACCEPTANCE**: <!-- concrete checks -->
+- **NOTES**: <!-- only if necessary -->
 
 ## DEPENDENCIES
 

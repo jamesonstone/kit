@@ -301,6 +301,12 @@ This is a new feature: %s
 After each batch of questions, state your current understanding percentage.
 Do NOT proceed to writing the spec until understanding >= ` + fmt.Sprintf("%d", goalPct) + `%.
 
+## SUMMARY Section (MANDATORY)
+Once you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding, write a SUMMARY section at the top of SPEC.md:
+- 1-2 sentences maximum
+- Information-dense: include the core problem, solution approach, and key constraint
+- Written for a coding agent who needs to quickly understand the feature
+- Example: "Adds CSV export for user data with streaming support for large datasets (>100k rows). Must complete in <5s and handle Unicode."
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
@@ -383,12 +389,19 @@ This is a new feature: %s
 After each batch of questions, state your current understanding percentage.
 Do NOT proceed to writing the spec until understanding >= %d%%.
 
+## SUMMARY Section (MANDATORY)
+Once you reach >= %d%% understanding, write a SUMMARY section at the top of SPEC.md:
+- 1-2 sentences maximum
+- Information-dense: include the core problem, solution approach, and key constraint
+- Written for a coding agent who needs to quickly understand the feature
+- Example: "Adds CSV export for user data with streaming support for large datasets (>100k rows). Must complete in <5s and handle Unicode."
+
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
-`, specPath, featureSlug, projectRoot, goalPct, goalPct)
+`, specPath, featureSlug, projectRoot, goalPct, goalPct, goalPct)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil
