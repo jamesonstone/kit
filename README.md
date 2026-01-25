@@ -42,8 +42,11 @@ kit plan my-feature
 # create task list
 kit tasks my-feature
 
-# validate documents
-kit check my-feature
+# start implementation (outputs context for coding agents)
+kit implement my-feature
+
+# check status anytime
+kit status
 ```
 
 ## Commands
@@ -54,6 +57,8 @@ kit check my-feature
 | `kit spec <feature>` | Create a feature specification |
 | `kit plan <feature>` | Create an implementation plan |
 | `kit tasks <feature>` | Create a task list |
+| `kit implement [feature]` | Output implementation context for coding agents |
+| `kit status` | Show current feature status for coding agents |
 | `kit check <feature>` | Validate feature documents |
 | `kit rollup` | Generate PROJECT_PROGRESS_SUMMARY.md |
 | `kit scaffold-agents` | Create agent pointer files |
