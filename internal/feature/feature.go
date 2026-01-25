@@ -34,7 +34,11 @@ const (
 	PhaseTasks     Phase = "tasks"
 	PhaseImplement Phase = "implement"
 	PhaseReflect   Phase = "reflect"
+	PhaseComplete  Phase = "complete"
 )
+
+// ReflectionCompleteMarker is the marker that indicates reflection is complete.
+const ReflectionCompleteMarker = "<!-- REFLECTION_COMPLETE -->"
 
 var (
 	// featureDirPattern matches feature directories like "0001-feat-name"
@@ -159,26 +163,32 @@ func DeterminePhase(featurePath string) Phase {
 
 // DeterminePhaseFromTasks determines phase based on task progress.
 // - no tasks defined: PhaseTasks (needs task definition)
+// - all tasks complete + reflection marker: PhaseComplete
 // - all tasks complete: PhaseReflect
 // - some tasks incomplete: PhaseImplement
 func DeterminePhaseFromTasks(tasksPath string) Phase {
-	progress, err := parseTaskProgressFromPath(tasksPath)
+	progress, hasReflectionMarker, err := parseTaskProgressFromPath(tasksPath)
 	if err != nil || progress.Total == 0 {
 		return PhaseTasks
 	}
 	if progress.Complete == progress.Total {
+		if hasReflectionMarker {
+			return PhaseComplete
+		}
 		return PhaseReflect
 	}
 	return PhaseImplement
 }
 
 // parseTaskProgressFromPath is a lightweight task counter used by DeterminePhase.
-func parseTaskProgressFromPath(tasksPath string) (struct{ Total, Complete int }, error) {
+// returns: progress counts, whether reflection marker is present, error
+func parseTaskProgressFromPath(tasksPath string) (struct{ Total, Complete int }, bool, error) {
 	progress := struct{ Total, Complete int }{}
+	hasReflectionMarker := false
 
 	file, err := os.Open(tasksPath)
 	if err != nil {
-		return progress, err
+		return progress, false, err
 	}
 	defer file.Close()
 
@@ -194,9 +204,12 @@ func parseTaskProgressFromPath(tasksPath string) (struct{ Total, Complete int },
 			progress.Total++
 			progress.Complete++
 		}
+		if strings.Contains(line, ReflectionCompleteMarker) {
+			hasReflectionMarker = true
+		}
 	}
 
-	return progress, scanner.Err()
+	return progress, hasReflectionMarker, scanner.Err()
 }
 
 // NextNumber returns the next available feature number.

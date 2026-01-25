@@ -151,6 +151,12 @@ Steps:
 - summarize remaining issues, if any
 - propose next steps
 
+8) Mark reflection complete
+- once all issues are resolved and confidence is 100%%
+- append the following marker to the end of TASKS.md:
+  <!-- REFLECTION_COMPLETE -->
+- this marker signals that the feature has completed the full development cycle
+
 Output format:
 
 A) CHANGESET
@@ -256,6 +262,11 @@ Steps:
 - summarize remaining issues, if any
 - propose next steps
 
+7) Mark reflection complete (feature-scoped only)
+- if this is a feature-scoped reflection with a TASKS.md file
+- and all issues are resolved with 100%% confidence
+- append to TASKS.md: <!-- REFLECTION_COMPLETE -->
+
 Output format:
 
 A) CHANGESET
@@ -342,7 +353,12 @@ After reflection, provide:
 2. **Files Changed**: list with brief rationale for each
 3. **Confidence Level**: percentage (target: 100%)
 4. **Issues Found**: any problems discovered and how they were resolved
-5. **Remaining Concerns**: anything that needs human review`
+5. **Remaining Concerns**: anything that needs human review
+
+### Completion (feature-scoped only)
+Once reflection is complete with 100% confidence and no remaining issues:
+- Append ` + "`<!-- REFLECTION_COMPLETE -->`" + ` to the end of TASKS.md
+- This marker signals that the feature has completed the full development cycle`
 }
 
 func featureScopedReflectInstructions(featureSlug, featurePath string, noCodeRabbit bool) string {
@@ -418,7 +434,12 @@ After reflection, provide:
 5. **Spec Compliance**: which SPEC.md requirements are now satisfied
 6. **Confidence Level**: percentage (target: 100%%%%)  
 7. **Issues Found**: any problems discovered and how they were resolved
-8. **Remaining Concerns**: anything that needs human review`, featureSlug, featureSlug,
+8. **Remaining Concerns**: anything that needs human review
+
+### Completion
+Once reflection is complete with 100%%%% confidence and no remaining issues:
+- Append `+"`<!-- REFLECTION_COMPLETE -->`"+` to the end of TASKS.md
+- This marker signals that the feature has completed the full development cycle`, featureSlug, featureSlug,
 		featurePath, featurePath, featurePath, coderabbitStep, featureSlug)
 }
 

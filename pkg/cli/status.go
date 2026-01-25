@@ -221,9 +221,9 @@ func printAllFeaturesProgress(specsDir string) {
 	fmt.Println("🗺️  " + whiteBold + "All Features:" + reset)
 	fmt.Println()
 
-	// table header
-	fmt.Println(dim + "| Feature              | SPEC | PLAN | TASK | IMPL | DONE |" + reset)
-	fmt.Println(dim + "|----------------------|------|------|------|------|------|" + reset)
+	// table header (6 stages: spec → plan → task → impl → refl → done)
+	fmt.Println(dim + "| Feature              | SPEC | PLAN | TASK | IMPL | REFL | DONE |" + reset)
+	fmt.Println(dim + "|----------------------|------|------|------|------|------|------|" + reset)
 
 	for _, feat := range features {
 		printFeatureProgressRow(&feat)
@@ -236,15 +236,16 @@ func printFeatureProgressRow(feat *feature.Feature) {
 	name := truncateString(feat.DirName, 20)
 	name = padRight(name, 20)
 
-	// phase markers
+	// phase markers (6 stages)
 	specM := phaseMarker(feat.Phase, feature.PhaseSpec)
 	planM := phaseMarker(feat.Phase, feature.PhasePlan)
 	taskM := phaseMarker(feat.Phase, feature.PhaseTasks)
 	implM := phaseMarker(feat.Phase, feature.PhaseImplement)
-	doneM := phaseMarker(feat.Phase, feature.PhaseReflect)
+	reflM := phaseMarker(feat.Phase, feature.PhaseReflect)
+	doneM := phaseMarker(feat.Phase, feature.PhaseComplete)
 
-	fmt.Printf("| %s | %s | %s | %s | %s | %s |\n",
-		name, specM, planM, taskM, implM, doneM)
+	fmt.Printf("| %s | %s | %s | %s | %s | %s | %s |\n",
+		name, specM, planM, taskM, implM, reflM, doneM)
 }
 
 // phaseMarker returns a visual marker for the phase state.
@@ -256,6 +257,7 @@ func phaseMarker(current feature.Phase, target feature.Phase) string {
 		feature.PhaseTasks:     3,
 		feature.PhaseImplement: 4,
 		feature.PhaseReflect:   5,
+		feature.PhaseComplete:  6,
 	}
 
 	currentIdx := order[current]
