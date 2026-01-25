@@ -170,6 +170,8 @@ func selectFeatureForPlan(specsDir string) (*feature.Feature, error) {
 
 // outputStandardPlanPrompt outputs the standard coding agent prompt.
 func outputStandardPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg *config.Config) {
+	projectRoot, _ := config.FindProjectRoot()
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
@@ -178,16 +180,18 @@ func outputStandardPlanPrompt(planPath, specPath string, feat *feature.Feature, 
 Please review and complete the implementation plan at %s.
 
 This plan corresponds to the feature defined in:
+- CONSTITUTION: %s (project-wide constraints)
 - SPEC: %s
 
 Feature: %s
 
 Your task:
-1. Read SPEC.md fully and treat it as a fixed contract
-2. Review the PLAN.md template and required sections
-3. Identify any missing design decisions required for execution
-4. Ask focused clarification questions until decisions can be made
-5. Commit to concrete design decisions that make execution unambiguous
+1. Read CONSTITUTION.md to understand project constraints and principles
+2. Read SPEC.md fully and treat it as a fixed contract
+3. Review the PLAN.md template and required sections
+4. Identify any missing design decisions required for execution
+5. Ask focused clarification questions until decisions can be made
+6. Commit to concrete design decisions that make execution unambiguous
 
 After each batch of questions:
 - state your current understanding percentage of the implementation plan
@@ -226,20 +230,23 @@ For each section, write only what is required to enable clear task breakdown:
 Rules:
 - focus on HOW, not WHAT
 - do not restate requirements
-- do not introduce new scope
+- do not introduce new scope beyond SPEC.md
 - do not write tasks
 - avoid code unless strictly necessary
 - keep language dense and factual
+- ensure plan respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
 
-`, planPath, specPath, feat.Slug, goalPct)
+`, planPath, constitutionPath, specPath, feat.Slug, goalPct)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 }
 
 // outputWarpPlanPrompt outputs a prompt for Warp coding agent to fill PLAN.md from Warp plan.
 func outputWarpPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg *config.Config) {
+	projectRoot, _ := config.FindProjectRoot()
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "📋 Warp Plan Integration" + reset)
@@ -258,13 +265,15 @@ I have created a Warp plan for the feature: %s
 Please take the Warp plan you just generated and use it to fill out the PLAN.md document at:
 %s
 
-The PLAN.md corresponds to the specification at:
-%s
+Context docs:
+- CONSTITUTION: %s (project-wide constraints)
+- SPEC: %s
 
 Your task:
-1. Read the Warp plan you created and extract the key design decisions
-2. Read SPEC.md to ensure alignment with requirements
-3. Fill out each section of PLAN.md, adding implementation details beyond what's in the Warp plan:
+1. Read CONSTITUTION.md to understand project constraints and principles
+2. Read the Warp plan you created and extract the key design decisions
+3. Read SPEC.md to ensure alignment with requirements
+4. Fill out each section of PLAN.md, adding implementation details beyond what's in the Warp plan:
 
    - SUMMARY: one-paragraph overview (expand from Warp plan's high-level description)
    - APPROACH: detailed strategy and tradeoff decisions
@@ -274,8 +283,8 @@ Your task:
    - RISKS: technical risks with mitigation strategies
    - TESTING: validation strategy and test types
 
-4. Ensure PLAN.md has MORE detail than the Warp plan — it should make task breakdown obvious
-5. Ask clarifying questions if any design decisions are ambiguous
+5. Ensure PLAN.md has MORE detail than the Warp plan — it should make task breakdown obvious
+6. Ask clarifying questions if any design decisions are ambiguous
 
 After completing PLAN.md:
 - state your confidence level that TASKS.md can be derived unambiguously
@@ -284,12 +293,13 @@ After completing PLAN.md:
 Rules:
 - focus on HOW, not WHAT (SPEC covers WHAT)
 - do not restate requirements verbatim
-- do not introduce new scope beyond the Warp plan
+- do not introduce new scope beyond the Warp plan and SPEC.md
 - keep language dense and factual
+- ensure plan respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
 
-`, feat.Slug, planPath, specPath, goalPct)
+`, feat.Slug, planPath, constitutionPath, specPath, goalPct)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 }

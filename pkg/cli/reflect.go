@@ -3,6 +3,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/jamesonstone/kit/internal/config"
@@ -19,26 +20,33 @@ implementation correctness.
 When a feature is specified, instructions are scoped to that feature's context.
 Without a feature argument, outputs generic verification instructions.
 
-The reflection process uses git to analyze changes and runs coderabbit for
-additional validation.`,
+The reflection process uses git to analyze changes and optionally runs coderabbit
+for additional validation.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runReflect,
 }
 
 func init() {
+	reflectCmd.Flags().Bool("no-coderabbit", false, "skip CodeRabbit config creation and instructions")
 	rootCmd.AddCommand(reflectCmd)
 }
 
 func runReflect(cmd *cobra.Command, args []string) error {
-	instructions := genericReflectInstructions()
+	noCodeRabbit, _ := cmd.Flags().GetBool("no-coderabbit")
+
+	projectRoot, err := config.FindProjectRoot()
+	if err != nil {
+		return err
+	}
+
+	if !noCodeRabbit {
+		ensureCodeRabbitConfig(projectRoot)
+	}
+
+	instructions := genericReflectInstructions(noCodeRabbit)
 
 	if len(args) == 1 {
 		featureRef := args[0]
-
-		projectRoot, err := config.FindProjectRoot()
-		if err != nil {
-			return err
-		}
 
 		cfg, err := config.Load(projectRoot)
 		if err != nil {
@@ -51,7 +59,7 @@ func runReflect(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to resolve feature: %w", err)
 		}
 
-		instructions = featureScopedReflectInstructions(feat.Slug, feat.Path)
+		instructions = featureScopedReflectInstructions(feat.Slug, feat.Path, noCodeRabbit)
 
 		fmt.Println(instructions)
 
@@ -62,6 +70,26 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		planPath := filepath.Join(feat.Path, "PLAN.md")
 		tasksPath := filepath.Join(feat.Path, "TASKS.md")
 
+		// build conditional CodeRabbit content
+		goalExtra := ""
+		coderabbitStep := ""
+		coderabbitOutput := ""
+		if !noCodeRabbit {
+			goalExtra = "\n- run CodeRabbit in prompt-only mode and address all findings"
+			coderabbitStep = `
+3) Run CodeRabbit (prompt-only)
+- coderabbit --prompt-only
+- treat the output as review findings
+- fix all issues that are valid
+- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
+`
+			coderabbitOutput = `B) CODERABBIT FINDINGS
+- accepted + fixed: <list>
+- rejected: <list with reason>
+
+`
+		}
+
 		fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
 		fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
@@ -69,8 +97,7 @@ func runReflect(cmd *cobra.Command, args []string) error {
 You are in the REFLECT phase for this repo at %s.
 
 Goal:
-- perform a strict code review of the current change set
-- run CodeRabbit in prompt-only mode and address all findings
+- perform a strict code review of the current change set%s
 - ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent
 
 Context docs (read first):
@@ -92,20 +119,14 @@ Steps:
 - list changed files
 - for each file, state the intent in one line
 - identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
-
-3) Run CodeRabbit (prompt-only)
-- coderabbit --prompt-only
-- treat the output as review findings
-- fix all issues that are valid
-- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
-
-4) Verify correctness against docs
+%s
+3) Verify correctness against docs
 - SPEC: ensure requirements + acceptance are fully satisfied
 - PLAN: ensure decisions were followed
 - TASKS: ensure every task marked done is actually done
 - ensure no scope creep
 
-5) Quality gates (hard checks)
+4) Quality gates (hard checks)
 - correctness: no panics, no silent failures
 - errors: wrapped/propagated with context, no swallowed errors
 - IO: paths resolved safely, no surprising writes
@@ -113,16 +134,16 @@ Steps:
 - tests: add or update only what is required to prove correctness
 - docs: update only if behavior changed
 
-6) Cleanliness
+5) Cleanliness
 - remove dead code
 - remove debug prints
 - remove unused flags/options
 - keep public surfaces small
 
-7) Documentation Generation
+6) Documentation Generation
 - if exists, use the repositories documentation generation tools to update any affected documentation
 
-8) Final pass
+7) Final pass
 - rerun:
   - git status
   - git diff
@@ -136,16 +157,12 @@ A) CHANGESET
 - files changed: <list>
 - key diffs: <tight bullets>
 
-B) CODERABBIT FINDINGS
-- accepted + fixed: <list>
-- rejected: <list with reason>
-
-C) DOC TRACE
+%sB) DOC TRACE
 - SPEC: pass/fail + notes
 - PLAN: pass/fail + notes
 - TASKS: pass/fail + notes
 
-D) REFLECTION NOTES
+C) REFLECTION NOTES
 - risks remaining
 - follow-ups
 
@@ -156,7 +173,7 @@ Rules:
 - keep diffs minimal
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
-`, projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath)
+`, projectRoot, goalExtra, constitutionPath, summaryPath, specPath, planPath, tasksPath, coderabbitStep, coderabbitOutput)
 		fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 		return nil
@@ -166,10 +183,25 @@ Rules:
 	return nil
 }
 
-func genericReflectInstructions() string {
+func genericReflectInstructions(noCodeRabbit bool) string {
+	coderabbitStep := `
+### Step 5: Run CodeRabbit Validation
+Once you reach 100% confidence in correctness:
+` + "```bash" + `
+coderabbit --prompt-only
+` + "```" + `
+
+Fix any issues found by this command before considering the reflection complete.
+`
+	if noCodeRabbit {
+		coderabbitStep = ""
+	}
+
 	return `## Reflection Instructions
 
 Reflect on all recent changes to ensure 100% implementation correctness.
+
+**Important**: Before reviewing changes, ensure you've read docs/CONSTITUTION.md for project-wide constraints and principles.
 
 ### Step 1: Analyze Git State
 Review staged and unstaged changes:
@@ -190,6 +222,7 @@ For each changed file:
 
 ### Step 3: Cross-Reference Context
 Combine change analysis with:
+- CONSTITUTION.md — project-wide constraints and principles
 - Repository structure and conventions
 - Related files that may need updates
 - Test files that should cover the changes
@@ -204,17 +237,10 @@ Confirm each item before proceeding:
 - [ ] Error handling is complete
 - [ ] Edge cases are handled
 - [ ] Changes match stated intent
+- [ ] Changes respect CONSTITUTION.md constraints
 - [ ] No debug code or TODOs left behind
 - [ ] Style matches project conventions
-
-### Step 5: Run CodeRabbit Validation
-Once you reach 100% confidence in correctness:
-` + "```bash" + `
-coderabbit --prompt-only
-` + "```" + `
-
-Fix any issues found by this command before considering the reflection complete.
-
+` + coderabbitStep + `
 ### Output
 After reflection, provide:
 1. **Summary**: one-sentence description of changes
@@ -224,13 +250,27 @@ After reflection, provide:
 5. **Remaining Concerns**: anything that needs human review`
 }
 
-func featureScopedReflectInstructions(featureSlug, featurePath string) string {
+func featureScopedReflectInstructions(featureSlug, featurePath string, noCodeRabbit bool) string {
+	coderabbitStep := `
+### Step 5: Run CodeRabbit Validation
+Once you reach 100%% confidence in correctness:
+` + "```bash" + `
+coderabbit --prompt-only
+` + "```" + `
+
+Fix any issues found by this command before considering the reflection complete.
+`
+	if noCodeRabbit {
+		coderabbitStep = ""
+	}
+
 	return fmt.Sprintf(`## Reflection Instructions — Feature: %s
 
-Reflect on all recent changes for feature **%s** to ensure 100%% implementation correctness.
+Reflect on all recent changes for feature **%s** to ensure 100%%%% implementation correctness.
 
-### Feature Documents
+### Required Reading
 Verify changes align with:
+- docs/CONSTITUTION.md — project-wide constraints and principles
 - %s/SPEC.md — requirements and acceptance criteria
 - %s/PLAN.md — implementation approach
 - %s/TASKS.md — task definitions and dependencies
@@ -265,6 +305,7 @@ Confirm each item before proceeding:
 - [ ] Changes implement the intended task(s)
 - [ ] Implementation matches PLAN.md approach
 - [ ] Requirements from SPEC.md are satisfied
+- [ ] Changes respect CONSTITUTION.md constraints
 - [ ] No syntax errors or typos
 - [ ] Variable and function names are consistent
 - [ ] Imports are correct and used
@@ -272,15 +313,7 @@ Confirm each item before proceeding:
 - [ ] Edge cases from SPEC.md are handled
 - [ ] No debug code or TODOs left behind
 - [ ] Style matches project conventions
-
-### Step 5: Run CodeRabbit Validation
-Once you reach 100%% confidence in correctness:
-`+"```bash"+`
-coderabbit --prompt-only
-`+"```"+`
-
-Fix any issues found by this command before considering the reflection complete.
-
+%s
 ### Output
 After reflection, provide:
 1. **Feature**: %s
@@ -288,8 +321,41 @@ After reflection, provide:
 3. **Summary**: one-sentence description of changes
 4. **Files Changed**: list with brief rationale for each
 5. **Spec Compliance**: which SPEC.md requirements are now satisfied
-6. **Confidence Level**: percentage (target: 100%%)
+6. **Confidence Level**: percentage (target: 100%%%%)  
 7. **Issues Found**: any problems discovered and how they were resolved
 8. **Remaining Concerns**: anything that needs human review`, featureSlug, featureSlug,
-		featurePath, featurePath, featurePath, featureSlug)
+		featurePath, featurePath, featurePath, coderabbitStep, featureSlug)
+}
+
+// ensureCodeRabbitConfig creates .coderabbit.yaml if it doesn't exist.
+func ensureCodeRabbitConfig(projectRoot string) {
+	configPath := filepath.Join(projectRoot, ".coderabbit.yaml")
+	if _, err := os.Stat(configPath); err == nil {
+		// file exists, nothing to do
+		return
+	}
+
+	const coderabbitConfig = `# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+reviews:
+  profile: "assertive"
+  high_level_summary: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!docs/**"
+    - "!.specify/**"
+    - "!**/*.md"
+    - "!**/mock-data/**"
+  auto_review:
+    enabled: true
+    drafts: true
+chat:
+  auto_reply: true
+`
+
+	if err := os.WriteFile(configPath, []byte(coderabbitConfig), 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: could not create .coderabbit.yaml: %v\n", err)
+		return
+	}
+	fmt.Printf("%s✓ Created .coderabbit.yaml%s\n", plan, reset)
 }

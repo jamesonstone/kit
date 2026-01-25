@@ -285,20 +285,25 @@ This is a new feature: %s
 		answers.Users != "" || answers.Requirements != "" || answers.Acceptance != "" ||
 		answers.EdgeCases != ""
 
-	fmt.Print(`## Your Task
+constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	fmt.Printf(`## Context Docs (read first)
+- CONSTITUTION: %s — project-wide constraints, principles, priors
 
-1. Read the SPEC.md template and understand the required sections
-2. Analyze the codebase at ` + projectRoot + ` to understand existing patterns
-`)
+## Your Task
+
+1. Read CONSTITUTION.md to understand project constraints and principles
+2. Read the SPEC.md template and understand the required sections
+3. Analyze the codebase at %s to understand existing patterns
+`, constitutionPath, projectRoot)
 
 	if hasContext {
-		fmt.Print(`3. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions
-4. Ask clarifying questions in batches of 10 until you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding
-5. Continue refining each section of SPEC.md as you learn more:
+		fmt.Print(`4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions
+5. Ask clarifying questions in batches of 10 until you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding
+6. Continue refining each section of SPEC.md as you learn more:
 `)
 	} else {
-		fmt.Print(`3. Ask clarifying questions in batches of 10 until you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding
-4. Fill in each section with clear, specific requirements:
+		fmt.Print(`4. Ask clarifying questions in batches of 10 until you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding
+5. Fill in each section with clear, specific requirements:
 `)
 	}
 
@@ -322,6 +327,7 @@ Once you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding, write a SUM
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
+- Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
 `)
@@ -354,10 +360,14 @@ func runSpecTemplate(specPath, featureSlug, projectRoot string, cfg *config.Conf
 	fmt.Println(dim + "   experience that guides you through each section." + reset)
 	fmt.Println()
 
-	goalPct := cfg.GoalPercentage
+goalPct := cfg.GoalPercentage
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	fmt.Printf(`Please review and complete the specification at %s.
 
 This is a new feature: %s
+
+## Context Docs (read first)
+- CONSTITUTION: %s — project-wide constraints, principles, priors
 
 ## Context Provided by User
 <!-- ⚠️ FILL THIS OUT BEFORE SUBMITTING TO YOUR CODING AGENT -->
@@ -385,11 +395,12 @@ This is a new feature: %s
 
 ## Your Task
 
-1. Read the SPEC.md template and understand the required sections
-2. Analyze the codebase at %s to understand existing patterns
-3. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions
-4. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
-5. Continue refining each section of SPEC.md as you learn more:
+1. Read CONSTITUTION.md to understand project constraints and principles
+2. Read the SPEC.md template and understand the required sections
+3. Analyze the codebase at %s to understand existing patterns
+4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions
+5. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
+6. Continue refining each section of SPEC.md as you learn more:
    - PROBLEM: What problem does this feature solve?
    - GOALS: What are the measurable outcomes?
    - NON-GOALS: What is explicitly out of scope?
@@ -411,9 +422,10 @@ Once you reach >= %d%% understanding, write a SUMMARY section at the top of SPEC
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
+- Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
-`, specPath, featureSlug, projectRoot, goalPct, goalPct, goalPct)
+`, specPath, featureSlug, constitutionPath, projectRoot, goalPct, goalPct, goalPct)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil

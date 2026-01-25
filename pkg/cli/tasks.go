@@ -124,6 +124,7 @@ func runTasks(cmd *cobra.Command, args []string) error {
 	fmt.Printf("  3. Begin implementation!\n")
 
 	// output easy-to-copy instruction for coding agents
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
@@ -132,17 +133,19 @@ func runTasks(cmd *cobra.Command, args []string) error {
 Please review and complete the task plan at %s.
 
 This task plan corresponds to:
+- CONSTITUTION: %s (project-wide constraints)
 - SPEC: %s
 - PLAN: %s
 
 Feature: %s
 
 Your task:
-1. Read SPEC.md and PLAN.md fully and treat them as fixed inputs
-2. Review the TASKS.md template and required sections
-3. Derive an atomic, ordered task list that can be executed without ambiguity
-4. Identify missing decisions that block task generation
-5. Ask focused clarification questions until tasks can be made deterministic
+1. Read CONSTITUTION.md to understand project constraints and principles
+2. Read SPEC.md and PLAN.md fully and treat them as fixed inputs
+3. Review the TASKS.md template and required sections
+4. Derive an atomic, ordered task list that can be executed without ambiguity
+5. Identify missing decisions that block task generation
+6. Ask focused clarification questions until tasks can be made deterministic
 
 After each batch of questions:
 - state your current understanding percentage of the task plan
@@ -182,17 +185,18 @@ E) NOTES SECTION
 
 Rules:
 - focus on executable steps, not prose
-- do not invent new requirements or scope
+- do not invent new requirements or scope beyond SPEC.md
 - tasks must map back to PLAN items
 - tasks must imply an unambiguous implementation order
 - avoid code unless strictly necessary
 - keep language dense and factual
+- ensure tasks respect constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
 Output goal:
 - a task list that a coding agent can execute linearly with minimal back-and-forth
 
-`, tasksPath, specPath, planPath, feat.DirName, goalPct)
+`, tasksPath, constitutionPath, specPath, planPath, feat.DirName, goalPct)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil

@@ -137,6 +137,7 @@ func selectFeatureForImplementation(specsDir string) (*feature.Feature, error) {
 }
 
 func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress, projectRoot string) {
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	fmt.Println()
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "🚀 Implementation Context: " + reset + feat.DirName)
@@ -201,32 +202,36 @@ You are implementing the feature: %s
 		fmt.Println()
 	}
 
-	fmt.Printf(`## Document Hierarchy
+fmt.Printf(`## Document Hierarchy
 
 | Document | Contains | Use When |
 |----------|----------|----------|
+| CONSTITUTION.md | Project-wide constraints, principles, priors | Understanding fundamental rules |
 | SPEC.md | Requirements, goals, constraints, acceptance criteria | Checking scope, validating completeness |
 | PLAN.md | Architecture, components, interfaces, design decisions | Making implementation choices, understanding structure |
 | TASKS.md | Ordered execution steps with acceptance criteria per task | Knowing what to do next, tracking progress |
 
 ## Your Instructions
 
-1. **Read all three documents** in order: SPEC → PLAN → TASKS
-2. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to SPEC/PLAN/TASKS when there's a conflict
-3. **Execute tasks from TASKS.md** in the order specified
-4. **For each task:**
+1. **Read CONSTITUTION.md first** to understand project constraints and principles
+2. **Read all three feature documents** in order: SPEC → PLAN → TASKS
+3. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict
+4. **Execute tasks from TASKS.md** in the order specified
+5. **For each task:**
    - Read the task's GOAL, SCOPE, and ACCEPTANCE criteria
    - Implement only what's specified (no gold-plating)
    - Verify acceptance criteria are met before marking complete
    - Update TASKS.md: change '- [ ]' to '- [x]' when done
 
 ## Key Files
+- CONSTITUTION: %s
 - SPEC: %s
 - PLAN: %s
 - TASKS: %s
 - Project root: %s
 
 ## Rules
+- Respect constraints defined in CONSTITUTION.md
 - Stay within scope defined in SPEC.md
 - Follow architecture decisions in PLAN.md
 - Complete tasks in dependency order from TASKS.md
@@ -241,7 +246,7 @@ You are implementing the feature: %s
 Start by reading TASKS.md to identify the first incomplete task (marked with '- [ ]').
 Then read its acceptance criteria and implement it.
 
-`, specPath, planPath, tasksPath, projectRoot, projectRoot)
+`, constitutionPath, specPath, planPath, tasksPath, projectRoot, projectRoot)
 
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 }

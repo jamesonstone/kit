@@ -184,9 +184,10 @@ func featureHandoff(featureRef string) (string, error) {
 
 	sb.WriteString("## Kit Workflow Reminder\n\n")
 	sb.WriteString("**Specs drive code. Code serves specs.**\n\n")
-	sb.WriteString("1. Read `SPEC.md` → `PLAN.md` → `TASKS.md` in order\n")
-	sb.WriteString("2. Implement tasks as defined\n")
-	sb.WriteString("3. If reality diverges, update specs first, then code\n\n")
+	sb.WriteString("1. Read `docs/CONSTITUTION.md` for project constraints\n")
+	sb.WriteString("2. Read `SPEC.md` → `PLAN.md` → `TASKS.md` in order\n")
+	sb.WriteString("3. Implement tasks as defined\n")
+	sb.WriteString("4. If reality diverges, update specs first, then code\n\n")
 
 	sb.WriteString("## Feature Location\n\n")
 	sb.WriteString(fmt.Sprintf("- **Path**: `%s`\n", feat.Path))
@@ -197,10 +198,16 @@ func featureHandoff(featureRef string) (string, error) {
 	sb.WriteString("Read these documents in order:\n\n")
 
 	// check which documents exist and provide guidance
+	constitutionPath := cfg.ConstitutionAbsPath(projectRoot)
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 	analysisPath := filepath.Join(feat.Path, "ANALYSIS.md")
+
+	// always list CONSTITUTION first
+	sb.WriteString(fmt.Sprintf("0. **CONSTITUTION.md** — `%s`\n", constitutionPath))
+	sb.WriteString("   - Project-wide constraints and principles\n")
+	sb.WriteString("   - **Read this first to understand fundamental rules**\n\n")
 
 	if document.Exists(specPath) {
 		sb.WriteString(fmt.Sprintf("1. **SPEC.md** — `%s`\n", specPath))
