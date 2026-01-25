@@ -67,7 +67,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		return outputStatusJSON(status)
 	}
 
-	return outputStatusText(status)
+	return outputStatusText(status, specsDir)
 }
 
 func outputNoActiveFeature(asJSON bool) error {
@@ -104,14 +104,14 @@ func outputStatusJSON(status *feature.FeatureStatus) error {
 	return nil
 }
 
-func outputStatusText(status *feature.FeatureStatus) error {
+func outputStatusText(status *feature.FeatureStatus, specsDir string) error {
 	fmt.Println()
-	fmt.Printf("📊 " + whiteBold + "Active Feature: " + reset + "%s-%s\n", status.ID, status.Name)
+	fmt.Printf("📊 "+whiteBold+"Active Feature: "+reset+"%s-%s\n", status.ID, status.Name)
 	fmt.Println()
 
 	// summary
 	if status.Summary != "" {
-		fmt.Printf("📝 " + whiteBold + "Summary: " + reset + "%s\n", status.Summary)
+		fmt.Printf("📝 "+whiteBold+"Summary: "+reset+"%s\n", status.Summary)
 		fmt.Println()
 	}
 
@@ -130,8 +130,11 @@ func outputStatusText(status *feature.FeatureStatus) error {
 
 	// next action
 	nextAction := determineNextAction(status)
-	fmt.Printf("🎯 " + whiteBold + "Next: " + reset + "%s\n", nextAction)
+	fmt.Printf("🎯 "+whiteBold+"Next: "+reset+"%s\n", nextAction)
 	fmt.Println()
+
+	// all features progress chart
+	printAllFeaturesProgress(specsDir)
 
 	return nil
 }
@@ -140,7 +143,7 @@ func printFileStatus(name string, fs feature.FileStatus) {
 	if fs.Exists {
 		fmt.Printf("   %s   ✓  %s\n", padRight(name, 10), fs.Path)
 	} else {
-		fmt.Printf("   %s   ✗  " + dim + "(not created)" + reset + "\n", padRight(name, 10))
+		fmt.Printf("   %s   ✗  "+dim+"(not created)"+reset+"\n", padRight(name, 10))
 	}
 }
 
@@ -206,4 +209,72 @@ func spaces(n int) string {
 		b[i] = ' '
 	}
 	return string(b)
+}
+
+// printAllFeaturesProgress displays a markdown-style progress chart for all features.
+func printAllFeaturesProgress(specsDir string) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil || len(features) == 0 {
+		return
+	}
+
+	fmt.Println("🗺️  " + whiteBold + "All Features:" + reset)
+	fmt.Println()
+
+	// table header
+	fmt.Println(dim + "| Feature              | SPEC | PLAN | TASK | IMPL | DONE |" + reset)
+	fmt.Println(dim + "|----------------------|------|------|------|------|------|" + reset)
+
+	for _, feat := range features {
+		printFeatureProgressRow(&feat)
+	}
+	fmt.Println()
+}
+
+// printFeatureProgressRow prints a single row in the progress table.
+func printFeatureProgressRow(feat *feature.Feature) {
+	name := truncateString(feat.DirName, 20)
+	name = padRight(name, 20)
+
+	// phase markers
+	specM := phaseMarker(feat.Phase, feature.PhaseSpec)
+	planM := phaseMarker(feat.Phase, feature.PhasePlan)
+	taskM := phaseMarker(feat.Phase, feature.PhaseTasks)
+	implM := phaseMarker(feat.Phase, feature.PhaseImplement)
+	doneM := phaseMarker(feat.Phase, feature.PhaseReflect)
+
+	fmt.Printf("| %s | %s | %s | %s | %s | %s |\n",
+		name, specM, planM, taskM, implM, doneM)
+}
+
+// phaseMarker returns a visual marker for the phase state.
+// returns: ●  (complete), ◐  (current), ○  (pending)
+func phaseMarker(current feature.Phase, target feature.Phase) string {
+	order := map[feature.Phase]int{
+		feature.PhaseSpec:      1,
+		feature.PhasePlan:      2,
+		feature.PhaseTasks:     3,
+		feature.PhaseImplement: 4,
+		feature.PhaseReflect:   5,
+	}
+
+	currentIdx := order[current]
+	targetIdx := order[target]
+
+	if targetIdx < currentIdx {
+		return plan + " ●  " + reset // complete (green)
+	}
+	if targetIdx == currentIdx {
+		return implement + " ◐  " + reset // current (orange)
+	}
+	return dim + " ○  " + reset // pending (dim)
+}
+
+// truncateString truncates a string to maxLen, adding ellipsis if needed.
+func truncateString(s string, maxLen int) string {
+	if utf8.RuneCountInString(s) <= maxLen {
+		return s
+	}
+	runes := []rune(s)
+	return string(runes[:maxLen-1]) + "…"
 }

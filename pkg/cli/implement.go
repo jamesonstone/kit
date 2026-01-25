@@ -202,7 +202,7 @@ You are implementing the feature: %s
 		fmt.Println()
 	}
 
-fmt.Printf(`## Document Hierarchy
+	fmt.Printf(`## Document Hierarchy
 
 | Document | Contains | Use When |
 |----------|----------|----------|

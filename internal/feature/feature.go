@@ -2,6 +2,7 @@
 package feature
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -32,6 +33,7 @@ const (
 	PhasePlan      Phase = "plan"
 	PhaseTasks     Phase = "tasks"
 	PhaseImplement Phase = "implement"
+	PhaseReflect   Phase = "reflect"
 )
 
 var (
@@ -136,13 +138,15 @@ func ListFeatures(specsDir string) ([]Feature, error) {
 }
 
 // DeterminePhase checks which documents exist and returns the current phase.
+// phase progression: spec → plan → tasks → implement → reflect
 func DeterminePhase(featurePath string) Phase {
 	tasksPath := filepath.Join(featurePath, "TASKS.md")
 	planPath := filepath.Join(featurePath, "PLAN.md")
 	specPath := filepath.Join(featurePath, "SPEC.md")
 
+	// if tasks file exists, check task completion for implement vs reflect
 	if _, err := os.Stat(tasksPath); err == nil {
-		return PhaseTasks
+		return DeterminePhaseFromTasks(tasksPath)
 	}
 	if _, err := os.Stat(planPath); err == nil {
 		return PhasePlan
@@ -151,6 +155,48 @@ func DeterminePhase(featurePath string) Phase {
 		return PhaseSpec
 	}
 	return PhaseSpec
+}
+
+// DeterminePhaseFromTasks determines phase based on task progress.
+// - no tasks defined: PhaseTasks (needs task definition)
+// - all tasks complete: PhaseReflect
+// - some tasks incomplete: PhaseImplement
+func DeterminePhaseFromTasks(tasksPath string) Phase {
+	progress, err := parseTaskProgressFromPath(tasksPath)
+	if err != nil || progress.Total == 0 {
+		return PhaseTasks
+	}
+	if progress.Complete == progress.Total {
+		return PhaseReflect
+	}
+	return PhaseImplement
+}
+
+// parseTaskProgressFromPath is a lightweight task counter used by DeterminePhase.
+func parseTaskProgressFromPath(tasksPath string) (struct{ Total, Complete int }, error) {
+	progress := struct{ Total, Complete int }{}
+
+	file, err := os.Open(tasksPath)
+	if err != nil {
+		return progress, err
+	}
+	defer file.Close()
+
+	incompletePattern := regexp.MustCompile(`^\s*-\s*\[\s*\]`)
+	completePattern := regexp.MustCompile(`^\s*-\s*\[[xX]\]`)
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if incompletePattern.MatchString(line) {
+			progress.Total++
+		} else if completePattern.MatchString(line) {
+			progress.Total++
+			progress.Complete++
+		}
+	}
+
+	return progress, scanner.Err()
 }
 
 // NextNumber returns the next available feature number.

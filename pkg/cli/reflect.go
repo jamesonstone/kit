@@ -179,7 +179,102 @@ Rules:
 		return nil
 	}
 
-	fmt.Println(instructions)
+	// standard agent prompt wrapper for generic reflection
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	summaryPath := filepath.Join(projectRoot, "PROJECT_PROGRESS_SUMMARY.md")
+
+	// build conditional CodeRabbit content
+	goalExtra := ""
+	coderabbitStep := ""
+	coderabbitOutput := ""
+	if !noCodeRabbit {
+		goalExtra = "\n- run CodeRabbit in prompt-only mode and address all findings"
+		coderabbitStep = `
+3) Run CodeRabbit (prompt-only)
+- coderabbit --prompt-only
+- treat the output as review findings
+- fix all issues that are valid
+- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
+`
+		coderabbitOutput = `B) CODERABBIT FINDINGS
+- accepted + fixed: <list>
+- rejected: <list with reason>
+
+`
+	}
+
+	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Printf(`
+You are in the REFLECT phase for this repo at %s.
+
+Goal:
+- perform a strict code review of the current change set%s
+- ensure changes are correct, minimal, and consistent
+
+Context docs (read first):
+- CONSTITUTION: %s
+- PROJECT SUMMARY: %s
+
+Steps:
+
+1) Snapshot the change set (do not skip)
+- git status
+- git diff
+- git diff --staged
+- git log -n 20 --oneline --decorate
+
+2) Build a review map
+- list changed files
+- for each file, state the intent in one line
+- identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
+%s
+3) Verify correctness against docs
+- ensure decisions in code respect CONSTITUTION.md
+- ensure no scope creep
+
+4) Quality gates (hard checks)
+- correctness: no panics, no silent failures
+- errors: wrapped/propagated with context, no swallowed errors
+- IO: paths resolved safely, no surprising writes
+- determinism: stable ordering in outputs
+- tests: add or update only what is required to prove correctness
+- docs: update only if behavior changed
+
+5) Cleanliness
+- remove dead code
+- remove debug prints
+- remove unused flags/options
+- keep public surfaces small
+
+6) Final pass
+- rerun:
+  - git status
+  - git diff
+  - git diff --staged
+- summarize remaining issues, if any
+- propose next steps
+
+Output format:
+
+A) CHANGESET
+- files changed: <list>
+- key diffs: <tight bullets>
+
+%sB) REFLECTION NOTES
+- risks remaining
+- follow-ups
+
+Rules:
+- be strict
+- no fluff
+- fix issues before reporting them as "known"
+- keep diffs minimal
+- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
+
+`, projectRoot, goalExtra, constitutionPath, summaryPath, coderabbitStep, coderabbitOutput)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	return nil
 }
 

@@ -285,7 +285,7 @@ This is a new feature: %s
 		answers.Users != "" || answers.Requirements != "" || answers.Acceptance != "" ||
 		answers.EdgeCases != ""
 
-constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	fmt.Printf(`## Context Docs (read first)
 - CONSTITUTION: %s — project-wide constraints, principles, priors
 
@@ -360,7 +360,7 @@ func runSpecTemplate(specPath, featureSlug, projectRoot string, cfg *config.Conf
 	fmt.Println(dim + "   experience that guides you through each section." + reset)
 	fmt.Println()
 
-goalPct := cfg.GoalPercentage
+	goalPct := cfg.GoalPercentage
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	fmt.Printf(`Please review and complete the specification at %s.
 
