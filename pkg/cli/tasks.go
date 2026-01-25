@@ -1,8 +1,12 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -13,10 +17,8 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
-var tasksForce bool
-
 var tasksCmd = &cobra.Command{
-	Use:   "tasks <feature>",
+	Use:   "tasks [feature]",
 	Short: "Create or open feature tasks",
 	Long: `Create a new task list for a feature.
 
@@ -26,18 +28,21 @@ Creates:
 Prerequisites:
   - PLAN.md must exist (unless --force)
 
+If no feature is specified, shows an interactive selection of features
+that have SPEC.md and PLAN.md but no TASKS.md yet.
+
 Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	RunE: runTasks,
 }
 
 func init() {
-	tasksCmd.Flags().BoolVar(&tasksForce, "force", false, "create missing SPEC.md and PLAN.md with headers if they don't exist")
+	tasksCmd.Flags().Bool("force", false, "create missing SPEC.md and PLAN.md with headers if they don't exist")
 	rootCmd.AddCommand(tasksCmd)
 }
 
 func runTasks(cmd *cobra.Command, args []string) error {
-	featureRef := args[0]
+	tasksForce, _ := cmd.Flags().GetBool("force")
 
 	// find project root
 	projectRoot, err := config.FindProjectRoot()
@@ -52,10 +57,21 @@ func runTasks(cmd *cobra.Command, args []string) error {
 
 	specsDir := cfg.SpecsPath(projectRoot)
 
-	// resolve feature
-	feat, err := feature.Resolve(specsDir, featureRef)
-	if err != nil {
-		return fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first to create it", featureRef, featureRef)
+	var feat *feature.Feature
+
+	if len(args) == 0 {
+		// interactive mode: select from features with SPEC + PLAN but no TASKS
+		feat, err = selectFeatureForTasks(specsDir)
+		if err != nil {
+			return err
+		}
+	} else {
+		// direct mode: resolve feature by name
+		featureRef := args[0]
+		feat, err = feature.Resolve(specsDir, featureRef)
+		if err != nil {
+			return fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first to create it", featureRef, featureRef)
+		}
 	}
 
 	fmt.Printf("📝 Creating tasks for feature: %s\n", feat.DirName)
@@ -180,4 +196,49 @@ Output goal:
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil
+}
+
+// selectFeatureForTasks shows an interactive numbered list of features
+// that have SPEC.md and PLAN.md but no TASKS.md yet.
+func selectFeatureForTasks(specsDir string) (*feature.Feature, error) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	// filter to features with SPEC + PLAN but no TASKS
+	var candidates []feature.Feature
+	for _, f := range features {
+		specPath := filepath.Join(f.Path, "SPEC.md")
+		planPath := filepath.Join(f.Path, "PLAN.md")
+		tasksPath := filepath.Join(f.Path, "TASKS.md")
+		if document.Exists(specPath) && document.Exists(planPath) && !document.Exists(tasksPath) {
+			candidates = append(candidates, f)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("no features ready for tasks (need SPEC.md + PLAN.md without TASKS.md)\n\nRun 'kit plan <feature>' to create a plan first")
+	}
+
+	fmt.Println()
+	fmt.Println(whiteBold + "Select a feature to create tasks for:" + reset)
+	fmt.Println()
+	for i, f := range candidates {
+		fmt.Printf("  [%d] %s\n", i+1, f.DirName)
+	}
+	fmt.Println()
+	fmt.Print(whiteBold + "Enter number: " + reset)
+
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	num, err := strconv.Atoi(input)
+	if err != nil || num < 1 || num > len(candidates) {
+		return nil, fmt.Errorf("invalid selection: %s", input)
+	}
+
+	selected := candidates[num-1]
+	return &selected, nil
 }

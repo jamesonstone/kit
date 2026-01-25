@@ -5,7 +5,6 @@
 | ID | FEATURE | PATH | PHASE | CREATED | SUMMARY |
 | -- | ------- | ---- | ----- | ------- | ------- |
 | 0001 | refactor-plan-command | `docs/specs/0001-refactor-plan-command` | tasks | 2026-01-19 | (no description) |
-| 0002 | test-feature | `docs/specs/0002-test-feature` | spec | 2026-01-24 | (no description) |
 
 ## PROJECT INTENT
 
@@ -25,14 +24,6 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0001-refactor-plan-command/SPEC.md`, `docs/specs/0001-refactor-plan-command/PLAN.md`, `docs/specs/0001-refactor-plan-command/TASKS.md`
 
-### test-feature
-
-- **STATUS**: spec
-- **INTENT**: (see SPEC.md)
-- **APPROACH**: (see PLAN.md)
-- **OPEN ITEMS**: none
-- **POINTERS**: `docs/specs/0002-test-feature/SPEC.md`, `docs/specs/0002-test-feature/PLAN.md`, `docs/specs/0002-test-feature/TASKS.md`
-
 ## LAST UPDATED
 
-2026-01-24 16:10:33 EST
+2026-01-25 06:54:15 EST

@@ -17,12 +17,6 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
-var (
-	specNoBranch     bool
-	specTemplateOnly bool
-	specInteractive  bool
-)
-
 var specCmd = &cobra.Command{
 	Use:   "spec <feature>",
 	Short: "Create or open a feature specification",
@@ -31,7 +25,7 @@ var specCmd = &cobra.Command{
 Creates:
   - Feature directory (e.g., docs/specs/0001-my-feature/)
   - SPEC.md with required sections and placeholder comments
-  - Git branch matching the feature directory name (unless --no-branch)
+  - Git branch matching the feature directory name (with --create-branch)
 
 Updates PROJECT_PROGRESS_SUMMARY.md after creation.
 
@@ -44,13 +38,17 @@ Modes:
 }
 
 func init() {
-	specCmd.Flags().BoolVar(&specNoBranch, "no-branch", false, "skip git branch creation")
-	specCmd.Flags().BoolVar(&specTemplateOnly, "template", false, "output empty template and prompt without interactive questions")
-	specCmd.Flags().BoolVar(&specInteractive, "interactive", false, "force interactive mode even when stdin is not a terminal")
+	specCmd.Flags().Bool("create-branch", false, "create and switch to a git branch matching the feature name")
+	specCmd.Flags().Bool("template", false, "output empty template and prompt without interactive questions")
+	specCmd.Flags().Bool("interactive", false, "force interactive mode even when stdin is not a terminal")
 	rootCmd.AddCommand(specCmd)
 }
 
 func runSpec(cmd *cobra.Command, args []string) error {
+	createBranch, _ := cmd.Flags().GetBool("create-branch")
+	specTemplateOnly, _ := cmd.Flags().GetBool("template")
+	specInteractive, _ := cmd.Flags().GetBool("interactive")
+
 	featureRef := args[0]
 
 	// find project root
@@ -94,19 +92,12 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		fmt.Println("  ✓ SPEC.md already exists")
 	}
 
-	// create git branch if enabled and not --no-branch
-	if !specNoBranch && cfg.Branching.Enabled && git.IsRepo(projectRoot) {
-		branchName := feat.DirName
-		branchCreated, err := git.EnsureBranch(projectRoot, branchName, cfg.Branching.BaseBranch)
-		if err != nil {
-			fmt.Printf("  ⚠ Could not create branch: %v\n", err)
-		} else if branchCreated {
-			fmt.Printf("  ✓ Created and switched to branch: %s\n", branchName)
-		} else {
-			fmt.Printf("  ✓ Switched to existing branch: %s\n", branchName)
-		}
-	} else if specNoBranch {
-		fmt.Println("  ℹ Skipped branch creation (--no-branch)")
+	// determine if we should run interactive mode
+	isInteractive := !specTemplateOnly && (specInteractive || isTerminal())
+
+	// create git branch if --create-branch flag is set
+	if createBranch && git.IsRepo(projectRoot) {
+		createBranchForFeature(projectRoot, feat, cfg)
 	}
 
 	// update PROJECT_PROGRESS_SUMMARY.md
@@ -118,16 +109,26 @@ func runSpec(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("\n✅ Feature '%s' ready!\n", feat.Slug)
 
-	// determine if we should run interactive mode
-	runInteractive := !specTemplateOnly && (specInteractive || isTerminal())
-
-	if runInteractive {
+	if isInteractive {
 		// interactive mode: gather details and compile prompt
-		return runSpecInteractive(specPath, feat.Slug, projectRoot, cfg)
+		return runSpecInteractive(specPath, feat, projectRoot, cfg, createBranch)
 	}
 
 	// template mode: output the template and instructions
 	return runSpecTemplate(specPath, feat.Slug, projectRoot, cfg)
+}
+
+// createBranchForFeature creates and switches to a git branch for the feature.
+func createBranchForFeature(projectRoot string, feat *feature.Feature, cfg *config.Config) {
+	branchName := feat.DirName
+	branchCreated, err := git.EnsureBranch(projectRoot, branchName, cfg.Branching.BaseBranch)
+	if err != nil {
+		fmt.Printf("  ⚠ Could not create branch: %v\n", err)
+	} else if branchCreated {
+		fmt.Printf("  ✓ Created and switched to branch: %s\n", branchName)
+	} else {
+		fmt.Printf("  ✓ Switched to existing branch: %s\n", branchName)
+	}
 }
 
 func ensureDir(path string) error {
@@ -155,13 +156,24 @@ type specAnswers struct {
 }
 
 // runSpecInteractive prompts the user for each SPEC section and compiles a ready-to-use prompt
-func runSpecInteractive(specPath, featureSlug, projectRoot string, cfg *config.Config) error {
+func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot string, cfg *config.Config, branchAlreadyCreated bool) error {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "📝 Interactive Spec Builder" + reset)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println()
+
+	// prompt for branch creation if in a git repo and not already created via flag
+	if !branchAlreadyCreated && git.IsRepo(projectRoot) {
+		fmt.Printf(dim+"Create feature branch '%s'?"+reset+" "+whiteBold+"[y/N]: "+reset, feat.DirName)
+		branchAnswer := strings.ToLower(strings.TrimSpace(readLine(reader)))
+		if branchAnswer == "y" || branchAnswer == "yes" {
+			createBranchForFeature(projectRoot, feat, cfg)
+		}
+		fmt.Println()
+	}
+
 	fmt.Println(dim + "Answer the following questions to generate a complete prompt for your coding agent." + reset)
 	fmt.Println(dim + "Press Enter to skip a question (you can refine details with the agent later)." + reset)
 	fmt.Println()
@@ -219,7 +231,7 @@ func runSpecInteractive(specPath, featureSlug, projectRoot string, cfg *config.C
 	fmt.Println()
 
 	// generate the compiled prompt
-	return outputCompiledPrompt(specPath, featureSlug, projectRoot, cfg, &answers)
+	return outputCompiledPrompt(specPath, feat.Slug, projectRoot, cfg, &answers)
 }
 
 // readLine reads a single line from the reader, trimming whitespace
