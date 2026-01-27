@@ -111,8 +111,9 @@ var commandOrder = map[string]int{
 	"implement": 13,
 	"status":    14,
 	// verification and state
-	"check":  20,
-	"rollup": 21,
+	"check":       20,
+	"rollup":      21,
+	"code-review": 22,
 	// context management
 	"handoff":   30,
 	"summarize": 31,
