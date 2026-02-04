@@ -507,7 +507,7 @@ func Brainstorm(topic string) string {
 - [What exists today?]
 
 ## Problem Statement
-[Single sentence framing the core issue]
+We are unable to __________ because __________.
 
 ## Goals
 - [What must be achieved?]
