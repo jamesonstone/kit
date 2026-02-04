@@ -115,9 +115,10 @@ var commandOrder = map[string]int{
 	"rollup":      21,
 	"code-review": 22,
 	// context management
-	"handoff":   30,
-	"summarize": 31,
-	"reflect":   32,
+	"handoff":    30,
+	"summarize":  31,
+	"reflect":    32,
+	"brainstorm": 33,
 	// utility
 	"scaffold-agents": 90,
 	"completion":      91,

@@ -496,3 +496,36 @@ const FeatureSummaryTemplate = `### {{.FeatureName}}
 - **OPEN ITEMS**: {{.OpenItems}}
 - **POINTERS**: ` + "`{{.Path}}/SPEC.md`" + `, ` + "`{{.Path}}/PLAN.md`" + `, ` + "`{{.Path}}/TASKS.md`" + `
 `
+
+// Brainstorm returns a scaffold template for brainstorming sessions.
+func Brainstorm(topic string) string {
+	return `# Brainstorm: ` + topic + `
+
+## Context
+- [What prompted this?]
+- [Who is affected?]
+- [What exists today?]
+
+## Problem Statement
+[Single sentence framing the core issue]
+
+## Goals
+- [What must be achieved?]
+- [What constraints exist?]
+
+## Options Considered
+1. **Option A** — [description]
+2. **Option B** — [description]
+3. **Do nothing** — [why this is/isn't viable]
+
+## Open Questions
+- [ ] [Question 1]
+- [ ] [Question 2]
+
+## Decision Criteria
+- [What would make Option X the winner?]
+
+## Next Steps
+- [ ] [Action item]
+`
+}
