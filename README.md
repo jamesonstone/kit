@@ -51,20 +51,46 @@ kit status
 
 ## Commands
 
-| Command | Description |
-| ------- | ----------- |
-| `kit init` | Initialize a new Kit project |
-| `kit spec <feature>` | Create a feature specification |
-| `kit plan <feature>` | Create an implementation plan |
-| `kit tasks <feature>` | Create a task list |
-| `kit implement [feature]` | Output implementation context for coding agents |
-| `kit status` | Show current feature status for coding agents |
-| `kit check <feature>` | Validate feature documents |
-| `kit rollup` | Generate PROJECT_PROGRESS_SUMMARY.md |
-| `kit scaffold-agents` | Create agent pointer files |
-| `kit summarize [feature]` | Output context summarization instructions |
-| `kit reflect [feature]` | Output reflection/verification instructions |
-| `kit handoff [feature]` | Output context for fresh agent session |
+### Project Initialization
+
+| Command              | Description                            |
+| -------------------- | -------------------------------------- |
+| `kit init`           | Initialize a new Kit project           |
+
+### Core Development Loop
+
+| Command                  | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| `kit spec <feature>`     | Create or open a feature specification           |
+| `kit plan <feature>`     | Create or open an implementation plan            |
+| `kit tasks <feature>`    | Create or open a task list                       |
+| `kit implement [feature]`| Output implementation context for coding agents  |
+| `kit status`             | Show current feature status for coding agents    |
+
+### Verification & State
+
+| Command              | Description                                |
+| -------------------- | ------------------------------------------ |
+| `kit check <feature>`| Validate feature documents                 |
+| `kit rollup`         | Generate PROJECT_PROGRESS_SUMMARY.md       |
+| `kit code-review`    | Output instructions for branch code review |
+
+### Context Management
+
+| Command                   | Description                                       |
+| ------------------------- | ------------------------------------------------- |
+| `kit handoff [feature]`   | Output context for fresh agent session            |
+| `kit summarize [feature]` | Output context summarization instructions         |
+| `kit reflect [feature]`   | Output reflection/verification instructions       |
+| `kit brainstorm [topic]`  | Generate a brainstorming scaffold document        |
+
+### Utility
+
+| Command              | Description                                          |
+| -------------------- | ---------------------------------------------------- |
+| `kit agentsmd`       | Create or overwrite AGENTS.md with full template     |
+| `kit scaffold-agents`| Create or update agent pointer files                 |
+| `kit completion`     | Generate shell autocompletion script                 |
 
 ## Artifact Pipeline
 
