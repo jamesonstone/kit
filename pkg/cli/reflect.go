@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
 	"github.com/spf13/cobra"
 )
+
+var reflectCopy bool
 
 var reflectCmd = &cobra.Command{
 	Use:   "reflect [feature]",
@@ -28,6 +31,7 @@ for additional validation.`,
 
 func init() {
 	reflectCmd.Flags().Bool("no-coderabbit", false, "skip CodeRabbit config creation and instructions")
+	reflectCmd.Flags().BoolVar(&reflectCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
 	rootCmd.AddCommand(reflectCmd)
 }
 
@@ -70,116 +74,20 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		planPath := filepath.Join(feat.Path, "PLAN.md")
 		tasksPath := filepath.Join(feat.Path, "TASKS.md")
 
-		// build conditional CodeRabbit content
-		goalExtra := ""
-		coderabbitStep := ""
-		coderabbitOutput := ""
-		if !noCodeRabbit {
-			goalExtra = "\n- run CodeRabbit in prompt-only mode and address all findings"
-			coderabbitStep = `
-3) Run CodeRabbit (prompt-only)
-- coderabbit --prompt-only
-- treat the output as review findings
-- fix all issues that are valid
-- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
-`
-			coderabbitOutput = `B) CODERABBIT FINDINGS
-- accepted + fixed: <list>
-- rejected: <list with reason>
+		prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, noCodeRabbit, true)
 
-`
+		if reflectCopy {
+			if err := copyToClipboard(prompt); err != nil {
+				return fmt.Errorf("failed to copy to clipboard: %w", err)
+			}
+			fmt.Println("✓ Copied agent prompt to clipboard")
+			return nil
 		}
 
 		fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
 		fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-		fmt.Printf(`
-You are in the REFLECT phase for this repo at %s.
-
-Goal:
-- perform a strict code review of the current change set%s
-- ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent
-
-Context docs (read first):
-- CONSTITUTION: %s
-- PROJECT SUMMARY: %s
-- SPEC: %s
-- PLAN: %s
-- TASKS: %s
-
-Steps:
-
-1) Snapshot the change set (do not skip)
-- git status
-- git diff
-- git diff --staged
-- git log -n 20 --oneline --decorate
-
-2) Build a review map
-- list changed files
-- for each file, state the intent in one line
-- identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
-%s
-3) Verify correctness against docs
-- SPEC: ensure requirements + acceptance are fully satisfied
-- PLAN: ensure decisions were followed
-- TASKS: ensure every task marked done is actually done
-- ensure no scope creep
-
-4) Quality gates (hard checks)
-- correctness: no panics, no silent failures
-- errors: wrapped/propagated with context, no swallowed errors
-- IO: paths resolved safely, no surprising writes
-- determinism: stable ordering in outputs (rollup tables, etc.)
-- tests: add or update only what is required to prove correctness
-- docs: update only if behavior changed
-
-5) Cleanliness
-- remove dead code
-- remove debug prints
-- remove unused flags/options
-- keep public surfaces small
-
-6) Documentation Generation
-- if exists, use the repositories documentation generation tools to update any affected documentation
-
-7) Final pass
-- rerun:
-  - git status
-  - git diff
-  - git diff --staged
-- summarize remaining issues, if any
-- propose next steps
-
-8) Mark reflection complete
-- once all issues are resolved and confidence is 100%%
-- append the following marker to the end of TASKS.md:
-  <!-- REFLECTION_COMPLETE -->
-- this marker signals that the feature has completed the full development cycle
-
-Output format:
-
-A) CHANGESET
-- files changed: <list>
-- key diffs: <tight bullets>
-
-%sB) DOC TRACE
-- SPEC: pass/fail + notes
-- PLAN: pass/fail + notes
-- TASKS: pass/fail + notes
-
-C) REFLECTION NOTES
-- risks remaining
-- follow-ups
-
-Rules:
-- be strict
-- no fluff
-- fix issues before reporting them as "known"
-- keep diffs minimal
-- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-
-`, projectRoot, goalExtra, constitutionPath, summaryPath, specPath, planPath, tasksPath, coderabbitStep, coderabbitOutput)
+		fmt.Print(prompt)
 		fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 		return nil
@@ -189,102 +97,20 @@ Rules:
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	summaryPath := filepath.Join(projectRoot, "PROJECT_PROGRESS_SUMMARY.md")
 
-	// build conditional CodeRabbit content
-	goalExtra := ""
-	coderabbitStep := ""
-	coderabbitOutput := ""
-	if !noCodeRabbit {
-		goalExtra = "\n- run CodeRabbit in prompt-only mode and address all findings"
-		coderabbitStep = `
-3) Run CodeRabbit (prompt-only)
-- coderabbit --prompt-only
-- treat the output as review findings
-- fix all issues that are valid
-- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
-`
-		coderabbitOutput = `B) CODERABBIT FINDINGS
-- accepted + fixed: <list>
-- rejected: <list with reason>
+	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, "", "", "", noCodeRabbit, false)
 
-`
+	if reflectCopy {
+		if err := copyToClipboard(prompt); err != nil {
+			return fmt.Errorf("failed to copy to clipboard: %w", err)
+		}
+		fmt.Println("✓ Copied agent prompt to clipboard")
+		return nil
 	}
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Printf(`
-You are in the REFLECT phase for this repo at %s.
-
-Goal:
-- perform a strict code review of the current change set%s
-- ensure changes are correct, minimal, and consistent
-
-Context docs (read first):
-- CONSTITUTION: %s
-- PROJECT SUMMARY: %s
-
-Steps:
-
-1) Snapshot the change set (do not skip)
-- git status
-- git diff
-- git diff --staged
-- git log -n 20 --oneline --decorate
-
-2) Build a review map
-- list changed files
-- for each file, state the intent in one line
-- identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
-%s
-3) Verify correctness against docs
-- ensure decisions in code respect CONSTITUTION.md
-- ensure no scope creep
-
-4) Quality gates (hard checks)
-- correctness: no panics, no silent failures
-- errors: wrapped/propagated with context, no swallowed errors
-- IO: paths resolved safely, no surprising writes
-- determinism: stable ordering in outputs
-- tests: add or update only what is required to prove correctness
-- docs: update only if behavior changed
-
-5) Cleanliness
-- remove dead code
-- remove debug prints
-- remove unused flags/options
-- keep public surfaces small
-
-6) Final pass
-- rerun:
-  - git status
-  - git diff
-  - git diff --staged
-- summarize remaining issues, if any
-- propose next steps
-
-7) Mark reflection complete (feature-scoped only)
-- if this is a feature-scoped reflection with a TASKS.md file
-- and all issues are resolved with 100%% confidence
-- append to TASKS.md: <!-- REFLECTION_COMPLETE -->
-
-Output format:
-
-A) CHANGESET
-- files changed: <list>
-- key diffs: <tight bullets>
-
-%sB) REFLECTION NOTES
-- risks remaining
-- follow-ups
-
-Rules:
-- be strict
-- no fluff
-- fix issues before reporting them as "known"
-- keep diffs minimal
-- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-
-`, projectRoot, goalExtra, constitutionPath, summaryPath, coderabbitStep, coderabbitOutput)
+	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	return nil
 }
@@ -441,6 +267,166 @@ Once reflection is complete with 100%%%% confidence and no remaining issues:
 - Append `+"`<!-- REFLECTION_COMPLETE -->`"+` to the end of TASKS.md
 - This marker signals that the feature has completed the full development cycle`, featureSlug, featureSlug,
 		featurePath, featurePath, featurePath, coderabbitStep, featureSlug)
+}
+
+// buildReflectPrompt builds the agent prompt string for the reflect command.
+func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath string, noCodeRabbit, featureScoped bool) string {
+	goalExtra := ""
+	coderabbitStep := ""
+	coderabbitOutput := ""
+	if !noCodeRabbit {
+		goalExtra = "\n- run CodeRabbit in prompt-only mode and address all findings"
+		coderabbitStep = `
+3) Run CodeRabbit (prompt-only)
+- coderabbit --prompt-only
+- treat the output as review findings
+- fix all issues that are valid
+- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
+`
+		coderabbitOutput = `B) CODERABBIT FINDINGS
+- accepted + fixed: <list>
+- rejected: <list with reason>
+
+`
+	}
+
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.\n\nGoal:\n- perform a strict code review of the current change set%s\n", projectRoot, goalExtra))
+
+	if featureScoped {
+		sb.WriteString("- ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent\n")
+		sb.WriteString(fmt.Sprintf(`
+Context docs (read first):
+- CONSTITUTION: %s
+- PROJECT SUMMARY: %s
+- SPEC: %s
+- PLAN: %s
+- TASKS: %s
+`, constitutionPath, summaryPath, specPath, planPath, tasksPath))
+	} else {
+		sb.WriteString("- ensure changes are correct, minimal, and consistent\n")
+		sb.WriteString(fmt.Sprintf(`
+Context docs (read first):
+- CONSTITUTION: %s
+- PROJECT SUMMARY: %s
+`, constitutionPath, summaryPath))
+	}
+
+	sb.WriteString(fmt.Sprintf(`
+Steps:
+
+1) Snapshot the change set (do not skip)
+- git status
+- git diff
+- git diff --staged
+- git log -n 20 --oneline --decorate
+
+2) Build a review map
+- list changed files
+- for each file, state the intent in one line
+- identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
+%s`, coderabbitStep))
+
+	if featureScoped {
+		sb.WriteString(`3) Verify correctness against docs
+- SPEC: ensure requirements + acceptance are fully satisfied
+- PLAN: ensure decisions were followed
+- TASKS: ensure every task marked done is actually done
+- ensure no scope creep
+`)
+	} else {
+		sb.WriteString(`3) Verify correctness against docs
+- ensure decisions in code respect CONSTITUTION.md
+- ensure no scope creep
+`)
+	}
+
+	sb.WriteString(`
+4) Quality gates (hard checks)
+- correctness: no panics, no silent failures
+- errors: wrapped/propagated with context, no swallowed errors
+- IO: paths resolved safely, no surprising writes
+- determinism: stable ordering in outputs
+- tests: add or update only what is required to prove correctness
+- docs: update only if behavior changed
+
+5) Cleanliness
+- remove dead code
+- remove debug prints
+- remove unused flags/options
+- keep public surfaces small
+`)
+
+	if featureScoped {
+		sb.WriteString(`
+6) Documentation Generation
+- if exists, use the repositories documentation generation tools to update any affected documentation
+
+7) Final pass
+- rerun:
+  - git status
+  - git diff
+  - git diff --staged
+- summarize remaining issues, if any
+- propose next steps
+
+8) Mark reflection complete
+- once all issues are resolved and confidence is 100%%
+- append the following marker to the end of TASKS.md:
+  <!-- REFLECTION_COMPLETE -->
+- this marker signals that the feature has completed the full development cycle
+`)
+	} else {
+		sb.WriteString(`
+6) Final pass
+- rerun:
+  - git status
+  - git diff
+  - git diff --staged
+- summarize remaining issues, if any
+- propose next steps
+
+7) Mark reflection complete (feature-scoped only)
+- if this is a feature-scoped reflection with a TASKS.md file
+- and all issues are resolved with 100%% confidence
+- append to TASKS.md: <!-- REFLECTION_COMPLETE -->
+`)
+	}
+
+	sb.WriteString(fmt.Sprintf(`
+Output format:
+
+A) CHANGESET
+- files changed: <list>
+- key diffs: <tight bullets>
+
+%s`, coderabbitOutput))
+
+	if featureScoped {
+		sb.WriteString(`B) DOC TRACE
+- SPEC: pass/fail + notes
+- PLAN: pass/fail + notes
+- TASKS: pass/fail + notes
+
+C) REFLECTION NOTES
+`)
+	} else {
+		sb.WriteString("B) REFLECTION NOTES\n")
+	}
+
+	sb.WriteString(`- risks remaining
+- follow-ups
+
+Rules:
+- be strict
+- no fluff
+- fix issues before reporting them as "known"
+- keep diffs minimal
+- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
+`)
+
+	return sb.String()
 }
 
 // ensureCodeRabbitConfig creates .coderabbit.yaml if it doesn't exist.

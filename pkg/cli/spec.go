@@ -17,6 +17,8 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
+var specCopy bool
+
 var specCmd = &cobra.Command{
 	Use:   "spec <feature>",
 	Short: "Create or open a feature specification",
@@ -41,6 +43,7 @@ func init() {
 	specCmd.Flags().Bool("create-branch", false, "create and switch to a git branch matching the feature name")
 	specCmd.Flags().Bool("template", false, "output empty template and prompt without interactive questions")
 	specCmd.Flags().Bool("interactive", false, "force interactive mode even when stdin is not a terminal")
+	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
 	rootCmd.AddCommand(specCmd)
 }
 
@@ -240,44 +243,42 @@ func readLine(reader *bufio.Reader) string {
 	return strings.TrimSpace(line)
 }
 
-// outputCompiledPrompt generates and prints the final agent prompt
+// outputCompiledPrompt generates the final agent prompt and either copies to clipboard or prints
 func outputCompiledPrompt(specPath, featureSlug, projectRoot string, cfg *config.Config, answers *specAnswers) error {
 	goalPct := cfg.GoalPercentage
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "✅ Copy this prompt to your coding agent:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	var sb strings.Builder
 
-	fmt.Printf(`
-Please review and complete the specification at %s.
+	sb.WriteString(fmt.Sprintf(`Please review and complete the specification at %s.
 
 This is a new feature: %s
 
 ## Context Provided by User
 
-`, specPath, featureSlug)
+`, specPath, featureSlug))
 
 	// output user-provided context
 	if answers.Problem != "" {
-		fmt.Printf("**PROBLEM**: %s\n\n", answers.Problem)
+		sb.WriteString(fmt.Sprintf("**PROBLEM**: %s\n\n", answers.Problem))
 	}
 	if answers.Goals != "" {
-		fmt.Printf("**GOALS**: %s\n\n", answers.Goals)
+		sb.WriteString(fmt.Sprintf("**GOALS**: %s\n\n", answers.Goals))
 	}
 	if answers.NonGoals != "" {
-		fmt.Printf("**NON-GOALS**: %s\n\n", answers.NonGoals)
+		sb.WriteString(fmt.Sprintf("**NON-GOALS**: %s\n\n", answers.NonGoals))
 	}
 	if answers.Users != "" {
-		fmt.Printf("**USERS**: %s\n\n", answers.Users)
+		sb.WriteString(fmt.Sprintf("**USERS**: %s\n\n", answers.Users))
 	}
 	if answers.Requirements != "" {
-		fmt.Printf("**REQUIREMENTS**: %s\n\n", answers.Requirements)
+		sb.WriteString(fmt.Sprintf("**REQUIREMENTS**: %s\n\n", answers.Requirements))
 	}
 	if answers.Acceptance != "" {
-		fmt.Printf("**ACCEPTANCE**: %s\n\n", answers.Acceptance)
+		sb.WriteString(fmt.Sprintf("**ACCEPTANCE**: %s\n\n", answers.Acceptance))
 	}
 	if answers.EdgeCases != "" {
-		fmt.Printf("**EDGE-CASES**: %s\n\n", answers.EdgeCases)
+		sb.WriteString(fmt.Sprintf("**EDGE-CASES**: %s\n\n", answers.EdgeCases))
 	}
 
 	// check if any answers were provided
@@ -285,8 +286,7 @@ This is a new feature: %s
 		answers.Users != "" || answers.Requirements != "" || answers.Acceptance != "" ||
 		answers.EdgeCases != ""
 
-	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
-	fmt.Printf(`## Context Docs (read first)
+	sb.WriteString(fmt.Sprintf(`## Context Docs (read first)
 - CONSTITUTION: %s — project-wide constraints, principles, priors
 
 ## Your Task
@@ -294,20 +294,20 @@ This is a new feature: %s
 1. Read CONSTITUTION.md to understand project constraints and principles
 2. Read the SPEC.md template and understand the required sections
 3. Analyze the codebase at %s to understand existing patterns
-`, constitutionPath, projectRoot)
+`, constitutionPath, projectRoot))
 
 	if hasContext {
-		fmt.Print(`4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions
-5. Ask clarifying questions in batches of 10 until you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding
+		sb.WriteString(fmt.Sprintf(`4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions
+5. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
 6. Continue refining each section of SPEC.md as you learn more:
-`)
+`, goalPct))
 	} else {
-		fmt.Print(`4. Ask clarifying questions in batches of 10 until you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding
+		sb.WriteString(fmt.Sprintf(`4. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
 5. Fill in each section with clear, specific requirements:
-`)
+`, goalPct))
 	}
 
-	fmt.Print(`   - PROBLEM: What problem does this feature solve?
+	sb.WriteString(fmt.Sprintf(`   - PROBLEM: What problem does this feature solve?
    - GOALS: What are the measurable outcomes?
    - NON-GOALS: What is explicitly out of scope?
    - USERS: Who will use this feature?
@@ -316,10 +316,10 @@ This is a new feature: %s
    - EDGE-CASES: What unusual scenarios must be handled?
 
 After each batch of questions, state your current understanding percentage.
-Do NOT proceed to writing the spec until understanding >= ` + fmt.Sprintf("%d", goalPct) + `%.
+Do NOT proceed to writing the spec until understanding >= %d%%.
 
 ## SUMMARY Section (MANDATORY)
-Once you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding, write a SUMMARY section at the top of SPEC.md:
+Once you reach >= %d%% understanding, write a SUMMARY section at the top of SPEC.md:
 - 1-2 sentences maximum
 - Information-dense: include the core problem, solution approach, and key constraint
 - Written for a coding agent who needs to quickly understand the feature
@@ -329,9 +329,27 @@ Once you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding, write a SUM
 - Avoid implementation details (focus on WHAT, not HOW)
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
+`, goalPct, goalPct))
 
-`)
+	prompt := sb.String()
 
+	// copy to clipboard if requested
+	if specCopy {
+		if err := copyToClipboard(prompt); err != nil {
+			return fmt.Errorf("failed to copy to clipboard: %w", err)
+		}
+		fmt.Println("✓ Copied agent prompt to clipboard")
+		fmt.Printf("\nNext steps:\n")
+		fmt.Printf("  1. Paste the prompt to your coding agent\n")
+		fmt.Printf("  2. Work with the agent to refine the specification\n")
+		fmt.Printf("  3. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
+		return nil
+	}
+
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println(whiteBold + "✅ Copy this prompt to your coding agent:" + reset)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	fmt.Printf("\nNext steps:\n")
@@ -344,25 +362,10 @@ Once you reach >= ` + fmt.Sprintf("%d", goalPct) + `% understanding, write a SUM
 
 // runSpecTemplate outputs the empty template and generic instructions (legacy behavior)
 func runSpecTemplate(specPath, featureSlug, projectRoot string, cfg *config.Config) error {
-	fmt.Printf("\nNext steps:\n")
-	fmt.Printf("  1. Edit %s to define the specification\n", specPath)
-	fmt.Printf("  2. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
-
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println()
-	fmt.Println(dim + "⚠️  IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
-	fmt.Println(dim + "   with details about your feature. The more context you provide, the" + reset)
-	fmt.Println(dim + "   better the agent can help you write the specification." + reset)
-	fmt.Println()
-	fmt.Println(dim + "   Tip: Run 'kit spec <feature>' without --template for an interactive" + reset)
-	fmt.Println(dim + "   experience that guides you through each section." + reset)
-	fmt.Println()
-
 	goalPct := cfg.GoalPercentage
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
-	fmt.Printf(`Please review and complete the specification at %s.
+
+	prompt := fmt.Sprintf(`Please review and complete the specification at %s.
 
 This is a new feature: %s
 
@@ -424,8 +427,37 @@ Once you reach >= %d%% understanding, write a SUMMARY section at the top of SPEC
 - Avoid implementation details (focus on WHAT, not HOW)
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-
 `, specPath, featureSlug, constitutionPath, projectRoot, goalPct, goalPct, goalPct)
+
+	// copy to clipboard if requested
+	if specCopy {
+		if err := copyToClipboard(prompt); err != nil {
+			return fmt.Errorf("failed to copy to clipboard: %w", err)
+		}
+		fmt.Println("✓ Copied agent prompt to clipboard")
+		fmt.Printf("\nNext steps:\n")
+		fmt.Printf("  1. Paste the prompt to your coding agent\n")
+		fmt.Printf("  2. Fill in the context section before submitting\n")
+		fmt.Printf("  3. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
+		return nil
+	}
+
+	fmt.Printf("\nNext steps:\n")
+	fmt.Printf("  1. Edit %s to define the specification\n", specPath)
+	fmt.Printf("  2. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
+
+	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println()
+	fmt.Println(dim + "⚠️  IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
+	fmt.Println(dim + "   with details about your feature. The more context you provide, the" + reset)
+	fmt.Println(dim + "   better the agent can help you write the specification." + reset)
+	fmt.Println()
+	fmt.Println(dim + "   Tip: Run 'kit spec <feature>' without --template for an interactive" + reset)
+	fmt.Println(dim + "   experience that guides you through each section." + reset)
+	fmt.Println()
+	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil

@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var summarizeCopy bool
+
 var summarizeCmd = &cobra.Command{
 	Use:   "summarize [feature]",
 	Short: "Output context summarization instructions",
@@ -24,6 +26,7 @@ Use with coding agents: /compact (Warp), /summarize (Claude), etc.`,
 }
 
 func init() {
+	summarizeCmd.Flags().BoolVar(&summarizeCopy, "copy", false, "copy output to clipboard (suppresses stdout)")
 	rootCmd.AddCommand(summarizeCmd)
 }
 
@@ -50,6 +53,14 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 		}
 
 		instructions = featureScopedSummarizeInstructions(feat.Slug, feat.Path)
+	}
+
+	if summarizeCopy {
+		if err := copyToClipboard(instructions); err != nil {
+			return fmt.Errorf("failed to copy to clipboard: %w", err)
+		}
+		fmt.Println("✓ Copied to clipboard")
+		return nil
 	}
 
 	fmt.Println(instructions)

@@ -15,6 +15,8 @@ import (
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
+var implementCopy bool
+
 var implementCmd = &cobra.Command{
 	Use:   "implement [feature]",
 	Short: "Output implementation context for coding agents",
@@ -32,6 +34,7 @@ that have SPEC.md, PLAN.md, and TASKS.md ready for implementation.`,
 }
 
 func init() {
+	implementCmd.Flags().BoolVar(&implementCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
 	rootCmd.AddCommand(implementCmd)
 }
 
@@ -86,9 +89,7 @@ func runImplement(cmd *cobra.Command, args []string) error {
 	// get task progress
 	progress, _ := feature.ParseTaskProgress(tasksPath)
 
-	outputImplementationPrompt(feat, specPath, planPath, tasksPath, summary, progress, projectRoot)
-
-	return nil
+	return outputImplementationPrompt(feat, specPath, planPath, tasksPath, summary, progress, projectRoot)
 }
 
 // selectFeatureForImplementation shows an interactive numbered list of features
@@ -136,8 +137,76 @@ func selectFeatureForImplementation(specsDir string) (*feature.Feature, error) {
 	return &selected, nil
 }
 
-func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress, projectRoot string) {
+func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress, projectRoot string) error {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+
+	// build the agent prompt
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf("You are implementing the feature: %s\n\n## Overview\n", feat.Slug))
+
+	if summary != "" {
+		sb.WriteString(fmt.Sprintf("%s\n\n", summary))
+	} else {
+		sb.WriteString("(Read SPEC.md for feature description)\n\n")
+	}
+
+	sb.WriteString(fmt.Sprintf(`## Document Hierarchy
+
+| Document | Contains | Use When |
+|----------|----------|----------|
+| CONSTITUTION.md | Project-wide constraints, principles, priors | Understanding fundamental rules |
+| SPEC.md | Requirements, goals, constraints, acceptance criteria | Checking scope, validating completeness |
+| PLAN.md | Architecture, components, interfaces, design decisions | Making implementation choices, understanding structure |
+| TASKS.md | Ordered execution steps with acceptance criteria per task | Knowing what to do next, tracking progress |
+
+## Your Instructions
+
+1. **Read CONSTITUTION.md first** to understand project constraints and principles
+2. **Read all three feature documents** in order: SPEC → PLAN → TASKS
+3. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict
+4. **Execute tasks from TASKS.md** in the order specified
+5. **For each task:**
+   - Read the task's GOAL, SCOPE, and ACCEPTANCE criteria
+   - Implement only what's specified (no gold-plating)
+   - Verify acceptance criteria are met before marking complete
+   - Update TASKS.md: change '- [ ]' to '- [x]' when done
+
+## Key Files
+- CONSTITUTION: %s
+- SPEC: %s
+- PLAN: %s
+- TASKS: %s
+- Project root: %s
+
+## Rules
+- Respect constraints defined in CONSTITUTION.md
+- Stay within scope defined in SPEC.md
+- Follow architecture decisions in PLAN.md
+- Complete tasks in dependency order from TASKS.md
+- Ask for clarification rather than making assumptions
+- If a task is blocked, explain what's blocking and suggest resolution
+- After completing each task, briefly confirm what was done
+- **Use available tools**: If you have access to MCP servers (e.g., Context7 for documentation, GitHub for issues/PRs, or others), use them to fetch up-to-date documentation, verify API usage, and ensure implementation correctness
+- **Always** update %s/docs/PROJECT_PROGRESS_SUMMARY.md as progress is made and at implementation completion
+- Keep TASKS.md updated with accurate status and ensure that it reflects reality upon completion
+
+## Begin
+Start by reading TASKS.md to identify the first incomplete task (marked with '- [ ]').
+Then read its acceptance criteria and implement it.
+`, constitutionPath, specPath, planPath, tasksPath, projectRoot, projectRoot))
+
+	prompt := sb.String()
+
+	// copy to clipboard if requested
+	if implementCopy {
+		if err := copyToClipboard(prompt); err != nil {
+			return fmt.Errorf("failed to copy to clipboard: %w", err)
+		}
+		fmt.Println("✓ Copied agent prompt to clipboard")
+		return nil
+	}
+
 	fmt.Println()
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "🚀 Implementation Context: " + reset + feat.DirName)
@@ -188,65 +257,8 @@ func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasks
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-
-	fmt.Printf(`
-You are implementing the feature: %s
-
-## Overview
-`, feat.Slug)
-
-	if summary != "" {
-		fmt.Printf("%s\n\n", summary)
-	} else {
-		fmt.Println("(Read SPEC.md for feature description)")
-		fmt.Println()
-	}
-
-	fmt.Printf(`## Document Hierarchy
-
-| Document | Contains | Use When |
-|----------|----------|----------|
-| CONSTITUTION.md | Project-wide constraints, principles, priors | Understanding fundamental rules |
-| SPEC.md | Requirements, goals, constraints, acceptance criteria | Checking scope, validating completeness |
-| PLAN.md | Architecture, components, interfaces, design decisions | Making implementation choices, understanding structure |
-| TASKS.md | Ordered execution steps with acceptance criteria per task | Knowing what to do next, tracking progress |
-
-## Your Instructions
-
-1. **Read CONSTITUTION.md first** to understand project constraints and principles
-2. **Read all three feature documents** in order: SPEC → PLAN → TASKS
-3. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict
-4. **Execute tasks from TASKS.md** in the order specified
-5. **For each task:**
-   - Read the task's GOAL, SCOPE, and ACCEPTANCE criteria
-   - Implement only what's specified (no gold-plating)
-   - Verify acceptance criteria are met before marking complete
-   - Update TASKS.md: change '- [ ]' to '- [x]' when done
-
-## Key Files
-- CONSTITUTION: %s
-- SPEC: %s
-- PLAN: %s
-- TASKS: %s
-- Project root: %s
-
-## Rules
-- Respect constraints defined in CONSTITUTION.md
-- Stay within scope defined in SPEC.md
-- Follow architecture decisions in PLAN.md
-- Complete tasks in dependency order from TASKS.md
-- Ask for clarification rather than making assumptions
-- If a task is blocked, explain what's blocking and suggest resolution
-- After completing each task, briefly confirm what was done
-- **Use available tools**: If you have access to MCP servers (e.g., Context7 for documentation, GitHub for issues/PRs, or others), use them to fetch up-to-date documentation, verify API usage, and ensure implementation correctness
-- **Always** update %s/docs/PROJECT_PROGRESS_SUMMARY.md as progress is made and at implementation completion
-- Keep TASKS.md updated with accurate status and ensure that it reflects reality upon completion
-
-## Begin
-Start by reading TASKS.md to identify the first incomplete task (marked with '- [ ]').
-Then read its acceptance criteria and implement it.
-
-`, constitutionPath, specPath, planPath, tasksPath, projectRoot, projectRoot)
-
+	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+
+	return nil
 }

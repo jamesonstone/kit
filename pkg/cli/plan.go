@@ -17,6 +17,8 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
+var planCopy bool
+
 var planCmd = &cobra.Command{
 	Use:   "plan [feature]",
 	Short: "Create or open a feature implementation plan",
@@ -39,6 +41,7 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
 func init() {
 	planCmd.Flags().Bool("force", false, "create missing SPEC.md with headers if it doesn't exist")
 	planCmd.Flags().Bool("warp", false, "output prompt for Warp coding agent to fill PLAN.md from Warp plan")
+	planCmd.Flags().BoolVar(&planCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
 	rootCmd.AddCommand(planCmd)
 }
 
@@ -173,11 +176,8 @@ func outputStandardPlanPrompt(planPath, specPath string, feat *feature.Feature, 
 	projectRoot, _ := config.FindProjectRoot()
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Printf(`
-Please review and complete the implementation plan at %s.
+
+	prompt := fmt.Sprintf(`Please review and complete the implementation plan at %s.
 
 This plan corresponds to the feature defined in:
 - CONSTITUTION: %s (project-wide constraints)
@@ -238,8 +238,22 @@ Rules:
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
-
 `, planPath, constitutionPath, specPath, feat.Slug, goalPct)
+
+	// copy to clipboard if requested
+	if planCopy {
+		if err := copyToClipboard(prompt); err != nil {
+			fmt.Printf("failed to copy to clipboard: %v\n", err)
+			return
+		}
+		fmt.Println("✓ Copied agent prompt to clipboard")
+		return
+	}
+
+	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 }
 
@@ -248,19 +262,8 @@ func outputWarpPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg 
 	projectRoot, _ := config.FindProjectRoot()
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "📋 Warp Plan Integration" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println()
-	fmt.Println(dim + "The following files have been created:" + reset)
-	fmt.Printf("  • PLAN.md: %s\n", planPath)
-	fmt.Printf("  • SPEC.md: %s\n", specPath)
-	fmt.Println()
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to continue with your Warp plan:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Printf(`
-I have created a Warp plan for the feature: %s
+
+	prompt := fmt.Sprintf(`I have created a Warp plan for the feature: %s
 
 Please take the Warp plan you just generated and use it to fill out the PLAN.md document at:
 %s
@@ -299,7 +302,29 @@ Rules:
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
-
 `, feat.Slug, planPath, constitutionPath, specPath, goalPct)
+
+	// copy to clipboard if requested
+	if planCopy {
+		if err := copyToClipboard(prompt); err != nil {
+			fmt.Printf("failed to copy to clipboard: %v\n", err)
+			return
+		}
+		fmt.Println("✓ Copied agent prompt to clipboard")
+		return
+	}
+
+	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println(whiteBold + "📋 Warp Plan Integration" + reset)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println()
+	fmt.Println(dim + "The following files have been created:" + reset)
+	fmt.Printf("  • PLAN.md: %s\n", planPath)
+	fmt.Printf("  • SPEC.md: %s\n", specPath)
+	fmt.Println()
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println(whiteBold + "Copy this prompt to continue with your Warp plan:" + reset)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 }

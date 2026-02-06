@@ -17,6 +17,8 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
+var tasksCopy bool
+
 var tasksCmd = &cobra.Command{
 	Use:   "tasks [feature]",
 	Short: "Create or open feature tasks",
@@ -38,6 +40,7 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
 
 func init() {
 	tasksCmd.Flags().Bool("force", false, "create missing SPEC.md and PLAN.md with headers if they don't exist")
+	tasksCmd.Flags().BoolVar(&tasksCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
 	rootCmd.AddCommand(tasksCmd)
 }
 
@@ -126,11 +129,8 @@ func runTasks(cmd *cobra.Command, args []string) error {
 	// output easy-to-copy instruction for coding agents
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Printf(`
-Please review and complete the task plan at %s.
+
+	prompt := fmt.Sprintf(`Please review and complete the task plan at %s.
 
 This task plan corresponds to:
 - CONSTITUTION: %s (project-wide constraints)
@@ -195,8 +195,21 @@ Rules:
 
 Output goal:
 - a task list that a coding agent can execute linearly with minimal back-and-forth
-
 `, tasksPath, constitutionPath, specPath, planPath, feat.DirName, goalPct)
+
+	// copy to clipboard if requested
+	if tasksCopy {
+		if err := copyToClipboard(prompt); err != nil {
+			return fmt.Errorf("failed to copy to clipboard: %w", err)
+		}
+		fmt.Println("✓ Copied agent prompt to clipboard")
+		return nil
+	}
+
+	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil
