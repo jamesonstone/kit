@@ -316,7 +316,8 @@ A feature or task is done only when all apply:
 
 ## Code Style Standards
 
-- Use lowercase letters at the beginning of comments
+- ALWAYS use lowercase letters at the beginning of comments
+- DO NOT add punctuation at the end of comments unless it improves readability
 - Use comments sparingly and only where necessary
 - Use docstrings/comments only for public or externally consumed APIs
 - REST APIs: OpenAPI/Swagger is the primary documentation source
