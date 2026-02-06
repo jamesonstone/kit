@@ -267,6 +267,9 @@ func phaseMarker(current feature.Phase, target feature.Phase) string {
 		return plan + " ●  " + reset // complete (green)
 	}
 	if targetIdx == currentIdx {
+		if current == feature.PhaseComplete {
+			return plan + " ●  " + reset // complete (green) — terminal phase
+		}
 		return implement + " ◐  " + reset // current (orange)
 	}
 	return dim + " ○  " + reset // pending (dim)
