@@ -1,12 +1,13 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
@@ -158,9 +159,32 @@ type specAnswers struct {
 	EdgeCases    string
 }
 
+// readLineRL reads a single line using the readline instance, returning empty string on EOF/interrupt.
+func readLineRL(rl *readline.Instance) string {
+	line, err := rl.Readline()
+	if err != nil {
+		if err == readline.ErrInterrupt || err == io.EOF {
+			return ""
+		}
+		return ""
+	}
+	return strings.TrimSpace(line)
+}
+
 // runSpecInteractive prompts the user for each SPEC section and compiles a ready-to-use prompt
 func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot string, cfg *config.Config, branchAlreadyCreated bool) error {
-	reader := bufio.NewReader(os.Stdin)
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:          whiteBold + "   > " + reset,
+		InterruptPrompt: "^C",
+		EOFPrompt:       "",
+		Stdin:           os.Stdin,
+		Stdout:          os.Stdout,
+		Stderr:          os.Stderr,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to initialize readline: %w", err)
+	}
+	defer rl.Close()
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "📝 Interactive Spec Builder" + reset)
@@ -169,8 +193,9 @@ func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot stri
 
 	// prompt for branch creation if in a git repo and not already created via flag
 	if !branchAlreadyCreated && git.IsRepo(projectRoot) {
-		fmt.Printf(dim+"Create feature branch '%s'?"+reset+" "+whiteBold+"[y/N]: "+reset, feat.DirName)
-		branchAnswer := strings.ToLower(strings.TrimSpace(readLine(reader)))
+		rl.SetPrompt(whiteBold + "[y/N]: " + reset)
+		fmt.Printf(dim+"Create feature branch '%s'?"+reset+" ", feat.DirName)
+		branchAnswer := strings.ToLower(readLineRL(rl))
 		if branchAnswer == "y" || branchAnswer == "yes" {
 			createBranchForFeature(projectRoot, feat, cfg)
 		}
@@ -178,69 +203,60 @@ func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot stri
 	}
 
 	fmt.Println(dim + "Answer the following questions to generate a complete prompt for your coding agent." + reset)
+	fmt.Println(dim + "Use ←/→ arrow keys to move through your text and correct mistakes." + reset)
 	fmt.Println(dim + "Press Enter to skip a question (you can refine details with the agent later)." + reset)
 	fmt.Println()
+
+	// reset prompt for question inputs
+	rl.SetPrompt(whiteBold + "   > " + reset)
 
 	answers := specAnswers{}
 
 	// PROBLEM
 	fmt.Println(spec + "1. PROBLEM" + reset + " - What problem does this feature solve?")
 	fmt.Println(dim + "   Example: Users cannot export their data in CSV format" + reset)
-	fmt.Print(whiteBold + "   > " + reset)
-	answers.Problem = readLine(reader)
+	answers.Problem = readLineRL(rl)
 
 	// GOALS
 	fmt.Println()
 	fmt.Println(spec + "2. GOALS" + reset + " - What are the measurable outcomes? (comma-separated)")
 	fmt.Println(dim + "   Example: Export completes in <5s, supports 100k+ rows, CSV is RFC-compliant" + reset)
-	fmt.Print(whiteBold + "   > " + reset)
-	answers.Goals = readLine(reader)
+	answers.Goals = readLineRL(rl)
 
 	// NON-GOALS
 	fmt.Println()
 	fmt.Println(spec + "3. NON-GOALS" + reset + " - What is explicitly out of scope?")
 	fmt.Println(dim + "   Example: Excel format, scheduled exports, email delivery" + reset)
-	fmt.Print(whiteBold + "   > " + reset)
-	answers.NonGoals = readLine(reader)
+	answers.NonGoals = readLineRL(rl)
 
 	// USERS
 	fmt.Println()
 	fmt.Println(spec + "4. USERS" + reset + " - Who will use this feature?")
 	fmt.Println(dim + "   Example: Admin users, API consumers, data analysts" + reset)
-	fmt.Print(whiteBold + "   > " + reset)
-	answers.Users = readLine(reader)
+	answers.Users = readLineRL(rl)
 
 	// REQUIREMENTS
 	fmt.Println()
 	fmt.Println(spec + "5. REQUIREMENTS" + reset + " - What must be true for this feature to be complete?")
 	fmt.Println(dim + "   Example: Must handle Unicode, must include headers, must stream large files" + reset)
-	fmt.Print(whiteBold + "   > " + reset)
-	answers.Requirements = readLine(reader)
+	answers.Requirements = readLineRL(rl)
 
 	// ACCEPTANCE
 	fmt.Println()
 	fmt.Println(spec + "6. ACCEPTANCE" + reset + " - How do we verify the feature works?")
 	fmt.Println(dim + "   Example: Unit tests pass, integration tests cover edge cases, manual QA sign-off" + reset)
-	fmt.Print(whiteBold + "   > " + reset)
-	answers.Acceptance = readLine(reader)
+	answers.Acceptance = readLineRL(rl)
 
 	// EDGE-CASES
 	fmt.Println()
 	fmt.Println(spec + "7. EDGE-CASES" + reset + " - What unusual scenarios must be handled?")
 	fmt.Println(dim + "   Example: Empty dataset, special characters in data, network timeout during export" + reset)
-	fmt.Print(whiteBold + "   > " + reset)
-	answers.EdgeCases = readLine(reader)
+	answers.EdgeCases = readLineRL(rl)
 
 	fmt.Println()
 
 	// generate the compiled prompt
 	return outputCompiledPrompt(specPath, feat.Slug, projectRoot, cfg, &answers)
-}
-
-// readLine reads a single line from the reader, trimming whitespace
-func readLine(reader *bufio.Reader) string {
-	line, _ := reader.ReadString('\n')
-	return strings.TrimSpace(line)
 }
 
 // outputCompiledPrompt generates the final agent prompt and either copies to clipboard or prints
@@ -250,9 +266,8 @@ func outputCompiledPrompt(specPath, featureSlug, projectRoot string, cfg *config
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(`Please review and complete the specification at %s.
-
-This is a new feature: %s
+	sb.WriteString(fmt.Sprintf(`You MUST update the specification file at: %s
+This is the source-of-truth document for feature: %s
 
 ## Context Provided by User
 
@@ -292,19 +307,20 @@ This is a new feature: %s
 ## Your Task
 
 1. Read CONSTITUTION.md to understand project constraints and principles
-2. Read the SPEC.md template and understand the required sections
+2. Read the current SPEC.md at %s and understand the required sections
 3. Analyze the codebase at %s to understand existing patterns
-`, constitutionPath, projectRoot))
+`, constitutionPath, specPath, projectRoot))
 
 	if hasContext {
-		sb.WriteString(fmt.Sprintf(`4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions
+		sb.WriteString(fmt.Sprintf(`4. **IMMEDIATELY write all context above into the SPEC.md file at %s** — do NOT ask questions before doing this
 5. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
-6. Continue refining each section of SPEC.md as you learn more:
-`, goalPct))
+6. After each round of questions, **save your updates to %s** before continuing
+7. Continue refining each section of SPEC.md as you learn more:
+`, specPath, goalPct, specPath))
 	} else {
 		sb.WriteString(fmt.Sprintf(`4. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
-5. Fill in each section with clear, specific requirements:
-`, goalPct))
+5. **Write your findings directly to %s** as you fill in each section:
+`, goalPct, specPath))
 	}
 
 	sb.WriteString(fmt.Sprintf(`   - PROBLEM: What problem does this feature solve?
@@ -324,12 +340,17 @@ Once you reach >= %d%% understanding, write a SUMMARY section at the top of SPEC
 - Information-dense: include the core problem, solution approach, and key constraint
 - Written for a coding agent who needs to quickly understand the feature
 - Example: "Adds CSV export for user data with streaming support for large datasets (>100k rows). Must complete in <5s and handle Unicode."
+
+## IMPORTANT: File Update Requirement
+All specification content MUST be written to: %s
+This file is the single source of truth for this feature. Do not leave content only in chat — persist everything to the file.
+
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-`, goalPct, goalPct))
+`, goalPct, goalPct, specPath))
 
 	prompt := sb.String()
 
