@@ -1,10 +1,10 @@
 ```text
 ██╗  ██╗██╗████████╗
 ██║ ██╔╝██║╚══██╔══╝
-█████╔╝ ██║   ██║   
-██╔═██╗ ██║   ██║   
-██║  ██╗██║   ██║   
-╚═╝  ╚═╝╚═╝   ╚═╝   
+█████╔╝ ██║   ██║
+██╔═██╗ ██║   ██║
+██║  ██╗██║   ██║
+╚═╝  ╚═╝╚═╝   ╚═╝
 ```
 
 **Spec-Driven Development Toolkit**
@@ -59,13 +59,14 @@ kit status
 
 ### Core Development Loop
 
-| Command                  | Description                                      |
-| ------------------------ | ------------------------------------------------ |
-| `kit spec <feature>`     | Create or open a feature specification           |
-| `kit plan <feature>`     | Create or open an implementation plan            |
-| `kit tasks <feature>`    | Create or open a task list                       |
-| `kit implement [feature]`| Output implementation context for coding agents  |
-| `kit status`             | Show current feature status for coding agents    |
+| Command                           | Description                                                       |
+| --------------------------------- | ----------------------------------------------------------------- |
+| `kit oneshot <feature>`           | **Flagship** — scaffold all artifacts + combined agent prompt     |
+| `kit spec <feature>`              | Create or open a feature specification                            |
+| `kit plan <feature>`              | Create or open an implementation plan                             |
+| `kit tasks <feature>`             | Create or open a task list                                        |
+| `kit implement [feature]`         | Output implementation context for coding agents                   |
+| `kit status`                      | Show current feature status for coding agents                     |
 
 ### Verification & State
 
@@ -120,6 +121,64 @@ kit status
 4. **Tasks** — executable work units
 5. **Implementation** — execution outside Kit's core scope
 6. **Reflection** — verify correctness, refine understanding
+
+## Oneshot — The Flagship Command
+
+The core loop above (spec → plan → tasks → implement → reflect) is the full workflow. **`kit oneshot`** collapses it into a single command. It is the fastest way to get value from Kit.
+
+The idea: do your deep thinking *before* you enter code.
+
+### The Two-Phase Research Model
+
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Phase A: Foundation Research (you + Foundation LLM + Notion)           │
+│                                                                         │
+│    You  ◄──────►  Foundation LLM  ◄──────►  Notion / Notes              │
+│                                                                         │
+│    Iterate many times. Brainstorm, challenge assumptions, explore       │
+│    tradeoffs. Refine until you have a succinct, information-dense       │
+│    specification — the "brainstorming spec".                            │
+└──────────────────────────────┬──────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Phase B: Codebase-Aware Refinement (kit oneshot)                       │
+│                                                                         │
+│    kit oneshot my-feature --spec-file brainstorm.md                     │
+│                                                                         │
+│    Kit scaffolds SPEC.md, PLAN.md, TASKS.md and outputs a prompt        │
+│    that drives a coding agent through a new line of questioning —       │
+│    one that takes into account the codebase as it actually is:          │
+│    existing patterns, architecture, constraints, and conventions.       │
+│                                                                         │
+│    The agent fills out every document, asks for clarification,          │
+│    and reaches >= 95% understanding before entering the                 │
+│    pre-implementation phase.                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Phase A** is where the hard intellectual work happens. Use a Foundation LLM (Claude, GPT, Gemini — whatever you prefer) connected to Notion or your note-taking tool of choice. Iterate *many times*. The goal is a short, dense specification that captures the problem, constraints, goals, and rough approach — without any codebase-specific detail.
+
+**Phase B** is where Kit takes over. The brainstorming spec you built in Notion becomes the input to `kit oneshot`. Kit creates all the artifact files, then outputs a comprehensive prompt that drives a coding agent through codebase-aware refinement. The agent reads your codebase, applies its patterns, and fills out SPEC.md, PLAN.md, and TASKS.md — enhancing the research you already did with the reality of the code as it exists today.
+
+### Usage
+
+```bash
+# interactive — Kit prompts you to paste your brainstorming spec
+kit oneshot my-feature
+
+# from a file — pipe your Notion export or brainstorm document directly
+kit oneshot my-feature --spec-file docs/brainstorm-export.md
+
+# inline — for short specs
+kit oneshot my-feature --spec "Add CSV export with streaming for large datasets"
+
+# copy the agent prompt to clipboard instead of printing
+kit oneshot my-feature --spec-file brainstorm.md --copy
+```
+
+After running, paste the generated prompt into your coding agent. The agent drives the entire workflow autonomously — clarifying, drafting, and refining each document — until all artifacts are complete and ready for `kit implement`.
 
 ## Project Structure
 
