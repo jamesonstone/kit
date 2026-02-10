@@ -47,7 +47,10 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		ensureCodeRabbitConfig(projectRoot)
 	}
 
-	instructions := genericReflectInstructions(noCodeRabbit)
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	summaryPath := filepath.Join(projectRoot, "PROJECT_PROGRESS_SUMMARY.md")
+
+	var prompt string
 
 	if len(args) == 1 {
 		featureRef := args[0]
@@ -63,41 +66,13 @@ func runReflect(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to resolve feature: %w", err)
 		}
 
-		instructions = featureScopedReflectInstructions(feat.Slug, feat.Path, noCodeRabbit)
-
-		fmt.Println(instructions)
-
-		// output easy-to-copy instruction for coding agents
-		constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
-		summaryPath := filepath.Join(projectRoot, "PROJECT_PROGRESS_SUMMARY.md")
 		specPath := filepath.Join(feat.Path, "SPEC.md")
 		planPath := filepath.Join(feat.Path, "PLAN.md")
 		tasksPath := filepath.Join(feat.Path, "TASKS.md")
-
-		prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, noCodeRabbit, true)
-
-		if reflectCopy {
-			if err := copyToClipboard(prompt); err != nil {
-				return fmt.Errorf("failed to copy to clipboard: %w", err)
-			}
-			fmt.Println("✓ Copied agent prompt to clipboard")
-			return nil
-		}
-
-		fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-		fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-		fmt.Print(prompt)
-		fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-
-		return nil
+		prompt = buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, feat.Slug, noCodeRabbit)
+	} else {
+		prompt = buildReflectPrompt(projectRoot, constitutionPath, summaryPath, "", "", "", "", noCodeRabbit)
 	}
-
-	// standard agent prompt wrapper for generic reflection
-	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
-	summaryPath := filepath.Join(projectRoot, "PROJECT_PROGRESS_SUMMARY.md")
-
-	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, "", "", "", noCodeRabbit, false)
 
 	if reflectCopy {
 		if err := copyToClipboard(prompt); err != nil {
@@ -107,191 +82,32 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Print(prompt)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	return nil
 }
 
-func genericReflectInstructions(noCodeRabbit bool) string {
-	coderabbitStep := `
-### Step 5: Run CodeRabbit Validation
-Once you reach 100% confidence in correctness:
-` + "```bash" + `
-coderabbit --prompt-only
-` + "```" + `
-
-Fix any issues found by this command before considering the reflection complete.
-`
-	if noCodeRabbit {
-		coderabbitStep = ""
-	}
-
-	return `## Reflection Instructions
-
-Reflect on all recent changes to ensure 100% implementation correctness.
-
-**Important**: Before reviewing changes, ensure you've read docs/CONSTITUTION.md for project-wide constraints and principles.
-
-### Step 1: Analyze Git State
-Review staged and unstaged changes:
-` + "```bash" + `
-git status
-git diff --stat
-git diff
-git diff --cached
-` + "```" + `
-
-### Step 2: Understand the Delta
-For each changed file:
-- What was the intent of the change?
-- Does the change align with project architecture?
-- Are there unintended side effects?
-- Is error handling complete?
-- Are edge cases covered?
-
-### Step 3: Cross-Reference Context
-Combine change analysis with:
-- CONSTITUTION.md — project-wide constraints and principles
-- Repository structure and conventions
-- Related files that may need updates
-- Test files that should cover the changes
-- Documentation that may need updates
-
-### Step 4: Verify Correctness Checklist
-Confirm each item before proceeding:
-- [ ] Code compiles without errors
-- [ ] No syntax errors or typos
-- [ ] Variable and function names are consistent
-- [ ] Imports are correct and used
-- [ ] Error handling is complete
-- [ ] Edge cases are handled
-- [ ] Changes match stated intent
-- [ ] Changes respect CONSTITUTION.md constraints
-- [ ] No debug code or TODOs left behind
-- [ ] Style matches project conventions
-` + coderabbitStep + `
-### Output
-After reflection, provide:
-1. **Summary**: one-sentence description of changes
-2. **Files Changed**: list with brief rationale for each
-3. **Confidence Level**: percentage (target: 100%)
-4. **Issues Found**: any problems discovered and how they were resolved
-5. **Remaining Concerns**: anything that needs human review
-
-### Completion (feature-scoped only)
-Once reflection is complete with 100% confidence and no remaining issues:
-- Append ` + "`<!-- REFLECTION_COMPLETE -->`" + ` to the end of TASKS.md
-- This marker signals that the feature has completed the full development cycle`
-}
-
-func featureScopedReflectInstructions(featureSlug, featurePath string, noCodeRabbit bool) string {
-	coderabbitStep := `
-### Step 5: Run CodeRabbit Validation
-Once you reach 100%% confidence in correctness:
-` + "```bash" + `
-coderabbit --prompt-only
-` + "```" + `
-
-Fix any issues found by this command before considering the reflection complete.
-`
-	if noCodeRabbit {
-		coderabbitStep = ""
-	}
-
-	return fmt.Sprintf(`## Reflection Instructions — Feature: %s
-
-Reflect on all recent changes for feature **%s** to ensure 100%%%% implementation correctness.
-
-### Required Reading
-Verify changes align with:
-- docs/CONSTITUTION.md — project-wide constraints and principles
-- %s/SPEC.md — requirements and acceptance criteria
-- %s/PLAN.md — implementation approach
-- %s/TASKS.md — task definitions and dependencies
-
-### Step 1: Analyze Git State
-Review staged and unstaged changes:
-`+"```bash"+`
-git status
-git diff --stat
-git diff
-git diff --cached
-`+"```"+`
-
-### Step 2: Understand the Delta
-For each changed file:
-- Does it implement a task from TASKS.md?
-- Does it follow the approach defined in PLAN.md?
-- Does it satisfy requirements from SPEC.md?
-- Are there unintended side effects?
-- Is error handling complete?
-
-### Step 3: Cross-Reference Feature Context
-Verify changes against:
-- Feature specification requirements
-- Implementation plan components
-- Task dependencies and order
-- Acceptance criteria from SPEC.md
-
-### Step 4: Verify Correctness Checklist
-Confirm each item before proceeding:
-- [ ] Code compiles without errors
-- [ ] Changes implement the intended task(s)
-- [ ] Implementation matches PLAN.md approach
-- [ ] Requirements from SPEC.md are satisfied
-- [ ] Changes respect CONSTITUTION.md constraints
-- [ ] No syntax errors or typos
-- [ ] Variable and function names are consistent
-- [ ] Imports are correct and used
-- [ ] Error handling is complete
-- [ ] Edge cases from SPEC.md are handled
-- [ ] No debug code or TODOs left behind
-- [ ] Style matches project conventions
-%s
-### Output
-After reflection, provide:
-1. **Feature**: %s
-2. **Tasks Completed**: which TASKS.md items are done
-3. **Summary**: one-sentence description of changes
-4. **Files Changed**: list with brief rationale for each
-5. **Spec Compliance**: which SPEC.md requirements are now satisfied
-6. **Confidence Level**: percentage (target: 100%%%%)  
-7. **Issues Found**: any problems discovered and how they were resolved
-8. **Remaining Concerns**: anything that needs human review
-
-### Completion
-Once reflection is complete with 100%%%% confidence and no remaining issues:
-- Append `+"`<!-- REFLECTION_COMPLETE -->`"+` to the end of TASKS.md
-- This marker signals that the feature has completed the full development cycle`, featureSlug, featureSlug,
-		featurePath, featurePath, featurePath, coderabbitStep, featureSlug)
-}
-
-// buildReflectPrompt builds the agent prompt string for the reflect command.
-func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath string, noCodeRabbit, featureScoped bool) string {
-	goalExtra := ""
-	coderabbitStep := ""
-	coderabbitOutput := ""
-	if !noCodeRabbit {
-		goalExtra = "\n- run CodeRabbit in prompt-only mode and address all findings"
-		coderabbitStep = `
-3) Run CodeRabbit (prompt-only)
-- coderabbit --prompt-only
-- treat the output as review findings
-- fix all issues that are valid
-- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
-`
-		coderabbitOutput = `B) CODERABBIT FINDINGS
-- accepted + fixed: <list>
-- rejected: <list with reason>
-
-`
-	}
+// buildReflectPrompt builds the unified reflection prompt.
+func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, featureSlug string, noCodeRabbit bool) string {
+	featureScoped := featureSlug != ""
 
 	var sb strings.Builder
+	step := 0
+	nextStep := func() int { step++; return step }
+	section := byte('A')
+	nextSection := func() string { s := string(section); section++; return s }
 
+	// header
+	if featureScoped {
+		sb.WriteString(fmt.Sprintf("## Reflection — Feature: %s\n\n", featureSlug))
+	} else {
+		sb.WriteString("## Reflection\n\n")
+	}
+
+	// goal
+	goalExtra := ""
+	if !noCodeRabbit {
+		goalExtra = "\n- run CodeRabbit in prompt-only mode and address all findings"
+	}
 	sb.WriteString(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.\n\nGoal:\n- perform a strict code review of the current change set%s\n", projectRoot, goalExtra))
 
 	if featureScoped {
@@ -313,109 +129,173 @@ Context docs (read first):
 `, constitutionPath, summaryPath))
 	}
 
-	sb.WriteString(fmt.Sprintf(`
-Steps:
+	// steps
+	sb.WriteString("\nSteps:\n")
 
-1) Snapshot the change set (do not skip)
+	// snapshot
+	sb.WriteString(fmt.Sprintf(`
+%d) Snapshot the change set (do not skip)
 - git status
 - git diff
 - git diff --staged
 - git log -n 20 --oneline --decorate
+`, nextStep()))
 
-2) Build a review map
+	// review map
+	sb.WriteString(fmt.Sprintf(`
+%d) Build a review map
 - list changed files
 - for each file, state the intent in one line
 - identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
-%s`, coderabbitStep))
+`, nextStep()))
 
+	// coderabbit (optional)
+	if !noCodeRabbit {
+		sb.WriteString(fmt.Sprintf(`
+%d) Run CodeRabbit (prompt-only)
+- coderabbit --prompt-only
+- treat the output as review findings
+- fix all issues that are valid
+- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
+`, nextStep()))
+	}
+
+	// verify correctness against docs
 	if featureScoped {
-		sb.WriteString(`3) Verify correctness against docs
+		sb.WriteString(fmt.Sprintf(`
+%d) Verify correctness against docs
 - SPEC: ensure requirements + acceptance are fully satisfied
 - PLAN: ensure decisions were followed
 - TASKS: ensure every task marked done is actually done
 - ensure no scope creep
-`)
+`, nextStep()))
 	} else {
-		sb.WriteString(`3) Verify correctness against docs
+		sb.WriteString(fmt.Sprintf(`
+%d) Verify correctness against docs
 - ensure decisions in code respect CONSTITUTION.md
 - ensure no scope creep
-`)
+`, nextStep()))
 	}
 
-	sb.WriteString(`
-4) Quality gates (hard checks)
+	// quality gates
+	sb.WriteString(fmt.Sprintf(`
+%d) Quality gates (hard checks)
 - correctness: no panics, no silent failures
 - errors: wrapped/propagated with context, no swallowed errors
 - IO: paths resolved safely, no surprising writes
 - determinism: stable ordering in outputs
 - tests: add or update only what is required to prove correctness
 - docs: update only if behavior changed
+`, nextStep()))
 
-5) Cleanliness
+	// correctness checklist
+	if featureScoped {
+		sb.WriteString(fmt.Sprintf(`
+%d) Correctness checklist
+- [ ] Code compiles without errors
+- [ ] Changes implement the intended task(s)
+- [ ] Implementation matches PLAN.md approach
+- [ ] Requirements from SPEC.md are satisfied
+- [ ] Changes respect CONSTITUTION.md constraints
+- [ ] No syntax errors or typos
+- [ ] Variable and function names are consistent
+- [ ] Imports are correct and used
+- [ ] Error handling is complete
+- [ ] Edge cases from SPEC.md are handled
+- [ ] No debug code or TODOs left behind
+- [ ] Style matches project conventions
+`, nextStep()))
+	} else {
+		sb.WriteString(fmt.Sprintf(`
+%d) Correctness checklist
+- [ ] Code compiles without errors
+- [ ] No syntax errors or typos
+- [ ] Variable and function names are consistent
+- [ ] Imports are correct and used
+- [ ] Error handling is complete
+- [ ] Edge cases are handled
+- [ ] Changes match stated intent
+- [ ] Changes respect CONSTITUTION.md constraints
+- [ ] No debug code or TODOs left behind
+- [ ] Style matches project conventions
+`, nextStep()))
+	}
+
+	// cleanliness
+	sb.WriteString(fmt.Sprintf(`
+%d) Cleanliness
 - remove dead code
 - remove debug prints
 - remove unused flags/options
 - keep public surfaces small
-`)
+`, nextStep()))
 
+	// documentation generation (feature-scoped only)
 	if featureScoped {
-		sb.WriteString(`
-6) Documentation Generation
+		sb.WriteString(fmt.Sprintf(`
+%d) Documentation generation
 - if exists, use the repositories documentation generation tools to update any affected documentation
+`, nextStep()))
+	}
 
-7) Final pass
+	// final pass
+	sb.WriteString(fmt.Sprintf(`
+%d) Final pass
 - rerun:
   - git status
   - git diff
   - git diff --staged
 - summarize remaining issues, if any
 - propose next steps
+`, nextStep()))
 
-8) Mark reflection complete
+	// mark reflection complete
+	if featureScoped {
+		sb.WriteString(fmt.Sprintf(`
+%d) Mark reflection complete
 - once all issues are resolved and confidence is 100%%
 - append the following marker to the end of TASKS.md:
   <!-- REFLECTION_COMPLETE -->
 - this marker signals that the feature has completed the full development cycle
-`)
+`, nextStep()))
 	} else {
-		sb.WriteString(`
-6) Final pass
-- rerun:
-  - git status
-  - git diff
-  - git diff --staged
-- summarize remaining issues, if any
-- propose next steps
-
-7) Mark reflection complete (feature-scoped only)
+		sb.WriteString(fmt.Sprintf(`
+%d) Mark reflection complete (feature-scoped only)
 - if this is a feature-scoped reflection with a TASKS.md file
 - and all issues are resolved with 100%% confidence
 - append to TASKS.md: <!-- REFLECTION_COMPLETE -->
-`)
+`, nextStep()))
 	}
 
+	// output format
 	sb.WriteString(fmt.Sprintf(`
 Output format:
 
-A) CHANGESET
+%s) CHANGESET
 - files changed: <list>
 - key diffs: <tight bullets>
+`, nextSection()))
 
-%s`, coderabbitOutput))
+	if !noCodeRabbit {
+		sb.WriteString(fmt.Sprintf(`
+%s) CODERABBIT FINDINGS
+- accepted + fixed: <list>
+- rejected: <list with reason>
+`, nextSection()))
+	}
 
 	if featureScoped {
-		sb.WriteString(`B) DOC TRACE
+		sb.WriteString(fmt.Sprintf(`
+%s) DOC TRACE
 - SPEC: pass/fail + notes
 - PLAN: pass/fail + notes
 - TASKS: pass/fail + notes
-
-C) REFLECTION NOTES
-`)
-	} else {
-		sb.WriteString("B) REFLECTION NOTES\n")
+`, nextSection()))
 	}
 
-	sb.WriteString(`- risks remaining
+	sb.WriteString(fmt.Sprintf(`
+%s) REFLECTION NOTES
+- risks remaining
 - follow-ups
 
 Rules:
@@ -424,7 +304,7 @@ Rules:
 - fix issues before reporting them as "known"
 - keep diffs minimal
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-`)
+`, nextSection()))
 
 	return sb.String()
 }
