@@ -105,8 +105,9 @@ var commandOrder = map[string]int{
 	// project initialization
 	"init": 1,
 	// core development loop
-	"oneshot":   9,
-	"spec":      10,
+	"scaffold": 8,
+	"oneshot":  9,
+	"spec":     10,
 	"plan":      11,
 	"tasks":     12,
 	"implement": 13,
