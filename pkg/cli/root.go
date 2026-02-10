@@ -110,7 +110,9 @@ var commandOrder = map[string]int{
 	"plan":      11,
 	"tasks":     12,
 	"implement": 13,
-	"status":    14,
+	"reflect":   14,
+	"complete":  15,
+	"status":    16,
 	// verification and state
 	"check":       20,
 	"rollup":      21,
@@ -118,7 +120,6 @@ var commandOrder = map[string]int{
 	// context management
 	"handoff":    30,
 	"summarize":  31,
-	"reflect":    32,
 	"brainstorm": 33,
 	// utility
 	"scaffold-agents": 90,
