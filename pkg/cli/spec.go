@@ -159,6 +159,18 @@ type specAnswers struct {
 	EdgeCases    string
 }
 
+// specInputRuneFilter keeps Enter as submit, but converts Ctrl+J/Shift+Enter to newline input.
+func specInputRuneFilter(r rune) (rune, bool) {
+	if r == readline.CharCtrlJ {
+		return '\n', true
+	}
+	return r, true
+}
+
+func normalizeSpecAnswer(raw string) string {
+	return strings.TrimSpace(raw)
+}
+
 // readLineRL reads a single line using the readline instance, returning empty string on EOF/interrupt.
 func readLineRL(rl *readline.Instance) string {
 	line, err := rl.Readline()
@@ -168,7 +180,7 @@ func readLineRL(rl *readline.Instance) string {
 		}
 		return ""
 	}
-	return strings.TrimSpace(line)
+	return normalizeSpecAnswer(line)
 }
 
 // runSpecInteractive prompts the user for each SPEC section and compiles a ready-to-use prompt
@@ -180,6 +192,7 @@ func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot stri
 		Stdin:           os.Stdin,
 		Stdout:          os.Stdout,
 		Stderr:          os.Stderr,
+		FuncFilterInputRune: specInputRuneFilter,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to initialize readline: %w", err)
@@ -204,7 +217,8 @@ func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot stri
 
 	fmt.Println(dim + "Answer the following questions to generate a complete prompt for your coding agent." + reset)
 	fmt.Println(dim + "Use ←/→ arrow keys to move through your text and correct mistakes." + reset)
-	fmt.Println(dim + "Press Enter to skip a question (you can refine details with the agent later)." + reset)
+	fmt.Println(dim + "Press Enter to continue; use Shift+Enter (or Ctrl+J) to add a newline." + reset)
+	fmt.Println(dim + "Press Enter on an empty response to skip a question." + reset)
 	fmt.Println()
 
 	// reset prompt for question inputs
