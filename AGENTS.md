@@ -1,13 +1,53 @@
 # AGENTS
 
-## Kit is the source of truth
+## Source of truth
 
-- Constitution: `docs/CONSTITUTION.md`
+- Primary authority for repository workflow, constraints, and change policy: `docs/CONSTITUTION.md`
 - Feature specs live under: `docs/specs/<feature>/`
   - `SPEC.md` (requirements)
   - `PLAN.md` (implementation plan)
   - `TASKS.md` (executable task list)
   - `ANALYSIS.md` (optional, analysis scratchpad)
+---
+
+## Change Classification (Required First Step)
+
+Classify each request before implementation.
+
+### 1) Spec-Driven (Formal Track)
+
+Use when any apply:
+
+- request initiated through `kit spec` or `kit oneshot`
+- new feature or capability
+- substantial architectural or behavioral change
+- work touches code with existing feature specs under `docs/specs/<feature>/`
+- changes cross component boundaries or public interfaces
+
+Required flow:
+
+- follow full artifact pipeline: `SPEC.md` → `PLAN.md` → `TASKS.md` → implementation → reflection
+
+### 2) Ad Hoc (Lightweight Track)
+
+Use when all apply:
+
+- not initiated through `kit spec` or `kit oneshot`
+- bug fix, security review, refactor, dependency update, config change, or small refinement
+- scope is contained and can be verified directly
+
+Required flow:
+
+- understand → implement → verify
+- update only relevant practical docs (README/API docs/inline docs) when needed
+- do not create spec artifacts for ad hoc work by default
+
+### 3) Ad Hoc + Existing Feature Specs
+
+If ad hoc work touches a feature with existing specs:
+
+- default to updating `SPEC.md` / `PLAN.md` / `TASKS.md` when behavior, requirements, or approach changes
+- skip spec updates only for mechanical edits (formatting, typo, dependency bump)
 
 ## Multi-feature rule
 
@@ -29,9 +69,7 @@
 
 ---
 
-## Workflow: Plan → Act → Reflect
-
-Specs drive code. Code serves specs.
+## Workflow: Plan → Act → Reflect (Spec-Driven Track)
 
 ### Phase 1: PLAN
 
@@ -77,9 +115,33 @@ Specs drive code. Code serves specs.
 
 ---
 
+## Workflow: Understand → Implement → Verify (Ad Hoc Track)
+
+### Phase 1: UNDERSTAND
+
+- Confirm scope and constraints directly from request + code context
+- Identify impacted files and risks
+- If feature specs exist for impacted behavior, default to updating them
+
+### Phase 2: IMPLEMENT
+
+- Apply focused code changes
+- Keep changes minimal and reversible
+- Preserve existing architecture and style constraints
+
+### Phase 3: VERIFY
+
+- Run the smallest relevant validation (build/tests/lint as applicable)
+- Confirm no unintended behavior changes
+- Update only relevant practical docs when behavior or usage changes
+
+---
+
 ## Definition of Done (DoD)
 
-A feature or task is done only when all apply:
+A change is done when all applicable conditions are met for its track.
+
+### Spec-Driven DoD
 
 - Requirements satisfied per `SPEC.md`
 - Code implemented per `PLAN.md` and `TASKS.md`
@@ -90,11 +152,19 @@ A feature or task is done only when all apply:
 - Migrations and rollback plan documented if data model changed
 - Relevant documentation updated
 
+### Ad Hoc DoD
+
+- Requested change implemented and validated
+- Existing specs updated when required by change classification
+- Relevant practical docs updated only when behavior/usage changed
+- No unnecessary artifact creation
+
 ---
 
 ## Code Style Standards
 
-- Use lowercase letters at the beginning of comments
+- ALWAYS use lowercase letters at the beginning of comments
+- DO NOT add punctuation at the end of comments unless it improves readability
 - Use comments sparingly and only where necessary
 - Use docstrings/comments only for public or externally consumed APIs
 - REST APIs: OpenAPI/Swagger is the primary documentation source

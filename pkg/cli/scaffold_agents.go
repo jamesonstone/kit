@@ -11,6 +11,8 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
+var scaffoldAgentsForce bool
+
 var scaffoldAgentsCmd = &cobra.Command{
 	Use:   "scaffold-agents",
 	Short: "Create or update agent pointer files",
@@ -21,11 +23,14 @@ Agent pointer files (e.g., AGENTS.md, CLAUDE.md) contain:
   - Workflow contracts for each agent
   - Multi-feature rules
 
-These files never duplicate specifications; they only point to them.`,
+These files never duplicate specifications; they only point to them.
+
+Use --force to overwrite existing files.`,
 	RunE: runScaffoldAgents,
 }
 
 func init() {
+	scaffoldAgentsCmd.Flags().BoolVarP(&scaffoldAgentsForce, "force", "f", false, "overwrite existing agent pointer files")
 	rootCmd.AddCommand(scaffoldAgentsCmd)
 }
 
@@ -49,19 +54,25 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 		agentPath := filepath.Join(projectRoot, agentFile)
 		agentName := agentFile[:len(agentFile)-3] // remove .md extension
 
-		if document.Exists(agentPath) {
-			// file exists, could update links here in the future
+		if document.Exists(agentPath) && !scaffoldAgentsForce {
 			fmt.Printf("  ✓ %s exists (skipped)\n", agentFile)
 			skipped++
 			continue
 		}
 
+		existed := document.Exists(agentPath)
 		content := templates.AgentPointer(agentName)
 		if err := document.Write(agentPath, content); err != nil {
-			return fmt.Errorf("failed to create %s: %w", agentFile, err)
+			return fmt.Errorf("failed to write %s: %w", agentFile, err)
 		}
-		fmt.Printf("  ✓ Created %s\n", agentFile)
-		created++
+
+		if existed {
+			fmt.Printf("  ✓ Overwrote %s\n", agentFile)
+			updated++
+		} else {
+			fmt.Printf("  ✓ Created %s\n", agentFile)
+			created++
+		}
 	}
 
 	fmt.Printf("\n✅ Agent scaffolding complete!\n")

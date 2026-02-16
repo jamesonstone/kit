@@ -12,6 +12,27 @@ const Constitution = `# CONSTITUTION
 
 <!-- TODO: define invariant rules that must never be violated -->
 
+## CHANGE CLASSIFICATION
+
+<!-- all work falls into one of two tracks — classify before acting -->
+
+### Spec-Driven (Formal)
+
+<!-- use when: new features, kit spec/oneshot, substantial architectural or behavioral changes -->
+<!-- workflow: full artifact pipeline — SPEC.md → PLAN.md → TASKS.md → implement → reflect -->
+
+### Ad Hoc (Lightweight)
+
+<!-- use when: bug fixes, security reviews, refactors, dependency updates, config changes, small refinements -->
+<!-- workflow: understand → implement → verify -->
+<!-- docs: update only practical docs (READMEs, inline docs, API docs) -->
+<!-- do NOT create SPEC.md / PLAN.md / TASKS.md for ad hoc work -->
+
+### Ad Hoc with Existing Specs
+
+<!-- if change touches code with existing spec docs: default to updating them -->
+<!-- skip spec updates only for purely mechanical changes (formatting, typo, dep bump) -->
+
 ## NON-GOALS
 
 <!-- TODO: define what this project explicitly will not do -->
@@ -193,24 +214,22 @@ const ProjectProgressSummary = `# PROJECT PROGRESS SUMMARY
 func AgentPointer(agentName string) string {
 	return `# ` + agentName + `
 
-## Kit is the source of truth
+## Source of truth
 
-- Constitution: ` + "`docs/CONSTITUTION.md`" + `
+- Primary authority for repository workflow, constraints, and change policy: ` + "`docs/CONSTITUTION.md`" + `
 - Feature specs live under: ` + "`docs/specs/<feature>/`" + `
   - ` + "`SPEC.md`" + ` (requirements)
   - ` + "`PLAN.md`" + ` (implementation plan)
   - ` + "`TASKS.md`" + ` (executable task list)
   - ` + "`ANALYSIS.md`" + ` (optional, analysis scratchpad)
 
-## Workflow contract
+## Workflow contract (classification-first)
 
-- Specs drive code. Code serves specs.
-- For any change:
-  1. locate the relevant feature directory in ` + "`docs/specs/<feature>/`" + `
-  2. read ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + `
-  3. implement tasks in order
-  4. verify (tests / validation steps from plan)
-  5. if reality diverges, update ` + "`SPEC.md`" + ` / ` + "`PLAN.md`" + ` / ` + "`TASKS.md`" + ` first, then code
+- Classify every request before acting:
+  - **Spec-driven**: use full pipeline for ` + "`kit spec`" + ` / ` + "`kit oneshot`" + `, new features, or substantial changes
+  - **Ad hoc**: use lightweight flow for small fixes, reviews, refinements, and mechanical changes
+- If ad hoc work touches an existing feature in ` + "`docs/specs/<feature>/`" + `, default to updating its spec docs when behavior, requirements, or approach changes
+- For ad hoc changes, update only relevant practical docs (e.g., README/API docs) and avoid creating spec artifacts unless needed
 
 ## Multi-feature rule
 
@@ -222,15 +241,56 @@ func AgentPointer(agentName string) string {
 // AgentsMD is the comprehensive AGENTS.md template with full workflow and standards.
 const AgentsMD = `# AGENTS
 
-## Kit is the source of truth
+## Source of truth
 
-- Constitution: ` + "`docs/CONSTITUTION.md`" + `
+- Primary authority for repository workflow, constraints, and change policy: ` + "`docs/CONSTITUTION.md`" + `
 - Feature specs live under: ` + "`docs/specs/<feature>/`" + `
   - ` + "`SPEC.md`" + ` (requirements)
   - ` + "`PLAN.md`" + ` (implementation plan)
   - ` + "`TASKS.md`" + ` (executable task list)
   - ` + "`ANALYSIS.md`" + ` (optional, analysis scratchpad)
+---
 
+## Change Classification (Required First Step)
+
+Classify each request before implementation.
+
+### 1) Spec-Driven (Formal Track)
+
+Use when any apply:
+
+- request initiated through ` + "`kit spec`" + ` or ` + "`kit oneshot`" + `
+- new feature or capability
+- substantial architectural or behavioral change
+- work touches code with existing feature specs under ` + "`docs/specs/<feature>/`" + `
+- changes cross component boundaries or public interfaces
+
+Required flow:
+
+- follow full artifact pipeline: ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + ` → implementation → reflection
+
+### 2) Ad Hoc (Lightweight Track)
+
+Use when all apply:
+
+- not initiated through ` + "`kit spec`" + ` or ` + "`kit oneshot`" + `
+- bug fix, security review, refactor, dependency update, config change, or small refinement
+- scope is contained and can be verified directly
+
+Required flow:
+
+- understand → implement → verify
+- update only relevant practical docs (README/API docs/inline docs) when needed
+- do not create spec artifacts for ad hoc work by default
+
+### 3) Ad Hoc + Existing Feature Specs
+
+If ad hoc work touches a feature with existing specs:
+
+- default to updating ` + "`SPEC.md`" + ` / ` + "`PLAN.md`" + ` / ` + "`TASKS.md`" + ` when behavior, requirements, or approach changes
+- skip spec updates only for mechanical edits (formatting, typo, dependency bump)
+
+## Multi-feature rule
 ## Multi-feature rule
 
 - Never mix features in one ` + "`docs/specs/<feature>/`" + ` directory.
@@ -251,9 +311,7 @@ const AgentsMD = `# AGENTS
 
 ---
 
-## Workflow: Plan → Act → Reflect
-
-Specs drive code. Code serves specs.
+## Workflow: Plan → Act → Reflect (Spec-Driven Track)
 
 ### Phase 1: PLAN
 
@@ -299,9 +357,33 @@ Specs drive code. Code serves specs.
 
 ---
 
+## Workflow: Understand → Implement → Verify (Ad Hoc Track)
+
+### Phase 1: UNDERSTAND
+
+- Confirm scope and constraints directly from request + code context
+- Identify impacted files and risks
+- If feature specs exist for impacted behavior, default to updating them
+
+### Phase 2: IMPLEMENT
+
+- Apply focused code changes
+- Keep changes minimal and reversible
+- Preserve existing architecture and style constraints
+
+### Phase 3: VERIFY
+
+- Run the smallest relevant validation (build/tests/lint as applicable)
+- Confirm no unintended behavior changes
+- Update only relevant practical docs when behavior or usage changes
+
+---
+
 ## Definition of Done (DoD)
 
-A feature or task is done only when all apply:
+A change is done when all applicable conditions are met for its track.
+
+### Spec-Driven DoD
 
 - Requirements satisfied per ` + "`SPEC.md`" + `
 - Code implemented per ` + "`PLAN.md`" + ` and ` + "`TASKS.md`" + `
@@ -311,6 +393,13 @@ A feature or task is done only when all apply:
 - Security checklist reviewed if inputs, auth, or data storage changed
 - Migrations and rollback plan documented if data model changed
 - Relevant documentation updated
+
+### Ad Hoc DoD
+
+- Requested change implemented and validated
+- Existing specs updated when required by change classification
+- Relevant practical docs updated only when behavior/usage changed
+- No unnecessary artifact creation
 
 ---
 

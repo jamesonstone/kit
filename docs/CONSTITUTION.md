@@ -113,6 +113,55 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
 
 ---
 
+## CHANGE CLASSIFICATION
+
+All work falls into one of two tracks. Classify before acting.
+
+### Spec-Driven (Formal)
+
+Use when ANY of these apply:
+
+- Initiated via `kit spec` or `kit oneshot`
+- New feature or capability
+- Substantial architectural or behavioral change
+- Work that has existing spec docs in `docs/specs/<feature>/`
+- Change affects multiple components or public interfaces
+
+**Workflow**: Full artifact pipeline — SPEC.md → PLAN.md → TASKS.md → implement → reflect
+
+### Ad Hoc (Lightweight)
+
+Use when ALL of these apply:
+
+- Not initiated via `kit spec` or `kit oneshot`
+- Bug fix, security review, refactor, dependency update, config change, or small refinement
+- Scope is contained and well-understood without formal specification
+
+**Workflow**: Understand → implement → verify
+
+**Documentation**: Update only practical docs (READMEs, inline docs, API docs). Do NOT create SPEC.md / PLAN.md / TASKS.md for ad hoc work.
+
+### Ad Hoc with Existing Specs
+
+If an ad hoc change touches code covered by existing spec docs in `docs/specs/<feature>/`:
+
+- **Default to updating** the spec docs if the change alters behavior, requirements, or approach
+- **Skip spec updates** only if the change is purely mechanical (formatting, typo fix, dependency bump)
+
+### Classification Examples
+
+| Change | Track | Why |
+| ------ | ----- | --- |
+| New CLI command | Spec-driven | New capability |
+| Fix nil pointer in existing handler | Ad hoc | Bug fix, contained scope |
+| Security review of auth flow | Ad hoc | Review, no new feature |
+| Refactor package structure | Ad hoc or Spec-driven | Depends on scope |
+| Add streaming support to export | Spec-driven | Substantial behavioral change |
+| Update dependency version | Ad hoc | Mechanical change |
+| Fix typo in error message | Ad hoc | Trivial, mechanical |
+
+---
+
 ## NON-GOALS
 
 Kit explicitly does NOT:

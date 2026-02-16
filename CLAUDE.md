@@ -1,23 +1,21 @@
 # CLAUDE
 
-## Kit is the source of truth
+## Source of truth
 
-- Constitution: `docs/CONSTITUTION.md`
+- Primary authority for repository workflow, constraints, and change policy: `docs/CONSTITUTION.md`
 - Feature specs live under: `docs/specs/<feature>/`
   - `SPEC.md` (requirements)
   - `PLAN.md` (implementation plan)
   - `TASKS.md` (executable task list)
   - `ANALYSIS.md` (optional, analysis scratchpad)
 
-## Workflow contract
+## Workflow contract (classification-first)
 
-- Specs drive code. Code serves specs.
-- For any change:
-  1. locate the relevant feature directory in `docs/specs/<feature>/`
-  2. read `SPEC.md` → `PLAN.md` → `TASKS.md`
-  3. implement tasks in order
-  4. verify (tests / validation steps from plan)
-  5. if reality diverges, update `SPEC.md` / `PLAN.md` / `TASKS.md` first, then code
+- Classify every request before acting:
+  - **Spec-driven**: use full pipeline for `kit spec` / `kit oneshot`, new features, or substantial changes
+  - **Ad hoc**: use lightweight flow for small fixes, reviews, refinements, and mechanical changes
+- If ad hoc work touches an existing feature in `docs/specs/<feature>/`, default to updating its spec docs when behavior, requirements, or approach changes
+- For ad hoc changes, update only relevant practical docs (e.g., README/API docs) and avoid creating spec artifacts unless needed
 
 ## Multi-feature rule
 
