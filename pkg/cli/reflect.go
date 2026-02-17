@@ -13,6 +13,7 @@ import (
 )
 
 var reflectCopy bool
+var reflectOutputOnly bool
 
 var reflectCmd = &cobra.Command{
 	Use:   "reflect [feature]",
@@ -31,12 +32,14 @@ for additional validation.`,
 
 func init() {
 	reflectCmd.Flags().Bool("no-coderabbit", false, "skip CodeRabbit config creation and instructions")
-	reflectCmd.Flags().BoolVar(&reflectCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
+	reflectCmd.Flags().BoolVar(&reflectCopy, "copy", false, "copy agent prompt to clipboard")
+	reflectCmd.Flags().BoolVar(&reflectOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
 	rootCmd.AddCommand(reflectCmd)
 }
 
 func runReflect(cmd *cobra.Command, args []string) error {
 	noCodeRabbit, _ := cmd.Flags().GetBool("no-coderabbit")
+	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
@@ -74,15 +77,15 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		prompt = buildReflectPrompt(projectRoot, constitutionPath, summaryPath, "", "", "", "", noCodeRabbit)
 	}
 
-	if reflectCopy {
-		if err := copyToClipboard(prompt); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		fmt.Println("✓ Copied agent prompt to clipboard")
-		return nil
+	printWorkflowInstructions("reflect", []string{
+		"if issues remain, return to implement",
+		"if clean, mark reflection complete",
+	})
+
+	if err := outputPrompt(prompt, outputOnly, reflectCopy); err != nil {
+		return err
 	}
 
-	fmt.Print(prompt)
 	return nil
 }
 

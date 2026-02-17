@@ -18,6 +18,7 @@ import (
 )
 
 var tasksCopy bool
+var tasksOutputOnly bool
 
 var tasksCmd = &cobra.Command{
 	Use:   "tasks [feature]",
@@ -40,12 +41,14 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
 
 func init() {
 	tasksCmd.Flags().Bool("force", false, "create missing SPEC.md and PLAN.md with headers if they don't exist")
-	tasksCmd.Flags().BoolVar(&tasksCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
+	tasksCmd.Flags().BoolVar(&tasksCopy, "copy", false, "copy agent prompt to clipboard")
+	tasksCmd.Flags().BoolVar(&tasksOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
 	rootCmd.AddCommand(tasksCmd)
 }
 
 func runTasks(cmd *cobra.Command, args []string) error {
 	tasksForce, _ := cmd.Flags().GetBool("force")
+	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
 	// find project root
 	projectRoot, err := config.FindProjectRoot()
@@ -133,9 +136,9 @@ func runTasks(cmd *cobra.Command, args []string) error {
 	prompt := fmt.Sprintf(`Please review and complete the task plan at %s.
 
 This task plan corresponds to:
-- CONSTITUTION: %s (project-wide constraints)
-- SPEC: %s
-- PLAN: %s
+|- CONSTITUTION: %s (project-wide constraints)
+|- SPEC: %s
+|- PLAN: %s
 
 Feature: %s
 
@@ -148,68 +151,67 @@ Your task:
 6. Ask focused clarification questions until tasks can be made deterministic
 
 After each batch of questions:
-- state your current understanding percentage of the task plan
-- do NOT proceed to writing or updating TASKS.md until understanding >= %d%%
+|- state your current understanding percentage of the task plan
+|- do NOT proceed to writing or updating TASKS.md until understanding >= %d%%
 
 TASKS.md requirements:
 
 A) PROGRESS TABLE (ALWAYS FIRST)
-- Fill the top table with one row per task
-- Use stable IDs (T001, T002, …)
-- STATUS ∈ todo | doing | blocked | done
-- DEPENDENCIES lists task IDs (comma-separated) or empty
+|- Fill the top table with one row per task
+|- Use stable IDs (T001, T002, …)
+|- STATUS ∈ todo | doing | blocked | done
+|- DEPENDENCIES lists task IDs (comma-separated) or empty
 
 Table columns:
-| ID | TASK | STATUS | OWNER | DEPENDENCIES |
+|| ID | TASK | STATUS | OWNER | DEPENDENCIES |
 
 B) TASK LIST (MANDATORY - uses markdown checkboxes)
-- Use markdown checkboxes for tracking: - [ ] incomplete, - [x] complete
-- Format: - [ ] T001: task description
-- This enables 'kit status' to parse progress automatically
+|- Use markdown checkboxes for tracking: - [ ] incomplete, - [x] complete
+|- Format: - [ ] T001: task description
+|- This enables 'kit status' to parse progress automatically
 
 C) TASK DETAILS SECTION
 For each task ID, include a short block:
 
 ### T00X
-- GOAL: one sentence outcome
-- SCOPE: tight bullets, no fluff
-- ACCEPTANCE: concrete checks (what must be true)
-- NOTES: only if necessary
+|- GOAL: one sentence outcome
+|- SCOPE: tight bullets, no fluff
+|- ACCEPTANCE: concrete checks (what must be true)
+|- NOTES: only if necessary
 
 D) DEPENDENCIES SECTION
-- list any cross-task or external blockers
-- include the exact missing decision if applicable
+|- list any cross-task or external blockers
+|- include the exact missing decision if applicable
 
 E) NOTES SECTION
-- only if required to prevent ambiguity
+|- only if required to prevent ambiguity
 
 Rules:
-- focus on executable steps, not prose
-- do not invent new requirements or scope beyond SPEC.md
-- tasks must map back to PLAN items
-- tasks must imply an unambiguous implementation order
-- avoid code unless strictly necessary
-- keep language dense and factual
-- ensure tasks respect constraints defined in CONSTITUTION.md
-- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
+|- focus on executable steps, not prose
+|- do not invent new requirements or scope beyond SPEC.md
+|- tasks must map back to PLAN items
+|- tasks must imply an unambiguous implementation order
+|- avoid code unless strictly necessary
+|- keep language dense and factual
+|- ensure tasks respect constraints defined in CONSTITUTION.md
+|- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
 Output goal:
-- a task list that a coding agent can execute linearly with minimal back-and-forth
-`, tasksPath, constitutionPath, specPath, planPath, feat.DirName, goalPct)
-
-	// copy to clipboard if requested
-	if tasksCopy {
-		if err := copyToClipboard(prompt); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		fmt.Println("✓ Copied agent prompt to clipboard")
-		return nil
-	}
+|- a task list that a coding agent can execute linearly with minimal back-and-forth
+|`, tasksPath, constitutionPath, specPath, planPath, feat.DirName, goalPct)
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	if tasksCopy {
+		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
+	} else {
+		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	}
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Print(prompt)
+
+	if err := outputPrompt(prompt, outputOnly, tasksCopy); err != nil {
+		return err
+	}
+
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil

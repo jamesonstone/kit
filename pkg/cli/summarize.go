@@ -10,6 +10,7 @@ import (
 )
 
 var summarizeCopy bool
+var summarizeOutputOnly bool
 
 var summarizeCmd = &cobra.Command{
 	Use:   "summarize [feature]",
@@ -26,7 +27,8 @@ Use with coding agents: /compact (Warp), /summarize (Claude), etc.`,
 }
 
 func init() {
-	summarizeCmd.Flags().BoolVar(&summarizeCopy, "copy", false, "copy output to clipboard (suppresses stdout)")
+	summarizeCmd.Flags().BoolVar(&summarizeCopy, "copy", false, "copy output to clipboard")
+	summarizeCmd.Flags().BoolVar(&summarizeOutputOnly, "output-only", false, "output text only, suppressing status messages")
 	rootCmd.AddCommand(summarizeCmd)
 }
 
@@ -55,15 +57,16 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 		instructions = featureScopedSummarizeInstructions(feat.Slug, feat.Path)
 	}
 
-	if summarizeCopy {
-		if err := copyToClipboard(instructions); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		fmt.Println("✓ Copied to clipboard")
-		return nil
+	outputOnly, _ := cmd.Flags().GetBool("output-only")
+
+	printWorkflowInstructions("summarize context (supporting step)", []string{
+		"resume your active phase: spec -> plan -> tasks -> implement -> reflect",
+	})
+
+	if err := outputPrompt(instructions, outputOnly, summarizeCopy); err != nil {
+		return err
 	}
 
-	fmt.Println(instructions)
 	return nil
 }
 

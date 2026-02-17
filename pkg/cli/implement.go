@@ -16,6 +16,7 @@ import (
 )
 
 var implementCopy bool
+var implementOutputOnly bool
 
 var implementCmd = &cobra.Command{
 	Use:   "implement [feature]",
@@ -34,11 +35,13 @@ that have SPEC.md, PLAN.md, and TASKS.md ready for implementation.`,
 }
 
 func init() {
-	implementCmd.Flags().BoolVar(&implementCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
+	implementCmd.Flags().BoolVar(&implementCopy, "copy", false, "copy agent prompt to clipboard")
+	implementCmd.Flags().BoolVar(&implementOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
 	rootCmd.AddCommand(implementCmd)
 }
 
 func runImplement(cmd *cobra.Command, args []string) error {
+	outputOnly, _ := cmd.Flags().GetBool("output-only")
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
 		return err
@@ -89,7 +92,7 @@ func runImplement(cmd *cobra.Command, args []string) error {
 	// get task progress
 	progress, _ := feature.ParseTaskProgress(tasksPath)
 
-	return outputImplementationPrompt(feat, specPath, planPath, tasksPath, summary, progress, projectRoot)
+	return outputImplementationPrompt(feat, specPath, planPath, tasksPath, summary, progress, projectRoot, outputOnly)
 }
 
 // selectFeatureForImplementation shows an interactive numbered list of features
@@ -137,7 +140,7 @@ func selectFeatureForImplementation(specsDir string) (*feature.Feature, error) {
 	return &selected, nil
 }
 
-func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress, projectRoot string) error {
+func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress, projectRoot string, outputOnly bool) error {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 
 	// build the agent prompt
@@ -198,15 +201,6 @@ Then read its acceptance criteria and implement it.
 
 	prompt := sb.String()
 
-	// copy to clipboard if requested
-	if implementCopy {
-		if err := copyToClipboard(prompt); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		fmt.Println("✓ Copied agent prompt to clipboard")
-		return nil
-	}
-
 	fmt.Println()
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "🚀 Implementation Context: " + reset + feat.DirName)
@@ -217,6 +211,10 @@ Then read its acceptance criteria and implement it.
 	if summary != "" {
 		fmt.Println(whiteBold + "Feature Summary:" + reset)
 		fmt.Println(summary)
+		fmt.Println()
+	} else {
+		fmt.Println(whiteBold + "Feature Summary:" + reset)
+		fmt.Println("(Read SPEC.md for feature description)")
 		fmt.Println()
 	}
 
@@ -230,21 +228,21 @@ Then read its acceptance criteria and implement it.
 
 	// document reference table
 	fmt.Println(whiteBold + "Document Reference:" + reset)
-	fmt.Println(dim + "┌─────────────┬────────────────────────────────────────────────────────────┐" + reset)
+	fmt.Println(dim + "┌────────────╌───────────────────────────────────────────────────────────────┐" + reset)
 	fmt.Println(dim + "│ " + reset + whiteBold + "Document" + reset + dim + "    │ " + reset + whiteBold + "Purpose & Usage" + reset + dim + "                                          │" + reset)
-	fmt.Println(dim + "├─────────────┼────────────────────────────────────────────────────────────┤" + reset)
+	fmt.Println(dim + "├────────────╌───────────────────────────────────────────────────────────────┤" + reset)
 	fmt.Println(dim + "│ " + reset + "SPEC.md" + dim + "     │ " + reset + "WHAT: Requirements, constraints, acceptance criteria" + dim + "      │" + reset)
 	fmt.Println(dim + "│             │ " + reset + "→ Consult when unsure if something is in scope" + dim + "            │" + reset)
 	fmt.Println(dim + "│             │ " + reset + "→ Do NOT add features not specified here" + dim + "                  │" + reset)
-	fmt.Println(dim + "├─────────────┼────────────────────────────────────────────────────────────┤" + reset)
+	fmt.Println(dim + "├────────────╌───────────────────────────────────────────────────────────────┤" + reset)
 	fmt.Println(dim + "│ " + reset + "PLAN.md" + dim + "     │ " + reset + "HOW: Architecture, components, data structures" + dim + "           │" + reset)
 	fmt.Println(dim + "│             │ " + reset + "→ Follow the design decisions made here" + dim + "                   │" + reset)
 	fmt.Println(dim + "│             │ " + reset + "→ If blocked, check RISKS section for mitigations" + dim + "         │" + reset)
-	fmt.Println(dim + "├─────────────┼────────────────────────────────────────────────────────────┤" + reset)
+	fmt.Println(dim + "├────────────╌───────────────────────────────────────────────────────────────┤" + reset)
 	fmt.Println(dim + "│ " + reset + "TASKS.md" + dim + "    │ " + reset + "EXECUTE: Ordered task list with acceptance criteria" + dim + "       │" + reset)
 	fmt.Println(dim + "│             │ " + reset + "→ Work through tasks in order (respect dependencies)" + dim + "       │" + reset)
 	fmt.Println(dim + "│             │ " + reset + "→ Mark tasks complete with [x] when acceptance met" + dim + "         │" + reset)
-	fmt.Println(dim + "└─────────────┴────────────────────────────────────────────────────────────┘" + reset)
+	fmt.Println(dim + "└────────────┴───────────────────────────────────────────────────────────────┘" + reset)
 	fmt.Println()
 
 	// file paths
@@ -255,9 +253,17 @@ Then read its acceptance criteria and implement it.
 	fmt.Println()
 
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	if implementCopy {
+		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
+	} else {
+		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	}
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Print(prompt)
+
+	if err := outputPrompt(prompt, outputOnly, implementCopy); err != nil {
+		return err
+	}
+
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil

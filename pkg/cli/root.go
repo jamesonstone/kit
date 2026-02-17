@@ -105,9 +105,9 @@ var commandOrder = map[string]int{
 	// project initialization
 	"init": 1,
 	// core development loop
-	"scaffold": 8,
-	"oneshot":  9,
-	"spec":     10,
+	"scaffold":  8,
+	"oneshot":   9,
+	"spec":      10,
 	"plan":      11,
 	"tasks":     12,
 	"implement": 13,
@@ -165,6 +165,35 @@ func init() {
 		})
 		return defaultUsage(cmd)
 	})
+}
+
+// outputPrompt handles consistent output behavior for --output-only and --copy flags.
+// if copy=true, copies prompt to clipboard and suppresses prompt output
+// if copy=false, outputs prompt to stdout
+func outputPrompt(prompt string, _ bool, copy bool) error {
+	if copy {
+		if err := copyToClipboard(prompt); err != nil {
+			return fmt.Errorf("failed to copy to clipboard: %w", err)
+		}
+		fmt.Println("✓ Copied to clipboard")
+		return nil
+	}
+
+	fmt.Print(prompt)
+	return nil
+}
+
+func printWorkflowInstructions(currentStep string, nextSteps []string) {
+	fmt.Println(whiteBold + "Workflow" + reset)
+	fmt.Println(dim + "Pipeline: spec -> plan -> tasks -> implement -> reflect" + reset)
+	fmt.Printf("Current step: %s\n", currentStep)
+	if len(nextSteps) > 0 {
+		fmt.Println("Next steps:")
+		for _, step := range nextSteps {
+			fmt.Printf("  - %s\n", step)
+		}
+	}
+	fmt.Println()
 }
 
 // unused but required to avoid "imported and not used" error for strings

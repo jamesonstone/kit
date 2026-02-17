@@ -3,13 +3,12 @@ package cli
 
 import (
 	"fmt"
-	"os/exec"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 var codeReviewCopy bool
+var codeReviewOutputOnly bool
 
 var codeReviewCmd = &cobra.Command{
 	Use:   "code-review",
@@ -29,27 +28,28 @@ The agent will:
 }
 
 func init() {
-	codeReviewCmd.Flags().BoolVarP(&codeReviewCopy, "copy", "c", false, "copy output to clipboard (pbcopy)")
+	codeReviewCmd.Flags().BoolVarP(&codeReviewCopy, "copy", "c", false, "copy output to clipboard")
+	codeReviewCmd.Flags().BoolVar(&codeReviewOutputOnly, "output-only", false, "output text only, suppressing status messages")
 	rootCmd.AddCommand(codeReviewCmd)
 }
 
 func runCodeReview(cmd *cobra.Command, args []string) error {
 	output := codeReviewInstructions()
 
-	if codeReviewCopy {
-		copyCmd := exec.Command("pbcopy")
-		copyCmd.Stdin = strings.NewReader(output)
-		if err := copyCmd.Run(); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		fmt.Println("✓ Copied to clipboard")
-		return nil
-	}
+	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	if codeReviewCopy {
+		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
+	} else {
+		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	}
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(output)
+
+	if err := outputPrompt(output, outputOnly, codeReviewCopy); err != nil {
+		return err
+	}
+
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println()
 	fmt.Println(whiteBold + "Optional: Add specific concerns or goals" + reset)
@@ -80,7 +80,7 @@ func codeReviewInstructions() string {
 
 Run: ` + "`git diff --name-only main..HEAD`" + ` (or master if main doesn't exist)
 
-This output is the **ONLY** list of files you will review. 
+This output is the **ONLY** list of files you will review.
 
 **CRITICAL RULES:**
 - If the output is empty, STOP — there are no changes to review
@@ -95,7 +95,7 @@ This output is the **ONLY** list of files you will review.
 For **each file in the list above** (and ONLY those files):
 
 1. **Read the file** as it exists now
-2. **Understand** what it does and how it fits in the codebase  
+2. **Understand** what it does and how it fits in the codebase
 3. **Analyze for correctness:**
    - Does the logic work correctly?
    - Are edge cases handled? (nil, empty, boundaries)
@@ -146,7 +146,7 @@ For test files in the changed list:
 - Bugs found: [list or "None"]
 - Edge cases missed: [list or "None"]
 
-### Performance Summary  
+### Performance Summary
 **Assessment: [Optimal/Acceptable/Needs Work/Critical]**
 - Issues: [list or "None"]
 

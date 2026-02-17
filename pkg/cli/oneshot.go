@@ -50,7 +50,7 @@ Examples:
 }
 
 func init() {
-	oneshotCmd.Flags().BoolVar(&oneshotCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
+	oneshotCmd.Flags().BoolVar(&oneshotCopy, "copy", false, "copy agent prompt to clipboard")
 	oneshotCmd.Flags().StringVar(&oneshotSpec, "spec", "", "brainstorming specification text (inline)")
 	oneshotCmd.Flags().StringVar(&oneshotSpecFile, "spec-file", "", "path to brainstorming specification file")
 	oneshotCmd.Flags().Bool("create-branch", false, "create and switch to a git branch matching the feature name")

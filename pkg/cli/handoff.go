@@ -14,6 +14,7 @@ import (
 )
 
 var handoffCopy bool
+var handoffOutputOnly bool
 
 var handoffCmd = &cobra.Command{
 	Use:   "handoff [feature]",
@@ -35,7 +36,8 @@ With a feature argument, outputs feature-specific context.`,
 }
 
 func init() {
-	handoffCmd.Flags().BoolVarP(&handoffCopy, "copy", "c", false, "copy output to clipboard (pbcopy)")
+	handoffCmd.Flags().BoolVarP(&handoffCopy, "copy", "c", false, "copy output to clipboard")
+	handoffCmd.Flags().BoolVar(&handoffOutputOnly, "output-only", false, "output text only, suppressing status messages")
 	rootCmd.AddCommand(handoffCmd)
 }
 
@@ -53,6 +55,10 @@ func runHandoff(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	printWorkflowInstructions("handoff (supporting step)", []string{
+		"resume your active phase: spec -> plan -> tasks -> implement -> reflect",
+	})
+
 	if handoffCopy {
 		copyCmd := exec.Command("pbcopy")
 		copyCmd.Stdin = strings.NewReader(output)
@@ -63,7 +69,7 @@ func runHandoff(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	fmt.Println(output)
+	fmt.Print(output)
 	return nil
 }
 

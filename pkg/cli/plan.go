@@ -18,6 +18,7 @@ import (
 )
 
 var planCopy bool
+var planOutputOnly bool
 
 var planCmd = &cobra.Command{
 	Use:   "plan [feature]",
@@ -41,13 +42,15 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
 func init() {
 	planCmd.Flags().Bool("force", false, "create missing SPEC.md with headers if it doesn't exist")
 	planCmd.Flags().Bool("warp", false, "output prompt for Warp coding agent to fill PLAN.md from Warp plan")
-	planCmd.Flags().BoolVar(&planCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
+	planCmd.Flags().BoolVar(&planCopy, "copy", false, "copy agent prompt to clipboard")
+	planCmd.Flags().BoolVar(&planOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
 	rootCmd.AddCommand(planCmd)
 }
 
 func runPlan(cmd *cobra.Command, args []string) error {
 	planForce, _ := cmd.Flags().GetBool("force")
 	warpMode, _ := cmd.Flags().GetBool("warp")
+	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
 	// find project root
 	projectRoot, err := config.FindProjectRoot()
@@ -119,9 +122,9 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	fmt.Printf("  2. Run 'kit tasks %s' to create executable tasks\n", feat.Slug)
 
 	if warpMode {
-		outputWarpPlanPrompt(planPath, specPath, feat, cfg)
+		outputWarpPlanPrompt(planPath, specPath, feat, cfg, outputOnly)
 	} else {
-		outputStandardPlanPrompt(planPath, specPath, feat, cfg)
+		outputStandardPlanPrompt(planPath, specPath, feat, cfg, outputOnly)
 	}
 
 	return nil
@@ -172,7 +175,7 @@ func selectFeatureForPlan(specsDir string) (*feature.Feature, error) {
 }
 
 // outputStandardPlanPrompt outputs the standard coding agent prompt.
-func outputStandardPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg *config.Config) {
+func outputStandardPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) {
 	projectRoot, _ := config.FindProjectRoot()
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
@@ -240,25 +243,24 @@ Rules:
 The output of PLAN.md must make TASKS.md obvious and deterministic.
 `, planPath, constitutionPath, specPath, feat.Slug, goalPct)
 
-	// copy to clipboard if requested
+	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	if planCopy {
-		if err := copyToClipboard(prompt); err != nil {
-			fmt.Printf("failed to copy to clipboard: %v\n", err)
-			return
-		}
-		fmt.Println("✓ Copied agent prompt to clipboard")
+		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
+	} else {
+		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	}
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+
+	if err := outputPrompt(prompt, outputOnly, planCopy); err != nil {
+		fmt.Printf("failed to output prompt: %v\n", err)
 		return
 	}
 
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 }
 
 // outputWarpPlanPrompt outputs a prompt for Warp coding agent to fill PLAN.md from Warp plan.
-func outputWarpPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg *config.Config) {
+func outputWarpPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) {
 	projectRoot, _ := config.FindProjectRoot()
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
@@ -304,16 +306,6 @@ Rules:
 The output of PLAN.md must make TASKS.md obvious and deterministic.
 `, feat.Slug, planPath, constitutionPath, specPath, goalPct)
 
-	// copy to clipboard if requested
-	if planCopy {
-		if err := copyToClipboard(prompt); err != nil {
-			fmt.Printf("failed to copy to clipboard: %v\n", err)
-			return
-		}
-		fmt.Println("✓ Copied agent prompt to clipboard")
-		return
-	}
-
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "📋 Warp Plan Integration" + reset)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
@@ -323,8 +315,17 @@ The output of PLAN.md must make TASKS.md obvious and deterministic.
 	fmt.Printf("  • SPEC.md: %s\n", specPath)
 	fmt.Println()
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to continue with your Warp plan:" + reset)
+	if planCopy {
+		fmt.Println(whiteBold + "Warp plan prompt copied to clipboard" + reset)
+	} else {
+		fmt.Println(whiteBold + "Copy this prompt to continue with your Warp plan:" + reset)
+	}
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Print(prompt)
+
+	if err := outputPrompt(prompt, outputOnly, planCopy); err != nil {
+		fmt.Printf("failed to output prompt: %v\n", err)
+		return
+	}
+
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 }

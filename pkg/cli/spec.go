@@ -19,6 +19,7 @@ import (
 )
 
 var specCopy bool
+var specOutputOnly bool
 
 var specCmd = &cobra.Command{
 	Use:   "spec <feature>",
@@ -33,18 +34,24 @@ Creates:
 Updates PROJECT_PROGRESS_SUMMARY.md after creation.
 
 Modes:
-  Default:       Interactive prompts to gather spec details, then outputs a ready-to-use prompt
-  --template:    Output the empty SPEC.md template and agent prompt (no interactive questions)
-  --interactive: Force interactive mode even when stdin is not a terminal`,
+  Default:        Output empty template and agent prompt (non-interactive)
+  --interactive:  Prompt user for spec details, then output ready-to-use prompt
+  --template:     Output empty template without interactive questions (deprecated, same as default)
+
+Flags:
+  --output-only:  Output prompt only, without status messages
+  --copy:         Copy prompt to clipboard (combine with --output-only for prompt+copy)
+  --interactive:  Force interactive prompts even when stdin is not a terminal`,
 	Args: cobra.ExactArgs(1),
 	RunE: runSpec,
 }
 
 func init() {
 	specCmd.Flags().Bool("create-branch", false, "create and switch to a git branch matching the feature name")
-	specCmd.Flags().Bool("template", false, "output empty template and prompt without interactive questions")
-	specCmd.Flags().Bool("interactive", false, "force interactive mode even when stdin is not a terminal")
-	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy agent prompt to clipboard (suppresses stdout)")
+	specCmd.Flags().Bool("template", false, "(deprecated) output empty template and prompt without interactive questions")
+	specCmd.Flags().Bool("interactive", false, "prompt user for spec details interactively")
+	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy agent prompt to clipboard")
+	specCmd.Flags().BoolVar(&specOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
 	rootCmd.AddCommand(specCmd)
 }
 
@@ -52,6 +59,7 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	createBranch, _ := cmd.Flags().GetBool("create-branch")
 	specTemplateOnly, _ := cmd.Flags().GetBool("template")
 	specInteractive, _ := cmd.Flags().GetBool("interactive")
+	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
 	featureRef := args[0]
 
@@ -97,7 +105,8 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	}
 
 	// determine if we should run interactive mode
-	isInteractive := !specTemplateOnly && (specInteractive || isTerminal())
+	// default is non-interactive (template mode), unless --interactive is explicitly set
+	isInteractive := specInteractive && !specTemplateOnly
 
 	// create git branch if --create-branch flag is set
 	if createBranch && git.IsRepo(projectRoot) {
@@ -115,11 +124,11 @@ func runSpec(cmd *cobra.Command, args []string) error {
 
 	if isInteractive {
 		// interactive mode: gather details and compile prompt
-		return runSpecInteractive(specPath, feat, projectRoot, cfg, createBranch)
+		return runSpecInteractive(specPath, feat, projectRoot, cfg, createBranch, outputOnly)
 	}
 
 	// template mode: output the template and instructions
-	return runSpecTemplate(specPath, feat.Slug, projectRoot, cfg)
+	return runSpecTemplate(specPath, feat.Slug, projectRoot, cfg, outputOnly)
 }
 
 // createBranchForFeature creates and switches to a git branch for the feature.
@@ -184,14 +193,14 @@ func readLineRL(rl *readline.Instance) string {
 }
 
 // runSpecInteractive prompts the user for each SPEC section and compiles a ready-to-use prompt
-func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot string, cfg *config.Config, branchAlreadyCreated bool) error {
+func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot string, cfg *config.Config, branchAlreadyCreated, outputOnly bool) error {
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          whiteBold + "   > " + reset,
-		InterruptPrompt: "^C",
-		EOFPrompt:       "",
-		Stdin:           os.Stdin,
-		Stdout:          os.Stdout,
-		Stderr:          os.Stderr,
+		Prompt:              whiteBold + "   > " + reset,
+		InterruptPrompt:     "^C",
+		EOFPrompt:           "",
+		Stdin:               os.Stdin,
+		Stdout:              os.Stdout,
+		Stderr:              os.Stderr,
 		FuncFilterInputRune: specInputRuneFilter,
 	})
 	if err != nil {
@@ -270,11 +279,11 @@ func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot stri
 	fmt.Println()
 
 	// generate the compiled prompt
-	return outputCompiledPrompt(specPath, feat.Slug, projectRoot, cfg, &answers)
+	return outputCompiledPrompt(specPath, feat.Slug, projectRoot, cfg, &answers, outputOnly)
 }
 
 // outputCompiledPrompt generates the final agent prompt and either copies to clipboard or prints
-func outputCompiledPrompt(specPath, featureSlug, projectRoot string, cfg *config.Config, answers *specAnswers) error {
+func outputCompiledPrompt(specPath, featureSlug, projectRoot string, cfg *config.Config, answers *specAnswers, outputOnly bool) error {
 	goalPct := cfg.GoalPercentage
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 
@@ -368,23 +377,18 @@ This file is the single source of truth for this feature. Do not leave content o
 
 	prompt := sb.String()
 
-	// copy to clipboard if requested
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	if specCopy {
-		if err := copyToClipboard(prompt); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		fmt.Println("✓ Copied agent prompt to clipboard")
-		fmt.Printf("\nNext steps:\n")
-		fmt.Printf("  1. Paste the prompt to your coding agent\n")
-		fmt.Printf("  2. Work with the agent to refine the specification\n")
-		fmt.Printf("  3. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
-		return nil
+		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
+	} else {
+		fmt.Println(whiteBold + "✅ Copy this prompt to your coding agent:" + reset)
+	}
+	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+
+	if err := outputPrompt(prompt, outputOnly, specCopy); err != nil {
+		return err
 	}
 
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "✅ Copy this prompt to your coding agent:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Print(prompt)
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	fmt.Printf("\nNext steps:\n")
@@ -396,7 +400,7 @@ This file is the single source of truth for this feature. Do not leave content o
 }
 
 // runSpecTemplate outputs the empty template and generic instructions (legacy behavior)
-func runSpecTemplate(specPath, featureSlug, projectRoot string, cfg *config.Config) error {
+func runSpecTemplate(specPath, featureSlug, projectRoot string, cfg *config.Config, outputOnly bool) error {
 	goalPct := cfg.GoalPercentage
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 
@@ -405,7 +409,7 @@ func runSpecTemplate(specPath, featureSlug, projectRoot string, cfg *config.Conf
 This is a new feature: %s
 
 ## Context Docs (read first)
-- CONSTITUTION: %s — project-wide constraints, principles, priors
+|- CONSTITUTION: %s — project-wide constraints, principles, priors
 
 ## Context Provided by User
 <!-- ⚠️ FILL THIS OUT BEFORE SUBMITTING TO YOUR CODING AGENT -->
@@ -464,35 +468,30 @@ Once you reach >= %d%% understanding, write a SUMMARY section at the top of SPEC
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 `, specPath, featureSlug, constitutionPath, projectRoot, goalPct, goalPct, goalPct)
 
-	// copy to clipboard if requested
-	if specCopy {
-		if err := copyToClipboard(prompt); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		fmt.Println("✓ Copied agent prompt to clipboard")
-		fmt.Printf("\nNext steps:\n")
-		fmt.Printf("  1. Paste the prompt to your coding agent\n")
-		fmt.Printf("  2. Fill in the context section before submitting\n")
-		fmt.Printf("  3. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
-		return nil
-	}
-
 	fmt.Printf("\nNext steps:\n")
 	fmt.Printf("  1. Edit %s to define the specification\n", specPath)
 	fmt.Printf("  2. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	if specCopy {
+		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
+	} else {
+		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	}
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println()
 	fmt.Println(dim + "⚠️  IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
 	fmt.Println(dim + "   with details about your feature. The more context you provide, the" + reset)
 	fmt.Println(dim + "   better the agent can help you write the specification." + reset)
 	fmt.Println()
-	fmt.Println(dim + "   Tip: Run 'kit spec <feature>' without --template for an interactive" + reset)
+	fmt.Println(dim + "   Tip: Run 'kit spec <feature> --interactive' for an interactive" + reset)
 	fmt.Println(dim + "   experience that guides you through each section." + reset)
 	fmt.Println()
-	fmt.Print(prompt)
+
+	if err := outputPrompt(prompt, outputOnly, specCopy); err != nil {
+		return err
+	}
+
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil

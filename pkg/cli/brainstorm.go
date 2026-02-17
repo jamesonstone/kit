@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	brainstormCopy   bool
-	brainstormOutput string
+	brainstormCopy       bool
+	brainstormOutput     string
+	brainstormOutputOnly bool
 )
 
 var brainstormCmd = &cobra.Command{
@@ -34,8 +35,9 @@ Examples:
 }
 
 func init() {
-	brainstormCmd.Flags().BoolVar(&brainstormCopy, "copy", false, "copy output to clipboard (suppresses stdout)")
+	brainstormCmd.Flags().BoolVar(&brainstormCopy, "copy", false, "copy output to clipboard")
 	brainstormCmd.Flags().StringVarP(&brainstormOutput, "output", "o", "", "write output to file")
+	brainstormCmd.Flags().BoolVar(&brainstormOutputOnly, "output-only", false, "output text only, suppressing status messages")
 	rootCmd.AddCommand(brainstormCmd)
 }
 
@@ -46,6 +48,11 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	}
 
 	content := templates.Brainstorm(topic)
+
+	printWorkflowInstructions("brainstorm (pre-spec)", []string{
+		"run kit spec <feature> to create SPEC.md",
+		"then follow spec -> plan -> tasks -> implement -> reflect",
+	})
 
 	// write to file if specified
 	if brainstormOutput != "" {
@@ -64,7 +71,7 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	// print to stdout (unless --copy was used)
+	// print to stdout when not copying
 	if brainstormOutput == "" {
 		fmt.Print(content)
 	}
