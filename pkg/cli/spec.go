@@ -289,12 +289,14 @@ func outputCompiledPrompt(specPath, featureSlug, projectRoot string, cfg *config
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(`You MUST update the specification file at: %s
-This is the source-of-truth document for feature: %s
+	sb.WriteString(fmt.Sprintf(`You MUST update the specification file at:
+**File**: %s
+**Feature**: %s
+**Project Root**: %s
 
 ## Context Provided by User
 
-`, specPath, featureSlug))
+`, specPath, featureSlug, projectRoot))
 
 	// output user-provided context
 	if answers.Problem != "" {
@@ -325,14 +327,18 @@ This is the source-of-truth document for feature: %s
 		answers.EdgeCases != ""
 
 	sb.WriteString(fmt.Sprintf(`## Context Docs (read first)
-- CONSTITUTION: %s — project-wide constraints, principles, priors
+| File | Purpose |
+|------|----------|
+| CONSTITUTION | %s |
+| SPEC | %s |
+| Project Root | %s |
 
 ## Your Task
 
-1. Read CONSTITUTION.md to understand project constraints and principles
-2. Read the current SPEC.md at %s and understand the required sections
+1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles
+2. Read the current SPEC.md (file: %s) and understand the required sections
 3. Analyze the codebase at %s to understand existing patterns
-`, constitutionPath, specPath, projectRoot))
+`, constitutionPath, specPath, projectRoot, constitutionPath, specPath, projectRoot))
 
 	if hasContext {
 		sb.WriteString(fmt.Sprintf(`4. **IMMEDIATELY write all context above into the SPEC.md file at %s** — do NOT ask questions before doing this

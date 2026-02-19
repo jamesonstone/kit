@@ -180,18 +180,21 @@ func outputStandardPlanPrompt(planPath, specPath string, feat *feature.Feature, 
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
 
-	prompt := fmt.Sprintf(`Please review and complete the implementation plan at %s.
+	prompt := fmt.Sprintf(`Please review and complete the implementation plan.
 
-This plan corresponds to the feature defined in:
-- CONSTITUTION: %s (project-wide constraints)
-- SPEC: %s
-
-Feature: %s
+## File References
+| Document | Path |
+|----------|------|
+| CONSTITUTION | %s |
+| SPEC | %s |
+| PLAN | %s |
+| Feature | %s |
+| Project Root | %s |
 
 Your task:
-1. Read CONSTITUTION.md to understand project constraints and principles
-2. Read SPEC.md fully and treat it as a fixed contract
-3. Review the PLAN.md template and required sections
+1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles
+2. Read SPEC.md (file: %s) fully and treat it as a fixed contract
+3. Review the PLAN.md (file: %s) template and required sections
 4. Identify any missing design decisions required for execution
 5. Ask focused clarification questions until decisions can be made
 6. Commit to concrete design decisions that make execution unambiguous
@@ -241,7 +244,7 @@ Rules:
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
-`, planPath, constitutionPath, specPath, feat.Slug, goalPct)
+|`, constitutionPath, specPath, planPath, feat.Slug, projectRoot, constitutionPath, specPath, planPath, goalPct)
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	if planCopy {
@@ -267,18 +270,22 @@ func outputWarpPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg 
 
 	prompt := fmt.Sprintf(`I have created a Warp plan for the feature: %s
 
+## File References
+| Document | Path |
+|----------|------|
+| CONSTITUTION | %s |
+| SPEC | %s |
+| PLAN | %s |
+| Project Root | %s |
+
 Please take the Warp plan you just generated and use it to fill out the PLAN.md document at:
 %s
 
-Context docs:
-- CONSTITUTION: %s (project-wide constraints)
-- SPEC: %s
-
 Your task:
-1. Read CONSTITUTION.md to understand project constraints and principles
+1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles
 2. Read the Warp plan you created and extract the key design decisions
-3. Read SPEC.md to ensure alignment with requirements
-4. Fill out each section of PLAN.md, adding implementation details beyond what's in the Warp plan:
+3. Read SPEC.md (file: %s) to ensure alignment with requirements
+4. Fill out each section of PLAN.md (file: %s), adding implementation details beyond what's in the Warp plan:
 
    - SUMMARY: one-paragraph overview (expand from Warp plan's high-level description)
    - APPROACH: detailed strategy and tradeoff decisions
@@ -304,7 +311,7 @@ Rules:
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
-`, feat.Slug, planPath, constitutionPath, specPath, goalPct)
+|`, feat.Slug, constitutionPath, specPath, planPath, projectRoot, planPath, constitutionPath, specPath, planPath, goalPct)
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "📋 Warp Plan Integration" + reset)
