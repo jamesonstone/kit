@@ -157,9 +157,12 @@ Context docs (read first):
 		sb.WriteString(fmt.Sprintf(`
 %d) Run CodeRabbit (prompt-only)
 - coderabbit --prompt-only
-- treat the output as review findings
-- fix all issues that are valid
-- if you disagree with a finding, document why in a short bullet under REFLECTION NOTES (below)
+- treat the output as review findings, but filter aggressively:
+  - fix ONLY major/blocking issues: security vulnerabilities, runtime errors, correctness bugs
+  - ignore: style preferences, linting suggestions, minor improvements
+  - ignore: code-golf, performance micro-optimizations that don't affect critical paths
+  - do not accept changes just to appease linters if they don't improve code safety or correctness
+- if you disagree with a finding or it's not blocking, document why in a short bullet under REFLECTION NOTES (below)
 `, nextStep()))
 	}
 
