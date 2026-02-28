@@ -190,8 +190,11 @@ Context docs (read first):
 - errors: wrapped/propagated with context, no swallowed errors
 - IO: paths resolved safely, no surprising writes
 - determinism: stable ordering in outputs
-- tests: add or update only what is required to prove correctness
+- regression tests: add comprehensive tests for all completed work to prevent future bugs
+  - test happy path, error cases, edge cases, boundary conditions
+  - ensure tests fail without the implementation (tests validate the test itself)
 - docs: update only if behavior changed
+- agent-readability: code optimized for agent understanding and future iteration
 `, nextStep()))
 
 	// correctness checklist
@@ -210,6 +213,11 @@ Context docs (read first):
 - [ ] Edge cases from SPEC.md are handled
 - [ ] No debug code or TODOs left behind
 - [ ] Style matches project conventions
+- [ ] Tests added/updated for all completed work
+- [ ] Tests cover happy path, error cases, and edge cases
+- [ ] Tests validate the implementation, not just pass trivially
+- [ ] Test names clearly describe what is being tested
+- [ ] Code is written for agent readability and future iteration
 `, nextStep()))
 	} else {
 		sb.WriteString(fmt.Sprintf(`
@@ -224,8 +232,31 @@ Context docs (read first):
 - [ ] Changes respect CONSTITUTION.md constraints
 - [ ] No debug code or TODOs left behind
 - [ ] Style matches project conventions
+- [ ] Tests added/updated for all completed work
+- [ ] Tests cover happy path, error cases, and edge cases
+- [ ] Code is written for agent readability
 `, nextStep()))
 	}
+
+	// agent-optimized code
+	sb.WriteString(fmt.Sprintf(`
+%d) Agent-optimized code structure
+Code should be built for agent readability and understanding, enabling both current and future agents to:
+- understand intent quickly: clear names, single responsibility, minimal nesting
+- modify safely: explicit error handling, testable design, clear contracts
+- extend effectively: composable pieces, discoverable patterns, good examples
+Checks:
+- [ ] Function/method names clearly describe what they do
+- [ ] Functions have single, well-defined responsibility
+- [ ] Complex logic is broken into named helper functions
+- [ ] Type names and fields describe their purpose
+- [ ] Public interfaces are documented with clear examples
+- [ ] Error paths are explicit, not silent
+- [ ] Dependencies are injected, not hidden in closures
+- [ ] Code avoids clever tricks; readability wins over cleverness
+- [ ] Configuration and magic numbers are named constants
+- [ ] Similar patterns use consistent approaches across codebase
+`, nextStep()))
 
 	// cleanliness
 	sb.WriteString(fmt.Sprintf(`
@@ -234,6 +265,7 @@ Context docs (read first):
 - remove debug prints
 - remove unused flags/options
 - keep public surfaces small
+- ensure code is written for agent and human understanding
 `, nextStep()))
 
 	// documentation generation (feature-scoped only)
@@ -241,6 +273,8 @@ Context docs (read first):
 		sb.WriteString(fmt.Sprintf(`
 %d) Documentation generation
 - if exists, use the repositories documentation generation tools to update any affected documentation
+- ensure documentation is agent-readable: clear structure, explicit examples, complete contracts
+- document public APIs with examples showing both normal usage and error handling
 `, nextStep()))
 	}
 
