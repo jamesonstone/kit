@@ -1,0 +1,140 @@
+name: release-tag-main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-tag-main
+  cancel-in-progress: false
+
+jobs:
+  tag-next-version:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    outputs:
+      next_tag: ${{ steps.semver.outputs.next_tag }}
+      tag_created: ${{ steps.create_tag.outputs.created }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Compute next semantic version tag
+        id: semver
+        shell: bash
+        run: |
+          set -euo pipefail
+          # patch-only bump policy: every push to main increments patch.
+          # manual semantic tags can be used for major/minor version changes.
+
+          latest_tag="$(
+            git tag --list 'v*' --sort=-v:refname \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              | head -n 1 || true
+          )"
+
+          if [[ -z "${latest_tag}" ]]; then
+            next_tag="v1.0.0"
+          else
+            if [[ ! "${latest_tag}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              echo "Invalid semantic tag format: ${latest_tag}" >&2
+              exit 1
+            fi
+            major="${BASH_REMATCH[1]}"
+            minor="${BASH_REMATCH[2]}"
+            patch="${BASH_REMATCH[3]}"
+            next_tag="v${major}.${minor}.$((patch + 1))"
+          fi
+
+          echo "next_tag=${next_tag}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create and push release tag
+        id: create_tag
+        shell: bash
+        env:
+          NEXT_TAG: ${{ steps.semver.outputs.next_tag }}
+        run: |
+          set -euo pipefail
+
+          if git rev-parse "${NEXT_TAG}" >/dev/null 2>&1; then
+            echo "Tag ${NEXT_TAG} already exists; skipping tag creation."
+            echo "created=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          git config user.name "jamesonstone"
+          git config user.email "4779701+jamesonstone@users.noreply.github.com"
+
+          git tag -a "${NEXT_TAG}" -m "Release ${NEXT_TAG}"
+          git push origin "${NEXT_TAG}"
+          echo "created=true" >> "${GITHUB_OUTPUT}"
+
+  publish-release:
+    needs: tag-next-version
+    if: needs.tag-next-version.outputs.tag_created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Checkout release tag
+        shell: bash
+        env:
+          TAG: ${{ needs.tag-next-version.outputs.next_tag }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          git checkout "tags/${TAG}"
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run release quality gates
+        run: |
+          make vet
+          make test
+
+      - name: Setup GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          install-only: true
+
+      - name: Build artifacts with GoReleaser
+        # publish is intentionally skipped so gh can create release with --generate-notes.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goreleaser release --clean --skip=publish --skip=announce
+
+      - name: Publish GitHub release with generated notes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.tag-next-version.outputs.next_tag }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          files=(dist/*.tar.gz dist/*.zip dist/checksums.txt)
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No release artifacts found in dist/." >&2
+            exit 1
+          fi
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" "${files[@]}" --clobber
+          else
+            gh release create "${TAG}" "${files[@]}" --generate-notes --title "${TAG}"
+          fi

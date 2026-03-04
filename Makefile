@@ -7,6 +7,9 @@ LDFLAGS=-ldflags "-X github.com/jamesonstone/kit/pkg/cli.Version=$(VERSION)"
 build:
 	go build $(LDFLAGS) -o bin/$(BINARY_NAME) ./cmd/kit
 
+build-windows:
+	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(BINARY_NAME).exe ./cmd/kit
+
 install:
 	go install $(LDFLAGS) ./cmd/kit
 
