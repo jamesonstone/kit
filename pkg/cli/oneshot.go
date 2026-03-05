@@ -312,6 +312,7 @@ Once understanding >= %d%%, finalize %s with all sections complete:
 Rules:
 - Keep language precise
 - Focus on WHAT, not HOW
+- Spec gate: unresolved assumptions = 0 before sign-off; if unresolved assumptions remain, stop and resolve before marking SPEC complete
 - Respect constraints from CONSTITUTION.md
 - All content MUST be written to %s — do not leave specification content only in chat
 
@@ -337,6 +338,7 @@ Rules:
 - Do not restate requirements
 - No new scope beyond SPEC.md
 - Avoid code unless strictly necessary
+- Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off
 - PLAN.md must make TASKS.md obvious and deterministic
 - All content MUST be written to %s — do not leave plan content only in chat
 
@@ -377,6 +379,7 @@ Rules:
 - Tasks must be atomic and ordered
 - Tasks must map back to PLAN items
 - Tasks must imply an unambiguous implementation order
+- Tasks gate: each task must include an explicit done-condition and required evidence artifact(s) before sign-off
 - A coding agent should execute them linearly with minimal back-and-forth
 - All content MUST be written to %s — do not leave task content only in chat
 

@@ -186,6 +186,9 @@ Context docs (read first):
 	// quality gates
 	sb.WriteString(fmt.Sprintf(`
 %d) Quality gates (hard checks)
+- zero-known-defects gate: do not mark reflection complete until all gates pass with evidence
+- required evidence gates: unresolved assumptions = 0; acceptance criteria mapped 1:1 to outputs; build/compile succeeds; lint/typecheck/test failures = 0; unrelated diff scope = 0
+- if any gate fails: stop, report the exact failure, and propose the next fix
 - correctness: no panics, no silent failures
 - errors: wrapped/propagated with context, no swallowed errors
 - IO: paths resolved safely, no surprising writes

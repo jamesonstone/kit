@@ -377,6 +377,7 @@ This file is the single source of truth for this feature. Do not leave content o
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
+- Spec gate: unresolved assumptions = 0 before sign-off; if unresolved assumptions remain, stop and resolve before marking SPEC complete
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 `, goalPct, goalPct, specPath))
@@ -470,6 +471,7 @@ Once you reach >= %d%% understanding, write a SUMMARY section at the top of SPEC
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
+- Spec gate: unresolved assumptions = 0 before sign-off; if unresolved assumptions remain, stop and resolve before marking SPEC complete
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 `, specPath, featureSlug, constitutionPath, projectRoot, goalPct, goalPct, goalPct)

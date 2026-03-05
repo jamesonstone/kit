@@ -187,6 +187,8 @@ func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasks
 - Stay within scope defined in SPEC.md
 - Follow architecture decisions in PLAN.md
 - Complete tasks in dependency order from TASKS.md
+- Quality gate: target zero known defects; do not mark implementation complete until all gates pass with evidence: unresolved assumptions = 0, acceptance criteria mapped 1:1 to outputs, build/compile succeeds, lint/typecheck/test failures = 0, and unrelated diff scope = 0
+- If any gate fails, stop, report the exact failure, and propose the next fix
 - Ask for clarification rather than making assumptions
 - If a task is blocked, explain what's blocking and suggest resolution
 - After completing each task, briefly confirm what was done

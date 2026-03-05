@@ -240,6 +240,7 @@ Rules:
 - do not write tasks
 - avoid code unless strictly necessary
 - keep language dense and factual
+- Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off
 - ensure plan respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
@@ -307,6 +308,7 @@ Rules:
 - do not restate requirements verbatim
 - do not introduce new scope beyond the Warp plan and SPEC.md
 - keep language dense and factual
+- Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off
 - ensure plan respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature
 

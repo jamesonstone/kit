@@ -200,6 +200,7 @@ Rules:
 - do not invent new requirements or scope beyond SPEC.md
 - tasks must map back to PLAN items via section anchors
 - tasks must imply an unambiguous implementation order
+- Tasks gate: each task must include an explicit done-condition and required evidence artifact(s) before sign-off
 - avoid code unless strictly necessary
 - keep language dense and factual
 - ensure tasks respect constraints defined in CONSTITUTION.md
