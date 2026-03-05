@@ -116,7 +116,9 @@ If ad hoc work touches a feature with existing specs:
 
 ## Tooling policy
 
-- Run `coderabbit --prompt-only` only when the user explicitly asks for it.
+- Do not run CodeRabbit yourself.
+- Ask the user to run CodeRabbit in prompt-only mode when review findings are needed.
+- Wait for the user's output before triaging or fixing findings.
 
 ---
 

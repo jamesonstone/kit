@@ -24,8 +24,8 @@ implementation correctness.
 When a feature is specified, instructions are scoped to that feature's context.
 Without a feature argument, outputs generic verification instructions.
 
-The reflection process uses git to analyze changes and optionally runs coderabbit
-for additional validation.`,
+The reflection process uses git to analyze changes and can incorporate
+user-provided CodeRabbit findings for additional validation.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runReflect,
 }
@@ -109,7 +109,7 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, pl
 	// goal
 	goalExtra := ""
 	if !noCodeRabbit {
-		goalExtra = "\n- run CodeRabbit in prompt-only mode and address all findings"
+		goalExtra = "\n- ask the user to run CodeRabbit in prompt-only mode and address all blocking findings"
 	}
 	sb.WriteString(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.\n\nGoal:\n- perform a strict code review of the current change set%s\n", projectRoot, goalExtra))
 
@@ -155,9 +155,10 @@ Context docs (read first):
 	// coderabbit (optional)
 	if !noCodeRabbit {
 		sb.WriteString(fmt.Sprintf(`
-%d) Run CodeRabbit (prompt-only)
-- coderabbit --prompt-only
-- treat the output as review findings, but filter aggressively:
+%d) Request CodeRabbit findings (prompt-only mode)
+- ask the user to run CodeRabbit in prompt-only mode and share the output
+- do not execute CodeRabbit directly from the agent
+- treat the provided output as review findings, but filter aggressively:
   - fix ONLY major/blocking issues: security vulnerabilities, runtime errors, correctness bugs
   - ignore: style preferences, linting suggestions, minor improvements
   - ignore: code-golf, performance micro-optimizations that don't affect critical paths
