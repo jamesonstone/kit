@@ -2,12 +2,15 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
 	"github.com/spf13/cobra"
 )
@@ -20,9 +23,9 @@ var reflectCmd = &cobra.Command{
 	Short: "Output reflection and verification instructions",
 	Long: `Output instructions for reflecting on recent changes to ensure
 implementation correctness.
-
 When a feature is specified, instructions are scoped to that feature's context.
-Without a feature argument, outputs generic verification instructions.
+Without a feature argument, shows an interactive selection of features
+that have SPEC.md, PLAN.md, and TASKS.md.
 
 The reflection process uses git to analyze changes and can incorporate
 user-provided CodeRabbit findings for additional validation.`,
@@ -49,34 +52,34 @@ func runReflect(cmd *cobra.Command, args []string) error {
 	if !noCodeRabbit {
 		ensureCodeRabbitConfig(projectRoot)
 	}
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	specsDir := cfg.SpecsPath(projectRoot)
 
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	summaryPath := filepath.Join(projectRoot, "PROJECT_PROGRESS_SUMMARY.md")
-
-	var prompt string
+	var feat *feature.Feature
 
 	if len(args) == 1 {
 		featureRef := args[0]
-
-		cfg, err := config.Load(projectRoot)
-		if err != nil {
-			return fmt.Errorf("failed to load config: %w", err)
-		}
-
-		specsDir := cfg.SpecsPath(projectRoot)
-		feat, err := feature.Resolve(specsDir, featureRef)
+		feat, err = feature.Resolve(specsDir, featureRef)
 		if err != nil {
 			return fmt.Errorf("failed to resolve feature: %w", err)
 		}
-
-		specPath := filepath.Join(feat.Path, "SPEC.md")
-		planPath := filepath.Join(feat.Path, "PLAN.md")
-		tasksPath := filepath.Join(feat.Path, "TASKS.md")
-		prompt = buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, feat.Slug, noCodeRabbit)
 	} else {
-		prompt = buildReflectPrompt(projectRoot, constitutionPath, summaryPath, "", "", "", "", noCodeRabbit)
+		feat, err = selectFeatureForReflect(specsDir)
+		if err != nil {
+			return err
+		}
 	}
 
+	specPath := filepath.Join(feat.Path, "SPEC.md")
+	planPath := filepath.Join(feat.Path, "PLAN.md")
+	tasksPath := filepath.Join(feat.Path, "TASKS.md")
+	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, feat.Slug, noCodeRabbit)
 	printWorkflowInstructions("reflect", []string{
 		"if issues remain, return to implement",
 		"if clean, mark reflection complete",
@@ -87,6 +90,50 @@ func runReflect(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+// selectFeatureForReflect shows an interactive numbered list of features
+// that have SPEC.md, PLAN.md, and TASKS.md.
+func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var candidates []feature.Feature
+	for _, f := range features {
+		specPath := filepath.Join(f.Path, "SPEC.md")
+		planPath := filepath.Join(f.Path, "PLAN.md")
+		tasksPath := filepath.Join(f.Path, "TASKS.md")
+		if document.Exists(specPath) && document.Exists(planPath) && document.Exists(tasksPath) {
+			candidates = append(candidates, f)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("no features ready for reflection (need SPEC.md + PLAN.md + TASKS.md)\n\nRun 'kit tasks <feature>' to create tasks first")
+	}
+
+	fmt.Println()
+	fmt.Println(whiteBold + "Select a feature to reflect on:" + reset)
+	fmt.Println()
+	for i, f := range candidates {
+		fmt.Printf("  [%d] %s\n", i+1, f.DirName)
+	}
+	fmt.Println()
+	fmt.Print(whiteBold + "Enter number: " + reset)
+
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	num, err := strconv.Atoi(input)
+	if err != nil || num < 1 || num > len(candidates) {
+		return nil, fmt.Errorf("invalid selection: %s", input)
+	}
+
+	selected := candidates[num-1]
+	return &selected, nil
 }
 
 // buildReflectPrompt builds the unified reflection prompt.

@@ -1,10 +1,12 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -22,7 +24,7 @@ var specCopy bool
 var specOutputOnly bool
 
 var specCmd = &cobra.Command{
-	Use:   "spec <feature>",
+	Use:   "spec [feature]",
 	Short: "Create or open a feature specification",
 	Long: `Create a new feature specification or open an existing one.
 
@@ -33,6 +35,9 @@ Creates:
 
 Updates PROJECT_PROGRESS_SUMMARY.md after creation.
 
+If no feature is specified, shows an interactive selection of existing
+features with SPEC.md.
+
 Modes:
   Default:        Output empty template and agent prompt (non-interactive)
   --interactive:  Prompt user for spec details, then output ready-to-use prompt
@@ -42,7 +47,7 @@ Flags:
   --output-only:  Output prompt only, without status messages
   --copy:         Copy prompt to clipboard (combine with --output-only for prompt+copy)
   --interactive:  Force interactive prompts even when stdin is not a terminal`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	RunE: runSpec,
 }
 
@@ -61,8 +66,6 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	specInteractive, _ := cmd.Flags().GetBool("interactive")
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
-	featureRef := args[0]
-
 	// find project root
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
@@ -80,11 +83,24 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	if err := ensureDir(specsDir); err != nil {
 		return err
 	}
+	var (
+		feat    *feature.Feature
+		created bool
+	)
 
-	// create or find feature
-	feat, created, err := feature.EnsureExists(cfg, specsDir, featureRef)
-	if err != nil {
-		return err
+	if len(args) == 0 {
+		feat, err = selectFeatureForSpec(specsDir)
+		if err != nil {
+			return err
+		}
+	} else {
+		featureRef := args[0]
+
+		// create or find feature
+		feat, created, err = feature.EnsureExists(cfg, specsDir, featureRef)
+		if err != nil {
+			return err
+		}
 	}
 
 	if created {
@@ -146,6 +162,48 @@ func createBranchForFeature(projectRoot string, feat *feature.Feature, cfg *conf
 
 func ensureDir(path string) error {
 	return os.MkdirAll(path, 0755)
+}
+
+// selectFeatureForSpec shows an interactive numbered list of existing
+// features that have SPEC.md.
+func selectFeatureForSpec(specsDir string) (*feature.Feature, error) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var candidates []feature.Feature
+	for _, f := range features {
+		specPath := filepath.Join(f.Path, "SPEC.md")
+		if document.Exists(specPath) {
+			candidates = append(candidates, f)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("no existing specifications found\n\nRun 'kit spec <feature>' to create a new feature first")
+	}
+
+	fmt.Println()
+	fmt.Println(whiteBold + "Select a specification:" + reset)
+	fmt.Println()
+	for i, f := range candidates {
+		fmt.Printf("  [%d] %s\n", i+1, f.DirName)
+	}
+	fmt.Println()
+	fmt.Print(whiteBold + "Enter number: " + reset)
+
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	num, err := strconv.Atoi(input)
+	if err != nil || num < 1 || num > len(candidates) {
+		return nil, fmt.Errorf("invalid selection: %s", input)
+	}
+
+	selected := candidates[num-1]
+	return &selected, nil
 }
 
 // isTerminal checks if stdin is connected to a terminal
