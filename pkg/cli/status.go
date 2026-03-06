@@ -87,7 +87,7 @@ func outputNoActiveFeature(asJSON bool) error {
 	fmt.Println()
 	fmt.Println("🤷 No active feature in progress 📭")
 	fmt.Println()
-	fmt.Println("Run `kit spec <feature-name>` to start a new feature.")
+	fmt.Println("Run `kit brainstorm` or `kit spec <feature-name>` to start a new feature.")
 	fmt.Println()
 	return nil
 }
@@ -117,6 +117,7 @@ func outputStatusText(status *feature.FeatureStatus, specsDir string) error {
 
 	// files
 	fmt.Println("📁 " + whiteBold + "Files:" + reset)
+	printFileStatus("BRAINSTORM.md", status.Files["brainstorm"])
 	printFileStatus("SPEC.md", status.Files["spec"])
 	printFileStatus("PLAN.md", status.Files["plan"])
 	printFileStatus("TASKS.md", status.Files["tasks"])
@@ -148,6 +149,10 @@ func printFileStatus(name string, fs feature.FileStatus) {
 }
 
 func printProgressLine(status *feature.FeatureStatus) {
+	brainstormMark := "✗"
+	if status.Files["brainstorm"].Exists {
+		brainstormMark = "✓"
+	}
 	specMark := "✗"
 	if status.Files["spec"].Exists {
 		specMark = "✓"
@@ -161,7 +166,7 @@ func printProgressLine(status *feature.FeatureStatus) {
 		tasksMark = "✓"
 	}
 
-	fmt.Printf("SPEC %s → PLAN %s → TASKS %s", specMark, planMark, tasksMark)
+	fmt.Printf("BRAINSTORM %s → SPEC %s → PLAN %s → TASKS %s", brainstormMark, specMark, planMark, tasksMark)
 
 	if status.Progress != nil && status.Progress.HasTasks() {
 		fmt.Printf(" (%d/%d complete)", status.Progress.Complete, status.Progress.Total)
@@ -169,9 +174,13 @@ func printProgressLine(status *feature.FeatureStatus) {
 }
 
 func determineNextAction(status *feature.FeatureStatus) string {
+	if status.Files["brainstorm"].Exists && !status.Files["spec"].Exists {
+		return fmt.Sprintf("Create specification from brainstorm: run `kit spec %s`", status.Name)
+	}
+
 	// check files in order
 	if !status.Files["spec"].Exists {
-		return fmt.Sprintf("Create specification: run `kit spec %s`", status.Name)
+		return fmt.Sprintf("Start research with `kit brainstorm %s` or create specification directly with `kit spec %s`", status.Name, status.Name)
 	}
 
 	if !status.Files["plan"].Exists {
@@ -221,9 +230,9 @@ func printAllFeaturesProgress(specsDir string) {
 	fmt.Println("🗺️  " + whiteBold + "All Features:" + reset)
 	fmt.Println()
 
-	// table header (6 stages: spec → plan → task → impl → refl → done)
-	fmt.Println(dim + "| Feature              | SPEC | PLAN | TASK | IMPL | REFL | DONE |" + reset)
-	fmt.Println(dim + "|----------------------|------|------|------|------|------|------|" + reset)
+	// table header (7 stages: brainstorm → spec → plan → task → impl → refl → done)
+	fmt.Println(dim + "| Feature              | BRN  | SPEC | PLAN | TASK | IMPL | REFL | DONE |" + reset)
+	fmt.Println(dim + "|----------------------|------|------|------|------|------|------|------|" + reset)
 
 	for _, feat := range features {
 		printFeatureProgressRow(&feat)
@@ -236,7 +245,8 @@ func printFeatureProgressRow(feat *feature.Feature) {
 	name := truncateString(feat.DirName, 20)
 	name = padRight(name, 20)
 
-	// phase markers (6 stages)
+	// phase markers (7 stages)
+	brainstormM := phaseMarker(feat.Phase, feature.PhaseBrainstorm)
 	specM := phaseMarker(feat.Phase, feature.PhaseSpec)
 	planM := phaseMarker(feat.Phase, feature.PhasePlan)
 	taskM := phaseMarker(feat.Phase, feature.PhaseTasks)
@@ -244,20 +254,21 @@ func printFeatureProgressRow(feat *feature.Feature) {
 	reflM := phaseMarker(feat.Phase, feature.PhaseReflect)
 	doneM := phaseMarker(feat.Phase, feature.PhaseComplete)
 
-	fmt.Printf("| %s | %s | %s | %s | %s | %s | %s |\n",
-		name, specM, planM, taskM, implM, reflM, doneM)
+	fmt.Printf("| %s | %s | %s | %s | %s | %s | %s | %s |\n",
+		name, brainstormM, specM, planM, taskM, implM, reflM, doneM)
 }
 
 // phaseMarker returns a visual marker for the phase state.
 // returns: ●  (complete), ◐  (current), ○  (pending)
 func phaseMarker(current feature.Phase, target feature.Phase) string {
 	order := map[feature.Phase]int{
-		feature.PhaseSpec:      1,
-		feature.PhasePlan:      2,
-		feature.PhaseTasks:     3,
-		feature.PhaseImplement: 4,
-		feature.PhaseReflect:   5,
-		feature.PhaseComplete:  6,
+		feature.PhaseBrainstorm: 1,
+		feature.PhaseSpec:       2,
+		feature.PhasePlan:       3,
+		feature.PhaseTasks:      4,
+		feature.PhaseImplement:  5,
+		feature.PhaseReflect:    6,
+		feature.PhaseComplete:   7,
 	}
 
 	currentIdx := order[current]

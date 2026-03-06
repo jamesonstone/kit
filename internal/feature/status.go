@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/jamesonstone/kit/internal/document"
 )
 
 // TaskProgress holds task completion statistics.
@@ -135,6 +137,27 @@ func ExtractSpecSummary(specPath string) (string, error) {
 	return summary, nil
 }
 
+// ExtractBrainstormSummary extracts the SUMMARY section from BRAINSTORM.md.
+// If SUMMARY is empty, it falls back to USER THESIS.
+func ExtractBrainstormSummary(brainstormPath string) (string, error) {
+	doc, err := document.ParseFile(brainstormPath, document.TypeBrainstorm)
+	if err != nil {
+		return "", err
+	}
+
+	if section := doc.GetSection("SUMMARY"); section != nil {
+		if summary := document.ExtractFirstParagraph(section); summary != "" {
+			return summary, nil
+		}
+	}
+
+	if section := doc.GetSection("USER THESIS"); section != nil {
+		return document.ExtractFirstParagraph(section), nil
+	}
+
+	return "", nil
+}
+
 // FileStatus represents the existence status of a feature file.
 type FileStatus struct {
 	Exists bool   `json:"exists"`
@@ -154,6 +177,7 @@ type FeatureStatus struct {
 
 // GetFeatureStatus returns complete status information for a feature.
 func GetFeatureStatus(feat *Feature) (*FeatureStatus, error) {
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
@@ -164,6 +188,10 @@ func GetFeatureStatus(feat *Feature) (*FeatureStatus, error) {
 		Path:  feat.Path,
 		Phase: feat.Phase,
 		Files: map[string]FileStatus{
+			"brainstorm": {
+				Exists: fileExists(brainstormPath),
+				Path:   brainstormPath,
+			},
 			"spec": {
 				Exists: fileExists(specPath),
 				Path:   specPath,
@@ -186,6 +214,13 @@ func GetFeatureStatus(feat *Feature) (*FeatureStatus, error) {
 			status.Summary = summary
 		}
 		// silently ignore errors (file read issues are non-fatal)
+	}
+
+	if status.Summary == "" && status.Files["brainstorm"].Exists {
+		summary, err := ExtractBrainstormSummary(brainstormPath)
+		if err == nil {
+			status.Summary = summary
+		}
 	}
 
 	// parse task progress if tasks exist

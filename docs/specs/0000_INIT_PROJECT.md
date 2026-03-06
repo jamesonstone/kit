@@ -8,7 +8,7 @@ Its goal is to help teams reach a high-confidence understanding of a problem and
 
 Kit intentionally avoids agent-specific tooling. Instead, it centralizes canonical documents and scaffolds lightweight pointer files for different coding agents and environments.
 
-All canonical markdown files use **FULL CAPITALIZATION** (e.g., `CONSTITUTION.md`, `SPEC.md`) and snake_case for file naming (i.e. `PROJECT_PROGRESS_SUMMARY.md`). Use kebab-case for directories (e.g., `0001-feat-name`). Use lowercase for git branches (e.g., `0001-feat-name`) and allow them to be customizable via a configuration file and/or CLI flags.
+All canonical markdown files use **FULL CAPITALIZATION** (e.g., `CONSTITUTION.md`, `SPEC.md`) and snake_case for file naming (i.e. `PROJECT_PROGRESS_SUMMARY.md`). Use kebab-case for directories (e.g., `0001-feat-name`). Feature directories use numeric prefix + slug naming and may optionally begin with a `BRAINSTORM.md` research artifact.
 
 ---
 
@@ -31,13 +31,17 @@ Kit enforces the following artifact pipeline:
 
 1. **Constitution** — strategy, patterns, long-term vision (kept updated with priors)
 
+**Optional Research Step**:
+
+1. **Brainstorm** — codebase-aware research, affected files, options, and recommended strategy
+
 **Core Development Loop**:
 
-2. **Specification** — what is being built and why
-3. **Plan** — how it will be built
-4. **Tasks** — executable work units
-5. **Implementation** — execution outside Kit's core scope
-6. **Reflection** — verify correctness, refine understanding (loops back to Specification)
+1. **Specification** — what is being built and why
+2. **Plan** — how it will be built
+3. **Tasks** — executable work units
+4. **Implementation** — execution outside Kit's core scope
+5. **Reflection** — verify correctness, refine understanding (loops back to Specification)
 
 Kit's responsibility ends once tasks are clear and validated.
 
@@ -102,7 +106,7 @@ These files:
 
 If canonical paths change, Kit can update pointers.
 
-#### Example: `AGENTS.md`
+### Example: `AGENTS.md`
 
 ```markdown
 # AGENTS.md
@@ -319,16 +323,7 @@ agents:
   - CLAUDE.md
 ```
 
-### 7.3 Branching
-
-```plaintext
-branching:
-  enabled: true
-  base_branch: main
-  name_template: "{numeric}-{slug}"
-```
-
-### 7.4 Feature Naming
+### 7.3 Feature Naming
 
 ```plaintext
 feature_naming:
@@ -357,17 +352,22 @@ CLI flags always override `.kit.yaml`.
 
 ### 8.2 Feature Lifecycle
 
+#### `kit brainstorm [feature]`
+
+- prompt interactively for a feature name and short issue or feature thesis
+- create or reuse the feature directory (uses `0001-feat-name` format)
+- create `BRAINSTORM.md` as the first artifact in the feature directory
+- output a planning-only `/plan` prompt for a coding agent
+- require the agent to research the codebase and reach the configured understanding threshold before writing implementation artifacts
+
+---
+
 #### `kit spec <feature>`
 
 - scaffold `SPEC.md` template for manual editing
 - template includes section headers with placeholder comments (e.g., `<!-- TODO: describe the problem -->`)
 - create feature directory if missing (uses `0001-feat-name` format)
-- create a new git branch matching the directory name
 - update `docs/PROJECT_PROGRESS_SUMMARY.md`
-
-Flags:
-
-- `--no-branch` — create directory but skip git branch creation
 
 ---
 
@@ -556,18 +556,17 @@ Defaults:
 
 ---
 
-## 10. Git Workflow
+## 10. Workflow Scope
 
-- feature creation defaults to a new branch
-- branch names use the format `0001-feat-name`
-- feature directory names match the branch name exactly
-- multiple features can be in progress simultaneously (different branches, different directories)
+- feature directories use the format `0001-feat-name`
+- multiple features can be in progress simultaneously
+- `BRAINSTORM.md` is optional but first-class when present
+- `SPEC.md`, `PLAN.md`, and `TASKS.md` remain the binding execution artifacts
 
 Kit does not:
 
-- merge branches
-- manage PRs
-- enforce git policies beyond branch creation
+- manage branches or PRs
+- enforce git policies
 - maintain any state beyond files (no database, no lock files)
 
 ---

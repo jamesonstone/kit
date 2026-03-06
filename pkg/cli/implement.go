@@ -74,6 +74,7 @@ func runImplement(cmd *cobra.Command, args []string) error {
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 
 	// verify all documents exist
 	if !document.Exists(specPath) {
@@ -92,7 +93,7 @@ func runImplement(cmd *cobra.Command, args []string) error {
 	// get task progress
 	progress, _ := feature.ParseTaskProgress(tasksPath)
 
-	return outputImplementationPrompt(feat, specPath, planPath, tasksPath, summary, progress, projectRoot, outputOnly)
+	return outputImplementationPrompt(feat, brainstormPath, specPath, planPath, tasksPath, summary, progress, projectRoot, outputOnly)
 }
 
 // selectFeatureForImplementation shows an interactive numbered list of features
@@ -140,8 +141,9 @@ func selectFeatureForImplementation(specsDir string) (*feature.Feature, error) {
 	return &selected, nil
 }
 
-func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress, projectRoot string, outputOnly bool) error {
+func outputImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress, projectRoot string, outputOnly bool) error {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	hasBrainstorm := document.Exists(brainstormPath)
 
 	// build the agent prompt
 	var sb strings.Builder
@@ -154,36 +156,47 @@ func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasks
 		sb.WriteString("(Read SPEC.md for feature description)\n\n")
 	}
 
-	sb.WriteString(fmt.Sprintf(`## Document Hierarchy
+	sb.WriteString("## Document Hierarchy\n\n")
+	sb.WriteString("| Document | Contains | Use When |\n")
+	sb.WriteString("|----------|----------|----------|\n")
+	sb.WriteString("| CONSTITUTION.md | Project-wide constraints, principles, priors | Understanding fundamental rules |\n")
+	if hasBrainstorm {
+		sb.WriteString("| BRAINSTORM.md | Upstream research findings, relevant files, strategy options | Recovering problem context before execution |\n")
+	}
+	sb.WriteString("| SPEC.md | Requirements, goals, constraints, acceptance criteria | Checking scope, validating completeness |\n")
+	sb.WriteString("| PLAN.md | Architecture, components, interfaces, design decisions | Making implementation choices, understanding structure |\n")
+	sb.WriteString("| TASKS.md | Ordered execution steps with acceptance criteria per task | Knowing what to do next, tracking progress |\n\n")
 
-| Document | Contains | Use When |
-|----------|----------|----------|
-| CONSTITUTION.md | Project-wide constraints, principles, priors | Understanding fundamental rules |
-| SPEC.md | Requirements, goals, constraints, acceptance criteria | Checking scope, validating completeness |
-| PLAN.md | Architecture, components, interfaces, design decisions | Making implementation choices, understanding structure |
-| TASKS.md | Ordered execution steps with acceptance criteria per task | Knowing what to do next, tracking progress |
-
-## Your Instructions
-
-1. **Read CONSTITUTION.md first** to understand project constraints and principles
-2. **Read all three feature documents** in order: SPEC → PLAN → TASKS
-3. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict
-4. **Execute tasks from TASKS.md** in the order specified
-5. **For each task:**
+	sb.WriteString("## Your Instructions\n\n")
+	sb.WriteString("1. **Read CONSTITUTION.md first** to understand project constraints and principles\n")
+	sb.WriteString("2. **Read the feature documents in order**: ")
+	if hasBrainstorm {
+		sb.WriteString("BRAINSTORM → ")
+	}
+	sb.WriteString("SPEC → PLAN → TASKS\n")
+	sb.WriteString("3. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict\n")
+	sb.WriteString("4. **Execute tasks from TASKS.md** in the order specified\n")
+	sb.WriteString(`5. **For each task:**
    - Read the task's GOAL, SCOPE, and ACCEPTANCE criteria
    - Implement only what's specified (no gold-plating)
    - Verify acceptance criteria are met before marking complete
    - Update TASKS.md: change '- [ ]' to '- [x]' when done
 
-## Key Files
-- CONSTITUTION: %s
-- SPEC: %s
-- PLAN: %s
-- TASKS: %s
-- Project root: %s
+`)
 
-## Rules
+	sb.WriteString("## Key Files\n")
+	sb.WriteString(fmt.Sprintf("- CONSTITUTION: %s\n", constitutionPath))
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("- BRAINSTORM: %s\n", brainstormPath))
+	}
+	sb.WriteString(fmt.Sprintf("- SPEC: %s\n", specPath))
+	sb.WriteString(fmt.Sprintf("- PLAN: %s\n", planPath))
+	sb.WriteString(fmt.Sprintf("- TASKS: %s\n", tasksPath))
+	sb.WriteString(fmt.Sprintf("- Project root: %s\n\n", projectRoot))
+
+	sb.WriteString(fmt.Sprintf(`## Rules
 - Respect constraints defined in CONSTITUTION.md
+- Use BRAINSTORM.md as context only; SPEC, PLAN, and TASKS control execution
 - Stay within scope defined in SPEC.md
 - Follow architecture decisions in PLAN.md
 - Complete tasks in dependency order from TASKS.md
@@ -199,7 +212,7 @@ func outputImplementationPrompt(feat *feature.Feature, specPath, planPath, tasks
 ## Begin
 Start by reading TASKS.md to identify the first incomplete task (marked with '- [ ]').
 Then read its acceptance criteria and implement it.
-`, constitutionPath, specPath, planPath, tasksPath, projectRoot, projectRoot))
+`, projectRoot))
 
 	prompt := sb.String()
 
@@ -249,6 +262,9 @@ Then read its acceptance criteria and implement it.
 
 	// file paths
 	fmt.Println(whiteBold + "File Locations:" + reset)
+	if hasBrainstorm {
+		fmt.Printf("  • BRAINSTORM: %s\n", brainstormPath)
+	}
 	fmt.Printf("  • SPEC:  %s\n", specPath)
 	fmt.Printf("  • PLAN:  %s\n", planPath)
 	fmt.Printf("  • TASKS: %s\n", tasksPath)

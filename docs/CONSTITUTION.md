@@ -55,7 +55,7 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
 ### Non-Negotiable Rules
 
 1. **Artifact Pipeline Order**
-   - Constitution → Specification → Plan → Tasks → Implementation → Reflection
+   - Constitution → Brainstorm (optional) → Specification → Plan → Tasks → Implementation → Reflection
    - Each artifact gates the next (unless `--force` or `allow_out_of_order: true`)
    - Breaking this order requires explicit intent
 
@@ -68,6 +68,7 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
 3. **Section Requirements**
    - Each document type has required sections that must be present
    - `CONSTITUTION.md`: PRINCIPLES, CONSTRAINTS, NON-GOALS, DEFINITIONS
+   - `BRAINSTORM.md`: SUMMARY, USER THESIS, CODEBASE FINDINGS, AFFECTED FILES, QUESTIONS, OPTIONS, RECOMMENDED STRATEGY, NEXT STEP
    - `SPEC.md`: PROBLEM, GOALS, NON-GOALS, USERS, REQUIREMENTS, ACCEPTANCE, EDGE-CASES, OPEN-QUESTIONS
    - `PLAN.md`: SUMMARY, APPROACH, COMPONENTS, DATA, INTERFACES, RISKS, TESTING
    - `TASKS.md`: TASKS (with table), DEPENDENCIES, NOTES
@@ -77,17 +78,12 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
    - If work spans features, update each feature's docs separately
    - Feature directories are immutable once created
 
-5. **Git Branch Naming**
-   - Branch names match feature directory names exactly
-   - Format: `{numeric}-{slug}` (e.g., `0001-feat-name`)
-   - Created automatically on `kit spec` unless `--no-branch`
-
-6. **No Implementation Details in Specs**
+5. **No Implementation Details in Specs**
    - `SPEC.md` defines WHAT, not HOW
    - No code in specifications
    - No technology choices unless absolutely required
 
-7. **Traceability**
+6. **Traceability**
    - Tasks link to plan items using `[PLAN-XX]` syntax
    - Plan items link to spec items using `[SPEC-XX]` syntax
    - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
@@ -103,7 +99,7 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
 2. **Package Structure**
    - `cmd/kit/` — main entry point only
    - `pkg/cli/` — command implementations
-   - `internal/` — private packages (config, document, feature, git, rollup, templates)
+   - `internal/` — private packages (config, document, feature, rollup, templates)
    - No circular dependencies
 
 3. **Error Messages**
@@ -121,19 +117,19 @@ All work falls into one of two tracks. Classify before acting.
 
 Use when ANY of these apply:
 
-- Initiated via `kit spec` or `kit oneshot`
+- Initiated via `kit brainstorm` or `kit spec`
 - New feature or capability
 - Substantial architectural or behavioral change
 - Work that has existing spec docs in `docs/specs/<feature>/`
 - Change affects multiple components or public interfaces
 
-**Workflow**: Full artifact pipeline — SPEC.md → PLAN.md → TASKS.md → implement → reflect
+**Workflow**: Optional research + artifact pipeline — BRAINSTORM.md → SPEC.md → PLAN.md → TASKS.md → implement → reflect
 
 ### Ad Hoc (Lightweight)
 
 Use when ALL of these apply:
 
-- Not initiated via `kit spec` or `kit oneshot`
+- Not initiated via `kit brainstorm` or `kit spec`
 - Bug fix, security review, refactor, dependency update, config change, or small refinement
 - Scope is contained and well-understood without formal specification
 
@@ -150,15 +146,15 @@ If an ad hoc change touches code covered by existing spec docs in `docs/specs/<f
 
 ### Classification Examples
 
-| Change | Track | Why |
-| ------ | ----- | --- |
-| New CLI command | Spec-driven | New capability |
-| Fix nil pointer in existing handler | Ad hoc | Bug fix, contained scope |
-| Security review of auth flow | Ad hoc | Review, no new feature |
-| Refactor package structure | Ad hoc or Spec-driven | Depends on scope |
-| Add streaming support to export | Spec-driven | Substantial behavioral change |
-| Update dependency version | Ad hoc | Mechanical change |
-| Fix typo in error message | Ad hoc | Trivial, mechanical |
+| Change                              | Track                 | Why                           |
+| ----------------------------------- | --------------------- | ----------------------------- |
+| New CLI command                     | Spec-driven           | New capability                |
+| Fix nil pointer in existing handler | Ad hoc                | Bug fix, contained scope      |
+| Security review of auth flow        | Ad hoc                | Review, no new feature        |
+| Refactor package structure          | Ad hoc or Spec-driven | Depends on scope              |
+| Add streaming support to export     | Spec-driven           | Substantial behavioral change |
+| Update dependency version           | Ad hoc                | Mechanical change             |
+| Fix typo in error message           | Ad hoc                | Trivial, mechanical           |
 
 ---
 
@@ -171,7 +167,6 @@ Kit explicitly does NOT:
 - ❌ Execute code or run tests
 - ❌ Manage agents directly or maintain prompt registries
 - ❌ Merge branches or manage PRs
-- ❌ Enforce git policies beyond branch creation
 - ❌ Replace CI/CD systems
 
 ### Data & State
@@ -205,15 +200,17 @@ The ordered sequence of documents that drive development:
 
 1. **Constitution** — Project-wide constraints, principles, long-term vision. Kept updated with priors. Single per repository.
 
-2. **Specification (SPEC.md)** — What is being built and why. Requirements, acceptance criteria, edge cases. No implementation details.
+2. **Brainstorm (BRAINSTORM.md)** — Optional codebase-aware research. Captures findings, affected files, open questions, and recommended strategy.
 
-3. **Plan (PLAN.md)** — How it will be built. Strategy, components, interfaces, risks. Explains approach, not code.
+3. **Specification (SPEC.md)** — What is being built and why. Requirements, acceptance criteria, edge cases. No implementation details.
 
-4. **Tasks (TASKS.md)** — Atomic executable work units. Maps to plan items. Reflects real progress.
+4. **Plan (PLAN.md)** — How it will be built. Strategy, components, interfaces, risks. Explains approach, not code.
 
-5. **Implementation** — Code execution. Outside Kit's core scope.
+5. **Tasks (TASKS.md)** — Atomic executable work units. Maps to plan items. Reflects real progress.
 
-6. **Reflection** — Verify correctness, refine understanding. Loops back to specification if needed.
+6. **Implementation** — Code execution. Outside Kit's core scope.
+
+7. **Reflection** — Verify correctness, refine understanding. Loops back to specification if needed.
 
 ### Feature
 
@@ -227,9 +224,10 @@ A self-contained unit of work with its own directory under `docs/specs/`. Identi
 
 The current state of a feature in the artifact pipeline:
 
-- `spec` — Has SPEC.md only
-- `plan` — Has SPEC.md and PLAN.md
-- `tasks` — Has SPEC.md, PLAN.md, and TASKS.md
+- `brainstorm` — Has BRAINSTORM.md without SPEC.md
+- `spec` — Has SPEC.md only, optionally preceded by BRAINSTORM.md
+- `plan` — Has SPEC.md and PLAN.md, optionally preceded by BRAINSTORM.md
+- `tasks` — Has SPEC.md, PLAN.md, and TASKS.md, optionally preceded by BRAINSTORM.md
 - `implement` — Beyond Kit's scope
 
 ### Understanding Percentage
@@ -275,6 +273,7 @@ kit/
 ├── pkg/cli/                  # Public CLI commands
 │   ├── root.go              # Root command, banner, colors
 │   ├── init.go              # kit init
+│   ├── brainstorm.go        # kit brainstorm [feature]
 │   ├── spec.go              # kit spec <feature>
 │   ├── plan.go              # kit plan <feature>
 │   ├── tasks.go             # kit tasks <feature>
@@ -288,7 +287,6 @@ kit/
 │   ├── config/config.go     # .kit.yaml loading, project root discovery
 │   ├── document/document.go # Markdown parsing, validation, section extraction
 │   ├── feature/feature.go   # Feature numbering, slug validation, directory management
-│   ├── git/git.go           # Branch creation, checkout, status
 │   ├── rollup/rollup.go     # PROJECT_PROGRESS_SUMMARY.md generation
 │   └── templates/templates.go # Embedded document templates
 └── docs/
@@ -412,12 +410,6 @@ allow_out_of_order: false
 agents:
   - AGENTS.md
   - CLAUDE.md
-
-# Git branching behavior
-branching:
-  enabled: true
-  base_branch: main
-  name_template: '{numeric}-{slug}'
 
 # Feature directory naming
 feature_naming:

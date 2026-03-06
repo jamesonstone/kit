@@ -14,6 +14,7 @@ type DocumentType string
 
 const (
 	TypeConstitution    DocumentType = "CONSTITUTION"
+	TypeBrainstorm      DocumentType = "BRAINSTORM"
 	TypeSpec            DocumentType = "SPEC"
 	TypePlan            DocumentType = "PLAN"
 	TypeTasks           DocumentType = "TASKS"
@@ -24,6 +25,7 @@ const (
 // RequiredSections returns the required sections for each document type.
 var RequiredSections = map[DocumentType][]string{
 	TypeConstitution:    {"PRINCIPLES", "CONSTRAINTS", "NON-GOALS", "DEFINITIONS"},
+	TypeBrainstorm:      {"SUMMARY", "USER THESIS", "CODEBASE FINDINGS", "AFFECTED FILES", "QUESTIONS", "OPTIONS", "RECOMMENDED STRATEGY", "NEXT STEP"},
 	TypeSpec:            {"PROBLEM", "GOALS", "NON-GOALS", "USERS", "REQUIREMENTS", "ACCEPTANCE", "EDGE-CASES", "OPEN-QUESTIONS"},
 	TypePlan:            {"SUMMARY", "APPROACH", "COMPONENTS", "DATA", "INTERFACES", "RISKS", "TESTING"},
 	TypeTasks:           {"TASKS", "DEPENDENCIES", "NOTES"},

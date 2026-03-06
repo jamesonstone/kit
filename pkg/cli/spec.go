@@ -15,7 +15,6 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
-	"github.com/jamesonstone/kit/internal/git"
 	"github.com/jamesonstone/kit/internal/rollup"
 	"github.com/jamesonstone/kit/internal/templates"
 )
@@ -31,12 +30,11 @@ var specCmd = &cobra.Command{
 Creates:
   - Feature directory (e.g., docs/specs/0001-my-feature/)
   - SPEC.md with required sections and placeholder comments
-  - Git branch matching the feature directory name (with --create-branch)
 
 Updates PROJECT_PROGRESS_SUMMARY.md after creation.
 
 If no feature is specified, shows an interactive selection of existing
-features with SPEC.md.
+features with BRAINSTORM.md or SPEC.md.
 
 Modes:
   Default:        Output empty template and agent prompt (non-interactive)
@@ -52,7 +50,6 @@ Flags:
 }
 
 func init() {
-	specCmd.Flags().Bool("create-branch", false, "create and switch to a git branch matching the feature name")
 	specCmd.Flags().Bool("template", false, "(deprecated) output empty template and prompt without interactive questions")
 	specCmd.Flags().Bool("interactive", false, "prompt user for spec details interactively")
 	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy agent prompt to clipboard")
@@ -61,7 +58,6 @@ func init() {
 }
 
 func runSpec(cmd *cobra.Command, args []string) error {
-	createBranch, _ := cmd.Flags().GetBool("create-branch")
 	specTemplateOnly, _ := cmd.Flags().GetBool("template")
 	specInteractive, _ := cmd.Flags().GetBool("interactive")
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
@@ -124,9 +120,9 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	// default is non-interactive (template mode), unless --interactive is explicitly set
 	isInteractive := specInteractive && !specTemplateOnly
 
-	// create git branch if --create-branch flag is set
-	if createBranch && git.IsRepo(projectRoot) {
-		createBranchForFeature(projectRoot, feat, cfg)
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
+	if document.Exists(brainstormPath) {
+		fmt.Println("  ✓ Found BRAINSTORM.md")
 	}
 
 	// update PROJECT_PROGRESS_SUMMARY.md
@@ -140,24 +136,11 @@ func runSpec(cmd *cobra.Command, args []string) error {
 
 	if isInteractive {
 		// interactive mode: gather details and compile prompt
-		return runSpecInteractive(specPath, feat, projectRoot, cfg, createBranch, outputOnly)
+		return runSpecInteractive(specPath, brainstormPath, feat, projectRoot, cfg, outputOnly)
 	}
 
 	// template mode: output the template and instructions
-	return runSpecTemplate(specPath, feat.Slug, projectRoot, cfg, outputOnly)
-}
-
-// createBranchForFeature creates and switches to a git branch for the feature.
-func createBranchForFeature(projectRoot string, feat *feature.Feature, cfg *config.Config) {
-	branchName := feat.DirName
-	branchCreated, err := git.EnsureBranch(projectRoot, branchName, cfg.Branching.BaseBranch)
-	if err != nil {
-		fmt.Printf("  ⚠ Could not create branch: %v\n", err)
-	} else if branchCreated {
-		fmt.Printf("  ✓ Created and switched to branch: %s\n", branchName)
-	} else {
-		fmt.Printf("  ✓ Switched to existing branch: %s\n", branchName)
-	}
+	return runSpecTemplate(specPath, brainstormPath, feat.Slug, projectRoot, cfg, outputOnly)
 }
 
 func ensureDir(path string) error {
@@ -165,7 +148,7 @@ func ensureDir(path string) error {
 }
 
 // selectFeatureForSpec shows an interactive numbered list of existing
-// features that have SPEC.md.
+// features that have BRAINSTORM.md or SPEC.md.
 func selectFeatureForSpec(specsDir string) (*feature.Feature, error) {
 	features, err := feature.ListFeatures(specsDir)
 	if err != nil {
@@ -174,21 +157,26 @@ func selectFeatureForSpec(specsDir string) (*feature.Feature, error) {
 
 	var candidates []feature.Feature
 	for _, f := range features {
+		brainstormPath := filepath.Join(f.Path, "BRAINSTORM.md")
 		specPath := filepath.Join(f.Path, "SPEC.md")
-		if document.Exists(specPath) {
+		if document.Exists(brainstormPath) || document.Exists(specPath) {
 			candidates = append(candidates, f)
 		}
 	}
 
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no existing specifications found\n\nRun 'kit spec <feature>' to create a new feature first")
+		return nil, fmt.Errorf("no brainstorms or specifications found\n\nRun 'kit brainstorm' or 'kit spec <feature>' to start a feature")
 	}
 
 	fmt.Println()
-	fmt.Println(whiteBold + "Select a specification:" + reset)
+	fmt.Println(whiteBold + "Select a feature to continue into spec:" + reset)
 	fmt.Println()
 	for i, f := range candidates {
-		fmt.Printf("  [%d] %s\n", i+1, f.DirName)
+		label := f.DirName
+		if document.Exists(filepath.Join(f.Path, "BRAINSTORM.md")) && !document.Exists(filepath.Join(f.Path, "SPEC.md")) {
+			label += " (brainstorm)"
+		}
+		fmt.Printf("  [%d] %s\n", i+1, label)
 	}
 	fmt.Println()
 	fmt.Print(whiteBold + "Enter number: " + reset)
@@ -250,8 +238,8 @@ func readLineRL(rl *readline.Instance) string {
 	return normalizeSpecAnswer(line)
 }
 
-// runSpecInteractive prompts the user for each SPEC section and compiles a ready-to-use prompt
-func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot string, cfg *config.Config, branchAlreadyCreated, outputOnly bool) error {
+// runSpecInteractive prompts the user for each SPEC section and compiles a ready-to-use prompt.
+func runSpecInteractive(specPath, brainstormPath string, feat *feature.Feature, projectRoot string, cfg *config.Config, outputOnly bool) error {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:              whiteBold + "   > " + reset,
 		InterruptPrompt:     "^C",
@@ -271,21 +259,13 @@ func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot stri
 	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println()
 
-	// prompt for branch creation if in a git repo and not already created via flag
-	if !branchAlreadyCreated && git.IsRepo(projectRoot) {
-		rl.SetPrompt(whiteBold + "[y/N]: " + reset)
-		fmt.Printf(dim+"Create feature branch '%s'?"+reset+" ", feat.DirName)
-		branchAnswer := strings.ToLower(readLineRL(rl))
-		if branchAnswer == "y" || branchAnswer == "yes" {
-			createBranchForFeature(projectRoot, feat, cfg)
-		}
-		fmt.Println()
-	}
-
 	fmt.Println(dim + "Answer the following questions to generate a complete prompt for your coding agent." + reset)
 	fmt.Println(dim + "Use ←/→ arrow keys to move through your text and correct mistakes." + reset)
 	fmt.Println(dim + "Press Enter to continue; use Shift+Enter (or Ctrl+J) to add a newline." + reset)
 	fmt.Println(dim + "Press Enter on an empty response to skip a question." + reset)
+	if document.Exists(brainstormPath) {
+		fmt.Println(dim + "Existing brainstorm research will also be referenced in the generated prompt." + reset)
+	}
 	fmt.Println()
 
 	// reset prompt for question inputs
@@ -337,13 +317,14 @@ func runSpecInteractive(specPath string, feat *feature.Feature, projectRoot stri
 	fmt.Println()
 
 	// generate the compiled prompt
-	return outputCompiledPrompt(specPath, feat.Slug, projectRoot, cfg, &answers, outputOnly)
+	return outputCompiledPrompt(specPath, brainstormPath, feat.Slug, projectRoot, cfg, &answers, outputOnly)
 }
 
-// outputCompiledPrompt generates the final agent prompt and either copies to clipboard or prints
-func outputCompiledPrompt(specPath, featureSlug, projectRoot string, cfg *config.Config, answers *specAnswers, outputOnly bool) error {
+// outputCompiledPrompt generates the final agent prompt and either copies to clipboard or prints.
+func outputCompiledPrompt(specPath, brainstormPath, featureSlug, projectRoot string, cfg *config.Config, answers *specAnswers, outputOnly bool) error {
 	goalPct := cfg.GoalPercentage
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	hasBrainstorm := document.Exists(brainstormPath)
 
 	var sb strings.Builder
 
@@ -384,30 +365,43 @@ func outputCompiledPrompt(specPath, featureSlug, projectRoot string, cfg *config
 		answers.Users != "" || answers.Requirements != "" || answers.Acceptance != "" ||
 		answers.EdgeCases != ""
 
-	sb.WriteString(fmt.Sprintf(`## Context Docs (read first)
-| File | Purpose |
-|------|----------|
-| CONSTITUTION | %s |
-| SPEC | %s |
-| Project Root | %s |
+	sb.WriteString("## Context Docs (read first)\n")
+	sb.WriteString("| File | Purpose |\n")
+	sb.WriteString("|------|----------|\n")
+	sb.WriteString(fmt.Sprintf("| CONSTITUTION | %s |\n", constitutionPath))
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("| BRAINSTORM | %s |\n", brainstormPath))
+	}
+	sb.WriteString(fmt.Sprintf("| SPEC | %s |\n", specPath))
+	sb.WriteString(fmt.Sprintf("| Project Root | %s |\n\n", projectRoot))
 
-## Your Task
+	sb.WriteString("## Your Task\n\n")
+	sb.WriteString(fmt.Sprintf("1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles\n", constitutionPath))
+	step := 2
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("%d. Read BRAINSTORM.md (file: %s) and treat it as upstream research context\n", step, brainstormPath))
+		step++
+	}
+	sb.WriteString(fmt.Sprintf("%d. Read the current SPEC.md (file: %s) and understand the required sections\n", step, specPath))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Analyze the codebase at %s to understand existing patterns\n", step, projectRoot))
 
-1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles
-2. Read the current SPEC.md (file: %s) and understand the required sections
-3. Analyze the codebase at %s to understand existing patterns
-`, constitutionPath, specPath, projectRoot, constitutionPath, specPath, projectRoot))
+	questionStart := step + 1
 
 	if hasContext {
-		sb.WriteString(fmt.Sprintf(`4. **IMMEDIATELY write all context above into the SPEC.md file at %s** — do NOT ask questions before doing this
-5. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
-6. After each round of questions, **save your updates to %s** before continuing
-7. Continue refining each section of SPEC.md as you learn more:
-`, specPath, goalPct, specPath))
+		sb.WriteString(fmt.Sprintf(`%d. **IMMEDIATELY write all context above into the SPEC.md file at %s** — do NOT ask questions before doing this
+%d. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
+%d. After each round of questions, **save your updates to %s** before continuing
+%d. Continue refining each section of SPEC.md as you learn more:
+`, questionStart, specPath, questionStart+1, goalPct, questionStart+2, specPath, questionStart+3))
 	} else {
-		sb.WriteString(fmt.Sprintf(`4. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
-5. **Write your findings directly to %s** as you fill in each section:
-`, goalPct, specPath))
+		sb.WriteString(fmt.Sprintf(`%d. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
+%d. **Write your findings directly to %s** as you fill in each section:
+`, questionStart, goalPct, questionStart+1, specPath))
+	}
+
+	if hasBrainstorm {
+		sb.WriteString("   - Carry forward validated findings from BRAINSTORM.md into SPEC.md\n")
 	}
 
 	sb.WriteString(fmt.Sprintf(`   - PROBLEM: What problem does this feature solve?
@@ -464,17 +458,22 @@ This file is the single source of truth for this feature. Do not leave content o
 	return nil
 }
 
-// runSpecTemplate outputs the empty template and generic instructions (legacy behavior)
-func runSpecTemplate(specPath, featureSlug, projectRoot string, cfg *config.Config, outputOnly bool) error {
+// runSpecTemplate outputs the empty template and generic instructions (legacy behavior).
+func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, cfg *config.Config, outputOnly bool) error {
 	goalPct := cfg.GoalPercentage
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	hasBrainstorm := document.Exists(brainstormPath)
 
-	prompt := fmt.Sprintf(`Please review and complete the specification at %s.
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Please review and complete the specification at %s.\n\n", specPath))
+	sb.WriteString(fmt.Sprintf("This is a new feature: %s\n\n", featureSlug))
+	sb.WriteString("## Context Docs (read first)\n")
+	sb.WriteString(fmt.Sprintf("|- CONSTITUTION: %s — project-wide constraints, principles, priors\n", constitutionPath))
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("|- BRAINSTORM: %s — upstream research context and codebase findings\n", brainstormPath))
+	}
 
-This is a new feature: %s
-
-## Context Docs (read first)
-|- CONSTITUTION: %s — project-wide constraints, principles, priors
+	sb.WriteString(`
 
 ## Context Provided by User
 <!-- ⚠️ FILL THIS OUT BEFORE SUBMITTING TO YOUR CODING AGENT -->
@@ -503,12 +502,24 @@ This is a new feature: %s
 ## Your Task
 
 1. Read CONSTITUTION.md to understand project constraints and principles
-2. Read the SPEC.md template and understand the required sections
-3. Analyze the codebase at %s to understand existing patterns
-4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions
-5. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding
-6. Continue refining each section of SPEC.md as you learn more:
-   - PROBLEM: What problem does this feature solve?
+`)
+
+	if hasBrainstorm {
+		sb.WriteString("2. Read BRAINSTORM.md and carry forward validated findings\n")
+		sb.WriteString("3. Read the SPEC.md template and understand the required sections\n")
+		sb.WriteString(fmt.Sprintf("4. Analyze the codebase at %s to understand existing patterns\n", projectRoot))
+		sb.WriteString("5. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions\n")
+		sb.WriteString(fmt.Sprintf("6. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding\n", goalPct))
+		sb.WriteString("7. Continue refining each section of SPEC.md as you learn more:\n")
+	} else {
+		sb.WriteString("2. Read the SPEC.md template and understand the required sections\n")
+		sb.WriteString(fmt.Sprintf("3. Analyze the codebase at %s to understand existing patterns\n", projectRoot))
+		sb.WriteString("4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions\n")
+		sb.WriteString(fmt.Sprintf("5. Ask clarifying questions in batches of 10 until you reach >= %d%% understanding\n", goalPct))
+		sb.WriteString("6. Continue refining each section of SPEC.md as you learn more:\n")
+	}
+
+	sb.WriteString(fmt.Sprintf(`   - PROBLEM: What problem does this feature solve?
    - GOALS: What are the measurable outcomes?
    - NON-GOALS: What is explicitly out of scope?
    - USERS: Who will use this feature?
@@ -532,7 +543,9 @@ Once you reach >= %d%% understanding, write a SUMMARY section at the top of SPEC
 - Spec gate: unresolved assumptions = 0 before sign-off; if unresolved assumptions remain, stop and resolve before marking SPEC complete
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-`, specPath, featureSlug, constitutionPath, projectRoot, goalPct, goalPct, goalPct)
+`, goalPct, goalPct))
+
+	prompt := sb.String()
 
 	fmt.Printf("\nNext steps:\n")
 	fmt.Printf("  1. Edit %s to define the specification\n", specPath)

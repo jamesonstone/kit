@@ -3,12 +3,8 @@ specs_dir: docs/specs
 constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false
 agents:
-    - AGENTS.md
-    - CLAUDE.md
-branching:
-    enabled: true
-    base_branch: main
-    name_template: '{numeric}-{slug}'
+  - AGENTS.md
+  - CLAUDE.md
 feature_naming:
-    numeric_width: 4
-    separator: '-'
+  numeric_width: 4
+  separator: '-'

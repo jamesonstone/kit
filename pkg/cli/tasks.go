@@ -131,29 +131,43 @@ func runTasks(cmd *cobra.Command, args []string) error {
 
 	// output easy-to-copy instruction for coding agents
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
+	hasBrainstorm := document.Exists(brainstormPath)
 	goalPct := cfg.GoalPercentage
 
-	prompt := fmt.Sprintf(`Please review and complete the task plan.
+	var sb strings.Builder
+	sb.WriteString("Please review and complete the task plan.\n\n")
+	sb.WriteString("## File References\n")
+	sb.WriteString("| Document | Path |\n")
+	sb.WriteString("|----------|------|\n")
+	sb.WriteString(fmt.Sprintf("| CONSTITUTION | %s |\n", constitutionPath))
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("| BRAINSTORM | %s |\n", brainstormPath))
+	}
+	sb.WriteString(fmt.Sprintf("| SPEC | %s |\n", specPath))
+	sb.WriteString(fmt.Sprintf("| PLAN | %s |\n", planPath))
+	sb.WriteString(fmt.Sprintf("| TASKS | %s |\n", tasksPath))
+	sb.WriteString(fmt.Sprintf("| Feature | %s |\n", feat.Slug))
+	sb.WriteString(fmt.Sprintf("| Project Root | %s |\n\n", projectRoot))
 
-## File References
-| Document | Path |
-|----------|------|
-| CONSTITUTION | %s |
-| SPEC | %s |
-| PLAN | %s |
-| TASKS | %s |
-| Feature | %s |
-| Project Root | %s |
+	sb.WriteString("Your task:\n")
+	sb.WriteString(fmt.Sprintf("1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles\n", constitutionPath))
+	step := 2
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("%d. Read BRAINSTORM.md (file: %s) to preserve upstream research context\n", step, brainstormPath))
+		step++
+	}
+	sb.WriteString(fmt.Sprintf("%d. Read SPEC.md (file: %s) and PLAN.md (file: %s) fully and treat them as fixed inputs\n", step, specPath, planPath))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Review the TASKS.md (file: %s) template and required sections\n", step, tasksPath))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Derive an atomic, ordered task list that can be executed without ambiguity\n", step))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Identify missing decisions that block task generation\n", step))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Ask focused clarification questions until tasks can be made deterministic\n\n", step))
 
-Your task:
-1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles
-2. Read SPEC.md (file: %s) and PLAN.md (file: %s) fully and treat them as fixed inputs
-3. Review the TASKS.md (file: %s) template and required sections
-4. Derive an atomic, ordered task list that can be executed without ambiguity
-5. Identify missing decisions that block task generation
-6. Ask focused clarification questions until tasks can be made deterministic
-
-After each batch of questions:
+	sb.WriteString(fmt.Sprintf(`After each batch of questions:
 - state your current understanding percentage of the task plan
 - do NOT proceed to writing or updating TASKS.md until understanding >= %d%%
 
@@ -197,6 +211,7 @@ F) PLAN LINKS (OPTIONAL)
 
 Rules:
 - focus on executable steps, not prose
+- use BRAINSTORM.md as research context only; SPEC.md and PLAN.md remain the binding inputs
 - do not invent new requirements or scope beyond SPEC.md
 - tasks must map back to PLAN items via section anchors
 - tasks must imply an unambiguous implementation order
@@ -208,7 +223,9 @@ Rules:
 
 Output goal:
 - a task list that a coding agent can execute linearly with minimal back-and-forth
-`, constitutionPath, specPath, planPath, tasksPath, feat.Slug, projectRoot, constitutionPath, specPath, planPath, tasksPath, goalPct)
+`, goalPct))
+
+	prompt := sb.String()
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	if tasksCopy {

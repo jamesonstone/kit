@@ -29,6 +29,7 @@ type Feature struct {
 type Phase string
 
 const (
+	PhaseBrainstorm Phase = "brainstorm"
 	PhaseSpec      Phase = "spec"
 	PhasePlan      Phase = "plan"
 	PhaseTasks     Phase = "tasks"
@@ -142,11 +143,12 @@ func ListFeatures(specsDir string) ([]Feature, error) {
 }
 
 // DeterminePhase checks which documents exist and returns the current phase.
-// phase progression: spec → plan → tasks → implement → reflect
+// phase progression: brainstorm → spec → plan → tasks → implement → reflect
 func DeterminePhase(featurePath string) Phase {
 	tasksPath := filepath.Join(featurePath, "TASKS.md")
 	planPath := filepath.Join(featurePath, "PLAN.md")
 	specPath := filepath.Join(featurePath, "SPEC.md")
+	brainstormPath := filepath.Join(featurePath, "BRAINSTORM.md")
 
 	// if tasks file exists, check task completion for implement vs reflect
 	if _, err := os.Stat(tasksPath); err == nil {
@@ -158,7 +160,10 @@ func DeterminePhase(featurePath string) Phase {
 	if _, err := os.Stat(specPath); err == nil {
 		return PhaseSpec
 	}
-	return PhaseSpec
+	if _, err := os.Stat(brainstormPath); err == nil {
+		return PhaseBrainstorm
+	}
+	return PhaseBrainstorm
 }
 
 // DeterminePhaseFromTasks determines phase based on task progress.
@@ -321,7 +326,7 @@ func Create(cfg *config.Config, specsDir string, slug string) (*Feature, error) 
 		DirName:   dirName,
 		Path:      path,
 		CreatedAt: time.Now(),
-		Phase:     PhaseSpec,
+		Phase:     PhaseBrainstorm,
 	}, nil
 }
 

@@ -19,6 +19,7 @@ type FeatureSummary struct {
 	Path      string
 	Phase     feature.Phase
 	Created   time.Time
+	HasBrainstorm bool
 	Summary   string
 	Intent    string
 	Approach  string
@@ -51,12 +52,15 @@ func Generate(projectRoot string, cfg *config.Config) error {
 
 func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 	summary := FeatureSummary{
-		ID:      fmt.Sprintf("%04d", f.Number),
-		Name:    f.Slug,
-		Path:    filepath.Join(specsDir, f.DirName),
-		Phase:   f.Phase,
-		Created: f.CreatedAt,
+		ID:           fmt.Sprintf("%04d", f.Number),
+		Name:         f.Slug,
+		Path:         filepath.Join(specsDir, f.DirName),
+		Phase:        f.Phase,
+		Created:      f.CreatedAt,
+		HasBrainstorm: document.Exists(filepath.Join(f.Path, "BRAINSTORM.md")),
 	}
+
+	brainstormPath := filepath.Join(f.Path, "BRAINSTORM.md")
 
 	// try to extract info from SPEC.md
 	specPath := filepath.Join(f.Path, "SPEC.md")
@@ -70,6 +74,21 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 		// extract open questions
 		if section := doc.GetSection("OPEN-QUESTIONS"); section != nil {
 			summary.OpenItems = document.ExtractFirstParagraph(section)
+		}
+	}
+
+	if summary.Summary == "" && summary.HasBrainstorm {
+		if brainstormSummary, err := feature.ExtractBrainstormSummary(brainstormPath); err == nil {
+			summary.Summary = brainstormSummary
+			summary.Intent = brainstormSummary
+		}
+
+		if doc, err := document.ParseFile(brainstormPath, document.TypeBrainstorm); err == nil {
+			if summary.OpenItems == "" {
+				if section := doc.GetSection("QUESTIONS"); section != nil {
+					summary.OpenItems = document.ExtractFirstParagraph(section)
+				}
+			}
 		}
 	}
 
@@ -138,8 +157,16 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 		b.WriteString(fmt.Sprintf("- **INTENT**: %s\n", s.Intent))
 		b.WriteString(fmt.Sprintf("- **APPROACH**: %s\n", s.Approach))
 		b.WriteString(fmt.Sprintf("- **OPEN ITEMS**: %s\n", s.OpenItems))
-		b.WriteString(fmt.Sprintf("- **POINTERS**: `%s/SPEC.md`, `%s/PLAN.md`, `%s/TASKS.md`\n\n",
-			s.Path, s.Path, s.Path))
+		var pointers []string
+		if s.HasBrainstorm {
+			pointers = append(pointers, fmt.Sprintf("`%s/BRAINSTORM.md`", s.Path))
+		}
+		pointers = append(pointers,
+			fmt.Sprintf("`%s/SPEC.md`", s.Path),
+			fmt.Sprintf("`%s/PLAN.md`", s.Path),
+			fmt.Sprintf("`%s/TASKS.md`", s.Path),
+		)
+		b.WriteString(fmt.Sprintf("- **POINTERS**: %s\n\n", strings.Join(pointers, ", ")))
 	}
 
 	// last updated

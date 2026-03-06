@@ -4,10 +4,12 @@
 
 - Primary authority for repository workflow, constraints, and change policy: `docs/CONSTITUTION.md`
 - Feature specs live under: `docs/specs/<feature>/`
+  - `BRAINSTORM.md` (optional research)
   - `SPEC.md` (requirements)
   - `PLAN.md` (implementation plan)
   - `TASKS.md` (executable task list)
   - `ANALYSIS.md` (optional, analysis scratchpad)
+
 ---
 
 ## Change Classification (Required First Step)
@@ -18,7 +20,7 @@ Classify each request before implementation.
 
 Use when any apply:
 
-- request initiated through `kit spec` or `kit oneshot`
+- request initiated through `kit brainstorm` or `kit spec`
 - new feature or capability
 - substantial architectural or behavioral change
 - work touches code with existing feature specs under `docs/specs/<feature>/`
@@ -26,13 +28,13 @@ Use when any apply:
 
 Required flow:
 
-- follow full artifact pipeline: `SPEC.md` → `PLAN.md` → `TASKS.md` → implementation → reflection
+- follow optional research + artifact pipeline: `BRAINSTORM.md` → `SPEC.md` → `PLAN.md` → `TASKS.md` → implementation → reflection
 
 ### 2) Ad Hoc (Lightweight Track)
 
 Use when all apply:
 
-- not initiated through `kit spec` or `kit oneshot`
+- not initiated through `kit brainstorm` or `kit spec`
 - bug fix, security review, refactor, dependency update, config change, or small refinement
 - scope is contained and can be verified directly
 
@@ -74,7 +76,7 @@ If ad hoc work touches a feature with existing specs:
 ### Phase 1: PLAN
 
 - Locate the relevant feature directory in `docs/specs/<feature>/`
-- Read `SPEC.md` → `PLAN.md` → `TASKS.md`
+- Read `BRAINSTORM.md` when present, then `SPEC.md` → `PLAN.md` → `TASKS.md`
 
 - Ask clarifying questions until requirements, constraints, and success criteria are explicit
   - Clarification questions must be clearly labeled as one of:
@@ -114,6 +116,7 @@ If ad hoc work touches a feature with existing specs:
   - then update code
 
 ---
+
 ## Quality gate policy
 
 - Always leave the project in a working state.

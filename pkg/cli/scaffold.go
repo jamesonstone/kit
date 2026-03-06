@@ -9,7 +9,6 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
-	"github.com/jamesonstone/kit/internal/git"
 	"github.com/jamesonstone/kit/internal/rollup"
 	"github.com/jamesonstone/kit/internal/templates"
 )
@@ -34,12 +33,10 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
 }
 
 func init() {
-	scaffoldCmd.Flags().Bool("create-branch", false, "create and switch to a git branch matching the feature name")
 	rootCmd.AddCommand(scaffoldCmd)
 }
 
 func runScaffold(cmd *cobra.Command, args []string) error {
-	createBranch, _ := cmd.Flags().GetBool("create-branch")
 	featureRef := args[0]
 
 	projectRoot, err := config.FindProjectRoot()
@@ -91,11 +88,6 @@ func runScaffold(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to create %s: %w", d.name, err)
 		}
 		fmt.Printf("  ✓ Created %s\n", d.name)
-	}
-
-	// create git branch if requested
-	if createBranch && git.IsRepo(projectRoot) {
-		createBranchForFeature(projectRoot, feat, cfg)
 	}
 
 	// update rollup

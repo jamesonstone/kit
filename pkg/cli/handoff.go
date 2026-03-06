@@ -56,7 +56,7 @@ func runHandoff(cmd *cobra.Command, args []string) error {
 	}
 
 	printWorkflowInstructions("handoff (supporting step)", []string{
-		"resume your active phase: spec -> plan -> tasks -> implement -> reflect",
+		"resume your active phase: brainstorm -> spec -> plan -> tasks -> implement -> reflect",
 	})
 
 	if handoffCopy {
@@ -96,16 +96,17 @@ func projectHandoff() (string, error) {
 	sb.WriteString("## How Kit Works\n\n")
 	sb.WriteString("Kit enforces a document-driven development workflow:\n")
 	sb.WriteString("1. **Constitution** (`docs/CONSTITUTION.md`) — project-wide constraints, principles, priors\n")
-	sb.WriteString("2. **Specification** (`SPEC.md`) — what is being built and why\n")
-	sb.WriteString("3. **Plan** (`PLAN.md`) — how it will be built\n")
-	sb.WriteString("4. **Tasks** (`TASKS.md`) — executable work units\n")
-	sb.WriteString("5. **Implementation** — code that fulfills the spec\n")
-	sb.WriteString("6. **Reflection** — verify correctness, loop back if needed\n\n")
+	sb.WriteString("2. **Brainstorm** (`BRAINSTORM.md`, optional) — codebase-aware research and framing\n")
+	sb.WriteString("3. **Specification** (`SPEC.md`) — what is being built and why\n")
+	sb.WriteString("4. **Plan** (`PLAN.md`) — how it will be built\n")
+	sb.WriteString("5. **Tasks** (`TASKS.md`) — executable work units\n")
+	sb.WriteString("6. **Implementation** — code that fulfills the spec\n")
+	sb.WriteString("7. **Reflection** — verify correctness, loop back if needed\n\n")
 
 	sb.WriteString("## Key Principle\n\n")
 	sb.WriteString("**Specs drive code. Code serves specs.**\n\n")
 	sb.WriteString("Before implementing anything:\n")
-	sb.WriteString("1. Read the relevant `SPEC.md` → `PLAN.md` → `TASKS.md`\n")
+	sb.WriteString("1. Read the relevant `BRAINSTORM.md` (if present) → `SPEC.md` → `PLAN.md` → `TASKS.md`\n")
 	sb.WriteString("2. Implement tasks in order\n")
 	sb.WriteString("3. If reality diverges from spec, update spec first, then code\n\n")
 
@@ -149,13 +150,14 @@ func projectHandoff() (string, error) {
 	sb.WriteString("1. Read `docs/CONSTITUTION.md` to understand project constraints\n")
 	if len(features) > 0 {
 		sb.WriteString("2. Read `docs/PROJECT_PROGRESS_SUMMARY.md` for current state\n")
-		sb.WriteString("3. Pick a feature and read its `SPEC.md` → `PLAN.md` → `TASKS.md`\n")
+		sb.WriteString("3. Pick a feature and read its `BRAINSTORM.md` (if present) → `SPEC.md` → `PLAN.md` → `TASKS.md`\n")
 	} else {
-		sb.WriteString("2. Run `kit spec <feature-name>` to create your first feature\n")
+		sb.WriteString("2. Run `kit brainstorm <feature-name>` or `kit spec <feature-name>` to create your first feature\n")
 	}
 	sb.WriteString("\n")
 
 	sb.WriteString("## Kit Commands\n\n")
+	sb.WriteString("- `kit brainstorm [feature]` — create/open brainstorm research\n")
 	sb.WriteString("- `kit spec <feature>` — create/open specification\n")
 	sb.WriteString("- `kit plan <feature>` — create/open implementation plan\n")
 	sb.WriteString("- `kit tasks <feature>` — create/open task list\n")
@@ -191,7 +193,7 @@ func featureHandoff(featureRef string) (string, error) {
 	sb.WriteString("## Kit Workflow Reminder\n\n")
 	sb.WriteString("**Specs drive code. Code serves specs.**\n\n")
 	sb.WriteString("1. Read `docs/CONSTITUTION.md` for project constraints\n")
-	sb.WriteString("2. Read `SPEC.md` → `PLAN.md` → `TASKS.md` in order\n")
+	sb.WriteString("2. Read `BRAINSTORM.md` (if present) → `SPEC.md` → `PLAN.md` → `TASKS.md` in order\n")
 	sb.WriteString("3. Implement tasks as defined\n")
 	sb.WriteString("4. If reality diverges, update specs first, then code\n\n")
 
@@ -205,6 +207,7 @@ func featureHandoff(featureRef string) (string, error) {
 
 	// check which documents exist and provide guidance
 	constitutionPath := cfg.ConstitutionAbsPath(projectRoot)
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
@@ -215,29 +218,41 @@ func featureHandoff(featureRef string) (string, error) {
 	sb.WriteString("   - Project-wide constraints and principles\n")
 	sb.WriteString("   - **Read this first to understand fundamental rules**\n\n")
 
+	nextIndex := 1
+
+	if document.Exists(brainstormPath) {
+		sb.WriteString(fmt.Sprintf("%d. **BRAINSTORM.md** — `%s`\n", nextIndex, brainstormPath))
+		sb.WriteString("   - Upstream research findings and affected files\n")
+		sb.WriteString("   - Problem framing, options, and recommended strategy\n\n")
+		nextIndex++
+	}
+
 	if document.Exists(specPath) {
-		sb.WriteString(fmt.Sprintf("1. **SPEC.md** — `%s`\n", specPath))
+		sb.WriteString(fmt.Sprintf("%d. **SPEC.md** — `%s`\n", nextIndex, specPath))
 		sb.WriteString("   - Requirements and acceptance criteria\n")
 		sb.WriteString("   - What problem we're solving\n")
 		sb.WriteString("   - Edge cases and constraints\n\n")
+		nextIndex++
 	}
 
 	if document.Exists(planPath) {
-		sb.WriteString(fmt.Sprintf("2. **PLAN.md** — `%s`\n", planPath))
+		sb.WriteString(fmt.Sprintf("%d. **PLAN.md** — `%s`\n", nextIndex, planPath))
 		sb.WriteString("   - Implementation approach\n")
 		sb.WriteString("   - Component design\n")
 		sb.WriteString("   - Technical decisions\n\n")
+		nextIndex++
 	}
 
 	if document.Exists(tasksPath) {
-		sb.WriteString(fmt.Sprintf("3. **TASKS.md** — `%s`\n", tasksPath))
+		sb.WriteString(fmt.Sprintf("%d. **TASKS.md** — `%s`\n", nextIndex, tasksPath))
 		sb.WriteString("   - Work units and their status\n")
 		sb.WriteString("   - Dependencies between tasks\n")
 		sb.WriteString("   - **Start here for what to do next**\n\n")
+		nextIndex++
 	}
 
 	if document.Exists(analysisPath) {
-		sb.WriteString(fmt.Sprintf("4. **ANALYSIS.md** — `%s`\n", analysisPath))
+		sb.WriteString(fmt.Sprintf("%d. **ANALYSIS.md** — `%s`\n", nextIndex, analysisPath))
 		sb.WriteString("   - Understanding percentage\n")
 		sb.WriteString("   - Open questions and assumptions\n\n")
 	}
@@ -245,6 +260,10 @@ func featureHandoff(featureRef string) (string, error) {
 	sb.WriteString("## Immediate Actions\n\n")
 
 	switch feat.Phase {
+	case feature.PhaseBrainstorm:
+		sb.WriteString("1. Read BRAINSTORM.md thoroughly\n")
+		sb.WriteString("2. Confirm the researched problem framing and affected code areas\n")
+		sb.WriteString("3. When ready, run `kit spec " + feat.Slug + "`\n")
 	case feature.PhaseSpec:
 		sb.WriteString("1. Read SPEC.md thoroughly\n")
 		sb.WriteString("2. Ask clarifying questions until understanding >= 95%\n")
@@ -281,18 +300,19 @@ You are starting work on a project that may use Kit for spec-driven development.
 Kit is a document-centered CLI that enforces a specification-driven workflow:
 
 1. **Constitution** — project-wide constraints, principles, priors
-2. **Specification** — what is being built and why
-3. **Plan** — how it will be built
-4. **Tasks** — executable work units
-5. **Implementation** — code execution
-6. **Reflection** — verify correctness, refine understanding
+2. **Brainstorm** — optional research and strategy context
+3. **Specification** — what is being built and why
+4. **Plan** — how it will be built
+5. **Tasks** — executable work units
+6. **Implementation** — code execution
+7. **Reflection** — verify correctness, refine understanding
 
 ## Key Principle
 
 **Specs drive code. Code serves specs.**
 
 Before implementing:
-1. Read SPEC.md → PLAN.md → TASKS.md
+1. Read BRAINSTORM.md (if present) → SPEC.md → PLAN.md → TASKS.md
 2. Implement tasks in order
 3. If reality diverges, update spec first, then code
 
@@ -322,6 +342,7 @@ kit spec <first-feature>
 ## Kit Commands
 
 - ` + "`kit init`" + ` — initialize project
+- ` + "`kit brainstorm [feature]`" + ` — create brainstorm research
 - ` + "`kit spec <feature>`" + ` — create specification
 - ` + "`kit plan <feature>`" + ` — create implementation plan
 - ` + "`kit tasks <feature>`" + ` — create task list

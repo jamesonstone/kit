@@ -60,7 +60,7 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
 	printWorkflowInstructions("summarize context (supporting step)", []string{
-		"resume your active phase: spec -> plan -> tasks -> implement -> reflect",
+		"resume your active phase: brainstorm -> spec -> plan -> tasks -> implement -> reflect",
 	})
 
 	if err := outputPrompt(instructions, outputOnly, summarizeCopy); err != nil {
@@ -121,6 +121,7 @@ Summarize the current context window, focusing on feature **%s**.
 
 ### Feature Documents
 Review and extract facts from:
+- %s/BRAINSTORM.md — optional research findings, affected files, and strategy
 - %s/SPEC.md — requirements and acceptance criteria
 - %s/PLAN.md — implementation approach and components
 - %s/TASKS.md — work units and their status
@@ -140,6 +141,7 @@ Review and extract facts from:
 - Error states and their resolutions
 - Dependencies and version constraints
 - Test requirements and acceptance criteria
+- Research findings and recommended strategy from BRAINSTORM.md when present
 - Feature-specific constraints from SPEC.md
 - Implementation choices from PLAN.md
 - Task status and dependencies from TASKS.md
@@ -169,5 +171,5 @@ Structure the summary as:
 - Quantify where possible (lines, counts, versions)
 - If a fact cannot be verified from context, mark it [ASSUMED]
 - Prioritize facts from feature documents over conversation`, featureSlug, featureSlug,
-		featurePath, featurePath, featurePath, featurePath, featureSlug)
+		featurePath, featurePath, featurePath, featurePath, featurePath, featureSlug)
 }

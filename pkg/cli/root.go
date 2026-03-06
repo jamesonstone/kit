@@ -20,6 +20,7 @@ const (
 	whiteBold    = "\033[1;37m"
 	gray         = "\033[38;5;240m"
 	constitution = "\033[38;5;220m" // gold/yellow
+	brainstorm   = "\033[38;5;117m" // light blue
 	spec         = "\033[38;5;39m"  // bright cyan
 	plan         = "\033[38;5;82m"  // bright green
 	tasks        = "\033[38;5;213m" // bright pink
@@ -59,25 +60,37 @@ func banner() string {
 
 // flowDiagram returns the colorized artifact pipeline flow diagram.
 func flowDiagram() string {
-	return whiteBold + "Project Initialization" + reset + dim + " (run once, update as needed):" + reset + `
-` + gray + `┌──────────────┐` + reset + `
-` + gray + `│ ` + constitution + `Constitution` + reset + gray + ` │  ← ` + reset + dim + `global constraints, principles, priors` + reset + `
-` + gray + `└──────────────┘` + reset + `
+	lines := []string{
+		whiteBold + "Project Initialization" + reset + dim + " (run once, update as needed):" + reset,
+		gray + "┌──────────────┐" + reset,
+		gray + "│ " + constitution + "Constitution" + reset + gray + " │  ← " + reset + dim + "global constraints, principles, priors" + reset,
+		gray + "└──────────────┘" + reset,
+		"",
+		whiteBold + "Optional Research Step:" + reset,
+		gray + "  ┌────────────┐" + reset,
+		gray + "  │ " + brainstorm + "Brainstorm" + reset + gray + " │  ← " + reset + dim + "codebase research, framing, options, affected files" + reset,
+		gray + "  └─────┬──────┘" + reset,
+		gray + "        │" + reset,
+		gray + "        ▼" + reset,
+		"",
+		whiteBold + "Core Development Loop:" + reset,
+		gray + "┌───────────────┐    ┌──────┐    ┌───────┐    ┌────────────────┐    ┌────────────┐" + reset,
+		gray + "│ " + spec + "Specification" + reset + gray + " │ ─▶ │ " + plan + "Plan" + reset + gray + " │ ─▶ │ " + tasks + "Tasks" + reset + gray + " │ ─▶ │ " + implement + "Implementation" + reset + gray + " │ ─▶ │ " + reflect + "Reflection" + reset + gray + " │ ─┐" + reset,
+		gray + "└───────────────┘    └──────┘    └───────┘    └────────────────┘    └────────────┘  │" + reset,
+		gray + "       ▲                                                                            │" + reset,
+		gray + "       └────────────────────────────────────────────────────────────────────────────┘" + reset,
+		"",
+		whiteBold + "Artifact Pipeline:" + reset,
+		"  1. " + constitution + "Constitution" + reset + dim + "   — strategy, patterns, long-term vision (kept updated)" + reset,
+		"  2. " + brainstorm + "Brainstorm" + reset + dim + "     — optional research and framing before the spec" + reset,
+		"  3. " + spec + "Specification" + reset + dim + "  — what is being built and why" + reset,
+		"  4. " + plan + "Plan" + reset + dim + "           — how it will be built" + reset,
+		"  5. " + tasks + "Tasks" + reset + dim + "          — executable work units" + reset,
+		"  6. " + implement + "Implementation" + reset + dim + " — execution outside Kit's core scope" + reset,
+		"  7. " + reflect + "Reflection" + reset + dim + "     — verify correctness, refine understanding" + reset,
+	}
 
-` + whiteBold + `Core Development Loop:` + reset + `
-` + gray + `┌───────────────┐    ┌──────┐    ┌───────┐    ┌────────────────┐    ┌────────────┐` + reset + `
-` + gray + `│ ` + spec + `Specification` + reset + gray + ` │ ─▶ │ ` + plan + `Plan` + reset + gray + ` │ ─▶ │ ` + tasks + `Tasks` + reset + gray + ` │ ─▶ │ ` + implement + `Implementation` + reset + gray + ` │ ─▶ │ ` + reflect + `Reflection` + reset + gray + ` │ ─┐` + reset + `
-` + gray + `└───────────────┘    └──────┘    └───────┘    └────────────────┘    └────────────┘  │` + reset + `
-` + gray + `       ▲                                                                            │` + reset + `
-` + gray + `       └────────────────────────────────────────────────────────────────────────────┘` + reset + `
-
-` + whiteBold + `Artifact Pipeline:` + reset + `
-  1. ` + constitution + `Constitution` + reset + dim + `   — strategy, patterns, long-term vision (kept updated)` + reset + `
-  2. ` + spec + `Specification` + reset + dim + `  — what is being built and why` + reset + `
-  3. ` + plan + `Plan` + reset + dim + `           — how it will be built` + reset + `
-  4. ` + tasks + `Tasks` + reset + dim + `          — executable work units` + reset + `
-  5. ` + implement + `Implementation` + reset + dim + ` — execution outside Kit's core scope` + reset + `
-  6. ` + reflect + `Reflection` + reset + dim + `     — verify correctness, refine understanding` + reset
+	return strings.Join(lines, "\n")
 }
 
 var rootCmd = &cobra.Command{
@@ -105,23 +118,22 @@ var commandOrder = map[string]int{
 	// project initialization
 	"init": 1,
 	// core development loop
-	"scaffold":  8,
-	"oneshot":   9,
-	"spec":      10,
-	"plan":      11,
-	"tasks":     12,
-	"implement": 13,
-	"reflect":   14,
-	"complete":  15,
-	"status":    16,
+	"scaffold":   8,
+	"brainstorm": 9,
+	"spec":       10,
+	"plan":       11,
+	"tasks":      12,
+	"implement":  13,
+	"reflect":    14,
+	"complete":   15,
+	"status":     16,
 	// verification and state
 	"check":       20,
 	"rollup":      21,
 	"code-review": 22,
 	// context management
-	"handoff":    30,
-	"summarize":  31,
-	"brainstorm": 33,
+	"handoff":   30,
+	"summarize": 31,
 	// utility
 	"scaffold-agents": 90,
 	"completion":      91,
@@ -185,7 +197,7 @@ func outputPrompt(prompt string, _ bool, copy bool) error {
 
 func printWorkflowInstructions(currentStep string, nextSteps []string) {
 	fmt.Println(whiteBold + "Workflow" + reset)
-	fmt.Println(dim + "Pipeline: spec -> plan -> tasks -> implement -> reflect" + reset)
+	fmt.Println(dim + "Pipeline: [optional brainstorm] -> spec -> plan -> tasks -> implement -> reflect" + reset)
 	fmt.Printf("Current step: %s\n", currentStep)
 	if len(nextSteps) > 0 {
 		fmt.Println("Next steps:")
@@ -195,6 +207,3 @@ func printWorkflowInstructions(currentStep string, nextSteps []string) {
 	}
 	fmt.Println()
 }
-
-// unused but required to avoid "imported and not used" error for strings
-var _ = strings.TrimSpace

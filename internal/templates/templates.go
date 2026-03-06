@@ -1,6 +1,8 @@
 // package templates provides embedded document templates for Kit.
 package templates
 
+import "strings"
+
 // Constitution template per spec section 6.1
 const Constitution = `# CONSTITUTION
 
@@ -18,8 +20,8 @@ const Constitution = `# CONSTITUTION
 
 ### Spec-Driven (Formal)
 
-<!-- use when: new features, kit spec/oneshot, substantial architectural or behavioral changes -->
-<!-- workflow: full artifact pipeline — SPEC.md → PLAN.md → TASKS.md → implement → reflect -->
+<!-- use when: new features, kit brainstorm/kit spec, substantial architectural or behavioral changes -->
+<!-- workflow: optional BRAINSTORM.md → SPEC.md → PLAN.md → TASKS.md → implement → reflect -->
 
 ### Ad Hoc (Lightweight)
 
@@ -41,6 +43,57 @@ const Constitution = `# CONSTITUTION
 
 <!-- TODO: define key terms used throughout the project -->
 `
+
+// BrainstormArtifact template for pre-spec research.
+const BrainstormArtifact = `# BRAINSTORM
+
+## SUMMARY
+
+<!-- TODO: 1-2 sentence summary of the issue, opportunity, and likely direction -->
+
+## USER THESIS
+
+<!-- TODO: capture the user's issue or feature description in their own terms -->
+
+## CODEBASE FINDINGS
+
+<!-- TODO: summarize relevant architecture, patterns, constraints, and related flows -->
+
+## AFFECTED FILES
+
+<!-- TODO: list concrete file paths and why they matter -->
+
+## QUESTIONS
+
+<!-- TODO: list unresolved clarifying questions and unknowns -->
+
+## OPTIONS
+
+<!-- TODO: compare viable strategies and tradeoffs -->
+
+## RECOMMENDED STRATEGY
+
+<!-- TODO: document the preferred direction and why -->
+
+## NEXT STEP
+
+<!-- TODO: state the next workflow step, usually kit spec <feature> -->
+`
+
+// BuildBrainstormArtifact seeds a new brainstorm document with the user's thesis.
+func BuildBrainstormArtifact(userThesis string) string {
+	userThesis = strings.TrimSpace(userThesis)
+	if userThesis == "" {
+		return BrainstormArtifact
+	}
+
+	return strings.Replace(
+		BrainstormArtifact,
+		"<!-- TODO: capture the user's issue or feature description in their own terms -->",
+		userThesis,
+		1,
+	)
+}
 
 // Spec template per spec section 6.2
 const Spec = `# SPEC
@@ -218,6 +271,7 @@ func AgentPointer(agentName string) string {
 
 - Primary authority for repository workflow, constraints, and change policy: ` + "`docs/CONSTITUTION.md`" + `
 - Feature specs live under: ` + "`docs/specs/<feature>/`" + `
+  - ` + "`BRAINSTORM.md`" + ` (optional research)
   - ` + "`SPEC.md`" + ` (requirements)
   - ` + "`PLAN.md`" + ` (implementation plan)
   - ` + "`TASKS.md`" + ` (executable task list)
@@ -226,7 +280,7 @@ func AgentPointer(agentName string) string {
 ## Workflow contract (classification-first)
 
 - Classify every request before acting:
-  - **Spec-driven**: use full pipeline for ` + "`kit spec`" + ` / ` + "`kit oneshot`" + `, new features, or substantial changes
+  - **Spec-driven**: use optional ` + "`kit brainstorm`" + ` + full pipeline for ` + "`kit spec`" + `, new features, or substantial changes
   - **Ad hoc**: use lightweight flow for small fixes, reviews, refinements, and mechanical changes
 - If ad hoc work touches an existing feature in ` + "`docs/specs/<feature>/`" + `, default to updating its spec docs when behavior, requirements, or approach changes
 - For ad hoc changes, update only relevant practical docs (e.g., README/API docs) and avoid creating spec artifacts unless needed
@@ -249,6 +303,7 @@ const AgentsMD = `# AGENTS
 
 - Primary authority for repository workflow, constraints, and change policy: ` + "`docs/CONSTITUTION.md`" + `
 - Feature specs live under: ` + "`docs/specs/<feature>/`" + `
+  - ` + "`BRAINSTORM.md`" + ` (optional research)
   - ` + "`SPEC.md`" + ` (requirements)
   - ` + "`PLAN.md`" + ` (implementation plan)
   - ` + "`TASKS.md`" + ` (executable task list)
@@ -263,7 +318,7 @@ Classify each request before implementation.
 
 Use when any apply:
 
-- request initiated through ` + "`kit spec`" + ` or ` + "`kit oneshot`" + `
+- request initiated through ` + "`kit brainstorm`" + ` or ` + "`kit spec`" + `
 - new feature or capability
 - substantial architectural or behavioral change
 - work touches code with existing feature specs under ` + "`docs/specs/<feature>/`" + `
@@ -271,13 +326,13 @@ Use when any apply:
 
 Required flow:
 
-- follow full artifact pipeline: ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + ` → implementation → reflection
+- follow optional research + artifact pipeline: ` + "`BRAINSTORM.md`" + ` → ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + ` → implementation → reflection
 
 ### 2) Ad Hoc (Lightweight Track)
 
 Use when all apply:
 
-- not initiated through ` + "`kit spec`" + ` or ` + "`kit oneshot`" + `
+- not initiated through ` + "`kit brainstorm`" + ` or ` + "`kit spec`" + `
 - bug fix, security review, refactor, dependency update, config change, or small refinement
 - scope is contained and can be verified directly
 
@@ -320,7 +375,7 @@ If ad hoc work touches a feature with existing specs:
 ### Phase 1: PLAN
 
 - Locate the relevant feature directory in ` + "`docs/specs/<feature>/`" + `
-- Read ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + `
+- Read ` + "`BRAINSTORM.md`" + ` when present, then ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + `
 
 - Ask clarifying questions until requirements, constraints, and success criteria are explicit
   - Clarification questions must be clearly labeled as one of:
@@ -596,36 +651,3 @@ const FeatureSummaryTemplate = `### {{.FeatureName}}
 - **OPEN ITEMS**: {{.OpenItems}}
 - **POINTERS**: ` + "`{{.Path}}/SPEC.md`" + `, ` + "`{{.Path}}/PLAN.md`" + `, ` + "`{{.Path}}/TASKS.md`" + `
 `
-
-// Brainstorm returns a scaffold template for brainstorming sessions.
-func Brainstorm(topic string) string {
-	return `# Brainstorm: ` + topic + `
-
-## Context
-- [What prompted this?]
-- [Who is affected?]
-- [What exists today?]
-
-## Problem Statement
-We are unable to __________ because __________.
-
-## Goals
-- [What must be achieved?]
-- [What constraints exist?]
-
-## Options Considered
-1. **Option A** — [description]
-2. **Option B** — [description]
-3. **Do nothing** — [why this is/isn't viable]
-
-## Open Questions
-- [ ] [Question 1]
-- [ ] [Question 2]
-
-## Decision Criteria
-- [What would make Option X the winner?]
-
-## Next Steps
-- [ ] [Action item]
-`
-}

@@ -68,10 +68,11 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
-	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, feat.Slug)
+	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPath, specPath, planPath, tasksPath, feat.Slug)
 	printWorkflowInstructions("reflect", []string{
 		"if issues remain, return to implement",
 		"if clean, mark reflection complete",
@@ -129,8 +130,9 @@ func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
 }
 
 // buildReflectPrompt builds the unified reflection prompt.
-func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, featureSlug string) string {
+func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPath, specPath, planPath, tasksPath, featureSlug string) string {
 	featureScoped := featureSlug != ""
+	hasBrainstorm := brainstormPath != "" && document.Exists(brainstormPath)
 
 	var sb strings.Builder
 	step := 0
@@ -138,39 +140,32 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, pl
 	section := byte('A')
 	nextSection := func() string { s := string(section); section++; return s }
 
-	// header
 	if featureScoped {
 		sb.WriteString(fmt.Sprintf("## Reflection — Feature: %s\n\n", featureSlug))
 	} else {
 		sb.WriteString("## Reflection\n\n")
 	}
 
-	// goal
 	sb.WriteString(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.\n\nGoal:\n- perform a strict code review of the current change set\n", projectRoot))
 
 	if featureScoped {
 		sb.WriteString("- ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent\n")
-		sb.WriteString(fmt.Sprintf(`
-Context docs (read first):
-- CONSTITUTION: %s
-- PROJECT SUMMARY: %s
-- SPEC: %s
-- PLAN: %s
-- TASKS: %s
-`, constitutionPath, summaryPath, specPath, planPath, tasksPath))
+		sb.WriteString("\nContext docs (read first):\n")
+		sb.WriteString(fmt.Sprintf("- CONSTITUTION: %s\n", constitutionPath))
+		sb.WriteString(fmt.Sprintf("- PROJECT SUMMARY: %s\n", summaryPath))
+		if hasBrainstorm {
+			sb.WriteString(fmt.Sprintf("- BRAINSTORM: %s\n", brainstormPath))
+		}
+		sb.WriteString(fmt.Sprintf("- SPEC: %s\n", specPath))
+		sb.WriteString(fmt.Sprintf("- PLAN: %s\n", planPath))
+		sb.WriteString(fmt.Sprintf("- TASKS: %s\n", tasksPath))
 	} else {
 		sb.WriteString("- ensure changes are correct, minimal, and consistent\n")
-		sb.WriteString(fmt.Sprintf(`
-Context docs (read first):
-- CONSTITUTION: %s
-- PROJECT SUMMARY: %s
-`, constitutionPath, summaryPath))
+		sb.WriteString(fmt.Sprintf("\nContext docs (read first):\n- CONSTITUTION: %s\n- PROJECT SUMMARY: %s\n", constitutionPath, summaryPath))
 	}
 
-	// steps
 	sb.WriteString("\nSteps:\n")
 
-	// snapshot
 	sb.WriteString(fmt.Sprintf(`
 %d) Snapshot the change set (do not skip)
 - git status
@@ -179,7 +174,6 @@ Context docs (read first):
 - git log -n 20 --oneline --decorate
 `, nextStep()))
 
-	// review map
 	sb.WriteString(fmt.Sprintf(`
 %d) Build a review map
 - list changed files
@@ -187,15 +181,15 @@ Context docs (read first):
 - identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
 `, nextStep()))
 
-	// verify correctness against docs
 	if featureScoped {
-		sb.WriteString(fmt.Sprintf(`
-%d) Verify correctness against docs
-- SPEC: ensure requirements + acceptance are fully satisfied
-- PLAN: ensure decisions were followed
-- TASKS: ensure every task marked done is actually done
-- ensure no scope creep
-`, nextStep()))
+		sb.WriteString(fmt.Sprintf("\n%d) Verify correctness against docs\n", nextStep()))
+		if hasBrainstorm {
+			sb.WriteString("- BRAINSTORM: ensure the implementation still aligns with the researched problem framing and identified constraints\n")
+		}
+		sb.WriteString("- SPEC: ensure requirements + acceptance are fully satisfied\n")
+		sb.WriteString("- PLAN: ensure decisions were followed\n")
+		sb.WriteString("- TASKS: ensure every task marked done is actually done\n")
+		sb.WriteString("- ensure no scope creep\n")
 	} else {
 		sb.WriteString(fmt.Sprintf(`
 %d) Verify correctness against docs
@@ -204,7 +198,6 @@ Context docs (read first):
 `, nextStep()))
 	}
 
-	// quality gates
 	sb.WriteString(fmt.Sprintf(`
 %d) Quality gates (hard checks)
 - zero-known-defects gate: do not mark reflection complete until all gates pass with evidence
@@ -222,7 +215,6 @@ Context docs (read first):
 - agent-readability: code optimized for agent understanding and future iteration
 `, nextStep()))
 
-	// correctness checklist
 	if featureScoped {
 		sb.WriteString(fmt.Sprintf(`
 %d) Correctness checklist
@@ -265,7 +257,6 @@ Context docs (read first):
 `, nextStep()))
 	}
 
-	// agent-optimized code
 	sb.WriteString(fmt.Sprintf(`
 %d) Agent-optimized code structure
 Code should be built for agent readability and understanding, enabling both current and future agents to:
@@ -285,7 +276,6 @@ Checks:
 - [ ] Similar patterns use consistent approaches across codebase
 `, nextStep()))
 
-	// cleanliness
 	sb.WriteString(fmt.Sprintf(`
 %d) Cleanliness
 - remove dead code
@@ -295,7 +285,6 @@ Checks:
 - ensure code is written for agent and human understanding
 `, nextStep()))
 
-	// documentation generation (feature-scoped only)
 	if featureScoped {
 		sb.WriteString(fmt.Sprintf(`
 %d) Documentation generation
@@ -305,7 +294,6 @@ Checks:
 `, nextStep()))
 	}
 
-	// final pass
 	sb.WriteString(fmt.Sprintf(`
 %d) Final pass
 - rerun:
@@ -316,7 +304,6 @@ Checks:
 - propose next steps
 `, nextStep()))
 
-	// mark reflection complete
 	if featureScoped {
 		sb.WriteString(fmt.Sprintf(`
 %d) Mark reflection complete
@@ -334,7 +321,6 @@ Checks:
 `, nextStep()))
 	}
 
-	// output format
 	sb.WriteString(fmt.Sprintf(`
 Output format:
 
@@ -344,12 +330,13 @@ Output format:
 `, nextSection()))
 
 	if featureScoped {
-		sb.WriteString(fmt.Sprintf(`
-%s) DOC TRACE
-- SPEC: pass/fail + notes
-- PLAN: pass/fail + notes
-- TASKS: pass/fail + notes
-`, nextSection()))
+		sb.WriteString(fmt.Sprintf("\n%s) DOC TRACE\n", nextSection()))
+		if hasBrainstorm {
+			sb.WriteString("- BRAINSTORM: pass/fail + notes\n")
+		}
+		sb.WriteString("- SPEC: pass/fail + notes\n")
+		sb.WriteString("- PLAN: pass/fail + notes\n")
+		sb.WriteString("- TASKS: pass/fail + notes\n")
 	}
 
 	sb.WriteString(fmt.Sprintf(`

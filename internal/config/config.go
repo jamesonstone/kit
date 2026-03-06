@@ -13,20 +13,12 @@ const ConfigFileName = ".kit.yaml"
 
 // Config represents the .kit.yaml configuration file.
 type Config struct {
-	GoalPercentage   int             `yaml:"goal_percentage"`
-	SpecsDir         string          `yaml:"specs_dir"`
-	ConstitutionPath string          `yaml:"constitution_path"`
-	AllowOutOfOrder  bool            `yaml:"allow_out_of_order"`
-	Agents           []string        `yaml:"agents"`
-	Branching        BranchingConfig `yaml:"branching"`
-	FeatureNaming    FeatureNaming   `yaml:"feature_naming"`
-}
-
-// BranchingConfig defines git branching behavior.
-type BranchingConfig struct {
-	Enabled      bool   `yaml:"enabled"`
-	BaseBranch   string `yaml:"base_branch"`
-	NameTemplate string `yaml:"name_template"`
+	GoalPercentage   int           `yaml:"goal_percentage"`
+	SpecsDir         string        `yaml:"specs_dir"`
+	ConstitutionPath string        `yaml:"constitution_path"`
+	AllowOutOfOrder  bool          `yaml:"allow_out_of_order"`
+	Agents           []string      `yaml:"agents"`
+	FeatureNaming    FeatureNaming `yaml:"feature_naming"`
 }
 
 // FeatureNaming defines how feature directories are named.
@@ -43,11 +35,6 @@ func Default() *Config {
 		ConstitutionPath: "docs/CONSTITUTION.md",
 		AllowOutOfOrder:  false,
 		Agents:           []string{"AGENTS.md", "CLAUDE.md"},
-		Branching: BranchingConfig{
-			Enabled:      true,
-			BaseBranch:   "main",
-			NameTemplate: "{numeric}-{slug}",
-		},
 		FeatureNaming: FeatureNaming{
 			NumericWidth: 4,
 			Separator:    "-",

@@ -120,11 +120,12 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	fmt.Printf("\nNext steps:\n")
 	fmt.Printf("  1. Edit %s to define the implementation approach\n", planPath)
 	fmt.Printf("  2. Run 'kit tasks %s' to create executable tasks\n", feat.Slug)
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 
 	if warpMode {
-		outputWarpPlanPrompt(planPath, specPath, feat, cfg, outputOnly)
+		outputWarpPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
 	} else {
-		outputStandardPlanPrompt(planPath, specPath, feat, cfg, outputOnly)
+		outputStandardPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
 	}
 
 	return nil
@@ -175,31 +176,44 @@ func selectFeatureForPlan(specsDir string) (*feature.Feature, error) {
 }
 
 // outputStandardPlanPrompt outputs the standard coding agent prompt.
-func outputStandardPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) {
+func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) {
 	projectRoot, _ := config.FindProjectRoot()
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
+	hasBrainstorm := document.Exists(brainstormPath)
 
-	prompt := fmt.Sprintf(`Please review and complete the implementation plan.
+	var sb strings.Builder
+	sb.WriteString("Please review and complete the implementation plan.\n\n")
+	sb.WriteString("## File References\n")
+	sb.WriteString("| Document | Path |\n")
+	sb.WriteString("|----------|------|\n")
+	sb.WriteString(fmt.Sprintf("| CONSTITUTION | %s |\n", constitutionPath))
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("| BRAINSTORM | %s |\n", brainstormPath))
+	}
+	sb.WriteString(fmt.Sprintf("| SPEC | %s |\n", specPath))
+	sb.WriteString(fmt.Sprintf("| PLAN | %s |\n", planPath))
+	sb.WriteString(fmt.Sprintf("| Feature | %s |\n", feat.Slug))
+	sb.WriteString(fmt.Sprintf("| Project Root | %s |\n\n", projectRoot))
 
-## File References
-| Document | Path |
-|----------|------|
-| CONSTITUTION | %s |
-| SPEC | %s |
-| PLAN | %s |
-| Feature | %s |
-| Project Root | %s |
+	sb.WriteString("Your task:\n")
+	sb.WriteString(fmt.Sprintf("1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles\n", constitutionPath))
+	step := 2
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("%d. Read BRAINSTORM.md (file: %s) for upstream research context\n", step, brainstormPath))
+		step++
+	}
+	sb.WriteString(fmt.Sprintf("%d. Read SPEC.md (file: %s) fully and treat it as a fixed contract\n", step, specPath))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Review the PLAN.md (file: %s) template and required sections\n", step, planPath))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Identify any missing design decisions required for execution\n", step))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Ask focused clarification questions until decisions can be made\n", step))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Commit to concrete design decisions that make execution unambiguous\n\n", step))
 
-Your task:
-1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles
-2. Read SPEC.md (file: %s) fully and treat it as a fixed contract
-3. Review the PLAN.md (file: %s) template and required sections
-4. Identify any missing design decisions required for execution
-5. Ask focused clarification questions until decisions can be made
-6. Commit to concrete design decisions that make execution unambiguous
-
-After each batch of questions:
+	sb.WriteString(fmt.Sprintf(`After each batch of questions:
 - state your current understanding percentage of the implementation plan
 - do NOT proceed to writing or updating PLAN.md until understanding >= %d%%
 
@@ -235,6 +249,7 @@ For each section, write only what is required to enable clear task breakdown:
 
 Rules:
 - focus on HOW, not WHAT
+- use BRAINSTORM.md as research context only; SPEC.md remains the binding contract
 - do not restate requirements
 - do not introduce new scope beyond SPEC.md
 - do not write tasks
@@ -245,7 +260,9 @@ Rules:
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
-|`, constitutionPath, specPath, planPath, feat.Slug, projectRoot, constitutionPath, specPath, planPath, goalPct)
+`, goalPct))
+
+	prompt := sb.String()
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	if planCopy {
@@ -264,47 +281,54 @@ The output of PLAN.md must make TASKS.md obvious and deterministic.
 }
 
 // outputWarpPlanPrompt outputs a prompt for Warp coding agent to fill PLAN.md from Warp plan.
-func outputWarpPlanPrompt(planPath, specPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) {
+func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) {
 	projectRoot, _ := config.FindProjectRoot()
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
+	hasBrainstorm := document.Exists(brainstormPath)
 
-	prompt := fmt.Sprintf(`I have created a Warp plan for the feature: %s
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("I have created a Warp plan for the feature: %s\n\n", feat.Slug))
+	sb.WriteString("## File References\n")
+	sb.WriteString("| Document | Path |\n")
+	sb.WriteString("|----------|------|\n")
+	sb.WriteString(fmt.Sprintf("| CONSTITUTION | %s |\n", constitutionPath))
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("| BRAINSTORM | %s |\n", brainstormPath))
+	}
+	sb.WriteString(fmt.Sprintf("| SPEC | %s |\n", specPath))
+	sb.WriteString(fmt.Sprintf("| PLAN | %s |\n", planPath))
+	sb.WriteString(fmt.Sprintf("| Project Root | %s |\n\n", projectRoot))
 
-## File References
-| Document | Path |
-|----------|------|
-| CONSTITUTION | %s |
-| SPEC | %s |
-| PLAN | %s |
-| Project Root | %s |
-
-Please take the Warp plan you just generated and use it to fill out the PLAN.md document at:
-%s
-
-Your task:
-1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles
-2. Read the Warp plan you created and extract the key design decisions
-3. Read SPEC.md (file: %s) to ensure alignment with requirements
-4. Fill out each section of PLAN.md (file: %s), adding implementation details beyond what's in the Warp plan:
-
-   - SUMMARY: one-paragraph overview (expand from Warp plan's high-level description)
-   - APPROACH: detailed strategy and tradeoff decisions
-   - COMPONENTS: logical modules with clear responsibility boundaries
-   - DATA: data shapes, structures, and storage decisions
-   - INTERFACES: commands, inputs, outputs, side effects
-   - RISKS: technical risks with mitigation strategies
-   - TESTING: validation strategy and test types
-
-5. Ensure PLAN.md has MORE detail than the Warp plan — it should make task breakdown obvious
-6. Ask clarifying questions if any design decisions are ambiguous
-
-After completing PLAN.md:
+	sb.WriteString(fmt.Sprintf("Please take the Warp plan you just generated and use it to fill out the PLAN.md document at:\n%s\n\n", planPath))
+	sb.WriteString("Your task:\n")
+	sb.WriteString(fmt.Sprintf("1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles\n", constitutionPath))
+	step := 2
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("%d. Read BRAINSTORM.md (file: %s) for upstream research context\n", step, brainstormPath))
+		step++
+	}
+	sb.WriteString(fmt.Sprintf("%d. Read the Warp plan you created and extract the key design decisions\n", step))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Read SPEC.md (file: %s) to ensure alignment with requirements\n", step, specPath))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Fill out each section of PLAN.md (file: %s), adding implementation details beyond what's in the Warp plan:\n\n", step, planPath))
+	sb.WriteString("   - SUMMARY: one-paragraph overview (expand from Warp plan's high-level description)\n")
+	sb.WriteString("   - APPROACH: detailed strategy and tradeoff decisions\n")
+	sb.WriteString("   - COMPONENTS: logical modules with clear responsibility boundaries\n")
+	sb.WriteString("   - DATA: data shapes, structures, and storage decisions\n")
+	sb.WriteString("   - INTERFACES: commands, inputs, outputs, side effects\n")
+	sb.WriteString("   - RISKS: technical risks with mitigation strategies\n")
+	sb.WriteString("   - TESTING: validation strategy and test types\n\n")
+	sb.WriteString(fmt.Sprintf("%d. Ensure PLAN.md has MORE detail than the Warp plan — it should make task breakdown obvious\n", step+1))
+	sb.WriteString(fmt.Sprintf("%d. Ask clarifying questions if any design decisions are ambiguous\n\n", step+2))
+	sb.WriteString(fmt.Sprintf(`After completing PLAN.md:
 - state your confidence level that TASKS.md can be derived unambiguously
 - aim for >= %d%% confidence before considering PLAN.md complete
 
 Rules:
 - focus on HOW, not WHAT (SPEC covers WHAT)
+- use BRAINSTORM.md as research context only; SPEC.md remains the binding contract
 - do not restate requirements verbatim
 - do not introduce new scope beyond the Warp plan and SPEC.md
 - keep language dense and factual
@@ -313,7 +337,9 @@ Rules:
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
-|`, feat.Slug, constitutionPath, specPath, planPath, projectRoot, planPath, constitutionPath, specPath, planPath, goalPct)
+`, goalPct))
+
+	prompt := sb.String()
 
 	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
 	fmt.Println(whiteBold + "📋 Warp Plan Integration" + reset)
