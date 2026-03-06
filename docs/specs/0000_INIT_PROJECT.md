@@ -490,7 +490,7 @@ Purpose:
 
 - output instructions for reflecting on recent changes
 - ensure 100% implementation correctness
-- verify changes using git and user-provided CodeRabbit findings
+- verify changes using git, lint, and tests
 
 Behavior:
 
@@ -503,7 +503,7 @@ Reflection Process:
 2. understand the delta and intent of each change
 3. cross-reference with repository context and codebase
 4. verify correctness checklist (compiles, no errors, edge cases handled)
-5. ask the user to run CodeRabbit in prompt-only mode, then fix any blocking issues
+5. run lint and tests, then fix ALL failures (including out-of-scope failures) before completion
 
 ---
 

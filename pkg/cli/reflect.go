@@ -26,31 +26,23 @@ implementation correctness.
 When a feature is specified, instructions are scoped to that feature's context.
 Without a feature argument, shows an interactive selection of features
 that have SPEC.md, PLAN.md, and TASKS.md.
-
-The reflection process uses git to analyze changes and can incorporate
-user-provided CodeRabbit findings for additional validation.`,
+The reflection process uses git, lint, and tests to enforce a clean, working state.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runReflect,
 }
 
 func init() {
-	reflectCmd.Flags().Bool("no-coderabbit", false, "skip CodeRabbit config creation and instructions")
 	reflectCmd.Flags().BoolVar(&reflectCopy, "copy", false, "copy agent prompt to clipboard")
 	reflectCmd.Flags().BoolVar(&reflectOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
 	rootCmd.AddCommand(reflectCmd)
 }
 
 func runReflect(cmd *cobra.Command, args []string) error {
-	noCodeRabbit, _ := cmd.Flags().GetBool("no-coderabbit")
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
 		return err
-	}
-
-	if !noCodeRabbit {
-		ensureCodeRabbitConfig(projectRoot)
 	}
 	cfg, err := config.Load(projectRoot)
 	if err != nil {
@@ -79,7 +71,7 @@ func runReflect(cmd *cobra.Command, args []string) error {
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
-	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, feat.Slug, noCodeRabbit)
+	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, feat.Slug)
 	printWorkflowInstructions("reflect", []string{
 		"if issues remain, return to implement",
 		"if clean, mark reflection complete",
@@ -137,7 +129,7 @@ func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
 }
 
 // buildReflectPrompt builds the unified reflection prompt.
-func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, featureSlug string, noCodeRabbit bool) string {
+func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, planPath, tasksPath, featureSlug string) string {
 	featureScoped := featureSlug != ""
 
 	var sb strings.Builder
@@ -154,11 +146,7 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, specPath, pl
 	}
 
 	// goal
-	goalExtra := ""
-	if !noCodeRabbit {
-		goalExtra = "\n- ask the user to run CodeRabbit in prompt-only mode and address all blocking findings"
-	}
-	sb.WriteString(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.\n\nGoal:\n- perform a strict code review of the current change set%s\n", projectRoot, goalExtra))
+	sb.WriteString(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.\n\nGoal:\n- perform a strict code review of the current change set\n", projectRoot))
 
 	if featureScoped {
 		sb.WriteString("- ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent\n")
@@ -199,21 +187,6 @@ Context docs (read first):
 - identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
 `, nextStep()))
 
-	// coderabbit (optional)
-	if !noCodeRabbit {
-		sb.WriteString(fmt.Sprintf(`
-%d) Request CodeRabbit findings (prompt-only mode)
-- ask the user to run CodeRabbit in prompt-only mode and share the output
-- do not execute CodeRabbit directly from the agent
-- treat the provided output as review findings, but filter aggressively:
-  - fix ONLY major/blocking issues: security vulnerabilities, runtime errors, correctness bugs
-  - ignore: style preferences, linting suggestions, minor improvements
-  - ignore: code-golf, performance micro-optimizations that don't affect critical paths
-  - do not accept changes just to appease linters if they don't improve code safety or correctness
-- if you disagree with a finding or it's not blocking, document why in a short bullet under REFLECTION NOTES (below)
-`, nextStep()))
-	}
-
 	// verify correctness against docs
 	if featureScoped {
 		sb.WriteString(fmt.Sprintf(`
@@ -236,6 +209,7 @@ Context docs (read first):
 %d) Quality gates (hard checks)
 - zero-known-defects gate: do not mark reflection complete until all gates pass with evidence
 - required evidence gates: unresolved assumptions = 0; acceptance criteria mapped 1:1 to outputs; build/compile succeeds; lint/typecheck/test failures = 0; unrelated diff scope = 0
+- lint + tests are absolute gates: fix ALL failures before completion, including pre-existing and out-of-scope failures
 - if any gate fails: stop, report the exact failure, and propose the next fix
 - correctness: no panics, no silent failures
 - errors: wrapped/propagated with context, no swallowed errors
@@ -268,6 +242,7 @@ Context docs (read first):
 - [ ] Tests cover happy path, error cases, and edge cases
 - [ ] Tests validate the implementation, not just pass trivially
 - [ ] Test names clearly describe what is being tested
+- [ ] All lint and test failures are fixed, including failures outside the feature scope
 - [ ] Code is written for agent readability and future iteration
 `, nextStep()))
 	} else {
@@ -285,6 +260,7 @@ Context docs (read first):
 - [ ] Style matches project conventions
 - [ ] Tests added/updated for all completed work
 - [ ] Tests cover happy path, error cases, and edge cases
+- [ ] All lint and test failures are fixed, including failures outside the immediate scope
 - [ ] Code is written for agent readability
 `, nextStep()))
 	}
@@ -367,14 +343,6 @@ Output format:
 - key diffs: <tight bullets>
 `, nextSection()))
 
-	if !noCodeRabbit {
-		sb.WriteString(fmt.Sprintf(`
-%s) CODERABBIT FINDINGS
-- accepted + fixed: <list>
-- rejected: <list with reason>
-`, nextSection()))
-	}
-
 	if featureScoped {
 		sb.WriteString(fmt.Sprintf(`
 %s) DOC TRACE
@@ -398,37 +366,4 @@ Rules:
 `, nextSection()))
 
 	return sb.String()
-}
-
-// ensureCodeRabbitConfig creates .coderabbit.yaml if it doesn't exist.
-func ensureCodeRabbitConfig(projectRoot string) {
-	configPath := filepath.Join(projectRoot, ".coderabbit.yaml")
-	if _, err := os.Stat(configPath); err == nil {
-		// file exists, nothing to do
-		return
-	}
-
-	const coderabbitConfig = `# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
-language: "en-US"
-reviews:
-  profile: "assertive"
-  high_level_summary: true
-  collapse_walkthrough: true
-  path_filters:
-    - "!docs/**"
-    - "!.specify/**"
-    - "!**/*.md"
-    - "!**/mock-data/**"
-  auto_review:
-    enabled: true
-    drafts: true
-chat:
-  auto_reply: true
-`
-
-	if err := os.WriteFile(configPath, []byte(coderabbitConfig), 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "warning: could not create .coderabbit.yaml: %v\n", err)
-		return
-	}
-	fmt.Printf("%s✓ Created .coderabbit.yaml%s\n", plan, reset)
 }

@@ -107,17 +107,17 @@ If ad hoc work touches a feature with existing specs:
 - Verify using tests and validation steps defined in the plan
 - Confirm correctness, edge cases, and failure handling
 - Ensure code is formatted, linted, and tested
+- Fix all lint and test failures before completion, including failures outside the immediate scope
 - Review changes using `git diff` against the approved plan
 - If implementation diverges from specs:
   - update `SPEC.md` / `PLAN.md` / `TASKS.md` first
   - then update code
 
 ---
+## Quality gate policy
 
-## Tooling policy
-
-- Do not run CodeRabbit yourself.
-- Ask the user to run CodeRabbit in prompt-only mode when review findings are needed.
+- Always leave the project in a working state.
+- Fix all lint and test failures before completion, including failures outside the immediate scope.
 - Wait for the user's output before triaging or fixing findings.
 
 ---

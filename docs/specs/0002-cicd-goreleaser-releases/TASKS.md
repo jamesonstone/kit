@@ -9,7 +9,7 @@
 - [x] Reflect on implementation and identify workflow trigger bug.
 - [x] Fix workflow chaining by publishing release from `main` workflow after tag creation.
 - [x] Add semantic-tag validation to manual tag release workflow.
-- [x] Request CodeRabbit prompt-only findings from the user and address reflection findings with workflow comments.
+- [x] Run reflection review and address findings with workflow comments.
 - [x] Verify end-to-end workflow execution on next push to `main`.
 
 ## DEPENDENCIES
