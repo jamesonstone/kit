@@ -18,7 +18,7 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"/plan",
 		"You are in planning mode for feature: **sample-feature**",
 		"Do NOT implement code, write production changes, or move into execution",
-		"continue asking clarifying questions until you reach >= 95% understanding",
+		"Continue asking clarifying questions until you reach >= 95% understanding",
 		"planning only — no implementation",
 		"kit spec sample-feature",
 		"/tmp/docs/specs/0001-sample/BRAINSTORM.md",

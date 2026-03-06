@@ -135,6 +135,7 @@ var commandOrder = map[string]int{
 	"handoff":   30,
 	"summarize": 31,
 	// utility
+	"version":         89,
 	"scaffold-agents": 90,
 	"completion":      91,
 	"help":            92,

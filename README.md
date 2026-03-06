@@ -91,6 +91,7 @@ kit status
 
 | Command               | Description                                      |
 | --------------------- | ------------------------------------------------ |
+| `kit version`         | Print the installed Kit version                  |
 | `kit agentsmd`        | Create or overwrite AGENTS.md with full template |
 | `kit scaffold-agents` | Create or update agent pointer files             |
 | `kit completion`      | Generate shell autocompletion script             |
