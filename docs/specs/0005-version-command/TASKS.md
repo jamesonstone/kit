@@ -2,12 +2,12 @@
 
 ## PROGRESS TABLE
 
-| ID | TASK | STATUS | OWNER | DEPENDENCIES |
-| -- | ---- | ------ | ----- | ------------ |
-| T001 | Add version command spec docs | done | agent | |
-| T002 | Implement `kit version` command | done | agent | T001 |
-| T003 | Update help and README surfaces | done | agent | T002 |
-| T004 | Add tests and run verification | done | agent | T002, T003 |
+| ID   | TASK                            | STATUS | OWNER | DEPENDENCIES |
+| ---- | ------------------------------- | ------ | ----- | ------------ |
+| T001 | Add version command spec docs   | done   | agent |              |
+| T002 | Implement `kit version` command | done   | agent | T001         |
+| T003 | Update help and README surfaces | done   | agent | T002         |
+| T004 | Add tests and run verification  | done   | agent | T002, T003   |
 
 ## TASK LIST
 
@@ -47,9 +47,11 @@ Use markdown checkboxes to track completion:
 - **GOAL**: Expose the command in user-facing help and docs
 - **SCOPE**:
   - update root command ordering
+  - update local build metadata defaults if needed
   - update README command documentation
 - **ACCEPTANCE**:
   - root help includes `version`
+  - local Makefile builds do not report a stale hard-coded version
   - README lists `kit version`
 - **NOTES**: keep wording short and script-friendly
 

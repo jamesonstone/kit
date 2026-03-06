@@ -4,6 +4,7 @@
 
 - Add a dedicated `pkg/cli/version.go` command that prints the effective installed version to `stdout`.
 - Register it on the root CLI, place it in command ordering, and document it in README.
+- Correct the local Makefile build/install path so linker-injected versions default to the latest semantic Git tag.
 
 ## APPROACH
 
@@ -15,6 +16,7 @@
 
 - `pkg/cli/version.go`: new command definition and runtime output.
 - `pkg/cli/root.go`: help ordering so `version` appears in root command listings.
+- `Makefile`: default `VERSION` derivation for local build/install flows.
 - `README.md`: command table update.
 - `pkg/cli/version_test.go`: regression coverage for output behavior.
 
@@ -38,3 +40,4 @@
 - Add tests for linker-version precedence, build-info fallback, and command stdout.
 - Run `go test ./...`.
 - Run `kit version` manually to confirm CLI behavior.
+- Run `make build && ./bin/kit version` to confirm local tagged builds report the expected semantic version.

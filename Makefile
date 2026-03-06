@@ -1,7 +1,7 @@
 .PHONY: build test lint fmt vet clean install
 
 BINARY_NAME=kit
-VERSION?=0.1.0
+VERSION?=$(shell git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo dev)
 LDFLAGS=-ldflags "-X github.com/jamesonstone/kit/pkg/cli.Version=$(VERSION)"
 
 build:

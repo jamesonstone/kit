@@ -17,6 +17,7 @@
 - Print the installed Kit version to stdout with a stable format.
 - Reuse the existing linker-injected version source of truth.
 - Reuse the existing linker-injected version source of truth with a fallback for module-installed binaries.
+- Ensure local `make build` and `make install` flows do not bake a stale hard-coded semantic version into the binary.
 - Keep the command lightweight with no filesystem or network requirements.
 - Surface the command in CLI help and README command listings.
 
@@ -41,6 +42,7 @@
 - The command must read from the same `pkg/cli.Version` value used by existing build and release flows.
 - The command must prefer the existing `pkg/cli.Version` value used by build and release flows.
 - If the linker version is empty or `dev`, the command must fall back to Go build info when a module version is available.
+- Local Makefile-driven builds must derive their default semantic version from the latest matching Git tag rather than a fixed literal.
 - The command must exit successfully for both release builds and non-release builds such as `dev`.
 - The command must appear in root help output and command ordering.
 - Public documentation must mention the new command.
@@ -49,6 +51,7 @@
 
 - Running `kit version` on an installed release prints the installed version string and exits with status `0`.
 - Running `kit version` on a binary installed via `go install ...@latest` prints the module version when available.
+- Running a local `make build` or `make install` from a tagged repository produces a binary whose `kit version` matches the latest semantic tag by default.
 - Running `kit version` on a local development build prints the current build version identifier and exits with status `0`.
 - Root help output includes `version` in the available commands list.
 - README command documentation includes `kit version`.
