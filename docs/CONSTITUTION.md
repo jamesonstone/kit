@@ -125,6 +125,14 @@ Use when ANY of these apply:
 
 **Workflow**: Optional research + artifact pipeline — BRAINSTORM.md → SPEC.md → PLAN.md → TASKS.md → implement → reflect
 
+**Clarification protocol for formal planning phases**:
+
+- Ask in numbered batches of up to 10 questions with a recommended default for each question
+- `yes` / `y` approves all recommended defaults in the current batch
+- `yes 3, 4, 5` / `y 3, 4, 5` approves only those numbered defaults
+- `no 2: <answer>` / `n 2: <answer>` overrides a numbered default
+- `no` / `n` rejects the full batch and requires explicit replacements before proceeding
+
 ### Ad Hoc (Lightweight)
 
 Use when ALL of these apply:

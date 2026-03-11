@@ -64,6 +64,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - output a `/plan` prompt for a coding agent
 - `kit spec`, `kit plan`, `kit tasks`, `kit implement`, `kit reflect`
   - include `BRAINSTORM.md` in file references and instructions when present
+  - preserve shared clarification-loop approval semantics when the `>=95%` understanding workflow is active
 - `kit status`
   - display brainstorm-only features correctly
 - help/README/constitution/agent templates
@@ -84,7 +85,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 ## TESTING
 
 - unit tests for brainstorm phase detection and ordering
-- unit tests for brainstorm prompt generation, including `/plan` prefix plus numbered-list and percentage-progress clarification requirements
+- unit tests for brainstorm prompt generation, including `/plan` prefix plus numbered-list, approval-syntax, and percentage-progress clarification requirements
 - unit tests for brainstorm-aware next-step/status behavior
 - repository-wide search verification for removed `oneshot` and branching references
 - full `go test ./...`

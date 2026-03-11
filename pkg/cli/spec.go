@@ -397,26 +397,39 @@ func outputCompiledPrompt(specPath, brainstormPath, featureSlug, projectRoot str
 	questionStart := step + 1
 
 	if hasContext {
-		sb.WriteString(fmt.Sprintf(`%d. **IMMEDIATELY write all context above into the SPEC.md file at %s** — do NOT ask questions before doing this
-%d. Ask clarifying questions until you reach ≥%d%% confidence that you understand the problem and desired solution
-%d. Use numbered lists
-%d. Ask questions in batches of up to 10
-%d. For every question, include your current best proposed solution or assumption
-%d. State uncertainties
-%d. After each batch of up to 10 questions, output your current percentage understanding so the user can see progress
-%d. Reassess, save your updates to %s, and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution
-%d. Continue refining each section of SPEC.md as you learn more:
-`, questionStart, specPath, questionStart+1, goalPct, questionStart+2, questionStart+3, questionStart+4, questionStart+5, questionStart+6, questionStart+7, specPath, questionStart+8))
+		sb.WriteString(fmt.Sprintf(
+			"%d. **IMMEDIATELY write all context above into the SPEC.md file at %s** — do NOT ask questions before doing this\n",
+			questionStart,
+			specPath,
+		))
+		questionStart++
+	}
+
+	questionStart = appendNumberedSteps(
+		&sb,
+		questionStart,
+		clarificationLoopSteps(
+			goalPct,
+			fmt.Sprintf(
+				"Reassess, save your updates to %s, and continue with additional "+
+					"batches of up to 10 questions until the specification is precise "+
+					"enough to produce a correct, production-quality solution",
+				specPath,
+			),
+		),
+	)
+
+	if hasContext {
+		sb.WriteString(fmt.Sprintf(
+			"%d. Continue refining each section of SPEC.md as you learn more:\n",
+			questionStart,
+		))
 	} else {
-		sb.WriteString(fmt.Sprintf(`%d. Ask clarifying questions until you reach ≥%d%% confidence that you understand the problem and desired solution
-%d. Use numbered lists
-%d. Ask questions in batches of up to 10
-%d. For every question, include your current best proposed solution or assumption
-%d. State uncertainties
-%d. After each batch of up to 10 questions, output your current percentage understanding so the user can see progress
-%d. Reassess, save your updates to %s, and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution
-%d. **Write your findings directly to %s** as you fill in each section:
-`, questionStart, goalPct, questionStart+1, questionStart+2, questionStart+3, questionStart+4, questionStart+5, questionStart+6, specPath, questionStart+7, specPath))
+		sb.WriteString(fmt.Sprintf(
+			"%d. **Write your findings directly to %s** as you fill in each section:\n",
+			questionStart,
+			specPath,
+		))
 	}
 
 	if hasBrainstorm {
@@ -518,26 +531,44 @@ func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, 
 		sb.WriteString("3. Read the SPEC.md template and understand the required sections\n")
 		sb.WriteString(fmt.Sprintf("4. Analyze the codebase at %s to understand existing patterns\n", projectRoot))
 		sb.WriteString("5. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions\n")
-		sb.WriteString(fmt.Sprintf("6. Ask clarifying questions until you reach ≥%d%% confidence that you understand the problem and desired solution\n", goalPct))
-		sb.WriteString("7. Use numbered lists\n")
-		sb.WriteString("8. Ask questions in batches of up to 10\n")
-		sb.WriteString("9. For every question, include your current best proposed solution or assumption\n")
-		sb.WriteString("10. State uncertainties\n")
-		sb.WriteString("11. After each batch of up to 10 questions, output your current percentage understanding so the user can see progress\n")
-		sb.WriteString(fmt.Sprintf("12. Reassess, save your updates to %s, and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution\n", specPath))
-		sb.WriteString("13. Continue refining each section of SPEC.md as you learn more:\n")
+		nextStep := appendNumberedSteps(
+			&sb,
+			6,
+			clarificationLoopSteps(
+				goalPct,
+				fmt.Sprintf(
+					"Reassess, save your updates to %s, and continue with additional "+
+						"batches of up to 10 questions until the specification is precise "+
+						"enough to produce a correct, production-quality solution",
+					specPath,
+				),
+			),
+		)
+		sb.WriteString(fmt.Sprintf(
+			"%d. Continue refining each section of SPEC.md as you learn more:\n",
+			nextStep,
+		))
 	} else {
 		sb.WriteString("2. Read the SPEC.md template and understand the required sections\n")
 		sb.WriteString(fmt.Sprintf("3. Analyze the codebase at %s to understand existing patterns\n", projectRoot))
 		sb.WriteString("4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions\n")
-		sb.WriteString(fmt.Sprintf("5. Ask clarifying questions until you reach ≥%d%% confidence that you understand the problem and desired solution\n", goalPct))
-		sb.WriteString("6. Use numbered lists\n")
-		sb.WriteString("7. Ask questions in batches of up to 10\n")
-		sb.WriteString("8. For every question, include your current best proposed solution or assumption\n")
-		sb.WriteString("9. State uncertainties\n")
-		sb.WriteString("10. After each batch of up to 10 questions, output your current percentage understanding so the user can see progress\n")
-		sb.WriteString(fmt.Sprintf("11. Reassess, save your updates to %s, and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution\n", specPath))
-		sb.WriteString("12. Continue refining each section of SPEC.md as you learn more:\n")
+		nextStep := appendNumberedSteps(
+			&sb,
+			5,
+			clarificationLoopSteps(
+				goalPct,
+				fmt.Sprintf(
+					"Reassess, save your updates to %s, and continue with additional "+
+						"batches of up to 10 questions until the specification is precise "+
+						"enough to produce a correct, production-quality solution",
+					specPath,
+				),
+			),
+		)
+		sb.WriteString(fmt.Sprintf(
+			"%d. Continue refining each section of SPEC.md as you learn more:\n",
+			nextStep,
+		))
 	}
 
 	sb.WriteString(fmt.Sprintf(`   - PROBLEM: What problem does this feature solve?

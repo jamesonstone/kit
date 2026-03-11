@@ -14,9 +14,10 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - create `BRAINSTORM.md` as an optional first-class feature artifact
 - make `kit brainstorm` interactive by default with two inputs: feature name and user thesis
 - emit a planning-only prompt that begins with `/plan`
-- require the coding agent to use numbered lists, ask clarifying questions in batches of up to 10, include assumptions and uncertainties, show percentage-understanding progress after each batch, and continue until the specification is precise enough for a production-quality solution
+- require the coding agent to use numbered lists, ask clarifying questions in batches of up to 10, include a recommended default/proposed solution/assumption for every question, accept `yes` / `y` as full-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` as numbered approval, support `no` / `n` overrides, show percentage-understanding progress after each batch, and continue until the specification is precise enough for a production-quality solution
 - require the coding agent to persist findings to `BRAINSTORM.md`
 - reference `BRAINSTORM.md` from `spec`, `plan`, `tasks`, `implement`, and `reflect` when present
+- require downstream prompts that use the `>=95%` clarification loop to preserve the same approval semantics across `spec`, `plan`, and `tasks`
 - remove `kit oneshot` from code, docs, and help output
 - remove git branch automation from commands, config, and docs
 - show `brainstorm` as an optional pre-spec phase in visible workflow messaging
@@ -55,9 +56,9 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 
 - running `kit brainstorm` interactively creates `docs/specs/<n>-<slug>/BRAINSTORM.md`
 - the brainstorm prompt begins with `/plan`
-- the brainstorm prompt instructs the agent to research the full codebase, avoid implementation, and use numbered batched clarification with assumptions, uncertainties, and visible percentage-understanding progress until the specification is precise enough for a production-quality solution
+- the brainstorm prompt instructs the agent to research the full codebase, avoid implementation, and use numbered batched clarification with recommended defaults, `yes` / `y` whole-batch approval, `yes 3, 4, 5` / `y 3, 4, 5` numbered approval, `no` / `n` overrides, uncertainties, and visible percentage-understanding progress until the specification is precise enough for a production-quality solution
 - `kit status` shows brainstorm-only features without mislabeling them as `spec`
-- `kit spec`, `kit plan`, `kit tasks`, `kit implement`, and `kit reflect` reference `BRAINSTORM.md` when present
+- `kit spec`, `kit plan`, and `kit tasks` preserve the same clarification-loop approval semantics, and `kit implement` plus `kit reflect` reference `BRAINSTORM.md` when present
 - `kit oneshot` is no longer available from the CLI or help output
 - repository config and docs contain no active branch automation guidance
 - help text and README show brainstorming as an optional pre-spec phase

@@ -59,7 +59,7 @@ Use markdown checkboxes to track completion:
   - output a `/plan` prompt with planning-only instructions
 - **ACCEPTANCE**:
   - prompt starts with `/plan`
-  - prompt instructs the coding agent to avoid implementation and use numbered batched clarification with assumptions, uncertainties, and percentage-understanding progress until the specification is precise enough for a production-quality solution
+  - prompt instructs the coding agent to avoid implementation and use numbered batched clarification with recommended defaults, `yes` / `y` whole-batch approval, `yes 3, 4, 5` / `y 3, 4, 5` numbered approval, `no` / `n` overrides, uncertainties, and percentage-understanding progress until the specification is precise enough for a production-quality solution
   - `BRAINSTORM.md` is the persistence target
 - **NOTES**: [PLAN-INTERFACES], [PLAN-APPROACH]
 
@@ -71,6 +71,7 @@ Use markdown checkboxes to track completion:
   - keep `BRAINSTORM.md` optional
 - **ACCEPTANCE**:
   - prompts include `BRAINSTORM.md` file references and guidance when present
+  - prompts that use the `>=95%` clarification loop preserve the shared approval semantics across `spec`, `plan`, and `tasks`
   - commands still function when `BRAINSTORM.md` is absent
 - **NOTES**: [PLAN-COMPONENTS], [PLAN-INTERFACES]
 
@@ -103,7 +104,7 @@ Use markdown checkboxes to track completion:
 - **SCOPE**:
   - add/update tests
   - run `go test ./...`
-  - search for stale `oneshot` and branch references
+  - search for stale `oneshot`, branch, and outdated clarification-loop references
 - **ACCEPTANCE**:
   - tests pass
   - targeted regressions are covered by tests

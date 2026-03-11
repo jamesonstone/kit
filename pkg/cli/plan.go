@@ -217,20 +217,16 @@ func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *f
 	step++
 	sb.WriteString(fmt.Sprintf("%d. Identify any missing design decisions required for execution\n", step))
 	step++
-	sb.WriteString(fmt.Sprintf("%d. Ask clarifying questions until you reach ≥%d%% confidence that you understand the problem and desired solution\n", step, goalPct))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Use numbered lists\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Ask questions in batches of up to 10\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. For every question, include your current best proposed solution or assumption\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. State uncertainties\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. After each batch of up to 10 questions, output your current percentage understanding so the user can see progress\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Reassess and continue with additional batches of up to 10 questions until the plan is precise enough to produce a correct, production-quality implementation\n", step))
-	step++
+	step = appendNumberedSteps(
+		&sb,
+		step,
+		clarificationLoopSteps(
+			goalPct,
+			"Reassess and continue with additional batches of up to 10 questions "+
+				"until the plan is precise enough to produce a correct, "+
+				"production-quality implementation",
+		),
+	)
 	sb.WriteString(fmt.Sprintf("%d. Commit to concrete design decisions that make execution unambiguous\n\n", step))
 
 	sb.WriteString(fmt.Sprintf(`Before you write or update PLAN.md:
@@ -332,13 +328,17 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 	sb.WriteString("   - RISKS: technical risks with mitigation strategies\n")
 	sb.WriteString("   - TESTING: validation strategy and test types\n\n")
 	sb.WriteString(fmt.Sprintf("%d. Ensure PLAN.md has MORE detail than the Warp plan — it should make task breakdown obvious\n", step+1))
-	sb.WriteString(fmt.Sprintf("%d. Ask clarifying questions until you reach ≥%d%% confidence that you understand any remaining ambiguities in the problem and desired solution\n", step+2, goalPct))
-	sb.WriteString(fmt.Sprintf("%d. Use numbered lists\n", step+3))
-	sb.WriteString(fmt.Sprintf("%d. Ask questions in batches of up to 10\n", step+4))
-	sb.WriteString(fmt.Sprintf("%d. For every question, include your current best proposed solution or assumption\n", step+5))
-	sb.WriteString(fmt.Sprintf("%d. State uncertainties\n", step+6))
-	sb.WriteString(fmt.Sprintf("%d. After each batch of up to 10 questions, output your current percentage understanding so the user can see progress\n", step+7))
-	sb.WriteString(fmt.Sprintf("%d. Reassess and continue with additional batches of up to 10 questions until PLAN.md is precise enough to produce a correct, production-quality implementation\n\n", step+8))
+	appendNumberedSteps(
+		&sb,
+		step+2,
+		clarificationLoopSteps(
+			goalPct,
+			"Reassess and continue with additional batches of up to 10 questions "+
+				"until PLAN.md is precise enough to produce a correct, "+
+				"production-quality implementation",
+		),
+	)
+	sb.WriteString("\n")
 	sb.WriteString(fmt.Sprintf(`After completing PLAN.md:
 - state your confidence level that TASKS.md can be derived unambiguously
 - do NOT treat PLAN.md as complete until confidence reaches ≥%d%%

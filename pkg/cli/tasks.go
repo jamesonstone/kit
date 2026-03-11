@@ -177,19 +177,17 @@ func runTasks(cmd *cobra.Command, args []string) error {
 	step++
 	sb.WriteString(fmt.Sprintf("%d. Identify missing decisions that block task generation\n", step))
 	step++
-	sb.WriteString(fmt.Sprintf("%d. Ask clarifying questions until you reach ≥%d%% confidence that you understand the problem and desired solution\n", step, goalPct))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Use numbered lists\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Ask questions in batches of up to 10\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. For every question, include your current best proposed solution or assumption\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. State uncertainties\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. After each batch of up to 10 questions, output your current percentage understanding so the user can see progress\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Reassess and continue with additional batches of up to 10 questions until the task plan is precise enough to produce a correct, production-quality implementation\n\n", step))
+	appendNumberedSteps(
+		&sb,
+		step,
+		clarificationLoopSteps(
+			goalPct,
+			"Reassess and continue with additional batches of up to 10 questions "+
+				"until the task plan is precise enough to produce a correct, "+
+				"production-quality implementation",
+		),
+	)
+	sb.WriteString("\n")
 
 	sb.WriteString(fmt.Sprintf(`Before you write or update TASKS.md:
 - after each batch of up to 10 questions, output your current percentage understanding of the task plan so the user can see progress

@@ -81,8 +81,14 @@ If ad hoc work touches a feature with existing specs:
 - Ask clarifying questions until you reach ≥95% confidence that you understand the problem and desired solution
 - Use numbered lists
 - Ask questions in batches of up to 10
-- For every question, include your current best proposed solution or assumption
+- For every question, include your current best recommended default, proposed solution, or assumption
 - State uncertainties
+- Accept lean approvals for the current batch:
+  - `yes` / `y` approves all recommended defaults in the batch
+  - `yes 3, 4, 5` / `y 3, 4, 5` approves only those numbered defaults in the batch
+  - `no 2: <answer>` / `n 2: <answer>` rejects a numbered default and provides the override
+  - `no` / `n` rejects all recommended defaults in the batch and requires explicit replacements before proceeding
+- Treat all unapproved questions in a batch as unresolved
 - After each batch of up to 10 questions, output your current percentage understanding so the user can see progress
 - After each batch, reassess and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution
 

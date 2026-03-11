@@ -147,7 +147,7 @@ Then Kit:
 - creates `BRAINSTORM.md` as the first artifact in that directory
 - outputs a planning-only prompt that starts with `/plan`
 - tells the coding agent to research the codebase, use numbered lists, ask questions in batches of up to 10, and avoid implementation
-- requires the agent to include assumptions, state uncertainties, output percentage-understanding progress after each batch, and continue until the spec is precise enough for a production-quality solution
+- requires the agent to include recommended defaults, accept `yes` / `y` for whole-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` for numbered approval, state uncertainties, output percentage-understanding progress after each batch, and continue until the spec is precise enough for a production-quality solution
 
 ### Why this matters
 
