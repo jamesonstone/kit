@@ -358,7 +358,8 @@ CLI flags always override `.kit.yaml`.
 - create or reuse the feature directory (uses `0001-feat-name` format)
 - create `BRAINSTORM.md` as the first artifact in the feature directory
 - output a planning-only `/plan` prompt for a coding agent
-- require the agent to research the codebase and reach the configured understanding threshold before writing implementation artifacts
+- require the agent to use numbered lists, ask clarifying questions in batches of up to 10, include a best proposed solution or assumption for every question, state uncertainties, and output percentage-understanding progress after each batch
+- require the agent to continue until the configured understanding threshold is reached and the specification is precise enough for a correct, production-quality solution before writing implementation artifacts
 
 ---
 

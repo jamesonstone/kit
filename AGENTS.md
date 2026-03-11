@@ -78,15 +78,13 @@ If ad hoc work touches a feature with existing specs:
 - Locate the relevant feature directory in `docs/specs/<feature>/`
 - Read `BRAINSTORM.md` when present, then `SPEC.md` → `PLAN.md` → `TASKS.md`
 
-- Ask clarifying questions until requirements, constraints, and success criteria are explicit
-  - Clarification questions must be clearly labeled as one of:
-    - **Fact-finding** (inputs, outputs, constraints, invariants)
-    - **Decision-required** (tradeoffs the user must choose)
-  - When appropriate, explicitly include the agent's **preferred solution** as **one option**, clearly labeled:
-    - state assumptions
-    - explain why it is preferred (performance, simplicity, safety, cost)
-    - present alternatives if they are viable
-  - Do not assume acceptance of the preferred solution without confirmation
+- Ask clarifying questions until you reach ≥95% confidence that you understand the problem and desired solution
+- Use numbered lists
+- Ask questions in batches of up to 10
+- For every question, include your current best proposed solution or assumption
+- State uncertainties
+- After each batch of up to 10 questions, output your current percentage understanding so the user can see progress
+- After each batch, reassess and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution
 
 - Identify ambiguities, missing context, edge cases, and failure modes
 - Reference existing codebase structure and patterns

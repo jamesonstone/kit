@@ -59,7 +59,7 @@ Use markdown checkboxes to track completion:
   - output a `/plan` prompt with planning-only instructions
 - **ACCEPTANCE**:
   - prompt starts with `/plan`
-  - prompt instructs the coding agent to avoid implementation and continue clarifying until `>=95%`
+  - prompt instructs the coding agent to avoid implementation and use numbered batched clarification with assumptions, uncertainties, and percentage-understanding progress until the specification is precise enough for a production-quality solution
   - `BRAINSTORM.md` is the persistence target
 - **NOTES**: [PLAN-INTERFACES], [PLAN-APPROACH]
 

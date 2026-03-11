@@ -38,8 +38,8 @@ Interactive flow:
 	2. Ask for a short issue/feature thesis
 
 The command never implements code. It outputs a /plan prompt that instructs
-the coding agent to research the codebase, continue asking questions until
->= 95%% understanding, and persist findings to BRAINSTORM.md.
+the coding agent to research the codebase, use numbered lists for clarifying
+questions, show percentage progress, and persist findings to BRAINSTORM.md.
 
 Examples:
 	kit brainstorm
@@ -233,14 +233,16 @@ You MUST update the brainstorm file at:
 3. Read CONSTITUTION.md first to understand project constraints and workflow rules
 4. Read the current BRAINSTORM.md template and treat it as the source of truth for this research phase
 5. Research the entire codebase at %s to identify relevant files, patterns, constraints, interfaces, and adjacent workflows
-6. Continue asking clarifying questions until you reach >= %d%% understanding of:
-   - the problem or feature being described
-   - the affected parts of the codebase
-   - the best solution or strategy
-7. After each clarification round, update %s with durable findings before continuing
-8. Keep every finding filepath-specific whenever possible
-9. If you create a tentative plan in chat, fold the durable conclusions back into %s so the file stays current
-10. Stop before implementation. The next workflow step after this research phase is usually kit spec %s
+6. Ask clarifying questions until you reach ≥%d%% confidence that you understand the problem and desired solution
+7. Use numbered lists
+8. Ask questions in batches of up to 10
+9. For every question, include your current best proposed solution or assumption
+10. State uncertainties
+11. After each batch of up to 10 questions, output your current percentage understanding so the user can see progress
+12. Reassess, update %s with durable findings, and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution
+13. Keep every finding filepath-specific whenever possible
+14. If you create a tentative plan in chat, fold the durable conclusions back into %s so the file stays current
+15. Stop before implementation. The next workflow step after this research phase is usually kit spec %s
 
 ## BRAINSTORM.md Requirements
 
@@ -259,7 +261,8 @@ The final BRAINSTORM.md must be a detailed, informational, filepath-specific doc
 - planning only — no implementation
 - no build or execution work intended to advance code changes
 - the purpose of this phase is understanding, not code output
-- continue asking questions until understanding >= %d%% for both the problem and the strategy
+- use numbered lists for clarifying questions and progress updates
+- continue the clarification loop until confidence reaches ≥%d%% and the specification is precise enough for a correct, production-quality solution
 - preserve facts in BRAINSTORM.md, not just in chat
 - make the final document dense, explicit, and easy for a coding agent to use when drafting SPEC.md
 `, featureSlug, brainstormPath, featureSlug, projectRoot, thesis, constitutionPath, brainstormPath, projectRoot, projectRoot, goalPct, brainstormPath, brainstormPath, featureSlug, goalPct))

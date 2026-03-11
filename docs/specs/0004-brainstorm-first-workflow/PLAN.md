@@ -84,7 +84,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 ## TESTING
 
 - unit tests for brainstorm phase detection and ordering
-- unit tests for brainstorm prompt generation, including `/plan` prefix and `>=95%` requirement
+- unit tests for brainstorm prompt generation, including `/plan` prefix plus numbered-list and percentage-progress clarification requirements
 - unit tests for brainstorm-aware next-step/status behavior
 - repository-wide search verification for removed `oneshot` and branching references
 - full `go test ./...`

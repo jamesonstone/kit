@@ -14,7 +14,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - create `BRAINSTORM.md` as an optional first-class feature artifact
 - make `kit brainstorm` interactive by default with two inputs: feature name and user thesis
 - emit a planning-only prompt that begins with `/plan`
-- require the coding agent to continue asking questions until `>=95%` understanding of the problem and solution strategy
+- require the coding agent to use numbered lists, ask clarifying questions in batches of up to 10, include assumptions and uncertainties, show percentage-understanding progress after each batch, and continue until the specification is precise enough for a production-quality solution
 - require the coding agent to persist findings to `BRAINSTORM.md`
 - reference `BRAINSTORM.md` from `spec`, `plan`, `tasks`, `implement`, and `reflect` when present
 - remove `kit oneshot` from code, docs, and help output
@@ -43,7 +43,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - `kit brainstorm` must ask for a multiline issue/feature thesis in interactive mode
 - the generated prompt must start with `/plan`
 - the generated prompt must explicitly forbid implementation/build work and keep the agent in information-gathering mode
-- the generated prompt must require repeated clarification until `>=95%` understanding
+- the generated prompt must require numbered batched clarification and visible percentage-understanding progress until `>=95%` confidence in the problem and desired solution
 - the generated prompt must instruct the agent to update `BRAINSTORM.md` with filepath-specific findings
 - downstream command prompts must include `BRAINSTORM.md` when the file exists
 - features with `BRAINSTORM.md` but no `SPEC.md` must be represented distinctly from `spec` phase features
@@ -55,7 +55,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 
 - running `kit brainstorm` interactively creates `docs/specs/<n>-<slug>/BRAINSTORM.md`
 - the brainstorm prompt begins with `/plan`
-- the brainstorm prompt instructs the agent to research the full codebase, avoid implementation, and continue clarifying until `>=95%` understanding
+- the brainstorm prompt instructs the agent to research the full codebase, avoid implementation, and use numbered batched clarification with assumptions, uncertainties, and visible percentage-understanding progress until the specification is precise enough for a production-quality solution
 - `kit status` shows brainstorm-only features without mislabeling them as `spec`
 - `kit spec`, `kit plan`, `kit tasks`, `kit implement`, and `kit reflect` reference `BRAINSTORM.md` when present
 - `kit oneshot` is no longer available from the CLI or help output

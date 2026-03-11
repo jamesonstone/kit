@@ -237,6 +237,7 @@ A single integer (0–100) reported by the coding agent indicating:
 - Completeness of requirements understanding
 - Clarity of implementation approach
 - Readiness to proceed to next phase
+- Surfaced after each batch of up to 10 numbered clarification questions so the user can see progress
 
 Kit does not define a scoring rubric — the agent determines the value.
 

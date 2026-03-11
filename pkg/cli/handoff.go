@@ -266,7 +266,7 @@ func featureHandoff(featureRef string) (string, error) {
 		sb.WriteString("3. When ready, run `kit spec " + feat.Slug + "`\n")
 	case feature.PhaseSpec:
 		sb.WriteString("1. Read SPEC.md thoroughly\n")
-		sb.WriteString("2. Ask clarifying questions until understanding >= 95%\n")
+		sb.WriteString("2. Use numbered lists, ask clarifying questions in batches of up to 10, include your best assumptions, state uncertainties, output your current percentage understanding after each batch so the user can see progress, and continue until confidence reaches ≥95%\n")
 		sb.WriteString("3. When ready, run `kit plan " + feat.Slug + "`\n")
 	case feature.PhasePlan:
 		sb.WriteString("1. Read SPEC.md and PLAN.md\n")
