@@ -107,11 +107,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	constitutionRelPath := cfg.ConstitutionPath
 	constitutionFullPath := filepath.Join(cwd, constitutionRelPath)
 
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Printf(`
-Please update %s with all patterns, strategy,
+	prompt := fmt.Sprintf(`Please update %s with all patterns, strategy,
 implementation details, process, and long-term vision for this project.
 This document will drive the "rules for development" going forward.
 
@@ -124,9 +120,11 @@ Analyze the codebase at %s to extract:
 
 Rules:
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-
 `, constitutionFullPath, cwd)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+
+	if err := outputPrompt(prompt, false, false); err != nil {
+		return err
+	}
 
 	return nil
 }

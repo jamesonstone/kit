@@ -82,7 +82,9 @@ func runPlan(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	fmt.Printf("📋 Creating plan for feature: %s\n", feat.DirName)
+	if !outputOnly {
+		fmt.Printf("📋 Creating plan for feature: %s\n", feat.DirName)
+	}
 
 	// check prerequisites
 	specPath := filepath.Join(feat.Path, "SPEC.md")
@@ -92,7 +94,9 @@ func runPlan(cmd *cobra.Command, args []string) error {
 			if err := document.Write(specPath, templates.Spec); err != nil {
 				return fmt.Errorf("failed to create SPEC.md: %w", err)
 			}
-			fmt.Println("  ✓ Created SPEC.md (--force)")
+			if !outputOnly {
+				fmt.Println("  ✓ Created SPEC.md (--force)")
+			}
 		} else {
 			return fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first or use --force", feat.Slug)
 		}
@@ -104,31 +108,35 @@ func runPlan(cmd *cobra.Command, args []string) error {
 		if err := document.Write(planPath, templates.Plan); err != nil {
 			return fmt.Errorf("failed to create PLAN.md: %w", err)
 		}
-		fmt.Println("  ✓ Created PLAN.md")
-	} else {
+		if !outputOnly {
+			fmt.Println("  ✓ Created PLAN.md")
+		}
+	} else if !outputOnly {
 		fmt.Println("  ✓ PLAN.md already exists")
 	}
 
 	// update PROJECT_PROGRESS_SUMMARY.md
 	if err := rollup.Update(projectRoot, cfg); err != nil {
-		fmt.Printf("  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
-	} else {
+		if !outputOnly {
+			fmt.Printf("  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
+		}
+	} else if !outputOnly {
 		fmt.Println("  ✓ Updated PROJECT_PROGRESS_SUMMARY.md")
 	}
 
-	fmt.Printf("\n✅ Plan for '%s' ready!\n", feat.Slug)
-	fmt.Printf("\nNext steps:\n")
-	fmt.Printf("  1. Edit %s to define the implementation approach\n", planPath)
-	fmt.Printf("  2. Run 'kit tasks %s' to create executable tasks\n", feat.Slug)
+	if !outputOnly {
+		fmt.Printf("\n✅ Plan for '%s' ready!\n", feat.Slug)
+		fmt.Printf("\nNext steps:\n")
+		fmt.Printf("  1. Edit %s to define the implementation approach\n", planPath)
+		fmt.Printf("  2. Run 'kit tasks %s' to create executable tasks\n", feat.Slug)
+	}
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 
 	if warpMode {
-		outputWarpPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
-	} else {
-		outputStandardPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
+		return outputWarpPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
 	}
 
-	return nil
+	return outputStandardPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
 }
 
 // selectFeatureForPlan shows an interactive numbered list of features
@@ -176,7 +184,7 @@ func selectFeatureForPlan(specsDir string) (*feature.Feature, error) {
 }
 
 // outputStandardPlanPrompt outputs the standard coding agent prompt.
-func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) {
+func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) error {
 	projectRoot, _ := config.FindProjectRoot()
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
@@ -276,24 +284,15 @@ The output of PLAN.md must make TASKS.md obvious and deterministic.
 
 	prompt := sb.String()
 
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	if planCopy {
-		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
-	} else {
-		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	}
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-
 	if err := outputPrompt(prompt, outputOnly, planCopy); err != nil {
-		fmt.Printf("failed to output prompt: %v\n", err)
-		return
+		return fmt.Errorf("failed to output prompt: %w", err)
 	}
 
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	return nil
 }
 
 // outputWarpPlanPrompt outputs a prompt for Warp coding agent to fill PLAN.md from Warp plan.
-func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) {
+func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) error {
 	projectRoot, _ := config.FindProjectRoot()
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
@@ -359,26 +358,17 @@ The output of PLAN.md must make TASKS.md obvious and deterministic.
 
 	prompt := sb.String()
 
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "📋 Warp Plan Integration" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println()
-	fmt.Println(dim + "The following files have been created:" + reset)
-	fmt.Printf("  • PLAN.md: %s\n", planPath)
-	fmt.Printf("  • SPEC.md: %s\n", specPath)
-	fmt.Println()
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	if planCopy {
-		fmt.Println(whiteBold + "Warp plan prompt copied to clipboard" + reset)
-	} else {
-		fmt.Println(whiteBold + "Copy this prompt to continue with your Warp plan:" + reset)
+	if !outputOnly {
+		fmt.Println()
+		fmt.Println(whiteBold + "Warp Plan Integration" + reset)
+		fmt.Println(dim + "The following files have been created:" + reset)
+		fmt.Printf("  • PLAN.md: %s\n", planPath)
+		fmt.Printf("  • SPEC.md: %s\n\n", specPath)
 	}
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	if err := outputPrompt(prompt, outputOnly, planCopy); err != nil {
-		fmt.Printf("failed to output prompt: %v\n", err)
-		return
+		return fmt.Errorf("failed to output prompt: %w", err)
 	}
 
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	return nil
 }

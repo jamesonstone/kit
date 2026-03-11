@@ -216,73 +216,59 @@ Then read its acceptance criteria and implement it.
 
 	prompt := sb.String()
 
-	fmt.Println()
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "🚀 Implementation Context: " + reset + feat.DirName)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println()
-
-	// feature summary
-	if summary != "" {
-		fmt.Println(whiteBold + "Feature Summary:" + reset)
-		fmt.Println(summary)
+	if !outputOnly {
 		fmt.Println()
-	} else {
-		fmt.Println(whiteBold + "Feature Summary:" + reset)
-		fmt.Println("(Read SPEC.md for feature description)")
+		fmt.Println(dim + "Implementation Context: " + reset + feat.DirName)
+		fmt.Println()
+
+		if summary != "" {
+			fmt.Println(whiteBold + "Feature Summary:" + reset)
+			fmt.Println(summary)
+			fmt.Println()
+		} else {
+			fmt.Println(whiteBold + "Feature Summary:" + reset)
+			fmt.Println("(Read SPEC.md for feature description)")
+			fmt.Println()
+		}
+
+		if progress.HasTasks() {
+			fmt.Printf(whiteBold+"Progress: "+reset+"%d/%d tasks complete\n", progress.Complete, progress.Total)
+		} else {
+			fmt.Println(whiteBold + "Progress: " + reset + "Tasks defined, ready to begin")
+		}
+		fmt.Println()
+
+		fmt.Println(whiteBold + "Document Reference:" + reset)
+		fmt.Println(dim + "┌───────────────────────────────────────────────────────────────────────────┐" + reset)
+		fmt.Println(dim + "│ " + reset + whiteBold + "Document" + reset + dim + "    │ " + reset + whiteBold + "Purpose & Usage" + reset + dim + "                                          │" + reset)
+		fmt.Println(dim + "├───────────────────────────────────────────────────────────────────────────┤" + reset)
+		fmt.Println(dim + "│ " + reset + "SPEC.md" + dim + "     │ " + reset + "WHAT: Requirements, constraints, acceptance criteria" + dim + "      │" + reset)
+		fmt.Println(dim + "│             │ " + reset + "→ Consult when unsure if something is in scope" + dim + "            │" + reset)
+		fmt.Println(dim + "│             │ " + reset + "→ Do NOT add features not specified here" + dim + "                  │" + reset)
+		fmt.Println(dim + "├───────────────────────────────────────────────────────────────────────────┤" + reset)
+		fmt.Println(dim + "│ " + reset + "PLAN.md" + dim + "     │ " + reset + "HOW: Architecture, components, data structures" + dim + "           │" + reset)
+		fmt.Println(dim + "│             │ " + reset + "→ Follow the design decisions made here" + dim + "                   │" + reset)
+		fmt.Println(dim + "│             │ " + reset + "→ If blocked, check RISKS section for mitigations" + dim + "         │" + reset)
+		fmt.Println(dim + "├───────────────────────────────────────────────────────────────────────────┤" + reset)
+		fmt.Println(dim + "│ " + reset + "TASKS.md" + dim + "    │ " + reset + "EXECUTE: Ordered task list with acceptance criteria" + dim + "       │" + reset)
+		fmt.Println(dim + "│             │ " + reset + "→ Work through tasks in order (respect dependencies)" + dim + "       │" + reset)
+		fmt.Println(dim + "│             │ " + reset + "→ Mark tasks complete with [x] when acceptance met" + dim + "         │" + reset)
+		fmt.Println(dim + "└────────────┴───────────────────────────────────────────────────────────────┘" + reset)
+		fmt.Println()
+
+		fmt.Println(whiteBold + "File Locations:" + reset)
+		if hasBrainstorm {
+			fmt.Printf("  • BRAINSTORM: %s\n", brainstormPath)
+		}
+		fmt.Printf("  • SPEC:  %s\n", specPath)
+		fmt.Printf("  • PLAN:  %s\n", planPath)
+		fmt.Printf("  • TASKS: %s\n", tasksPath)
 		fmt.Println()
 	}
-
-	// progress status
-	if progress.HasTasks() {
-		fmt.Printf(whiteBold+"Progress: "+reset+"%d/%d tasks complete\n", progress.Complete, progress.Total)
-	} else {
-		fmt.Println(whiteBold + "Progress: " + reset + "Tasks defined, ready to begin")
-	}
-	fmt.Println()
-
-	// document reference table
-	fmt.Println(whiteBold + "Document Reference:" + reset)
-	fmt.Println(dim + "┌────────────╌───────────────────────────────────────────────────────────────┐" + reset)
-	fmt.Println(dim + "│ " + reset + whiteBold + "Document" + reset + dim + "    │ " + reset + whiteBold + "Purpose & Usage" + reset + dim + "                                          │" + reset)
-	fmt.Println(dim + "├────────────╌───────────────────────────────────────────────────────────────┤" + reset)
-	fmt.Println(dim + "│ " + reset + "SPEC.md" + dim + "     │ " + reset + "WHAT: Requirements, constraints, acceptance criteria" + dim + "      │" + reset)
-	fmt.Println(dim + "│             │ " + reset + "→ Consult when unsure if something is in scope" + dim + "            │" + reset)
-	fmt.Println(dim + "│             │ " + reset + "→ Do NOT add features not specified here" + dim + "                  │" + reset)
-	fmt.Println(dim + "├────────────╌───────────────────────────────────────────────────────────────┤" + reset)
-	fmt.Println(dim + "│ " + reset + "PLAN.md" + dim + "     │ " + reset + "HOW: Architecture, components, data structures" + dim + "           │" + reset)
-	fmt.Println(dim + "│             │ " + reset + "→ Follow the design decisions made here" + dim + "                   │" + reset)
-	fmt.Println(dim + "│             │ " + reset + "→ If blocked, check RISKS section for mitigations" + dim + "         │" + reset)
-	fmt.Println(dim + "├────────────╌───────────────────────────────────────────────────────────────┤" + reset)
-	fmt.Println(dim + "│ " + reset + "TASKS.md" + dim + "    │ " + reset + "EXECUTE: Ordered task list with acceptance criteria" + dim + "       │" + reset)
-	fmt.Println(dim + "│             │ " + reset + "→ Work through tasks in order (respect dependencies)" + dim + "       │" + reset)
-	fmt.Println(dim + "│             │ " + reset + "→ Mark tasks complete with [x] when acceptance met" + dim + "         │" + reset)
-	fmt.Println(dim + "└────────────┴───────────────────────────────────────────────────────────────┘" + reset)
-	fmt.Println()
-
-	// file paths
-	fmt.Println(whiteBold + "File Locations:" + reset)
-	if hasBrainstorm {
-		fmt.Printf("  • BRAINSTORM: %s\n", brainstormPath)
-	}
-	fmt.Printf("  • SPEC:  %s\n", specPath)
-	fmt.Printf("  • PLAN:  %s\n", planPath)
-	fmt.Printf("  • TASKS: %s\n", tasksPath)
-	fmt.Println()
-
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	if implementCopy {
-		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
-	} else {
-		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	}
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	if err := outputPrompt(prompt, outputOnly, implementCopy); err != nil {
 		return err
 	}
-
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil
 }

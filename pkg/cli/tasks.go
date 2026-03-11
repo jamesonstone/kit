@@ -80,7 +80,9 @@ func runTasks(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	fmt.Printf("📝 Creating tasks for feature: %s\n", feat.DirName)
+	if !outputOnly {
+		fmt.Printf("📝 Creating tasks for feature: %s\n", feat.DirName)
+	}
 
 	// check prerequisites
 	specPath := filepath.Join(feat.Path, "SPEC.md")
@@ -93,13 +95,17 @@ func runTasks(cmd *cobra.Command, args []string) error {
 				if err := document.Write(specPath, templates.Spec); err != nil {
 					return fmt.Errorf("failed to create SPEC.md: %w", err)
 				}
-				fmt.Println("  ✓ Created SPEC.md (--force)")
+				if !outputOnly {
+					fmt.Println("  ✓ Created SPEC.md (--force)")
+				}
 			}
 			// create PLAN.md
 			if err := document.Write(planPath, templates.Plan); err != nil {
 				return fmt.Errorf("failed to create PLAN.md: %w", err)
 			}
-			fmt.Println("  ✓ Created PLAN.md (--force)")
+			if !outputOnly {
+				fmt.Println("  ✓ Created PLAN.md (--force)")
+			}
 		} else {
 			return fmt.Errorf("PLAN.md not found. Run 'kit plan %s' first or use --force", feat.Slug)
 		}
@@ -111,23 +117,29 @@ func runTasks(cmd *cobra.Command, args []string) error {
 		if err := document.Write(tasksPath, templates.Tasks); err != nil {
 			return fmt.Errorf("failed to create TASKS.md: %w", err)
 		}
-		fmt.Println("  ✓ Created TASKS.md")
-	} else {
+		if !outputOnly {
+			fmt.Println("  ✓ Created TASKS.md")
+		}
+	} else if !outputOnly {
 		fmt.Println("  ✓ TASKS.md already exists")
 	}
 
 	// update PROJECT_PROGRESS_SUMMARY.md
 	if err := rollup.Update(projectRoot, cfg); err != nil {
-		fmt.Printf("  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
-	} else {
+		if !outputOnly {
+			fmt.Printf("  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
+		}
+	} else if !outputOnly {
 		fmt.Println("  ✓ Updated PROJECT_PROGRESS_SUMMARY.md")
 	}
 
-	fmt.Printf("\n✅ Tasks for '%s' ready!\n", feat.Slug)
-	fmt.Printf("\nNext steps:\n")
-	fmt.Printf("  1. Edit %s to define atomic tasks\n", tasksPath)
-	fmt.Printf("  2. Link tasks to plan items using [PLAN-XX] syntax\n")
-	fmt.Printf("  3. Begin implementation!\n")
+	if !outputOnly {
+		fmt.Printf("\n✅ Tasks for '%s' ready!\n", feat.Slug)
+		fmt.Printf("\nNext steps:\n")
+		fmt.Printf("  1. Edit %s to define atomic tasks\n", tasksPath)
+		fmt.Printf("  2. Link tasks to plan items using [PLAN-XX] syntax\n")
+		fmt.Printf("  3. Begin implementation!\n")
+	}
 
 	// output easy-to-copy instruction for coding agents
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
@@ -239,19 +251,9 @@ Output goal:
 
 	prompt := sb.String()
 
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	if tasksCopy {
-		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
-	} else {
-		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	}
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-
 	if err := outputPrompt(prompt, outputOnly, tasksCopy); err != nil {
 		return err
 	}
-
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 
 	return nil
 }

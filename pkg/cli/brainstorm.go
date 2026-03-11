@@ -123,18 +123,16 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if brainstormCopy {
+	if brainstormOutput == "" {
+		if err := outputPrompt(prompt, outputOnly, brainstormCopy); err != nil {
+			return err
+		}
+	} else if brainstormCopy {
 		if err := copyToClipboard(prompt); err != nil {
 			return fmt.Errorf("failed to copy to clipboard: %w", err)
 		}
 		if !outputOnly {
-			fmt.Println("✓ Copied to clipboard")
-		}
-	}
-
-	if !brainstormCopy && brainstormOutput == "" {
-		if err := outputPrompt(prompt, outputOnly, false); err != nil {
-			return err
+			fmt.Println("Copied agent instructions to clipboard.")
 		}
 	}
 

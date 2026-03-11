@@ -59,9 +59,11 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
-	printWorkflowInstructions("summarize context (supporting step)", []string{
-		"resume your active phase: brainstorm -> spec -> plan -> tasks -> implement -> reflect",
-	})
+	if !outputOnly {
+		printWorkflowInstructions("summarize context (supporting step)", []string{
+			"resume your active phase: brainstorm -> spec -> plan -> tasks -> implement -> reflect",
+		})
+	}
 
 	if err := outputPrompt(instructions, outputOnly, summarizeCopy); err != nil {
 		return err

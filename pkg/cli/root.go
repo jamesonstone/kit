@@ -180,19 +180,40 @@ func init() {
 	})
 }
 
+func formatAgentInstructionBlock(prompt string) string {
+	var sb strings.Builder
+	sb.WriteString("---\n")
+	sb.WriteString(prompt)
+	if !strings.HasSuffix(prompt, "\n") {
+		sb.WriteString("\n")
+	}
+	sb.WriteString("---\n")
+	return sb.String()
+}
+
 // outputPrompt handles consistent output behavior for --output-only and --copy flags.
-// if copy=true, copies prompt to clipboard and suppresses prompt output
-// if copy=false, outputs prompt to stdout
-func outputPrompt(prompt string, _ bool, copy bool) error {
+// if copy=true, copies the raw prompt to the clipboard
+// if outputOnly=true, outputs the raw prompt without status text or dividers
+// otherwise, outputs the prompt inside a standardized markdown copy block
+func outputPrompt(prompt string, outputOnly, copy bool) error {
 	if copy {
 		if err := copyToClipboard(prompt); err != nil {
 			return fmt.Errorf("failed to copy to clipboard: %w", err)
 		}
-		fmt.Println("✓ Copied to clipboard")
+		if outputOnly {
+			fmt.Print(prompt)
+			return nil
+		}
+		fmt.Println("Copied agent instructions to clipboard.")
+		return nil
+	}
+	if outputOnly {
+		fmt.Print(prompt)
 		return nil
 	}
 
-	fmt.Print(prompt)
+	fmt.Println("Copy this section to the Agent:")
+	fmt.Print(formatAgentInstructionBlock(prompt))
 	return nil
 }
 

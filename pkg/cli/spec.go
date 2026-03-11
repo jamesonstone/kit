@@ -99,10 +99,12 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if created {
-		fmt.Printf("📁 Created feature directory: %s\n", feat.DirName)
-	} else {
-		fmt.Printf("📁 Using existing feature: %s\n", feat.DirName)
+	if !outputOnly {
+		if created {
+			fmt.Printf("📁 Created feature directory: %s\n", feat.DirName)
+		} else {
+			fmt.Printf("📁 Using existing feature: %s\n", feat.DirName)
+		}
 	}
 
 	// create SPEC.md if it doesn't exist
@@ -111,8 +113,10 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		if err := document.Write(specPath, templates.Spec); err != nil {
 			return fmt.Errorf("failed to create SPEC.md: %w", err)
 		}
-		fmt.Println("  ✓ Created SPEC.md")
-	} else {
+		if !outputOnly {
+			fmt.Println("  ✓ Created SPEC.md")
+		}
+	} else if !outputOnly {
 		fmt.Println("  ✓ SPEC.md already exists")
 	}
 
@@ -121,18 +125,22 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	isInteractive := specInteractive && !specTemplateOnly
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
-	if document.Exists(brainstormPath) {
+	if !outputOnly && document.Exists(brainstormPath) {
 		fmt.Println("  ✓ Found BRAINSTORM.md")
 	}
 
 	// update PROJECT_PROGRESS_SUMMARY.md
 	if err := rollup.Update(projectRoot, cfg); err != nil {
-		fmt.Printf("  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
-	} else {
+		if !outputOnly {
+			fmt.Printf("  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
+		}
+	} else if !outputOnly {
 		fmt.Println("  ✓ Updated PROJECT_PROGRESS_SUMMARY.md")
 	}
 
-	fmt.Printf("\n✅ Feature '%s' ready!\n", feat.Slug)
+	if !outputOnly {
+		fmt.Printf("\n✅ Feature '%s' ready!\n", feat.Slug)
+	}
 
 	if isInteractive {
 		// interactive mode: gather details and compile prompt
@@ -446,24 +454,15 @@ This file is the single source of truth for this feature. Do not leave content o
 
 	prompt := sb.String()
 
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	if specCopy {
-		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
-	} else {
-		fmt.Println(whiteBold + "✅ Copy this prompt to your coding agent:" + reset)
-	}
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-
 	if err := outputPrompt(prompt, outputOnly, specCopy); err != nil {
 		return err
 	}
-
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-
-	fmt.Printf("\nNext steps:\n")
-	fmt.Printf("  1. Copy the prompt above and paste it to your coding agent\n")
-	fmt.Printf("  2. Work with the agent to refine the specification\n")
-	fmt.Printf("  3. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
+	if !outputOnly {
+		fmt.Printf("\nNext steps:\n")
+		fmt.Printf("  1. Copy the prompt above and paste it to your coding agent\n")
+		fmt.Printf("  2. Work with the agent to refine the specification\n")
+		fmt.Printf("  3. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
+	}
 
 	return nil
 }
@@ -568,31 +567,25 @@ Once you reach ≥%d%% confidence, write a SUMMARY section at the top of SPEC.md
 
 	prompt := sb.String()
 
-	fmt.Printf("\nNext steps:\n")
-	fmt.Printf("  1. Edit %s to define the specification\n", specPath)
-	fmt.Printf("  2. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
-
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	if specCopy {
-		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
-	} else {
-		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
+	if !outputOnly {
+		fmt.Println()
+		fmt.Println(dim + "⚠️  IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
+		fmt.Println(dim + "   with details about your feature. The more context you provide, the" + reset)
+		fmt.Println(dim + "   better the agent can help you write the specification." + reset)
+		fmt.Println()
+		fmt.Println(dim + "   Tip: Run 'kit spec <feature> --interactive' for an interactive" + reset)
+		fmt.Println(dim + "   experience that guides you through each section." + reset)
+		fmt.Println()
 	}
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println()
-	fmt.Println(dim + "⚠️  IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
-	fmt.Println(dim + "   with details about your feature. The more context you provide, the" + reset)
-	fmt.Println(dim + "   better the agent can help you write the specification." + reset)
-	fmt.Println()
-	fmt.Println(dim + "   Tip: Run 'kit spec <feature> --interactive' for an interactive" + reset)
-	fmt.Println(dim + "   experience that guides you through each section." + reset)
-	fmt.Println()
 
 	if err := outputPrompt(prompt, outputOnly, specCopy); err != nil {
 		return err
 	}
-
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
+	if !outputOnly {
+		fmt.Printf("\nNext steps:\n")
+		fmt.Printf("  1. Edit %s to define the specification\n", specPath)
+		fmt.Printf("  2. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
+	}
 
 	return nil
 }

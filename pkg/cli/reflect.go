@@ -73,10 +73,12 @@ func runReflect(cmd *cobra.Command, args []string) error {
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPath, specPath, planPath, tasksPath, feat.Slug)
-	printWorkflowInstructions("reflect", []string{
-		"if issues remain, return to implement",
-		"if clean, mark reflection complete",
-	})
+	if !outputOnly {
+		printWorkflowInstructions("reflect", []string{
+			"if issues remain, return to implement",
+			"if clean, mark reflection complete",
+		})
+	}
 
 	if err := outputPrompt(prompt, outputOnly, reflectCopy); err != nil {
 		return err

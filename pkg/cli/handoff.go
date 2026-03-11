@@ -3,7 +3,6 @@ package cli
 
 import (
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -54,23 +53,14 @@ func runHandoff(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-
-	printWorkflowInstructions("handoff (supporting step)", []string{
-		"resume your active phase: brainstorm -> spec -> plan -> tasks -> implement -> reflect",
-	})
-
-	if handoffCopy {
-		copyCmd := exec.Command("pbcopy")
-		copyCmd.Stdin = strings.NewReader(output)
-		if err := copyCmd.Run(); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		fmt.Println("✓ Copied to clipboard")
-		return nil
+	outputOnly, _ := cmd.Flags().GetBool("output-only")
+	if !outputOnly {
+		printWorkflowInstructions("handoff (supporting step)", []string{
+			"resume your active phase: brainstorm -> spec -> plan -> tasks -> implement -> reflect",
+		})
 	}
 
-	fmt.Print(output)
-	return nil
+	return outputPrompt(output, outputOnly, handoffCopy)
 }
 
 func projectHandoff() (string, error) {

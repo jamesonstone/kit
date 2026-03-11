@@ -38,28 +38,20 @@ func runCodeReview(cmd *cobra.Command, args []string) error {
 
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	if codeReviewCopy {
-		fmt.Println(whiteBold + "Agent prompt copied to clipboard" + reset)
-	} else {
-		fmt.Println(whiteBold + "Copy this prompt to your coding agent:" + reset)
-	}
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-
 	if err := outputPrompt(output, outputOnly, codeReviewCopy); err != nil {
 		return err
 	}
-
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println()
-	fmt.Println(whiteBold + "Optional: Add specific concerns or goals" + reset)
-	fmt.Println(dim + "After pasting the prompt above, consider adding a follow-up message:" + reset)
-	fmt.Println()
-	fmt.Println("  \"I have the following specific concerns for this review:")
-	fmt.Println("    - [e.g., performance impact of the new caching layer]")
-	fmt.Println("    - [e.g., error handling in the API endpoints]")
-	fmt.Println("    - [e.g., backward compatibility with existing clients]\"")
-	fmt.Println()
+	if !outputOnly {
+		fmt.Println()
+		fmt.Println(whiteBold + "Optional: Add specific concerns or goals" + reset)
+		fmt.Println(dim + "After pasting the prompt above, consider adding a follow-up message:" + reset)
+		fmt.Println()
+		fmt.Println("  \"I have the following specific concerns for this review:")
+		fmt.Println("    - [e.g., performance impact of the new caching layer]")
+		fmt.Println("    - [e.g., error handling in the API endpoints]")
+		fmt.Println("    - [e.g., backward compatibility with existing clients]\"")
+		fmt.Println()
+	}
 	return nil
 }
 
