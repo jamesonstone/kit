@@ -29,6 +29,7 @@ Use this when switching between agents (Warp, Claude, Copilot, Codex) due to
 token limits or rate limiting. The output provides:
   - Kit project structure explanation
   - How to read and use Kit documents
+	- How to preserve current conversation context
   - Current project/feature state
   - Immediate next steps
 Without a feature argument, shows an interactive selector with:
@@ -175,7 +176,22 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 		sb.WriteString("\n")
 	}
 
+	sb.WriteString("## Conversation Context Preservation\n\n")
+	sb.WriteString("Before taking action, summarize the context of the current conversation into high-signal facts.\n")
+	sb.WriteString("Use `kit summarize` to shape that summary when the prior session is still available.\n\n")
+	sb.WriteString("Use that summarized conversation context in conjunction with:\n")
+	sb.WriteString("- `docs/CONSTITUTION.md`\n")
+	if document.Exists(summaryPath) {
+		sb.WriteString("- `docs/PROJECT_PROGRESS_SUMMARY.md`\n")
+	}
+	sb.WriteString("- relevant feature docs under `docs/specs/<feature>/`\n")
+	sb.WriteString("- direct code findings from the repository\n\n")
+	sb.WriteString("When sources disagree, prefer repository files and current code as the source of truth. ")
+	sb.WriteString("Preserve recent decisions, blockers, validation results, and open questions from the conversation summary when they are not yet written down.\n\n")
+
 	sb.WriteString("## Immediate Actions\n\n")
+	sb.WriteString("Summarize the context of the current conversation first. ")
+	sb.WriteString("Then use that summary together with the files and findings above.\n\n")
 	sb.WriteString("1. Read `docs/CONSTITUTION.md` to understand project constraints\n")
 	if len(features) > 0 {
 		sb.WriteString("2. Read `docs/PROJECT_PROGRESS_SUMMARY.md` for current state\n")
@@ -289,6 +305,7 @@ func featureHandoff(featureRef string) (string, error) {
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 	analysisPath := filepath.Join(feat.Path, "ANALYSIS.md")
+	summaryPath := cfg.ProgressSummaryPath(projectRoot)
 
 	// always list CONSTITUTION first
 	sb.WriteString(fmt.Sprintf("0. **CONSTITUTION.md** — `%s`\n", constitutionPath))
@@ -334,7 +351,22 @@ func featureHandoff(featureRef string) (string, error) {
 		sb.WriteString("   - Open questions and assumptions\n\n")
 	}
 
+	sb.WriteString("## Conversation Context Preservation\n\n")
+	sb.WriteString("Before taking action, summarize the context of the current conversation into high-signal facts.\n")
+	sb.WriteString(fmt.Sprintf("Use `kit summarize %s` to shape that summary when the prior session is still available.\n\n", feat.Slug))
+	sb.WriteString("Use that summarized conversation context in conjunction with:\n")
+	sb.WriteString("- `docs/CONSTITUTION.md`\n")
+	if document.Exists(summaryPath) {
+		sb.WriteString("- `docs/PROJECT_PROGRESS_SUMMARY.md`\n")
+	}
+	sb.WriteString(fmt.Sprintf("- feature docs in `%s`\n", feat.Path))
+	sb.WriteString("- direct code findings from the repository\n\n")
+	sb.WriteString("When sources disagree, prefer repository files and current code as the source of truth. ")
+	sb.WriteString("Preserve recent decisions, blockers, validation results, and open questions from the conversation summary when they are not yet written down.\n\n")
+
 	sb.WriteString("## Immediate Actions\n\n")
+	sb.WriteString("Summarize the context of the current conversation first. ")
+	sb.WriteString("Then use that summary together with the required reading and repository findings below.\n\n")
 
 	switch feat.Phase {
 	case feature.PhaseBrainstorm:
@@ -397,6 +429,15 @@ Before implementing:
 2. Implement tasks in order
 3. If reality diverges, update spec first, then code
 
+## Preserve Current Conversation Context
+
+Before taking action:
+1. Summarize the context of the current conversation into high-signal facts
+2. If this is a Kit project, use ` + "`kit summarize`" + ` or ` + "`kit summarize <feature>`" + ` to shape that summary
+3. Use the summarized conversation context in conjunction with ` + "`CONSTITUTION.md`" + `, ` + "`PROJECT_PROGRESS_SUMMARY.md`" + `, feature docs, and direct code findings
+4. Prefer repository files and current code as the source of truth when the summary conflicts
+5. Preserve recent decisions, blockers, validation results, and open questions that are not yet written down
+
 ## Check for Kit Project
 
 Run these commands to check if this is a Kit project:
@@ -428,6 +469,7 @@ kit spec <first-feature>
 - ` + "`kit plan <feature>`" + ` — create implementation plan
 - ` + "`kit tasks <feature>`" + ` — create task list
 - ` + "`kit check <feature>`" + ` — validate documents
+- ` + "`kit summarize [feature]`" + ` — get context summarization instructions
 - ` + "`kit handoff [feature]`" + ` — output this context (use when switching agents)
 `
 }

@@ -93,8 +93,75 @@ func TestProjectHandoffIncludesProgressSummaryAndStatus(t *testing.T) {
 		"## Progress Summary",
 		"docs/PROJECT_PROGRESS_SUMMARY.md",
 		"## Current Development Status",
+		"## Conversation Context Preservation",
+		"Summarize the context of the current conversation",
+		"Use `kit summarize` to shape that summary",
 		"| alpha | spec |",
 		"| beta | implement |",
+	}
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected output to contain %q", check)
+		}
+	}
+}
+
+func TestFeatureHandoffIncludesConversationPreservationInstructions(t *testing.T) {
+	projectRoot := t.TempDir()
+	mustWriteFile(t, filepath.Join(projectRoot, ".kit.yaml"), []byte{})
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
+		[]byte("# CONSTITUTION\n"),
+	)
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
+		[]byte("# PROJECT_PROGRESS_SUMMARY\n"),
+	)
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
+		[]byte("# SPEC\n"),
+	)
+
+	originalWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get working directory: %v", err)
+	}
+	if err := os.Chdir(projectRoot); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
+	t.Cleanup(func() {
+		_ = os.Chdir(originalWD)
+	})
+
+	output, err := featureHandoff("alpha")
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	checks := []string{
+		"## Conversation Context Preservation",
+		"Summarize the context of the current conversation",
+		"`kit summarize alpha`",
+		"Use that summarized conversation context in conjunction with:",
+	}
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected output to contain %q", check)
+		}
+	}
+}
+
+func TestGenericHandoffIncludesConversationPreservationInstructions(t *testing.T) {
+	output := genericHandoffInstructions()
+
+	checks := []string{
+		"## Preserve Current Conversation Context",
+		"Summarize the context of the current conversation into high-signal facts",
+		"`kit summarize`",
+		"Use the summarized conversation context in conjunction with",
 	}
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
