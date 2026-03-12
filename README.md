@@ -81,11 +81,11 @@ kit status
 
 ### Context Management
 
-| Command                   | Description                                 |
-| ------------------------- | ------------------------------------------- |
-| `kit handoff [feature]`   | Output context for fresh agent session      |
-| `kit summarize [feature]` | Output context summarization instructions   |
-| `kit reflect [feature]`   | Output reflection/verification instructions |
+| Command                   | Description                                                      |
+| ------------------------- | ---------------------------------------------------------------- |
+| `kit handoff [feature]`   | Output feature or project-wide context for a fresh agent session |
+| `kit summarize [feature]` | Output context summarization instructions                        |
+| `kit reflect [feature]`   | Output reflection/verification instructions                      |
 
 ### Utility
 

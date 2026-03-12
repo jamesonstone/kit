@@ -2,8 +2,12 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/jamesonstone/kit/internal/config"
@@ -27,8 +31,9 @@ token limits or rate limiting. The output provides:
   - How to read and use Kit documents
   - Current project/feature state
   - Immediate next steps
-
-Without a feature argument, outputs project-level context.
+Without a feature argument, shows an interactive selector with:
+  - numbered features from docs/specs/
+  - [0] no specific feature for a project-wide handoff
 With a feature argument, outputs feature-specific context.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runHandoff,
@@ -47,7 +52,7 @@ func runHandoff(cmd *cobra.Command, args []string) error {
 	if len(args) == 1 {
 		output, err = featureHandoff(args[0])
 	} else {
-		output, err = projectHandoff()
+		output, err = interactiveHandoff()
 	}
 
 	if err != nil {
@@ -63,6 +68,29 @@ func runHandoff(cmd *cobra.Command, args []string) error {
 	return outputPrompt(output, outputOnly, handoffCopy)
 }
 
+func interactiveHandoff() (string, error) {
+	projectRoot, err := config.FindProjectRoot()
+	if err != nil {
+		return genericHandoffInstructions(), nil
+	}
+
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		return "", fmt.Errorf("failed to load config: %w", err)
+	}
+
+	feat, projectWide, err := selectFeatureForHandoff(cfg.SpecsPath(projectRoot))
+	if err != nil {
+		return "", err
+	}
+
+	if projectWide || feat == nil {
+		return projectHandoffWithConfig(projectRoot, cfg)
+	}
+
+	return featureHandoff(feat.Slug)
+}
+
 func projectHandoff() (string, error) {
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
@@ -74,9 +102,16 @@ func projectHandoff() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to load config: %w", err)
 	}
+	return projectHandoffWithConfig(projectRoot, cfg)
+}
 
+func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, error) {
 	specsDir := cfg.SpecsPath(projectRoot)
-	features, _ := feature.ListFeatures(specsDir)
+	summaryPath := cfg.ProgressSummaryPath(projectRoot)
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return "", fmt.Errorf("projectHandoffWithConfig: failed to list features in %s: %w", specsDir, err)
+	}
 
 	var sb strings.Builder
 
@@ -124,10 +159,14 @@ func projectHandoff() (string, error) {
 		sb.WriteString("## Constitution Summary\n\n")
 		sb.WriteString(fmt.Sprintf("Read `%s` for project-wide constraints.\n\n", cfg.ConstitutionPath))
 	}
+	if document.Exists(summaryPath) {
+		sb.WriteString("## Progress Summary\n\n")
+		sb.WriteString("Read `docs/PROJECT_PROGRESS_SUMMARY.md` for the latest cross-feature state.\n\n")
+	}
 
 	// list features with their phases
 	if len(features) > 0 {
-		sb.WriteString("## Features\n\n")
+		sb.WriteString("## Current Development Status\n\n")
 		sb.WriteString("| Feature | Phase | Path |\n")
 		sb.WriteString("| ------- | ----- | ---- |\n")
 		for _, f := range features {
@@ -156,6 +195,54 @@ func projectHandoff() (string, error) {
 	sb.WriteString("- `kit reflect` — get reflection/verification instructions\n")
 
 	return sb.String(), nil
+}
+
+func selectFeatureForHandoff(specsDir string) (*feature.Feature, bool, error) {
+	return selectFeatureForHandoffWithIO(specsDir, os.Stdin, os.Stdout)
+}
+
+func selectFeatureForHandoffWithIO(
+	specsDir string,
+	input io.Reader,
+	output io.Writer,
+) (*feature.Feature, bool, error) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if len(features) == 0 {
+		return nil, true, nil
+	}
+
+	fmt.Fprintln(output)
+	fmt.Fprintln(output, whiteBold+"Select a feature to hand off:"+reset)
+	fmt.Fprintln(output)
+	for i, f := range features {
+		fmt.Fprintf(output, "  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
+	}
+	fmt.Fprintln(output, "  [0] no specific feature (project-wide handoff)")
+	fmt.Fprintln(output)
+	fmt.Fprint(output, whiteBold+"Enter number: "+reset)
+
+	reader := bufio.NewReader(input)
+	selection, err := reader.ReadString('\n')
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to read selection: %w", err)
+	}
+	selection = strings.TrimSpace(selection)
+
+	choice, err := strconv.Atoi(selection)
+	if err != nil || choice < 0 || choice > len(features) {
+		return nil, false, fmt.Errorf("invalid selection: %s", selection)
+	}
+
+	if choice == 0 {
+		return nil, true, nil
+	}
+
+	selected := features[choice-1]
+	return &selected, false, nil
 }
 
 func featureHandoff(featureRef string) (string, error) {

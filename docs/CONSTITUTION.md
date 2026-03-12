@@ -88,6 +88,9 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
    - Plan items link to spec items using `[SPEC-XX]` syntax
    - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
 
+7. **External Review Tools**
+   - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
+
 ### Code Quality Constraints
 
 1. **Go Best Practices**

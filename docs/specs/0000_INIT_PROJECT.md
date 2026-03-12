@@ -505,6 +505,7 @@ Reflection Process:
 3. cross-reference with repository context and codebase
 4. verify correctness checklist (compiles, no errors, edge cases handled)
 5. run lint and tests, then fix ALL failures (including out-of-scope failures) before completion
+6. do not run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 
 ---
 
@@ -520,10 +521,12 @@ Purpose:
 
 Behavior:
 
-- without feature argument: outputs project-level context including:
+- without feature argument: shows an interactive numbered selector of all features under `docs/specs/` plus `0` for no specific feature
+- selecting `0`: outputs project-level context including:
   - Kit workflow explanation
   - project structure
-  - list of features with their phases
+  - current development status across all features
+  - `docs/PROJECT_PROGRESS_SUMMARY.md` as the current rollup source
   - immediate next steps
 - with feature argument: outputs feature-specific context including:
   - feature location and phase

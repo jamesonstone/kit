@@ -22,3 +22,7 @@
 
 - Never mix features in one `docs/specs/<feature>/` directory.
 - If work spans features, update each feature's docs separately.
+
+## Tooling approval
+
+- Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first.

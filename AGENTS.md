@@ -115,6 +115,7 @@ If ad hoc work touches a feature with existing specs:
 - Ensure code is formatted, linted, and tested
 - Fix all lint and test failures before completion, including failures outside the immediate scope
 - Review changes using `git diff` against the approved plan
+- Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 - If implementation diverges from specs:
   - update `SPEC.md` / `PLAN.md` / `TASKS.md` first
   - then update code
