@@ -20,7 +20,7 @@ var initCmd = &cobra.Command{
 Creates:
   - .kit.yaml configuration file
   - docs/CONSTITUTION.md
-  - Agent pointer files (AGENTS.md, CLAUDE.md)
+	- Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
 
 If files already exist, Kit attempts to merge by preserving existing
 content and adding any missing required sections.`,
@@ -81,21 +81,19 @@ func runInit(cmd *cobra.Command, args []string) error {
 		fmt.Println("  ✓ Created docs/CONSTITUTION.md")
 	}
 
-	// scaffold agent pointer files
-	for _, agentFile := range cfg.Agents {
-		agentPath := filepath.Join(cwd, agentFile)
-		agentName := agentFile[:len(agentFile)-3] // remove .md extension
-
-		if document.Exists(agentPath) {
-			fmt.Printf("  ✓ %s exists, skipping\n", agentFile)
-			continue
+	// scaffold repository instruction files
+	for _, instructionFile := range instructionFiles(cfg) {
+		result, err := writeInstructionFile(cwd, instructionFile, false)
+		if err != nil {
+			return err
 		}
 
-		content := templates.AgentPointer(agentName)
-		if err := document.Write(agentPath, content); err != nil {
-			return fmt.Errorf("failed to create %s: %w", agentFile, err)
+		switch result {
+		case instructionFileCreated:
+			fmt.Printf("  ✓ Created %s\n", instructionFile)
+		case instructionFileSkipped:
+			fmt.Printf("  ✓ %s exists, skipping\n", instructionFile)
 		}
-		fmt.Printf("  ✓ Created %s\n", agentFile)
 	}
 
 	fmt.Println("\n✅ Kit project initialized!")

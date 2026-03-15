@@ -88,23 +88,24 @@ Slug validation:
 
 ---
 
-## 5. Agent Portability via Pointer Files
+## 5. Repository Instruction Files
 
-Kit scaffolds, but does not own, agent-specific files.
+Kit scaffolds, but does not own, repository instruction files.
 
 Examples:
 
 - `AGENTS.md`
 - `CLAUDE.md`
+- `.github/copilot-instructions.md`
 
 These files:
 
 - contain links/paths to canonical documents
-- include minimal agent-specific constraints
-- never duplicate specifications
-- define the workflow contract for that agent
+- summarize the active workflow contract and repository standards
+- stay aligned with the canonical docs
+- support multiple tools without changing the artifact pipeline
 
-If canonical paths change, Kit can update pointers.
+If canonical paths change, Kit can refresh these files.
 
 ### Example: `AGENTS.md`
 
@@ -123,12 +124,14 @@ If canonical paths change, Kit can update pointers.
 ## Workflow contract
 
 - Specs drive code. Code serves specs.
+- Optional research starts with `BRAINSTORM.md` when present.
 - For any change:
-  1. locate the relevant feature directory in `docs/specs/<feature>/`
-  2. read `SPEC.md` → `PLAN.md` → `TASKS.md`
-  3. implement tasks in order
-  4. verify (tests / validation steps from plan)
-  5. if reality diverges, update `SPEC.md` / `PLAN.md` / `TASKS.md` first, then code
+  1. classify the work as spec-driven or ad hoc
+  2. locate the relevant feature directory in `docs/specs/<feature>/`
+  3. read `BRAINSTORM.md` when present, then `SPEC.md` → `PLAN.md` → `TASKS.md`
+  4. implement tasks in order
+  5. verify (tests / validation steps from plan)
+  6. if reality diverges, update `SPEC.md` / `PLAN.md` / `TASKS.md` first, then code
 
 ## Multi-feature rule
 
@@ -323,6 +326,8 @@ agents:
   - CLAUDE.md
 ```
 
+`agents` controls agent-specific files only. Repo-wide Copilot instructions always scaffold to `.github/copilot-instructions.md`.
+
 ### 7.3 Feature Naming
 
 ```plaintext
@@ -345,7 +350,7 @@ CLI flags always override `.kit.yaml`.
 
 - create `.kit.yaml` if missing
 - create `docs/CONSTITUTION.md` if missing
-- scaffold configured agent pointer files
+- scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, attempt to merge (preserve existing content, add missing sections)
 
 ---
@@ -456,8 +461,15 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 
 #### `kit scaffold-agents`
 
-- create missing agent pointer files
-- update document links if paths changed
+- create missing repository instruction files
+- overwrite existing repository instruction files only when `--force` is set
+- scaffold `.github/copilot-instructions.md` alongside configured agent files
+- support the alias `kit scaffold-agent`
+- without targeted flags, scaffold configured agent files plus `.github/copilot-instructions.md`
+- `--agentsmd` scaffolds only `AGENTS.md`
+- `--claude` scaffolds only `CLAUDE.md`
+- `--copilot` scaffolds only `.github/copilot-instructions.md`
+- allow combining targeted flags to scaffold multiple specific built-in files in one run
 
 ---
 

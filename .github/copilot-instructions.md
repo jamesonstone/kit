@@ -1,4 +1,27 @@
-# AGENTS
+# GitHub Copilot Repository Instructions
+
+## Fast rules for chat and code review
+
+- classify every request first
+  - **spec-driven**: `kit brainstorm` / `kit spec` work, new capability, substantial behavioral or architectural change, existing spec-covered feature work, or cross-component/public-interface changes
+  - **ad hoc**: contained bug fix, review, refactor, dependency update, config change, or small refinement
+- for spec-driven work:
+  - read `BRAINSTORM.md` when present, then `SPEC.md` → `PLAN.md` → `TASKS.md`
+  - ask numbered clarification questions until you reach ≥95% confidence
+  - include a recommended default, proposed solution, or assumption for every question
+  - accept approvals via `yes` / `y`, partial approvals via `yes 3, 4`, and overrides via `no 2: <answer>`
+  - implement tasks in order and update docs first if implementation changes behavior, requirements, or approach
+- for ad hoc work:
+  - follow understand → implement → verify
+  - update existing spec docs when the change alters behavior, requirements, or approach
+- always:
+  - never mix multiple features in one `docs/specs/<feature>/` directory
+  - keep `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` aligned with canonical docs
+  - prefer readable, maintainable code with explicit error handling and focused functions
+  - fix all lint and test failures before completion and wait for the user's output before triaging findings they report
+  - do NOT run `coderabbit --prompt-only`, `git add`, or `git commit` without explicit approval
+
+---
 
 ## Source of truth
 

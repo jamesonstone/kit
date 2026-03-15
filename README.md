@@ -92,9 +92,33 @@ kit status
 | Command               | Description                                      |
 | --------------------- | ------------------------------------------------ |
 | `kit version`         | Print the installed Kit version                  |
-| `kit agentsmd`        | Create or overwrite AGENTS.md with full template |
-| `kit scaffold-agents` | Create or update agent pointer files             |
+| `kit scaffold-agents` | Create or refresh repository instruction files and Copilot rules |
 | `kit completion`      | Generate shell autocompletion script             |
+
+`kit scaffold-agents` also supports the singular alias `kit scaffold-agent`.
+
+### Target specific instruction files
+
+By default, `kit scaffold-agents` refreshes all configured repository instruction files.
+
+Use targeted flags to refresh only specific built-in files:
+
+```bash
+# update only Copilot instructions
+kit scaffold-agents --copilot
+
+# update only CLAUDE.md
+kit scaffold-agents --claude
+
+# update only AGENTS.md
+kit scaffold-agents --agentsmd
+
+# update multiple built-in files together
+kit scaffold-agents --agentsmd --copilot --force
+
+# singular alias
+kit scaffold-agent --claude
+```
 
 ## Artifact Pipeline
 

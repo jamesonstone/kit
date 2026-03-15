@@ -17,7 +17,7 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
 
 - No vendor lock-in to any coding agent (Claude, Copilot, Codex, etc.).
 - Documents use only markdown and YAML — universally readable.
-- Agent pointer files (`AGENTS.md`, `CLAUDE.md`) link to canonical docs but never duplicate content.
+- Repository instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) stay aligned with canonical docs and summarize the active workflow contract for supported tools.
 - Agents can be swapped with zero document changes.
 
 ### 3. Minimal Magic, Explicit State
@@ -252,14 +252,14 @@ A single integer (0–100) reported by the coding agent indicating:
 
 Kit does not define a scoring rubric — the agent determines the value.
 
-### Agent Pointer File
+### Repository Instruction File
 
-A lightweight markdown file (e.g., `AGENTS.md`, `CLAUDE.md`) that:
+A markdown file (e.g., `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) that:
 
 - Links to canonical documents
-- Defines workflow contract for that agent
-- Contains minimal agent-specific constraints
-- Never duplicates specifications
+- Defines the active workflow contract for supported tools
+- Summarizes repository standards and execution rules
+- Must stay aligned with canonical project documents
 
 ### Project Root
 
