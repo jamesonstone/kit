@@ -137,6 +137,8 @@ var commandOrder = map[string]int{
 	"skill":     40,
 	"skills":    40,
 	// utility
+	"upgrade":         88,
+	"update":          88,
 	"version":         89,
 	"scaffold-agents": 90,
 	"completion":      91,

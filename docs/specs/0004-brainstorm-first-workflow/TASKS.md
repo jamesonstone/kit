@@ -93,9 +93,11 @@ Use markdown checkboxes to track completion:
 - **SCOPE**:
   - update help text, status, handoff, rollup, README, constitution, and generated templates
   - show brainstorming as optional before spec
+  - keep `kit status` output informative by including the running Kit version as a minor metadata line
 - **ACCEPTANCE**:
   - visible workflow messaging is internally consistent
   - brainstorm-only features produce correct next-step guidance
+  - `kit status` includes the running Kit version without overwhelming the main feature output
 - **NOTES**: [PLAN-INTERFACES], [PLAN-RISKS]
 
 ### T007

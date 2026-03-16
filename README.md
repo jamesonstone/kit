@@ -98,6 +98,8 @@ kit status
 
 | Command               | Description                                      |
 | --------------------- | ------------------------------------------------ |
+| `kit upgrade`         | Download and install the latest Kit release      |
+| `kit update`          | Alias for `kit upgrade`                          |
 | `kit version`         | Print the installed Kit version                  |
 | `kit scaffold-agents` | Create or refresh repository instruction files and Copilot rules |
 | `kit completion`      | Generate shell autocompletion script             |

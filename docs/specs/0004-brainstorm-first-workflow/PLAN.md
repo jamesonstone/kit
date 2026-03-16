@@ -67,6 +67,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - preserve shared clarification-loop approval semantics when the `>=95%` understanding workflow is active
 - `kit status`
   - display brainstorm-only features correctly
+  - include the running Kit version as minor informational metadata
 - help/README/constitution/agent templates
   - show optional brainstorm before spec
   - remove `oneshot` and branching language

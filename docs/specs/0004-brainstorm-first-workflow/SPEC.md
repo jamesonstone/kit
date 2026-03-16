@@ -49,6 +49,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - downstream command prompts must include `BRAINSTORM.md` when the file exists
 - features with `BRAINSTORM.md` but no `SPEC.md` must be represented distinctly from `spec` phase features
 - `kit status`, rollup output, and handoff/help messaging must reflect the brainstorm phase accurately
+- `kit status` must include the running Kit version as minor informational metadata without displacing feature guidance
 - all `oneshot` command code and references must be removed
 - all branch automation code, flags, config fields, and references must be removed
 
@@ -58,6 +59,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - the brainstorm prompt begins with `/plan`
 - the brainstorm prompt instructs the agent to research the full codebase, avoid implementation, and use numbered batched clarification with recommended defaults, `yes` / `y` whole-batch approval, `yes 3, 4, 5` / `y 3, 4, 5` numbered approval, `no` / `n` overrides, uncertainties, and visible percentage-understanding progress until the specification is precise enough for a production-quality solution
 - `kit status` shows brainstorm-only features without mislabeling them as `spec`
+- `kit status` includes the running Kit version while preserving brainstorm-aware feature guidance
 - `kit spec`, `kit plan`, and `kit tasks` preserve the same clarification-loop approval semantics, and `kit implement` plus `kit reflect` reference `BRAINSTORM.md` when present
 - `kit oneshot` is no longer available from the CLI or help output
 - repository config and docs contain no active branch automation guidance
