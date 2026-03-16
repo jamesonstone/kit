@@ -9,6 +9,7 @@
 | 0003 | inplace-upgrade-update | `docs/specs/0003-inplace-upgrade-update` | spec | 2026-03-05 | - Kit users currently need manual update flows (for examp... |
 | 0004 | brainstorm-first-workflow | `docs/specs/0004-brainstorm-first-workflow` | reflect | 2026-03-06 | Kit currently treats brainstorming as an external or stan... |
 | 0005 | version-command | `docs/specs/0005-version-command` | reflect | 2026-03-06 | - Kit currently exposes version information only through ... |
+| 0006 | skill-mine-command | `docs/specs/0006-skill-mine-command` | reflect | 2026-03-15 | - Kit has no built-in command for turning completed featu... |
 
 ## PROJECT INTENT
 
@@ -60,6 +61,14 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - None.
 - **POINTERS**: `docs/specs/0005-version-command/SPEC.md`, `docs/specs/0005-version-command/PLAN.md`, `docs/specs/0005-version-command/TASKS.md`
 
+### skill-mine-command
+
+- **STATUS**: reflect
+- **INTENT**: - Kit has no built-in command for turning completed feature work into reusable agent skills. - Reusable implementatio...
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-32][SPEC-36] Extend config with a configurable canonical skills directory and keep...
+- **OPEN ITEMS**: - None.
+- **POINTERS**: `docs/specs/0006-skill-mine-command/SPEC.md`, `docs/specs/0006-skill-mine-command/PLAN.md`, `docs/specs/0006-skill-mine-command/TASKS.md`
+
 ## LAST UPDATED
 
-2026-03-11 12:41:40 EDT
+2026-03-15 17:10:51 EDT

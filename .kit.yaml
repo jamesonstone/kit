@@ -1,5 +1,6 @@
 goal_percentage: 95
 specs_dir: docs/specs
+skills_dir: .agents/skills
 constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false
 agents:

@@ -15,6 +15,7 @@ const ConfigFileName = ".kit.yaml"
 type Config struct {
 	GoalPercentage   int           `yaml:"goal_percentage"`
 	SpecsDir         string        `yaml:"specs_dir"`
+	SkillsDir        string        `yaml:"skills_dir"`
 	ConstitutionPath string        `yaml:"constitution_path"`
 	AllowOutOfOrder  bool          `yaml:"allow_out_of_order"`
 	Agents           []string      `yaml:"agents"`
@@ -32,6 +33,7 @@ func Default() *Config {
 	return &Config{
 		GoalPercentage:   95,
 		SpecsDir:         "docs/specs",
+		SkillsDir:        ".agents/skills",
 		ConstitutionPath: "docs/CONSTITUTION.md",
 		AllowOutOfOrder:  false,
 		Agents:           []string{"AGENTS.md", "CLAUDE.md"},
@@ -117,6 +119,11 @@ func Exists(dir string) bool {
 // SpecsPath returns the absolute path to the specs directory.
 func (c *Config) SpecsPath(projectRoot string) string {
 	return filepath.Join(projectRoot, c.SpecsDir)
+}
+
+// SkillsPath returns the absolute path to the skills directory.
+func (c *Config) SkillsPath(projectRoot string) string {
+	return filepath.Join(projectRoot, c.SkillsDir)
 }
 
 // ConstitutionAbsPath returns the absolute path to the constitution file.

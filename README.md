@@ -87,6 +87,13 @@ kit status
 | `kit summarize [feature]` | Output context summarization instructions                        |
 | `kit reflect [feature]`   | Output reflection/verification instructions                      |
 
+### Skill Mining
+
+| Command                     | Description                                                |
+| --------------------------- | ---------------------------------------------------------- |
+| `kit skill mine [feature]`  | Output skill extraction prompt for the active coding agent |
+| `kit skills mine [feature]` | Alias for `kit skill mine`                                 |
+
 ### Utility
 
 | Command               | Description                                      |
