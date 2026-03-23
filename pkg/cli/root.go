@@ -134,6 +134,7 @@ var commandOrder = map[string]int{
 	// context management
 	"handoff":   30,
 	"summarize": 31,
+	"catchup":   32,
 	"skill":     40,
 	"skills":    40,
 	// utility

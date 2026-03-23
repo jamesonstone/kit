@@ -48,17 +48,24 @@ kit tasks my-feature
 # start implementation (outputs context for coding agents)
 kit implement my-feature
 
+# catch up on a feature before resuming work
+kit catchup my-feature
+
 # check status anytime
 kit status
+
+# mark all eligible active features complete
+kit complete --all
 ```
 
 ## Commands
 
 ### Project Initialization
 
-| Command    | Description                  |
-| ---------- | ---------------------------- |
-| `kit init` | Initialize a new Kit project |
+| Command                  | Description                                    |
+| ------------------------ | ---------------------------------------------- |
+| `kit init`               | Initialize a new Kit project                   |
+| `kit scaffold [feature]` | Create a feature directory with pipeline files |
 
 ### Core Development Loop
 
@@ -69,7 +76,9 @@ kit status
 | `kit plan <feature>`       | Create or open an implementation plan                                   |
 | `kit tasks <feature>`      | Create or open a task list                                              |
 | `kit implement [feature]`  | Output implementation context for coding agents                         |
-| `kit status`               | Show current feature status for coding agents                           |
+| `kit reflect [feature]`    | Output reflection/verification instructions                             |
+| `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features |
+| `kit status`               | Show current feature status; supports `--json` and includes the running Kit version |
 
 ### Verification & State
 
@@ -85,7 +94,7 @@ kit status
 | ------------------------- | ---------------------------------------------------------------- |
 | `kit handoff [feature]`   | Output feature or project-wide context for a fresh agent session |
 | `kit summarize [feature]` | Output context summarization instructions                        |
-| `kit reflect [feature]`   | Output reflection/verification instructions                      |
+| `kit catchup [feature]`   | Output a feature catch-up prompt that stays in plan mode         |
 
 ### Skill Mining
 
@@ -96,38 +105,15 @@ kit status
 
 ### Utility
 
-| Command               | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| `kit upgrade`         | Download and install the latest Kit release      |
-| `kit update`          | Alias for `kit upgrade`                          |
-| `kit version`         | Print the installed Kit version                  |
+| Command               | Description                                                    |
+| --------------------- | -------------------------------------------------------------- |
+| `kit upgrade`         | Download and install the latest Kit release                    |
+| `kit update`          | Alias for `kit upgrade`                                        |
+| `kit version`         | Print the installed Kit version                                |
 | `kit scaffold-agents` | Create or refresh repository instruction files and Copilot rules |
-| `kit completion`      | Generate shell autocompletion script             |
+| `kit completion`      | Generate shell autocompletion script                           |
 
 `kit scaffold-agents` also supports the singular alias `kit scaffold-agent`.
-
-### Target specific instruction files
-
-By default, `kit scaffold-agents` refreshes all configured repository instruction files.
-
-Use targeted flags to refresh only specific built-in files:
-
-```bash
-# update only Copilot instructions
-kit scaffold-agents --copilot
-
-# update only CLAUDE.md
-kit scaffold-agents --claude
-
-# update only AGENTS.md
-kit scaffold-agents --agentsmd
-
-# update multiple built-in files together
-kit scaffold-agents --agentsmd --copilot --force
-
-# singular alias
-kit scaffold-agent --claude
-```
 
 ## Artifact Pipeline
 
