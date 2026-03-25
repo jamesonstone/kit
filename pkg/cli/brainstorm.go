@@ -2,12 +2,10 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
@@ -19,8 +17,10 @@ import (
 
 var (
 	brainstormCopy       bool
+	brainstormEditor     string
 	brainstormOutput     string
 	brainstormOutputOnly bool
+	brainstormUseVim     bool
 )
 
 var brainstormCmd = &cobra.Command{
@@ -35,7 +35,7 @@ Creates:
 
 Interactive flow:
 	1. Ask for a feature/project name (unless provided as an argument)
-	2. Ask for a short issue/feature thesis
+	2. Ask for a multiline issue/feature thesis
 
 The command never implements code. It outputs a /plan prompt that instructs
 the coding agent to research the codebase, use numbered lists for clarifying
@@ -43,6 +43,7 @@ questions, show percentage progress, and persist findings to BRAINSTORM.md.
 
 Examples:
 	kit brainstorm
+	kit brainstorm --vim
 	kit brainstorm patient-intake-redesign --copy
 	kit brainstorm -o docs/brainstorm-prompt.md`,
 	Args: cobra.MaximumNArgs(1),
@@ -50,6 +51,7 @@ Examples:
 }
 
 func init() {
+	addFreeTextInputFlags(brainstormCmd, &brainstormUseVim, &brainstormEditor)
 	brainstormCmd.Flags().BoolVar(&brainstormCopy, "copy", false, "copy output to clipboard")
 	brainstormCmd.Flags().StringVarP(&brainstormOutput, "output", "o", "", "write output to file")
 	brainstormCmd.Flags().BoolVar(&brainstormOutputOnly, "output-only", false, "output text only, suppressing status messages")
@@ -73,8 +75,10 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	if err := ensureDir(specsDir); err != nil {
 		return err
 	}
-
-	featureRef, thesis, err := promptBrainstormInputs(args)
+	featureRef, thesis, err := promptBrainstormInputs(
+		args,
+		newFreeTextInputConfig(brainstormUseVim, brainstormEditor),
+	)
 	if err != nil {
 		return err
 	}
@@ -147,27 +151,32 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func promptBrainstormInputs(args []string) (string, string, error) {
-	rl, err := readline.NewEx(&readline.Config{
-		Prompt:              whiteBold + "   > " + reset,
-		InterruptPrompt:     "^C",
-		EOFPrompt:           "",
-		Stdin:               os.Stdin,
-		Stdout:              os.Stdout,
-		Stderr:              os.Stderr,
-		FuncFilterInputRune: specInputRuneFilter,
-	})
+func promptBrainstormInputs(args []string, inputCfg freeTextInputConfig) (string, string, error) {
+	featureRef, err := promptBrainstormFeatureRef(args)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to initialize readline: %w", err)
+		return "", "", err
 	}
-	defer rl.Close()
+
+	thesis, err := promptBrainstormThesis(inputCfg)
+	if err != nil {
+		return "", "", err
+	}
+
+	return featureRef, thesis, nil
+}
+
+func promptBrainstormFeatureRef(args []string) (string, error) {
 
 	featureRef := ""
 	if len(args) == 1 {
 		featureRef = normalizeSpecAnswer(args[0])
 	}
-
 	if featureRef == "" {
+		rl, err := newMultilineReadline()
+		if err != nil {
+			return "", fmt.Errorf("failed to initialize readline: %w", err)
+		}
+		defer closeMultilineReadline(rl)
 		fmt.Println()
 		fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
 		fmt.Println(whiteBold + "🧠 Brainstorm Builder" + reset)
@@ -179,26 +188,42 @@ func promptBrainstormInputs(args []string) (string, string, error) {
 	}
 
 	if featureRef == "" {
-		return "", "", fmt.Errorf("feature name cannot be empty")
+		return "", fmt.Errorf("feature name cannot be empty")
 	}
 
 	normalized := feature.NormalizeSlug(featureRef)
 	if err := feature.ValidateSlug(normalized); err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	if normalized != featureRef {
 		fmt.Printf(dim+"Using normalized feature slug: %s"+reset+"\n\n", normalized)
 	}
+	return normalized, nil
+}
+
+func promptBrainstormThesis(inputCfg freeTextInputConfig) (string, error) {
 
 	fmt.Println(dim + "Step 2 of 2: Describe the issue or feature in a few sentences." + reset)
-	fmt.Println(dim + "Press Enter to submit. Use Shift+Enter or Ctrl+J to insert a newline." + reset)
-	thesis := readLineRL(rl)
-	if thesis == "" {
-		return "", "", fmt.Errorf("brainstorm thesis cannot be empty")
+	if inputCfg.usesEditor() {
+		fmt.Println(dim + "A vim-compatible editor will open for this response." + reset)
+		return readEditorText(inputCfg, "brainstorm thesis", false)
 	}
 
-	return normalized, thesis, nil
+	rl, err := newMultilineReadline()
+	if err != nil {
+		return "", fmt.Errorf("failed to initialize readline: %w", err)
+	}
+	defer closeMultilineReadline(rl)
+
+	fmt.Println(dim + "Press Enter to submit. Use Shift+Enter or Ctrl+J to insert newlines." + reset)
+	fmt.Println(dim + "Consecutive blank lines are preserved." + reset)
+	thesis := readLineRL(rl)
+	if thesis == "" {
+		return "", fmt.Errorf("brainstorm thesis cannot be empty")
+	}
+
+	return thesis, nil
 }
 
 func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis string, goalPct int) string {

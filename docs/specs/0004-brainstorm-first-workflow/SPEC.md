@@ -42,6 +42,10 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - `kit brainstorm` must create or reuse the numbered feature directory under `docs/specs/`
 - `kit brainstorm` must create `BRAINSTORM.md` if missing and keep it in the feature directory
 - `kit brainstorm` must ask for a multiline issue/feature thesis in interactive mode
+- free-text interactive prompts must accept `Shift+Enter` for newline insertion without submitting
+- free-text interactive prompts must preserve consecutive blank lines within submitted content
+- free-text interactive prompts must support `--vim` and `--editor=vim` to open a vim-compatible editor
+- in editor mode, save+quit must submit and quit-without-save must cancel or skip
 - the generated prompt must start with `/plan`
 - the generated prompt must explicitly forbid implementation/build work and keep the agent in information-gathering mode
 - the generated prompt must require numbered batched clarification and visible percentage-understanding progress until `>=95%` confidence in the problem and desired solution
@@ -56,6 +60,8 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 ## ACCEPTANCE
 
 - running `kit brainstorm` interactively creates `docs/specs/<n>-<slug>/BRAINSTORM.md`
+- `kit brainstorm` and `kit spec --interactive` allow multiline responses with `Shift+Enter` without accidental submit
+- `kit brainstorm --vim` and `kit spec --interactive --vim` open free-text responses in a vim-compatible editor
 - the brainstorm prompt begins with `/plan`
 - the brainstorm prompt instructs the agent to research the full codebase, avoid implementation, and use numbered batched clarification with recommended defaults, `yes` / `y` whole-batch approval, `yes 3, 4, 5` / `y 3, 4, 5` numbered approval, `no` / `n` overrides, uncertainties, and visible percentage-understanding progress until the specification is precise enough for a production-quality solution
 - `kit status` shows brainstorm-only features without mislabeling them as `spec`
@@ -73,6 +79,8 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - brainstorm-only features coexist with later-phase features in status and rollup output
 - user provides a feature name that needs normalization or fails slug validation
 - user enters an empty thesis or interrupts interactive input
+- user enters multiple consecutive blank lines in a free-text response
+- user exits the editor without saving a required response
 - downstream commands run for features that do not have `BRAINSTORM.md`
 
 ## OPEN-QUESTIONS

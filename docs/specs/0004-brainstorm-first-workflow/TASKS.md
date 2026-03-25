@@ -54,6 +54,8 @@ Use markdown checkboxes to track completion:
 - **GOAL**: Turn `kit brainstorm` into the interactive planning-only entrypoint
 - **SCOPE**:
   - ask for feature name and thesis
+  - support `Shift+Enter` and `Ctrl+J` for multiline thesis entry
+  - support `--vim` and `--editor=vim` for editor-backed thesis entry
   - create or reuse the numbered feature directory
   - create `BRAINSTORM.md`
   - output a `/plan` prompt with planning-only instructions
@@ -68,6 +70,8 @@ Use markdown checkboxes to track completion:
 - **GOAL**: Make downstream workflow prompts consume `BRAINSTORM.md` when present
 - **SCOPE**:
   - update `spec`, `plan`, `tasks`, `implement`, and `reflect`
+  - keep free-text prompt behavior consistent between `brainstorm` and `spec --interactive`
+  - support the same editor-backed free-text mode in both commands
   - keep `BRAINSTORM.md` optional
 - **ACCEPTANCE**:
   - prompts include `BRAINSTORM.md` file references and guidance when present
@@ -105,6 +109,8 @@ Use markdown checkboxes to track completion:
 - **GOAL**: Prove the refactor works and prevent regression
 - **SCOPE**:
   - add/update tests
+  - cover `Shift+Enter` multiline entry behavior and newline preservation helpers
+  - cover editor flag resolution and editor-backed input helpers
   - run `go test ./...`
   - search for stale `oneshot`, branch, and outdated clarification-loop references
 - **ACCEPTANCE**:

@@ -20,6 +20,14 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - feature resolution/creation
   - brainstorm prompt generation
   - output/copy/file behaviors
+- `pkg/cli/multiline_input.go`
+  - shared free-text prompt setup
+  - kitty keyboard protocol activation/restoration
+  - `Shift+Enter` escape translation and newline insertion
+- `pkg/cli/editor_input.go`
+  - shared editor-backed free-text input
+  - `--vim` and `--editor=vim` flag handling
+  - editor launch, cancel, and submit semantics
 - `internal/templates/templates.go`
   - brainstorm artifact template
   - generated agent pointer/template updates
@@ -60,11 +68,16 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - default interactive mode
   - prompt for feature name
   - prompt for multiline thesis
+  - allow `Shift+Enter` and `Ctrl+J` to insert newlines without submit
+  - allow `--vim` and `--editor=vim` to capture the thesis in a vim-compatible editor
   - create or reuse `docs/specs/<feature>/BRAINSTORM.md`
   - output a `/plan` prompt for a coding agent
 - `kit spec`, `kit plan`, `kit tasks`, `kit implement`, `kit reflect`
   - include `BRAINSTORM.md` in file references and instructions when present
   - preserve shared clarification-loop approval semantics when the `>=95%` understanding workflow is active
+- `kit spec --interactive`
+  - use the same multiline free-text input behavior as `kit brainstorm`
+  - support editor-backed per-question responses via `--vim` and `--editor=vim`
 - `kit status`
   - display brainstorm-only features correctly
   - include the running Kit version as minor informational metadata
@@ -87,6 +100,8 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 
 - unit tests for brainstorm phase detection and ordering
 - unit tests for brainstorm prompt generation, including `/plan` prefix plus numbered-list, approval-syntax, and percentage-progress clarification requirements
+- unit tests for multiline input translation, including `Shift+Enter` escape handling and blank-line preservation hooks
+- unit tests for editor resolution and editor-backed submit/cancel semantics helpers
 - unit tests for brainstorm-aware next-step/status behavior
 - repository-wide search verification for removed `oneshot` and branching references
 - full `go test ./...`
