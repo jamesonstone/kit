@@ -2,16 +2,20 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var (
-	execCommand = exec.Command
-	lookPath    = exec.LookPath
+	awaitEditorLaunchConfirmation = waitForEditorLaunchConfirmation
+	editorInputRunner             = runEditorInput
+	execCommand                   = exec.Command
+	lookPath                      = exec.LookPath
 )
 
 type freeTextInputConfig struct {
@@ -96,15 +100,14 @@ func readEditorText(inputCfg freeTextInputConfig, fieldName string, emptyAllowed
 	if emptyAllowed {
 		cancelAction = "skip"
 	}
+	if err := printEditorLaunchInstructions(os.Stdout, inputCfg, fieldName, cancelAction); err != nil {
+		return "", err
+	}
+	if err := awaitEditorLaunchConfirmation(os.Stdin, os.Stdout); err != nil {
+		return "", err
+	}
 
-	fmt.Printf(
-		dim+"Opening %s for %s. Save and quit to submit. Quit without save to %s."+reset+"\n",
-		inputCfg.editorLabel(),
-		fieldName,
-		cancelAction,
-	)
-
-	text, changed, err := runEditorInput(inputCfg, fieldName, "")
+	text, changed, err := editorInputRunner(inputCfg, fieldName, "")
 	if err != nil {
 		return "", err
 	}
@@ -124,6 +127,56 @@ func readEditorText(inputCfg freeTextInputConfig, fieldName string, emptyAllowed
 	}
 
 	return text, nil
+}
+
+func printEditorLaunchInstructions(
+	output io.Writer,
+	inputCfg freeTextInputConfig,
+	fieldName string,
+	cancelAction string,
+) error {
+	_, err := fmt.Fprintf(
+		output,
+		dim+"Step: %s. Paste only the content for this response into the %s that opens next. Save and quit to submit. Quit without save to %s.\nPress any key to open the editor."+reset+"\n",
+		fieldName,
+		inputCfg.editorLabel(),
+		cancelAction,
+	)
+	return err
+}
+
+func waitForEditorLaunchConfirmation(input *os.File, output io.Writer) error {
+	if input == nil {
+		return nil
+	}
+
+	fd := int(input.Fd())
+	if !term.IsTerminal(fd) {
+		return nil
+	}
+
+	state, err := term.MakeRaw(fd)
+	if err != nil {
+		return fmt.Errorf("failed to enter raw mode for editor launch: %w", err)
+	}
+	defer term.Restore(fd, state)
+
+	var key [1]byte
+	if _, err := input.Read(key[:]); err != nil {
+		return fmt.Errorf("failed to read key press before opening editor: %w", err)
+	}
+
+	if key[0] == 3 {
+		return fmt.Errorf("editor launch cancelled")
+	}
+
+	if output != nil {
+		if _, err := io.WriteString(output, "\n"); err != nil {
+			return fmt.Errorf("failed to write editor launch newline: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func runEditorInput(inputCfg freeTextInputConfig, fieldName, initialContent string) (string, bool, error) {

@@ -11,6 +11,7 @@
 | T005 | Remove `kit oneshot`, git branch automation, and stale config/code        | done   | agent | T001                   |
 | T006 | Update root/help/status/handoff/rollup/docs for brainstorm-first workflow | done   | agent | T002, T005             |
 | T007 | Add tests and run verification                                            | done   | agent | T003, T004, T005, T006 |
+| T008 | Add pre-editor instructions and keypress gating for editor-backed input   | done   | agent | T003, T007             |
 
 ## TASK LIST
 
@@ -23,6 +24,7 @@ Use markdown checkboxes to track completion:
 - [x] T005: Remove `kit oneshot`, git branch automation, and stale config/code
 - [x] T006: Update root/help/status/handoff/rollup/docs for brainstorm-first workflow
 - [x] T007: Add tests and run verification
+- [x] T008: Add pre-editor instructions and keypress gating for editor-backed input
 
 ## TASK DETAILS
 
@@ -118,6 +120,19 @@ Use markdown checkboxes to track completion:
   - targeted regressions are covered by tests
   - stale references are removed or intentionally documented
 - **NOTES**: [PLAN-TESTING]
+
+### T008
+
+- **GOAL**: Make editor-backed free-text entry clearer before the editor opens
+- **SCOPE**:
+  - update the shared editor input helper
+  - show a short step-specific instruction screen before editor launch
+  - wait for any key before opening the editor
+- **ACCEPTANCE**:
+  - `brainstorm --vim` and `spec --interactive --vim` display step instructions before opening the editor
+  - the editor opens only after an explicit key press
+  - tests cover the new pre-editor interaction
+- **NOTES**: [PLAN-COMPONENTS], [PLAN-TESTING]
 
 ## DEPENDENCIES
 

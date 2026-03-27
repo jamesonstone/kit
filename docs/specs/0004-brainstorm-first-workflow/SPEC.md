@@ -45,6 +45,8 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - free-text interactive prompts must accept `Shift+Enter` for newline insertion without submitting
 - free-text interactive prompts must preserve consecutive blank lines within submitted content
 - free-text interactive prompts must support `--vim` and `--editor=vim` to open a vim-compatible editor
+- editor-backed free-text prompts must show a short step-specific instruction screen before opening the editor
+- editor-backed free-text prompts must wait for any key press before opening the editor
 - in editor mode, save+quit must submit and quit-without-save must cancel or skip
 - the generated prompt must start with `/plan`
 - the generated prompt must explicitly forbid implementation/build work and keep the agent in information-gathering mode
@@ -62,6 +64,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - running `kit brainstorm` interactively creates `docs/specs/<n>-<slug>/BRAINSTORM.md`
 - `kit brainstorm` and `kit spec --interactive` allow multiline responses with `Shift+Enter` without accidental submit
 - `kit brainstorm --vim` and `kit spec --interactive --vim` open free-text responses in a vim-compatible editor
+- `kit brainstorm --vim` and `kit spec --interactive --vim` first show step-specific instructions and wait for any key before opening the editor
 - the brainstorm prompt begins with `/plan`
 - the brainstorm prompt instructs the agent to research the full codebase, avoid implementation, and use numbered batched clarification with recommended defaults, `yes` / `y` whole-batch approval, `yes 3, 4, 5` / `y 3, 4, 5` numbered approval, `no` / `n` overrides, uncertainties, and visible percentage-understanding progress until the specification is precise enough for a production-quality solution
 - `kit status` shows brainstorm-only features without mislabeling them as `spec`

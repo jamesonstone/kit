@@ -135,6 +135,7 @@ var commandOrder = map[string]int{
 	"handoff":   30,
 	"summarize": 31,
 	"catchup":   32,
+	"dispatch":  33,
 	"skill":     40,
 	"skills":    40,
 	// utility
@@ -201,6 +202,14 @@ func formatAgentInstructionBlock(prompt string) string {
 // if outputOnly=true, outputs the raw prompt without status text or dividers
 // otherwise, outputs the prompt inside a standardized markdown copy block
 func outputPrompt(prompt string, outputOnly, copy bool) error {
+	return writePrompt(prepareAgentPrompt(prompt), outputOnly, copy)
+}
+
+func outputPromptWithoutSubagents(prompt string, outputOnly, copy bool) error {
+	return writePrompt(prompt, outputOnly, copy)
+}
+
+func writePrompt(prompt string, outputOnly, copy bool) error {
 	if copy {
 		if err := copyToClipboard(prompt); err != nil {
 			return fmt.Errorf("failed to copy to clipboard: %w", err)

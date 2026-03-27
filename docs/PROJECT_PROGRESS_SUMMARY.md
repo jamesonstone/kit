@@ -6,10 +6,12 @@
 | -- | ------- | ---- | ----- | ------- | ------- |
 | 0001 | refactor-plan-command | `docs/specs/0001-refactor-plan-command` | tasks | 2026-01-19 | (no description) |
 | 0002 | cicd-goreleaser-releases | `docs/specs/0002-cicd-goreleaser-releases` | reflect | 2026-03-04 | - Kit lacks an automated release pipeline for cross-platf... |
-| 0003 | inplace-upgrade-update | `docs/specs/0003-inplace-upgrade-update` | spec | 2026-03-05 | - Kit users currently need manual update flows (for examp... |
+| 0003 | inplace-upgrade-update | `docs/specs/0003-inplace-upgrade-update` | reflect | 2026-03-16 | - Kit users currently need manual update flows (for examp... |
 | 0004 | brainstorm-first-workflow | `docs/specs/0004-brainstorm-first-workflow` | reflect | 2026-03-06 | Kit currently treats brainstorming as an external or stan... |
 | 0005 | version-command | `docs/specs/0005-version-command` | reflect | 2026-03-06 | - Kit currently exposes version information only through ... |
 | 0006 | skill-mine-command | `docs/specs/0006-skill-mine-command` | reflect | 2026-03-15 | - Kit has no built-in command for turning completed featu... |
+| 0007 | catchup-command | `docs/specs/0007-catchup-command` | reflect | 2026-03-23 | - Kit has `status`, `handoff`, `summarize`, and `implemen... |
+| 0008 | dispatch-command | `docs/specs/0008-dispatch-command` | reflect | 2026-03-27 | - Kit has prompt generators for planning, catch-up, imple... |
 
 ## PROJECT INTENT
 
@@ -39,9 +41,9 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 
 ### inplace-upgrade-update
 
-- **STATUS**: spec
+- **STATUS**: reflect
 - **INTENT**: - Kit users currently need manual update flows (for example, reinstalling with Go tooling), which is slower and incon...
-- **APPROACH**: (see PLAN.md)
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03] Add a new `pkg/cli/upgrade.go` file that registers `upgrade` and `update` as r...
 - **OPEN ITEMS**: - Should prereleases be ignored by default, with no opt-in in this phase? - For `dev` builds, should the command refu...
 - **POINTERS**: `docs/specs/0003-inplace-upgrade-update/SPEC.md`, `docs/specs/0003-inplace-upgrade-update/PLAN.md`, `docs/specs/0003-inplace-upgrade-update/TASKS.md`
 
@@ -69,6 +71,22 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - None.
 - **POINTERS**: `docs/specs/0006-skill-mine-command/SPEC.md`, `docs/specs/0006-skill-mine-command/PLAN.md`, `docs/specs/0006-skill-mine-command/TASKS.md`
 
+### catchup-command
+
+- **STATUS**: reflect
+- **INTENT**: - Kit has `status`, `handoff`, `summarize`, and `implement`, but no feature-scoped command dedicated to helping a cod...
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04] Create a new `pkg/cli/catchup.go` command with optional feature argum...
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0007-catchup-command/SPEC.md`, `docs/specs/0007-catchup-command/PLAN.md`, `docs/specs/0007-catchup-command/TASKS.md`
+
+### dispatch-command
+
+- **STATUS**: reflect
+- **INTENT**: - Kit has prompt generators for planning, catch-up, implementation, reflection, and skill mining, but no prompt-only ...
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06][SPEC-07][SPEC-08][SPEC-09][SPEC-10][SPEC-11][SPEC-1...
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0008-dispatch-command/SPEC.md`, `docs/specs/0008-dispatch-command/PLAN.md`, `docs/specs/0008-dispatch-command/TASKS.md`
+
 ## LAST UPDATED
 
-2026-03-15 17:10:51 EDT
+2026-03-27 15:00:55 EDT

@@ -27,6 +27,8 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - `pkg/cli/editor_input.go`
   - shared editor-backed free-text input
   - `--vim` and `--editor=vim` flag handling
+  - pre-editor instruction screen
+  - any-key confirmation before editor launch
   - editor launch, cancel, and submit semantics
 - `internal/templates/templates.go`
   - brainstorm artifact template
@@ -102,6 +104,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - unit tests for brainstorm prompt generation, including `/plan` prefix plus numbered-list, approval-syntax, and percentage-progress clarification requirements
 - unit tests for multiline input translation, including `Shift+Enter` escape handling and blank-line preservation hooks
 - unit tests for editor resolution and editor-backed submit/cancel semantics helpers
+- unit tests for pre-editor instruction rendering and any-key launch gating
 - unit tests for brainstorm-aware next-step/status behavior
 - repository-wide search verification for removed `oneshot` and branching references
 - full `go test ./...`

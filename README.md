@@ -96,6 +96,19 @@ kit complete --all
 | `kit summarize [feature]` | Output context summarization instructions                        |
 | `kit catchup [feature]`   | Output a feature catch-up prompt that stays in plan mode         |
 
+### Agent Orchestration
+
+| Command        | Description                                                           |
+| -------------- | --------------------------------------------------------------------- |
+| `kit dispatch` | Output a discovery-first prompt for clustering tasks and queueing subagents |
+
+All prompt-producing commands also accept `--subagents` to append lightweight
+discovery-first routing guidance.
+
+Use `kit dispatch` when you need the full overlap-clustering and queue-planning
+workflow for a raw task set. Use `--subagents` when you want an existing prompt
+to tell the coding agent to route safe, low-overlap work through subagents.
+
 ### Skill Mining
 
 | Command                     | Description                                                |

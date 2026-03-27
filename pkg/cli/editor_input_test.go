@@ -1,8 +1,12 @@
 package cli
 
 import (
+	"bytes"
+	"io"
+	"os"
 	"os/exec"
 	stdreflect "reflect"
+	"strings"
 	"testing"
 )
 
@@ -90,6 +94,68 @@ func TestFinalizeEditorInput_UnchangedContentReturnsFalse(t *testing.T) {
 	}
 	if got != "" {
 		t.Fatalf("expected empty content, got %q", got)
+	}
+}
+
+func TestPrintEditorLaunchInstructions(t *testing.T) {
+	var output bytes.Buffer
+
+	err := printEditorLaunchInstructions(
+		&output,
+		newFreeTextInputConfig(true, ""),
+		"dispatch tasks",
+		"cancel",
+	)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	rendered := output.String()
+	checks := []string{
+		"Step: dispatch tasks.",
+		"vim-compatible editor",
+		"Paste only the content for this response",
+		"Quit without save to cancel",
+		"Press any key to open the editor.",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(rendered, check) {
+			t.Fatalf("expected instructions to contain %q", check)
+		}
+	}
+}
+
+func TestReadEditorTextWaitsBeforeLaunchingEditor(t *testing.T) {
+	previousWait := awaitEditorLaunchConfirmation
+	previousRunner := editorInputRunner
+	defer func() {
+		awaitEditorLaunchConfirmation = previousWait
+		editorInputRunner = previousRunner
+	}()
+
+	var sequence []string
+	awaitEditorLaunchConfirmation = func(_ *os.File, _ io.Writer) error {
+		sequence = append(sequence, "wait")
+		return nil
+	}
+	editorInputRunner = func(_ freeTextInputConfig, _ string, _ string) (string, bool, error) {
+		sequence = append(sequence, "run")
+		return "captured text", true, nil
+	}
+
+	got, err := readEditorText(newFreeTextInputConfig(true, ""), "dispatch tasks", false)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if got != "captured text" {
+		t.Fatalf("expected captured text, got %q", got)
+	}
+
+	want := []string{"wait", "run"}
+	if !stdreflect.DeepEqual(sequence, want) {
+		t.Fatalf("expected sequence %v, got %v", want, sequence)
 	}
 }
 

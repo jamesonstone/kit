@@ -117,9 +117,10 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	}
 
 	prompt := buildBrainstormPrompt(brainstormPath, feat.Slug, projectRoot, thesis, cfg.GoalPercentage)
+	preparedPrompt := prepareAgentPrompt(prompt)
 
 	if brainstormOutput != "" {
-		if err := document.Write(brainstormOutput, prompt); err != nil {
+		if err := document.Write(brainstormOutput, preparedPrompt); err != nil {
 			return fmt.Errorf("failed to write prompt file: %w", err)
 		}
 		if !outputOnly {
@@ -132,7 +133,7 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	} else if brainstormCopy {
-		if err := copyToClipboard(prompt); err != nil {
+		if err := copyToClipboard(preparedPrompt); err != nil {
 			return fmt.Errorf("failed to copy to clipboard: %w", err)
 		}
 		if !outputOnly {
