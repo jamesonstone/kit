@@ -34,6 +34,12 @@ func buildDispatchPrompt(
 	sb.WriteString("10. Output a dry-run discovery report with the exact sections listed below before any subagent execution begins\n")
 	sb.WriteString("11. Wait for explicit user approval after the dry-run report and proposed queue before launching any subagents\n")
 	sb.WriteString(fmt.Sprintf("12. After approval, launch at most %d concurrent subagents and keep queued clusters serialized behind them\n\n", maxSubagents))
+	sb.WriteString(
+		"13. When a subagent needs an isolated checkout, use " +
+			"`git worktree add ~/worktrees/<repo>-<branch> <branch>` or " +
+			"`git worktree add -b <branch> ~/worktrees/<repo>-<branch> <base-ref>` " +
+			"and keep all worktrees flat under `~/worktrees/`\n\n",
+	)
 	sb.WriteString("## Required Dry-Run Report Sections\n")
 	sb.WriteString("- normalized tasks\n")
 	sb.WriteString("- predicted touched files per task\n")
@@ -46,6 +52,7 @@ func buildDispatchPrompt(
 	sb.WriteString("- do not invent parallelism where file overlap is unclear\n")
 	sb.WriteString("- tasks with overlapping predicted file changes belong to the same subagent queue\n")
 	sb.WriteString("- preserve the original task order inside each cluster\n")
+	sb.WriteString("- do not create worktrees inside the repository tree; keep them flat under `~/worktrees/`\n")
 	sb.WriteString("- keep the dry-run report reviewable and explicit before asking for approval\n")
 
 	return sb.String()

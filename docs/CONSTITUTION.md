@@ -91,6 +91,11 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
 7. **External Review Tools**
    - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 
+8. **Git Worktrees**
+   - When isolated checkouts are needed, create worktrees under `~/worktrees/`
+   - Use a flat repo-prefixed leaf path such as `~/worktrees/<repo>-<branch>`
+   - Never create worktrees inside the repository tree or nested per-project directories
+
 ### Code Quality Constraints
 
 1. **Go Best Practices**

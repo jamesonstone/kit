@@ -1,4 +1,4 @@
-.PHONY: build test lint fmt vet clean install
+.PHONY: build test lint fmt vet clean install install-git-hooks
 
 BINARY_NAME=kit
 VERSION?=$(shell git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo dev)
@@ -12,6 +12,10 @@ build-windows:
 
 install:
 	go install $(LDFLAGS) ./cmd/kit
+
+install-git-hooks:
+	chmod +x .githooks/pre-commit
+	git config core.hooksPath .githooks
 
 test:
 	go test -v ./...

@@ -50,6 +50,8 @@ func TestPrepareAgentPromptWithSubagents(t *testing.T) {
 		"use intelligent routing to identify the different areas of change or analysis",
 		"delegate and dispatch to subagents where possible",
 		"apply the same discovery-first discipline as kit dispatch",
+		"git worktree add ~/worktrees/<repo>-<branch> <branch>",
+		"keep all worktrees flat under `~/worktrees/`",
 	}
 
 	for _, check := range checks {

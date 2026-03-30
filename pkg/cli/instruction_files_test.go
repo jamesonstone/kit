@@ -47,6 +47,13 @@ func TestRunInit_CreatesRepositoryInstructionFiles(t *testing.T) {
 			t.Fatalf("expected %s to exist: %v", relativePath, err)
 		}
 	}
+	agentsContent, err := os.ReadFile(filepath.Join(tempDir, "AGENTS.md"))
+	if err != nil {
+		t.Fatalf("failed to read AGENTS.md: %v", err)
+	}
+	if !strings.Contains(string(agentsContent), "`git worktree add ~/worktrees/<repo>-<branch> <branch>`") {
+		t.Fatalf("AGENTS.md did not contain the flat worktree guidance")
+	}
 
 	claudeContent, err := os.ReadFile(filepath.Join(tempDir, "CLAUDE.md"))
 	if err != nil {
@@ -55,6 +62,9 @@ func TestRunInit_CreatesRepositoryInstructionFiles(t *testing.T) {
 	if !strings.Contains(string(claudeContent), "## Workflow: Plan → Act → Reflect (Spec-Driven Track)") {
 		t.Fatalf("CLAUDE.md did not contain the comprehensive workflow template")
 	}
+	if !strings.Contains(string(claudeContent), "`~/worktrees/`") {
+		t.Fatalf("CLAUDE.md did not contain the flat worktree guidance")
+	}
 
 	copilotContent, err := os.ReadFile(filepath.Join(tempDir, copilotInstructionsPath))
 	if err != nil {
@@ -62,6 +72,9 @@ func TestRunInit_CreatesRepositoryInstructionFiles(t *testing.T) {
 	}
 	if !strings.HasPrefix(string(copilotContent), "# GitHub Copilot Repository Instructions\n\n") {
 		t.Fatalf("%s did not contain the expected heading", copilotInstructionsPath)
+	}
+	if !strings.Contains(string(copilotContent), "`~/worktrees/`") {
+		t.Fatalf("%s did not contain the flat worktree guidance", copilotInstructionsPath)
 	}
 }
 

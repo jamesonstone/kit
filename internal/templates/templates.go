@@ -569,6 +569,8 @@ A change is done when all applicable conditions are met for its track.
 
 - **NEVER** run ` + "`git add`" + ` or ` + "`git commit`" + ` without user approval
 - Use conventional commit messages with "gitmojis" in the title to improve commit message readability
+- When creating a ` + "`git worktree`" + `, use ` + "`git worktree add ~/worktrees/<repo>-<branch> <branch>`" + ` or ` + "`git worktree add -b <branch> ~/worktrees/<repo>-<branch> <base-ref>`" + `
+- Keep the ` + "`~/worktrees/`" + ` directory flat across all projects; do NOT create worktrees inside the repository tree or nested per-project directories
 
 ---
 
@@ -629,6 +631,7 @@ const copilotQuickRules = `## Fast rules for chat and code review
 - always:
   - never mix multiple features in one ` + "`docs/specs/<feature>/`" + ` directory
   - keep ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, and ` + "`.github/copilot-instructions.md`" + ` aligned with canonical docs
+  - when creating a ` + "`git worktree`" + `, use the flat ` + "`~/worktrees/`" + ` root with repo-prefixed leaf directories such as ` + "`~/worktrees/<repo>-<branch>`" + `
   - prefer readable, maintainable code with explicit error handling and focused functions
   - fix all lint and test failures before completion and wait for the user's output before triaging findings they report
   - do NOT run ` + "`coderabbit --prompt-only`" + `, ` + "`git add`" + `, or ` + "`git commit`" + ` without explicit approval
@@ -637,14 +640,14 @@ const copilotQuickRules = `## Fast rules for chat and code review
 `
 
 func repositoryInstructionDocument(title string) string {
-  return `# ` + title + `
+	return `# ` + title + `
 
 ` + sharedRepositoryInstructions
 }
 
 // AgentPointer returns the comprehensive instruction template for agent files.
 func AgentPointer(agentName string) string {
-  return repositoryInstructionDocument(agentName)
+	return repositoryInstructionDocument(agentName)
 }
 
 // AgentsMD is the comprehensive AGENTS.md template with full workflow and standards.
@@ -661,22 +664,22 @@ var CopilotInstructionsMD = `# GitHub Copilot Repository Instructions
 
 // InstructionFile returns scaffold content for supported instruction file paths.
 func InstructionFile(path string) string {
-  cleanPath := strings.ReplaceAll(path, "\\", "/")
+	cleanPath := strings.ReplaceAll(path, "\\", "/")
 
-  switch {
-  case strings.HasSuffix(cleanPath, "/AGENTS.md") || cleanPath == "AGENTS.md":
-    return AgentsMD
-  case strings.HasSuffix(cleanPath, "/CLAUDE.md") || cleanPath == "CLAUDE.md":
-    return ClaudeMD
-  case strings.HasSuffix(cleanPath, "/copilot-instructions.md") || cleanPath == "copilot-instructions.md":
-    return CopilotInstructionsMD
-  default:
-    base := cleanPath
-    if idx := strings.LastIndex(cleanPath, "/"); idx >= 0 {
-      base = cleanPath[idx+1:]
-    }
-    return AgentPointer(strings.TrimSuffix(base, ".md"))
-  }
+	switch {
+	case strings.HasSuffix(cleanPath, "/AGENTS.md") || cleanPath == "AGENTS.md":
+		return AgentsMD
+	case strings.HasSuffix(cleanPath, "/CLAUDE.md") || cleanPath == "CLAUDE.md":
+		return ClaudeMD
+	case strings.HasSuffix(cleanPath, "/copilot-instructions.md") || cleanPath == "copilot-instructions.md":
+		return CopilotInstructionsMD
+	default:
+		base := cleanPath
+		if idx := strings.LastIndex(cleanPath, "/"); idx >= 0 {
+			base = cleanPath[idx+1:]
+		}
+		return AgentPointer(strings.TrimSuffix(base, ".md"))
+	}
 }
 
 // FeatureSummaryTemplate returns a template for a feature summary in PROJECT_PROGRESS_SUMMARY.md

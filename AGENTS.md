@@ -308,6 +308,8 @@ A change is done when all applicable conditions are met for its track.
 
 - **NEVER** run `git add` or `git commit` without user approval
 - Use conventional commit messages with "gitmojis" in the title to improve commit message readability
+- When creating a `git worktree`, use `git worktree add ~/worktrees/<repo>-<branch> <branch>` or `git worktree add -b <branch> ~/worktrees/<repo>-<branch> <base-ref>`
+- Keep the `~/worktrees/` directory flat across all projects; do NOT create worktrees inside the repository tree or nested per-project directories
 
 ---
 

@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+echo "🔎 pre-commit: running make build"
+if ! make build; then
+	echo "❌ pre-commit: make build failed; commit aborted" >&2
+	exit 1
+fi
+
+echo "✅ pre-commit: make build passed"

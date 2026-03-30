@@ -27,6 +27,16 @@ cd kit
 make build
 ```
 
+To enable the repository-managed Git hooks for this clone:
+
+```bash
+make install-git-hooks
+```
+
+This configures `core.hooksPath` to use `.githooks/`, including a `pre-commit`
+hook that runs `make build` before every `git commit`. If the build fails, the
+commit is blocked.
+
 ## Quick Start
 
 ```bash
@@ -69,15 +79,15 @@ kit complete --all
 
 ### Core Development Loop
 
-| Command                    | Description                                                             |
-| -------------------------- | ----------------------------------------------------------------------- |
-| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and a planning-only `/plan` prompt |
-| `kit spec <feature>`       | Create or open a feature specification and perform skills discovery     |
-| `kit plan <feature>`       | Create or open an implementation plan                                   |
-| `kit tasks <feature>`      | Create or open a task list                                              |
-| `kit implement [feature]`  | Output implementation context for coding agents                         |
-| `kit reflect [feature]`    | Output reflection/verification instructions                             |
-| `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features |
+| Command                    | Description                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and a planning-only `/plan` prompt             |
+| `kit spec <feature>`       | Create or open a feature specification and perform skills discovery                 |
+| `kit plan <feature>`       | Create or open an implementation plan                                               |
+| `kit tasks <feature>`      | Create or open a task list                                                          |
+| `kit implement [feature]`  | Output implementation context for coding agents                                     |
+| `kit reflect [feature]`    | Output reflection/verification instructions                                         |
+| `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features          |
 | `kit status`               | Show current feature status; supports `--json` and includes the running Kit version |
 
 ### Verification & State
@@ -98,8 +108,8 @@ kit complete --all
 
 ### Agent Orchestration
 
-| Command        | Description                                                           |
-| -------------- | --------------------------------------------------------------------- |
+| Command        | Description                                                                 |
+| -------------- | --------------------------------------------------------------------------- |
 | `kit dispatch` | Output a discovery-first prompt for clustering tasks and queueing subagents |
 
 All prompt-producing commands also accept `--subagents` to append lightweight
@@ -118,13 +128,13 @@ to tell the coding agent to route safe, low-overlap work through subagents.
 
 ### Utility
 
-| Command               | Description                                                    |
-| --------------------- | -------------------------------------------------------------- |
-| `kit upgrade`         | Download and install the latest Kit release                    |
-| `kit update`          | Alias for `kit upgrade`                                        |
-| `kit version`         | Print the installed Kit version                                |
+| Command               | Description                                                      |
+| --------------------- | ---------------------------------------------------------------- |
+| `kit upgrade`         | Download and install the latest Kit release                      |
+| `kit update`          | Alias for `kit upgrade`                                          |
+| `kit version`         | Print the installed Kit version                                  |
 | `kit scaffold-agents` | Create or refresh repository instruction files and Copilot rules |
-| `kit completion`      | Generate shell autocompletion script                           |
+| `kit completion`      | Generate shell autocompletion script                             |
 
 `kit scaffold-agents` also supports the singular alias `kit scaffold-agent`.
 
