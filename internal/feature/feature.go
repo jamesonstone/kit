@@ -30,12 +30,12 @@ type Phase string
 
 const (
 	PhaseBrainstorm Phase = "brainstorm"
-	PhaseSpec      Phase = "spec"
-	PhasePlan      Phase = "plan"
-	PhaseTasks     Phase = "tasks"
-	PhaseImplement Phase = "implement"
-	PhaseReflect   Phase = "reflect"
-	PhaseComplete  Phase = "complete"
+	PhaseSpec       Phase = "spec"
+	PhasePlan       Phase = "plan"
+	PhaseTasks      Phase = "tasks"
+	PhaseImplement  Phase = "implement"
+	PhaseReflect    Phase = "reflect"
+	PhaseComplete   Phase = "complete"
 )
 
 // ReflectionCompleteMarker is the marker that indicates reflection is complete.

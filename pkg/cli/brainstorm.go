@@ -44,7 +44,8 @@ questions, show percentage progress, and persist findings to BRAINSTORM.md.
 Examples:
 	kit brainstorm
 	kit brainstorm --vim
-	kit brainstorm patient-intake-redesign --copy
+	kit brainstorm patient-intake-redesign
+	kit brainstorm patient-intake-redesign --output-only
 	kit brainstorm -o docs/brainstorm-prompt.md`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runBrainstorm,
@@ -52,9 +53,9 @@ Examples:
 
 func init() {
 	addFreeTextInputFlags(brainstormCmd, &brainstormUseVim, &brainstormEditor)
-	brainstormCmd.Flags().BoolVar(&brainstormCopy, "copy", false, "copy output to clipboard")
+	brainstormCmd.Flags().BoolVar(&brainstormCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	brainstormCmd.Flags().StringVarP(&brainstormOutput, "output", "o", "", "write output to file")
-	brainstormCmd.Flags().BoolVar(&brainstormOutputOnly, "output-only", false, "output text only, suppressing status messages")
+	brainstormCmd.Flags().BoolVar(&brainstormOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(brainstormCmd)
 }
 
@@ -128,17 +129,8 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if brainstormOutput == "" {
-		if err := outputPrompt(prompt, outputOnly, brainstormCopy); err != nil {
-			return err
-		}
-	} else if brainstormCopy {
-		if err := copyToClipboard(preparedPrompt); err != nil {
-			return fmt.Errorf("failed to copy to clipboard: %w", err)
-		}
-		if !outputOnly {
-			fmt.Println("Copied agent instructions to clipboard.")
-		}
+	if err := writePromptWithClipboardDefault(preparedPrompt, outputOnly, brainstormCopy); err != nil {
+		return err
 	}
 
 	if !outputOnly {

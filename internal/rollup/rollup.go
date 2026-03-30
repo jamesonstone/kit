@@ -14,16 +14,16 @@ import (
 
 // FeatureSummary contains extracted information about a feature for the rollup.
 type FeatureSummary struct {
-	ID        string
-	Name      string
-	Path      string
-	Phase     feature.Phase
-	Created   time.Time
+	ID            string
+	Name          string
+	Path          string
+	Phase         feature.Phase
+	Created       time.Time
 	HasBrainstorm bool
-	Summary   string
-	Intent    string
-	Approach  string
-	OpenItems string
+	Summary       string
+	Intent        string
+	Approach      string
+	OpenItems     string
 }
 
 // Generate creates or updates the PROJECT_PROGRESS_SUMMARY.md file.
@@ -52,11 +52,11 @@ func Generate(projectRoot string, cfg *config.Config) error {
 
 func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 	summary := FeatureSummary{
-		ID:           fmt.Sprintf("%04d", f.Number),
-		Name:         f.Slug,
-		Path:         filepath.Join(specsDir, f.DirName),
-		Phase:        f.Phase,
-		Created:      f.CreatedAt,
+		ID:            fmt.Sprintf("%04d", f.Number),
+		Name:          f.Slug,
+		Path:          filepath.Join(specsDir, f.DirName),
+		Phase:         f.Phase,
+		Created:       f.CreatedAt,
 		HasBrainstorm: document.Exists(filepath.Join(f.Path, "BRAINSTORM.md")),
 	}
 

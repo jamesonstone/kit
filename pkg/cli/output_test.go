@@ -46,3 +46,84 @@ func TestFormatAgentInstructionBlockAddsTrailingNewline(t *testing.T) {
 		t.Fatalf("formatAgentInstructionBlock() = %q, want %q", block, want)
 	}
 }
+
+func TestWritePromptWithClipboardDefault_CopiesAndAcknowledges(t *testing.T) {
+	previous := clipboardCopyFunc
+	defer func() {
+		clipboardCopyFunc = previous
+	}()
+
+	var copied string
+	clipboardCopyFunc = func(text string) error {
+		copied = text
+		return nil
+	}
+
+	output := captureStdout(t, func() {
+		if err := writePromptWithClipboardDefault("prompt text", false, false); err != nil {
+			t.Fatalf("writePromptWithClipboardDefault() error = %v", err)
+		}
+	})
+
+	if copied != "prompt text" {
+		t.Fatalf("expected clipboard copy %q, got %q", "prompt text", copied)
+	}
+
+	if output != "Copied agent instructions to the clipboard.\n" {
+		t.Fatalf("unexpected stdout: %q", output)
+	}
+}
+
+func TestWritePromptWithClipboardDefault_OutputOnlySkipsDefaultCopy(t *testing.T) {
+	previous := clipboardCopyFunc
+	defer func() {
+		clipboardCopyFunc = previous
+	}()
+
+	copied := false
+	clipboardCopyFunc = func(text string) error {
+		copied = true
+		return nil
+	}
+
+	output := captureStdout(t, func() {
+		if err := writePromptWithClipboardDefault("prompt text", true, false); err != nil {
+			t.Fatalf("writePromptWithClipboardDefault() error = %v", err)
+		}
+	})
+
+	if copied {
+		t.Fatalf("expected output-only mode to skip clipboard copy")
+	}
+
+	if output != "prompt text" {
+		t.Fatalf("unexpected stdout: %q", output)
+	}
+}
+
+func TestWritePromptWithClipboardDefault_OutputOnlyAndCopyDoesBoth(t *testing.T) {
+	previous := clipboardCopyFunc
+	defer func() {
+		clipboardCopyFunc = previous
+	}()
+
+	var copied string
+	clipboardCopyFunc = func(text string) error {
+		copied = text
+		return nil
+	}
+
+	output := captureStdout(t, func() {
+		if err := writePromptWithClipboardDefault("prompt text", true, true); err != nil {
+			t.Fatalf("writePromptWithClipboardDefault() error = %v", err)
+		}
+	})
+
+	if copied != "prompt text" {
+		t.Fatalf("expected clipboard copy %q, got %q", "prompt text", copied)
+	}
+
+	if output != "prompt text" {
+		t.Fatalf("unexpected stdout: %q", output)
+	}
+}

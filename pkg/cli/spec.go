@@ -39,13 +39,13 @@ If no feature is specified, shows an interactive selection of existing
 features with BRAINSTORM.md or SPEC.md.
 
 Modes:
-  Default:        Output empty template and agent prompt (non-interactive)
+  Default:        Copy the generated prompt to the clipboard and show status (non-interactive)
   --interactive:  Prompt user for spec details, then output ready-to-use prompt
   --template:     Output empty template without interactive questions (deprecated, same as default)
 
 Flags:
-  --output-only:  Output prompt only, without status messages
-  --copy:         Copy prompt to clipboard (combine with --output-only for prompt+copy)
+  --output-only:  Output the raw prompt to stdout instead of copying it to the clipboard
+  --copy:         Copy prompt to clipboard (mainly useful with --output-only)
   --interactive:  Force interactive prompts even when stdin is not a terminal
   --vim:          Open free-text responses in a vim-compatible editor`,
 	Args: cobra.MaximumNArgs(1),
@@ -56,8 +56,8 @@ func init() {
 	addFreeTextInputFlags(specCmd, &specUseVim, &specEditor)
 	specCmd.Flags().Bool("template", false, "(deprecated) output empty template and prompt without interactive questions")
 	specCmd.Flags().Bool("interactive", false, "prompt user for spec details interactively")
-	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy agent prompt to clipboard")
-	specCmd.Flags().BoolVar(&specOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
+	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy prompt to clipboard even with --output-only")
+	specCmd.Flags().BoolVar(&specOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(specCmd)
 }
 
@@ -477,7 +477,6 @@ func runSpecInteractiveWithEditor(
 	return outputCompiledPrompt(specPath, brainstormPath, feat.Slug, projectRoot, cfg, &answers, outputOnly)
 }
 
-// outputCompiledPrompt generates the final agent prompt and either copies to clipboard or prints.
 func outputCompiledPrompt(specPath, brainstormPath, featureSlug, projectRoot string, cfg *config.Config, answers *specAnswers, outputOnly bool) error {
 	goalPct := cfg.GoalPercentage
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
@@ -625,7 +624,7 @@ This file is the single source of truth for this feature. Do not leave content o
 
 	prompt := sb.String()
 
-	if err := outputPrompt(prompt, outputOnly, specCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, specCopy); err != nil {
 		return err
 	}
 	if !outputOnly {
@@ -797,7 +796,7 @@ Once you reach ≥%d%% confidence, write a SUMMARY section at the top of SPEC.md
 		fmt.Println()
 	}
 
-	if err := outputPrompt(prompt, outputOnly, specCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, specCopy); err != nil {
 		return err
 	}
 	if !outputOnly {

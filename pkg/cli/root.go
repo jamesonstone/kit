@@ -12,6 +12,7 @@ import (
 
 // Version is set at build time via ldflags.
 var Version = "dev"
+var clipboardCopyFunc = copyToClipboard
 
 // ANSI color codes for consistent theming.
 const (
@@ -205,13 +206,17 @@ func outputPrompt(prompt string, outputOnly, copy bool) error {
 	return writePrompt(prepareAgentPrompt(prompt), outputOnly, copy)
 }
 
+func outputPromptWithClipboardDefault(prompt string, outputOnly, copy bool) error {
+	return writePromptWithClipboardDefault(prepareAgentPrompt(prompt), outputOnly, copy)
+}
+
 func outputPromptWithoutSubagents(prompt string, outputOnly, copy bool) error {
 	return writePrompt(preparePromptWithoutSubagents(prompt), outputOnly, copy)
 }
 
 func writePrompt(prompt string, outputOnly, copy bool) error {
 	if copy {
-		if err := copyToClipboard(prompt); err != nil {
+		if err := clipboardCopyFunc(prompt); err != nil {
 			return fmt.Errorf("failed to copy to clipboard: %w", err)
 		}
 		if outputOnly {
@@ -228,6 +233,23 @@ func writePrompt(prompt string, outputOnly, copy bool) error {
 
 	fmt.Println("Copy this section to the Agent:")
 	fmt.Print(formatAgentInstructionBlock(prompt))
+	return nil
+}
+
+func writePromptWithClipboardDefault(prompt string, outputOnly, copy bool) error {
+	shouldCopy := !outputOnly || copy
+	if shouldCopy {
+		if err := clipboardCopyFunc(prompt); err != nil {
+			return fmt.Errorf("failed to copy to clipboard: %w", err)
+		}
+	}
+
+	if outputOnly {
+		fmt.Print(prompt)
+		return nil
+	}
+
+	fmt.Println("Copied agent instructions to the clipboard.")
 	return nil
 }
 

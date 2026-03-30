@@ -4,16 +4,17 @@
 
 ## PROGRESS TABLE
 
-| ID   | TASK                                                                      | STATUS | OWNER | DEPENDENCIES           |
-| ---- | ------------------------------------------------------------------------- | ------ | ----- | ---------------------- |
-| T001 | Add brainstorm workflow spec docs and canonical repo references           | done   | agent |                        |
-| T002 | Add brainstorm artifact template and brainstorm phase detection           | done   | agent | T001                   |
-| T003 | Rebuild `kit brainstorm` as interactive planning-only command             | done   | agent | T002                   |
-| T004 | Thread `BRAINSTORM.md` through downstream prompt commands                 | done   | agent | T002                   |
-| T005 | Remove `kit oneshot`, git branch automation, and stale config/code        | done   | agent | T001                   |
-| T006 | Update root/help/status/handoff/rollup/docs for brainstorm-first workflow | done   | agent | T002, T005             |
-| T007 | Add tests and run verification                                            | done   | agent | T003, T004, T005, T006 |
-| T008 | Add pre-editor instructions and keypress gating for editor-backed input   | done   | agent | T003, T007             |
+| ID   | TASK                                                                       | STATUS | OWNER | DEPENDENCIES           |
+| ---- | -------------------------------------------------------------------------- | ------ | ----- | ---------------------- |
+| T001 | Add brainstorm workflow spec docs and canonical repo references            | done   | agent |                        |
+| T002 | Add brainstorm artifact template and brainstorm phase detection            | done   | agent | T001                   |
+| T003 | Rebuild `kit brainstorm` as interactive planning-only command              | done   | agent | T002                   |
+| T004 | Thread `BRAINSTORM.md` through downstream prompt commands                  | done   | agent | T002                   |
+| T005 | Remove `kit oneshot`, git branch automation, and stale config/code         | done   | agent | T001                   |
+| T006 | Update root/help/status/handoff/rollup/docs for brainstorm-first workflow  | done   | agent | T002, T005             |
+| T007 | Add tests and run verification                                             | done   | agent | T003, T004, T005, T006 |
+| T008 | Add pre-editor instructions and keypress gating for editor-backed input    | done   | agent | T003, T007             |
+| T009 | Switch `brainstorm`/`spec`/`plan`/`tasks` to clipboard-first prompt output | done   | agent | T003, T004, T007       |
 
 ## TASK LIST
 
@@ -27,6 +28,7 @@ Use markdown checkboxes to track completion:
 - [x] T006: Update root/help/status/handoff/rollup/docs for brainstorm-first workflow
 - [x] T007: Add tests and run verification
 - [x] T008: Add pre-editor instructions and keypress gating for editor-backed input
+- [x] T009: Switch `brainstorm`, `spec`, `plan`, and `tasks` to clipboard-first prompt output
 
 ## TASK DETAILS
 
@@ -135,6 +137,21 @@ Use markdown checkboxes to track completion:
   - the editor opens only after an explicit key press
   - tests cover the new pre-editor interaction
 - **NOTES**: [PLAN-COMPONENTS], [PLAN-TESTING]
+
+### T009
+
+- **GOAL**: Make the planning-stage prompt commands copy to the clipboard by default
+- **SCOPE**:
+  - update `brainstorm`, `spec`, `plan`, and `tasks`
+  - keep raw stdout prompt output behind `--output-only`
+  - preserve `--copy` as an explicit override for `--output-only`
+  - keep `brainstorm --output <path>` writing files while also copying by default
+- **ACCEPTANCE**:
+  - default command output acknowledges clipboard copy and does not print the prompt body
+  - `--output-only` prints the raw prompt to stdout
+  - `--output-only --copy` both prints and copies
+  - tests cover the new output behavior
+- **NOTES**: [PLAN-COMPONENTS], [PLAN-INTERFACES], [PLAN-TESTING]
 
 ## DEPENDENCIES
 

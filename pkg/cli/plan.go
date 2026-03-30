@@ -42,8 +42,8 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
 func init() {
 	planCmd.Flags().Bool("force", false, "create missing SPEC.md with headers if it doesn't exist")
 	planCmd.Flags().Bool("warp", false, "output prompt for Warp coding agent to fill PLAN.md from Warp plan")
-	planCmd.Flags().BoolVar(&planCopy, "copy", false, "copy agent prompt to clipboard")
-	planCmd.Flags().BoolVar(&planOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
+	planCmd.Flags().BoolVar(&planCopy, "copy", false, "copy prompt to clipboard even with --output-only")
+	planCmd.Flags().BoolVar(&planOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(planCmd)
 }
 
@@ -280,7 +280,7 @@ The output of PLAN.md must make TASKS.md obvious and deterministic.
 
 	prompt := sb.String()
 
-	if err := outputPrompt(prompt, outputOnly, planCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, planCopy); err != nil {
 		return fmt.Errorf("failed to output prompt: %w", err)
 	}
 
@@ -366,7 +366,7 @@ The output of PLAN.md must make TASKS.md obvious and deterministic.
 		fmt.Printf("  • SPEC.md: %s\n\n", specPath)
 	}
 
-	if err := outputPrompt(prompt, outputOnly, planCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, planCopy); err != nil {
 		return fmt.Errorf("failed to output prompt: %w", err)
 	}
 

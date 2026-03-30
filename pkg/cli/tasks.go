@@ -41,8 +41,8 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
 
 func init() {
 	tasksCmd.Flags().Bool("force", false, "create missing SPEC.md and PLAN.md with headers if they don't exist")
-	tasksCmd.Flags().BoolVar(&tasksCopy, "copy", false, "copy agent prompt to clipboard")
-	tasksCmd.Flags().BoolVar(&tasksOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
+	tasksCmd.Flags().BoolVar(&tasksCopy, "copy", false, "copy prompt to clipboard even with --output-only")
+	tasksCmd.Flags().BoolVar(&tasksOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(tasksCmd)
 }
 
@@ -249,7 +249,7 @@ Output goal:
 
 	prompt := sb.String()
 
-	if err := outputPrompt(prompt, outputOnly, tasksCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, tasksCopy); err != nil {
 		return err
 	}
 
