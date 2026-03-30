@@ -206,7 +206,7 @@ func outputPrompt(prompt string, outputOnly, copy bool) error {
 }
 
 func outputPromptWithoutSubagents(prompt string, outputOnly, copy bool) error {
-	return writePrompt(prompt, outputOnly, copy)
+	return writePrompt(preparePromptWithoutSubagents(prompt), outputOnly, copy)
 }
 
 func writePrompt(prompt string, outputOnly, copy bool) error {

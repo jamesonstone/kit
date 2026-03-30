@@ -12,6 +12,7 @@
 | 0006 | skill-mine-command | `docs/specs/0006-skill-mine-command` | reflect | 2026-03-15 | - Kit has no built-in command for turning completed featu... |
 | 0007 | catchup-command | `docs/specs/0007-catchup-command` | reflect | 2026-03-23 | - Kit has `status`, `handoff`, `summarize`, and `implemen... |
 | 0008 | dispatch-command | `docs/specs/0008-dispatch-command` | reflect | 2026-03-27 | - Kit has prompt generators for planning, catch-up, imple... |
+| 0009 | spec-skills-discovery | `docs/specs/0009-spec-skills-discovery` | reflect | 2026-03-29 | - Kit captures reusable skills after implementation, but ... |
 
 ## PROJECT INTENT
 
@@ -87,6 +88,14 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - none
 - **POINTERS**: `docs/specs/0008-dispatch-command/SPEC.md`, `docs/specs/0008-dispatch-command/PLAN.md`, `docs/specs/0008-dispatch-command/TASKS.md`
 
+### spec-skills-discovery
+
+- **STATUS**: reflect
+- **INTENT**: - Kit captures reusable skills after implementation, but the specification workflow does not currently tell coding ag...
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03] Update document validation and templates so `SPEC.md` requires a `## SKILLS` s...
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0009-spec-skills-discovery/SPEC.md`, `docs/specs/0009-spec-skills-discovery/PLAN.md`, `docs/specs/0009-spec-skills-discovery/TASKS.md`
+
 ## LAST UPDATED
 
-2026-03-27 15:00:55 EDT
+2026-03-29 16:40:48 EDT

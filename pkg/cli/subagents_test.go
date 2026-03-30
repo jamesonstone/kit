@@ -13,8 +13,23 @@ func TestPrepareAgentPromptWithoutSubagents(t *testing.T) {
 	})
 
 	prompt := "Please review the plan.\n"
-	if got := prepareAgentPrompt(prompt); got != prompt {
-		t.Fatalf("prepareAgentPrompt() = %q, want %q", got, prompt)
+	got := prepareAgentPrompt(prompt)
+	checks := []string{
+		"Please review the plan.",
+		"## Skills",
+		"consult the repository instruction files for the active skills workflow before acting",
+		"read that feature's SPEC.md and the `## SKILLS` table first",
+		"open each referenced `SKILL.md` and use those skills during execution",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(got, check) {
+			t.Fatalf("expected augmented prompt to contain %q", check)
+		}
+	}
+
+	if strings.Contains(got, "## Subagent Orchestration") {
+		t.Fatalf("expected prompt without subagents not to contain subagent guidance")
 	}
 }
 
@@ -28,6 +43,7 @@ func TestPrepareAgentPromptWithSubagents(t *testing.T) {
 	got := prepareAgentPrompt("Please review the plan.\n")
 	checks := []string{
 		"Please review the plan.",
+		"## Skills",
 		"## Subagent Orchestration",
 		"drive to understanding first",
 		"then drive task orchestration coordination",

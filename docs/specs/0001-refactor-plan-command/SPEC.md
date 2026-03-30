@@ -1,5 +1,9 @@
 # SPEC
 
+## SUMMARY
+
+<!-- TODO: summarize the feature in 1-2 sentences -->
+
 ## PROBLEM
 
 <!-- TODO: describe the problem being solved -->
@@ -15,6 +19,12 @@
 ## USERS
 
 <!-- TODO: identify who will use this feature -->
+
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
 
 ## REQUIREMENTS
 

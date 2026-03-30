@@ -14,7 +14,17 @@ func init() {
 }
 
 func prepareAgentPrompt(prompt string) string {
-	if !subagents {
+	return preparePrompt(prompt, subagents)
+}
+
+func preparePromptWithoutSubagents(prompt string) string {
+	return preparePrompt(prompt, false)
+}
+
+func preparePrompt(prompt string, includeSubagents bool) string {
+	prompt = appendSkillPromptSuffix(prompt)
+
+	if !includeSubagents {
 		return prompt
 	}
 

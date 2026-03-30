@@ -1,5 +1,9 @@
 # SPEC
 
+## SUMMARY
+
+- Add an automated release pipeline that versions Kit from semantic Git tags and publishes cross-platform GitHub release artifacts from the main branch workflow.
+
 ## PROBLEM
 
 - Kit lacks an automated release pipeline for cross-platform binary distribution.
@@ -24,6 +28,12 @@
 
 - Maintainers publishing Kit binaries.
 - Users downloading prebuilt binaries from GitHub Releases.
+
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
 
 ## REQUIREMENTS
 

@@ -34,6 +34,12 @@
 - Users switching back into an in-flight feature without needing the broader project-wide handoff flow.
 - Coding agents that need a narrow, explicit “resume the feature and ask questions first” instruction set.
 
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
+
 ## REQUIREMENTS
 
 - Expose a new root command `kit catchup [feature]`.

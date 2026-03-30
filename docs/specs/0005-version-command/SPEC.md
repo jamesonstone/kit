@@ -34,6 +34,12 @@
 - Automation or scripts that need a stable command form for reading the installed version.
 - Future self-update flows that need a canonical local version command.
 
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
+
 ## REQUIREMENTS
 
 - Add a new root command: `kit version`.

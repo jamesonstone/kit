@@ -72,7 +72,7 @@ kit complete --all
 | Command                    | Description                                                             |
 | -------------------------- | ----------------------------------------------------------------------- |
 | `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and a planning-only `/plan` prompt |
-| `kit spec <feature>`       | Create or open a feature specification                                  |
+| `kit spec <feature>`       | Create or open a feature specification and perform skills discovery     |
 | `kit plan <feature>`       | Create or open an implementation plan                                   |
 | `kit tasks <feature>`      | Create or open a task list                                              |
 | `kit implement [feature]`  | Output implementation context for coding agents                         |
@@ -160,7 +160,7 @@ to tell the coding agent to route safe, low-overlap work through subagents.
 
 1. **Constitution** — strategy, patterns, long-term vision (kept updated)
 2. **Brainstorm** — optional research artifact with codebase findings and strategy
-3. **Specification** — what is being built and why
+3. **Specification** — what is being built and why, plus the feature's selected skills
 4. **Plan** — how it will be built
 5. **Tasks** — executable work units
 6. **Implementation** — execution outside Kit's core scope

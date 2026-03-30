@@ -35,6 +35,12 @@
 - Users who want to hand a coding agent a free-form task set and have it plan safe subagent delegation.
 - Coding agents that need deterministic instructions for discovery, overlap clustering, queueing, and approval gating before execution.
 
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
+
 ## REQUIREMENTS
 
 - [SPEC-01] Expose a new root command `kit dispatch`.

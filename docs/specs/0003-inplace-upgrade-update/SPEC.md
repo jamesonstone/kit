@@ -34,6 +34,12 @@
 - Contributors who want a low-friction path to stay on the latest stable Kit version.
 - CI and automation contexts where explicit version updates are run as a command step.
 
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
+
 ## REQUIREMENTS
 
 - Expose a new `upgrade` command and an `update` alias from the Kit root CLI.

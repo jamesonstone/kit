@@ -234,6 +234,63 @@ func normalizeSpecAnswer(raw string) string {
 	return strings.TrimSpace(raw)
 }
 
+func appendRepoInstructionContextRows(sb *strings.Builder, projectRoot string, cfg *config.Config) {
+	for _, path := range repoInstructionPaths(projectRoot, cfg) {
+		label := filepath.Base(path)
+		if strings.Contains(path, ".github/copilot-instructions.md") {
+			label = "COPILOT"
+		}
+		sb.WriteString(fmt.Sprintf("| %s | %s |\n", label, path))
+	}
+}
+
+func appendSpecSkillDiscoveryContextRows(sb *strings.Builder, projectRoot string, cfg *config.Config) {
+	skillsDir := cfg.SkillsPath(projectRoot)
+	globalInputs := globalSkillDiscoveryInputs()
+
+	sb.WriteString(fmt.Sprintf("| Canonical Skills Root | %s/*/SKILL.md |\n", skillsDir))
+	sb.WriteString(fmt.Sprintf("| Claude Global | %s |\n", globalInputs[0]))
+	sb.WriteString(fmt.Sprintf("| Codex Global AGENTS | %s |\n", globalInputs[1]))
+	sb.WriteString(fmt.Sprintf("| Codex Global Instructions | %s |\n", globalInputs[2]))
+	sb.WriteString(fmt.Sprintf("| Codex Global Skills | %s |\n", globalInputs[3]))
+}
+
+func appendRepoInstructionReadStep(
+	sb *strings.Builder,
+	step int,
+	projectRoot string,
+	cfg *config.Config,
+) int {
+	sb.WriteString(fmt.Sprintf("%d. Read the repository instruction files first:\n", step))
+	for _, path := range repoInstructionPaths(projectRoot, cfg) {
+		sb.WriteString(fmt.Sprintf("   - `%s`\n", path))
+	}
+	return step + 1
+}
+
+func appendSpecSkillDiscoveryStep(
+	sb *strings.Builder,
+	step int,
+	projectRoot string,
+	cfg *config.Config,
+	specPath string,
+) int {
+	skillsDir := cfg.SkillsPath(projectRoot)
+	globalInputs := globalSkillDiscoveryInputs()
+
+	sb.WriteString(fmt.Sprintf("%d. Perform a skills discovery phase before treating SPEC.md as complete:\n", step))
+	sb.WriteString(fmt.Sprintf("   - inspect repo-local canonical skills under `%s/*/SKILL.md`\n", skillsDir))
+	sb.WriteString("   - inspect documented global inputs:\n")
+	for _, path := range globalInputs {
+		sb.WriteString(fmt.Sprintf("     - `%s`\n", path))
+	}
+	sb.WriteString("   - choose the minimal relevant set of skills for this feature\n")
+	sb.WriteString(fmt.Sprintf("   - write the selected skills into the `## SKILLS` table in `%s`\n", specPath))
+	sb.WriteString("   - if no additional skills apply, keep the required `none | n/a | n/a | no additional skills required | no` row\n")
+	sb.WriteString("   - do not use `.claude/skills` as canonical discovery input\n")
+	return step + 1
+}
+
 // readLineRL reads from the readline instance, returning empty string on EOF/interrupt.
 func readLineRL(rl *readline.Instance) string {
 	line, err := rl.Readline()
@@ -469,15 +526,17 @@ func outputCompiledPrompt(specPath, brainstormPath, featureSlug, projectRoot str
 	sb.WriteString("| File | Purpose |\n")
 	sb.WriteString("|------|----------|\n")
 	sb.WriteString(fmt.Sprintf("| CONSTITUTION | %s |\n", constitutionPath))
+	appendRepoInstructionContextRows(&sb, projectRoot, cfg)
 	if hasBrainstorm {
 		sb.WriteString(fmt.Sprintf("| BRAINSTORM | %s |\n", brainstormPath))
 	}
 	sb.WriteString(fmt.Sprintf("| SPEC | %s |\n", specPath))
+	appendSpecSkillDiscoveryContextRows(&sb, projectRoot, cfg)
 	sb.WriteString(fmt.Sprintf("| Project Root | %s |\n\n", projectRoot))
 
 	sb.WriteString("## Your Task\n\n")
 	sb.WriteString(fmt.Sprintf("1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles\n", constitutionPath))
-	step := 2
+	step := appendRepoInstructionReadStep(&sb, 2, projectRoot, cfg)
 	if hasBrainstorm {
 		sb.WriteString(fmt.Sprintf("%d. Read BRAINSTORM.md (file: %s) and treat it as upstream research context\n", step, brainstormPath))
 		step++
@@ -496,6 +555,8 @@ func outputCompiledPrompt(specPath, brainstormPath, featureSlug, projectRoot str
 		))
 		questionStart++
 	}
+
+	questionStart = appendSpecSkillDiscoveryStep(&sb, questionStart, projectRoot, cfg, specPath)
 
 	questionStart = appendNumberedSteps(
 		&sb,
@@ -532,6 +593,7 @@ func outputCompiledPrompt(specPath, brainstormPath, featureSlug, projectRoot str
    - GOALS: What are the measurable outcomes?
    - NON-GOALS: What is explicitly out of scope?
    - USERS: Who will use this feature?
+   - SKILLS: Which documented skills should the coding agent use for this feature, where do they live, and when should each one trigger?
    - REQUIREMENTS: What must be true for this feature to be complete?
    - ACCEPTANCE: How do we verify the feature works?
    - EDGE-CASES: What unusual scenarios must be handled?
@@ -552,6 +614,10 @@ This file is the single source of truth for this feature. Do not leave content o
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
+- the ## SKILLS section is mandatory and must be populated before sign-off
+- use repo instruction files, repo-local canonical skills, and documented global inputs during the skills discovery phase
+- keep the selected skill set minimal and actionable
+- do not use .claude/skills as canonical discovery input
 - Spec gate: unresolved assumptions = 0 before sign-off; if unresolved assumptions remain, stop and resolve before marking SPEC complete
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
@@ -583,8 +649,15 @@ func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, 
 	sb.WriteString(fmt.Sprintf("This is a new feature: %s\n\n", featureSlug))
 	sb.WriteString("## Context Docs (read first)\n")
 	sb.WriteString(fmt.Sprintf("|- CONSTITUTION: %s — project-wide constraints, principles, priors\n", constitutionPath))
+	for _, path := range repoInstructionPaths(projectRoot, cfg) {
+		sb.WriteString(fmt.Sprintf("|- REPO INSTRUCTION: %s — active workflow and skill usage rules\n", path))
+	}
 	if hasBrainstorm {
 		sb.WriteString(fmt.Sprintf("|- BRAINSTORM: %s — upstream research context and codebase findings\n", brainstormPath))
+	}
+	sb.WriteString(fmt.Sprintf("|- CANONICAL SKILLS: %s/*/SKILL.md — repo-local reusable skills\n", cfg.SkillsPath(projectRoot)))
+	for _, path := range globalSkillDiscoveryInputs() {
+		sb.WriteString(fmt.Sprintf("|- GLOBAL INPUT: %s — documented global skill or instruction input\n", path))
 	}
 
 	sb.WriteString(`
@@ -619,13 +692,22 @@ func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, 
 `)
 
 	if hasBrainstorm {
-		sb.WriteString("2. Read BRAINSTORM.md and carry forward validated findings\n")
-		sb.WriteString("3. Read the SPEC.md template and understand the required sections\n")
-		sb.WriteString(fmt.Sprintf("4. Analyze the codebase at %s to understand existing patterns\n", projectRoot))
-		sb.WriteString("5. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions\n")
+		sb.WriteString("2. Read the repository instruction files first\n")
+		sb.WriteString("3. Read BRAINSTORM.md and carry forward validated findings\n")
+		sb.WriteString("4. Read the SPEC.md template and understand the required sections\n")
+		sb.WriteString(fmt.Sprintf("5. Analyze the codebase at %s to understand existing patterns\n", projectRoot))
+		sb.WriteString("6. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions\n")
+		sb.WriteString("7. Perform a skills discovery phase before asking sign-off questions:\n")
+		sb.WriteString(fmt.Sprintf("   - inspect repo-local canonical skills under `%s/*/SKILL.md`\n", cfg.SkillsPath(projectRoot)))
+		for _, path := range globalSkillDiscoveryInputs() {
+			sb.WriteString(fmt.Sprintf("   - inspect `%s`\n", path))
+		}
+		sb.WriteString(fmt.Sprintf("   - populate the `## SKILLS` table in `%s`\n", specPath))
+		sb.WriteString("   - keep the required `none | n/a | n/a | no additional skills required | no` row if nothing else applies\n")
+		sb.WriteString("   - do not use `.claude/skills` as canonical discovery input\n")
 		nextStep := appendNumberedSteps(
 			&sb,
-			6,
+			8,
 			clarificationLoopSteps(
 				goalPct,
 				fmt.Sprintf(
@@ -641,12 +723,21 @@ func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, 
 			nextStep,
 		))
 	} else {
-		sb.WriteString("2. Read the SPEC.md template and understand the required sections\n")
-		sb.WriteString(fmt.Sprintf("3. Analyze the codebase at %s to understand existing patterns\n", projectRoot))
-		sb.WriteString("4. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions\n")
+		sb.WriteString("2. Read the repository instruction files first\n")
+		sb.WriteString("3. Read the SPEC.md template and understand the required sections\n")
+		sb.WriteString(fmt.Sprintf("4. Analyze the codebase at %s to understand existing patterns\n", projectRoot))
+		sb.WriteString("5. **IMMEDIATELY update SPEC.md** with the context provided above before asking any questions\n")
+		sb.WriteString("6. Perform a skills discovery phase before asking sign-off questions:\n")
+		sb.WriteString(fmt.Sprintf("   - inspect repo-local canonical skills under `%s/*/SKILL.md`\n", cfg.SkillsPath(projectRoot)))
+		for _, path := range globalSkillDiscoveryInputs() {
+			sb.WriteString(fmt.Sprintf("   - inspect `%s`\n", path))
+		}
+		sb.WriteString(fmt.Sprintf("   - populate the `## SKILLS` table in `%s`\n", specPath))
+		sb.WriteString("   - keep the required `none | n/a | n/a | no additional skills required | no` row if nothing else applies\n")
+		sb.WriteString("   - do not use `.claude/skills` as canonical discovery input\n")
 		nextStep := appendNumberedSteps(
 			&sb,
-			5,
+			7,
 			clarificationLoopSteps(
 				goalPct,
 				fmt.Sprintf(
@@ -667,6 +758,7 @@ func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, 
    - GOALS: What are the measurable outcomes?
    - NON-GOALS: What is explicitly out of scope?
    - USERS: Who will use this feature?
+   - SKILLS: Which documented skills should the coding agent use for this feature, where do they live, and when should each one trigger?
    - REQUIREMENTS: What must be true for this feature to be complete?
    - ACCEPTANCE: How do we verify the feature works?
    - EDGE-CASES: What unusual scenarios must be handled?
@@ -683,6 +775,10 @@ Once you reach ≥%d%% confidence, write a SUMMARY section at the top of SPEC.md
 ## Rules
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
+- the ## SKILLS section is mandatory and must be populated before sign-off
+- use repo instruction files, repo-local canonical skills, and documented global inputs during the skills discovery phase
+- keep the selected skill set minimal and actionable
+- do not use .claude/skills as canonical discovery input
 - Spec gate: unresolved assumptions = 0 before sign-off; if unresolved assumptions remain, stop and resolve before marking SPEC complete
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times

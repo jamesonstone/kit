@@ -36,6 +36,12 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - coding agents that need a canonical research document before writing `SPEC.md`
 - maintainers who need a simpler workflow without `oneshot` or branch automation
 
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
+
 ## REQUIREMENTS
 
 - `kit brainstorm` must normalize and validate feature names using existing feature naming rules

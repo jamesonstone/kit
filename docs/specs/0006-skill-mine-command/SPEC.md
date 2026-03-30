@@ -38,6 +38,12 @@
 - Teams building a local skill library under source control.
 - Coding agents that need a deterministic prompt for skill extraction work.
 
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
+
 ## REQUIREMENTS
 
 - [SPEC-01] Add `skills_dir` to `.kit.yaml` config loading with default `.agents/skills`.

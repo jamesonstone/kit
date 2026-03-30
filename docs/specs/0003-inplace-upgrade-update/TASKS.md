@@ -1,5 +1,7 @@
 # TASKS
 
+## TASKS
+
 ## PROGRESS TABLE
 
 | ID   | TASK                               | STATUS | OWNER | DEPENDENCIES |
@@ -67,3 +69,7 @@
 - T002 depends on T001 because implementation follows the recorded plan.
 - T003 depends on T002 because docs must describe the shipped command surface.
 - T004 depends on T002 and T003 because verification must validate the final implementation and docs.
+
+## NOTES
+
+- No additional notes.
