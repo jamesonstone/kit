@@ -52,12 +52,12 @@ have reached at least TASKS.md.`,
 		RunE: runSkillMine,
 	}
 
-	mineCmd.Flags().BoolVar(&skillCopy, "copy", false, "copy agent prompt to clipboard")
+	mineCmd.Flags().BoolVar(&skillCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	mineCmd.Flags().BoolVar(
 		&skillOutputOnly,
 		"output-only",
 		false,
-		"output prompt only, suppressing status messages",
+		"output prompt text to stdout instead of copying it to the clipboard",
 	)
 
 	cmd.AddCommand(mineCmd)
@@ -131,7 +131,7 @@ func runSkillMine(cmd *cobra.Command, args []string) error {
 		projectRoot,
 	)
 
-	if err := outputPrompt(prompt, outputOnly, skillCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, skillCopy); err != nil {
 		return err
 	}
 

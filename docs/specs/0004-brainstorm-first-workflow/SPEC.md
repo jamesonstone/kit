@@ -2,7 +2,7 @@
 
 ## SUMMARY
 
-Adds an optional `BRAINSTORM.md` artifact and makes `kit brainstorm` the interactive, planning-only entrypoint before `kit spec`. Removes `kit oneshot` and all git branch automation while preserving the existing spec → plan → tasks → implement → reflect workflow. Prompt-producing planning commands default to copying generated instructions to the clipboard and require `--output-only` for raw stdout prompt output.
+Adds an optional `BRAINSTORM.md` artifact and makes `kit brainstorm` the interactive, planning-only entrypoint before `kit spec`. Removes `kit oneshot` and all git branch automation while preserving the existing spec → plan → tasks → implement → reflect workflow. Core workflow prompt commands default to copying generated instructions to the clipboard and require `--output-only` for raw stdout prompt output.
 
 ## PROBLEM
 
@@ -18,8 +18,8 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - require the coding agent to persist findings to `BRAINSTORM.md`
 - reference `BRAINSTORM.md` from `spec`, `plan`, `tasks`, `implement`, and `reflect` when present
 - require downstream prompts that use the `>=95%` clarification loop to preserve the same approval semantics across `spec`, `plan`, and `tasks`
-- default `brainstorm`, `spec`, `plan`, and `tasks` to copying generated prompts to the clipboard instead of printing the prompt body to stdout
-- require `--output-only` to emit the raw prompt to stdout for `brainstorm`, `spec`, `plan`, and `tasks`
+- default `brainstorm`, `spec`, `plan`, `tasks`, `implement`, and `reflect` to copying generated prompts to the clipboard instead of printing the prompt body to stdout
+- require `--output-only` to emit the raw prompt to stdout for `brainstorm`, `spec`, `plan`, `tasks`, `implement`, and `reflect`
 - keep `--copy` as an explicit compatibility flag, especially for `--output-only` usage
 - remove `kit oneshot` from code, docs, and help output
 - remove git branch automation from commands, config, and docs
@@ -62,7 +62,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - the generated prompt must require numbered batched clarification and visible percentage-understanding progress until `>=95%` confidence in the problem and desired solution
 - the generated prompt must instruct the agent to update `BRAINSTORM.md` with filepath-specific findings
 - downstream command prompts must include `BRAINSTORM.md` when the file exists
-- `kit brainstorm`, `kit spec`, `kit plan`, and `kit tasks` must copy generated prompts to the clipboard by default when `--output-only` is not set
+- `kit brainstorm`, `kit spec`, `kit plan`, `kit tasks`, `kit implement`, and `kit reflect` must copy generated prompts to the clipboard by default when `--output-only` is not set
 - in default mode, those commands must acknowledge that the prompt was copied to the clipboard and must not print the prompt body to stdout
 - for those commands, `--output-only` must print the raw prompt to stdout and must suppress automatic clipboard copying unless `--copy` is also set
 - `kit brainstorm --output <path>` must continue writing the prepared prompt to the requested file and, in default mode, must also copy the prompt to the clipboard
@@ -83,9 +83,9 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - `kit status` shows brainstorm-only features without mislabeling them as `spec`
 - `kit status` includes the running Kit version while preserving brainstorm-aware feature guidance
 - `kit spec`, `kit plan`, and `kit tasks` preserve the same clarification-loop approval semantics, and `kit implement` plus `kit reflect` reference `BRAINSTORM.md` when present
-- `kit brainstorm`, `kit spec`, `kit plan`, and `kit tasks` copy their generated prompt to the clipboard by default, print an acknowledgement, and do not print the prompt body unless `--output-only` is passed
+- `kit brainstorm`, `kit spec`, `kit plan`, `kit tasks`, `kit implement`, and `kit reflect` copy their generated prompt to the clipboard by default, print an acknowledgement, and do not print the prompt body unless `--output-only` is passed
 - `kit brainstorm --output <path>` still writes the prompt file and also copies the prompt to the clipboard in default mode
-- `kit brainstorm --output-only`, `kit spec --output-only`, `kit plan --output-only`, and `kit tasks --output-only` print the raw prompt to stdout and only copy when `--copy` is also passed
+- `kit brainstorm --output-only`, `kit spec --output-only`, `kit plan --output-only`, `kit tasks --output-only`, `kit implement --output-only`, and `kit reflect --output-only` print the raw prompt to stdout and only copy when `--copy` is also passed
 - `kit oneshot` is no longer available from the CLI or help output
 - repository config and docs contain no active branch automation guidance
 - help text and README show brainstorming as an optional pre-spec phase

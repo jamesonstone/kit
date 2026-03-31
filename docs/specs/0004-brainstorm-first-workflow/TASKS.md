@@ -15,6 +15,7 @@
 | T007 | Add tests and run verification                                             | done   | agent | T003, T004, T005, T006 |
 | T008 | Add pre-editor instructions and keypress gating for editor-backed input    | done   | agent | T003, T007             |
 | T009 | Switch `brainstorm`/`spec`/`plan`/`tasks` to clipboard-first prompt output | done   | agent | T003, T004, T007       |
+| T010 | Extend clipboard-first prompt output to `implement` and `reflect`          | done   | agent | T004, T009             |
 
 ## TASK LIST
 
@@ -29,6 +30,7 @@ Use markdown checkboxes to track completion:
 - [x] T007: Add tests and run verification
 - [x] T008: Add pre-editor instructions and keypress gating for editor-backed input
 - [x] T009: Switch `brainstorm`, `spec`, `plan`, and `tasks` to clipboard-first prompt output
+- [x] T010: Extend clipboard-first prompt output to `implement` and `reflect`
 
 ## TASK DETAILS
 
@@ -151,6 +153,20 @@ Use markdown checkboxes to track completion:
   - `--output-only` prints the raw prompt to stdout
   - `--output-only --copy` both prints and copies
   - tests cover the new output behavior
+- **NOTES**: [PLAN-COMPONENTS], [PLAN-INTERFACES], [PLAN-TESTING]
+
+### T010
+
+- **GOAL**: Make the execution-stage core workflow commands clipboard-first by default
+- **SCOPE**:
+  - update `implement` and `reflect`
+  - keep raw stdout prompt output behind `--output-only`
+  - preserve `--copy` as an explicit override for `--output-only`
+- **ACCEPTANCE**:
+  - default command output acknowledges clipboard copy and does not print the prompt body
+  - `--output-only` prints the raw prompt to stdout
+  - `--output-only --copy` both prints and copies
+  - tests and verification still pass
 - **NOTES**: [PLAN-COMPONENTS], [PLAN-INTERFACES], [PLAN-TESTING]
 
 ## DEPENDENCIES

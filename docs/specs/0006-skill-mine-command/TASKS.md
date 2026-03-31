@@ -4,18 +4,19 @@
 
 ## PROGRESS TABLE
 
-| ID   | TASK                                 | STATUS | OWNER | DEPENDENCIES |
-| ---- | ------------------------------------ | ------ | ----- | ------------ |
-| T001 | Record skill-mine feature docs       | done   | agent |              |
-| T002 | Implement config and CLI command     | done   | agent | T001         |
-| T003 | Update help and README surfaces      | done   | agent | T002         |
-| T004 | Add tests and run verification       | done   | agent | T002, T003   |
-| T005 | Amend docs for insight and audit     | done   | agent | T004         |
-| T006 | Extend prompt for insight synthesis  | done   | agent | T005         |
-| T007 | Extend tests and rerun verification  | done   | agent | T006         |
-| T008 | Amend docs for cross-agent skill paths | done | agent | T007 |
-| T009 | Switch prompt to canonical plus mirror skill bundles | done | agent | T008 |
-| T010 | Expand tests and rerun verification for path changes | done | agent | T009 |
+| ID   | TASK                                                 | STATUS | OWNER | DEPENDENCIES |
+| ---- | ---------------------------------------------------- | ------ | ----- | ------------ |
+| T001 | Record skill-mine feature docs                       | done   | agent |              |
+| T002 | Implement config and CLI command                     | done   | agent | T001         |
+| T003 | Update help and README surfaces                      | done   | agent | T002         |
+| T004 | Add tests and run verification                       | done   | agent | T002, T003   |
+| T005 | Amend docs for insight and audit                     | done   | agent | T004         |
+| T006 | Extend prompt for insight synthesis                  | done   | agent | T005         |
+| T007 | Extend tests and rerun verification                  | done   | agent | T006         |
+| T008 | Amend docs for cross-agent skill paths               | done   | agent | T007         |
+| T009 | Switch prompt to canonical plus mirror skill bundles | done   | agent | T008         |
+| T010 | Expand tests and rerun verification for path changes | done   | agent | T009         |
+| T011 | Switch `skill mine` to clipboard-first prompt output | done   | agent | T010         |
 
 ## TASK LIST
 
@@ -31,6 +32,7 @@ Use markdown checkboxes to track completion:
 - [x] T008: Amend docs for cross-agent skill paths [PLAN-01] [PLAN-04] [PLAN-06]
 - [x] T009: Switch prompt to canonical plus mirror skill bundles [PLAN-01] [PLAN-04] [PLAN-06]
 - [x] T010: Expand tests and rerun verification for path changes [PLAN-07]
+- [x] T011: Switch `skill mine` to clipboard-first prompt output [PLAN-08]
 
 ## TASK DETAILS
 
@@ -157,6 +159,20 @@ Use markdown checkboxes to track completion:
   - verification still passes cleanly
 - **NOTES**: preserve the existing command surface
 
+### T011
+
+- **GOAL**: Align `skill mine` prompt output with the clipboard-first core workflow contract
+- **SCOPE**:
+  - update `pkg/cli/skill.go`
+  - keep raw stdout prompt output behind `--output-only`
+  - preserve `--copy` as an explicit override for `--output-only`
+- **ACCEPTANCE**:
+  - default command output acknowledges clipboard copy and does not print the prompt body
+  - `--output-only` prints the raw prompt to stdout
+  - `--output-only --copy` both prints and copies
+  - verification still passes cleanly
+- **NOTES**: reuse the shared clipboard-first helper instead of duplicating output logic
+
 ## DEPENDENCIES
 
 - T002 depends on T001 because implementation must follow the approved formal docs.
@@ -166,6 +182,7 @@ Use markdown checkboxes to track completion:
 - T007 depends on T006 because tests and verification validate the amended prompt.
 - T009 depends on T008 because the path change must be specified before implementation.
 - T010 depends on T009 because tests and verification validate the canonical-plus-mirror change.
+- T011 depends on T010 because the clipboard-first amendment must follow the existing prompt contract changes.
 
 ## NOTES
 

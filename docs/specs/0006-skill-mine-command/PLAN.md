@@ -3,7 +3,7 @@
 ## SUMMARY
 
 - Add a new prompt-only CLI surface under `skill mine` and `skills mine`.
-- Reuse existing selection, output, and workflow-instruction patterns so the new command behaves like the current prompt-output commands.
+- Reuse existing selection, clipboard-first output, and workflow-instruction patterns so the new command behaves like the current core workflow prompt commands.
 - Add config support for a canonical transferable skills directory, extend the prompt to derive higher-order insights, and add a mandatory stale-skill audit section with Claude mirror cleanup.
 
 ## APPROACH
@@ -15,6 +15,7 @@
 - [PLAN-05][SPEC-21][SPEC-22][SPEC-23][SPEC-24][SPEC-25] Expand the prompt so it synthesizes across `PROJECT_PROGRESS_SUMMARY.md`, constitution alignment, and emergent workflows, with an explicit signal priority ladder for insight derivation.
 - [PLAN-06][SPEC-26][SPEC-27][SPEC-28][SPEC-29][SPEC-30][SPEC-31][SPEC-34][SPEC-35] Add a mandatory stale-skill audit section that evaluates canonical skills under `<skills_dir>/*/SKILL.md`, retains passing canonical bundles unchanged, and removes the Claude mirror whenever a stale canonical skill is deleted.
 - [PLAN-07][SPEC-18][SPEC-19][SPEC-20] Keep the existing command surface and workflow instructions intact while rerunning verification.
+- [PLAN-08][SPEC-06][SPEC-06a][SPEC-06b] Switch `skill mine` output to the shared clipboard-first helper while keeping `--output-only` and `--copy` behavior explicit.
 
 ## COMPONENTS
 
@@ -54,13 +55,14 @@
 - Shared flags:
   - `--copy`
   - `--output-only`
-- Prompt output remains plain markdown passed through `outputPrompt`.
+- Prompt output remains plain markdown passed through the shared clipboard-first helper.
 
 ## RISKS
 
 - Two separate top-level commands can drift if they do not share the same subcommand instance or builder.
 - Selector eligibility can diverge from the intended workflow if it filters on phase instead of `TASKS.md`.
 - Prompt wording can become inconsistent with existing commands if output status handling does not reuse `outputPrompt` and `printWorkflowInstructions`.
+- Prompt wording can become inconsistent with existing commands if output status handling does not reuse the shared clipboard-first helper and `printWorkflowInstructions`.
 - Help ordering can hide one alias if `commandOrder` is not updated for both names.
 - Adding the insight-derivation and audit sections can push `pkg/cli/skill.go` past the repository file-size limit unless prompt-building logic is split into a helper file.
 - Canonical and mirror roots can drift conceptually if the prompt does not state that `.agents/skills` is the source of truth and `.claude/skills` is only the mirrored discovery path.
@@ -69,6 +71,7 @@
 ## TESTING
 
 - Add unit tests for `buildSkillMinePrompt`.
+- Add or reuse unit tests for clipboard-first prompt output semantics.
 - Verify prompt content includes canonical skills directory, Claude mirror directory, directory-based `SKILL.md` paths, git diff instructions, de-duplication instructions, `PROJECT_PROGRESS_SUMMARY.md`, `CONSTITUTION.md`, signal-priority language, `SKILL AUDIT`, audit criteria, deletion instructions for both roots, and `Skill Audit Summary`.
 - Verify prompt does not mention API calls or HTTP.
 - Run:

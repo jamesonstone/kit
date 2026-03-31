@@ -2,7 +2,7 @@
 
 ## SUMMARY
 
-Introduce a real brainstorm artifact and visible brainstorm phase, then rewire CLI prompts and product docs around that model. Remove parallel workflow concepts (`oneshot`, branch automation) so Kit is consistently document-centered and planning-first. Keep `brainstorm`, `spec`, `plan`, and `tasks` clipboard-first by default so stdout prompt output is reserved for explicit `--output-only` usage.
+Introduce a real brainstorm artifact and visible brainstorm phase, then rewire CLI prompts and product docs around that model. Remove parallel workflow concepts (`oneshot`, branch automation) so Kit is consistently document-centered and planning-first. Keep the core workflow prompt commands clipboard-first by default so stdout prompt output is reserved for explicit `--output-only` usage.
 
 ## APPROACH
 
@@ -10,7 +10,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 2. add `BRAINSTORM.md` support and a dedicated brainstorm phase in feature/status/rollup logic
 3. refactor `kit brainstorm` into the interactive, planning-only feature entrypoint
 4. thread `BRAINSTORM.md` through downstream prompts as optional upstream context
-5. keep prompt output behavior command-scoped by adding a clipboard-first helper for `brainstorm`, `spec`, `plan`, and `tasks` without changing other prompt commands
+5. keep prompt output behavior command-scoped by adding a clipboard-first helper for the core workflow commands without changing support utilities
 6. remove `kit oneshot` and git branch automation from code, config, help, and docs
 7. add tests for prompt generation, clipboard-first output, and phase detection, then run full verification
 
@@ -23,7 +23,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - output/copy/file behaviors
 - `pkg/cli/root.go`
   - shared prompt formatting
-  - command-scoped clipboard-first output helper for brainstorm/spec/plan/tasks
+  - command-scoped clipboard-first output helper for brainstorm/spec/plan/tasks/implement/reflect
 - `pkg/cli/multiline_input.go`
   - shared free-text prompt setup
   - kitty keyboard protocol activation/restoration
@@ -82,7 +82,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - `kit spec`, `kit plan`, `kit tasks`, `kit implement`, `kit reflect`
   - include `BRAINSTORM.md` in file references and instructions when present
   - preserve shared clarification-loop approval semantics when the `>=95%` understanding workflow is active
-- `kit spec`, `kit plan`, `kit tasks`
+- `kit spec`, `kit plan`, `kit tasks`, `kit implement`, `kit reflect`
   - match `kit brainstorm` clipboard-first default output semantics
   - keep `--copy` available as an explicit override for `--output-only`
 - `kit spec --interactive`
@@ -100,7 +100,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - phase reordering could break status, handoff, or rollup assumptions
   - mitigate with explicit phase ordering updates and tests
 - changing the shared prompt output helper could silently alter unrelated commands
-  - mitigate with a dedicated helper used only by `brainstorm`, `spec`, `plan`, and `tasks`
+  - mitigate with a dedicated helper used only by the core workflow commands
 - removing `oneshot` and branching could leave stale references in docs or template generators
   - mitigate with repo-wide search verification
 - brainstorm prompt generation could diverge from required planning-only behavior

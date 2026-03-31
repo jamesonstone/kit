@@ -35,8 +35,8 @@ that have SPEC.md, PLAN.md, and TASKS.md ready for implementation.`,
 }
 
 func init() {
-	implementCmd.Flags().BoolVar(&implementCopy, "copy", false, "copy agent prompt to clipboard")
-	implementCmd.Flags().BoolVar(&implementOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
+	implementCmd.Flags().BoolVar(&implementCopy, "copy", false, "copy prompt to clipboard even with --output-only")
+	implementCmd.Flags().BoolVar(&implementOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(implementCmd)
 }
 
@@ -252,7 +252,7 @@ Then read its acceptance criteria and implement it.
 		fmt.Println()
 	}
 
-	if err := outputPrompt(prompt, outputOnly, implementCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, implementCopy); err != nil {
 		return err
 	}
 

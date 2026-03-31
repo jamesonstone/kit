@@ -3,7 +3,7 @@
 ## SUMMARY
 
 - Add a new `kit skill mine [feature]` command, plus a `skills` alias, that outputs a prompt for an active coding agent to mine reusable procedural skills from a completed feature.
-- The command must follow the same output-prompt contract as existing prompt-only commands and write nothing itself except the generated prompt.
+- The command must follow the same clipboard-first output-prompt contract as `kit implement` and `kit reflect` and write nothing itself except the generated prompt.
 - Mined skills must use a transferable directory bundle layout that can be consumed by multiple coding agent systems.
 
 ## PROBLEM
@@ -16,7 +16,7 @@
 
 - Add a top-level `skill` command with a `mine` subcommand.
 - Add a top-level `skills` command as an alias surface with the same `mine` behavior.
-- Reuse the existing prompt-output contract used by `kit reflect`, `kit implement`, and `kit brainstorm`.
+- Reuse the existing clipboard-first prompt-output contract used by `kit reflect` and `kit implement`.
 - Let users target a feature directly or pick interactively from features that have reached at least `TASKS.md`.
 - Include the feature's spec pipeline, project constraints, git diff instructions, and skill de-duplication instructions in the output prompt.
 - Instruct the active coding agent to derive novel insights from the feature pipeline, git diff, and project-wide progression instead of limiting output to simple pattern extraction.
@@ -51,7 +51,9 @@
 - [SPEC-03] Register two top-level Cobra commands: `skill` and `skills`.
 - [SPEC-04] Both top-level commands must expose a `mine` subcommand and route to identical `RunE` behavior.
 - [SPEC-05] The `mine` subcommand must accept zero or one positional feature argument.
-- [SPEC-06] The `mine` subcommand must support `--copy` and `--output-only` flags with the same semantics as `kit reflect`.
+- [SPEC-06] The `mine` subcommand must support `--copy` and `--output-only` flags with the same clipboard-first semantics as `kit reflect`.
+- [SPEC-06a] By default, `kit skill mine` and `kit skills mine` must copy the generated prompt to the clipboard, print an acknowledgement, and not print the prompt body to stdout.
+- [SPEC-06b] With `--output-only`, the commands must print the raw prompt to stdout and only copy when `--copy` is also set.
 - [SPEC-07] When no feature argument is given, interactive selection must list only features with `TASKS.md` present.
 - [SPEC-08] The interactive selector must show each eligible feature with its current phase label.
 - [SPEC-09] The output prompt must instruct the active coding agent to read `CONSTITUTION.md`.
@@ -104,6 +106,8 @@
 
 - Running `kit skill mine <feature>` outputs a prompt that references the feature docs, configured canonical skills directory, Claude mirror path, project root, and deterministic draft output path.
 - Running `kit skills mine <feature>` produces the same prompt behavior as `kit skill mine <feature>`.
+- Default command output copies the generated prompt to the clipboard, prints an acknowledgement, and does not print the prompt body.
+- `--output-only` prints the raw prompt to stdout, and `--output-only --copy` does both.
 - Running `kit skill mine` with no feature argument opens an interactive selector containing only features with `TASKS.md`, each annotated with a phase label.
 - The prompt includes instructions for `git diff main`, fallback to `master`, skill de-duplication, reusable-pattern filtering, and the required `SKILL.md` format block.
 - The prompt includes `PROJECT_PROGRESS_SUMMARY.md` as an input for cross-feature theme detection.
@@ -121,6 +125,7 @@
 - `.claude/skills/` contains no existing mirror directories yet.
 - The local repository uses `master` rather than `main`.
 - The git diff is empty or unavailable.
+- `--output-only --copy` is passed and must both print and copy.
 - All existing skills pass audit and no new skill is warranted.
 - A skill is incomplete but still accurate and relevant, so it should be retained.
 - A canonical skill exists but its Claude mirror directory is missing.

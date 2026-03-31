@@ -32,8 +32,8 @@ The reflection process uses git, lint, and tests to enforce a clean, working sta
 }
 
 func init() {
-	reflectCmd.Flags().BoolVar(&reflectCopy, "copy", false, "copy agent prompt to clipboard")
-	reflectCmd.Flags().BoolVar(&reflectOutputOnly, "output-only", false, "output prompt only, suppressing status messages")
+	reflectCmd.Flags().BoolVar(&reflectCopy, "copy", false, "copy prompt to clipboard even with --output-only")
+	reflectCmd.Flags().BoolVar(&reflectOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(reflectCmd)
 }
 
@@ -80,7 +80,7 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		})
 	}
 
-	if err := outputPrompt(prompt, outputOnly, reflectCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, reflectCopy); err != nil {
 		return err
 	}
 

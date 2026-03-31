@@ -119,9 +119,10 @@ Use `kit dispatch` when you need the full overlap-clustering and queue-planning
 workflow for a raw task set. Use `--subagents` when you want an existing prompt
 to tell the coding agent to route safe, low-overlap work through subagents.
 
-`kit brainstorm`, `kit spec`, `kit plan`, and `kit tasks` copy their generated
-prompt to the clipboard by default. Pass `--output-only` to print the raw prompt
-to stdout instead, or combine `--output-only --copy` to do both.
+`kit brainstorm`, `kit spec`, `kit plan`, `kit tasks`, `kit implement`,
+`kit reflect`, and `kit skill mine` copy their generated prompt to the
+clipboard by default. Pass `--output-only` to print the raw prompt to stdout
+instead, or combine `--output-only --copy` to do both.
 
 ### Skill Mining
 
