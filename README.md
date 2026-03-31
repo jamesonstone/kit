@@ -282,4 +282,16 @@ MIT
 
 ## Maintainer
 
-[@jamesonstone](https://github.com/jamesonstone)
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/jamesonstone">
+        <img src="https://github.com/jamesonstone.png" width="100px;" alt="Jameson Stone"/>
+        <br />
+        <sub><b>Jameson Stone</b></sub>
+      </a>
+      <br />
+      <sub>Lead Maintainer</sub>
+    </td>
+  </tr>
+</table>
