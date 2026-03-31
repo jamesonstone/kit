@@ -36,12 +36,12 @@ The command never launches subagents itself. It only outputs the prompt.`,
 func init() {
 	addFreeTextInputFlags(dispatchCmd, &dispatchUseVim, &dispatchEditor)
 	dispatchCmd.Flags().StringVar(&dispatchFile, "file", "", "read the raw task set from a file")
-	dispatchCmd.Flags().BoolVar(&dispatchCopy, "copy", false, "copy agent prompt to clipboard")
+	dispatchCmd.Flags().BoolVar(&dispatchCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	dispatchCmd.Flags().BoolVar(
 		&dispatchOutputOnly,
 		"output-only",
 		false,
-		"output prompt only, suppressing status messages",
+		"output prompt text to stdout instead of copying it to the clipboard",
 	)
 	dispatchCmd.Flags().IntVar(
 		&dispatchMaxSubagents,
@@ -78,7 +78,7 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 	}
 
 	prompt := buildDispatchPrompt(tasks, dispatchMaxSubagents, workingDirectory, inputSource)
-	if err := outputPromptWithoutSubagents(prompt, outputOnly, dispatchCopy); err != nil {
+	if err := outputPromptWithoutSubagentsWithClipboardDefault(prompt, outputOnly, dispatchCopy); err != nil {
 		return err
 	}
 

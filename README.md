@@ -100,11 +100,11 @@ kit complete --all
 
 ### Context Management
 
-| Command                   | Description                                                      |
-| ------------------------- | ---------------------------------------------------------------- |
-| `kit handoff [feature]`   | Output feature or project-wide context for a fresh agent session |
-| `kit summarize [feature]` | Output context summarization instructions                        |
-| `kit catchup [feature]`   | Output a feature catch-up prompt that stays in plan mode         |
+| Command                   | Description                                                         |
+| ------------------------- | ------------------------------------------------------------------- |
+| `kit handoff [feature]`   | Prompt the current agent session to sync docs and prepare a handoff |
+| `kit summarize [feature]` | Output context summarization instructions                           |
+| `kit catchup [feature]`   | Output a feature catch-up prompt that stays in plan mode            |
 
 ### Agent Orchestration
 
@@ -119,10 +119,10 @@ Use `kit dispatch` when you need the full overlap-clustering and queue-planning
 workflow for a raw task set. Use `--subagents` when you want an existing prompt
 to tell the coding agent to route safe, low-overlap work through subagents.
 
-`kit brainstorm`, `kit spec`, `kit plan`, `kit tasks`, `kit implement`,
-`kit reflect`, and `kit skill mine` copy their generated prompt to the
-clipboard by default. Pass `--output-only` to print the raw prompt to stdout
-instead, or combine `--output-only --copy` to do both.
+Prompt-producing commands that expose `--output-only` copy their generated
+output to the clipboard by default. Pass `--output-only` to print the raw
+prompt or output to stdout instead, or combine `--output-only --copy` to do
+both.
 
 ### Skill Mining
 

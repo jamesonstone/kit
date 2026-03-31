@@ -3,7 +3,7 @@
 ## SUMMARY
 
 - Add a prompt-only `dispatch` command that captures a raw task block, normalizes top-level tasks, and outputs a deterministic subagent-dispatch planning prompt.
-- Reuse Kit's existing prompt-output and editor-input patterns, with a vim-compatible editor as the default interactive capture path.
+- Reuse Kit's existing clipboard-first prompt-output and editor-input patterns, with a vim-compatible editor as the default interactive capture path.
 
 ## APPROACH
 
@@ -12,6 +12,7 @@
 - [PLAN-03][SPEC-17][SPEC-18][SPEC-19][SPEC-20][SPEC-21][SPEC-22][SPEC-23][SPEC-24][SPEC-25][SPEC-26] Build a dedicated prompt builder that embeds the normalized task list and enforces discovery-first clustering, conservative overlap handling, dry-run reporting, and approval gating before subagent launch.
 - [PLAN-04][SPEC-28] Register the new command in help ordering and README so the public CLI surface matches the shipped behavior.
 - [PLAN-05] Add focused tests for input-source precedence, task normalization, prompt invariants, and flag validation, then run the standard verification commands.
+- [PLAN-06] Switch `dispatch` to the shared clipboard-first helper that preserves dispatch's no-subagent-suffix prompt shape.
 
 ## COMPONENTS
 
@@ -62,7 +63,7 @@
   - `--editor`
   - `--max-subagents`
 - Output shape:
-  - prompt-only, passed through `outputPrompt(...)`
+  - prompt-only, passed through the shared clipboard-first helper without subagent suffix text
   - workflow footer via `printWorkflowInstructions(...)`
 
 ## RISKS
@@ -72,6 +73,7 @@
 - Task normalization can over-split if nested bullets are mistaken for top-level tasks.
 - The prompt can encourage unsafe parallelization if overlap ambiguity is not handled conservatively.
 - File/stdin/editor precedence can become surprising if not encoded and tested explicitly.
+- Clipboard-first output can accidentally append unrelated orchestration text if dispatch stops using its dedicated no-subagent prompt path.
 
 ## TESTING
 
@@ -81,6 +83,7 @@
   - nested-item attachment to parent tasks
   - input-source precedence
   - `--max-subagents` validation
+- Add or reuse unit tests for clipboard-first prompt output semantics.
 - Run:
   - `make vet`
   - `make test`

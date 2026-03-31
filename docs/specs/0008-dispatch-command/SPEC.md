@@ -4,6 +4,7 @@
 
 - Add a new `kit dispatch` command that outputs a prompt for a coding agent to discover likely file overlap across a pasted task set, cluster overlapping work, and queue subagents safely.
 - The command must be prompt-only and must force a discovery-and-approval step before any subagent execution begins.
+- Default command output must copy the generated prompt to the clipboard and reserve raw stdout prompt output for `--output-only`.
 
 ## PROBLEM
 
@@ -21,7 +22,7 @@
 - Normalize top-level paragraphs, bullets, and numbered items into dispatchable tasks while keeping nested items attached to their parent task.
 - Output a prompt that requires discovery first, clustering by predicted file overlap, conservative handling of ambiguity, and explicit approval before subagent launch.
 - Support `--max-subagents` with default `10` and minimum `1`.
-- Reuse the standard prompt-output contract already used by Kit prompt commands.
+- Reuse the clipboard-first prompt-output contract already used by Kit prompt commands while preserving the no-subagent-suffix behavior of `dispatch`.
 
 ## NON-GOALS
 
@@ -45,7 +46,9 @@
 
 - [SPEC-01] Expose a new root command `kit dispatch`.
 - [SPEC-02] The command must accept no positional arguments.
-- [SPEC-03] The command must support `--copy` and `--output-only` and must use `outputPrompt(...)`.
+- [SPEC-03] The command must support `--copy` and `--output-only` and must use the shared clipboard-first prompt helper without appending subagent-routing suffix text.
+- [SPEC-03a] By default, the command must copy the generated prompt to the clipboard, print an acknowledgement, and not print the prompt body to stdout.
+- [SPEC-03b] With `--output-only`, the command must print the raw prompt to stdout and only copy when `--copy` is also set.
 - [SPEC-04] The command must support `--file <path>` for reading the raw task set from disk.
 - [SPEC-05] The command must support `--vim` and `--editor` for editor-backed task capture.
 - [SPEC-06] The command must support `--max-subagents <n>`, default `10`, minimum `1`.
@@ -92,6 +95,8 @@
 - The generated prompt states the effective max-subagent cap.
 - The generated prompt requires discovery first, conservative overlap clustering, and explicit approval before subagent launch.
 - The generated prompt includes the required dry-run sections.
+- Default command output copies the generated prompt to the clipboard, prints an acknowledgement, and does not print the prompt body.
+- `--output-only` prints the raw prompt to stdout, and `--output-only --copy` does both.
 - Help and README expose `kit dispatch` as a prompt-only command.
 
 ## EDGE-CASES
@@ -104,6 +109,7 @@
 - `--vim` or `--editor` is passed together with `--file` or piped stdin.
 - `--max-subagents` is `0` or negative.
 - The file passed to `--file` does not exist.
+- `--output-only --copy` is passed and must both print and copy.
 
 ## OPEN-QUESTIONS
 

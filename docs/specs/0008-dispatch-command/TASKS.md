@@ -4,13 +4,14 @@
 
 ## PROGRESS TABLE
 
-| ID   | TASK                                       | STATUS | OWNER | DEPENDENCIES |
-| ---- | ------------------------------------------ | ------ | ----- | ------------ |
-| T001 | Record dispatch feature artifacts          | done   | agent |              |
-| T002 | Implement dispatch command and prompt      | done   | agent | T001         |
-| T003 | Update help and README surfaces            | done   | agent | T002         |
-| T004 | Add tests and run verification             | done   | agent | T002, T003   |
-| T005 | Add pre-editor instructions and keypress gating | done | agent | T002, T004 |
+| ID   | TASK                                               | STATUS | OWNER | DEPENDENCIES |
+| ---- | -------------------------------------------------- | ------ | ----- | ------------ |
+| T001 | Record dispatch feature artifacts                  | done   | agent |              |
+| T002 | Implement dispatch command and prompt              | done   | agent | T001         |
+| T003 | Update help and README surfaces                    | done   | agent | T002         |
+| T004 | Add tests and run verification                     | done   | agent | T002, T003   |
+| T005 | Add pre-editor instructions and keypress gating    | done   | agent | T002, T004   |
+| T006 | Switch `dispatch` to clipboard-first prompt output | done   | agent | T005         |
 
 ## TASK LIST
 
@@ -19,6 +20,7 @@
 - [x] T003: Update help and README surfaces [PLAN-04]
 - [x] T004: Add tests and run verification [PLAN-05]
 - [x] T005: Add pre-editor instructions and keypress gating [PLAN-01] [PLAN-05]
+- [x] T006: Switch `dispatch` to clipboard-first prompt output [PLAN-06]
 
 ## TASK DETAILS
 
@@ -78,11 +80,26 @@
   - the editor opens only after an explicit key press
   - tests cover the new pre-editor interaction
 
+### T006
+
+- **GOAL**: Align `dispatch` output with the clipboard-first prompt contract
+- **SCOPE**:
+  - update `pkg/cli/dispatch.go`
+  - keep dispatch's no-subagent-suffix prompt shape
+  - keep raw stdout prompt output behind `--output-only`
+  - preserve `--copy` as an explicit override for `--output-only`
+- **ACCEPTANCE**:
+  - default command output acknowledges clipboard copy and does not print the prompt body
+  - `--output-only` prints the raw prompt to stdout
+  - `--output-only --copy` both prints and copies
+  - verification commands pass cleanly
+
 ## DEPENDENCIES
 
 - T002 depends on T001 because implementation follows the recorded contract.
 - T003 depends on T002 because docs must describe the final command surface.
 - T004 depends on T002 and T003 because verification must validate the shipped behavior.
+- T006 depends on T005 because the clipboard-first amendment follows the shipped dispatch behavior.
 
 ## NOTES
 

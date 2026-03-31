@@ -27,8 +27,8 @@ Use with coding agents: /compact (Warp), /summarize (Claude), etc.`,
 }
 
 func init() {
-	summarizeCmd.Flags().BoolVar(&summarizeCopy, "copy", false, "copy output to clipboard")
-	summarizeCmd.Flags().BoolVar(&summarizeOutputOnly, "output-only", false, "output text only, suppressing status messages")
+	summarizeCmd.Flags().BoolVar(&summarizeCopy, "copy", false, "copy output to clipboard even with --output-only")
+	summarizeCmd.Flags().BoolVar(&summarizeOutputOnly, "output-only", false, "output text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(summarizeCmd)
 }
 
@@ -65,7 +65,7 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 		})
 	}
 
-	if err := outputPrompt(instructions, outputOnly, summarizeCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(instructions, outputOnly, summarizeCopy); err != nil {
 		return err
 	}
 

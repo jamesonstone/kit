@@ -210,6 +210,10 @@ func outputPromptWithClipboardDefault(prompt string, outputOnly, copy bool) erro
 	return writePromptWithClipboardDefault(prepareAgentPrompt(prompt), outputOnly, copy)
 }
 
+func outputPromptWithoutSubagentsWithClipboardDefault(prompt string, outputOnly, copy bool) error {
+	return writePromptWithClipboardDefault(preparePromptWithoutSubagents(prompt), outputOnly, copy)
+}
+
 func outputPromptWithoutSubagents(prompt string, outputOnly, copy bool) error {
 	return writePrompt(preparePromptWithoutSubagents(prompt), outputOnly, copy)
 }

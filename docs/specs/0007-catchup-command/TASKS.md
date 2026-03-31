@@ -4,12 +4,13 @@
 
 ## PROGRESS TABLE
 
-| ID   | TASK                                | STATUS | OWNER | DEPENDENCIES |
-| ---- | ----------------------------------- | ------ | ----- | ------------ |
-| T001 | Record catchup feature artifacts    | done   | agent |              |
-| T002 | Implement catchup command and prompt | done  | agent | T001         |
-| T003 | Update help/docs surfaces           | done   | agent | T002         |
-| T004 | Add tests and run verification      | done   | agent | T002, T003   |
+| ID   | TASK                                              | STATUS | OWNER | DEPENDENCIES |
+| ---- | ------------------------------------------------- | ------ | ----- | ------------ |
+| T001 | Record catchup feature artifacts                  | done   | agent |              |
+| T002 | Implement catchup command and prompt              | done   | agent | T001         |
+| T003 | Update help/docs surfaces                         | done   | agent | T002         |
+| T004 | Add tests and run verification                    | done   | agent | T002, T003   |
+| T005 | Switch `catchup` to clipboard-first prompt output | done   | agent | T004         |
 
 ## TASK LIST
 
@@ -17,6 +18,7 @@
 - [x] T002: Implement catchup command and prompt [PLAN-01] [PLAN-02] [PLAN-03] [PLAN-04]
 - [x] T003: Update help/docs surfaces [PLAN-05]
 - [x] T004: Add tests and run verification [PLAN-06]
+- [x] T005: Switch `catchup` to clipboard-first prompt output [PLAN-07]
 
 ## TASK DETAILS
 
@@ -63,11 +65,25 @@
   - prompt tests cover stage/state, planning-mode gating, and complete-phase wording
   - verification commands pass cleanly
 
+### T005
+
+- **GOAL**: Align `catchup` output with the clipboard-first prompt contract
+- **SCOPE**:
+  - update `pkg/cli/catchup.go`
+  - keep raw stdout prompt output behind `--output-only`
+  - preserve `--copy` as an explicit override for `--output-only`
+- **ACCEPTANCE**:
+  - default command output acknowledges clipboard copy and does not print the prompt body
+  - `--output-only` prints the raw prompt to stdout
+  - `--output-only --copy` both prints and copies
+  - verification commands pass cleanly
+
 ## DEPENDENCIES
 
 - T002 depends on T001 because implementation follows the recorded contract.
 - T003 depends on T002 because docs must describe the final command surface.
 - T004 depends on T002 and T003 because verification must validate the shipped behavior.
+- T005 depends on T004 because the clipboard-first amendment follows the shipped prompt contract.
 
 ## NOTES
 

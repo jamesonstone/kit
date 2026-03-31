@@ -3,7 +3,7 @@
 ## SUMMARY
 
 - Add a prompt-only `catchup` command that helps a coding agent resume work on a specific feature without moving directly into implementation.
-- Reuse existing feature status, selector, and prompt-output patterns so the new surface is additive and does not duplicate `handoff`, `summarize`, or `implement`.
+- Reuse existing feature status, selector, and clipboard-first prompt-output patterns so the new surface is additive and does not duplicate `handoff`, `summarize`, or `implement`.
 
 ## APPROACH
 
@@ -13,6 +13,7 @@
 - [PLAN-04][SPEC-17] Add complete-phase-specific prompt wording so completed features are treated as review/reopen triage rather than resumed implementation.
 - [PLAN-05][SPEC-18] Register the command in help ordering and README with wording that clearly distinguishes it from `handoff`, `summarize`, and `implement`.
 - [PLAN-06][SPEC-19] Add focused tests for prompt generation and state rendering, then run the normal verification commands.
+- [PLAN-07] Switch `catchup` to the shared clipboard-first helper while keeping `--output-only` and `--copy` behavior explicit.
 
 ## COMPONENTS
 
@@ -48,7 +49,7 @@
   - `--copy`
   - `--output-only`
 - Output shape:
-  - prompt-only, passed through `outputPrompt(...)`
+  - prompt-only, passed through the shared clipboard-first prompt helper
   - workflow footer via `printWorkflowInstructions(...)`
 
 ## RISKS
@@ -57,6 +58,7 @@
 - `catchup` can drift into `implement` duplication if the prompt tells the agent to begin execution instead of asking questions first.
 - State wording can become inconsistent if it invents a parallel stage model instead of using `feature.GetFeatureStatus(...)`.
 - Complete-phase handling can be misleading if the prompt assumes every resumed feature needs more implementation.
+- Clipboard-first output can become confusing if acknowledgement text replaces the prompt body without a documented `--output-only` escape hatch.
 
 ## TESTING
 
@@ -73,6 +75,7 @@
   - explicit permission before implementation
   - optional `kit summarize <feature>` reference
   - complete-phase reopen/review wording
+- Add or reuse unit tests for clipboard-first prompt output semantics.
 - Run:
   - `make vet`
   - `make test`

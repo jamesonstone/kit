@@ -4,6 +4,7 @@
 
 - Add a new `kit catchup [feature]` command that outputs a prompt for a coding agent to recover the current state of a selected feature before any implementation resumes.
 - The command must be prompt-only, feature-scoped, and explicitly keep the agent in plan mode until the user approves moving into implementation.
+- Default command output must copy the generated prompt to the clipboard and reserve raw stdout prompt output for `--output-only`.
 
 ## PROBLEM
 
@@ -18,7 +19,7 @@
 - Let the selector include all feature directories under `docs/specs/` and display the phase beside each feature.
 - Derive the selected feature's current stage and state from Kit's existing feature/status model.
 - Output a prompt that tells the coding agent to catch up on the selected feature, stay in plan mode, ask questions first, and ask explicitly before starting implementation.
-- Reuse the standard prompt-output contract already used by Kit prompt commands.
+- Reuse the clipboard-first prompt-output contract already used by Kit prompt commands.
 
 ## NON-GOALS
 
@@ -45,7 +46,9 @@
 - Expose a new root command `kit catchup [feature]`.
 - When no feature argument is provided, show an interactive numbered selector for all features returned by `feature.ListFeatures`.
 - The selector must show each feature's directory name and current phase.
-- The command must support `--copy` and `--output-only` and must use `outputPrompt(...)`.
+- The command must support `--copy` and `--output-only` and must use the shared clipboard-first prompt helper.
+- By default, the command must copy the generated prompt to the clipboard, print an acknowledgement, and not print the prompt body to stdout.
+- With `--output-only`, the command must print the raw prompt to stdout and only copy when `--copy` is also set.
 - The command must resolve the selected feature using existing feature-resolution logic.
 - The generated prompt must begin with `/plan`.
 - The generated prompt must identify the selected feature's current stage and current state.
@@ -70,6 +73,8 @@
 - The prompt does not duplicate the full project-wide `handoff` content or the full summarization workflow.
 - The prompt references `kit summarize <feature>` only as an optional support command.
 - A `complete` feature produces a review/reopen-style catch-up prompt rather than an implementation-start prompt.
+- Default command output copies the generated prompt to the clipboard, prints an acknowledgement, and does not print the prompt body.
+- `--output-only` prints the raw prompt to stdout, and `--output-only --copy` does both.
 - Help and README document the new command distinctly from `handoff`, `summarize`, and `implement`.
 
 ## EDGE-CASES
@@ -79,6 +84,7 @@
 - The selected feature has `SPEC.md` or `PLAN.md` but no `TASKS.md`.
 - The selected feature has `TASKS.md` with no checkbox progress.
 - The selected feature is already `complete`.
+- `--output-only --copy` is passed and must both print and copy.
 - The selected feature has missing conversation context, but the repository docs are sufficient to reconstruct current state.
 
 ## OPEN-QUESTIONS

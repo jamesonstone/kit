@@ -28,8 +28,8 @@ The agent will:
 }
 
 func init() {
-	codeReviewCmd.Flags().BoolVarP(&codeReviewCopy, "copy", "c", false, "copy output to clipboard")
-	codeReviewCmd.Flags().BoolVar(&codeReviewOutputOnly, "output-only", false, "output text only, suppressing status messages")
+	codeReviewCmd.Flags().BoolVarP(&codeReviewCopy, "copy", "c", false, "copy output to clipboard even with --output-only")
+	codeReviewCmd.Flags().BoolVar(&codeReviewOutputOnly, "output-only", false, "output text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(codeReviewCmd)
 }
 
@@ -38,7 +38,7 @@ func runCodeReview(cmd *cobra.Command, args []string) error {
 
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
-	if err := outputPrompt(output, outputOnly, codeReviewCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(output, outputOnly, codeReviewCopy); err != nil {
 		return err
 	}
 	if !outputOnly {

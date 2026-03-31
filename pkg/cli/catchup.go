@@ -31,12 +31,12 @@ approval before any implementation begins.`,
 }
 
 func init() {
-	catchupCmd.Flags().BoolVar(&catchupCopy, "copy", false, "copy agent prompt to clipboard")
+	catchupCmd.Flags().BoolVar(&catchupCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	catchupCmd.Flags().BoolVar(
 		&catchupOutputOnly,
 		"output-only",
 		false,
-		"output prompt only, suppressing status messages",
+		"output prompt text to stdout instead of copying it to the clipboard",
 	)
 	rootCmd.AddCommand(catchupCmd)
 }
@@ -73,7 +73,7 @@ func runCatchup(cmd *cobra.Command, args []string) error {
 	}
 
 	prompt := buildCatchupPrompt(feat, status, projectRoot)
-	if err := outputPrompt(prompt, outputOnly, catchupCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, catchupCopy); err != nil {
 		return err
 	}
 

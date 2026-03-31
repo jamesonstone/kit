@@ -90,14 +90,17 @@ func TestProjectHandoffIncludesProgressSummaryAndStatus(t *testing.T) {
 	}
 
 	checks := []string{
-		"## Progress Summary",
-		"docs/PROJECT_PROGRESS_SUMMARY.md",
-		"## Current Development Status",
-		"## Conversation Context Preservation",
-		"Summarize the context of the current conversation",
-		"Use `kit summarize` to shape that summary",
-		"| alpha | spec |",
-		"| beta | implement |",
+		"You are the current coding agent session preparing this project for handoff.",
+		"## Documentation Inventory",
+		"| File | Full Path | How To Use |",
+		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
+		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
+		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
+		filepath.Join(projectRoot, "docs", "specs", "0002-beta", "TASKS.md"),
+		"Update any stale feature docs first.",
+		"## Final Response Contract",
+		"`Documentation Files`",
+		"`Recent Context`",
 	}
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
@@ -106,7 +109,7 @@ func TestProjectHandoffIncludesProgressSummaryAndStatus(t *testing.T) {
 	}
 }
 
-func TestFeatureHandoffIncludesConversationPreservationInstructions(t *testing.T) {
+func TestFeatureHandoffIncludesDocSyncInstructions(t *testing.T) {
 	projectRoot := t.TempDir()
 	mustWriteFile(t, filepath.Join(projectRoot, ".kit.yaml"), []byte{})
 	mustWriteFile(
@@ -124,17 +127,22 @@ func TestFeatureHandoffIncludesConversationPreservationInstructions(t *testing.T
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
 		[]byte("# SPEC\n"),
 	)
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "PLAN.md"),
+		[]byte("# PLAN\n"),
+	)
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "TASKS.md"),
+		[]byte("- [ ] T001: first task\n"),
+	)
 
-	originalWD, err := os.Getwd()
+	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
 	if err != nil {
-		t.Fatalf("failed to get working directory: %v", err)
+		t.Fatalf("failed to prepare working directory: %v", err)
 	}
-	if err := os.Chdir(projectRoot); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-	t.Cleanup(func() {
-		_ = os.Chdir(originalWD)
-	})
+	t.Cleanup(restoreWD)
 
 	output, err := featureHandoff("alpha")
 	if err != nil {
@@ -142,10 +150,19 @@ func TestFeatureHandoffIncludesConversationPreservationInstructions(t *testing.T
 	}
 
 	checks := []string{
-		"## Conversation Context Preservation",
-		"Summarize the context of the current conversation",
-		"`kit summarize alpha`",
-		"Use that summarized conversation context in conjunction with:",
+		"You are the current coding agent session preparing this feature for handoff.",
+		"## Documentation Inventory",
+		"| File | Full Path | How To Use |",
+		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
+		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
+		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "PLAN.md"),
+		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "TASKS.md"),
+		"Compare current implementation reality, task status, and repository findings against each feature document",
+		"If any feature specification document is stale, update it first",
+		"## Final Response Contract",
+		"`Documentation Sync`",
+		"`Documentation Files`",
+		"`Recent Context`",
 	}
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
@@ -154,14 +171,14 @@ func TestFeatureHandoffIncludesConversationPreservationInstructions(t *testing.T
 	}
 }
 
-func TestGenericHandoffIncludesConversationPreservationInstructions(t *testing.T) {
+func TestGenericHandoffIncludesRecentContextAndFinalResponseContract(t *testing.T) {
 	output := genericHandoffInstructions()
 
 	checks := []string{
-		"## Preserve Current Conversation Context",
-		"Summarize the context of the current conversation into high-signal facts",
-		"`kit summarize`",
-		"Use the summarized conversation context in conjunction with",
+		"You are the current coding agent session preparing this project for handoff.",
+		"Summarize that recent context into high-signal facts",
+		"`Documentation Files`",
+		"`Recent Context`",
 	}
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
