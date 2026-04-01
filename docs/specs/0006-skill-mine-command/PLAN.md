@@ -16,6 +16,7 @@
 - [PLAN-06][SPEC-26][SPEC-27][SPEC-28][SPEC-29][SPEC-30][SPEC-31][SPEC-34][SPEC-35] Add a mandatory stale-skill audit section that evaluates canonical skills under `<skills_dir>/*/SKILL.md`, retains passing canonical bundles unchanged, and removes the Claude mirror whenever a stale canonical skill is deleted.
 - [PLAN-07][SPEC-18][SPEC-19][SPEC-20] Keep the existing command surface and workflow instructions intact while rerunning verification.
 - [PLAN-08][SPEC-06][SPEC-06a][SPEC-06b] Switch `skill mine` output to the shared clipboard-first helper while keeping `--output-only` and `--copy` behavior explicit.
+- [PLAN-09][SPEC-06c] Register the shared `--prompt-only` flag on `skill mine` so the command surface stays consistent with the rest of Kit's feature-scoped prompt commands without changing runtime behavior.
 
 ## COMPONENTS
 
@@ -55,6 +56,7 @@
 - Shared flags:
   - `--copy`
   - `--output-only`
+  - `--prompt-only`
 - Prompt output remains plain markdown passed through the shared clipboard-first helper.
 
 ## RISKS
@@ -72,6 +74,7 @@
 
 - Add unit tests for `buildSkillMinePrompt`.
 - Add or reuse unit tests for clipboard-first prompt output semantics.
+- Verify `kit skill mine --help` and `kit skills mine --help` expose `--prompt-only`.
 - Verify prompt content includes canonical skills directory, Claude mirror directory, directory-based `SKILL.md` paths, git diff instructions, de-duplication instructions, `PROJECT_PROGRESS_SUMMARY.md`, `CONSTITUTION.md`, signal-priority language, `SKILL AUDIT`, audit criteria, deletion instructions for both roots, and `Skill Audit Summary`.
 - Verify prompt does not mention API calls or HTTP.
 - Run:

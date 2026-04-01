@@ -65,6 +65,9 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 		filepath.Join(codexDir, "skills", "*", "SKILL.md"),
 		"Perform a skills discovery phase before treating SPEC.md as complete",
 		"write the selected skills into the `## SKILLS` table",
+		"Populate or refresh the `## DEPENDENCIES` table",
+		"keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`",
+		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
 		"do not use `.claude/skills` as canonical discovery input",
 		"## Skills",
 		"read that feature's SPEC.md and the `## SKILLS` table first",
@@ -106,8 +109,11 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 	checks := []string{
 		"Perform a skills discovery phase before asking sign-off questions",
 		"populate the `## SKILLS` table",
+		"Populate or refresh the `## DEPENDENCIES` table",
 		"keep the required `none | n/a | n/a | no additional skills required | no` row",
+		"keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`",
 		"the ## SKILLS section is mandatory and must be populated before sign-off",
+		"the ## DEPENDENCIES section must be current before sign-off",
 	}
 
 	for _, check := range checks {

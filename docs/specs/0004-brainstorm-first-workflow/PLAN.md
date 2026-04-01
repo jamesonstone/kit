@@ -2,17 +2,18 @@
 
 ## SUMMARY
 
-Introduce a real brainstorm artifact and visible brainstorm phase, then rewire CLI prompts and product docs around that model. Remove parallel workflow concepts (`oneshot`, branch automation) so Kit is consistently document-centered and planning-first. Keep the core workflow prompt commands clipboard-first by default so stdout prompt output is reserved for explicit `--output-only` usage.
+Introduce a real brainstorm artifact and visible brainstorm phase, then rewire CLI prompts and product docs around that model. Remove parallel workflow concepts (`oneshot`, branch automation) so Kit is consistently document-centered and planning-first. Keep the core workflow prompt commands clipboard-first by default so stdout prompt output is reserved for explicit `--output-only` usage, and add a side-effect-free `--prompt-only` regeneration path for existing features.
 
 ## APPROACH
 
 1. formalize the workflow contract in repo docs and generated templates
 2. add `BRAINSTORM.md` support and a dedicated brainstorm phase in feature/status/rollup logic
 3. refactor `kit brainstorm` into the interactive, planning-only feature entrypoint
-4. thread `BRAINSTORM.md` through downstream prompts as optional upstream context
+4. thread `BRAINSTORM.md` through downstream prompts as optional upstream context and phase dependency source
 5. keep prompt output behavior command-scoped by adding a clipboard-first helper for the core workflow commands without changing support utilities
-6. remove `kit oneshot` and git branch automation from code, config, help, and docs
-7. add tests for prompt generation, clipboard-first output, and phase detection, then run full verification
+6. add a shared `--prompt-only` flag for feature-scoped prompt commands and branch artifact-writing commands into side-effect-free regeneration mode
+7. remove `kit oneshot` and git branch automation from code, config, help, and docs
+8. add tests for prompt generation, clipboard-first output, prompt-only regeneration, and phase detection, then run full verification
 
 ## COMPONENTS
 
@@ -24,6 +25,8 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - `pkg/cli/root.go`
   - shared prompt formatting
   - command-scoped clipboard-first output helper for brainstorm/spec/plan/tasks/implement/reflect
+- `pkg/cli/prompt_only.go`
+  - shared `--prompt-only` flag registration and lookup
 - `pkg/cli/multiline_input.go`
   - shared free-text prompt setup
   - kitty keyboard protocol activation/restoration
@@ -37,6 +40,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - `internal/templates/templates.go`
   - brainstorm artifact template
   - generated agent pointer/template updates
+  - dependency inventory tables for brainstorm and plan docs
 - `internal/feature/feature.go`
   - brainstorm phase constant
   - phase detection based on `BRAINSTORM.md`
@@ -78,10 +82,15 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - allow `--vim` and `--editor=vim` to capture the thesis in a vim-compatible editor
   - create or reuse `docs/specs/<feature>/BRAINSTORM.md`
   - output a `/plan` prompt for a coding agent
+  - require `BRAINSTORM.md` `## DEPENDENCIES` to track the supporting inputs used during the brainstorm phase
   - default to copying the prepared prompt to the clipboard and only print the prompt body for `--output-only`
+  - allow `--prompt-only` to regenerate the prompt from an existing `BRAINSTORM.md` without asking for a new thesis, without writing files, and without updating rollups
 - `kit spec`, `kit plan`, `kit tasks`, `kit implement`, `kit reflect`
   - include `BRAINSTORM.md` in file references and instructions when present
   - preserve shared clarification-loop approval semantics when the `>=95%` understanding workflow is active
+  - accept `--prompt-only` to regenerate prompts for an existing feature without mutating repo docs
+- `kit plan`
+  - refresh `PLAN.md` `## DEPENDENCIES` with the resources that shape the implementation strategy
 - `kit spec`, `kit plan`, `kit tasks`, `kit implement`, `kit reflect`
   - match `kit brainstorm` clipboard-first default output semantics
   - keep `--copy` available as an explicit override for `--output-only`
@@ -112,7 +121,9 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 
 - unit tests for brainstorm phase detection and ordering
 - unit tests for brainstorm prompt generation, including `/plan` prefix plus numbered-list, approval-syntax, and percentage-progress clarification requirements
+- unit tests for brainstorm and plan dependency-inventory guidance
 - unit tests for clipboard-first prompt output semantics, including default-copy acknowledgement and `--output-only` raw stdout behavior
+- unit tests for prompt-only regeneration, including existing-feature selectors and missing-artifact failures
 - unit tests for multiline input translation, including `Shift+Enter` escape handling and blank-line preservation hooks
 - unit tests for editor resolution and editor-backed submit/cancel semantics helpers
 - unit tests for pre-editor instruction rendering and any-key launch gating

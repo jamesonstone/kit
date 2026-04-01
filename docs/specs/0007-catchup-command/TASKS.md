@@ -11,6 +11,7 @@
 | T003 | Update help/docs surfaces                         | done   | agent | T002         |
 | T004 | Add tests and run verification                    | done   | agent | T002, T003   |
 | T005 | Switch `catchup` to clipboard-first prompt output | done   | agent | T004         |
+| T006 | Add `--prompt-only` consistency flag to `catchup` | done   | agent | T005         |
 
 ## TASK LIST
 
@@ -19,6 +20,7 @@
 - [x] T003: Update help/docs surfaces [PLAN-05]
 - [x] T004: Add tests and run verification [PLAN-06]
 - [x] T005: Switch `catchup` to clipboard-first prompt output [PLAN-07]
+- [x] T006: Add `--prompt-only` consistency flag to `catchup` [PLAN-08]
 
 ## TASK DETAILS
 
@@ -78,12 +80,25 @@
   - `--output-only --copy` both prints and copies
   - verification commands pass cleanly
 
+### T006
+
+- **GOAL**: keep `catchup` aligned with the shared feature-prompt command surface
+- **SCOPE**:
+  - register `--prompt-only`
+  - preserve the existing prompt-only runtime behavior
+  - cover the flag in help/docs verification
+- **ACCEPTANCE**:
+  - `kit catchup --prompt-only` is accepted
+  - the flag does not change the repo mutation model
+  - docs/help reflect the shared command-surface contract
+
 ## DEPENDENCIES
 
 - T002 depends on T001 because implementation follows the recorded contract.
 - T003 depends on T002 because docs must describe the final command surface.
 - T004 depends on T002 and T003 because verification must validate the shipped behavior.
 - T005 depends on T004 because the clipboard-first amendment follows the shipped prompt contract.
+- T006 depends on T005 because the shared prompt-only flag sits on top of the shipped prompt-output surface.
 
 ## NOTES
 

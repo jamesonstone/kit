@@ -8,8 +8,9 @@
 
 - [PLAN-01][SPEC-01][SPEC-02][SPEC-03] Update document validation and templates so `SPEC.md` requires a `## SKILLS` section with the fixed table shape and default row.
 - [PLAN-02][SPEC-04][SPEC-05][SPEC-06][SPEC-07] Update `kit spec` prompt generation to treat skills discovery as a first-class phase and to name repo-local and documented global inputs explicitly.
-- [PLAN-03][SPEC-08] Add a shared prompt suffix that tells coding agents to consult documented skills before execution, so every prompt-output command stays aligned.
-- [PLAN-04][SPEC-09][SPEC-10] Update repository instruction templates and checked-in instruction files to describe the new workflow and to keep `.claude/skills` mirror-only.
+- [PLAN-02A][SPEC-08][SPEC-09][SPEC-10][SPEC-11] Keep `SPEC.md` dependency inventories separate from `## SKILLS` and require exact locations for design dependencies.
+- [PLAN-03][SPEC-12] Add a shared prompt suffix that tells coding agents to consult documented skills before execution, so every prompt-output command stays aligned.
+- [PLAN-04][SPEC-13][SPEC-14] Update repository instruction templates and checked-in instruction files to describe the new workflow and to keep `.claude/skills` mirror-only.
 
 ## COMPONENTS
 
@@ -34,7 +35,7 @@
 
 ## INTERFACES
 
-- `SPEC.md` gains a required `## SKILLS` section.
+- `SPEC.md` gains a required `## SKILLS` section and a dependency inventory for newly generated or touched specs.
 - `kit spec` prompt contract adds a mandatory skills discovery phase.
 - Prompt-output commands inherit a shared `## Skills` instruction block.
 
@@ -47,6 +48,6 @@
 ## TESTING
 
 - Verify the `SPEC.md` template includes the new `## SKILLS` section and table.
-- Verify `kit spec` prompt output names all required discovery inputs and the `## SKILLS` table requirement.
+- Verify `kit spec` prompt output names all required discovery inputs, the `## SKILLS` table requirement, and the separate dependency inventory rules.
 - Verify the shared prompt suffix appears on prompt-output commands.
 - Verify repository instruction templates mention the new workflow and do not describe `.claude/skills` as canonical.

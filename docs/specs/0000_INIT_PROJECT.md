@@ -167,14 +167,40 @@ Purpose:
 
 ---
 
-### 6.2 `SPEC.md`
+### 6.2 `BRAINSTORM.md` (Optional)
 
-Required sections:
+Required sections for newly generated brainstorm docs and brainstorm docs touched by current workflow commands:
 
+- SUMMARY
+- USER THESIS
+- CODEBASE FINDINGS
+- AFFECTED FILES
+- DEPENDENCIES
+- QUESTIONS
+- OPTIONS
+- RECOMMENDED STRATEGY
+- NEXT STEP
+
+Rules:
+
+- keep file paths concrete whenever possible
+- keep supporting inputs in a dependency table with columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`
+- `Status` should distinguish `active`, `optional`, and `stale` inputs
+- when a dependency is a Figma or MCP-driven design source, record the exact URL or file/node reference in `Location`
+
+---
+
+### 6.3 `SPEC.md`
+
+Required sections for newly generated specs and specs touched by current workflow commands:
+
+- SUMMARY
 - PROBLEM
 - GOALS
 - NON-GOALS
 - USERS
+- SKILLS
+- DEPENDENCIES
 - REQUIREMENTS
 - ACCEPTANCE
 - EDGE-CASES
@@ -185,18 +211,21 @@ Rules:
 - one sentence where possible
 - no implementation detail
 - no speculative language
+- keep `## SKILLS` focused on execution-time agent skills
+- keep broader supporting inputs in `## DEPENDENCIES`
 
 ---
 
-### 6.3 `PLAN.md`
+### 6.4 `PLAN.md`
 
-Required sections:
+Required sections for newly generated plans and plans touched by current workflow commands:
 
 - SUMMARY
 - APPROACH
 - COMPONENTS
 - DATA
 - INTERFACES
+- DEPENDENCIES
 - RISKS
 - TESTING
 
@@ -205,10 +234,11 @@ Rules:
 - explain strategy, not code
 - name decisions explicitly
 - defer code unless essential
+- keep implementation-strategy dependencies in a dependency table with columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`
 
 ---
 
-### 6.4 `TASKS.md`
+### 6.5 `TASKS.md`
 
 Top-level table (required):
 
@@ -229,7 +259,7 @@ Rules:
 
 ---
 
-### 6.5 `PROJECT_PROGRESS_SUMMARY.md`
+### 6.6 `PROJECT_PROGRESS_SUMMARY.md`
 
 Purpose:
 
@@ -278,7 +308,7 @@ Rules:
 
 ---
 
-### 6.6 `ANALYSIS.md` (Optional)
+### 6.7 `ANALYSIS.md` (Optional)
 
 Purpose:
 
@@ -363,6 +393,7 @@ CLI flags always override `.kit.yaml`.
 - create or reuse the feature directory (uses `0001-feat-name` format)
 - create `BRAINSTORM.md` as the first artifact in the feature directory
 - output a planning-only `/plan` prompt for a coding agent
+- require the agent to keep `BRAINSTORM.md` `## DEPENDENCIES` current with the supporting inputs used during the research phase
 - require the agent to use numbered lists, ask clarifying questions in batches of up to 10, include a recommended default/proposed solution/assumption for every question, accept `yes` / `y` as full-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` as numbered approval, support `no` / `n` overrides, state uncertainties, and output percentage-understanding progress after each batch
 - require the agent to continue until the configured understanding threshold is reached and the specification is precise enough for a correct, production-quality solution before writing implementation artifacts
 
@@ -372,6 +403,7 @@ CLI flags always override `.kit.yaml`.
 
 - scaffold `SPEC.md` template for manual editing
 - template includes section headers with placeholder comments (e.g., `<!-- TODO: describe the problem -->`)
+- template includes `## SKILLS` and `## DEPENDENCIES` tables for newly generated specs
 - create feature directory if missing (uses `0001-feat-name` format)
 - update `docs/PROJECT_PROGRESS_SUMMARY.md`
 
@@ -380,6 +412,7 @@ CLI flags always override `.kit.yaml`.
 #### `kit plan <feature>`
 
 - scaffold `PLAN.md` template for manual editing
+- scaffold includes a `## DEPENDENCIES` table for implementation-strategy inputs
 - plan items link to spec items using `[SPEC-01]` syntax
 - update `PROJECT_PROGRESS_SUMMARY.md`
 
@@ -527,7 +560,7 @@ Reflection Process:
 
 Purpose:
 
-- output context for starting a fresh coding agent session
+- prepare the current coding agent session to reconcile docs before transfer
 - minimize information loss when switching agents due to token limits or rate limiting
 - enable seamless continuation across Warp, Claude, Copilot, Codex, etc.
 
@@ -535,21 +568,20 @@ Behavior:
 
 - without feature argument: shows an interactive numbered selector of all features under `docs/specs/` plus `0` for no specific feature
 - selecting `0`: outputs project-level context including:
-  - Kit workflow explanation
-  - project structure
-  - current development status across all features
-  - `docs/PROJECT_PROGRESS_SUMMARY.md` as the current rollup source
-  - immediate next steps
+  - documentation inventory and current development status across active features
+  - instructions to reconcile stale docs before handoff
+  - dependency-inventory verification for touched feature docs
 - with feature argument: outputs feature-specific context including:
   - feature location and phase
-  - required reading (SPEC.md, PLAN.md, TASKS.md)
-  - phase-appropriate next actions
+  - required reading (`BRAINSTORM.md` when present, then `SPEC.md`, `PLAN.md`, `TASKS.md`)
+  - instructions to refresh dependency tables in `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` when those docs exist
+  - a final response contract for concise documentation sync and recent-context summary
 
 Flags:
 
 - `--copy` / `-c` — copy output to clipboard (pbcopy)
 
-Use case: when you run out of tokens or hit rate limits, run `kit handoff` and paste the output into a new agent session to continue with minimal context loss.
+Use case: when you run out of tokens or hit rate limits, run `kit handoff`, let the current agent reconcile docs and dependency inventories, then transfer the final handoff summary.
 
 ---
 

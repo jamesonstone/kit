@@ -63,6 +63,14 @@ const BrainstormArtifact = `# BRAINSTORM
 
 <!-- TODO: list concrete file paths and why they matter -->
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| none | n/a | n/a | no phase dependencies recorded yet | active |
+
+<!-- TODO: list the tools, docs, design refs, APIs, libraries, datasets, assets, and other inputs used during this phase; keep exact URLs or file/node refs in Location -->
+
 ## QUESTIONS
 
 <!-- TODO: list unresolved clarifying questions and unknowns -->
@@ -118,6 +126,20 @@ const Spec = `# SPEC
 
 <!-- TODO: identify who will use this feature -->
 
+## SKILLS
+
+| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
+| ----- | ------ | ---- | ------- | -------- |
+| none | n/a | n/a | no additional skills required | no |
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| none | n/a | n/a | no supporting dependencies recorded yet | active |
+
+<!-- TODO: list the supporting docs, MCP tools, design refs, APIs, libraries, datasets, assets, and other inputs that shaped this spec -->
+
 ## REQUIREMENTS
 
 <!-- TODO: list functional requirements -->
@@ -157,6 +179,14 @@ const Plan = `# PLAN
 ## INTERFACES
 
 <!-- TODO: define APIs, contracts, and integration points -->
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| none | n/a | n/a | no planning dependencies recorded yet | active |
+
+<!-- TODO: list the dependencies that shape the implementation strategy, including exact design URLs or file/node refs when applicable -->
 
 ## RISKS
 

@@ -14,6 +14,7 @@
 - [PLAN-05][SPEC-18] Register the command in help ordering and README with wording that clearly distinguishes it from `handoff`, `summarize`, and `implement`.
 - [PLAN-06][SPEC-19] Add focused tests for prompt generation and state rendering, then run the normal verification commands.
 - [PLAN-07] Switch `catchup` to the shared clipboard-first helper while keeping `--output-only` and `--copy` behavior explicit.
+- [PLAN-08] Register the shared `--prompt-only` flag on `catchup` so the command surface matches the rest of Kit's feature-scoped prompt commands.
 
 ## COMPONENTS
 
@@ -48,6 +49,7 @@
 - Flags:
   - `--copy`
   - `--output-only`
+  - `--prompt-only`
 - Output shape:
   - prompt-only, passed through the shared clipboard-first prompt helper
   - workflow footer via `printWorkflowInstructions(...)`
@@ -76,6 +78,7 @@
   - optional `kit summarize <feature>` reference
   - complete-phase reopen/review wording
 - Add or reuse unit tests for clipboard-first prompt output semantics.
+- Verify `kit catchup --help` exposes `--prompt-only`.
 - Run:
   - `make vet`
   - `make test`

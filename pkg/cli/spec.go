@@ -58,6 +58,7 @@ func init() {
 	specCmd.Flags().Bool("interactive", false, "prompt user for spec details interactively")
 	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	specCmd.Flags().BoolVar(&specOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	addPromptOnlyFlag(specCmd)
 	rootCmd.AddCommand(specCmd)
 }
 
@@ -65,6 +66,7 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	specTemplateOnly, _ := cmd.Flags().GetBool("template")
 	specInteractive, _ := cmd.Flags().GetBool("interactive")
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
+	promptOnly := promptOnlyEnabled(cmd)
 
 	// find project root
 	projectRoot, err := config.FindProjectRoot()
@@ -83,6 +85,14 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	if err := ensureDir(specsDir); err != nil {
 		return err
 	}
+
+	if promptOnly {
+		if specTemplateOnly || specInteractive || specUseVim || specEditor != "" {
+			return fmt.Errorf("--prompt-only cannot be used with --template, --interactive, --vim, or --editor")
+		}
+		return runSpecPromptOnly(args, projectRoot, cfg, outputOnly)
+	}
+
 	var (
 		feat    *feature.Feature
 		created bool
@@ -159,6 +169,35 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	return runSpecTemplate(specPath, brainstormPath, feat.Slug, projectRoot, cfg, outputOnly)
 }
 
+func runSpecPromptOnly(args []string, projectRoot string, cfg *config.Config, outputOnly bool) error {
+	specsDir := cfg.SpecsPath(projectRoot)
+
+	var (
+		feat *feature.Feature
+		err  error
+	)
+
+	if len(args) == 0 {
+		feat, err = selectFeatureForSpecPromptOnly(specsDir)
+		if err != nil {
+			return err
+		}
+	} else {
+		feat, err = feature.Resolve(specsDir, args[0])
+		if err != nil {
+			return fmt.Errorf("feature '%s' not found: %w", args[0], err)
+		}
+	}
+
+	specPath := filepath.Join(feat.Path, "SPEC.md")
+	if !document.Exists(specPath) {
+		return fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first", feat.Slug)
+	}
+
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
+	return runSpecTemplate(specPath, brainstormPath, feat.Slug, projectRoot, cfg, outputOnly)
+}
+
 func ensureDir(path string) error {
 	return os.MkdirAll(path, 0755)
 }
@@ -193,6 +232,45 @@ func selectFeatureForSpec(specsDir string) (*feature.Feature, error) {
 			label += " (brainstorm)"
 		}
 		fmt.Printf("  [%d] %s\n", i+1, label)
+	}
+	fmt.Println()
+	fmt.Print(whiteBold + "Enter number: " + reset)
+
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	num, err := strconv.Atoi(input)
+	if err != nil || num < 1 || num > len(candidates) {
+		return nil, fmt.Errorf("invalid selection: %s", input)
+	}
+
+	selected := candidates[num-1]
+	return &selected, nil
+}
+
+func selectFeatureForSpecPromptOnly(specsDir string) (*feature.Feature, error) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var candidates []feature.Feature
+	for _, f := range features {
+		if document.Exists(filepath.Join(f.Path, "SPEC.md")) {
+			candidates = append(candidates, f)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("no specifications available to regenerate prompts for\n\nRun 'kit spec <feature>' first")
+	}
+
+	fmt.Println()
+	fmt.Println(whiteBold + "Select a feature to regenerate the spec prompt for:" + reset)
+	fmt.Println()
+	for i, f := range candidates {
+		fmt.Printf("  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
 	}
 	fmt.Println()
 	fmt.Print(whiteBold + "Enter number: " + reset)
@@ -288,6 +366,27 @@ func appendSpecSkillDiscoveryStep(
 	sb.WriteString(fmt.Sprintf("   - write the selected skills into the `## SKILLS` table in `%s`\n", specPath))
 	sb.WriteString("   - if no additional skills apply, keep the required `none | n/a | n/a | no additional skills required | no` row\n")
 	sb.WriteString("   - do not use `.claude/skills` as canonical discovery input\n")
+	return step + 1
+}
+
+func appendSpecDependencyInventoryStep(
+	sb *strings.Builder,
+	step int,
+	specPath string,
+	brainstormPath string,
+	hasBrainstorm bool,
+) int {
+	sb.WriteString(fmt.Sprintf("%d. Populate or refresh the `## DEPENDENCIES` table in `%s` before sign-off:\n", step, specPath))
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("   - carry forward still-relevant dependencies from `%s`\n", brainstormPath))
+	}
+	sb.WriteString("   - keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`\n")
+	sb.WriteString("   - include skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, assets, and other resources that shaped the feature definition\n")
+	sb.WriteString("   - use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`\n")
+	sb.WriteString("   - `Status` must be one of `active`, `optional`, or `stale`\n")
+	sb.WriteString("   - for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`\n")
+	sb.WriteString("   - if a dependency influenced decisions but is no longer current, keep it in the table with `Status` = `stale`\n")
+	sb.WriteString("   - if no additional dependencies apply, keep the default `none` row\n")
 	return step + 1
 }
 
@@ -556,6 +655,7 @@ func outputCompiledPrompt(specPath, brainstormPath, featureSlug, projectRoot str
 	}
 
 	questionStart = appendSpecSkillDiscoveryStep(&sb, questionStart, projectRoot, cfg, specPath)
+	questionStart = appendSpecDependencyInventoryStep(&sb, questionStart, specPath, brainstormPath, hasBrainstorm)
 
 	questionStart = appendNumberedSteps(
 		&sb,
@@ -593,6 +693,7 @@ func outputCompiledPrompt(specPath, brainstormPath, featureSlug, projectRoot str
    - NON-GOALS: What is explicitly out of scope?
    - USERS: Who will use this feature?
    - SKILLS: Which documented skills should the coding agent use for this feature, where do they live, and when should each one trigger?
+   - DEPENDENCIES: Which supporting docs, tools, design refs, APIs, libraries, datasets, assets, and other inputs shaped this specification?
    - REQUIREMENTS: What must be true for this feature to be complete?
    - ACCEPTANCE: How do we verify the feature works?
    - EDGE-CASES: What unusual scenarios must be handled?
@@ -614,6 +715,7 @@ This file is the single source of truth for this feature. Do not leave content o
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
 - the ## SKILLS section is mandatory and must be populated before sign-off
+- the ## DEPENDENCIES section must be current before sign-off and must keep exact locations for external design inputs
 - use repo instruction files, repo-local canonical skills, and documented global inputs during the skills discovery phase
 - keep the selected skill set minimal and actionable
 - do not use .claude/skills as canonical discovery input
@@ -704,9 +806,17 @@ func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, 
 		sb.WriteString(fmt.Sprintf("   - populate the `## SKILLS` table in `%s`\n", specPath))
 		sb.WriteString("   - keep the required `none | n/a | n/a | no additional skills required | no` row if nothing else applies\n")
 		sb.WriteString("   - do not use `.claude/skills` as canonical discovery input\n")
+		sb.WriteString(fmt.Sprintf("8. Populate or refresh the `## DEPENDENCIES` table in `%s` before sign-off:\n", specPath))
+		sb.WriteString(fmt.Sprintf("   - carry forward still-relevant dependencies from `%s`\n", brainstormPath))
+		sb.WriteString("   - keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`\n")
+		sb.WriteString("   - use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`\n")
+		sb.WriteString("   - `Status` must be one of `active`, `optional`, or `stale`\n")
+		sb.WriteString("   - for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`\n")
+		sb.WriteString("   - if a dependency influenced decisions but is no longer current, keep it in the table with `Status` = `stale`\n")
+		sb.WriteString("   - keep the default `none` row only if no additional dependencies apply\n")
 		nextStep := appendNumberedSteps(
 			&sb,
-			8,
+			9,
 			clarificationLoopSteps(
 				goalPct,
 				fmt.Sprintf(
@@ -734,9 +844,16 @@ func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, 
 		sb.WriteString(fmt.Sprintf("   - populate the `## SKILLS` table in `%s`\n", specPath))
 		sb.WriteString("   - keep the required `none | n/a | n/a | no additional skills required | no` row if nothing else applies\n")
 		sb.WriteString("   - do not use `.claude/skills` as canonical discovery input\n")
+		sb.WriteString(fmt.Sprintf("7. Populate or refresh the `## DEPENDENCIES` table in `%s` before sign-off:\n", specPath))
+		sb.WriteString("   - keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`\n")
+		sb.WriteString("   - use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`\n")
+		sb.WriteString("   - `Status` must be one of `active`, `optional`, or `stale`\n")
+		sb.WriteString("   - for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`\n")
+		sb.WriteString("   - if a dependency influenced decisions but is no longer current, keep it in the table with `Status` = `stale`\n")
+		sb.WriteString("   - keep the default `none` row only if no additional dependencies apply\n")
 		nextStep := appendNumberedSteps(
 			&sb,
-			7,
+			8,
 			clarificationLoopSteps(
 				goalPct,
 				fmt.Sprintf(
@@ -758,6 +875,7 @@ func runSpecTemplate(specPath, brainstormPath, featureSlug, projectRoot string, 
    - NON-GOALS: What is explicitly out of scope?
    - USERS: Who will use this feature?
    - SKILLS: Which documented skills should the coding agent use for this feature, where do they live, and when should each one trigger?
+   - DEPENDENCIES: Which supporting docs, tools, design refs, APIs, libraries, datasets, assets, and other inputs shaped this specification?
    - REQUIREMENTS: What must be true for this feature to be complete?
    - ACCEPTANCE: How do we verify the feature works?
    - EDGE-CASES: What unusual scenarios must be handled?
@@ -775,6 +893,7 @@ Once you reach ≥%d%% confidence, write a SUMMARY section at the top of SPEC.md
 - Keep language precise
 - Avoid implementation details (focus on WHAT, not HOW)
 - the ## SKILLS section is mandatory and must be populated before sign-off
+- the ## DEPENDENCIES section must be current before sign-off and must keep exact locations for external design inputs
 - use repo instruction files, repo-local canonical skills, and documented global inputs during the skills discovery phase
 - keep the selected skill set minimal and actionable
 - do not use .claude/skills as canonical discovery input

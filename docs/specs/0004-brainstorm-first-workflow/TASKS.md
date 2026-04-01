@@ -16,6 +16,8 @@
 | T008 | Add pre-editor instructions and keypress gating for editor-backed input    | done   | agent | T003, T007             |
 | T009 | Switch `brainstorm`/`spec`/`plan`/`tasks` to clipboard-first prompt output | done   | agent | T003, T004, T007       |
 | T010 | Extend clipboard-first prompt output to `implement` and `reflect`          | done   | agent | T004, T009             |
+| T011 | Add phase dependency inventories to brainstorm and plan workflow prompts   | done   | agent | T003, T004             |
+| T012 | Add side-effect-free `--prompt-only` regeneration to core workflow commands | done   | agent | T003, T004, T009, T010 |
 
 ## TASK LIST
 
@@ -31,6 +33,8 @@ Use markdown checkboxes to track completion:
 - [x] T008: Add pre-editor instructions and keypress gating for editor-backed input
 - [x] T009: Switch `brainstorm`, `spec`, `plan`, and `tasks` to clipboard-first prompt output
 - [x] T010: Extend clipboard-first prompt output to `implement` and `reflect`
+- [x] T011: Add phase dependency inventories to brainstorm and plan workflow prompts
+- [x] T012: Add side-effect-free `--prompt-only` regeneration to core workflow commands
 
 ## TASK DETAILS
 
@@ -169,11 +173,39 @@ Use markdown checkboxes to track completion:
   - tests and verification still pass
 - **NOTES**: [PLAN-COMPONENTS], [PLAN-INTERFACES], [PLAN-TESTING]
 
+### T011
+
+- **GOAL**: keep brainstorm and plan artifacts explicit about the resources that shape each phase
+- **SCOPE**:
+  - update brainstorm prompt requirements
+  - update plan prompt requirements
+  - add dependency inventory tables to canonical templates
+- **ACCEPTANCE**:
+  - newly generated or touched `BRAINSTORM.md` docs track phase dependencies
+  - `kit plan` prompts require `PLAN.md` to track implementation-strategy dependencies
+  - tests cover the new prompt guidance
+- **NOTES**: [PLAN-APPROACH], [PLAN-INTERFACES], [PLAN-TESTING]
+
+### T012
+
+- **GOAL**: let users regenerate existing workflow prompts without mutating repo docs
+- **SCOPE**:
+  - add a shared `--prompt-only` flag to `brainstorm`, `spec`, `plan`, `tasks`, `implement`, and `reflect`
+  - make `brainstorm`, `spec`, `plan`, and `tasks` skip scaffolding and rollup writes when `--prompt-only` is used
+  - reuse existing-feature selectors for prompt regeneration when no feature argument is provided
+  - add regression tests for selector filtering and missing-artifact failures
+- **ACCEPTANCE**:
+  - `kit brainstorm --prompt-only`, `kit spec --prompt-only`, `kit plan --prompt-only`, and `kit tasks --prompt-only` regenerate prompts for existing eligible features without mutating feature docs or rollups
+  - `kit implement --prompt-only` and `kit reflect --prompt-only` are accepted as consistency flags and preserve the current prompt-only behavior
+  - tests cover prompt-only regeneration and missing-artifact failures
+- **NOTES**: [PLAN-COMPONENTS], [PLAN-INTERFACES], [PLAN-TESTING]
+
 ## DEPENDENCIES
 
 - T002 precedes T003 and T004 because prompt/status behavior depends on brainstorm artifact modeling
 - T005 should land before T006 so docs/help reflect the final product surface
 - T007 is the final gate after all behavior and docs are updated
+- T012 depends on the shipped core workflow prompt surfaces because regeneration reuses those prompt builders instead of introducing a parallel code path
 
 ## NOTES
 

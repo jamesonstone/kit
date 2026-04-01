@@ -34,6 +34,7 @@ The reflection process uses git, lint, and tests to enforce a clean, working sta
 func init() {
 	reflectCmd.Flags().BoolVar(&reflectCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	reflectCmd.Flags().BoolVar(&reflectOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	addPromptOnlyFlag(reflectCmd)
 	rootCmd.AddCommand(reflectCmd)
 }
 

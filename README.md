@@ -79,16 +79,16 @@ kit complete --all
 
 ### Core Development Loop
 
-| Command                    | Description                                                                         |
-| -------------------------- | ----------------------------------------------------------------------------------- |
-| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and a planning-only `/plan` prompt             |
-| `kit spec <feature>`       | Create or open a feature specification and perform skills discovery                 |
-| `kit plan <feature>`       | Create or open an implementation plan                                               |
-| `kit tasks <feature>`      | Create or open a task list                                                          |
-| `kit implement [feature]`  | Output implementation context for coding agents                                     |
-| `kit reflect [feature]`    | Output reflection/verification instructions                                         |
-| `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features          |
-| `kit status`               | Show current feature status; supports `--json` and includes the running Kit version |
+| Command                    | Description                                                                              |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and track phase dependencies in a `/plan` prompt    |
+| `kit spec <feature>`       | Create or open a feature specification, perform skills discovery, and track dependencies |
+| `kit plan <feature>`       | Create or open an implementation plan and track planning dependencies                    |
+| `kit tasks <feature>`      | Create or open a task list                                                               |
+| `kit implement [feature]`  | Output implementation context for coding agents                                          |
+| `kit reflect [feature]`    | Output reflection/verification instructions                                              |
+| `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features               |
+| `kit status`               | Show current feature status; supports `--json` and includes the running Kit version      |
 
 ### Verification & State
 
@@ -100,11 +100,11 @@ kit complete --all
 
 ### Context Management
 
-| Command                   | Description                                                         |
-| ------------------------- | ------------------------------------------------------------------- |
-| `kit handoff [feature]`   | Prompt the current agent session to sync docs and prepare a handoff |
-| `kit summarize [feature]` | Output context summarization instructions                           |
-| `kit catchup [feature]`   | Output a feature catch-up prompt that stays in plan mode            |
+| Command                   | Description                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------------- |
+| `kit handoff [feature]`   | Prompt the current agent session to sync docs, dependency inventories, and prepare a handoff |
+| `kit summarize [feature]` | Output context summarization instructions                                                    |
+| `kit catchup [feature]`   | Output a feature catch-up prompt that stays in plan mode                                     |
 
 ### Agent Orchestration
 
@@ -123,6 +123,14 @@ Prompt-producing commands that expose `--output-only` copy their generated
 output to the clipboard by default. Pass `--output-only` to print the raw
 prompt or output to stdout instead, or combine `--output-only --copy` to do
 both.
+
+Feature-scoped prompt commands also accept `--prompt-only` to regenerate the
+selected feature's prompt without mutating repository docs:
+`kit brainstorm`, `kit spec`, `kit plan`, `kit tasks`, `kit implement`,
+`kit reflect`, `kit catchup`, `kit handoff`, and `kit skill mine`. For
+`brainstorm`, `spec`, `plan`, and `tasks`, `--prompt-only` skips scaffolding
+and rollup writes, requires the existing artifact set, and uses the normal
+existing-feature selector when no feature argument is provided.
 
 ### Skill Mining
 
@@ -174,9 +182,9 @@ both.
 **Artifact Details**:
 
 1. **Constitution** — strategy, patterns, long-term vision (kept updated)
-2. **Brainstorm** — optional research artifact with codebase findings and strategy
-3. **Specification** — what is being built and why, plus the feature's selected skills
-4. **Plan** — how it will be built
+2. **Brainstorm** — optional research artifact with codebase findings, dependency inventory, and strategy
+3. **Specification** — what is being built and why, plus the feature's selected skills and supporting dependencies
+4. **Plan** — how it will be built, plus the dependencies shaping the implementation strategy
 5. **Tasks** — executable work units
 6. **Implementation** — execution outside Kit's core scope
 7. **Reflection** — verify correctness, refine understanding
@@ -192,6 +200,7 @@ Then Kit:
 
 - creates or reuses `docs/specs/<feature>/`
 - creates `BRAINSTORM.md` as the first artifact in that directory
+- requires the coding agent to keep the `## DEPENDENCIES` table current with the inputs used during the brainstorm phase
 - supports multiline free-text entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
 - supports `--vim` and `--editor=vim` to open a vim-compatible editor for free-text responses
 - outputs a planning-only prompt that starts with `/plan`
@@ -233,6 +242,9 @@ kit brainstorm my-feature
 
 # print the raw prompt to stdout instead of copying it
 kit brainstorm my-feature --output-only
+
+# regenerate the brainstorm prompt from an existing BRAINSTORM.md without touching repo docs
+kit brainstorm my-feature --prompt-only
 
 # write the brainstorm thesis in a vim-compatible editor
 kit brainstorm my-feature --vim

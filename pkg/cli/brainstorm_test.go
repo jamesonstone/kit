@@ -31,6 +31,10 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"kit spec sample-feature",
 		"/tmp/docs/specs/0001-sample/BRAINSTORM.md",
 		"/tmp/project/docs/CONSTITUTION.md",
+		"## DEPENDENCIES",
+		"`Dependency`, `Type`, `Location`, `Used For`, and `Status`",
+		"for Figma or other MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
+		"`Status` = `stale`",
 	}
 
 	for _, check := range checks {

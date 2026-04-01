@@ -98,6 +98,8 @@ func TestProjectHandoffIncludesProgressSummaryAndStatus(t *testing.T) {
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0002-beta", "TASKS.md"),
 		"Update any stale feature docs first.",
+		"phase dependency inventories",
+		"`## DEPENDENCIES` table lists current `active`, `optional`, and `stale` dependencies with exact locations",
 		"## Final Response Contract",
 		"`Documentation Files`",
 		"`Recent Context`",
@@ -157,8 +159,10 @@ func TestFeatureHandoffIncludesDocSyncInstructions(t *testing.T) {
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "PLAN.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "TASKS.md"),
-		"Compare current implementation reality, task status, and repository findings against each feature document",
+		"Compare current implementation reality, task status, repository findings, and phase dependency inventories against each feature document",
 		"If any feature specification document is stale, update it first",
+		"Verify that `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keep their `## DEPENDENCIES` tables current",
+		"all relevant documentation files and dependency inventories have been updated and are up to date",
 		"## Final Response Contract",
 		"`Documentation Sync`",
 		"`Documentation Files`",
@@ -177,6 +181,7 @@ func TestGenericHandoffIncludesRecentContextAndFinalResponseContract(t *testing.
 	checks := []string{
 		"You are the current coding agent session preparing this project for handoff.",
 		"Summarize that recent context into high-signal facts",
+		"`## DEPENDENCIES` tables",
 		"`Documentation Files`",
 		"`Recent Context`",
 	}

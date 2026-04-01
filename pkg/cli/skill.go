@@ -59,6 +59,7 @@ have reached at least TASKS.md.`,
 		false,
 		"output prompt text to stdout instead of copying it to the clipboard",
 	)
+	addPromptOnlyFlag(mineCmd)
 
 	cmd.AddCommand(mineCmd)
 

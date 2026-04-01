@@ -4,6 +4,7 @@
 
 - Add a new `kit skill mine [feature]` command, plus a `skills` alias, that outputs a prompt for an active coding agent to mine reusable procedural skills from a completed feature.
 - The command must follow the same clipboard-first output-prompt contract as `kit implement` and `kit reflect` and write nothing itself except the generated prompt.
+- The command must also accept `--prompt-only` as a consistency flag for regenerating the selected feature prompt without mutating repo docs.
 - Mined skills must use a transferable directory bundle layout that can be consumed by multiple coding agent systems.
 
 ## PROBLEM
@@ -54,6 +55,7 @@
 - [SPEC-06] The `mine` subcommand must support `--copy` and `--output-only` flags with the same clipboard-first semantics as `kit reflect`.
 - [SPEC-06a] By default, `kit skill mine` and `kit skills mine` must copy the generated prompt to the clipboard, print an acknowledgement, and not print the prompt body to stdout.
 - [SPEC-06b] With `--output-only`, the commands must print the raw prompt to stdout and only copy when `--copy` is also set.
+- [SPEC-06c] The `mine` subcommand must accept `--prompt-only`; because the command is already prompt-only, the flag may reuse the normal generation path and must not introduce any new repo mutations.
 - [SPEC-07] When no feature argument is given, interactive selection must list only features with `TASKS.md` present.
 - [SPEC-08] The interactive selector must show each eligible feature with its current phase label.
 - [SPEC-09] The output prompt must instruct the active coding agent to read `CONSTITUTION.md`.
@@ -108,6 +110,7 @@
 - Running `kit skills mine <feature>` produces the same prompt behavior as `kit skill mine <feature>`.
 - Default command output copies the generated prompt to the clipboard, prints an acknowledgement, and does not print the prompt body.
 - `--output-only` prints the raw prompt to stdout, and `--output-only --copy` does both.
+- `kit skill mine --prompt-only <feature>` and `kit skills mine --prompt-only <feature>` are accepted and preserve the existing prompt-only behavior.
 - Running `kit skill mine` with no feature argument opens an interactive selector containing only features with `TASKS.md`, each annotated with a phase label.
 - The prompt includes instructions for `git diff main`, fallback to `master`, skill de-duplication, reusable-pattern filtering, and the required `SKILL.md` format block.
 - The prompt includes `PROJECT_PROGRESS_SUMMARY.md` as an input for cross-feature theme detection.

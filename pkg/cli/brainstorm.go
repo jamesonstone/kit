@@ -1,9 +1,12 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -56,11 +59,13 @@ func init() {
 	brainstormCmd.Flags().BoolVar(&brainstormCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	brainstormCmd.Flags().StringVarP(&brainstormOutput, "output", "o", "", "write output to file")
 	brainstormCmd.Flags().BoolVar(&brainstormOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	addPromptOnlyFlag(brainstormCmd)
 	rootCmd.AddCommand(brainstormCmd)
 }
 
 func runBrainstorm(cmd *cobra.Command, args []string) error {
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
+	promptOnly := promptOnlyEnabled(cmd)
 
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
@@ -76,6 +81,14 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	if err := ensureDir(specsDir); err != nil {
 		return err
 	}
+
+	if promptOnly {
+		if brainstormUseVim || brainstormEditor != "" {
+			return fmt.Errorf("--prompt-only cannot be used with --vim or --editor")
+		}
+		return outputExistingBrainstormPrompt(args, projectRoot, cfg, outputOnly)
+	}
+
 	featureRef, thesis, err := promptBrainstormInputs(
 		args,
 		newFreeTextInputConfig(brainstormUseVim, brainstormEditor),
@@ -144,6 +157,63 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func outputExistingBrainstormPrompt(args []string, projectRoot string, cfg *config.Config, outputOnly bool) error {
+	if brainstormOutput != "" {
+		return fmt.Errorf("--prompt-only cannot be used with --output because it writes a file")
+	}
+
+	specsDir := cfg.SpecsPath(projectRoot)
+
+	var (
+		feat *feature.Feature
+		err  error
+	)
+
+	if len(args) == 1 {
+		feat, err = feature.Resolve(specsDir, args[0])
+		if err != nil {
+			return fmt.Errorf("feature '%s' not found: %w", args[0], err)
+		}
+	} else {
+		feat, err = selectFeatureForBrainstormPromptOnly(specsDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
+	if !document.Exists(brainstormPath) {
+		return fmt.Errorf("BRAINSTORM.md not found for %s. Run 'kit brainstorm %s' first", feat.Slug, feat.Slug)
+	}
+
+	thesis := existingBrainstormThesis(brainstormPath)
+	prompt := buildBrainstormPrompt(brainstormPath, feat.Slug, projectRoot, thesis, cfg.GoalPercentage)
+	preparedPrompt := prepareAgentPrompt(prompt)
+
+	if brainstormOutput != "" {
+		if err := document.Write(brainstormOutput, preparedPrompt); err != nil {
+			return fmt.Errorf("failed to write prompt file: %w", err)
+		}
+		if !outputOnly {
+			fmt.Printf("✓ Written prompt to %s\n", brainstormOutput)
+		}
+	}
+
+	if err := writePromptWithClipboardDefault(preparedPrompt, outputOnly, brainstormCopy); err != nil {
+		return err
+	}
+
+	if !outputOnly {
+		printWorkflowInstructions("brainstorm (existing feature prompt)", []string{
+			fmt.Sprintf("review and refine %s", brainstormPath),
+			fmt.Sprintf("run kit spec %s when the brainstorm is complete", feat.Slug),
+			"no repository docs were mutated by this prompt-only run",
+		})
+	}
+
+	return nil
+}
+
 func promptBrainstormInputs(args []string, inputCfg freeTextInputConfig) (string, string, error) {
 	featureRef, err := promptBrainstormFeatureRef(args)
 	if err != nil {
@@ -156,6 +226,65 @@ func promptBrainstormInputs(args []string, inputCfg freeTextInputConfig) (string
 	}
 
 	return featureRef, thesis, nil
+}
+
+func selectFeatureForBrainstormPromptOnly(specsDir string) (*feature.Feature, error) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var candidates []feature.Feature
+	for _, f := range features {
+		if document.Exists(filepath.Join(f.Path, "BRAINSTORM.md")) {
+			candidates = append(candidates, f)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("no features with BRAINSTORM.md available\n\nRun 'kit brainstorm <feature>' first")
+	}
+
+	fmt.Println()
+	fmt.Println(whiteBold + "Select a feature to regenerate the brainstorm prompt for:" + reset)
+	fmt.Println()
+	for i, f := range candidates {
+		fmt.Printf("  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
+	}
+	fmt.Println()
+	fmt.Print(whiteBold + "Enter number: " + reset)
+
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	num, err := strconv.Atoi(input)
+	if err != nil || num < 1 || num > len(candidates) {
+		return nil, fmt.Errorf("invalid selection: %s", input)
+	}
+
+	selected := candidates[num-1]
+	return &selected, nil
+}
+
+func existingBrainstormThesis(brainstormPath string) string {
+	doc, err := document.ParseFile(brainstormPath, document.TypeBrainstorm)
+	if err != nil {
+		return "Continue the existing brainstorm using the current file contents as the source of truth."
+	}
+
+	if section := doc.GetSection("USER THESIS"); section != nil {
+		if thesis := document.ExtractFirstParagraph(section); thesis != "" {
+			return thesis
+		}
+	}
+	if section := doc.GetSection("SUMMARY"); section != nil {
+		if summary := document.ExtractFirstParagraph(section); summary != "" {
+			return summary
+		}
+	}
+
+	return "Continue the existing brainstorm using the current file contents as the source of truth."
 }
 
 func promptBrainstormFeatureRef(args []string) (string, error) {
@@ -251,9 +380,16 @@ You MUST update the brainstorm file at:
 5. Research the entire codebase at %s to identify relevant files, patterns, constraints, interfaces, and adjacent workflows
 `, featureSlug, brainstormPath, featureSlug, projectRoot, thesis, constitutionPath, brainstormPath, projectRoot, projectRoot))
 
+	sb.WriteString(fmt.Sprintf("6. Keep the `## DEPENDENCIES` table in %s current throughout the research phase:\n", brainstormPath))
+	sb.WriteString("   - include every dependency that materially shapes the feature definition, such as skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, and assets\n")
+	sb.WriteString("   - use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`\n")
+	sb.WriteString("   - `Status` must be one of `active`, `optional`, or `stale`\n")
+	sb.WriteString("   - for Figma or other MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`\n")
+	sb.WriteString("   - if a dependency influenced decisions but is no longer current, keep it in the table with `Status` = `stale` instead of deleting it\n")
+
 	nextStep := appendNumberedSteps(
 		&sb,
-		6,
+		7,
 		clarificationLoopSteps(
 			goalPct,
 			fmt.Sprintf(
@@ -276,6 +412,7 @@ The final BRAINSTORM.md must be a detailed, informational, filepath-specific doc
 - USER THESIS
 - CODEBASE FINDINGS
 - AFFECTED FILES
+- DEPENDENCIES
 - QUESTIONS
 - OPTIONS
 - RECOMMENDED STRATEGY
@@ -290,6 +427,7 @@ The final BRAINSTORM.md must be a detailed, informational, filepath-specific doc
 - continue the clarification loop until confidence reaches ≥%d%% and the specification is precise enough for a correct, production-quality solution
 - preserve facts in BRAINSTORM.md, not just in chat
 - make the final document dense, explicit, and easy for a coding agent to use when drafting SPEC.md
+- keep the ## DEPENDENCIES table aligned with the tools, docs, and design references used during the phase
 `, nextStep, nextStep+1, brainstormPath, nextStep+2, featureSlug, goalPct))
 
 	return sb.String()

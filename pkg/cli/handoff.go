@@ -37,6 +37,7 @@ With a feature argument, outputs a feature-scoped handoff-preparation prompt.`,
 func init() {
 	handoffCmd.Flags().BoolVarP(&handoffCopy, "copy", "c", false, "copy output to clipboard even with --output-only")
 	handoffCmd.Flags().BoolVar(&handoffOutputOnly, "output-only", false, "output text to stdout instead of copying it to the clipboard")
+	addPromptOnlyFlag(handoffCmd)
 	rootCmd.AddCommand(handoffCmd)
 }
 

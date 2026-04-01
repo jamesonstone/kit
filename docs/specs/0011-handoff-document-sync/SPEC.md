@@ -17,6 +17,7 @@
 - Preserve the current command surface:
   - `kit handoff [feature]`
   - interactive selector with `0` for project-wide mode
+- Accept `--prompt-only` as a consistency flag so users can explicitly request the selected handoff prompt without changing repo state.
 - For feature scope, require the prompt to review and update:
   - `CONSTITUTION.md`
   - optional `BRAINSTORM.md`
@@ -30,6 +31,7 @@
   - file name
   - full absolute filesystem path
   - concise guidance for how to use the document
+- Require the prompt to verify dependency inventories in touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` docs before handoff.
 - Require the prompted agent's final response to:
   - confirm documentation sync in stdout/chat
   - include a concise documentation table with full paths
@@ -74,6 +76,7 @@
 - All file paths shown in the prompt must be absolute filesystem paths.
 - The prompt must instruct the agent to update `PROJECT_PROGRESS_SUMMARY.md` when the reconciled feature docs change the current feature state.
 - In project-wide mode, the prompt must instruct the agent to reconcile `PROJECT_PROGRESS_SUMMARY.md` plus active feature docs that are inconsistent with repository reality.
+- The prompt must instruct the agent to verify or refresh `## DEPENDENCIES` tables in touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` docs, including exact locations for design dependencies.
 - The prompt must include explicit instructions for summarizing the most recent conversation context into high-signal facts covering:
   - decisions made
   - blockers
@@ -81,11 +84,12 @@
   - open questions
   - next steps
 - The prompt must define a final response contract that tells the agent to output:
-  - a concise confirmation that documentation files are up to date
+  - a concise confirmation that documentation files and dependency inventories are up to date
   - a markdown table of documentation files with full paths and usage guidance
   - a concise recent-context summary
 - If docs are not up to date, the prompt must instruct the agent to update them first and only then produce the final confirmation/table/summary.
 - The prompt must remain prompt-only; Kit itself still does not update the docs directly.
+- `kit handoff` must accept `--prompt-only`; because the command already only emits prompts, the flag may reuse the normal generation path and must not introduce any new repo mutations.
 
 ## ACCEPTANCE
 
@@ -97,7 +101,9 @@
   - documentation-sync confirmation
   - documentation table
   - recent conversation-context summary
+- The prompt explicitly requires dependency inventory verification for touched feature docs.
 - The prompt includes explicit instructions for summarizing recent conversation context into high-signal facts.
+- `kit handoff --prompt-only <feature>` is accepted and preserves the existing prompt-only behavior.
 
 ## EDGE-CASES
 

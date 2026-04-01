@@ -43,12 +43,14 @@ func init() {
 	tasksCmd.Flags().Bool("force", false, "create missing SPEC.md and PLAN.md with headers if they don't exist")
 	tasksCmd.Flags().BoolVar(&tasksCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	tasksCmd.Flags().BoolVar(&tasksOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	addPromptOnlyFlag(tasksCmd)
 	rootCmd.AddCommand(tasksCmd)
 }
 
 func runTasks(cmd *cobra.Command, args []string) error {
 	tasksForce, _ := cmd.Flags().GetBool("force")
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
+	promptOnly := promptOnlyEnabled(cmd)
 
 	// find project root
 	projectRoot, err := config.FindProjectRoot()
@@ -62,6 +64,13 @@ func runTasks(cmd *cobra.Command, args []string) error {
 	}
 
 	specsDir := cfg.SpecsPath(projectRoot)
+
+	if promptOnly {
+		if tasksForce {
+			return fmt.Errorf("--prompt-only cannot be used with --force")
+		}
+		return runTasksPromptOnly(args, projectRoot, cfg, outputOnly)
+	}
 
 	var feat *feature.Feature
 
@@ -141,11 +150,51 @@ func runTasks(cmd *cobra.Command, args []string) error {
 		fmt.Printf("  3. Begin implementation!\n")
 	}
 
+	return outputTasksPrompt(feat, projectRoot, cfg, outputOnly)
+}
+
+func runTasksPromptOnly(args []string, projectRoot string, cfg *config.Config, outputOnly bool) error {
+	specsDir := cfg.SpecsPath(projectRoot)
+
+	var (
+		feat *feature.Feature
+		err  error
+	)
+
+	if len(args) == 0 {
+		feat, err = selectFeatureForTasksPromptOnly(specsDir)
+		if err != nil {
+			return err
+		}
+	} else {
+		feat, err = feature.Resolve(specsDir, args[0])
+		if err != nil {
+			return fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first to create it", args[0], args[0])
+		}
+	}
+
+	if !document.Exists(filepath.Join(feat.Path, "SPEC.md")) {
+		return fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first", feat.Slug)
+	}
+	if !document.Exists(filepath.Join(feat.Path, "PLAN.md")) {
+		return fmt.Errorf("PLAN.md not found. Run 'kit plan %s' first", feat.Slug)
+	}
+	if !document.Exists(filepath.Join(feat.Path, "TASKS.md")) {
+		return fmt.Errorf("TASKS.md not found. Run 'kit tasks %s' first", feat.Slug)
+	}
+
+	return outputTasksPrompt(feat, projectRoot, cfg, outputOnly)
+}
+
+func outputTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Config, outputOnly bool) error {
 	// output easy-to-copy instruction for coding agents
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	hasBrainstorm := document.Exists(brainstormPath)
 	goalPct := cfg.GoalPercentage
+	specPath := filepath.Join(feat.Path, "SPEC.md")
+	planPath := filepath.Join(feat.Path, "PLAN.md")
+	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 
 	var sb strings.Builder
 	sb.WriteString("Please review and complete the task plan.\n\n")
@@ -284,6 +333,47 @@ func selectFeatureForTasks(specsDir string) (*feature.Feature, error) {
 	fmt.Println()
 	for i, f := range candidates {
 		fmt.Printf("  [%d] %s\n", i+1, f.DirName)
+	}
+	fmt.Println()
+	fmt.Print(whiteBold + "Enter number: " + reset)
+
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	num, err := strconv.Atoi(input)
+	if err != nil || num < 1 || num > len(candidates) {
+		return nil, fmt.Errorf("invalid selection: %s", input)
+	}
+
+	selected := candidates[num-1]
+	return &selected, nil
+}
+
+func selectFeatureForTasksPromptOnly(specsDir string) (*feature.Feature, error) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var candidates []feature.Feature
+	for _, f := range features {
+		if document.Exists(filepath.Join(f.Path, "SPEC.md")) &&
+			document.Exists(filepath.Join(f.Path, "PLAN.md")) &&
+			document.Exists(filepath.Join(f.Path, "TASKS.md")) {
+			candidates = append(candidates, f)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("no task plans available to regenerate prompts for\n\nRun 'kit tasks <feature>' first")
+	}
+
+	fmt.Println()
+	fmt.Println(whiteBold + "Select a feature to regenerate the tasks prompt for:" + reset)
+	fmt.Println()
+	for i, f := range candidates {
+		fmt.Printf("  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
 	}
 	fmt.Println()
 	fmt.Print(whiteBold + "Enter number: " + reset)

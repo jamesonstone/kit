@@ -38,6 +38,7 @@ func init() {
 		false,
 		"output prompt text to stdout instead of copying it to the clipboard",
 	)
+	addPromptOnlyFlag(catchupCmd)
 	rootCmd.AddCommand(catchupCmd)
 }
 

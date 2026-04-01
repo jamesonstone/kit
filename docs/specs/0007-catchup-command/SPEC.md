@@ -20,6 +20,7 @@
 - Derive the selected feature's current stage and state from Kit's existing feature/status model.
 - Output a prompt that tells the coding agent to catch up on the selected feature, stay in plan mode, ask questions first, and ask explicitly before starting implementation.
 - Reuse the clipboard-first prompt-output contract already used by Kit prompt commands.
+- Accept `--prompt-only` as a consistency flag so users can request the selected feature prompt without changing the repo state.
 
 ## NON-GOALS
 
@@ -49,6 +50,7 @@
 - The command must support `--copy` and `--output-only` and must use the shared clipboard-first prompt helper.
 - By default, the command must copy the generated prompt to the clipboard, print an acknowledgement, and not print the prompt body to stdout.
 - With `--output-only`, the command must print the raw prompt to stdout and only copy when `--copy` is also set.
+- The command must accept `--prompt-only`; because `catchup` already only emits prompts, the flag may reuse the normal generation path and must not introduce any new repo mutations.
 - The command must resolve the selected feature using existing feature-resolution logic.
 - The generated prompt must begin with `/plan`.
 - The generated prompt must identify the selected feature's current stage and current state.
@@ -75,6 +77,7 @@
 - A `complete` feature produces a review/reopen-style catch-up prompt rather than an implementation-start prompt.
 - Default command output copies the generated prompt to the clipboard, prints an acknowledgement, and does not print the prompt body.
 - `--output-only` prints the raw prompt to stdout, and `--output-only --copy` does both.
+- `kit catchup --prompt-only <feature>` is accepted and preserves the existing prompt-only behavior.
 - Help and README document the new command distinctly from `handoff`, `summarize`, and `implement`.
 
 ## EDGE-CASES

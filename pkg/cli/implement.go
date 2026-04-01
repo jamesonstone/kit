@@ -37,6 +37,7 @@ that have SPEC.md, PLAN.md, and TASKS.md ready for implementation.`,
 func init() {
 	implementCmd.Flags().BoolVar(&implementCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	implementCmd.Flags().BoolVar(&implementOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	addPromptOnlyFlag(implementCmd)
 	rootCmd.AddCommand(implementCmd)
 }
 

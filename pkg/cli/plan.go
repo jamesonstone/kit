@@ -44,6 +44,7 @@ func init() {
 	planCmd.Flags().Bool("warp", false, "output prompt for Warp coding agent to fill PLAN.md from Warp plan")
 	planCmd.Flags().BoolVar(&planCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	planCmd.Flags().BoolVar(&planOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	addPromptOnlyFlag(planCmd)
 	rootCmd.AddCommand(planCmd)
 }
 
@@ -51,6 +52,7 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	planForce, _ := cmd.Flags().GetBool("force")
 	warpMode, _ := cmd.Flags().GetBool("warp")
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
+	promptOnly := promptOnlyEnabled(cmd)
 
 	// find project root
 	projectRoot, err := config.FindProjectRoot()
@@ -64,6 +66,13 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	}
 
 	specsDir := cfg.SpecsPath(projectRoot)
+
+	if promptOnly {
+		if planForce {
+			return fmt.Errorf("--prompt-only cannot be used with --force")
+		}
+		return runPlanPromptOnly(args, projectRoot, cfg, warpMode, outputOnly)
+	}
 
 	var feat *feature.Feature
 
@@ -139,6 +148,44 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	return outputStandardPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
 }
 
+func runPlanPromptOnly(args []string, projectRoot string, cfg *config.Config, warpMode, outputOnly bool) error {
+	specsDir := cfg.SpecsPath(projectRoot)
+
+	var (
+		feat *feature.Feature
+		err  error
+	)
+
+	if len(args) == 0 {
+		feat, err = selectFeatureForPlanPromptOnly(specsDir)
+		if err != nil {
+			return err
+		}
+	} else {
+		feat, err = feature.Resolve(specsDir, args[0])
+		if err != nil {
+			return fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first to create it", args[0], args[0])
+		}
+	}
+
+	specPath := filepath.Join(feat.Path, "SPEC.md")
+	planPath := filepath.Join(feat.Path, "PLAN.md")
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
+
+	if !document.Exists(specPath) {
+		return fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first", feat.Slug)
+	}
+	if !document.Exists(planPath) {
+		return fmt.Errorf("PLAN.md not found. Run 'kit plan %s' first", feat.Slug)
+	}
+
+	if warpMode {
+		return outputWarpPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
+	}
+
+	return outputStandardPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, outputOnly)
+}
+
 // selectFeatureForPlan shows an interactive numbered list of features
 // that have SPEC.md but no PLAN.md yet.
 func selectFeatureForPlan(specsDir string) (*feature.Feature, error) {
@@ -183,6 +230,68 @@ func selectFeatureForPlan(specsDir string) (*feature.Feature, error) {
 	return &selected, nil
 }
 
+func selectFeatureForPlanPromptOnly(specsDir string) (*feature.Feature, error) {
+	features, err := feature.ListFeatures(specsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var candidates []feature.Feature
+	for _, f := range features {
+		if document.Exists(filepath.Join(f.Path, "SPEC.md")) &&
+			document.Exists(filepath.Join(f.Path, "PLAN.md")) {
+			candidates = append(candidates, f)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("no plans available to regenerate prompts for\n\nRun 'kit plan <feature>' first")
+	}
+
+	fmt.Println()
+	fmt.Println(whiteBold + "Select a feature to regenerate the plan prompt for:" + reset)
+	fmt.Println()
+	for i, f := range candidates {
+		fmt.Printf("  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
+	}
+	fmt.Println()
+	fmt.Print(whiteBold + "Enter number: " + reset)
+
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	num, err := strconv.Atoi(input)
+	if err != nil || num < 1 || num > len(candidates) {
+		return nil, fmt.Errorf("invalid selection: %s", input)
+	}
+
+	selected := candidates[num-1]
+	return &selected, nil
+}
+
+func appendPlanDependencyInventoryStep(
+	sb *strings.Builder,
+	step int,
+	planPath string,
+	specPath string,
+	brainstormPath string,
+	hasBrainstorm bool,
+) int {
+	sb.WriteString(fmt.Sprintf("%d. Populate or refresh the `## DEPENDENCIES` table in `%s` before sign-off:\n", step, planPath))
+	sb.WriteString(fmt.Sprintf("   - carry forward still-relevant dependencies from `%s`\n", specPath))
+	if hasBrainstorm {
+		sb.WriteString(fmt.Sprintf("   - carry forward still-relevant dependencies from `%s`\n", brainstormPath))
+	}
+	sb.WriteString("   - include skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, assets, and other resources that shape the implementation strategy\n")
+	sb.WriteString("   - use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`\n")
+	sb.WriteString("   - `Status` must be one of `active`, `optional`, or `stale`\n")
+	sb.WriteString("   - for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`\n")
+	sb.WriteString("   - if a dependency influenced the implementation strategy but is no longer current, keep it in the table with `Status` = `stale`\n")
+	sb.WriteString("   - if no additional dependencies apply, keep the default `none` row\n")
+	return step + 1
+}
+
 // outputStandardPlanPrompt outputs the standard coding agent prompt.
 func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) error {
 	projectRoot, _ := config.FindProjectRoot()
@@ -217,6 +326,7 @@ func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *f
 	step++
 	sb.WriteString(fmt.Sprintf("%d. Identify any missing design decisions required for execution\n", step))
 	step++
+	step = appendPlanDependencyInventoryStep(&sb, step, planPath, specPath, brainstormPath, hasBrainstorm)
 	step = appendNumberedSteps(
 		&sb,
 		step,
@@ -255,6 +365,11 @@ For each section, write only what is required to enable clear task breakdown:
   - commands, inputs, outputs, side effects
   - files and artifacts touched
 
+- DEPENDENCIES
+  - the docs, tools, design refs, APIs, libraries, datasets, assets, and other resources shaping the implementation strategy
+  - keep exact URLs or file/node refs in the Location column
+  - use Status = active, optional, or stale
+
 - RISKS
   - top technical or design risks
   - mitigation per risk
@@ -268,6 +383,7 @@ Rules:
 - use BRAINSTORM.md as research context only; SPEC.md remains the binding contract
 - do not restate requirements
 - do not introduce new scope beyond SPEC.md
+- the ## DEPENDENCIES section must be current before sign-off and must keep exact locations for external design inputs
 - do not write tasks
 - avoid code unless strictly necessary
 - keep language dense and factual
@@ -319,12 +435,14 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 	step++
 	sb.WriteString(fmt.Sprintf("%d. Read SPEC.md (file: %s) to ensure alignment with requirements\n", step, specPath))
 	step++
+	step = appendPlanDependencyInventoryStep(&sb, step, planPath, specPath, brainstormPath, hasBrainstorm)
 	sb.WriteString(fmt.Sprintf("%d. Fill out each section of PLAN.md (file: %s), adding implementation details beyond what's in the Warp plan:\n\n", step, planPath))
 	sb.WriteString("   - SUMMARY: one-paragraph overview (expand from Warp plan's high-level description)\n")
 	sb.WriteString("   - APPROACH: detailed strategy and tradeoff decisions\n")
 	sb.WriteString("   - COMPONENTS: logical modules with clear responsibility boundaries\n")
 	sb.WriteString("   - DATA: data shapes, structures, and storage decisions\n")
 	sb.WriteString("   - INTERFACES: commands, inputs, outputs, side effects\n")
+	sb.WriteString("   - DEPENDENCIES: the resources that shape the implementation strategy, with exact URLs or file/node refs in `Location`\n")
 	sb.WriteString("   - RISKS: technical risks with mitigation strategies\n")
 	sb.WriteString("   - TESTING: validation strategy and test types\n\n")
 	sb.WriteString(fmt.Sprintf("%d. Ensure PLAN.md has MORE detail than the Warp plan — it should make task breakdown obvious\n", step+1))
@@ -348,6 +466,7 @@ Rules:
 - use BRAINSTORM.md as research context only; SPEC.md remains the binding contract
 - do not restate requirements verbatim
 - do not introduce new scope beyond the Warp plan and SPEC.md
+- the ## DEPENDENCIES section must be current before sign-off and must keep exact locations for external design inputs
 - keep language dense and factual
 - Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off
 - ensure plan respects constraints defined in CONSTITUTION.md

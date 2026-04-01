@@ -11,6 +11,7 @@
 | T003 | Add shared execution-time skills guidance to prompt-output commands      | done   | agent | T002             |
 | T004 | Update repository instruction templates and checked-in instruction files | done   | agent | T001             |
 | T005 | Add tests for templates and spec prompt output                           | done   | agent | T002, T003, T004 |
+| T006 | Split broader spec dependencies from execution-time skills              | done   | agent | T002, T005       |
 
 ### TASK LIST
 
@@ -21,6 +22,7 @@ Use markdown checkboxes to track completion:
 - [x] T003: Add shared execution-time skills guidance to prompt-output commands
 - [x] T004: Update repository instruction templates and checked-in instruction files
 - [x] T005: Add tests for templates and spec prompt output
+- [x] T006: Split broader spec dependencies from execution-time skills
 
 ### TASK DETAILS
 
@@ -54,6 +56,12 @@ Use markdown checkboxes to track completion:
 - **GOAL**: verify templates and prompt output changed as intended
 - **SCOPE**: add or update unit tests for spec prompts, shared prompt suffix, and instruction templates
 - **ACCEPTANCE**: tests fail if required discovery inputs or `## SKILLS` instructions are removed
+
+### T006
+
+- **GOAL**: keep the spec workflow explicit about broader supporting dependencies without overloading `## SKILLS`
+- **SCOPE**: update `SPEC.md` templates and prompt guidance to add a separate dependency inventory
+- **ACCEPTANCE**: `kit spec` prompts keep `## SKILLS` and `## DEPENDENCIES` separate and require exact design locations
 
 ## DEPENDENCIES
 
