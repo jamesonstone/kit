@@ -86,3 +86,27 @@ func TestOutputStatusTextIncludesKitVersion(t *testing.T) {
 		t.Fatalf("expected version line in output, got %q", out.String())
 	}
 }
+
+func TestDetermineNextAction_AllTasksCompleteMentionsReadinessGate(t *testing.T) {
+	status := &feature.FeatureStatus{
+		Name: "patient-import",
+		Files: map[string]feature.FileStatus{
+			"brainstorm": {Exists: true, Path: "/tmp/BRAINSTORM.md"},
+			"spec":       {Exists: true, Path: "/tmp/SPEC.md"},
+			"plan":       {Exists: true, Path: "/tmp/PLAN.md"},
+			"tasks":      {Exists: true, Path: "/tmp/TASKS.md"},
+		},
+		Progress: &feature.TaskProgress{Total: 3, Complete: 3},
+	}
+
+	got := determineNextAction(status)
+	if !strings.Contains(got, "kit implement patient-import") {
+		t.Fatalf("expected implement guidance, got %q", got)
+	}
+	if !strings.Contains(got, "implementation readiness gate") {
+		t.Fatalf("expected readiness gate guidance, got %q", got)
+	}
+	if !strings.Contains(got, "review and verify implementation") {
+		t.Fatalf("expected reflection guidance, got %q", got)
+	}
+}

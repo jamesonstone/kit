@@ -40,7 +40,7 @@ Kit enforces the following artifact pipeline:
 1. **Specification** — what is being built and why
 2. **Plan** — how it will be built
 3. **Tasks** — executable work units
-4. **Implementation** — execution outside Kit's core scope
+4. **Implementation** — execution begins only after the implementation readiness gate passes
 5. **Reflection** — verify correctness, refine understanding (loops back to Specification)
 
 Kit's responsibility ends once tasks are clear and validated.
@@ -394,6 +394,7 @@ CLI flags always override `.kit.yaml`.
 - create `BRAINSTORM.md` as the first artifact in the feature directory
 - output a planning-only `/plan` prompt for a coding agent
 - require the agent to keep `BRAINSTORM.md` `## DEPENDENCIES` current with the supporting inputs used during the research phase
+- require the agent to populate every `BRAINSTORM.md` section and replace placeholder-only sections with `not applicable`, `not required`, or `no additional information required`
 - require the agent to use numbered lists, ask clarifying questions in batches of up to 10, include a recommended default/proposed solution/assumption for every question, accept `yes` / `y` as full-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` as numbered approval, support `no` / `n` overrides, state uncertainties, and output percentage-understanding progress after each batch
 - require the agent to continue until the configured understanding threshold is reached and the specification is precise enough for a correct, production-quality solution before writing implementation artifacts
 
@@ -404,6 +405,7 @@ CLI flags always override `.kit.yaml`.
 - scaffold `SPEC.md` template for manual editing
 - template includes section headers with placeholder comments (e.g., `<!-- TODO: describe the problem -->`)
 - template includes `## SKILLS` and `## DEPENDENCIES` tables for newly generated specs
+- prompt instructions require every `SPEC.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - create feature directory if missing (uses `0001-feat-name` format)
 - update `docs/PROJECT_PROGRESS_SUMMARY.md`
 
@@ -413,6 +415,7 @@ CLI flags always override `.kit.yaml`.
 
 - scaffold `PLAN.md` template for manual editing
 - scaffold includes a `## DEPENDENCIES` table for implementation-strategy inputs
+- prompt instructions require every `PLAN.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - plan items link to spec items using `[SPEC-01]` syntax
 - update `PROJECT_PROGRESS_SUMMARY.md`
 
@@ -429,6 +432,7 @@ Flags:
 #### `kit tasks <feature>`
 
 - scaffold `TASKS.md` template for manual editing
+- prompt instructions require every `TASKS.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - tasks link to plan items using `[PLAN-01]` syntax
 - update `PROJECT_PROGRESS_SUMMARY.md`
 
@@ -439,6 +443,17 @@ Prerequisites:
 Flags:
 
 - `--force` — create empty `SPEC.md` and `PLAN.md` with headers if missing
+
+---
+
+#### `kit implement [feature]`
+
+- output implementation context for a coding agent
+- begin with an implementation readiness gate before any code execution instructions
+- require an adversarial preflight across `CONSTITUTION.md`, optional `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md`
+- require the coding agent to challenge contradictions, ambiguity, hidden assumptions, missing edge cases, missing task coverage, and scope creep before coding
+- if the readiness gate fails, require the agent to update `SPEC.md`, `PLAN.md`, and/or `TASKS.md` first, refresh `PROJECT_PROGRESS_SUMMARY.md` when needed, then rerun the gate
+- only after the readiness gate passes should the agent begin with the first incomplete task in `TASKS.md`
 
 ---
 
@@ -478,7 +493,7 @@ This command is also executed automatically as the final stage of feature creati
 Validates:
 
 - required documents exist
-- required sections present
+- required sections present and populated
 - traceability between spec → plan → tasks
 - no unresolved placeholders
 
@@ -496,6 +511,9 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 
 - create missing repository instruction files
 - overwrite existing repository instruction files only when `--force` is set
+- prompt for confirmation before `--force` overwrites existing instruction files
+- support `--yes` / `-y` to skip the overwrite confirmation prompt when `--force` is used
+- support `--append-only` to merge missing Kit-managed sections without overwriting matched existing content
 - scaffold `.github/copilot-instructions.md` alongside configured agent files
 - support the alias `kit scaffold-agent`
 - without targeted flags, scaffold configured agent files plus `.github/copilot-instructions.md`
@@ -503,6 +521,7 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 - `--claude` scaffolds only `CLAUDE.md`
 - `--copilot` scaffolds only `.github/copilot-instructions.md`
 - allow combining targeted flags to scaffold multiple specific built-in files in one run
+- in default mode, suggest `--append-only` and `--force` when existing instruction files are skipped
 
 ---
 

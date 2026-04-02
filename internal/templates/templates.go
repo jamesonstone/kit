@@ -350,6 +350,12 @@ If ad hoc work touches a feature with existing specs:
 - Never mix features in one ` + "`docs/specs/<feature>/`" + ` directory.
 - If work spans features, update each feature's docs separately.
 
+## Document Completeness
+
+- For ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + `, every required section must be populated
+- Do not leave HTML TODO comments as the only content in a section
+- If a section has no additional detail, replace the placeholder comment with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + `
+
 ---
 
 ## Communication Style
@@ -396,6 +402,7 @@ If ad hoc work touches a feature with existing specs:
 
 ### Phase 2: ACT
 
+- Before writing code for spec-driven work, run an implementation readiness gate: adversarially challenge ` + "`CONSTITUTION.md`" + `, optional ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, and scope creep. If the gate fails, update docs first, then code.
 - Implement tasks strictly in order from ` + "`TASKS.md`" + `
 - Follow all code style guidelines and architectural standards
 - Ensure explicit error handling and input validation
@@ -654,6 +661,7 @@ const copilotQuickRules = `## Fast rules for chat and code review
   - ask numbered clarification questions until you reach ≥95% confidence
   - include a recommended default, proposed solution, or assumption for every question
   - accept approvals via ` + "`yes`" + ` / ` + "`y`" + `, partial approvals via ` + "`yes 3, 4`" + `, and overrides via ` + "`no 2: <answer>`" + `
+  - run the implementation readiness gate before writing code; if it fails, update docs first
   - implement tasks in order and update docs first if implementation changes behavior, requirements, or approach
 - for ad hoc work:
   - follow understand → implement → verify
@@ -661,6 +669,7 @@ const copilotQuickRules = `## Fast rules for chat and code review
 - always:
   - never mix multiple features in one ` + "`docs/specs/<feature>/`" + ` directory
   - keep ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, and ` + "`.github/copilot-instructions.md`" + ` aligned with canonical docs
+  - populate every section in ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + `; replace placeholder-only sections with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + ` instead of leaving HTML TODO comments
   - when creating a ` + "`git worktree`" + `, use the flat ` + "`~/worktrees/`" + ` root with repo-prefixed leaf directories such as ` + "`~/worktrees/<repo>-<branch>`" + `
   - prefer readable, maintainable code with explicit error handling and focused functions
   - fix all lint and test failures before completion and wait for the user's output before triaging findings they report

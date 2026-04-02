@@ -93,7 +93,7 @@ func determineNextAction(status *feature.FeatureStatus) string {
 		if incomplete > 0 {
 			return fmt.Sprintf("Complete %d remaining task(s) in %s", incomplete, status.Files["tasks"].Path)
 		}
-		return "All tasks complete! Review and verify implementation."
+		return fmt.Sprintf("All tasks are marked complete. If coding has not started, run `kit implement %s` to pass the implementation readiness gate; otherwise review and verify implementation.", status.Name)
 	}
 
 	// tasks file exists but no checkboxes found

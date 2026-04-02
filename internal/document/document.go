@@ -28,7 +28,7 @@ var RequiredSections = map[DocumentType][]string{
 	TypeBrainstorm:      {"SUMMARY", "USER THESIS", "CODEBASE FINDINGS", "AFFECTED FILES", "DEPENDENCIES", "QUESTIONS", "OPTIONS", "RECOMMENDED STRATEGY", "NEXT STEP"},
 	TypeSpec:            {"SUMMARY", "PROBLEM", "GOALS", "NON-GOALS", "USERS", "SKILLS", "DEPENDENCIES", "REQUIREMENTS", "ACCEPTANCE", "EDGE-CASES", "OPEN-QUESTIONS"},
 	TypePlan:            {"SUMMARY", "APPROACH", "COMPONENTS", "DATA", "INTERFACES", "DEPENDENCIES", "RISKS", "TESTING"},
-	TypeTasks:           {"TASKS", "DEPENDENCIES", "NOTES"},
+	TypeTasks:           {"PROGRESS TABLE", "TASK LIST", "TASK DETAILS", "DEPENDENCIES", "NOTES"},
 	TypeAnalysis:        {"UNDERSTANDING", "QUESTIONS", "RESEARCH", "CLARIFICATIONS", "ASSUMPTIONS", "RISKS"},
 	TypeProgressSummary: {"FEATURE PROGRESS TABLE", "PROJECT INTENT", "GLOBAL CONSTRAINTS", "FEATURE SUMMARIES", "LAST UPDATED"},
 }
@@ -129,17 +129,35 @@ func (d *Document) Validate() []ValidationError {
 	// check required sections
 	required := RequiredSections[d.Type]
 	found := make(map[string]bool)
+	sections := make(map[string]Section)
 	for _, s := range d.Sections {
-		found[strings.ToUpper(s.Name)] = true
+		key := strings.ToUpper(s.Name)
+		found[key] = true
+		sections[key] = s
 	}
 
 	for _, req := range required {
-		if !found[strings.ToUpper(req)] {
+		key := strings.ToUpper(req)
+		if !found[key] {
 			errors = append(errors, ValidationError{
 				Document: d.Path,
 				Section:  req,
 				Message:  fmt.Sprintf("missing required section '%s'", req),
 				Fix:      fmt.Sprintf("Add a '## %s' section to %s", req, d.Path),
+			})
+			continue
+		}
+		if documentTypeRequiresPopulatedSections(d.Type) &&
+			!sectionHasVisibleContent(sections[key].Content) {
+			errors = append(errors, ValidationError{
+				Document: d.Path,
+				Section:  req,
+				Message:  fmt.Sprintf("required section '%s' is empty", req),
+				Fix: fmt.Sprintf(
+					"Populate '## %s' in %s or replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`",
+					req,
+					d.Path,
+				),
 			})
 		}
 	}
@@ -242,21 +260,24 @@ func ExtractFirstParagraph(section *Section) string {
 	lines := strings.Split(section.Content, "\n")
 	var result []string
 	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
 			if len(result) > 0 {
 				break
 			}
 			continue
 		}
-		// skip TODO comments
-		if strings.HasPrefix(line, "<!--") {
+		line = visibleLineContent(trimmed)
+		if line == "" {
 			continue
 		}
 		result = append(result, line)
 	}
 
 	text := strings.Join(result, " ")
+	if isExplicitSectionFallbackText(text) {
+		return ""
+	}
 	if len(text) > 120 {
 		text = text[:117] + "..."
 	}

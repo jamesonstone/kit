@@ -19,8 +19,9 @@ var checkCmd = &cobra.Command{
 	Long: `Validate a feature's documents for completeness and correctness.
 
 Validates:
+  - Optional BRAINSTORM.md when present
   - Required documents exist (SPEC.md, PLAN.md, TASKS.md)
-  - Required sections are present in each document
+  - Required sections are present and populated in each document
   - Traceability between spec → plan → tasks
   - No unresolved placeholders
 
@@ -69,6 +70,22 @@ func checkFeature(specsDir string, featureRef string) error {
 
 	var errors []string
 	var warnings []string
+
+	// check BRAINSTORM.md when present
+	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
+	if document.Exists(brainstormPath) {
+		doc, err := document.ParseFile(brainstormPath, document.TypeBrainstorm)
+		if err != nil {
+			errors = append(errors, fmt.Sprintf("Failed to parse BRAINSTORM.md: %v", err))
+		} else {
+			for _, e := range doc.Validate() {
+				errors = append(errors, e.Error())
+			}
+			if doc.HasUnresolvedPlaceholders() {
+				warnings = append(warnings, "BRAINSTORM.md has unresolved TODO placeholders")
+			}
+		}
+	}
 
 	// check SPEC.md
 	specPath := filepath.Join(feat.Path, "SPEC.md")

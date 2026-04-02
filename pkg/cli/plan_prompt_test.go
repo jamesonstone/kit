@@ -41,6 +41,7 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
 		"- DEPENDENCIES",
 		"the ## DEPENDENCIES section must be current before sign-off",
+		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
 	}
 
 	for _, check := range checks {
@@ -81,6 +82,7 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 		"DEPENDENCIES: the resources that shape the implementation strategy",
 		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
 		"the ## DEPENDENCIES section must be current before sign-off",
+		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
 	}
 
 	for _, check := range checks {

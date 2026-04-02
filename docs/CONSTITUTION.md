@@ -57,6 +57,9 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
 1. **Artifact Pipeline Order**
    - Constitution → Brainstorm (optional) → Specification → Plan → Tasks → Implementation → Reflection
    - Each artifact gates the next (unless `--force` or `allow_out_of_order: true`)
+   - Promotion from Tasks to Implementation requires an implementation readiness gate
+   - The readiness gate adversarially challenges `CONSTITUTION.md`, optional `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md` for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, and scope creep before code begins
+   - If the readiness gate fails, update the canonical docs first, then restart implementation
    - Breaking this order requires explicit intent
 
 2. **Document Structure**
@@ -67,11 +70,14 @@ Kit is a document-centered CLI for spec-driven development. This constitution de
 
 3. **Section Requirements**
    - Each document type has required sections that must be present
+   - Required sections in `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md` must also be populated
+   - Do not leave HTML TODO comments as the only content in a required section
+   - If a required section has no feature-specific detail, replace the placeholder comment with `not applicable`, `not required`, or `no additional information required`
    - `CONSTITUTION.md`: PRINCIPLES, CONSTRAINTS, NON-GOALS, DEFINITIONS
    - `BRAINSTORM.md`: SUMMARY, USER THESIS, CODEBASE FINDINGS, AFFECTED FILES, QUESTIONS, OPTIONS, RECOMMENDED STRATEGY, NEXT STEP
    - `SPEC.md`: PROBLEM, GOALS, NON-GOALS, USERS, REQUIREMENTS, ACCEPTANCE, EDGE-CASES, OPEN-QUESTIONS
    - `PLAN.md`: SUMMARY, APPROACH, COMPONENTS, DATA, INTERFACES, RISKS, TESTING
-   - `TASKS.md`: TASKS (with table), DEPENDENCIES, NOTES
+   - `TASKS.md`: PROGRESS TABLE, TASK LIST, TASK DETAILS, DEPENDENCIES, NOTES
 
 4. **Single Feature Per Directory**
    - Never mix features in one `docs/specs/<feature>/` directory
@@ -225,6 +231,7 @@ The ordered sequence of documents that drive development:
 5. **Tasks (TASKS.md)** — Atomic executable work units. Maps to plan items. Reflects real progress.
 
 6. **Implementation** — Code execution. Outside Kit's core scope.
+   - `kit implement` begins with an implementation readiness gate before code execution starts.
 
 7. **Reflection** — Verify correctness, refine understanding. Loops back to specification if needed.
 

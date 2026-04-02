@@ -35,6 +35,8 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"`Dependency`, `Type`, `Location`, `Used For`, and `Status`",
 		"for Figma or other MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
 		"`Status` = `stale`",
+		"no section in `BRAINSTORM.md` may remain empty or contain only an HTML TODO comment",
+		"`not applicable`, `not required`, or `no additional information required`",
 	}
 
 	for _, check := range checks {

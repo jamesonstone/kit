@@ -87,7 +87,7 @@ func flowDiagram() string {
 		"  3. " + spec + "Specification" + reset + dim + "  — what is being built and why" + reset,
 		"  4. " + plan + "Plan" + reset + dim + "           — how it will be built" + reset,
 		"  5. " + tasks + "Tasks" + reset + dim + "          — executable work units" + reset,
-		"  6. " + implement + "Implementation" + reset + dim + " — execution outside Kit's core scope" + reset,
+		"  6. " + implement + "Implementation" + reset + dim + " — execution begins after the readiness gate" + reset,
 		"  7. " + reflect + "Reflection" + reset + dim + "     — verify correctness, refine understanding" + reset,
 	}
 
@@ -212,10 +212,6 @@ func outputPromptWithClipboardDefault(prompt string, outputOnly, copy bool) erro
 
 func outputPromptWithoutSubagentsWithClipboardDefault(prompt string, outputOnly, copy bool) error {
 	return writePromptWithClipboardDefault(preparePromptWithoutSubagents(prompt), outputOnly, copy)
-}
-
-func outputPromptWithoutSubagents(prompt string, outputOnly, copy bool) error {
-	return writePrompt(preparePromptWithoutSubagents(prompt), outputOnly, copy)
 }
 
 func writePrompt(prompt string, outputOnly, copy bool) error {

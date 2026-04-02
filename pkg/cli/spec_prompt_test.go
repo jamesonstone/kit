@@ -69,6 +69,8 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 		"keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`",
 		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
 		"do not use `.claude/skills` as canonical discovery input",
+		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
+		"`not applicable`, `not required`, or `no additional information required`",
 		"## Skills",
 		"read that feature's SPEC.md and the `## SKILLS` table first",
 	}
@@ -114,6 +116,7 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 		"keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`",
 		"the ## SKILLS section is mandatory and must be populated before sign-off",
 		"the ## DEPENDENCIES section must be current before sign-off",
+		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
 	}
 
 	for _, check := range checks {

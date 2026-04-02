@@ -1,8 +1,12 @@
 package cli
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -13,6 +17,8 @@ var scaffoldAgentsForce bool
 var scaffoldAgentsCopilot bool
 var scaffoldAgentsClaude bool
 var scaffoldAgentsAgentsMD bool
+var scaffoldAgentsYes bool
+var scaffoldAgentsAppendOnly bool
 
 var scaffoldAgentsCmd = &cobra.Command{
 	Use:     "scaffold-agents",
@@ -35,12 +41,16 @@ These files stay aligned with canonical project documents.
 
 Use --agentsmd, --claude, and --copilot to update only specific built-in files.
 
-Use --force to overwrite existing files.`,
+Use --force to overwrite existing files.
+Use --append-only to add missing Kit-managed sections without overwriting
+existing matched content.`,
 	RunE: runScaffoldAgents,
 }
 
 func init() {
 	scaffoldAgentsCmd.Flags().BoolVarP(&scaffoldAgentsForce, "force", "f", false, "overwrite existing repository instruction files")
+	scaffoldAgentsCmd.Flags().BoolVarP(&scaffoldAgentsYes, "yes", "y", false, "skip the overwrite confirmation prompt when used with --force")
+	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsAppendOnly, "append-only", false, "append missing Kit-managed sections without overwriting matched existing content")
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsAgentsMD, "agentsmd", false, "scaffold only AGENTS.md")
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsClaude, "claude", false, "scaffold only CLAUDE.md")
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsCopilot, "copilot", false, "scaffold only .github/copilot-instructions.md")
@@ -48,6 +58,15 @@ func init() {
 }
 
 func runScaffoldAgents(cmd *cobra.Command, args []string) error {
+	if scaffoldAgentsYes && !scaffoldAgentsForce {
+		return fmt.Errorf("--yes requires --force")
+	}
+
+	writeMode, err := determineInstructionFileWriteMode(scaffoldAgentsForce, scaffoldAgentsAppendOnly)
+	if err != nil {
+		return err
+	}
+
 	selection := instructionFileSelection{
 		agentsMD: scaffoldAgentsAgentsMD,
 		claude:   scaffoldAgentsClaude,
@@ -60,32 +79,86 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("🤖 Scaffolding repository instruction files...")
+	targets := selectedInstructionFiles(cfg, selection)
 
-	var created, updated, skipped int
+	if writeMode == instructionFileWriteModeOverwrite && !scaffoldAgentsYes {
+		existing := existingInstructionFiles(projectRoot, targets)
+		if len(existing) > 0 {
+			ok, err := confirmInstructionOverwrite(cmd, existing)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				fmt.Println("\nCancelled. No instruction files were changed.")
+				return nil
+			}
+		}
+	}
 
-	for _, instructionFile := range selectedInstructionFiles(cfg, selection) {
-		result, err := writeInstructionFile(projectRoot, instructionFile, scaffoldAgentsForce)
+	plans, err := planInstructionFileWrites(projectRoot, targets, writeMode)
+	if err != nil {
+		return err
+	}
+
+	var created, updated, merged, skipped int
+
+	for _, plan := range plans {
+		result, err := applyInstructionFileWritePlan(plan)
 		if err != nil {
 			return err
 		}
 
 		switch result {
 		case instructionFileCreated:
-			fmt.Printf("  ✓ Created %s\n", instructionFile)
+			fmt.Printf("  ✓ Created %s\n", plan.relativePath)
 			created++
 		case instructionFileUpdated:
-			fmt.Printf("  ✓ Overwrote %s\n", instructionFile)
+			fmt.Printf("  ✓ Overwrote %s\n", plan.relativePath)
 			updated++
+		case instructionFileMerged:
+			fmt.Printf("  ✓ Appended missing Kit sections to %s\n", plan.relativePath)
+			merged++
 		case instructionFileSkipped:
-			fmt.Printf("  ✓ %s exists (skipped)\n", instructionFile)
+			if writeMode == instructionFileWriteModeAppendOnly {
+				fmt.Printf("  ✓ %s already contains all detectable Kit sections\n", plan.relativePath)
+			} else {
+				fmt.Printf("  ✓ %s exists (skipped)\n", plan.relativePath)
+			}
 			skipped++
 		}
 	}
 
 	fmt.Printf("\n✅ Instruction scaffolding complete!\n")
-	fmt.Printf("   Created: %d, Updated: %d, Skipped: %d\n", created, updated, skipped)
+	fmt.Printf("   Created: %d, Updated: %d, Merged: %d, Skipped: %d\n", created, updated, merged, skipped)
+
+	if writeMode == instructionFileWriteModeSkipExisting && skipped > 0 {
+		fmt.Println("   Hint: use --append-only to merge missing Kit-managed sections without overwriting custom content, or --force to replace existing files.")
+	}
 
 	return nil
+}
+
+func confirmInstructionOverwrite(cmd *cobra.Command, existingFiles []string) (bool, error) {
+	out := cmd.OutOrStdout()
+	if _, err := fmt.Fprintln(out, "The following repository instruction files will be overwritten:"); err != nil {
+		return false, err
+	}
+	for _, file := range existingFiles {
+		if _, err := fmt.Fprintf(out, "- %s\n", file); err != nil {
+			return false, err
+		}
+	}
+	if _, err := fmt.Fprintln(out, "Proceed? [y/N]"); err != nil {
+		return false, err
+	}
+
+	input, err := bufio.NewReader(cmd.InOrStdin()).ReadString('\n')
+	if err != nil && !errors.Is(err, io.EOF) {
+		return false, fmt.Errorf("failed to read confirmation: %w", err)
+	}
+
+	answer := strings.ToLower(strings.TrimSpace(input))
+	return answer == "y" || answer == "yes", nil
 }
 
 func scaffoldInstructionContext(selection instructionFileSelection) (string, *config.Config, error) {

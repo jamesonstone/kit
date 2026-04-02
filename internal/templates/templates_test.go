@@ -19,6 +19,49 @@ func TestBrainstormTemplateIncludesDependenciesTable(t *testing.T) {
 	}
 }
 
+func TestInstructionTemplatesRequirePopulatedSections(t *testing.T) {
+	checks := []string{
+		"## Document Completeness",
+		"every required section must be populated",
+		"`not applicable`, `not required`, or `no additional information required`",
+	}
+
+	templates := map[string]string{
+		"AGENTS.md":                       AgentsMD,
+		"CLAUDE.md":                       ClaudeMD,
+		".github/copilot-instructions.md": CopilotInstructionsMD,
+	}
+
+	for name, content := range templates {
+		for _, check := range checks {
+			if !strings.Contains(content, check) {
+				t.Fatalf("expected %s to contain %q", name, check)
+			}
+		}
+	}
+}
+
+func TestInstructionTemplatesIncludeReadinessGate(t *testing.T) {
+	checks := []string{
+		"implementation readiness gate",
+		"If the gate fails, update docs first, then code",
+	}
+
+	templates := map[string]string{
+		"AGENTS.md":                       AgentsMD,
+		"CLAUDE.md":                       ClaudeMD,
+		".github/copilot-instructions.md": CopilotInstructionsMD,
+	}
+
+	for name, content := range templates {
+		for _, check := range checks {
+			if !strings.Contains(content, check) {
+				t.Fatalf("expected %s to contain %q", name, check)
+			}
+		}
+	}
+}
+
 func TestSpecTemplateIncludesSkillsAndDependencies(t *testing.T) {
 	checks := []string{
 		"## SKILLS",

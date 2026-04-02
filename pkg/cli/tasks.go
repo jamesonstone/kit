@@ -271,9 +271,11 @@ For each task ID, include a short block:
 D) DEPENDENCIES SECTION
 - list any cross-task or external blockers
 - include the exact missing decision if applicable
+- if there are no blockers or ordering notes, replace placeholder comments with "no additional information required" or "not applicable"
 
 E) NOTES SECTION
 - only if required to prevent ambiguity
+- otherwise write "not required"
 
 F) PLAN LINKS (OPTIONAL)
 - Link to PLAN sections using anchors from headings (lowercase, dashes)
@@ -295,6 +297,7 @@ Rules:
 Output goal:
 - a task list that a coding agent can execute linearly with minimal back-and-forth
 `, goalPct))
+	appendNonEmptySectionRules(&sb, "`TASKS.md`")
 
 	prompt := sb.String()
 

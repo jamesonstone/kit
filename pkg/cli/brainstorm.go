@@ -429,6 +429,7 @@ The final BRAINSTORM.md must be a detailed, informational, filepath-specific doc
 - make the final document dense, explicit, and easy for a coding agent to use when drafting SPEC.md
 - keep the ## DEPENDENCIES table aligned with the tools, docs, and design references used during the phase
 `, nextStep, nextStep+1, brainstormPath, nextStep+2, featureSlug, goalPct))
+	appendNonEmptySectionRules(&sb, "`BRAINSTORM.md`")
 
 	return sb.String()
 }

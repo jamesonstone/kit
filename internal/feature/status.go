@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/jamesonstone/kit/internal/document"
 )
@@ -76,65 +75,18 @@ func ParseTaskProgress(tasksPath string) (TaskProgress, error) {
 }
 
 // ExtractSpecSummary extracts the SUMMARY section from SPEC.md.
-// Returns empty string if not found or only contains TODO placeholder.
+// Returns empty string if not found or only contains placeholder/fallback text.
 func ExtractSpecSummary(specPath string) (string, error) {
-	file, err := os.Open(specPath)
+	doc, err := document.ParseFile(specPath, document.TypeSpec)
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	inSummary := false
-	var summaryLines []string
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		trimmed := strings.TrimSpace(line)
-
-		// check for SUMMARY header
-		if strings.HasPrefix(trimmed, "## SUMMARY") {
-			inSummary = true
-			continue
-		}
-
-		// check for next section header (end of summary)
-		if inSummary && strings.HasPrefix(trimmed, "## ") {
-			break
-		}
-
-		// collect summary content, handling inline comments
-		if inSummary && trimmed != "" {
-			// skip full comment lines
-			if strings.HasPrefix(trimmed, "<!--") && !strings.Contains(trimmed, "-->") {
-				continue
-			}
-			if strings.HasPrefix(trimmed, "<!--") {
-				continue
-			}
-			// handle inline comments: extract text after -->
-			if idx := strings.Index(trimmed, "-->"); idx != -1 {
-				trimmed = strings.TrimSpace(trimmed[idx+3:])
-				if trimmed == "" {
-					continue
-				}
-			}
-			summaryLines = append(summaryLines, trimmed)
-		}
+	if section := doc.GetSection("SUMMARY"); section != nil {
+		return document.ExtractFirstParagraph(section), nil
 	}
 
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-
-	summary := strings.Join(summaryLines, " ")
-
-	// return empty if it's just a TODO placeholder
-	if strings.Contains(strings.ToLower(summary), "todo") {
-		return "", nil
-	}
-
-	return summary, nil
+	return "", nil
 }
 
 // ExtractBrainstormSummary extracts the SUMMARY section from BRAINSTORM.md.

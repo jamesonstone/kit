@@ -20,10 +20,12 @@ var implementOutputOnly bool
 
 var implementCmd = &cobra.Command{
 	Use:   "implement [feature]",
-	Short: "Output implementation context for coding agents",
-	Long: `Output a comprehensive summary for coding agents to begin implementation.
+	Short: "Run the readiness gate and output implementation context",
+	Long: `Run the implementation readiness gate and output a comprehensive
+summary for coding agents to begin implementation.
 
 Provides:
+  - Implementation-readiness gate instructions
   - Feature overview and current status
   - Document reference table (SPEC, PLAN, TASKS)
   - Clear instructions for executing tasks
@@ -143,6 +145,20 @@ func selectFeatureForImplementation(specsDir string) (*feature.Feature, error) {
 }
 
 func outputImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress, projectRoot string, outputOnly bool) error {
+	prompt := buildImplementationPrompt(feat, brainstormPath, specPath, planPath, tasksPath, summary, projectRoot)
+
+	if !outputOnly {
+		printImplementationContext(feat, brainstormPath, specPath, planPath, tasksPath, summary, progress)
+	}
+
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, implementCopy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary, projectRoot string) string {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	hasBrainstorm := document.Exists(brainstormPath)
 
@@ -175,9 +191,25 @@ func outputImplementationPrompt(feat *feature.Feature, brainstormPath, specPath,
 		sb.WriteString("BRAINSTORM → ")
 	}
 	sb.WriteString("SPEC → PLAN → TASKS\n")
-	sb.WriteString("3. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict\n")
-	sb.WriteString("4. **Execute tasks from TASKS.md** in the order specified\n")
-	sb.WriteString(`5. **For each task:**
+	sb.WriteString("3. **Run the implementation readiness gate before writing code**\n")
+	sb.WriteString(`   - Treat this as an adversarial preflight over the full document set
+   - Build a review map for CONSTITUTION.md, optional BRAINSTORM.md, SPEC.md, PLAN.md, and TASKS.md
+   - Challenge the docs for contradictions, ambiguous requirements, hidden assumptions, missing edge cases or failure modes, task gaps, and scope creep
+   - Verify each planned implementation step still traces back to the binding docs
+   - Produce an explicit go/no-go decision before coding
+
+`)
+	sb.WriteString(`4. **If the readiness gate fails, stop and repair the docs first**
+   - Do NOT write production code yet
+   - Update SPEC.md, PLAN.md, and/or TASKS.md to resolve the exact issue
+   - Update PROJECT_PROGRESS_SUMMARY.md when the feature summary or state changes
+   - Re-run the implementation readiness gate after the docs are fixed
+
+`)
+	sb.WriteString("5. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict\n")
+	sb.WriteString("6. **Only after the readiness gate passes, execute tasks from TASKS.md**\n")
+	sb.WriteString(`7. **For each task:**
+   - Start with the first incomplete task (marked '- [ ]')
    - Read the task's GOAL, SCOPE, and ACCEPTANCE criteria
    - Implement only what's specified (no gold-plating)
    - Verify acceptance criteria are met before marking complete
@@ -198,6 +230,9 @@ func outputImplementationPrompt(feat *feature.Feature, brainstormPath, specPath,
 	sb.WriteString(fmt.Sprintf(`## Rules
 - Respect constraints defined in CONSTITUTION.md
 - Use BRAINSTORM.md as context only; SPEC, PLAN, and TASKS control execution
+- Do not begin coding until the implementation readiness gate passes
+- If the readiness gate fails, report the exact contradiction, ambiguity, missing coverage, or scope issue before editing docs
+- Re-run the readiness gate every time implementation restarts after a doc repair
 - Stay within scope defined in SPEC.md
 - Follow architecture decisions in PLAN.md
 - Complete tasks in dependency order from TASKS.md
@@ -211,51 +246,50 @@ func outputImplementationPrompt(feat *feature.Feature, brainstormPath, specPath,
 - Keep TASKS.md updated with accurate status and ensure that it reflects reality upon completion
 
 ## Begin
-Start by reading TASKS.md to identify the first incomplete task (marked with '- [ ]').
+Start by running the implementation readiness gate against the document set.
+Do not write code until the gate passes.
+Once it passes, read TASKS.md to identify the first incomplete task (marked with '- [ ]').
 Then read its acceptance criteria and implement it.
 `, projectRoot))
 
-	prompt := sb.String()
+	return sb.String()
+}
 
-	if !outputOnly {
+
+func printImplementationContext(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress) {
+	hasBrainstorm := document.Exists(brainstormPath)
+
+	fmt.Println()
+	fmt.Println(dim + "Implementation Context: " + reset + feat.DirName)
+	fmt.Println()
+
+	if summary != "" {
+		fmt.Println(whiteBold + "Feature Summary:" + reset)
+		fmt.Println(summary)
 		fmt.Println()
-		fmt.Println(dim + "Implementation Context: " + reset + feat.DirName)
-		fmt.Println()
-
-		if summary != "" {
-			fmt.Println(whiteBold + "Feature Summary:" + reset)
-			fmt.Println(summary)
-			fmt.Println()
-		} else {
-			fmt.Println(whiteBold + "Feature Summary:" + reset)
-			fmt.Println("(Read SPEC.md for feature description)")
-			fmt.Println()
-		}
-
-		if progress.HasTasks() {
-			fmt.Printf(whiteBold+"Progress: "+reset+"%d/%d tasks complete\n", progress.Complete, progress.Total)
-		} else {
-			fmt.Println(whiteBold + "Progress: " + reset + "Tasks defined, ready to begin")
-		}
-		fmt.Println()
-
-		fmt.Println(whiteBold + "Document Reference:" + reset)
-		printImplementDocumentReferenceTable()
-		fmt.Println()
-
-		fmt.Println(whiteBold + "File Locations:" + reset)
-		if hasBrainstorm {
-			fmt.Printf("  • BRAINSTORM: %s\n", brainstormPath)
-		}
-		fmt.Printf("  • SPEC:  %s\n", specPath)
-		fmt.Printf("  • PLAN:  %s\n", planPath)
-		fmt.Printf("  • TASKS: %s\n", tasksPath)
+	} else {
+		fmt.Println(whiteBold + "Feature Summary:" + reset)
+		fmt.Println("(Read SPEC.md for feature description)")
 		fmt.Println()
 	}
 
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, implementCopy); err != nil {
-		return err
+	if progress.HasTasks() {
+		fmt.Printf(whiteBold+"Progress: "+reset+"%d/%d tasks complete\n", progress.Complete, progress.Total)
+	} else {
+		fmt.Println(whiteBold + "Progress: " + reset + "Tasks defined, ready to begin")
 	}
+	fmt.Println()
 
-	return nil
+	fmt.Println(whiteBold + "Document Reference:" + reset)
+	printImplementDocumentReferenceTable()
+	fmt.Println()
+
+	fmt.Println(whiteBold + "File Locations:" + reset)
+	if hasBrainstorm {
+		fmt.Printf("  • BRAINSTORM: %s\n", brainstormPath)
+	}
+	fmt.Printf("  • SPEC:  %s\n", specPath)
+	fmt.Printf("  • PLAN:  %s\n", planPath)
+	fmt.Printf("  • TASKS: %s\n", tasksPath)
+	fmt.Println()
 }

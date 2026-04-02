@@ -393,6 +393,7 @@ Rules:
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
 `, goalPct))
+	appendNonEmptySectionRules(&sb, "`PLAN.md`")
 
 	prompt := sb.String()
 
@@ -474,6 +475,7 @@ Rules:
 
 The output of PLAN.md must make TASKS.md obvious and deterministic.
 `, goalPct))
+	appendNonEmptySectionRules(&sb, "`PLAN.md`")
 
 	prompt := sb.String()
 

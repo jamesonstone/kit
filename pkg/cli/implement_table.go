@@ -37,6 +37,7 @@ func printImplementDocumentReferenceTable() {
 			document: "TASKS.md",
 			lines: []string{
 				"EXECUTE: Ordered task list with acceptance criteria",
+				"- Do NOT execute tasks until the readiness gate passes",
 				"- Work through tasks in order (respect dependencies)",
 				"- Mark tasks complete with [x] when acceptance met",
 			},

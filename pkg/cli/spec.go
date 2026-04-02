@@ -723,6 +723,7 @@ This file is the single source of truth for this feature. Do not leave content o
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 `, goalPct, goalPct, specPath))
+	appendNonEmptySectionRules(&sb, "`SPEC.md`")
 
 	prompt := sb.String()
 
@@ -901,6 +902,7 @@ Once you reach ≥%d%% confidence, write a SUMMARY section at the top of SPEC.md
 - Ensure the spec respects constraints defined in CONSTITUTION.md
 - PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
 `, goalPct, goalPct))
+	appendNonEmptySectionRules(&sb, "`SPEC.md`")
 
 	prompt := sb.String()
 

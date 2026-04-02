@@ -55,7 +55,7 @@ kit plan my-feature
 # create task list
 kit tasks my-feature
 
-# start implementation (outputs context for coding agents)
+# start implementation (runs the readiness gate, then outputs context for coding agents)
 kit implement my-feature
 
 # catch up on a feature before resuming work
@@ -79,24 +79,24 @@ kit complete --all
 
 ### Core Development Loop
 
-| Command                    | Description                                                                              |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and track phase dependencies in a `/plan` prompt    |
-| `kit spec <feature>`       | Create or open a feature specification, perform skills discovery, and track dependencies |
-| `kit plan <feature>`       | Create or open an implementation plan and track planning dependencies                    |
-| `kit tasks <feature>`      | Create or open a task list                                                               |
-| `kit implement [feature]`  | Output implementation context for coding agents                                          |
-| `kit reflect [feature]`    | Output reflection/verification instructions                                              |
-| `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features               |
-| `kit status`               | Show current feature status; supports `--json` and includes the running Kit version      |
+| Command                    | Description                                                                               |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and track phase dependencies in a `/plan` prompt     |
+| `kit spec <feature>`       | Create or open a feature specification, perform skills discovery, and track dependencies  |
+| `kit plan <feature>`       | Create or open an implementation plan and track planning dependencies                     |
+| `kit tasks <feature>`      | Create or open a task list                                                                |
+| `kit implement [feature]`  | Run the implementation readiness gate and output implementation context for coding agents |
+| `kit reflect [feature]`    | Output reflection/verification instructions                                               |
+| `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features                |
+| `kit status`               | Show current feature status; supports `--json` and includes the running Kit version       |
 
 ### Verification & State
 
-| Command               | Description                                |
-| --------------------- | ------------------------------------------ |
-| `kit check <feature>` | Validate feature documents                 |
-| `kit rollup`          | Generate PROJECT_PROGRESS_SUMMARY.md       |
-| `kit code-review`     | Output instructions for branch code review |
+| Command               | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| `kit check <feature>` | Validate feature documents and populated required sections |
+| `kit rollup`          | Generate PROJECT_PROGRESS_SUMMARY.md                       |
+| `kit code-review`     | Output instructions for branch code review                 |
 
 ### Context Management
 
@@ -141,15 +141,22 @@ existing-feature selector when no feature argument is provided.
 
 ### Utility
 
-| Command               | Description                                                      |
-| --------------------- | ---------------------------------------------------------------- |
-| `kit upgrade`         | Download and install the latest Kit release                      |
-| `kit update`          | Alias for `kit upgrade`                                          |
-| `kit version`         | Print the installed Kit version                                  |
-| `kit scaffold-agents` | Create or refresh repository instruction files and Copilot rules |
-| `kit completion`      | Generate shell autocompletion script                             |
+| Command               | Description                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| `kit upgrade`         | Download and install the latest Kit release                                                 |
+| `kit update`          | Alias for `kit upgrade`                                                                     |
+| `kit version`         | Print the installed Kit version                                                             |
+| `kit scaffold-agents` | Create or refresh repository instruction files and Copilot rules with safer overwrite modes |
+| `kit completion`      | Generate shell autocompletion script                                                        |
 
 `kit scaffold-agents` also supports the singular alias `kit scaffold-agent`.
+
+When instruction files already exist:
+
+- default mode skips them and suggests safer next steps
+- `--append-only` merges missing Kit-managed sections without overwriting matched existing content
+- `--force` overwrites existing files after confirmation
+- `--force --yes` overwrites existing files without prompting for automation use
 
 ## Artifact Pipeline
 
@@ -186,8 +193,13 @@ existing-feature selector when no feature argument is provided.
 3. **Specification** — what is being built and why, plus the feature's selected skills and supporting dependencies
 4. **Plan** — how it will be built, plus the dependencies shaping the implementation strategy
 5. **Tasks** — executable work units
-6. **Implementation** — execution outside Kit's core scope
+6. **Implementation** — execution begins after the implementation readiness gate passes
 7. **Reflection** — verify correctness, refine understanding
+
+Spec-driven prompts must populate every section in `BRAINSTORM.md`, `SPEC.md`,
+`PLAN.md`, and `TASKS.md`. If a section has no additional detail, replace the
+placeholder comment with `not applicable`, `not required`, or
+`no additional information required`.
 
 ## Brainstorm — Interactive Research Entry Point
 
@@ -230,6 +242,11 @@ kit implement my-feature
   ↓
 kit reflect my-feature
 ```
+
+`kit implement` begins with an implementation readiness gate that adversarially
+challenges `CONSTITUTION.md`, optional `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`,
+and `TASKS.md` before any code work starts. If the gate fails, update the
+canonical docs first, then rerun the gate before implementing.
 
 ### Usage
 

@@ -2,17 +2,21 @@
 
 ## FEATURE PROGRESS TABLE
 
-| ID | FEATURE | PATH | PHASE | CREATED | SUMMARY |
-| -- | ------- | ---- | ----- | ------- | ------- |
-| 0001 | refactor-plan-command | `docs/specs/0001-refactor-plan-command` | tasks | 2026-01-19 | (no description) |
-| 0002 | cicd-goreleaser-releases | `docs/specs/0002-cicd-goreleaser-releases` | reflect | 2026-03-04 | - Kit lacks an automated release pipeline for cross-platf... |
-| 0003 | inplace-upgrade-update | `docs/specs/0003-inplace-upgrade-update` | reflect | 2026-03-16 | - Kit users currently need manual update flows (for examp... |
-| 0004 | brainstorm-first-workflow | `docs/specs/0004-brainstorm-first-workflow` | reflect | 2026-03-06 | Kit currently treats brainstorming as an external or stan... |
-| 0005 | version-command | `docs/specs/0005-version-command` | reflect | 2026-03-06 | - Kit currently exposes version information only through ... |
-| 0006 | skill-mine-command | `docs/specs/0006-skill-mine-command` | reflect | 2026-03-15 | - Kit has no built-in command for turning completed featu... |
-| 0007 | catchup-command | `docs/specs/0007-catchup-command` | reflect | 2026-03-23 | - Kit has `status`, `handoff`, `summarize`, and `implemen... |
-| 0008 | dispatch-command | `docs/specs/0008-dispatch-command` | reflect | 2026-03-27 | - Kit has prompt generators for planning, catch-up, imple... |
-| 0009 | spec-skills-discovery | `docs/specs/0009-spec-skills-discovery` | reflect | 2026-03-29 | - Kit captures reusable skills after implementation, but ... |
+| ID   | FEATURE                            | PATH                                                 | PHASE   | CREATED    | SUMMARY                                                      |
+| ---- | ---------------------------------- | ---------------------------------------------------- | ------- | ---------- | ------------------------------------------------------------ |
+| 0001 | refactor-plan-command              | `docs/specs/0001-refactor-plan-command`              | tasks   | 2026-01-19 | (no description)                                             |
+| 0002 | cicd-goreleaser-releases           | `docs/specs/0002-cicd-goreleaser-releases`           | reflect | 2026-03-04 | - Kit lacks an automated release pipeline for cross-platf... |
+| 0003 | inplace-upgrade-update             | `docs/specs/0003-inplace-upgrade-update`             | reflect | 2026-03-16 | - Kit users currently need manual update flows (for examp... |
+| 0004 | brainstorm-first-workflow          | `docs/specs/0004-brainstorm-first-workflow`          | reflect | 2026-03-06 | Kit currently treats brainstorming as an external or stan... |
+| 0005 | version-command                    | `docs/specs/0005-version-command`                    | reflect | 2026-03-06 | - Kit currently exposes version information only through ... |
+| 0006 | skill-mine-command                 | `docs/specs/0006-skill-mine-command`                 | reflect | 2026-03-15 | - Kit has no built-in command for turning completed featu... |
+| 0007 | catchup-command                    | `docs/specs/0007-catchup-command`                    | reflect | 2026-03-23 | - Kit has `status`, `handoff`, `summarize`, and `implemen... |
+| 0008 | dispatch-command                   | `docs/specs/0008-dispatch-command`                   | reflect | 2026-03-27 | - Kit has prompt generators for planning, catch-up, imple... |
+| 0009 | spec-skills-discovery              | `docs/specs/0009-spec-skills-discovery`              | reflect | 2026-03-29 | - Kit captures reusable skills after implementation, but ... |
+| 0010 | support-command-clipboard-defaults | `docs/specs/0010-support-command-clipboard-defaults` | reflect | 2026-03-31 | - These three support commands still print their full pro... |
+| 0011 | handoff-document-sync              | `docs/specs/0011-handoff-document-sync`              | reflect | 2026-03-31 | - `kit handoff` currently focuses on orienting a fresh ag... |
+| 0012 | implement-readiness-gate           | `docs/specs/0012-implement-readiness-gate`           | reflect | 2026-04-02 | - `kit implement` currently moves directly from document ... |
+| 0013 | scaffold-agents-safe-merge         | `docs/specs/0013-scaffold-agents-safe-merge`         | reflect | 2026-04-02 | - `kit scaffold-agents` currently has binary behavior: - ... |
 
 ## PROJECT INTENT
 
@@ -96,6 +100,38 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - none
 - **POINTERS**: `docs/specs/0009-spec-skills-discovery/SPEC.md`, `docs/specs/0009-spec-skills-discovery/PLAN.md`, `docs/specs/0009-spec-skills-discovery/TASKS.md`
 
+### support-command-clipboard-defaults
+
+- **STATUS**: reflect
+- **INTENT**: - These three support commands still print their full prompt or output body by default while the rest of Kit's prompt...
+- **APPROACH**: - [PLAN-01] Update the formal docs for the three commands before changing code. - [PLAN-02] Route all three commands ...
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0010-support-command-clipboard-defaults/SPEC.md`, `docs/specs/0010-support-command-clipboard-defaults/PLAN.md`, `docs/specs/0010-support-command-clipboard-defaults/TASKS.md`
+
+### handoff-document-sync
+
+- **STATUS**: reflect
+- **INTENT**: - `kit handoff` currently focuses on orienting a fresh agent session, but it does not explicitly require the current ...
+- **APPROACH**: - [PLAN-01] Record the handoff prompt contract before changing code. - [PLAN-02] Add prompt-building helpers that gen...
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0011-handoff-document-sync/SPEC.md`, `docs/specs/0011-handoff-document-sync/PLAN.md`, `docs/specs/0011-handoff-document-sync/TASKS.md`
+
+### implement-readiness-gate
+
+- **STATUS**: reflect
+- **INTENT**: - `kit implement` currently moves directly from document reading to task execution. - That leaves no explicit semanti...
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06] Record the approved readiness-gate contract in feat...
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0012-implement-readiness-gate/SPEC.md`, `docs/specs/0012-implement-readiness-gate/PLAN.md`, `docs/specs/0012-implement-readiness-gate/TASKS.md`
+
+### scaffold-agents-safe-merge
+
+- **STATUS**: reflect
+- **INTENT**: - `kit scaffold-agents` currently has binary behavior: - skip existing files by default - overwrite existing files bl...
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06][SPEC-07] Record the scaffold safety contract in a d...
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0013-scaffold-agents-safe-merge/SPEC.md`, `docs/specs/0013-scaffold-agents-safe-merge/PLAN.md`, `docs/specs/0013-scaffold-agents-safe-merge/TASKS.md`
+
 ## LAST UPDATED
 
-2026-03-29 16:40:48 EDT
+2026-04-02 12:22:25 EDT
