@@ -6,10 +6,10 @@ import (
 )
 
 func TestPrepareAgentPromptWithoutSubagents(t *testing.T) {
-	previous := subagents
-	subagents = false
+	previous := singleAgent
+	singleAgent = true
 	t.Cleanup(func() {
-		subagents = previous
+		singleAgent = previous
 	})
 
 	prompt := "Please review the plan.\n"
@@ -33,11 +33,11 @@ func TestPrepareAgentPromptWithoutSubagents(t *testing.T) {
 	}
 }
 
-func TestPrepareAgentPromptWithSubagents(t *testing.T) {
-	previous := subagents
-	subagents = true
+func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
+	previous := singleAgent
+	singleAgent = false
 	t.Cleanup(func() {
-		subagents = previous
+		singleAgent = previous
 	})
 
 	got := prepareAgentPrompt("Please review the plan.\n")
@@ -47,8 +47,8 @@ func TestPrepareAgentPromptWithSubagents(t *testing.T) {
 		"## Subagent Orchestration",
 		"drive to understanding first",
 		"then drive task orchestration coordination",
-		"use intelligent routing to identify the different areas of change or analysis",
-		"delegate and dispatch to subagents where possible",
+		"default to subagents when the work spans multiple distinct areas",
+		"predict likely touched files or interfaces",
 		"apply the same discovery-first discipline as kit dispatch",
 		"git worktree add ~/worktrees/<repo>-<branch> <branch>",
 		"keep all worktrees flat under `~/worktrees/`",
@@ -65,8 +65,18 @@ func TestPrepareAgentPromptWithSubagents(t *testing.T) {
 	}
 }
 
-func TestSubagentsFlagRegisteredOnRootCommand(t *testing.T) {
-	if flag := rootCmd.PersistentFlags().Lookup("subagents"); flag == nil {
-		t.Fatal("expected root command to register --subagents")
+func TestSingleAgentFlagRegisteredOnRootCommand(t *testing.T) {
+	if flag := rootCmd.PersistentFlags().Lookup("single-agent"); flag == nil {
+		t.Fatal("expected root command to register --single-agent")
+	}
+}
+
+func TestLegacySubagentsFlagRemainsAvailable(t *testing.T) {
+	flag := rootCmd.PersistentFlags().Lookup("subagents")
+	if flag == nil {
+		t.Fatal("expected root command to retain hidden --subagents compatibility flag")
+	}
+	if !flag.Hidden {
+		t.Fatal("expected legacy --subagents flag to be hidden")
 	}
 }

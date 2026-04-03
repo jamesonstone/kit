@@ -112,12 +112,13 @@ kit complete --all
 | -------------- | --------------------------------------------------------------------------- |
 | `kit dispatch` | Output a discovery-first prompt for clustering tasks and queueing subagents |
 
-All prompt-producing commands also accept `--subagents` to append lightweight
-discovery-first routing guidance.
+Prompt-producing commands default to subagent orchestration guidance. Pass
+`--single-agent` when you explicitly want to keep the work in one lane.
 
 Use `kit dispatch` when you need the full overlap-clustering and queue-planning
-workflow for a raw task set. Use `--subagents` when you want an existing prompt
-to tell the coding agent to route safe, low-overlap work through subagents.
+workflow for a raw task set. Use the default prompt path when the agent should
+use subagents opportunistically, and use `kit dispatch` when you want a formal
+discovery report, overlap clustering, and explicit approval before launch.
 
 Prompt-producing commands that expose `--output-only` copy their generated
 output to the clipboard by default. Pass `--output-only` to print the raw

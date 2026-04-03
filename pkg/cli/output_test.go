@@ -133,10 +133,10 @@ func TestWritePromptWithClipboardDefault_OutputOnlyAndCopyDoesBoth(t *testing.T)
 
 func TestOutputPromptWithoutSubagentsWithClipboardDefault_SkipsSubagentSuffix(t *testing.T) {
 	previousCopy := clipboardCopyFunc
-	previousSubagents := subagents
+	previousSingleAgent := singleAgent
 	defer func() {
 		clipboardCopyFunc = previousCopy
-		subagents = previousSubagents
+		singleAgent = previousSingleAgent
 	}()
 
 	var copied string
@@ -144,7 +144,7 @@ func TestOutputPromptWithoutSubagentsWithClipboardDefault_SkipsSubagentSuffix(t 
 		copied = text
 		return nil
 	}
-	subagents = true
+	singleAgent = false
 
 	output := captureStdout(t, func() {
 		if err := outputPromptWithoutSubagentsWithClipboardDefault("prompt text", false, false); err != nil {
