@@ -55,7 +55,7 @@ func banner() string {
 		result += "                                        " + colors[i] + line + reset + "\n"
 	}
 	result += "\n"
-	result += "                                   " + dim + "Spec-Driven Development Toolkit" + reset + "\n"
+	result += "                                   " + dim + "General-Purpose Thought-Work Harness" + reset + "\n"
 	return result
 }
 
@@ -69,7 +69,7 @@ func flowDiagram() string {
 		"",
 		whiteBold + "🧠 Optional Research Step" + reset + dim + ":" + reset,
 		gray + "  ┌────────────┐" + reset,
-		gray + "  │ " + brainstorm + "Brainstorm" + reset + gray + " │  ← " + reset + dim + "codebase research, framing, options, affected files" + reset,
+		gray + "  │ " + brainstorm + "Brainstorm" + reset + gray + " │  ← " + reset + dim + "research, framing, options, affected artifacts" + reset,
 		gray + "  └─────┬──────┘" + reset,
 		gray + "        │" + reset,
 		gray + "        ▼" + reset,
@@ -81,7 +81,7 @@ func flowDiagram() string {
 		gray + "       ▲                                                                            │" + reset,
 		gray + "       └────────────────────────────────────────────────────────────────────────────┘" + reset,
 		"",
-		whiteBold + "🗂️ Artifact Pipeline" + reset + dim + ":" + reset,
+		whiteBold + "🗂️ Structured Engine: Artifact Pipeline" + reset,
 		"  1. " + constitution + "Constitution" + reset + dim + "   — strategy, patterns, long-term vision (kept updated)" + reset,
 		"  2. " + brainstorm + "Brainstorm" + reset + dim + "     — optional research and framing before the spec" + reset,
 		"  3. " + spec + "Specification" + reset + dim + "  — what is being built and why" + reset,
@@ -96,11 +96,16 @@ func flowDiagram() string {
 
 var rootCmd = &cobra.Command{
 	Use:   "kit",
-	Short: "🧰 Kit is a document-centered CLI for spec-driven development",
+	Short: "🧰 Kit is a general-purpose harness for thought work",
 	Long: banner() + `
-Kit helps teams reach a high-confidence understanding of a problem
-and its solution before implementation, using open standards and
-universally portable documents.
+Kit is a general-purpose harness for disciplined thought work.
+Its strongest engine is a document-first, spec-driven workflow, but the
+harness also supports ad hoc execution, catch-up, handoff, summarization,
+review, and orchestration.
+
+The current command surface is packaged around repository and software
+workflows, but the underlying harness patterns generalize to research,
+strategy, operations, writing, policy, and other structured fields.
 
 ` + flowDiagram(),
 	Version: Version,

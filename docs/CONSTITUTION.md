@@ -1,47 +1,62 @@
 # CONSTITUTION
 
-Kit is a document-centered CLI for spec-driven development. This constitution defines the invariant rules, patterns, and vision that guide all decisions.
+Kit is a general-purpose harness for disciplined thought work.
+Its strongest engine is a document-first, spec-driven workflow, but the
+harness also supports ad hoc execution, catch-up, handoff, summarization,
+review, and orchestration. The current command surface is packaged around
+repository and software workflows, but the underlying concepts generalize to
+research, strategy, operations, writing, policy, and other structured fields.
+This constitution defines the invariant rules, patterns, and vision that guide
+all decisions.
 
 ---
 
 ## PRINCIPLES
 
-### 1. Documents Are the Source of Truth
+### 1. Harness First, Workflow Second
+
+- Kit is a harness, not a single rigid workflow.
+- Spec-driven planning is a first-class engine, not the only operating mode.
+- Ad hoc work, recovery flows, and orchestration flows are part of the product surface, not side utilities.
+- The harness should help teams choose the right level of structure for the work.
+- Software is a current packaging default, not the conceptual boundary of the product.
+
+### 2. Documents Are the Source of Truth
 
 - Specifications drive code. Code serves specifications.
 - All decisions must be traceable to a document.
 - If reality diverges from documentation, update documentation first, then code.
 - The repository should be understandable by reading docs alone.
 
-### 2. Portable and Agent-Agnostic
+### 3. Portable and Agent-Agnostic
 
 - No vendor lock-in to any coding agent (Claude, Copilot, Codex, etc.).
 - Documents use only markdown and YAML — universally readable.
 - Repository instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) stay aligned with canonical docs and summarize the active workflow contract for supported tools.
 - Agents can be swapped with zero document changes.
 
-### 3. Minimal Magic, Explicit State
+### 4. Minimal Magic, Explicit State
 
 - Prefer explicit over implicit behavior.
 - No hidden databases, lock files, or external state.
 - All state lives in the filesystem (markdown files + `.kit.yaml`).
 - Commands fail fast with actionable error messages.
 
-### 4. Opinionated Defaults, Configurable Escapes
+### 5. Opinionated Defaults, Configurable Escapes
 
 - Sensible defaults work out of the box.
 - Configuration overrides via `.kit.yaml` for team customization.
 - CLI flags always override configuration.
 - Escape hatches exist but aren't encouraged.
 
-### 5. Tooling Should Disappear
+### 6. Tooling Should Disappear
 
 - Kit's job is done once documents are complete and correct.
 - Implementation happens outside Kit's scope.
 - The CLI becomes unnecessary once understanding is achieved.
 - Teams should reach clarity faster with fewer reworks.
 
-### 6. Density Over Prose
+### 7. Density Over Prose
 
 - Documents prioritize brevity and precision.
 - One sentence where possible.

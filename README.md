@@ -7,18 +7,49 @@
 ╚═╝  ╚═╝╚═╝   ╚═╝
 ```
 
-**Spec-Driven Development Toolkit**
+**General-Purpose Thought-Work Harness**
 
-🎒 Portable specification-driven development framework without vendor lock-in.
+🎒 Portable harness without vendor lock-in.
 
-Kit is a document-centered CLI that helps teams reach high-confidence understanding of a problem and its solution _before_ implementation.
+Kit is a general-purpose harness for disciplined thought work.
+Its deepest engine is a document-first, spec-driven workflow, but the harness
+also supports ad hoc execution, catch-up, handoff, summarization, review, and
+orchestration.
 
-Core ideas:
+Today, the shipped command surface is packaged around repository and software
+work. The underlying concepts are broader: they generalize to research,
+strategy, operations, policy, writing, analysis, and other fields where you
+need explicit constraints, structured exploration, planning, execution, and
+reflection.
 
+Harness principles:
+
+- 🧰 harness-first, workflow-second
 - 📄 documents are the source of truth
-- 🧠 brainstorming is optional but first-class
-- 🛠️ implementation starts only after the readiness gate
+- 🧠 spec-driven planning is the strongest engine for ambiguous or high-risk work
+- ⚡ ad hoc work stays lightweight but still verified
+- 🤝 portable and agent-agnostic by default
+- 🔍 explicit gates beat hidden automation
 - 🔄 reflection closes the loop after code changes
+
+### 🌍 Cross-Domain Concepts
+
+The artifact model is broader than software:
+
+| Kit Concept | In Software | In Research | In Strategy / Ops | In Writing / Policy |
+| ----------- | ----------- | ----------- | ----------------- | ------------------- |
+| `CONSTITUTION.md` | engineering constraints | study constraints | operating principles | editorial or policy constraints |
+| `BRAINSTORM.md` | codebase research | literature scan | landscape scan | source gathering and framing |
+| `SPEC.md` | feature requirements | research question or hypothesis | decision brief | argument or policy brief |
+| `PLAN.md` | implementation plan | study design | rollout plan | outline and revision plan |
+| `TASKS.md` | execution checklist | experiment tasks | workback schedule | drafting and review checklist |
+| `implement` | coding and integration | running the study | executing the change | drafting and editing |
+| `reflect` | verification and regression review | results review | retro and validation | revision review and critique |
+| `catchup` / `summarize` / `handoff` | resume or transfer context | resume the investigation | transfer project state | transfer editorial context |
+
+The names may be software-flavored today, but the structure is general:
+constraints, research, specification, planning, execution, verification, and
+transfer are common to most serious thought work.
 
 ## ⚙️ Installation
 
@@ -175,7 +206,11 @@ When instruction files already exist:
 - `--force` overwrites existing files after confirmation
 - `--force --yes` overwrites existing files without prompting for automation use
 
-## 🗂️ Artifact Pipeline
+## 🗂️ Structured Engine: Artifact Pipeline
+
+The artifact pipeline is Kit's most structured operating engine. It is not the
+entire product, but it is the clearest path when a problem needs deliberate
+discovery, planning, and execution control in any domain.
 
 ### 🏗️ Project Initialization
 
@@ -319,9 +354,25 @@ docs/
       ANALYSIS.md            # optional
 ```
 
+## ✨ Positioning
+
+Kit is broader than a spec generator. It is a harness for disciplined
+development workflows:
+
+- structured planning when scope is unclear
+- lightweight ad hoc execution when the change is contained
+- recovery tools such as `catchup`, `summarize`, and `handoff`
+- review and orchestration tools such as `code-review` and `dispatch`
+
+Spec-driven development principles remain a core engine inside that harness,
+not the only identity of the tool.
+
 ## ✨ Inspiration
 
-Kit is inspired by GitHub's [spec-kit](https://github.com/github/spec-kit), which pioneered the concept of specification-driven development. However, spec-kit proved too verbose for my personal workflow. Kit distills the core ideas into a lighter, more portable tool.
+Kit is inspired by GitHub's [spec-kit](https://github.com/github/spec-kit),
+which pioneered the concept of specification-driven development. Kit keeps that
+discipline where it helps most, then broadens it into a lighter, more portable,
+general-purpose harness.
 
 ## 📚 Documentation
 

@@ -2,9 +2,17 @@
 
 ## 1. Purpose
 
-Kit is a document-centered CLI for spec-driven development.
+Kit is a general-purpose harness for disciplined thought work.
 
-Its goal is to help teams reach a high-confidence understanding of a problem and its solution _before_ implementation, using open standards and universally portable documents.
+Its goal is to give teams the right amount of structure for the work in front
+of them, using open standards and universally portable documents. Its deepest
+engine is a document-first, spec-driven workflow, but the harness also supports
+ad hoc work, catch-up, handoff, summarization, review, and orchestration.
+
+The current command surface is packaged around repository and software work,
+but the underlying concepts generalize to research, strategy, operations,
+writing, policy, and other fields that benefit from explicit constraints,
+exploration, specification, planning, execution, and reflection.
 
 Kit intentionally avoids agent-specific tooling. Instead, it centralizes canonical documents and scaffolds lightweight pointer files for different coding agents and environments.
 
@@ -14,7 +22,11 @@ All canonical markdown files use **FULL CAPITALIZATION** (e.g., `CONSTITUTION.md
 
 ## 2. Design Principles
 
+- harness-first, workflow-second
 - documents are the source of truth
+- spec-driven workflow is a first-class engine, not the whole product
+- ad hoc work should remain lightweight but verified
+- software-oriented defaults should not narrow the conceptual scope of the harness
 - markdown + yaml only
 - no agent lock-in
 - minimal magic, explicit state
@@ -25,7 +37,9 @@ All canonical markdown files use **FULL CAPITALIZATION** (e.g., `CONSTITUTION.md
 
 ## 3. Artifact Model (Non-Negotiable)
 
-Kit enforces the following artifact pipeline:
+Kit exposes the following structured artifact pipeline as one of its core
+engines. The names are software-friendly, but the pattern is general across
+domains:
 
 **Project Initialization** (run once, update as needed):
 
@@ -43,7 +57,9 @@ Kit enforces the following artifact pipeline:
 4. **Implementation** — execution begins only after the implementation readiness gate passes
 5. **Reflection** — verify correctness, refine understanding (loops back to Specification)
 
-Kit's responsibility ends once tasks are clear and validated.
+Kit's responsibility is to provide disciplined harnessing around planning,
+state, verification, and transfer. In the structured path, its responsibility
+ends once tasks are clear and validated.
 
 ---
 
