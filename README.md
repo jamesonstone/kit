@@ -13,7 +13,14 @@
 
 Kit is a document-centered CLI that helps teams reach high-confidence understanding of a problem and its solution _before_ implementation.
 
-## Installation
+Core ideas:
+
+- 📄 documents are the source of truth
+- 🧠 brainstorming is optional but first-class
+- 🛠️ implementation starts only after the readiness gate
+- 🔄 reflection closes the loop after code changes
+
+## ⚙️ Installation
 
 ```bash
 go install github.com/jamesonstone/kit/cmd/kit@latest
@@ -37,47 +44,48 @@ This configures `core.hooksPath` to use `.githooks/`, including a `pre-commit`
 hook that runs `make build` before every `git commit`. If the build fails, the
 commit is blocked.
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
-# initialize a new project
+# initialize the project
 kit init
 
-# optionally create brainstorm research first
+# optionally capture research first
 kit brainstorm my-feature
 
-# create a feature specification
+# write the spec
 kit spec my-feature
 
-# create implementation plan
+# define the plan
 kit plan my-feature
 
-# create task list
+# break work into tasks
 kit tasks my-feature
 
-# start implementation (runs the readiness gate, then outputs context for coding agents)
+# start implementation
+# runs the readiness gate, then outputs coding-agent context
 kit implement my-feature
 
-# catch up on a feature before resuming work
+# reorient before resuming work
 kit catchup my-feature
 
-# check status anytime
+# inspect progress at any time
 kit status
 
 # mark all eligible active features complete
 kit complete --all
 ```
 
-## Commands
+## 🧰 Commands
 
-### Project Initialization
+### 🏁 Project Initialization
 
 | Command                  | Description                                    |
 | ------------------------ | ---------------------------------------------- |
 | `kit init`               | Initialize a new Kit project                   |
 | `kit scaffold [feature]` | Create a feature directory with pipeline files |
 
-### Core Development Loop
+### 🔁 Core Development Loop
 
 | Command                    | Description                                                                               |
 | -------------------------- | ----------------------------------------------------------------------------------------- |
@@ -90,7 +98,7 @@ kit complete --all
 | `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features                |
 | `kit status`               | Show current feature status; supports `--json` and includes the running Kit version       |
 
-### Verification & State
+### ✅ Verification & State
 
 | Command               | Description                                                |
 | --------------------- | ---------------------------------------------------------- |
@@ -98,7 +106,7 @@ kit complete --all
 | `kit rollup`          | Generate PROJECT_PROGRESS_SUMMARY.md                       |
 | `kit code-review`     | Output instructions for branch code review                 |
 
-### Context Management
+### 🔄 Context Management
 
 | Command                   | Description                                                                                  |
 | ------------------------- | -------------------------------------------------------------------------------------------- |
@@ -106,7 +114,7 @@ kit complete --all
 | `kit summarize [feature]` | Output context summarization instructions                                                    |
 | `kit catchup [feature]`   | Output a feature catch-up prompt that stays in plan mode                                     |
 
-### Agent Orchestration
+### 🤝 Agent Orchestration
 
 | Command        | Description                                                                 |
 | -------------- | --------------------------------------------------------------------------- |
@@ -120,10 +128,18 @@ workflow for a raw task set. Use the default prompt path when the agent should
 use subagents opportunistically, and use `kit dispatch` when you want a formal
 discovery report, overlap clustering, and explicit approval before launch.
 
+### 📋 Output Behavior
+
 Prompt-producing commands that expose `--output-only` copy their generated
 output to the clipboard by default. Pass `--output-only` to print the raw
 prompt or output to stdout instead, or combine `--output-only --copy` to do
 both.
+
+In interactive terminals, Kit also uses clearer section spacing and semantic
+emoji markers for help, status, selectors, and other human-readable guidance.
+Raw `--output-only` payloads and `--json` output stay unchanged.
+
+### ♻️ Prompt Regeneration
 
 Feature-scoped prompt commands also accept `--prompt-only` to regenerate the
 selected feature's prompt without mutating repository docs:
@@ -133,14 +149,14 @@ selected feature's prompt without mutating repository docs:
 and rollup writes, requires the existing artifact set, and uses the normal
 existing-feature selector when no feature argument is provided.
 
-### Skill Mining
+### ⛏️ Skill Mining
 
 | Command                     | Description                                                |
 | --------------------------- | ---------------------------------------------------------- |
 | `kit skill mine [feature]`  | Output skill extraction prompt for the active coding agent |
 | `kit skills mine [feature]` | Alias for `kit skill mine`                                 |
 
-### Utility
+### 🔧 Utility
 
 | Command               | Description                                                                                 |
 | --------------------- | ------------------------------------------------------------------------------------------- |
@@ -159,9 +175,11 @@ When instruction files already exist:
 - `--force` overwrites existing files after confirmation
 - `--force --yes` overwrites existing files without prompting for automation use
 
-## Artifact Pipeline
+## 🗂️ Artifact Pipeline
 
-**Project Initialization** (run once, update as needed):
+### 🏗️ Project Initialization
+
+Run once, then refine as the project matures:
 
 ```text
 ┌──────────────┐
@@ -169,7 +187,7 @@ When instruction files already exist:
 └──────────────┘
 ```
 
-**Optional Research Step**:
+### 🧠 Optional Research Step
 
 ```text
 ┌──────────────┐
@@ -177,7 +195,7 @@ When instruction files already exist:
 └──────────────┘
 ```
 
-**Core Development Loop**:
+### 🔁 Core Development Loop
 
 ```text
 ┌──────────────┐    ┌───────────────┐    ┌──────┐    ┌───────┐    ┌────────────────┐    ┌────────────┐
@@ -187,22 +205,22 @@ When instruction files already exist:
        └────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Artifact Details**:
+### 📝 Artifact Details
 
-1. **Constitution** — strategy, patterns, long-term vision (kept updated)
-2. **Brainstorm** — optional research artifact with codebase findings, dependency inventory, and strategy
-3. **Specification** — what is being built and why, plus the feature's selected skills and supporting dependencies
-4. **Plan** — how it will be built, plus the dependencies shaping the implementation strategy
-5. **Tasks** — executable work units
-6. **Implementation** — execution begins after the implementation readiness gate passes
-7. **Reflection** — verify correctness, refine understanding
+1. 📜 **Constitution** — strategy, patterns, long-term vision
+2. 🧠 **Brainstorm** — optional research, findings, dependencies, strategy
+3. 📐 **Specification** — what is being built and why
+4. 🗺️ **Plan** — how it will be built
+5. ✅ **Tasks** — executable work units
+6. 🛠️ **Implementation** — execution after the readiness gate passes
+7. 🔍 **Reflection** — verification and learning after implementation
 
 Spec-driven prompts must populate every section in `BRAINSTORM.md`, `SPEC.md`,
 `PLAN.md`, and `TASKS.md`. If a section has no additional detail, replace the
 placeholder comment with `not applicable`, `not required`, or
 `no additional information required`.
 
-## Brainstorm — Interactive Research Entry Point
+## 🧠 Brainstorm — Interactive Research Entry Point
 
 `kit brainstorm` is now the optional front door for new feature work. It asks for:
 
@@ -214,17 +232,18 @@ Then Kit:
 - creates or reuses `docs/specs/<feature>/`
 - creates `BRAINSTORM.md` as the first artifact in that directory
 - requires the coding agent to keep the `## DEPENDENCIES` table current with the inputs used during the brainstorm phase
-- supports multiline free-text entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
-- supports `--vim` and `--editor=vim` to open a vim-compatible editor for free-text responses
+- opens a vim-compatible editor by default for the multiline thesis, with step instructions and a press-any-key launch gate
+- supports `--inline` to use terminal multiline entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
+- keeps `--vim` and `--editor=vim` as explicit editor controls, though vim-mode is already the default for multiline free-text responses
 - outputs a planning-only prompt that starts with `/plan`
 - tells the coding agent to research the codebase, use numbered lists, ask questions in batches of up to 10, and avoid implementation
 - requires the agent to include recommended defaults, accept `yes` / `y` for whole-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` for numbered approval, state uncertainties, output percentage-understanding progress after each batch, and continue until the spec is precise enough for a production-quality solution
 
-### Why this matters
+### 💡 Why this matters
 
 `BRAINSTORM.md` becomes the durable bridge between early ideation and the formal artifact pipeline. When present, downstream commands use it as research context while still treating `SPEC.md`, `PLAN.md`, and `TASKS.md` as the binding execution contract.
 
-### Typical flow
+### 🪜 Typical flow
 
 ```text
 You / team idea
@@ -249,7 +268,7 @@ challenges `CONSTITUTION.md`, optional `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`,
 and `TASKS.md` before any code work starts. If the gate fails, update the
 canonical docs first, then rerun the gate before implementing.
 
-### Usage
+### ▶️ Usage
 
 ```bash
 # interactive brainstorm for a new feature
@@ -264,17 +283,18 @@ kit brainstorm my-feature --output-only
 # regenerate the brainstorm prompt from an existing BRAINSTORM.md without touching repo docs
 kit brainstorm my-feature --prompt-only
 
-# write the brainstorm thesis in a vim-compatible editor
-kit brainstorm my-feature --vim
+# opt out of default vim-mode and use inline multiline entry
+kit brainstorm my-feature --inline
 
 # write the generated /plan prompt to a file
 kit brainstorm my-feature --output tmp/brainstorm-prompt.md
 ```
 
-`kit spec <feature> --interactive` uses the same multiline text-entry behavior.
-`kit spec <feature> --interactive --vim` opens each free-text answer in a vim-compatible editor.
+`kit spec <feature> --interactive` now opens a vim-compatible editor for each
+free-text answer by default. Use `kit spec <feature> --interactive --inline`
+to opt back into terminal multiline entry.
 
-### What goes in `BRAINSTORM.md`
+### 📄 What goes in `BRAINSTORM.md`
 
 - summary of the issue or opportunity
 - user thesis in the user's own words
@@ -283,7 +303,7 @@ kit brainstorm my-feature --output tmp/brainstorm-prompt.md
 - unresolved questions and viable options
 - recommended strategy and the next workflow step
 
-## Project Structure
+## 🏛️ Project Structure
 
 ```text
 .kit.yaml                    # configuration
@@ -299,19 +319,19 @@ docs/
       ANALYSIS.md            # optional
 ```
 
-## Inspiration
+## ✨ Inspiration
 
 Kit is inspired by GitHub's [spec-kit](https://github.com/github/spec-kit), which pioneered the concept of specification-driven development. However, spec-kit proved too verbose for my personal workflow. Kit distills the core ideas into a lighter, more portable tool.
 
-## Documentation
+## 📚 Documentation
 
 See [docs/specs/0000_INIT_PROJECT.md](docs/specs/0000_INIT_PROJECT.md) for the full specification.
 
-## License
+## ⚖️ License
 
 MIT
 
-## Maintainer
+## 👤 Maintainer
 
 <table>
   <tr>

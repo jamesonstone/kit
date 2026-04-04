@@ -135,9 +135,10 @@ func runPlan(cmd *cobra.Command, args []string) error {
 
 	if !outputOnly {
 		fmt.Printf("\n✅ Plan for '%s' ready!\n", feat.Slug)
-		fmt.Printf("\nNext steps:\n")
-		fmt.Printf("  1. Edit %s to define the implementation approach\n", planPath)
-		fmt.Printf("  2. Run 'kit tasks %s' to create executable tasks\n", feat.Slug)
+		printNumberedNextSteps([]string{
+			fmt.Sprintf("Edit %s to define the implementation approach", planPath),
+			fmt.Sprintf("Run 'kit tasks %s' to create executable tasks", feat.Slug),
+		})
 	}
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 
@@ -208,14 +209,12 @@ func selectFeatureForPlan(specsDir string) (*feature.Feature, error) {
 		return nil, fmt.Errorf("no features ready for planning (need SPEC.md without PLAN.md)\n\nRun 'kit spec <feature>' to create a new feature first")
 	}
 
-	fmt.Println()
-	fmt.Println(whiteBold + "Select a feature to plan:" + reset)
-	fmt.Println()
+	printSelectionHeader("Select a feature to plan:")
 	for i, f := range candidates {
 		fmt.Printf("  [%d] %s\n", i+1, f.DirName)
 	}
 	fmt.Println()
-	fmt.Print(whiteBold + "Enter number: " + reset)
+	fmt.Print(selectionPrompt(os.Stdout))
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -248,14 +247,12 @@ func selectFeatureForPlanPromptOnly(specsDir string) (*feature.Feature, error) {
 		return nil, fmt.Errorf("no plans available to regenerate prompts for\n\nRun 'kit plan <feature>' first")
 	}
 
-	fmt.Println()
-	fmt.Println(whiteBold + "Select a feature to regenerate the plan prompt for:" + reset)
-	fmt.Println()
+	printSelectionHeader("Select a feature to regenerate the plan prompt for:")
 	for i, f := range candidates {
 		fmt.Printf("  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
 	}
 	fmt.Println()
-	fmt.Print(whiteBold + "Enter number: " + reset)
+	fmt.Print(selectionPrompt(os.Stdout))
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')

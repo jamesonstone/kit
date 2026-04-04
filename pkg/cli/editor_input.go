@@ -19,8 +19,10 @@ var (
 )
 
 type freeTextInputConfig struct {
-	editor string
-	useVim bool
+	defaultEditor bool
+	editor        string
+	inline        bool
+	useVim        bool
 }
 
 func addFreeTextInputFlags(cmd *cobra.Command, useVim *bool, editor *string) {
@@ -38,15 +40,35 @@ func addFreeTextInputFlags(cmd *cobra.Command, useVim *bool, editor *string) {
 	)
 }
 
-func newFreeTextInputConfig(useVim bool, editor string) freeTextInputConfig {
+func addInlineTextInputFlag(cmd *cobra.Command, inline *bool) {
+	cmd.Flags().BoolVar(
+		inline,
+		"inline",
+		false,
+		"use inline multiline prompts instead of opening a vim-compatible editor",
+	)
+}
+
+func newFreeTextInputConfig(
+	useVim bool,
+	editor string,
+	inline bool,
+	defaultEditor bool,
+) freeTextInputConfig {
 	return freeTextInputConfig{
-		editor: strings.TrimSpace(editor),
-		useVim: useVim,
+		defaultEditor: defaultEditor,
+		editor:        strings.TrimSpace(editor),
+		inline:        inline,
+		useVim:        useVim,
 	}
 }
 
 func (c freeTextInputConfig) usesEditor() bool {
-	return c.useVim || c.editor != ""
+	if c.inline {
+		return false
+	}
+
+	return c.useVim || c.editor != "" || c.defaultEditor
 }
 
 func (c freeTextInputConfig) editorLabel() string {
@@ -62,7 +84,7 @@ func (c freeTextInputConfig) resolveEditorCommand() ([]string, error) {
 		return resolveVimCommand()
 	case c.editor != "":
 		return resolveExactEditorCommand(c.editor)
-	case c.useVim:
+	case c.useVim || c.defaultEditor:
 		return resolveVimCommand()
 	default:
 		return nil, fmt.Errorf("no editor configured")
@@ -135,13 +157,34 @@ func printEditorLaunchInstructions(
 	fieldName string,
 	cancelAction string,
 ) error {
-	_, err := fmt.Fprintf(
+	style := styleForWriter(output)
+
+	if divider := style.sectionDivider(); divider != "" {
+		if _, err := fmt.Fprintln(output, divider); err != nil {
+			return err
+		}
+	}
+	if _, err := fmt.Fprintln(output, style.title("📝", fmt.Sprintf("Step: %s.", fieldName))); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(
 		output,
-		dim+"Step: %s. Paste only the content for this response into the %s that opens next. Save and quit to submit. Quit without save to %s.\nPress any key to open the editor."+reset+"\n",
-		fieldName,
-		inputCfg.editorLabel(),
-		cancelAction,
-	)
+		"%s\n",
+		style.muted(fmt.Sprintf(
+			"Paste only the content for this response into the %s that opens next.",
+			inputCfg.editorLabel(),
+		)),
+	); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(
+		output,
+		"%s\n",
+		style.muted(fmt.Sprintf("Save and quit to submit. Quit without save to %s.", cancelAction)),
+	); err != nil {
+		return err
+	}
+	_, err := fmt.Fprintf(output, "%s\n", style.label("Press any key to open the editor."))
 	return err
 }
 

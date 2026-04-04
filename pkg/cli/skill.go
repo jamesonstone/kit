@@ -167,14 +167,12 @@ func selectFeatureForSkillMine(specsDir string) (*feature.Feature, error) {
 		)
 	}
 
-	fmt.Println()
-	fmt.Println(whiteBold + "Select a feature to mine a skill from:" + reset)
-	fmt.Println()
+	printSelectionHeader("Select a feature to mine a skill from:")
 	for i, f := range candidates {
 		fmt.Printf("  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
 	}
 	fmt.Println()
-	fmt.Print(whiteBold + "Enter number: " + reset)
+	fmt.Print(selectionPrompt(os.Stdout))
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')

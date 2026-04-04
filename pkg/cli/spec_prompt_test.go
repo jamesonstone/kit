@@ -5,11 +5,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	stdreflect "reflect"
 	"strings"
 	"testing"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/internal/feature"
 )
 
 func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
@@ -119,6 +121,84 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
 	}
 
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected output to contain %q", check)
+		}
+	}
+}
+
+func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
+	projectRoot := t.TempDir()
+	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
+
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0010-sample")
+	specPath := filepath.Join(featurePath, "SPEC.md")
+	writeFile(t, specPath, "# SPEC\n")
+
+	restore := chdirForTest(t, projectRoot)
+	defer restore()
+
+	previousWait := awaitEditorLaunchConfirmation
+	previousRunner := editorInputRunner
+	defer func() {
+		awaitEditorLaunchConfirmation = previousWait
+		editorInputRunner = previousRunner
+	}()
+
+	var sequence []string
+	awaitEditorLaunchConfirmation = func(_ *os.File, _ io.Writer) error {
+		sequence = append(sequence, "wait")
+		return nil
+	}
+	editorInputRunner = func(_ freeTextInputConfig, fieldName, _ string) (string, bool, error) {
+		sequence = append(sequence, fieldName)
+		return fieldName + " answer", true, nil
+	}
+
+	cfg := config.Default()
+	feat := &feature.Feature{Slug: "sample", DirName: "0010-sample", Path: featurePath}
+
+	output := captureStdout(t, func() {
+		err := runSpecInteractive(
+			specPath,
+			"",
+			feat,
+			projectRoot,
+			cfg,
+			newFreeTextInputConfig(false, "", false, true),
+			true,
+		)
+		if err != nil {
+			t.Fatalf("runSpecInteractive() error = %v", err)
+		}
+	})
+
+	wantSequence := []string{
+		"wait",
+		"problem",
+		"wait",
+		"goals",
+		"wait",
+		"non-goals",
+		"wait",
+		"users",
+		"wait",
+		"requirements",
+		"wait",
+		"acceptance",
+		"wait",
+		"edge-cases",
+	}
+	if !stdreflect.DeepEqual(sequence, wantSequence) {
+		t.Fatalf("unexpected editor prompt sequence: got %v want %v", sequence, wantSequence)
+	}
+
+	checks := []string{
+		"A vim-compatible editor will open for each free-text response.",
+		"**PROBLEM**: problem answer",
+		"**EDGE-CASES**: edge-cases answer",
+	}
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)

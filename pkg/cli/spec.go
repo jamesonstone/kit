@@ -21,6 +21,7 @@ import (
 
 var specCopy bool
 var specEditor string
+var specInline bool
 var specOutputOnly bool
 var specUseVim bool
 
@@ -40,20 +41,22 @@ features with BRAINSTORM.md or SPEC.md.
 
 Modes:
   Default:        Copy the generated prompt to the clipboard and show status (non-interactive)
-  --interactive:  Prompt user for spec details, then output ready-to-use prompt
+  --interactive:  Prompt user for spec details, opening a vim-compatible editor for free-text answers by default
   --template:     Output empty template without interactive questions (deprecated, same as default)
 
 Flags:
   --output-only:  Output the raw prompt to stdout instead of copying it to the clipboard
   --copy:         Copy prompt to clipboard (mainly useful with --output-only)
   --interactive:  Force interactive prompts even when stdin is not a terminal
-  --vim:          Open free-text responses in a vim-compatible editor`,
+  --vim:          Open free-text responses in a vim-compatible editor
+  --inline:       Use inline multiline prompts instead of opening the editor`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runSpec,
 }
 
 func init() {
 	addFreeTextInputFlags(specCmd, &specUseVim, &specEditor)
+	addInlineTextInputFlag(specCmd, &specInline)
 	specCmd.Flags().Bool("template", false, "(deprecated) output empty template and prompt without interactive questions")
 	specCmd.Flags().Bool("interactive", false, "prompt user for spec details interactively")
 	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy prompt to clipboard even with --output-only")
@@ -87,8 +90,8 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	}
 
 	if promptOnly {
-		if specTemplateOnly || specInteractive || specUseVim || specEditor != "" {
-			return fmt.Errorf("--prompt-only cannot be used with --template, --interactive, --vim, or --editor")
+		if specTemplateOnly || specInteractive || specUseVim || specEditor != "" || specInline {
+			return fmt.Errorf("--prompt-only cannot be used with --template, --interactive, --vim, --editor, or --inline")
 		}
 		return runSpecPromptOnly(args, projectRoot, cfg, outputOnly)
 	}
@@ -137,9 +140,12 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	// determine if we should run interactive mode
 	// default is non-interactive (template mode), unless --interactive is explicitly set
 	isInteractive := specInteractive && !specTemplateOnly
-	inputCfg := newFreeTextInputConfig(specUseVim, specEditor)
-	if inputCfg.usesEditor() && !isInteractive {
-		return fmt.Errorf("--vim and --editor require --interactive")
+	inputCfg := newFreeTextInputConfig(specUseVim, specEditor, specInline, isInteractive)
+	if (specUseVim || specEditor != "" || specInline) && !isInteractive {
+		return fmt.Errorf("--vim, --editor, and --inline require --interactive")
+	}
+	if specInline && (specUseVim || specEditor != "") {
+		return fmt.Errorf("--inline cannot be used with --vim or --editor")
 	}
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
@@ -223,9 +229,7 @@ func selectFeatureForSpec(specsDir string) (*feature.Feature, error) {
 		return nil, fmt.Errorf("no brainstorms or specifications found\n\nRun 'kit brainstorm' or 'kit spec <feature>' to start a feature")
 	}
 
-	fmt.Println()
-	fmt.Println(whiteBold + "Select a feature to continue into spec:" + reset)
-	fmt.Println()
+	printSelectionHeader("Select a feature to continue into spec:")
 	for i, f := range candidates {
 		label := f.DirName
 		if document.Exists(filepath.Join(f.Path, "BRAINSTORM.md")) && !document.Exists(filepath.Join(f.Path, "SPEC.md")) {
@@ -234,7 +238,7 @@ func selectFeatureForSpec(specsDir string) (*feature.Feature, error) {
 		fmt.Printf("  [%d] %s\n", i+1, label)
 	}
 	fmt.Println()
-	fmt.Print(whiteBold + "Enter number: " + reset)
+	fmt.Print(selectionPrompt(os.Stdout))
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -266,14 +270,12 @@ func selectFeatureForSpecPromptOnly(specsDir string) (*feature.Feature, error) {
 		return nil, fmt.Errorf("no specifications available to regenerate prompts for\n\nRun 'kit spec <feature>' first")
 	}
 
-	fmt.Println()
-	fmt.Println(whiteBold + "Select a feature to regenerate the spec prompt for:" + reset)
-	fmt.Println()
+	printSelectionHeader("Select a feature to regenerate the spec prompt for:")
 	for i, f := range candidates {
 		fmt.Printf("  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
 	}
 	fmt.Println()
-	fmt.Print(whiteBold + "Enter number: " + reset)
+	fmt.Print(selectionPrompt(os.Stdout))
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -425,18 +427,16 @@ func runSpecInteractiveWithReadline(specPath, brainstormPath string, feat *featu
 	}
 	defer closeMultilineReadline(rl)
 
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "📝 Interactive Spec Builder" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println()
+	printSectionBanner("📝", "Interactive Spec Builder")
+	style := styleForStdout()
 
-	fmt.Println(dim + "Answer the following questions to generate a complete prompt for your coding agent." + reset)
-	fmt.Println(dim + "Use ←/→ arrow keys to move through your text and correct mistakes." + reset)
-	fmt.Println(dim + "Press Enter to continue; use Shift+Enter or Ctrl+J to add newlines." + reset)
-	fmt.Println(dim + "Consecutive blank lines are preserved." + reset)
-	fmt.Println(dim + "Press Enter on an empty response to skip a question." + reset)
+	fmt.Println(style.muted("Answer the following questions to generate a complete prompt for your coding agent."))
+	fmt.Println(style.muted("Use ←/→ arrow keys to move through your text and correct mistakes."))
+	fmt.Println(style.muted("Press Enter to continue; use Shift+Enter or Ctrl+J to add newlines."))
+	fmt.Println(style.muted("Consecutive blank lines are preserved."))
+	fmt.Println(style.muted("Press Enter on an empty response to skip a question."))
 	if document.Exists(brainstormPath) {
-		fmt.Println(dim + "Existing brainstorm research will also be referenced in the generated prompt." + reset)
+		fmt.Println(style.muted("Existing brainstorm research will also be referenced in the generated prompt."))
 	}
 	fmt.Println()
 
@@ -500,16 +500,14 @@ func runSpecInteractiveWithEditor(
 	inputCfg freeTextInputConfig,
 	outputOnly bool,
 ) error {
-	fmt.Println("\n" + dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println(whiteBold + "📝 Interactive Spec Builder" + reset)
-	fmt.Println(dim + "────────────────────────────────────────────────────────────────────────" + reset)
-	fmt.Println()
+	printSectionBanner("📝", "Interactive Spec Builder")
+	style := styleForStdout()
 
-	fmt.Println(dim + "Answer the following questions to generate a complete prompt for your coding agent." + reset)
-	fmt.Println(dim + "A vim-compatible editor will open for each free-text response." + reset)
-	fmt.Println(dim + "Save and quit to submit. Quit without save to skip that question." + reset)
+	fmt.Println(style.muted("Answer the following questions to generate a complete prompt for your coding agent."))
+	fmt.Printf("%s\n", style.muted(fmt.Sprintf("A %s will open for each free-text response.", inputCfg.editorLabel())))
+	fmt.Println(style.muted("Save and quit to submit. Quit without save to skip that question."))
 	if document.Exists(brainstormPath) {
-		fmt.Println(dim + "Existing brainstorm research will also be referenced in the generated prompt." + reset)
+		fmt.Println(style.muted("Existing brainstorm research will also be referenced in the generated prompt."))
 	}
 	fmt.Println()
 
@@ -731,10 +729,11 @@ This file is the single source of truth for this feature. Do not leave content o
 		return err
 	}
 	if !outputOnly {
-		fmt.Printf("\nNext steps:\n")
-		fmt.Printf("  1. Copy the prompt above and paste it to your coding agent\n")
-		fmt.Printf("  2. Work with the agent to refine the specification\n")
-		fmt.Printf("  3. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
+		printNumberedNextSteps([]string{
+			"Paste the copied prompt into your coding agent",
+			"Work with the agent to refine the specification",
+			fmt.Sprintf("Run 'kit plan %s' to create the implementation plan", featureSlug),
+		})
 	}
 
 	return nil
@@ -908,12 +907,12 @@ Once you reach ≥%d%% confidence, write a SUMMARY section at the top of SPEC.md
 
 	if !outputOnly {
 		fmt.Println()
-		fmt.Println(dim + "⚠️  IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
+		fmt.Println(dim + "⚠️ IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
 		fmt.Println(dim + "   with details about your feature. The more context you provide, the" + reset)
 		fmt.Println(dim + "   better the agent can help you write the specification." + reset)
 		fmt.Println()
-		fmt.Println(dim + "   Tip: Run 'kit spec <feature> --interactive' for an interactive" + reset)
-		fmt.Println(dim + "   experience that guides you through each section." + reset)
+		fmt.Println(dim + "   Tip: Run 'kit spec <feature> --interactive' for a guided" + reset)
+		fmt.Println(dim + "   editor-first experience, or add '--inline' for terminal multiline entry." + reset)
 		fmt.Println()
 	}
 
@@ -921,9 +920,10 @@ Once you reach ≥%d%% confidence, write a SUMMARY section at the top of SPEC.md
 		return err
 	}
 	if !outputOnly {
-		fmt.Printf("\nNext steps:\n")
-		fmt.Printf("  1. Edit %s to define the specification\n", specPath)
-		fmt.Printf("  2. Run 'kit plan %s' to create the implementation plan\n", featureSlug)
+		printNumberedNextSteps([]string{
+			fmt.Sprintf("Edit %s to define the specification", specPath),
+			fmt.Sprintf("Run 'kit plan %s' to create the implementation plan", featureSlug),
+		})
 	}
 
 	return nil

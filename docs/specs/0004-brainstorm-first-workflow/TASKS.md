@@ -17,7 +17,8 @@
 | T009 | Switch `brainstorm`/`spec`/`plan`/`tasks` to clipboard-first prompt output | done   | agent | T003, T004, T007       |
 | T010 | Extend clipboard-first prompt output to `implement` and `reflect`          | done   | agent | T004, T009             |
 | T011 | Add phase dependency inventories to brainstorm and plan workflow prompts   | done   | agent | T003, T004             |
-| T012 | Add side-effect-free `--prompt-only` regeneration to core workflow commands | done   | agent | T003, T004, T009, T010 |
+| T012 | Add side-effect-free `--prompt-only` regeneration to core workflow commands  | done   | agent | T003, T004, T009, T010 |
+| T013 | Make supported multiline free-text flows vim-default with `--inline` opt-out | done   | agent | T003, T004, T008       |
 
 ## TASK LIST
 
@@ -35,6 +36,7 @@ Use markdown checkboxes to track completion:
 - [x] T010: Extend clipboard-first prompt output to `implement` and `reflect`
 - [x] T011: Add phase dependency inventories to brainstorm and plan workflow prompts
 - [x] T012: Add side-effect-free `--prompt-only` regeneration to core workflow commands
+- [x] T013: Make supported multiline free-text flows vim-default with `--inline` opt-out
 
 ## TASK DETAILS
 
@@ -200,12 +202,29 @@ Use markdown checkboxes to track completion:
   - tests cover prompt-only regeneration and missing-artifact failures
 - **NOTES**: [PLAN-COMPONENTS], [PLAN-INTERFACES], [PLAN-TESTING]
 
+### T013
+
+- **GOAL**: make supported multiline free-text flows open a vim-compatible editor by default
+- **SCOPE**:
+  - update shared free-text input config
+  - make `kit brainstorm` thesis entry editor-default
+  - make `kit spec --interactive` answers editor-default
+  - add `--inline` as the explicit opt-out for inline-capable flows
+  - keep `kit dispatch` editor-default without adding a new inline mode
+- **ACCEPTANCE**:
+  - `kit brainstorm` thesis entry opens the editor by default and `kit brainstorm --inline` restores terminal multiline entry
+  - `kit spec --interactive` opens the editor by default and `kit spec --interactive --inline` restores terminal multiline entry
+  - contradictory flag combinations such as `--inline --vim` fail fast
+  - tests cover default editor routing and the inline opt-out
+- **NOTES**: [PLAN-COMPONENTS], [PLAN-INTERFACES], [PLAN-TESTING]
+
 ## DEPENDENCIES
 
 - T002 precedes T003 and T004 because prompt/status behavior depends on brainstorm artifact modeling
 - T005 should land before T006 so docs/help reflect the final product surface
 - T007 is the final gate after all behavior and docs are updated
 - T012 depends on the shipped core workflow prompt surfaces because regeneration reuses those prompt builders instead of introducing a parallel code path
+- T013 depends on the existing shared editor helper and brainstorm/spec free-text flows because it changes the default routing instead of introducing a new input system
 
 ## NOTES
 

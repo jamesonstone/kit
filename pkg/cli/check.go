@@ -148,7 +148,7 @@ func checkFeature(specsDir string, featureRef string) error {
 	}
 
 	if len(warnings) > 0 {
-		fmt.Printf("\n⚠️  Warnings (%d):\n", len(warnings))
+		fmt.Printf("\n⚠️ Warnings (%d):\n", len(warnings))
 		for _, w := range warnings {
 			fmt.Printf("  - %s\n", w)
 		}

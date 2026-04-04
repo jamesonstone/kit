@@ -97,14 +97,12 @@ func selectFeatureForCatchup(specsDir string) (*feature.Feature, error) {
 		return nil, fmt.Errorf("no features available to catch up on")
 	}
 
-	fmt.Println()
-	fmt.Println(whiteBold + "Select a feature to catch up on:" + reset)
-	fmt.Println()
+	printSelectionHeader("Select a feature to catch up on:")
 	for i, f := range features {
 		fmt.Printf("  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
 	}
 	fmt.Println()
-	fmt.Print(whiteBold + "Enter number: " + reset)
+	fmt.Print(selectionPrompt(os.Stdout))
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')

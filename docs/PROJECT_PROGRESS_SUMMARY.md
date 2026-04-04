@@ -17,6 +17,7 @@
 | 0011 | handoff-document-sync              | `docs/specs/0011-handoff-document-sync`              | reflect | 2026-03-31 | - `kit handoff` currently focuses on orienting a fresh ag... |
 | 0012 | implement-readiness-gate           | `docs/specs/0012-implement-readiness-gate`           | reflect | 2026-04-02 | - `kit implement` currently moves directly from document ... |
 | 0013 | scaffold-agents-safe-merge         | `docs/specs/0013-scaffold-agents-safe-merge`         | reflect | 2026-04-02 | - `kit scaffold-agents` currently has binary behavior: - ... |
+| 0014 | human-readable-terminal-output     | `docs/specs/0014-human-readable-terminal-output`     | reflect | 2026-04-04 | - Kit mixes plain text, sparse emoji usage, dense sectio... |
 
 ## PROJECT INTENT
 
@@ -132,6 +133,14 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - none
 - **POINTERS**: `docs/specs/0013-scaffold-agents-safe-merge/SPEC.md`, `docs/specs/0013-scaffold-agents-safe-merge/PLAN.md`, `docs/specs/0013-scaffold-agents-safe-merge/TASKS.md`
 
+### human-readable-terminal-output
+
+- **STATUS**: reflect
+- **INTENT**: - Kit mixes plain text, sparse emoji usage, dense section layouts, and default Cobra help formatting across its huma...
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05] Record the approved scope and exclusions in a dedicated fe...
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0014-human-readable-terminal-output/SPEC.md`, `docs/specs/0014-human-readable-terminal-output/PLAN.md`, `docs/specs/0014-human-readable-terminal-output/TASKS.md`
+
 ## LAST UPDATED
 
-2026-04-02 12:22:25 EDT
+2026-04-04 07:28:53 EDT

@@ -19,22 +19,27 @@ func outputNoActiveFeature(w io.Writer, asJSON bool, version string) error {
 		return err
 	}
 
+	style := styleForWriter(w)
+
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(w, "🤷 No active feature in progress 📭"); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintln(w); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintln(w, "Run `kit brainstorm` or `kit spec <feature-name>` to start a new feature."); err != nil {
+	if _, err := fmt.Fprintln(w, style.title("🤷", "No active feature in progress")); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
-	_, err := fmt.Fprintln(w, formatKitVersionInfo(version))
+	if _, err := fmt.Fprintln(
+		w,
+		style.muted("Run `kit brainstorm` or `kit spec <feature-name>` to start a new feature."),
+	); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintln(w); err != nil {
+		return err
+	}
+	_, err := fmt.Fprintln(w, style.muted(formatKitVersionInfo(version)))
 	return err
 }
 
@@ -48,17 +53,22 @@ func outputStatusJSON(w io.Writer, status *feature.FeatureStatus, version string
 }
 
 func outputStatusText(w io.Writer, status *feature.FeatureStatus, specsDir, version string) error {
+	style := styleForWriter(w)
+
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(w, "📊 "+whiteBold+"Active Feature: "+reset+"%s-%s\n", status.ID, status.Name); err != nil {
+	if _, err := fmt.Fprintln(w, style.title("📊", fmt.Sprintf("Active Feature: %s-%s", status.ID, status.Name))); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
 	if status.Summary != "" {
-		if _, err := fmt.Fprintf(w, "📝 "+whiteBold+"Summary: "+reset+"%s\n", status.Summary); err != nil {
+		if _, err := fmt.Fprintln(w, style.title("📝", "Summary")); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprintln(w, status.Summary); err != nil {
 			return err
 		}
 		if _, err := fmt.Fprintln(w); err != nil {
@@ -66,7 +76,7 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, specsDir, vers
 		}
 	}
 
-	if _, err := fmt.Fprintln(w, "📁 "+whiteBold+"Files:"+reset); err != nil {
+	if _, err := fmt.Fprintln(w, style.title("📁", "Files")); err != nil {
 		return err
 	}
 	for _, file := range []struct {
@@ -86,7 +96,7 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, specsDir, vers
 		return err
 	}
 
-	if _, err := fmt.Fprint(w, "📈 "+whiteBold+"Progress: "+reset); err != nil {
+	if _, err := fmt.Fprintln(w, style.title("📈", "Progress")); err != nil {
 		return err
 	}
 	if err := printProgressLine(w, status); err != nil {
@@ -100,7 +110,10 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, specsDir, vers
 	}
 
 	nextAction := determineNextAction(status)
-	if _, err := fmt.Fprintf(w, "🎯 "+whiteBold+"Next: "+reset+"%s\n", nextAction); err != nil {
+	if _, err := fmt.Fprintln(w, style.title("🎯", "Next")); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintln(w, nextAction); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprintln(w); err != nil {
@@ -109,7 +122,7 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, specsDir, vers
 	if err := printAllFeaturesProgress(w, specsDir); err != nil {
 		return err
 	}
-	_, err := fmt.Fprintln(w, formatKitVersionInfo(version))
+	_, err := fmt.Fprintln(w, style.muted(formatKitVersionInfo(version)))
 	return err
 }
 
@@ -129,7 +142,7 @@ func statusJSONPayload(
 }
 
 func formatKitVersionInfo(version string) string {
-	return fmt.Sprintf("ℹ️  Kit version: %s", version)
+	return fmt.Sprintf("ℹ️ Kit version: %s", version)
 }
 
 func printFileStatus(w io.Writer, name string, fs feature.FileStatus) error {
@@ -171,20 +184,22 @@ func marker(exists bool) string {
 }
 
 func printAllFeaturesProgress(w io.Writer, specsDir string) error {
+	style := styleForWriter(w)
+
 	features, err := feature.ListFeatures(specsDir)
 	if err != nil || len(features) == 0 {
 		return nil
 	}
-	if _, err := fmt.Fprintln(w, "🗺️  "+whiteBold+"All Features:"+reset); err != nil {
+	if _, err := fmt.Fprintln(w, style.title("🗺️", "All Features")); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(w, dim+"| Feature              | BRN  | SPEC | PLAN | TASK | IMPL | REFL | DONE |"+reset); err != nil {
+	if _, err := fmt.Fprintln(w, style.muted("| Feature              | BRN  | SPEC | PLAN | TASK | IMPL | REFL | DONE |")); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(w, dim+"|----------------------|------|------|------|------|------|------|------|"+reset); err != nil {
+	if _, err := fmt.Fprintln(w, style.muted("|----------------------|------|------|------|------|------|------|------|")); err != nil {
 		return err
 	}
 	for _, feat := range features {

@@ -2,7 +2,7 @@
 
 ## SUMMARY
 
-Introduce a real brainstorm artifact and visible brainstorm phase, then rewire CLI prompts and product docs around that model. Remove parallel workflow concepts (`oneshot`, branch automation) so Kit is consistently document-centered and planning-first. Keep the core workflow prompt commands clipboard-first by default so stdout prompt output is reserved for explicit `--output-only` usage, and add a side-effect-free `--prompt-only` regeneration path for existing features.
+Introduce a real brainstorm artifact and visible brainstorm phase, then rewire CLI prompts and product docs around that model. Remove parallel workflow concepts (`oneshot`, branch automation) so Kit is consistently document-centered and planning-first. Keep the core workflow prompt commands clipboard-first by default so stdout prompt output is reserved for explicit `--output-only` usage, add a side-effect-free `--prompt-only` regeneration path for existing features, and make supported multiline free-text flows open a vim-compatible editor by default.
 
 ## APPROACH
 
@@ -12,8 +12,9 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 4. thread `BRAINSTORM.md` through downstream prompts as optional upstream context and phase dependency source
 5. keep prompt output behavior command-scoped by adding a clipboard-first helper for the core workflow commands without changing support utilities
 6. add a shared `--prompt-only` flag for feature-scoped prompt commands and branch artifact-writing commands into side-effect-free regeneration mode
-7. remove `kit oneshot` and git branch automation from code, config, help, and docs
-8. add tests for prompt generation, clipboard-first output, prompt-only regeneration, and phase detection, then run full verification
+7. make supported multiline free-text prompts editor-default and add an explicit `--inline` opt-out where inline entry already exists
+8. remove `kit oneshot` and git branch automation from code, config, help, and docs
+9. add tests for prompt generation, clipboard-first output, prompt-only regeneration, editor-default free-text flows, and phase detection, then run full verification
 
 ## COMPONENTS
 
@@ -34,6 +35,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - `pkg/cli/editor_input.go`
   - shared editor-backed free-text input
   - `--vim` and `--editor=vim` flag handling
+  - `--inline` opt-out flag handling for inline-capable flows
   - pre-editor instruction screen
   - any-key confirmation before editor launch
   - editor launch, cancel, and submit semantics
@@ -78,8 +80,9 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - default interactive mode
   - prompt for feature name
   - prompt for multiline thesis
-  - allow `Shift+Enter` and `Ctrl+J` to insert newlines without submit
-  - allow `--vim` and `--editor=vim` to capture the thesis in a vim-compatible editor
+  - default the multiline thesis to a vim-compatible editor
+  - allow `--inline` to switch the thesis back to terminal multiline entry with `Shift+Enter` and `Ctrl+J`
+  - allow `--vim` and `--editor=vim` to capture the thesis in a vim-compatible editor explicitly
   - create or reuse `docs/specs/<feature>/BRAINSTORM.md`
   - output a `/plan` prompt for a coding agent
   - require `BRAINSTORM.md` `## DEPENDENCIES` to track the supporting inputs used during the brainstorm phase
@@ -95,7 +98,8 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - match `kit brainstorm` clipboard-first default output semantics
   - keep `--copy` available as an explicit override for `--output-only`
 - `kit spec --interactive`
-  - use the same multiline free-text input behavior as `kit brainstorm`
+  - use the same editor-default multiline free-text behavior as `kit brainstorm`
+  - support `--inline` to switch per-question responses back to terminal multiline entry
   - support editor-backed per-question responses via `--vim` and `--editor=vim`
 - `kit status`
   - display brainstorm-only features correctly
@@ -126,6 +130,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - unit tests for prompt-only regeneration, including existing-feature selectors and missing-artifact failures
 - unit tests for multiline input translation, including `Shift+Enter` escape handling and blank-line preservation hooks
 - unit tests for editor resolution and editor-backed submit/cancel semantics helpers
+- unit tests for default editor routing and `--inline` opt-out behavior on brainstorm/spec interactive flows
 - unit tests for pre-editor instruction rendering and any-key launch gating
 - unit tests for brainstorm-aware next-step/status behavior
 - repository-wide search verification for removed `oneshot` and branching references

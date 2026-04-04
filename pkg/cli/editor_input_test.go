@@ -17,7 +17,7 @@ func TestResolveEditorCommand_UsesPreferredVimEditorForVimFlag(t *testing.T) {
 	})
 	defer restore()
 
-	got, err := newFreeTextInputConfig(true, "").resolveEditorCommand()
+	got, err := newFreeTextInputConfig(true, "", false, false).resolveEditorCommand()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -34,7 +34,7 @@ func TestResolveEditorCommand_UsesVimAliasFromEditorFlag(t *testing.T) {
 	})
 	defer restore()
 
-	got, err := newFreeTextInputConfig(false, "vim").resolveEditorCommand()
+	got, err := newFreeTextInputConfig(false, "vim", false, false).resolveEditorCommand()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -51,7 +51,7 @@ func TestResolveEditorCommand_ExplicitEditorOverridesVimFlag(t *testing.T) {
 	})
 	defer restore()
 
-	got, err := newFreeTextInputConfig(true, "nvim").resolveEditorCommand()
+	got, err := newFreeTextInputConfig(true, "nvim", false, false).resolveEditorCommand()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -66,8 +66,57 @@ func TestResolveEditorCommand_ErrorsWhenNoVimEditorExists(t *testing.T) {
 	restore := stubLookPath(map[string]string{})
 	defer restore()
 
-	if _, err := newFreeTextInputConfig(true, "").resolveEditorCommand(); err == nil {
+	if _, err := newFreeTextInputConfig(true, "", false, false).resolveEditorCommand(); err == nil {
 		t.Fatalf("expected error when no vim-compatible editor is available")
+	}
+}
+
+func TestResolveEditorCommand_UsesDefaultEditorWhenConfigured(t *testing.T) {
+	restore := stubLookPath(map[string]string{
+		"nvim": "/usr/local/bin/nvim",
+	})
+	defer restore()
+
+	got, err := newFreeTextInputConfig(false, "", false, true).resolveEditorCommand()
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	want := []string{"/usr/local/bin/nvim"}
+	if !stdreflect.DeepEqual(got, want) {
+		t.Fatalf("expected %v, got %v", want, got)
+	}
+}
+
+func TestFreeTextInputConfig_InlineOverridesDefaultEditor(t *testing.T) {
+	if newFreeTextInputConfig(false, "", true, true).usesEditor() {
+		t.Fatal("expected --inline to disable editor mode")
+	}
+}
+
+func TestInlineFlagRegisteredOnlyOnInlineCapableCommands(t *testing.T) {
+	brainstorm, _, err := rootCmd.Find([]string{"brainstorm"})
+	if err != nil {
+		t.Fatalf("rootCmd.Find(brainstorm) error = %v", err)
+	}
+	if brainstorm.Flags().Lookup("inline") == nil {
+		t.Fatal("expected brainstorm to expose --inline")
+	}
+
+	spec, _, err := rootCmd.Find([]string{"spec"})
+	if err != nil {
+		t.Fatalf("rootCmd.Find(spec) error = %v", err)
+	}
+	if spec.Flags().Lookup("inline") == nil {
+		t.Fatal("expected spec to expose --inline")
+	}
+
+	dispatch, _, err := rootCmd.Find([]string{"dispatch"})
+	if err != nil {
+		t.Fatalf("rootCmd.Find(dispatch) error = %v", err)
+	}
+	if dispatch.Flags().Lookup("inline") != nil {
+		t.Fatal("expected dispatch not to expose --inline")
 	}
 }
 
@@ -102,7 +151,7 @@ func TestPrintEditorLaunchInstructions(t *testing.T) {
 
 	err := printEditorLaunchInstructions(
 		&output,
-		newFreeTextInputConfig(true, ""),
+		newFreeTextInputConfig(true, "", false, false),
 		"dispatch tasks",
 		"cancel",
 	)
@@ -144,7 +193,11 @@ func TestReadEditorTextWaitsBeforeLaunchingEditor(t *testing.T) {
 		return "captured text", true, nil
 	}
 
-	got, err := readEditorText(newFreeTextInputConfig(true, ""), "dispatch tasks", false)
+	got, err := readEditorText(
+		newFreeTextInputConfig(true, "", false, false),
+		"dispatch tasks",
+		false,
+	)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

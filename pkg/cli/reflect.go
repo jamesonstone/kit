@@ -110,14 +110,12 @@ func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
 		return nil, fmt.Errorf("no features ready for reflection (need SPEC.md + PLAN.md + TASKS.md)\n\nRun 'kit tasks <feature>' to create tasks first")
 	}
 
-	fmt.Println()
-	fmt.Println(whiteBold + "Select a feature to reflect on:" + reset)
-	fmt.Println()
+	printSelectionHeader("Select a feature to reflect on:")
 	for i, f := range candidates {
 		fmt.Printf("  [%d] %s\n", i+1, f.DirName)
 	}
 	fmt.Println()
-	fmt.Print(whiteBold + "Enter number: " + reset)
+	fmt.Print(selectionPrompt(os.Stdout))
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')

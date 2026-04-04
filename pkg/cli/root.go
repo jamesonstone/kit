@@ -62,26 +62,26 @@ func banner() string {
 // flowDiagram returns the colorized artifact pipeline flow diagram.
 func flowDiagram() string {
 	lines := []string{
-		whiteBold + "Project Initialization" + reset + dim + " (run once, update as needed):" + reset,
+		whiteBold + "🧱 Project Initialization" + reset + dim + " (run once, update as needed):" + reset,
 		gray + "┌──────────────┐" + reset,
 		gray + "│ " + constitution + "Constitution" + reset + gray + " │  ← " + reset + dim + "global constraints, principles, priors" + reset,
 		gray + "└──────────────┘" + reset,
 		"",
-		whiteBold + "Optional Research Step:" + reset,
+		whiteBold + "🧠 Optional Research Step" + reset + dim + ":" + reset,
 		gray + "  ┌────────────┐" + reset,
 		gray + "  │ " + brainstorm + "Brainstorm" + reset + gray + " │  ← " + reset + dim + "codebase research, framing, options, affected files" + reset,
 		gray + "  └─────┬──────┘" + reset,
 		gray + "        │" + reset,
 		gray + "        ▼" + reset,
 		"",
-		whiteBold + "Core Development Loop:" + reset,
+		whiteBold + "🔁 Core Development Loop" + reset + dim + ":" + reset,
 		gray + "┌───────────────┐    ┌──────┐    ┌───────┐    ┌────────────────┐    ┌────────────┐" + reset,
 		gray + "│ " + spec + "Specification" + reset + gray + " │ ─▶ │ " + plan + "Plan" + reset + gray + " │ ─▶ │ " + tasks + "Tasks" + reset + gray + " │ ─▶ │ " + implement + "Implementation" + reset + gray + " │ ─▶ │ " + reflect + "Reflection" + reset + gray + " │ ─┐" + reset,
 		gray + "└───────────────┘    └──────┘    └───────┘    └────────────────┘    └────────────┘  │" + reset,
 		gray + "       ▲                                                                            │" + reset,
 		gray + "       └────────────────────────────────────────────────────────────────────────────┘" + reset,
 		"",
-		whiteBold + "Artifact Pipeline:" + reset,
+		whiteBold + "🗂️ Artifact Pipeline" + reset + dim + ":" + reset,
 		"  1. " + constitution + "Constitution" + reset + dim + "   — strategy, patterns, long-term vision (kept updated)" + reset,
 		"  2. " + brainstorm + "Brainstorm" + reset + dim + "     — optional research and framing before the spec" + reset,
 		"  3. " + spec + "Specification" + reset + dim + "  — what is being built and why" + reset,
@@ -96,7 +96,7 @@ func flowDiagram() string {
 
 var rootCmd = &cobra.Command{
 	Use:   "kit",
-	Short: "Kit is a document-centered CLI for spec-driven development",
+	Short: "🧰 Kit is a document-centered CLI for spec-driven development",
 	Long: banner() + `
 Kit helps teams reach a high-confidence understanding of a problem
 and its solution before implementation, using open standards and
@@ -166,6 +166,7 @@ func init() {
 			}
 			return iOrder < jOrder
 		})
+		cmd.SetHelpTemplate(helpTemplate(terminalWriterCheck(cmd.OutOrStdout())))
 		defaultHelp(cmd, args)
 	})
 
@@ -183,6 +184,7 @@ func init() {
 			}
 			return iOrder < jOrder
 		})
+		cmd.SetUsageTemplate(usageTemplate(terminalWriterCheck(cmd.OutOrStdout())))
 		return defaultUsage(cmd)
 	})
 }
@@ -249,18 +251,25 @@ func writePromptWithClipboardDefault(prompt string, outputOnly, copy bool) error
 		return nil
 	}
 
-	fmt.Println("Copied agent instructions to the clipboard.")
+	fmt.Println(styleForStdout().clipboardAcknowledgement())
 	return nil
 }
 
 func printWorkflowInstructions(currentStep string, nextSteps []string) {
-	fmt.Println(whiteBold + "Workflow" + reset)
-	fmt.Println(dim + "Pipeline: [optional brainstorm] -> spec -> plan -> tasks -> implement -> reflect" + reset)
-	fmt.Printf("Current step: %s\n", currentStep)
+	style := styleForStdout()
+
+	fmt.Println(style.title("🧭", "Workflow"))
+	if divider := style.sectionDivider(); divider != "" {
+		fmt.Println(divider)
+	}
+	fmt.Println(style.muted("Pipeline: [optional brainstorm] -> spec -> plan -> tasks -> implement -> reflect"))
+	fmt.Println()
+	fmt.Println(style.currentStepLine(currentStep))
 	if len(nextSteps) > 0 {
-		fmt.Println("Next steps:")
+		fmt.Println()
+		fmt.Println(style.nextStepsTitle())
 		for _, step := range nextSteps {
-			fmt.Printf("  - %s\n", step)
+			fmt.Printf("  %s\n", style.bullet(step))
 		}
 	}
 	fmt.Println()

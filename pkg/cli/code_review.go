@@ -42,9 +42,10 @@ func runCodeReview(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if !outputOnly {
+		style := styleForStdout()
 		fmt.Println()
-		fmt.Println(whiteBold + "Optional: Add specific concerns or goals" + reset)
-		fmt.Println(dim + "After pasting the prompt above, consider adding a follow-up message:" + reset)
+		fmt.Println(style.title("🔍", "Optional: Add specific concerns or goals"))
+		fmt.Println(style.muted("After pasting the copied prompt, consider adding a follow-up message:"))
 		fmt.Println()
 		fmt.Println("  \"I have the following specific concerns for this review:")
 		fmt.Println("    - [e.g., performance impact of the new caching layer]")

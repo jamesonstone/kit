@@ -122,14 +122,12 @@ func selectFeatureForImplementation(specsDir string) (*feature.Feature, error) {
 		return nil, fmt.Errorf("no features ready for implementation (need SPEC.md + PLAN.md + TASKS.md)\n\nRun 'kit tasks <feature>' to create tasks first")
 	}
 
-	fmt.Println()
-	fmt.Println(whiteBold + "Select a feature to implement:" + reset)
-	fmt.Println()
+	printSelectionHeader("Select a feature to implement:")
 	for i, f := range candidates {
 		fmt.Printf("  [%d] %s\n", i+1, f.DirName)
 	}
 	fmt.Println()
-	fmt.Print(whiteBold + "Enter number: " + reset)
+	fmt.Print(selectionPrompt(os.Stdout))
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -255,36 +253,36 @@ Then read its acceptance criteria and implement it.
 	return sb.String()
 }
 
-
 func printImplementationContext(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress) {
 	hasBrainstorm := document.Exists(brainstormPath)
+	style := styleForStdout()
 
 	fmt.Println()
-	fmt.Println(dim + "Implementation Context: " + reset + feat.DirName)
+	fmt.Println(style.title("🛠️", fmt.Sprintf("Implementation Context: %s", feat.DirName)))
 	fmt.Println()
 
 	if summary != "" {
-		fmt.Println(whiteBold + "Feature Summary:" + reset)
+		fmt.Println(style.title("📝", "Feature Summary"))
 		fmt.Println(summary)
 		fmt.Println()
 	} else {
-		fmt.Println(whiteBold + "Feature Summary:" + reset)
+		fmt.Println(style.title("📝", "Feature Summary"))
 		fmt.Println("(Read SPEC.md for feature description)")
 		fmt.Println()
 	}
 
 	if progress.HasTasks() {
-		fmt.Printf(whiteBold+"Progress: "+reset+"%d/%d tasks complete\n", progress.Complete, progress.Total)
+		fmt.Println(style.title("📈", fmt.Sprintf("Progress: %d/%d tasks complete", progress.Complete, progress.Total)))
 	} else {
-		fmt.Println(whiteBold + "Progress: " + reset + "Tasks defined, ready to begin")
+		fmt.Println(style.title("📈", "Progress: Tasks defined, ready to begin"))
 	}
 	fmt.Println()
 
-	fmt.Println(whiteBold + "Document Reference:" + reset)
+	fmt.Println(style.title("📚", "Document Reference"))
 	printImplementDocumentReferenceTable()
 	fmt.Println()
 
-	fmt.Println(whiteBold + "File Locations:" + reset)
+	fmt.Println(style.title("📍", "File Locations"))
 	if hasBrainstorm {
 		fmt.Printf("  • BRAINSTORM: %s\n", brainstormPath)
 	}

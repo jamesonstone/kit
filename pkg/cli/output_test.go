@@ -72,7 +72,7 @@ func TestWritePromptWithClipboardDefault_CopiesAndAcknowledges(t *testing.T) {
 		t.Fatalf("expected clipboard copy %q, got %q", "prompt text", copied)
 	}
 
-	if output != "Copied agent instructions to the clipboard.\n" {
+	if output != "Copied the prepared text to the clipboard.\n" {
 		t.Fatalf("unexpected stdout: %q", output)
 	}
 }
@@ -156,7 +156,23 @@ func TestOutputPromptWithoutSubagentsWithClipboardDefault_SkipsSubagentSuffix(t 
 		t.Fatalf("expected dispatch-style helper to skip subagent suffix, got %q", copied)
 	}
 
-	if output != "Copied agent instructions to the clipboard.\n" {
+	if output != "Copied the prepared text to the clipboard.\n" {
 		t.Fatalf("unexpected stdout: %q", output)
+	}
+}
+
+func TestHelpTemplateIncludesHumanReadableHeadings(t *testing.T) {
+	got := helpTemplate(true)
+
+	checks := []string{
+		"🚀 Usage",
+		"🧰 Available Commands",
+		"⚙️ Flags",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(got, check) {
+			t.Fatalf("expected help template to contain %q", check)
+		}
 	}
 }

@@ -13,6 +13,8 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - create or reuse `docs/specs/<feature>/` from `kit brainstorm`
 - create `BRAINSTORM.md` as an optional first-class feature artifact
 - make `kit brainstorm` interactive by default with two inputs: feature name and user thesis
+- make multiline free-text entry default to a vim-compatible editor for interactive flows that already support editor-backed input
+- add `--inline` as the explicit opt-out for interactive multiline flows that also support inline entry
 - emit a planning-only prompt that begins with `/plan`
 - require the coding agent to use numbered lists, ask clarifying questions in batches of up to 10, include a recommended default/proposed solution/assumption for every question, accept `yes` / `y` as full-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` as numbered approval, support `no` / `n` overrides, show percentage-understanding progress after each batch, and continue until the specification is precise enough for a production-quality solution
 - require the coding agent to persist findings to `BRAINSTORM.md`
@@ -54,9 +56,12 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - `kit brainstorm` must create or reuse the numbered feature directory under `docs/specs/`
 - `kit brainstorm` must create `BRAINSTORM.md` if missing and keep it in the feature directory
 - `kit brainstorm` must ask for a multiline issue/feature thesis in interactive mode
-- free-text interactive prompts must accept `Shift+Enter` for newline insertion without submitting
-- free-text interactive prompts must preserve consecutive blank lines within submitted content
-- free-text interactive prompts must support `--vim` and `--editor=vim` to open a vim-compatible editor
+- `kit brainstorm` multiline thesis entry must open a vim-compatible editor by default
+- `kit spec --interactive` free-text answers must open a vim-compatible editor by default
+- interactive multiline free-text prompts with inline support must accept `--inline` to force terminal multiline entry
+- free-text interactive prompts must accept `Shift+Enter` for newline insertion without submitting when `--inline` is used
+- free-text interactive prompts must preserve consecutive blank lines within submitted content when `--inline` is used
+- free-text interactive prompts must support `--vim` and `--editor=vim` to open a vim-compatible editor explicitly
 - editor-backed free-text prompts must show a short step-specific instruction screen before opening the editor
 - editor-backed free-text prompts must wait for any key press before opening the editor
 - in editor mode, save+quit must submit and quit-without-save must cancel or skip
@@ -85,7 +90,8 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 ## ACCEPTANCE
 
 - running `kit brainstorm` interactively creates `docs/specs/<n>-<slug>/BRAINSTORM.md`
-- `kit brainstorm` and `kit spec --interactive` allow multiline responses with `Shift+Enter` without accidental submit
+- `kit brainstorm` and `kit spec --interactive` open vim-compatible editors by default for multiline free-text responses
+- `kit brainstorm --inline` and `kit spec --interactive --inline` allow multiline responses with `Shift+Enter` without accidental submit
 - `kit brainstorm --vim` and `kit spec --interactive --vim` open free-text responses in a vim-compatible editor
 - `kit brainstorm --vim` and `kit spec --interactive --vim` first show step-specific instructions and wait for any key before opening the editor
 - the brainstorm prompt begins with `/plan`
@@ -115,6 +121,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - user enters an empty thesis or interrupts interactive input
 - user enters multiple consecutive blank lines in a free-text response
 - user exits the editor without saving a required response
+- user passes `--inline` together with `--vim` or `--editor`
 - user passes `--output-only --copy` and expects both raw stdout and clipboard output
 - user passes `kit brainstorm --output <path>` with and without `--output-only`
 - user passes `kit brainstorm --prompt-only` with no feature argument and expects an existing-feature selector instead of new-feature creation

@@ -61,7 +61,7 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 
 	rawInput, inputSource, err := loadDispatchInput(
 		dispatchFile,
-		newFreeTextInputConfig(true, dispatchEditor),
+		newFreeTextInputConfig(true, dispatchEditor, false, true),
 	)
 	if err != nil {
 		return err

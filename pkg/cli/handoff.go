@@ -106,15 +106,13 @@ func selectFeatureForHandoffWithIO(
 		return nil, true, nil
 	}
 
-	fmt.Fprintln(output)
-	fmt.Fprintln(output, whiteBold+"Select a feature to hand off:"+reset)
-	fmt.Fprintln(output)
+	printSelectionHeaderTo(output, "Select a feature to hand off:")
 	for i, f := range features {
 		fmt.Fprintf(output, "  [%d] %s (%s)\n", i+1, f.DirName, f.Phase)
 	}
 	fmt.Fprintln(output, "  [0] no specific feature (project-wide handoff)")
 	fmt.Fprintln(output)
-	fmt.Fprint(output, whiteBold+"Enter number: "+reset)
+	fmt.Fprint(output, selectionPrompt(output))
 
 	reader := bufio.NewReader(input)
 	selection, err := reader.ReadString('\n')
