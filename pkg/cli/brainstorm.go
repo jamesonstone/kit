@@ -108,6 +108,7 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	feature.ApplyLifecycleState(feat, cfg)
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	if !document.Exists(brainstormPath) {
@@ -126,6 +127,13 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 			fmt.Printf("📁 Created feature directory: %s\n", feat.DirName)
 		} else {
 			fmt.Printf("📁 Using existing feature: %s\n", feat.DirName)
+		}
+	}
+
+	wasPaused := feat.Paused
+	if !created {
+		if err := clearPausedForExplicitResume(projectRoot, cfg, feat); err != nil {
+			return err
 		}
 	}
 
@@ -154,6 +162,9 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	}
 
 	if !outputOnly {
+		if wasPaused {
+			fmt.Println("  ✓ Cleared paused state")
+		}
 		printWorkflowInstructions("brainstorm (optional pre-spec)", []string{
 			fmt.Sprintf("review and refine %s", brainstormPath),
 			fmt.Sprintf("run kit spec %s when the brainstorm is complete", feat.Slug),
@@ -177,7 +188,7 @@ func outputExistingBrainstormPrompt(args []string, projectRoot string, cfg *conf
 	)
 
 	if len(args) == 1 {
-		feat, err = feature.Resolve(specsDir, args[0])
+		feat, err = loadFeatureWithState(specsDir, cfg, args[0])
 		if err != nil {
 			return fmt.Errorf("feature '%s' not found: %w", args[0], err)
 		}
@@ -186,6 +197,7 @@ func outputExistingBrainstormPrompt(args []string, projectRoot string, cfg *conf
 		if err != nil {
 			return err
 		}
+		feature.ApplyLifecycleState(feat, cfg)
 	}
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")

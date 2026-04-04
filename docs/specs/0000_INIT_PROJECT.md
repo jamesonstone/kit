@@ -287,14 +287,15 @@ Purpose:
 
 **FEATURE PROGRESS TABLE**
 
-| ID  | FEATURE | PATH | PHASE | CREATED | SUMMARY |
-| --- | ------- | ---- | ----- | ------- | ------- |
+| ID  | FEATURE | PATH | PHASE | PAUSED | CREATED | SUMMARY |
+| --- | ------- | ---- | ----- | ------ | ------- | ------- |
 
 Rules:
 
 - one row per feature
 - sorted by ID ascending
-- `PHASE` ∈ `spec | plan | tasks | implement`
+- `PHASE` ∈ `brainstorm | spec | plan | tasks | implement | reflect | complete`
+- `PAUSED` ∈ `yes | no`
 - `SUMMARY` ≤ 120 characters
 - table is the authoritative project state
 
@@ -360,8 +361,12 @@ All Kit commands traverse upward to find `.kit.yaml` and use its location as the
 ```yaml
 goal_percentage: 95
 specs_dir: docs/specs
+skills_dir: .agents/skills
 constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false # if true, kit plan/tasks create missing prerequisites
+feature_state:
+  0001-feat-name:
+    paused: false
 ```
 
 ### 7.2 Agents
@@ -470,6 +475,28 @@ Flags:
 - require the coding agent to challenge contradictions, ambiguity, hidden assumptions, missing edge cases, missing task coverage, and scope creep before coding
 - if the readiness gate fails, require the agent to update `SPEC.md`, `PLAN.md`, and/or `TASKS.md` first, refresh `PROJECT_PROGRESS_SUMMARY.md` when needed, then rerun the gate
 - only after the readiness gate passes should the agent begin with the first incomplete task in `TASKS.md`
+- if the target feature is paused, clear the paused flag before continuing
+
+---
+
+#### `kit pause [feature]`
+
+- resolve the target feature using existing feature reference rules
+- without a feature argument, show an interactive selector of non-complete features
+- persist paused state in `.kit.yaml` without changing the feature's underlying phase
+- reject complete features with an actionable error
+- update `PROJECT_PROGRESS_SUMMARY.md`
+
+---
+
+#### `kit remove [feature]`
+
+- resolve the target feature using existing feature reference rules
+- without a feature argument, show an interactive selector of existing features
+- require explicit confirmation before deletion unless `--yes` is set
+- delete the feature directory and all files under it
+- remove any persisted lifecycle state for the deleted feature from `.kit.yaml`
+- update `PROJECT_PROGRESS_SUMMARY.md`
 
 ---
 
@@ -489,7 +516,8 @@ Behavior:
   - feature name
   - directory path
   - short summary
-  - current artifact phase (spec | plan | tasks | implement)
+  - current artifact phase (`brainstorm | spec | plan | tasks | implement | reflect | complete`)
+  - paused state
   - spec creation date
 
 `PROJECT_PROGRESS_SUMMARY.md` is intended to be:
@@ -603,7 +631,7 @@ Behavior:
 
 - without feature argument: shows an interactive numbered selector of all features under `docs/specs/` plus `0` for no specific feature
 - selecting `0`: outputs project-level context including:
-  - documentation inventory and current development status across active features
+  - documentation inventory and current development status across active non-paused features
   - instructions to reconcile stale docs before handoff
   - dependency-inventory verification for touched feature docs
 - with feature argument: outputs feature-specific context including:

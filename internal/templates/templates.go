@@ -273,8 +273,8 @@ const ProjectProgressSummary = `# PROJECT PROGRESS SUMMARY
 
 ## FEATURE PROGRESS TABLE
 
-| ID | FEATURE | PATH | PHASE | CREATED | SUMMARY |
-| -- | ------- | ---- | ----- | ------- | ------- |
+| ID | FEATURE | PATH | PHASE | PAUSED | CREATED | SUMMARY |
+| -- | ------- | ---- | ----- | ------ | ------- | ------- |
 
 ## PROJECT INTENT
 
@@ -725,6 +725,7 @@ func InstructionFile(path string) string {
 const FeatureSummaryTemplate = `### {{.FeatureName}}
 
 - **STATUS**: {{.Phase}}
+- **PAUSED**: {{.Paused}}
 - **INTENT**: {{.Intent}}
 - **APPROACH**: {{.Approach}}
 - **OPEN ITEMS**: {{.OpenItems}}

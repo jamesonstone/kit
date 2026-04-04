@@ -80,10 +80,11 @@ func runTasks(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		feature.ApplyLifecycleState(feat, cfg)
 	} else {
 		// direct mode: resolve feature by name
 		featureRef := args[0]
-		feat, err = feature.Resolve(specsDir, featureRef)
+		feat, err = loadFeatureWithState(specsDir, cfg, featureRef)
 		if err != nil {
 			return fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first to create it", featureRef, featureRef)
 		}
@@ -133,6 +134,11 @@ func runTasks(cmd *cobra.Command, args []string) error {
 		fmt.Println("  ✓ TASKS.md already exists")
 	}
 
+	wasPaused := feat.Paused
+	if err := clearPausedForExplicitResume(projectRoot, cfg, feat); err != nil {
+		return err
+	}
+
 	// update PROJECT_PROGRESS_SUMMARY.md
 	if err := rollup.Update(projectRoot, cfg); err != nil {
 		if !outputOnly {
@@ -144,6 +150,9 @@ func runTasks(cmd *cobra.Command, args []string) error {
 
 	if !outputOnly {
 		fmt.Printf("\n✅ Tasks for '%s' ready!\n", feat.Slug)
+		if wasPaused {
+			fmt.Println("  ✓ Cleared paused state")
+		}
 		printNumberedNextSteps([]string{
 			fmt.Sprintf("Edit %s to define atomic tasks", tasksPath),
 			"Link tasks to plan items using [PLAN-XX] syntax",
@@ -167,8 +176,9 @@ func runTasksPromptOnly(args []string, projectRoot string, cfg *config.Config, o
 		if err != nil {
 			return err
 		}
+		feature.ApplyLifecycleState(feat, cfg)
 	} else {
-		feat, err = feature.Resolve(specsDir, args[0])
+		feat, err = loadFeatureWithState(specsDir, cfg, args[0])
 		if err != nil {
 			return fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first to create it", args[0], args[0])
 		}

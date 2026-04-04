@@ -103,8 +103,14 @@ kit catchup my-feature
 # inspect progress at any time
 kit status
 
+# pause a feature without losing its phase
+kit pause my-feature
+
 # mark all eligible active features complete
 kit complete --all
+
+# remove a feature and its lifecycle state
+kit remove my-feature --yes
 ```
 
 ## 🧰 Commands
@@ -126,8 +132,10 @@ kit complete --all
 | `kit tasks <feature>`      | Create or open a task list                                                                |
 | `kit implement [feature]`  | Run the implementation readiness gate and output implementation context for coding agents |
 | `kit reflect [feature]`    | Output reflection/verification instructions                                               |
+| `kit pause [feature]`      | Pause an in-flight feature without changing its underlying phase                          |
 | `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features                |
-| `kit status`               | Show current feature status; supports `--json` and includes the running Kit version       |
+| `kit status`               | Show current feature status, including paused state; supports `--json`                    |
+| `kit remove [feature]`     | Remove a feature directory and its persisted lifecycle state                              |
 
 ### ✅ Verification & State
 
@@ -169,6 +177,10 @@ both.
 In interactive terminals, Kit also uses clearer section spacing and semantic
 emoji markers for help, status, selectors, and other human-readable guidance.
 Raw `--output-only` payloads and `--json` output stay unchanged.
+
+Lifecycle views now surface paused work explicitly. `kit status` keeps the
+latest feature in focus even when it is paused, while `PROJECT_PROGRESS_SUMMARY.md`
+and the all-features status table expose paused state in a dedicated column.
 
 ### ♻️ Prompt Regeneration
 

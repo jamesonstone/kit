@@ -20,8 +20,29 @@ func TestEligibleFeaturesForCompletion(t *testing.T) {
 	createFeatureTasks(t, specsDir, "0001-alpha", "- [x] done\n")
 	createFeatureTasks(t, specsDir, "0002-beta", "- [x] done\n\n"+feature.ReflectionCompleteMarker+"\n")
 	createFeatureFile(t, specsDir, "0003-gamma", "SPEC.md", "# SPEC\n")
+	cfg := config.Default()
 
-	candidates, err := eligibleFeaturesForCompletion(specsDir)
+	candidates, err := eligibleFeaturesForCompletion(specsDir, cfg)
+	if err != nil {
+		t.Fatalf("eligibleFeaturesForCompletion() error = %v", err)
+	}
+	if len(candidates) != 1 || candidates[0].Slug != "alpha" {
+		t.Fatalf("eligibleFeaturesForCompletion() = %+v, want only alpha", candidates)
+	}
+}
+
+func TestEligibleFeaturesForCompletion_ExcludesPaused(t *testing.T) {
+	specsDir := filepath.Join(t.TempDir(), "docs", "specs")
+	if err := os.MkdirAll(specsDir, 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+
+	createFeatureTasks(t, specsDir, "0001-alpha", "- [x] done\n")
+	createFeatureTasks(t, specsDir, "0002-beta", "- [x] done\n")
+	cfg := config.Default()
+	cfg.SetFeaturePaused("0002-beta", true)
+
+	candidates, err := eligibleFeaturesForCompletion(specsDir, cfg)
 	if err != nil {
 		t.Fatalf("eligibleFeaturesForCompletion() error = %v", err)
 	}

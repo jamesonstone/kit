@@ -23,6 +23,7 @@ type Feature struct {
 	Path      string
 	CreatedAt time.Time
 	Phase     Phase
+	Paused    bool
 }
 
 // Phase represents the current phase of a feature in the artifact pipeline.

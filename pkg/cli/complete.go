@@ -61,7 +61,7 @@ func runComplete(cmd *cobra.Command, args []string) error {
 	specsDir := cfg.SpecsPath(projectRoot)
 
 	if completeAll {
-		candidates, err := eligibleFeaturesForCompletion(specsDir)
+		candidates, err := eligibleFeaturesForCompletion(specsDir, cfg)
 		if err != nil {
 			return err
 		}
@@ -77,12 +77,12 @@ func runComplete(cmd *cobra.Command, args []string) error {
 
 	var feat *feature.Feature
 	if len(args) == 0 {
-		feat, err = selectFeatureForCompletion(specsDir)
+		feat, err = selectFeatureForCompletion(specsDir, cfg)
 		if err != nil {
 			return err
 		}
 	} else {
-		feat, err = feature.Resolve(specsDir, args[0])
+		feat, err = loadFeatureWithState(specsDir, cfg, args[0])
 		if err != nil {
 			return fmt.Errorf("feature '%s' not found", args[0])
 		}
@@ -92,6 +92,15 @@ func runComplete(cmd *cobra.Command, args []string) error {
 	if feature.DeterminePhaseFromTasks(tasksPath) == feature.PhaseComplete {
 		_, err := fmt.Fprintf(cmd.OutOrStdout(), "✓ Feature '%s' is already marked complete\n", feat.Slug)
 		return err
+	}
+
+	if feat.Paused {
+		if _, err := validateFeatureCanComplete(feat, completeForce); err != nil {
+			return err
+		}
+		if err := clearPausedForExplicitResume(projectRoot, cfg, feat); err != nil {
+			return err
+		}
 	}
 
 	return markFeaturesComplete(
@@ -106,8 +115,8 @@ func runComplete(cmd *cobra.Command, args []string) error {
 
 // selectFeatureForCompletion shows an interactive numbered list of features
 // that have TASKS.md and are not yet marked complete.
-func selectFeatureForCompletion(specsDir string) (*feature.Feature, error) {
-	candidates, err := eligibleFeaturesForCompletion(specsDir)
+func selectFeatureForCompletion(specsDir string, cfg *config.Config) (*feature.Feature, error) {
+	candidates, err := eligibleFeaturesForCompletion(specsDir, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -132,14 +141,17 @@ func selectFeatureForCompletion(specsDir string) (*feature.Feature, error) {
 	return &selected, nil
 }
 
-func eligibleFeaturesForCompletion(specsDir string) ([]feature.Feature, error) {
-	features, err := feature.ListFeatures(specsDir)
+func eligibleFeaturesForCompletion(specsDir string, cfg *config.Config) ([]feature.Feature, error) {
+	features, err := feature.ListFeaturesWithState(specsDir, cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	var candidates []feature.Feature
 	for _, f := range features {
+		if f.Paused {
+			continue
+		}
 		tasksPath := filepath.Join(f.Path, "TASKS.md")
 		if _, err := os.Stat(tasksPath); err != nil {
 			continue

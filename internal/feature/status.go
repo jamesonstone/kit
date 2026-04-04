@@ -123,6 +123,7 @@ type FeatureStatus struct {
 	Path     string                `json:"path"`
 	Summary  string                `json:"summary,omitempty"`
 	Phase    Phase                 `json:"phase"`
+	Paused   bool                  `json:"paused"`
 	Files    map[string]FileStatus `json:"files"`
 	Progress *TaskProgress         `json:"progress,omitempty"`
 }
@@ -135,10 +136,11 @@ func GetFeatureStatus(feat *Feature) (*FeatureStatus, error) {
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 
 	status := &FeatureStatus{
-		ID:    formatFeatureID(feat.Number),
-		Name:  feat.Slug,
-		Path:  feat.Path,
-		Phase: feat.Phase,
+		ID:     formatFeatureID(feat.Number),
+		Name:   feat.Slug,
+		Path:   feat.Path,
+		Phase:  feat.Phase,
+		Paused: feat.Paused,
 		Files: map[string]FileStatus{
 			"brainstorm": {
 				Exists: fileExists(brainstormPath),

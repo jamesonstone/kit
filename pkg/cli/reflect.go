@@ -58,7 +58,7 @@ func runReflect(cmd *cobra.Command, args []string) error {
 
 	if len(args) == 1 {
 		featureRef := args[0]
-		feat, err = feature.Resolve(specsDir, featureRef)
+		feat, err = loadFeatureWithState(specsDir, cfg, featureRef)
 		if err != nil {
 			return fmt.Errorf("failed to resolve feature: %w", err)
 		}
@@ -67,14 +67,25 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		feature.ApplyLifecycleState(feat, cfg)
 	}
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
+	wasPaused := feat.Paused
+	if err := clearPausedForExplicitResume(projectRoot, cfg, feat); err != nil {
+		return err
+	}
+	if err := updateRollupForResume(projectRoot, cfg, feat.DirName, wasPaused); err != nil {
+		return err
+	}
 	prompt := buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPath, specPath, planPath, tasksPath, feat.Slug)
 	if !outputOnly {
+		if wasPaused {
+			fmt.Println("  ✓ Cleared paused state")
+		}
 		printWorkflowInstructions("reflect", []string{
 			"if issues remain, return to implement",
 			"if clean, mark reflection complete",

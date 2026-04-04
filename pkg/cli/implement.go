@@ -65,10 +65,11 @@ func runImplement(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		feature.ApplyLifecycleState(feat, cfg)
 	} else {
 		// direct mode: resolve feature by name
 		featureRef := args[0]
-		feat, err = feature.Resolve(specsDir, featureRef)
+		feat, err = loadFeatureWithState(specsDir, cfg, featureRef)
 		if err != nil {
 			return fmt.Errorf("feature '%s' not found", featureRef)
 		}
@@ -88,6 +89,17 @@ func runImplement(cmd *cobra.Command, args []string) error {
 	}
 	if !document.Exists(tasksPath) {
 		return fmt.Errorf("TASKS.md not found. Run 'kit tasks %s' first", feat.Slug)
+	}
+
+	wasPaused := feat.Paused
+	if err := clearPausedForExplicitResume(projectRoot, cfg, feat); err != nil {
+		return err
+	}
+	if err := updateRollupForResume(projectRoot, cfg, feat.DirName, wasPaused); err != nil {
+		return err
+	}
+	if wasPaused && !outputOnly {
+		fmt.Println("  ✓ Cleared paused state")
 	}
 
 	// extract summary from spec

@@ -32,7 +32,7 @@ func projectHandoff() (string, error) {
 
 func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, error) {
 	specsDir := cfg.SpecsPath(projectRoot)
-	features, err := feature.ListFeatures(specsDir)
+	features, err := feature.ListFeaturesWithState(specsDir, cfg)
 	if err != nil {
 		return "", fmt.Errorf("projectHandoffWithConfig: failed to list features in %s: %w", specsDir, err)
 	}
@@ -107,7 +107,7 @@ func featureHandoff(featureRef string) (string, error) {
 	}
 
 	specsDir := cfg.SpecsPath(projectRoot)
-	feat, err := feature.Resolve(specsDir, featureRef)
+	feat, err := loadFeatureWithState(specsDir, cfg, featureRef)
 	if err != nil {
 		return "", fmt.Errorf("feature '%s' not found: %w", featureRef, err)
 	}
@@ -124,6 +124,7 @@ func featureHandoff(featureRef string) (string, error) {
 	sb.WriteString("| ----- | ----- |\n")
 	sb.WriteString(fmt.Sprintf("| Feature | %s |\n", feat.Slug))
 	sb.WriteString(fmt.Sprintf("| Phase | %s |\n", feat.Phase))
+	sb.WriteString(fmt.Sprintf("| Paused | %t |\n", feat.Paused))
 	sb.WriteString(fmt.Sprintf("| Directory | %s |\n", feat.DirName))
 	sb.WriteString(fmt.Sprintf("| Full Path | %s |\n\n", feat.Path))
 
@@ -187,7 +188,7 @@ func genericHandoffInstructions() string {
 func activeHandoffFeatures(features []feature.Feature) []feature.Feature {
 	var active []feature.Feature
 	for _, feat := range features {
-		if feat.Phase == feature.PhaseComplete {
+		if feat.Phase == feature.PhaseComplete || feat.Paused {
 			continue
 		}
 		active = append(active, feat)

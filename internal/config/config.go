@@ -13,13 +13,18 @@ const ConfigFileName = ".kit.yaml"
 
 // Config represents the .kit.yaml configuration file.
 type Config struct {
-	GoalPercentage   int           `yaml:"goal_percentage"`
-	SpecsDir         string        `yaml:"specs_dir"`
-	SkillsDir        string        `yaml:"skills_dir"`
-	ConstitutionPath string        `yaml:"constitution_path"`
-	AllowOutOfOrder  bool          `yaml:"allow_out_of_order"`
-	Agents           []string      `yaml:"agents"`
-	FeatureNaming    FeatureNaming `yaml:"feature_naming"`
+	GoalPercentage   int                              `yaml:"goal_percentage"`
+	SpecsDir         string                           `yaml:"specs_dir"`
+	SkillsDir        string                           `yaml:"skills_dir"`
+	ConstitutionPath string                           `yaml:"constitution_path"`
+	AllowOutOfOrder  bool                             `yaml:"allow_out_of_order"`
+	Agents           []string                         `yaml:"agents"`
+	FeatureNaming    FeatureNaming                    `yaml:"feature_naming"`
+	FeatureState     map[string]FeatureLifecycleState `yaml:"feature_state,omitempty"`
+}
+
+type FeatureLifecycleState struct {
+	Paused bool `yaml:"paused,omitempty"`
 }
 
 // FeatureNaming defines how feature directories are named.
@@ -42,6 +47,38 @@ func Default() *Config {
 			Separator:    "-",
 		},
 	}
+}
+
+func (c *Config) IsFeaturePaused(dirName string) bool {
+	if c == nil || c.FeatureState == nil {
+		return false
+	}
+
+	state, ok := c.FeatureState[dirName]
+	return ok && state.Paused
+}
+
+func (c *Config) SetFeaturePaused(dirName string, paused bool) {
+	if paused {
+		if c.FeatureState == nil {
+			c.FeatureState = make(map[string]FeatureLifecycleState)
+		}
+		c.FeatureState[dirName] = FeatureLifecycleState{Paused: true}
+		return
+	}
+
+	if c.FeatureState == nil {
+		return
+	}
+
+	delete(c.FeatureState, dirName)
+	if len(c.FeatureState) == 0 {
+		c.FeatureState = nil
+	}
+}
+
+func (c *Config) RemoveFeatureState(dirName string) {
+	c.SetFeaturePaused(dirName, false)
 }
 
 // FindProjectRoot traverses upward from the current directory to find .kit.yaml.

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -78,12 +79,34 @@ func TestOutputStatusTextIncludesKitVersion(t *testing.T) {
 	}
 	out := &bytes.Buffer{}
 
-	if err := outputStatusText(out, status, t.TempDir(), "v1.2.3"); err != nil {
+	if err := outputStatusText(out, status, t.TempDir(), config.Default(), "v1.2.3"); err != nil {
 		t.Fatalf("outputStatusText() error = %v", err)
 	}
 
 	if !strings.Contains(out.String(), "Kit version: v1.2.3") {
 		t.Fatalf("expected version line in output, got %q", out.String())
+	}
+}
+
+func TestDetermineNextAction_PausedWrapsResumeGuidance(t *testing.T) {
+	status := &feature.FeatureStatus{
+		Name:   "patient-import",
+		Paused: true,
+		Files: map[string]feature.FileStatus{
+			"brainstorm": {Exists: true, Path: "/tmp/BRAINSTORM.md"},
+			"spec":       {Exists: true, Path: "/tmp/SPEC.md"},
+			"plan":       {Exists: true, Path: "/tmp/PLAN.md"},
+			"tasks":      {Exists: true, Path: "/tmp/TASKS.md"},
+		},
+		Progress: &feature.TaskProgress{Total: 4, Complete: 1},
+	}
+
+	got := determineNextAction(status)
+	if !strings.Contains(got, "Feature is paused") {
+		t.Fatalf("expected paused guidance, got %q", got)
+	}
+	if !strings.Contains(got, "Suggested next step after resume") {
+		t.Fatalf("expected resume guidance, got %q", got)
 	}
 }
 

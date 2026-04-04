@@ -18,6 +18,7 @@ type FeatureSummary struct {
 	Name          string
 	Path          string
 	Phase         feature.Phase
+	Paused        bool
 	Created       time.Time
 	HasBrainstorm bool
 	Summary       string
@@ -29,7 +30,7 @@ type FeatureSummary struct {
 // Generate creates or updates the PROJECT_PROGRESS_SUMMARY.md file.
 func Generate(projectRoot string, cfg *config.Config) error {
 	specsDir := cfg.SpecsPath(projectRoot)
-	features, err := feature.ListFeatures(specsDir)
+	features, err := feature.ListFeaturesWithState(specsDir, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to list features: %w", err)
 	}
@@ -56,6 +57,7 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 		Name:          f.Slug,
 		Path:          filepath.Join(specsDir, f.DirName),
 		Phase:         f.Phase,
+		Paused:        f.Paused,
 		Created:       f.CreatedAt,
 		HasBrainstorm: document.Exists(filepath.Join(f.Path, "BRAINSTORM.md")),
 	}
@@ -124,18 +126,22 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 
 	// feature progress table
 	b.WriteString("## FEATURE PROGRESS TABLE\n\n")
-	b.WriteString("| ID | FEATURE | PATH | PHASE | CREATED | SUMMARY |\n")
-	b.WriteString("| -- | ------- | ---- | ----- | ------- | ------- |\n")
+	b.WriteString("| ID | FEATURE | PATH | PHASE | PAUSED | CREATED | SUMMARY |\n")
+	b.WriteString("| -- | ------- | ---- | ----- | ------ | ------- | ------- |\n")
 
 	for _, s := range summaries {
 		created := s.Created.Format("2006-01-02")
+		paused := "no"
+		if s.Paused {
+			paused = "yes"
+		}
 		// truncate summary for table
 		tableSummary := s.Summary
 		if len(tableSummary) > 60 {
 			tableSummary = tableSummary[:57] + "..."
 		}
-		b.WriteString(fmt.Sprintf("| %s | %s | `%s` | %s | %s | %s |\n",
-			s.ID, s.Name, s.Path, s.Phase, created, tableSummary))
+		b.WriteString(fmt.Sprintf("| %s | %s | `%s` | %s | %s | %s | %s |\n",
+			s.ID, s.Name, s.Path, s.Phase, paused, created, tableSummary))
 	}
 
 	b.WriteString("\n")
@@ -154,6 +160,11 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 	for _, s := range summaries {
 		b.WriteString(fmt.Sprintf("### %s\n\n", s.Name))
 		b.WriteString(fmt.Sprintf("- **STATUS**: %s\n", s.Phase))
+		if s.Paused {
+			b.WriteString("- **PAUSED**: yes\n")
+		} else {
+			b.WriteString("- **PAUSED**: no\n")
+		}
 		b.WriteString(fmt.Sprintf("- **INTENT**: %s\n", s.Intent))
 		b.WriteString(fmt.Sprintf("- **APPROACH**: %s\n", s.Approach))
 		b.WriteString(fmt.Sprintf("- **OPEN ITEMS**: %s\n", s.OpenItems))

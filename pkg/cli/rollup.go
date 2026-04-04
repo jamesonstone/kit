@@ -16,7 +16,7 @@ var rollupCmd = &cobra.Command{
 	Long: `Analyze all feature specifications and generate PROJECT_PROGRESS_SUMMARY.md.
 
 The summary includes:
-  - Feature progress table with phase, created date, and summary
+  - Feature progress table with phase, paused state, created date, and summary
   - Project intent section
   - Global constraints reference
   - Feature summaries with status, intent, approach, and pointers

@@ -6,6 +6,7 @@ import (
 	"io"
 	"unicode/utf8"
 
+	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -52,7 +53,13 @@ func outputStatusJSON(w io.Writer, status *feature.FeatureStatus, version string
 	return err
 }
 
-func outputStatusText(w io.Writer, status *feature.FeatureStatus, specsDir, version string) error {
+func outputStatusText(
+	w io.Writer,
+	status *feature.FeatureStatus,
+	specsDir string,
+	cfg *config.Config,
+	version string,
+) error {
 	style := styleForWriter(w)
 
 	if _, err := fmt.Fprintln(w); err != nil {
@@ -74,6 +81,23 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, specsDir, vers
 		if _, err := fmt.Fprintln(w); err != nil {
 			return err
 		}
+	}
+
+	if _, err := fmt.Fprintln(w, style.title("⏸️", "Lifecycle")); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(w, "Phase: %s\n", status.Phase); err != nil {
+		return err
+	}
+	if status.Paused {
+		if _, err := fmt.Fprintln(w, "Paused: yes"); err != nil {
+			return err
+		}
+	} else if _, err := fmt.Fprintln(w, "Paused: no"); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintln(w); err != nil {
+		return err
 	}
 
 	if _, err := fmt.Fprintln(w, style.title("📁", "Files")); err != nil {
@@ -119,7 +143,7 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, specsDir, vers
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
-	if err := printAllFeaturesProgress(w, specsDir); err != nil {
+	if err := printAllFeaturesProgress(w, specsDir, cfg); err != nil {
 		return err
 	}
 	_, err := fmt.Fprintln(w, style.muted(formatKitVersionInfo(version)))
@@ -183,10 +207,10 @@ func marker(exists bool) string {
 	return "✗"
 }
 
-func printAllFeaturesProgress(w io.Writer, specsDir string) error {
+func printAllFeaturesProgress(w io.Writer, specsDir string, cfg *config.Config) error {
 	style := styleForWriter(w)
 
-	features, err := feature.ListFeatures(specsDir)
+	features, err := feature.ListFeaturesWithState(specsDir, cfg)
 	if err != nil || len(features) == 0 {
 		return nil
 	}
@@ -196,10 +220,10 @@ func printAllFeaturesProgress(w io.Writer, specsDir string) error {
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(w, style.muted("| Feature              | BRN  | SPEC | PLAN | TASK | IMPL | REFL | DONE |")); err != nil {
+	if _, err := fmt.Fprintln(w, style.muted("| Feature              | BRN  | SPEC | PLAN | TASK | IMPL | REFL | DONE | PAUSED |")); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(w, style.muted("|----------------------|------|------|------|------|------|------|------|")); err != nil {
+	if _, err := fmt.Fprintln(w, style.muted("|----------------------|------|------|------|------|------|------|------|--------|")); err != nil {
 		return err
 	}
 	for _, feat := range features {
@@ -215,7 +239,7 @@ func printFeatureProgressRow(w io.Writer, feat *feature.Feature) error {
 	name := padRight(truncateString(feat.DirName, 20), 20)
 	_, err := fmt.Fprintf(
 		w,
-		"| %s | %s | %s | %s | %s | %s | %s | %s |\n",
+		"| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",
 		name,
 		phaseMarker(feat.Phase, feature.PhaseBrainstorm),
 		phaseMarker(feat.Phase, feature.PhaseSpec),
@@ -224,8 +248,16 @@ func printFeatureProgressRow(w io.Writer, feat *feature.Feature) error {
 		phaseMarker(feat.Phase, feature.PhaseImplement),
 		phaseMarker(feat.Phase, feature.PhaseReflect),
 		phaseMarker(feat.Phase, feature.PhaseComplete),
+		yesNo(feat.Paused),
 	)
 	return err
+}
+
+func yesNo(v bool) string {
+	if v {
+		return "yes"
+	}
+	return "no"
 }
 
 func padRight(s string, width int) string {

@@ -15,6 +15,7 @@ var statusCmd = &cobra.Command{
 	Long: `Display the active feature's status, including:
   - Feature name and ID
   - Business summary from SPEC.md
+  - Lifecycle phase and paused state
   - File existence (SPEC, PLAN, TASKS)
   - Task completion progress (from markdown checkboxes)
   - Suggested next action
@@ -56,6 +57,8 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		return outputNoActiveFeature(cmd.OutOrStdout(), jsonOutput, version)
 	}
 
+	feature.ApplyLifecycleState(feat, cfg)
+
 	// get full status
 	status, err := feature.GetFeatureStatus(feat)
 	if err != nil {
@@ -66,10 +69,19 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		return outputStatusJSON(cmd.OutOrStdout(), status, version)
 	}
 
-	return outputStatusText(cmd.OutOrStdout(), status, specsDir, version)
+	return outputStatusText(cmd.OutOrStdout(), status, specsDir, cfg, version)
 }
 
 func determineNextAction(status *feature.FeatureStatus) string {
+	nextAction := determineUnpausedNextAction(status)
+	if !status.Paused {
+		return nextAction
+	}
+
+	return fmt.Sprintf("Feature is paused. Resume explicitly when ready. Suggested next step after resume: %s", nextAction)
+}
+
+func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 	if status.Files["brainstorm"].Exists && !status.Files["spec"].Exists {
 		return fmt.Sprintf("Create specification from brainstorm: run `kit spec %s`", status.Name)
 	}

@@ -106,6 +106,7 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		feature.ApplyLifecycleState(feat, cfg)
 	} else {
 		featureRef := args[0]
 
@@ -114,6 +115,7 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		feature.ApplyLifecycleState(feat, cfg)
 	}
 
 	if !outputOnly {
@@ -153,6 +155,13 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		fmt.Println("  ✓ Found BRAINSTORM.md")
 	}
 
+	wasPaused := feat.Paused
+	if !created {
+		if err := clearPausedForExplicitResume(projectRoot, cfg, feat); err != nil {
+			return err
+		}
+	}
+
 	// update PROJECT_PROGRESS_SUMMARY.md
 	if err := rollup.Update(projectRoot, cfg); err != nil {
 		if !outputOnly {
@@ -164,6 +173,9 @@ func runSpec(cmd *cobra.Command, args []string) error {
 
 	if !outputOnly {
 		fmt.Printf("\n✅ Feature '%s' ready!\n", feat.Slug)
+		if wasPaused {
+			fmt.Println("  ✓ Cleared paused state")
+		}
 	}
 
 	if isInteractive {
@@ -188,8 +200,9 @@ func runSpecPromptOnly(args []string, projectRoot string, cfg *config.Config, ou
 		if err != nil {
 			return err
 		}
+		feature.ApplyLifecycleState(feat, cfg)
 	} else {
-		feat, err = feature.Resolve(specsDir, args[0])
+		feat, err = loadFeatureWithState(specsDir, cfg, args[0])
 		if err != nil {
 			return fmt.Errorf("feature '%s' not found: %w", args[0], err)
 		}

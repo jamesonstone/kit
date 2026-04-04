@@ -131,8 +131,10 @@ var commandOrder = map[string]int{
 	"tasks":      12,
 	"implement":  13,
 	"reflect":    14,
-	"complete":   15,
-	"status":     16,
+	"pause":      15,
+	"complete":   16,
+	"status":     17,
+	"remove":     18,
 	// verification and state
 	"check":       20,
 	"rollup":      21,
