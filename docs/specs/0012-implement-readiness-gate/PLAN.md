@@ -54,6 +54,17 @@
 - Prompt semantics change so implementation begins with an implementation-readiness gate before execution.
 - `kit status` remains phase-based and may only change its guidance text.
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | canonical workflow rules and implementation gate contract | active |
+| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | shipped workflow summary and gate wording | active |
+| implement command | code | `pkg/cli/implement.go` | readiness-gate prompt behavior | active |
+| status command | code | `pkg/cli/status.go` | next-step wording for completed work | active |
+| repository instruction templates | code | `internal/templates/templates.go` | scaffolded workflow guidance | active |
+| README | doc | `README.md` | user-facing workflow wording | active |
+
 ## RISKS
 
 - The readiness gate prompt can become verbose or repetitive if it duplicates too much of `reflect`.

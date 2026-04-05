@@ -27,6 +27,15 @@
 - Trigger 2: GitHub push event for tags `v*` (manual tags).
 - Release target: GitHub Releases API via `gh release create --generate-notes`.
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| GitHub Actions workflows | code | `.github/workflows/` | main-branch release orchestration and tag publication | active |
+| GoReleaser config | code | `.goreleaser.yaml` | artifact matrix, checksums, and release packaging | active |
+| release versioning model | doc | `docs/specs/0005-version-command/SPEC.md` | semantic version surface used by the release flow | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | project-state visibility after release changes | active |
+
 ## RISKS
 
 - Concurrent `main` pushes could race on next tag computation.

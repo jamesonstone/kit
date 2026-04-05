@@ -67,10 +67,16 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 	// try to extract info from SPEC.md
 	specPath := filepath.Join(f.Path, "SPEC.md")
 	if doc, err := document.ParseFile(specPath, document.TypeSpec); err == nil {
-		// extract problem section as summary
-		if section := doc.GetSection("PROBLEM"); section != nil {
+		if section := doc.GetSection("SUMMARY"); section != nil {
 			summary.Summary = document.ExtractFirstParagraph(section)
-			summary.Intent = summary.Summary
+		}
+
+		// extract problem section as intent
+		if section := doc.GetSection("PROBLEM"); section != nil {
+			summary.Intent = document.ExtractFirstParagraph(section)
+			if summary.Summary == "" {
+				summary.Summary = summary.Intent
+			}
 		}
 
 		// extract open questions
@@ -82,7 +88,9 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 	if summary.Summary == "" && summary.HasBrainstorm {
 		if brainstormSummary, err := feature.ExtractBrainstormSummary(brainstormPath); err == nil {
 			summary.Summary = brainstormSummary
-			summary.Intent = brainstormSummary
+			if summary.Intent == "" {
+				summary.Intent = brainstormSummary
+			}
 		}
 
 		if doc, err := document.ParseFile(brainstormPath, document.TypeBrainstorm); err == nil {
@@ -107,7 +115,7 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 		summary.Summary = "(no description)"
 	}
 	if summary.Intent == "" {
-		summary.Intent = "(see SPEC.md)"
+		summary.Intent = summary.Summary
 	}
 	if summary.Approach == "" {
 		summary.Approach = "(see PLAN.md)"
@@ -135,13 +143,8 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 		if s.Paused {
 			paused = "yes"
 		}
-		// truncate summary for table
-		tableSummary := s.Summary
-		if len(tableSummary) > 60 {
-			tableSummary = tableSummary[:57] + "..."
-		}
 		b.WriteString(fmt.Sprintf("| %s | %s | `%s` | %s | %s | %s | %s |\n",
-			s.ID, s.Name, s.Path, s.Phase, paused, created, tableSummary))
+			s.ID, s.Name, s.Path, s.Phase, paused, created, formatSummaryTableCell(s.Summary)))
 	}
 
 	b.WriteString("\n")
@@ -190,4 +193,9 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 // Update is an alias for Generate (updates the existing file).
 func Update(projectRoot string, cfg *config.Config) error {
 	return Generate(projectRoot, cfg)
+}
+
+func formatSummaryTableCell(summary string) string {
+	normalized := strings.Join(strings.Fields(summary), " ")
+	return strings.ReplaceAll(normalized, "|", `\|`)
 }

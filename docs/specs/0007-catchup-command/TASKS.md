@@ -54,8 +54,9 @@
   - update `pkg/cli/root.go`
   - update `README.md`
 - **ACCEPTANCE**:
-  - help output shows `catchup` in context management
-  - README explains the command without collapsing into `handoff` or `implement`
+  - `catchup` remains callable for compatibility
+  - canonical help and README teach `resume` as the general resume command
+  - deprecated `catchup` guidance stays distinct from `handoff` and `implement`
 
 ### T004
 
@@ -90,7 +91,8 @@
 - **ACCEPTANCE**:
   - `kit catchup --prompt-only` is accepted
   - the flag does not change the repo mutation model
-  - docs/help reflect the shared command-surface contract
+  - docs/help reflect the shared command-surface contract while keeping
+    `catchup` as a hidden deprecated compatibility path
 
 ## DEPENDENCIES
 

@@ -35,6 +35,19 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| release workflow | code | `.github/workflows/` | release publication and tag automation | active |
+| GoReleaser config | code | `.goreleaser.yaml` | cross-platform artifact matrix and archive settings | active |
+| version command | code | `pkg/cli/version.go` | installed-version surface referenced by release docs | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | release visibility and project-state reporting | active |
+
 ## REQUIREMENTS
 
 - On push to `main`, compute next semantic version patch tag.

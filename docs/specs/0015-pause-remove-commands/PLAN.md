@@ -19,7 +19,10 @@ paused state without changing the underlying phase model.
   directory deletion, state cleanup, and rollup regeneration
 - update rollup and status rendering to surface paused state separately from
   phase
+- keep default `status` active-feature focused and move the fleet view into the
+  explicit `status --all` mode
 - exclude paused features from active-only multi-feature flows except `status`
+  and `status --all`
 
 ## COMPONENTS
 

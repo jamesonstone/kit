@@ -108,6 +108,15 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
   - show optional brainstorm before spec
   - remove `oneshot` and branching language
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | workflow model and prompt semantics | active |
+| document templates | code | `internal/templates/templates.go` | brainstorm artifact and prompt scaffolding | active |
+| rollup generator | code | `internal/rollup/rollup.go` | brainstorm-aware project summary output | active |
+| instruction templates | doc | `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` | repository instruction alignment | active |
+
 ## RISKS
 
 - phase reordering could break status, handoff, or rollup assumptions

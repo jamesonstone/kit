@@ -21,14 +21,15 @@ leave stale active-feature views behind.
 - keep paused state separate from the underlying workflow phase
 - show paused state in `kit status` and `PROJECT_PROGRESS_SUMMARY.md`
 - exclude paused features from active-only multi-feature flows other than
-  `kit status`
+  `kit status` and the new explicit `kit status --all` overview mode
 - automatically clear paused state when a user resumes a feature through an
   explicit feature-scoped workflow command
 - remove deleted features from generated lifecycle views and persisted state
 
 ## NON-GOALS
 
-- add a dedicated `kit resume` command in this phase
+- redesign the lifecycle model beyond the paused flag and explicit resume
+  commands
 - preserve removed feature numbers for future feature allocation
 - rewrite arbitrary historical markdown outside Kit-managed lifecycle views
 - add bulk remove or bulk pause flows
@@ -44,6 +45,10 @@ leave stale active-feature views behind.
 | SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
+
+## RELATIONSHIPS
+
+none
 
 ## DEPENDENCIES
 
@@ -70,11 +75,12 @@ leave stale active-feature views behind.
   phase
 - explicit feature-scoped workflow commands that continue work on a paused
   feature must clear the paused flag before proceeding
-- `kit status` must continue to treat the highest-numbered feature as the
-  active feature even if that feature is paused
+- `kit status` must continue to treat the highest-numbered non-backlog feature
+  as the active feature even if that feature is paused
 - `kit status` text output must show whether the active feature is paused
 - `kit status --json` must include paused state for the active feature
-- `kit status` all-features output must add a paused column
+- `kit status --all` must render the all-features output as a fixed-width
+  lifecycle matrix and must add a paused or backlog indicator
 - `PROJECT_PROGRESS_SUMMARY.md` feature progress table must add a paused column
 - `PROJECT_PROGRESS_SUMMARY.md` feature summaries must reflect paused state in a
   stable, generated way
@@ -104,9 +110,10 @@ leave stale active-feature views behind.
 - running `kit plan <feature>`, `kit tasks <feature>`, `kit implement <feature>`,
   or another explicit feature-scoped workflow command on a paused feature clears
   the paused flag before continuing
-- `kit status` shows the latest feature even when paused and labels it paused
+- `kit status` shows the latest non-backlog feature even when paused and labels
+  it paused
 - `kit status --json` includes paused state in the active-feature payload
-- the `kit status` all-features table includes a paused column
+- the `kit status --all` matrix includes paused or backlog state
 - `PROJECT_PROGRESS_SUMMARY.md` includes a paused column in the feature progress
   table and a paused field in each generated feature summary
 - paused features are excluded from active-only flows such as handoff's active
@@ -124,6 +131,7 @@ leave stale active-feature views behind.
 
 - pausing a feature that is already paused
 - pausing the current highest-numbered feature
+- pausing a brainstorm-phase feature that is later used as a backlog item
 - attempting to pause a complete feature
 - removing a paused feature
 - removing the current highest-numbered feature

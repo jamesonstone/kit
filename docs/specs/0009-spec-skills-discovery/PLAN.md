@@ -39,6 +39,18 @@
 - `kit spec` prompt contract adds a mandatory skills discovery phase.
 - Prompt-output commands inherit a shared `## Skills` instruction block.
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | canonical workflow and section requirements | active |
+| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | canonical skills and dependency inventory contract | active |
+| spec template | code | `internal/templates/templates.go` | required `SPEC.md` and prompt section shapes | active |
+| document validation | code | `internal/document/document.go` | required section parsing and validation | active |
+| spec prompt flow | code | `pkg/cli/spec.go` | skills discovery prompt content | active |
+| shared skills guidance | code | `pkg/cli/subagents.go` | prompt-output skills instruction block | active |
+| repository instruction files | doc | `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` | checked-in workflow contract alignment | active |
+
 ## RISKS
 
 - Generic prompt augmentation could become noisy if the shared skills note is too verbose.

@@ -11,19 +11,20 @@ import (
 var upgradeYes bool
 
 func init() {
-	rootCmd.AddCommand(newUpgradeCommand("upgrade", []string{"update"}))
-	rootCmd.AddCommand(newUpgradeCommand("update", nil))
+	rootCmd.AddCommand(newUpgradeCommand("upgrade", false, ""))
+	rootCmd.AddCommand(newUpgradeCommand("update", true, "use `kit upgrade`"))
 }
 
-func newUpgradeCommand(use string, aliases []string) *cobra.Command {
+func newUpgradeCommand(use string, hidden bool, deprecated string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          use,
-		Aliases:      aliases,
 		Short:        "Download and install the latest Kit release",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE:         runUpgrade,
 	}
+	cmd.Hidden = hidden
+	cmd.Deprecated = deprecated
 	cmd.Flags().BoolVarP(&upgradeYes, "yes", "y", false, "skip confirmation prompt")
 	return cmd
 }

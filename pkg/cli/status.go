@@ -21,18 +21,28 @@ var statusCmd = &cobra.Command{
   - Suggested next action
 
 Output is optimized for coding agents to quickly understand
-which files to investigate for the current feature.`,
+which files to investigate for the current feature.
+
+Use --all for a project-wide overview.`,
 	Args: cobra.NoArgs,
 	RunE: runStatus,
 }
 
 func init() {
 	statusCmd.Flags().Bool("json", false, "output status as JSON")
+	statusCmd.Flags().Bool("all", false, "show all features instead of only the active feature")
 	rootCmd.AddCommand(statusCmd)
+}
+
+type allFeatureStatusEntry struct {
+	Status     *feature.FeatureStatus `json:"status"`
+	IsBacklog  bool                   `json:"is_backlog"`
+	NextAction string                 `json:"next_action"`
 }
 
 func runStatus(cmd *cobra.Command, args []string) error {
 	jsonOutput, _ := cmd.Flags().GetBool("json")
+	allOutput, _ := cmd.Flags().GetBool("all")
 	version := currentVersion()
 
 	projectRoot, err := config.FindProjectRoot()
@@ -47,17 +57,23 @@ func runStatus(cmd *cobra.Command, args []string) error {
 
 	specsDir := cfg.SpecsPath(projectRoot)
 
+	if allOutput {
+		return runStatusAll(cmd, specsDir, cfg, jsonOutput, version)
+	}
+
 	// find active feature
-	feat, err := feature.FindActiveFeature(specsDir)
+	feat, err := feature.FindActiveFeatureWithState(specsDir, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to find active feature: %w", err)
 	}
 
 	if feat == nil {
-		return outputNoActiveFeature(cmd.OutOrStdout(), jsonOutput, version)
+		backlog, backlogErr := feature.ListBacklogFeatures(specsDir, cfg)
+		if backlogErr != nil {
+			return fmt.Errorf("failed to list backlog items: %w", backlogErr)
+		}
+		return outputNoActiveFeature(cmd.OutOrStdout(), jsonOutput, version, len(backlog))
 	}
-
-	feature.ApplyLifecycleState(feat, cfg)
 
 	// get full status
 	status, err := feature.GetFeatureStatus(feat)
@@ -69,7 +85,68 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		return outputStatusJSON(cmd.OutOrStdout(), status, version)
 	}
 
-	return outputStatusText(cmd.OutOrStdout(), status, specsDir, cfg, version)
+	return outputStatusText(cmd.OutOrStdout(), status, version)
+}
+
+func runStatusAll(
+	cmd *cobra.Command,
+	specsDir string,
+	cfg *config.Config,
+	jsonOutput bool,
+	version string,
+) error {
+	activeFeat, err := feature.FindActiveFeatureWithState(specsDir, cfg)
+	if err != nil {
+		return fmt.Errorf("failed to find active feature: %w", err)
+	}
+
+	var activeStatus *feature.FeatureStatus
+	if activeFeat != nil {
+		activeStatus, err = feature.GetFeatureStatus(activeFeat)
+		if err != nil {
+			return fmt.Errorf("failed to get active feature status: %w", err)
+		}
+	}
+
+	entries, backlogCount, err := buildAllFeatureStatusEntries(specsDir, cfg)
+	if err != nil {
+		return err
+	}
+
+	if jsonOutput {
+		return outputAllFeaturesStatusJSON(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version)
+	}
+
+	return outputAllFeaturesStatusText(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version)
+}
+
+func buildAllFeatureStatusEntries(specsDir string, cfg *config.Config) ([]allFeatureStatusEntry, int, error) {
+	features, err := feature.ListFeaturesWithState(specsDir, cfg)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list features: %w", err)
+	}
+
+	entries := make([]allFeatureStatusEntry, 0, len(features))
+	backlogCount := 0
+	for i := range features {
+		status, err := feature.GetFeatureStatus(&features[i])
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to get feature status for %s: %w", features[i].DirName, err)
+		}
+
+		isBacklog := feature.IsBacklogItem(features[i])
+		if isBacklog {
+			backlogCount++
+		}
+
+		entries = append(entries, allFeatureStatusEntry{
+			Status:     status,
+			IsBacklog:  isBacklog,
+			NextAction: determineNextAction(status),
+		})
+	}
+
+	return entries, backlogCount, nil
 }
 
 func determineNextAction(status *feature.FeatureStatus) string {
@@ -78,7 +155,11 @@ func determineNextAction(status *feature.FeatureStatus) string {
 		return nextAction
 	}
 
-	return fmt.Sprintf("Feature is paused. Resume explicitly when ready. Suggested next step after resume: %s", nextAction)
+	return fmt.Sprintf(
+		"Feature is paused. Run `kit resume %s` when ready. Suggested next step after resume: %s",
+		status.Name,
+		nextAction,
+	)
 }
 
 func determineUnpausedNextAction(status *feature.FeatureStatus) string {

@@ -56,6 +56,20 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | canonical workflow and document rules | active |
+| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | shipped handoff behavior summary | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | project-wide reconciliation context | active |
+| handoff command flow | code | `pkg/cli/handoff.go` | selector and prompt wiring | active |
+| README | doc | `README.md` | user-facing command description | active |
+
 ## REQUIREMENTS
 
 - `kit handoff` must keep the existing selector and direct feature-argument behavior.

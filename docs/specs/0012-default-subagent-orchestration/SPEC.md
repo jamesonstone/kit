@@ -39,6 +39,10 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
 ## DEPENDENCIES
 
 | Dependency | Type | Location | Used For | Status |

@@ -25,8 +25,8 @@ const (
 // RequiredSections returns the required sections for each document type.
 var RequiredSections = map[DocumentType][]string{
 	TypeConstitution:    {"PRINCIPLES", "CONSTRAINTS", "NON-GOALS", "DEFINITIONS"},
-	TypeBrainstorm:      {"SUMMARY", "USER THESIS", "CODEBASE FINDINGS", "AFFECTED FILES", "DEPENDENCIES", "QUESTIONS", "OPTIONS", "RECOMMENDED STRATEGY", "NEXT STEP"},
-	TypeSpec:            {"SUMMARY", "PROBLEM", "GOALS", "NON-GOALS", "USERS", "SKILLS", "DEPENDENCIES", "REQUIREMENTS", "ACCEPTANCE", "EDGE-CASES", "OPEN-QUESTIONS"},
+	TypeBrainstorm:      {"SUMMARY", "USER THESIS", "RELATIONSHIPS", "CODEBASE FINDINGS", "AFFECTED FILES", "DEPENDENCIES", "QUESTIONS", "OPTIONS", "RECOMMENDED STRATEGY", "NEXT STEP"},
+	TypeSpec:            {"SUMMARY", "PROBLEM", "GOALS", "NON-GOALS", "USERS", "SKILLS", "RELATIONSHIPS", "DEPENDENCIES", "REQUIREMENTS", "ACCEPTANCE", "EDGE-CASES", "OPEN-QUESTIONS"},
 	TypePlan:            {"SUMMARY", "APPROACH", "COMPONENTS", "DATA", "INTERFACES", "DEPENDENCIES", "RISKS", "TESTING"},
 	TypeTasks:           {"PROGRESS TABLE", "TASK LIST", "TASK DETAILS", "DEPENDENCIES", "NOTES"},
 	TypeAnalysis:        {"UNDERSTANDING", "QUESTIONS", "RESEARCH", "CLARIFICATIONS", "ASSUMPTIONS", "RISKS"},
@@ -160,6 +160,17 @@ func (d *Document) Validate() []ValidationError {
 				),
 			})
 		}
+		if requiresRelationshipSectionValidation(d.Type, key) {
+			section := sections[key]
+			if _, err := ParseRelationshipsSection(&section); err != nil {
+				errors = append(errors, ValidationError{
+					Document: d.Path,
+					Section:  req,
+					Message:  fmt.Sprintf("invalid relationship syntax: %v", err),
+					Fix:      fmt.Sprintf("Use `none` or bullets like `- builds on: 0001-example-feature` in '## %s' in %s", req, d.Path),
+				})
+			}
+		}
 	}
 
 	return errors
@@ -277,9 +288,6 @@ func ExtractFirstParagraph(section *Section) string {
 	text := strings.Join(result, " ")
 	if isExplicitSectionFallbackText(text) {
 		return ""
-	}
-	if len(text) > 120 {
-		text = text[:117] + "..."
 	}
 	return text
 }

@@ -2,7 +2,9 @@
 
 ## SUMMARY
 
-- Add first-class self-update commands (`kit upgrade` and `kit update`) so users can move to the latest Kit release from GitHub Releases without manual install steps.
+- Add a canonical self-update command (`kit upgrade`) and keep `kit update` as
+  a hidden deprecated compatibility entry point so users can move to the latest
+  Kit release from GitHub Releases without manual install steps.
 - Updates must be safe and predictable: never leave users with a broken binary, and always provide clear outcome and recovery guidance.
 
 ## PROBLEM
@@ -13,8 +15,10 @@
 
 ## GOALS
 
-- Provide a single built-in command path for self-updating Kit from official GitHub Releases.
-- Support both `kit upgrade` and `kit update` with identical behavior.
+- Provide a single built-in canonical command path for self-updating Kit from
+  official GitHub Releases.
+- Keep `kit update` callable with identical behavior while teaching
+  `kit upgrade` as the canonical command.
 - Detect current installed Kit version and latest stable release version using semantic version comparison.
 - Upgrade in place when a newer compatible release is available and the install location is writable.
 - Preserve a working Kit binary on all failure paths.
@@ -40,9 +44,23 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| release artifacts | code | `.github/workflows/`, `.goreleaser.yaml` | stable release downloads for self-update | active |
+| version command | code | `pkg/cli/version.go` | local installed-version resolution | active |
+| project docs | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | update-related user guidance and status references | active |
+| GitHub Releases | external | `https://github.com/jamesonstone/kit/releases` | latest-release lookup and artifact download | active |
+
 ## REQUIREMENTS
 
-- Expose a new `upgrade` command and an `update` alias from the Kit root CLI.
+- Expose a canonical `upgrade` command from the Kit root CLI.
+- Keep `update` callable as a hidden deprecated compatibility entry point.
 - The command must query the latest stable Kit release from `https://github.com/jamesonstone/kit/releases`.
 - The command must compare current Kit version to latest stable release using semantic version rules.
 - If already current, the command must make no filesystem changes and report both current and latest versions.

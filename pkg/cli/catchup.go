@@ -31,6 +31,8 @@ approval before any implementation begins.`,
 }
 
 func init() {
+	catchupCmd.Hidden = true
+	catchupCmd.Deprecated = "use `kit resume [feature]`"
 	catchupCmd.Flags().BoolVar(&catchupCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	catchupCmd.Flags().BoolVar(
 		&catchupOutputOnly,
@@ -57,29 +59,39 @@ func runCatchup(cmd *cobra.Command, args []string) error {
 	specsDir := cfg.SpecsPath(projectRoot)
 	var feat *feature.Feature
 	if len(args) == 1 {
-		feat, err = feature.Resolve(specsDir, args[0])
+		feat, err = loadFeatureWithState(specsDir, cfg, args[0])
 		if err != nil {
 			return fmt.Errorf("failed to resolve feature: %w", err)
 		}
 	} else {
-		feat, err = selectFeatureForCatchup(specsDir)
+		feat, err = selectFeatureForCatchup(specsDir, cfg)
 		if err != nil {
 			return err
 		}
 	}
 
+	return outputCatchupPromptForFeature(feat, projectRoot, outputOnly, catchupCopy, "catchup (supporting step)")
+}
+
+func outputCatchupPromptForFeature(
+	feat *feature.Feature,
+	projectRoot string,
+	outputOnly bool,
+	copy bool,
+	currentStep string,
+) error {
 	status, err := feature.GetFeatureStatus(feat)
 	if err != nil {
 		return fmt.Errorf("failed to get feature status: %w", err)
 	}
 
 	prompt := buildCatchupPrompt(feat, status, projectRoot)
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, catchupCopy); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, outputOnly, copy); err != nil {
 		return err
 	}
 
 	if !outputOnly {
-		printWorkflowInstructions("catchup (supporting step)", []string{
+		printWorkflowInstructions(currentStep, []string{
 			"answer the agent's clarification questions to restore context",
 			"approve a move to implementation only when you want coding to begin",
 		})
@@ -88,8 +100,8 @@ func runCatchup(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func selectFeatureForCatchup(specsDir string) (*feature.Feature, error) {
-	features, err := feature.ListFeatures(specsDir)
+func selectFeatureForCatchup(specsDir string, cfg *config.Config) (*feature.Feature, error) {
+	features, err := feature.ListFeaturesWithState(specsDir, cfg)
 	if err != nil {
 		return nil, err
 	}

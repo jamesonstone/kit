@@ -30,6 +30,15 @@
 - New CLI interface: `kit version`.
 - Existing interface retained: `kit --version`.
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| version source | code | `pkg/cli/version.go` | command output resolution | active |
+| root command ordering | code | `pkg/cli/root.go` | help visibility | active |
+| build pipeline | code | `Makefile` | default version injection for local builds | active |
+| README | doc | `README.md` | user-facing command documentation | active |
+
 ## RISKS
 
 - Help ordering could hide the new command if not added to `commandOrder`.

@@ -42,6 +42,19 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| prompt-output contract | code | `pkg/cli/implement.go`, `pkg/cli/reflect.go` | clipboard-first prompt behavior | active |
+| editor input helpers | code | `pkg/cli/editor_input.go` | default interactive capture path | active |
+| root CLI help | code | `pkg/cli/root.go` | command visibility and ordering | active |
+| README | doc | `README.md` | command documentation | active |
+
 ## REQUIREMENTS
 
 - [SPEC-01] Expose a new root command `kit dispatch`.

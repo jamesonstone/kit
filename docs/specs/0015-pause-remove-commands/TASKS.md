@@ -45,7 +45,7 @@ Use markdown checkboxes to track completion:
 - **SCOPE**: add `kit pause`, selection flow, complete-phase guard, idempotence,
   and auto-unpause for explicit feature-scoped workflow commands
 - **ACCEPTANCE**: paused features can be resumed by explicit work commands
-  without a dedicated resume command
+  and by the canonical `kit resume` command
 - **NOTES**: `kit status` still reports the highest-numbered feature even if it
   is paused
 
@@ -62,7 +62,8 @@ Use markdown checkboxes to track completion:
 - **SCOPE**: update rollup, status text/json, all-features tables, and
   active-only multi-feature flows
 - **ACCEPTANCE**: paused state renders separately from phase and paused features
-  are excluded from active-only flows other than `status`
+  are excluded from active-only flows other than the active-feature `status`
+  view while `status --all` exposes the project overview
 - **NOTES**: keep progress-summary ordering stable
 
 ### T006
@@ -70,7 +71,7 @@ Use markdown checkboxes to track completion:
 - **SCOPE**: add focused tests for pause, remove, rollup, status, and
   auto-unpause flows; run targeted validation
 - **ACCEPTANCE**: relevant tests pass and cover the new lifecycle controls
-- **NOTES**: include remove confirmation and `--yes` cases
+- **NOTES**: include remove confirmation, `--yes` cases, and resume-path coverage
 
 ## DEPENDENCIES
 
@@ -85,3 +86,5 @@ Use markdown checkboxes to track completion:
 - feature numbering continues to derive from existing directories
 - `kit status` remains latest-feature-first even when the latest feature is
   paused
+
+<!-- REFLECTION_COMPLETE -->

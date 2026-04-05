@@ -19,28 +19,29 @@ var skillCopy bool
 var skillOutputOnly bool
 
 func init() {
-	rootCmd.AddCommand(newSkillRootCommand("skill", []string{"skills"}))
-	rootCmd.AddCommand(newSkillRootCommand("skills", []string{"skill"}))
+	rootCmd.AddCommand(newSkillRootCommand("skill", false, ""))
+	rootCmd.AddCommand(newSkillRootCommand("skills", true, "use `kit skill mine`"))
 }
 
-func newSkillRootCommand(use string, aliases []string) *cobra.Command {
+func newSkillRootCommand(use string, hidden bool, deprecated string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     use,
-		Aliases: aliases,
-		Short:   "Output skill extraction prompts for completed features",
+		Use:        use,
+		Short:      "Output skill extraction prompts for completed features",
+		Hidden:     hidden,
+		Deprecated: deprecated,
 		Long: `Output a structured prompt that tells the active coding agent how to
 mine a reusable skill from a feature's spec pipeline and implemented delta.
 
 The command never writes a skill directly. It only outputs the prompt.
 
 Commands:
-  kit skill mine [feature]
-  kit skills mine [feature]`,
+  kit skill mine [feature]`,
 	}
 
 	mineCmd := &cobra.Command{
-		Use:   "mine [feature]",
-		Short: "Output skill extraction prompt for the active coding agent",
+		Use:        "mine [feature]",
+		Short:      "Output skill extraction prompt for the active coding agent",
+		Deprecated: deprecated,
 		Long: `Output a structured markdown prompt that instructs the active coding
 agent to analyze a feature's documents, compare planned work to implemented
 work, and draft a reusable SKILL.md only when a real cross-feature pattern

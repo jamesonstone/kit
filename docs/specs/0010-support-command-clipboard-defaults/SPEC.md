@@ -38,6 +38,20 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| clipboard-first helper | code | `pkg/cli/root.go` | shared prompt and output transport behavior | active |
+| human output style | code | `pkg/cli/human_output.go` | clipboard acknowledgement rendering | active |
+| handoff command spec | doc | `docs/specs/0011-handoff-document-sync/SPEC.md` | handoff prompt content ownership | active |
+| support command workflow | doc | `docs/specs/0004-brainstorm-first-workflow/SPEC.md` | prompt-output contract alignment | active |
+| repository instruction files | doc | `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` | shipped workflow wording alignment | active |
+
 ## REQUIREMENTS
 
 - `kit handoff`, `kit summarize`, and `kit code-review` must keep their existing command surfaces.

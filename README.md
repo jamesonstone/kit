@@ -36,16 +36,16 @@ Harness principles:
 
 The artifact model is broader than software:
 
-| Kit Concept | In Software | In Research | In Strategy / Ops | In Writing / Policy |
-| ----------- | ----------- | ----------- | ----------------- | ------------------- |
-| `CONSTITUTION.md` | engineering constraints | study constraints | operating principles | editorial or policy constraints |
-| `BRAINSTORM.md` | codebase research | literature scan | landscape scan | source gathering and framing |
-| `SPEC.md` | feature requirements | research question or hypothesis | decision brief | argument or policy brief |
-| `PLAN.md` | implementation plan | study design | rollout plan | outline and revision plan |
-| `TASKS.md` | execution checklist | experiment tasks | workback schedule | drafting and review checklist |
-| `implement` | coding and integration | running the study | executing the change | drafting and editing |
-| `reflect` | verification and regression review | results review | retro and validation | revision review and critique |
-| `catchup` / `summarize` / `handoff` | resume or transfer context | resume the investigation | transfer project state | transfer editorial context |
+| Kit Concept                                      | In Software                            | In Research                           | In Strategy / Ops                   | In Writing / Policy                     |
+| ------------------------------------------------ | -------------------------------------- | ------------------------------------- | ----------------------------------- | --------------------------------------- |
+| `CONSTITUTION.md`                                | engineering constraints                | study constraints                     | operating principles                | editorial or policy constraints         |
+| `BRAINSTORM.md`                                  | codebase research                      | literature scan                       | landscape scan                      | source gathering and framing            |
+| `SPEC.md`                                        | feature requirements                   | research question or hypothesis       | decision brief                      | argument or policy brief                |
+| `PLAN.md`                                        | implementation plan                    | study design                          | rollout plan                        | outline and revision plan               |
+| `TASKS.md`                                       | execution checklist                    | experiment tasks                      | workback schedule                   | drafting and review checklist           |
+| `implement`                                      | coding and integration                 | running the study                     | executing the change                | drafting and editing                    |
+| `reflect`                                        | verification and regression review     | results review                        | retro and validation                | revision review and critique            |
+| `reconcile` / `resume` / `summarize` / `handoff` | reconcile, resume, or transfer context | reconcile or resume the investigation | reconcile or transfer project state | reconcile or transfer editorial context |
 
 The names may be software-flavored today, but the structure is general:
 constraints, research, specification, planning, execution, verification, and
@@ -84,6 +84,12 @@ kit init
 # optionally capture research first
 kit brainstorm my-feature
 
+# capture out-of-scope follow-up work without changing the active lane
+kit brainstorm --backlog shared-refactor
+
+# review deferred backlog items
+kit backlog
+
 # write the spec
 kit spec my-feature
 
@@ -97,11 +103,17 @@ kit tasks my-feature
 # runs the readiness gate, then outputs coding-agent context
 kit implement my-feature
 
-# reorient before resuming work
-kit catchup my-feature
-
 # inspect progress at any time
 kit status
+
+# inspect the full project overview
+kit status --all
+
+# reorient before resuming work
+kit resume my-feature
+
+# inspect the current document map and feature lineage
+kit map
 
 # pause a feature without losing its phase
 kit pause my-feature
@@ -115,49 +127,60 @@ kit remove my-feature --yes
 
 ## 🧰 Commands
 
-### 🏁 Project Initialization
+### 🏁 Setup
 
-| Command                  | Description                                    |
-| ------------------------ | ---------------------------------------------- |
-| `kit init`               | Initialize a new Kit project                   |
-| `kit scaffold [feature]` | Create a feature directory with pipeline files |
+| Command               | Description                                           |
+| --------------------- | ----------------------------------------------------- |
+| `kit init`            | Initialize a new Kit project                          |
+| `kit scaffold-agents` | Create or refresh repository instruction files safely |
 
-### 🔁 Core Development Loop
+### 🔁 Workflow
 
 | Command                    | Description                                                                               |
 | -------------------------- | ----------------------------------------------------------------------------------------- |
-| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and track phase dependencies in a `/plan` prompt     |
+| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and output a planning-only `/plan` prompt            |
+| `kit backlog`              | List deferred brainstorm items or use `--pickup` as the backlog-specific resume shortcut  |
 | `kit spec <feature>`       | Create or open a feature specification, perform skills discovery, and track dependencies  |
 | `kit plan <feature>`       | Create or open an implementation plan and track planning dependencies                     |
 | `kit tasks <feature>`      | Create or open a task list                                                                |
+| `kit resume [feature]`     | Resume backlog or in-flight work through the canonical prompt flow                        |
 | `kit implement [feature]`  | Run the implementation readiness gate and output implementation context for coding agents |
-| `kit reflect [feature]`    | Output reflection/verification instructions                                               |
+| `kit reflect [feature]`    | Output reflection and verification instructions                                           |
 | `kit pause [feature]`      | Pause an in-flight feature without changing its underlying phase                          |
 | `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features                |
-| `kit status`               | Show current feature status, including paused state; supports `--json`                    |
 | `kit remove [feature]`     | Remove a feature directory and its persisted lifecycle state                              |
 
-### ✅ Verification & State
+### 🔎 Inspect & Repair
 
-| Command               | Description                                                |
-| --------------------- | ---------------------------------------------------------- |
-| `kit check <feature>` | Validate feature documents and populated required sections |
-| `kit rollup`          | Generate PROJECT_PROGRESS_SUMMARY.md                       |
-| `kit code-review`     | Output instructions for branch code review                 |
+| Command                   | Description                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| `kit status`              | Show the active feature status, including paused state; supports `--json`                        |
+| `kit status --all`        | Show the project-wide overview as a lifecycle matrix with state and task progress; supports JSON |
+| `kit map [feature]`       | Show a read-only map of canonical docs, lifecycle state, and explicit feature lineage            |
+| `kit check <feature>`     | Validate feature documents and populated required sections                                       |
+| `kit reconcile [feature]` | Audit Kit-managed docs for contract drift and output a documentation-reconciliation prompt       |
 
-### 🔄 Context Management
+### 🧾 Prompt Utilities
 
-| Command                   | Description                                                                                  |
-| ------------------------- | -------------------------------------------------------------------------------------------- |
-| `kit handoff [feature]`   | Prompt the current agent session to sync docs, dependency inventories, and prepare a handoff |
-| `kit summarize [feature]` | Output context summarization instructions                                                    |
-| `kit catchup [feature]`   | Output a feature catch-up prompt that stays in plan mode                                     |
+| Command                    | Description                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| `kit handoff [feature]`    | Prompt the current agent session to sync docs, dependency inventories, and prepare a handoff |
+| `kit summarize [feature]`  | Output context summarization instructions                                                    |
+| `kit dispatch`             | Output a discovery-first prompt for clustering tasks and queueing subagents                  |
+| `kit code-review`          | Output instructions for branch code review                                                   |
+| `kit skill mine [feature]` | Output skill extraction prompt for the active coding agent                                   |
 
-### 🤝 Agent Orchestration
+### 🔧 Utilities
 
-| Command        | Description                                                                 |
-| -------------- | --------------------------------------------------------------------------- |
-| `kit dispatch` | Output a discovery-first prompt for clustering tasks and queueing subagents |
+| Command          | Description                                 |
+| ---------------- | ------------------------------------------- |
+| `kit upgrade`    | Download and install the latest Kit release |
+| `kit version`    | Print the installed Kit version             |
+| `kit completion` | Generate shell autocompletion script        |
+
+Hidden compatibility commands remain callable for migration, but they are no longer shown in
+default help or primary docs: `kit update`, `kit skills`, `kit catchup`, `kit scaffold`,
+`kit rollup`, and `kit brainstorm --pickup`.
 
 Prompt-producing commands default to subagent orchestration guidance. Pass
 `--single-agent` when you explicitly want to keep the work in one lane.
@@ -176,38 +199,32 @@ both.
 
 In interactive terminals, Kit also uses clearer section spacing and semantic
 emoji markers for help, status, selectors, and other human-readable guidance.
+Status views may also use ANSI color in a real terminal to highlight lifecycle
+markers, state labels, file presence, and progress without changing non-TTY
+output.
 Raw `--output-only` payloads and `--json` output stay unchanged.
 
-Lifecycle views now surface paused work explicitly. `kit status` keeps the
-latest feature in focus even when it is paused, while `PROJECT_PROGRESS_SUMMARY.md`
-and the all-features status table expose paused state in a dedicated column.
+Lifecycle views surface paused work explicitly. `kit status` keeps the active
+feature in focus, `kit status --all` provides the project overview as a
+fixed-width lifecycle matrix, and
+deferred brainstorm items stay available through `kit backlog`,
+`kit backlog --pickup`, or `kit resume`.
 
 ### ♻️ Prompt Regeneration
 
 Feature-scoped prompt commands also accept `--prompt-only` to regenerate the
 selected feature's prompt without mutating repository docs:
 `kit brainstorm`, `kit spec`, `kit plan`, `kit tasks`, `kit implement`,
-`kit reflect`, `kit catchup`, `kit handoff`, and `kit skill mine`. For
+`kit reflect`, `kit reconcile`, `kit handoff`, and `kit skill mine`. For
 `brainstorm`, `spec`, `plan`, and `tasks`, `--prompt-only` skips scaffolding
 and rollup writes, requires the existing artifact set, and uses the normal
 existing-feature selector when no feature argument is provided.
 
 ### ⛏️ Skill Mining
 
-| Command                     | Description                                                |
-| --------------------------- | ---------------------------------------------------------- |
-| `kit skill mine [feature]`  | Output skill extraction prompt for the active coding agent |
-| `kit skills mine [feature]` | Alias for `kit skill mine`                                 |
-
-### 🔧 Utility
-
-| Command               | Description                                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| `kit upgrade`         | Download and install the latest Kit release                                                 |
-| `kit update`          | Alias for `kit upgrade`                                                                     |
-| `kit version`         | Print the installed Kit version                                                             |
-| `kit scaffold-agents` | Create or refresh repository instruction files and Copilot rules with safer overwrite modes |
-| `kit completion`      | Generate shell autocompletion script                                                        |
+| Command                    | Description                                                |
+| -------------------------- | ---------------------------------------------------------- |
+| `kit skill mine [feature]` | Output skill extraction prompt for the active coding agent |
 
 `kit scaffold-agents` also supports the singular alias `kit scaffold-agent`.
 
@@ -248,15 +265,15 @@ Run once, then refine as the project matures:
 ┌──────────────┐    ┌───────────────┐    ┌──────┐    ┌───────┐    ┌────────────────┐    ┌────────────┐
 │ Brainstorm   │ ─▶ │ Specification │ ─▶ │ Plan │ ─▶ │ Tasks │ ─▶ │ Implementation │ ─▶ │ Reflection │ ─┐
 └──────────────┘    └───────────────┘    └──────┘    └───────┘    └────────────────┘    └────────────┘  │
-       ▲                                                                            │
-       └────────────────────────────────────────────────────────────────────────────┘
+       ▲                                                                                                │
+       └────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 📝 Artifact Details
 
 1. 📜 **Constitution** — strategy, patterns, long-term vision
-2. 🧠 **Brainstorm** — optional research, findings, dependencies, strategy
-3. 📐 **Specification** — what is being built and why
+2. 🧠 **Brainstorm** — optional research, findings, relationships, dependencies, strategy
+3. 📐 **Specification** — what is being built, why, and how it relates to prior features
 4. 🗺️ **Plan** — how it will be built
 5. ✅ **Tasks** — executable work units
 6. 🛠️ **Implementation** — execution after the readiness gate passes
@@ -278,6 +295,7 @@ Then Kit:
 
 - creates or reuses `docs/specs/<feature>/`
 - creates `BRAINSTORM.md` as the first artifact in that directory
+- requires the coding agent to keep the `## RELATIONSHIPS` section current with explicit prior-feature lineage or `none`
 - requires the coding agent to keep the `## DEPENDENCIES` table current with the inputs used during the brainstorm phase
 - opens a vim-compatible editor by default for the multiline thesis, with step instructions and a press-any-key launch gate
 - supports `--inline` to use terminal multiline entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
@@ -285,6 +303,8 @@ Then Kit:
 - outputs a planning-only prompt that starts with `/plan`
 - tells the coding agent to research the codebase, use numbered lists, ask questions in batches of up to 10, and avoid implementation
 - requires the agent to include recommended defaults, accept `yes` / `y` for whole-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` for numbered approval, state uncertainties, output percentage-understanding progress after each batch, and continue until the spec is precise enough for a production-quality solution
+- supports `--backlog` to capture a deferred brainstorm item without outputting a planning prompt
+- keeps `--pickup` callable as a hidden compatibility path while teaching `kit resume <feature>` or `kit backlog --pickup <feature>` as the primary resume flows
 
 ### 💡 Why this matters
 
@@ -321,6 +341,9 @@ canonical docs first, then rerun the gate before implementing.
 # interactive brainstorm for a new feature
 kit brainstorm my-feature
 
+# capture a deferred follow-up feature and leave it in backlog
+kit brainstorm --backlog shared-refactor
+
 # open or continue an existing brainstorm
 kit brainstorm my-feature
 
@@ -335,6 +358,15 @@ kit brainstorm my-feature --inline
 
 # write the generated /plan prompt to a file
 kit brainstorm my-feature --output tmp/brainstorm-prompt.md
+
+# list deferred backlog items
+kit backlog
+
+# resume a deferred backlog item
+kit backlog --pickup shared-refactor
+
+# canonical general resume flow
+kit resume shared-refactor
 ```
 
 `kit spec <feature> --interactive` now opens a vim-compatible editor for each
@@ -345,6 +377,7 @@ to opt back into terminal multiline entry.
 
 - summary of the issue or opportunity
 - user thesis in the user's own words
+- explicit relationship to prior features or `none`
 - codebase findings and relevant architecture notes
 - affected files with concrete paths
 - unresolved questions and viable options
@@ -373,7 +406,7 @@ development workflows:
 
 - structured planning when scope is unclear
 - lightweight ad hoc execution when the change is contained
-- recovery tools such as `catchup`, `summarize`, and `handoff`
+- recovery tools such as `reconcile`, `resume`, `summarize`, and `handoff`
 - review and orchestration tools such as `code-review` and `dispatch`
 
 Spec-driven development principles remain a core engine inside that harness,

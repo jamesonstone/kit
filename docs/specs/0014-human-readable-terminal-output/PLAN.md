@@ -8,15 +8,18 @@
 
 - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05] Record the approved scope and exclusions in a dedicated feature spec before code changes.
 - [PLAN-02][SPEC-06][SPEC-07][SPEC-08][SPEC-09][SPEC-10] Add shared terminal-formatting helpers for human-readable acknowledgements, headings, selector prompts, and TTY detection.
-- [PLAN-03][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05] Apply the shared formatting to root help, workflow guidance, editor-launch instructions, selector screens, and related command follow-up output.
-- [PLAN-04][SPEC-01][SPEC-05] Improve human-readable status presentation without changing status content.
+- [PLAN-03][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05] Apply the shared formatting to grouped root help, workflow guidance, editor-launch instructions, selector screens, and related command follow-up output.
+- [PLAN-04][SPEC-01][SPEC-05] Improve human-readable status presentation
+  without changing status content, and keep fleet views in fixed-width
+  terminal columns instead of Markdown-style tables, with ANSI color gated on
+  TTY output only.
 - [PLAN-05][SPEC-06][SPEC-07][SPEC-08][SPEC-09] Add or update tests to prove raw-output stability and new human-readable formatting behavior.
 - [PLAN-06][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05] Update practical docs and rollup state to match the shipped UX.
 
 ## COMPONENTS
 
 - `pkg/cli/root.go`
-  - help and usage template updates
+  - grouped root help and usage updates
   - shared clipboard acknowledgement integration
   - workflow guidance integration
 - `pkg/cli/human_output.go`
@@ -61,6 +64,18 @@
 - Human-readable surfaces receive presentation-only changes.
 - `--output-only` continues to bypass the human-readable acknowledgement path.
 - `--json` continues to bypass human-readable rendering.
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | canonical command and output rules | active |
+| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | shipped terminal-output behavior summary | active |
+| root command wiring | code | `pkg/cli/root.go` | help and usage template updates | active |
+| human output helpers | code | `pkg/cli/human_output.go` | shared formatting and TTY detection | active |
+| status output | code | `pkg/cli/status_output.go` | human-readable status rendering | active |
+| editor input | code | `pkg/cli/editor_input.go` | editor-launch guidance formatting | active |
+| README | doc | `README.md` | user-facing output behavior notes | active |
 
 ## RISKS
 

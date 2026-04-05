@@ -33,6 +33,8 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.`,
 }
 
 func init() {
+	scaffoldCmd.Hidden = true
+	scaffoldCmd.Deprecated = "use `kit brainstorm`, `kit spec`, `kit plan`, or `kit tasks`"
 	rootCmd.AddCommand(scaffoldCmd)
 }
 

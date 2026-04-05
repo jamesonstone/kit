@@ -50,6 +50,19 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | workflow constraints and prompt contract updates | active |
+| core artifact templates | code | `internal/templates/templates.go` | brainstorm and downstream prompt scaffolding | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | brainstorm-aware phase and summary reporting | active |
+| repository instruction files | doc | `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` | alignment of the repo's workflow contract | active |
+
 ## REQUIREMENTS
 
 - `kit brainstorm` must normalize and validate feature names using existing feature naming rules

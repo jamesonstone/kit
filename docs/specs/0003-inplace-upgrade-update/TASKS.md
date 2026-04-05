@@ -51,8 +51,9 @@
   - update `pkg/cli/root.go`
   - update `README.md`
 - **ACCEPTANCE**:
-  - `kit --help` lists both `upgrade` and `update`
-  - README utility table documents both entries
+  - `kit --help` lists `upgrade` as the canonical utility command
+  - `kit update` remains callable as a hidden deprecated compatibility command
+  - README teaches `upgrade` first and references `update` only as migration guidance
 
 ### T004
 

@@ -34,6 +34,21 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | canonical workflow and section requirements | active |
+| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | canonical skills and dependency inventory contract | active |
+| spec template | code | `internal/templates/templates.go` | required `SPEC.md` section shapes | active |
+| spec validation | code | `internal/document/document.go` | required section parsing and validation | active |
+| spec prompt flow | code | `pkg/cli/spec.go` | skills discovery and prompt output behavior | active |
+| shared skills guidance | code | `pkg/cli/subagents.go` | execution-time skill instructions in prompt output | active |
+
 ## REQUIREMENTS
 
 - [SPEC-01] `SPEC.md` must gain a required `## SKILLS` section.

@@ -89,10 +89,11 @@ all decisions.
    - Do not leave HTML TODO comments as the only content in a required section
    - If a required section has no feature-specific detail, replace the placeholder comment with `not applicable`, `not required`, or `no additional information required`
    - `CONSTITUTION.md`: PRINCIPLES, CONSTRAINTS, NON-GOALS, DEFINITIONS
-   - `BRAINSTORM.md`: SUMMARY, USER THESIS, CODEBASE FINDINGS, AFFECTED FILES, QUESTIONS, OPTIONS, RECOMMENDED STRATEGY, NEXT STEP
-   - `SPEC.md`: PROBLEM, GOALS, NON-GOALS, USERS, REQUIREMENTS, ACCEPTANCE, EDGE-CASES, OPEN-QUESTIONS
+   - `BRAINSTORM.md`: SUMMARY, USER THESIS, RELATIONSHIPS, CODEBASE FINDINGS, AFFECTED FILES, DEPENDENCIES, QUESTIONS, OPTIONS, RECOMMENDED STRATEGY, NEXT STEP
+   - `SPEC.md`: SUMMARY, PROBLEM, GOALS, NON-GOALS, USERS, SKILLS, RELATIONSHIPS, DEPENDENCIES, REQUIREMENTS, ACCEPTANCE, EDGE-CASES, OPEN-QUESTIONS
    - `PLAN.md`: SUMMARY, APPROACH, COMPONENTS, DATA, INTERFACES, RISKS, TESTING
    - `TASKS.md`: PROGRESS TABLE, TASK LIST, TASK DETAILS, DEPENDENCIES, NOTES
+   - `RELATIONSHIPS` in `BRAINSTORM.md` and `SPEC.md` must be either `none` or explicit bullets using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
 
 4. **Single Feature Per Directory**
    - Never mix features in one `docs/specs/<feature>/` directory
@@ -300,6 +301,14 @@ The process of scanning all features and generating `PROJECT_PROGRESS_SUMMARY.md
 - Sufficient to onboard or fork the project
 - Primary context input for any coding agent
 
+### Map
+
+The read-only structural view rendered by `kit map`:
+
+- Shows global docs, feature docs, lifecycle state, and explicit feature-to-feature relationships
+- Derives its state from canonical markdown docs and the filesystem
+- Does not create another persisted graph document in the repository
+
 ---
 
 ## ARCHITECTURAL PATTERNS
@@ -318,9 +327,11 @@ kit/
 │   ├── tasks.go             # kit tasks <feature>
 │   ├── check.go             # kit check [feature]
 │   ├── rollup.go            # kit rollup
+│   ├── reconcile.go         # kit reconcile [feature]
 │   ├── handoff.go           # kit handoff [feature]
 │   ├── summarize.go         # kit summarize [feature]
 │   ├── reflect.go           # kit reflect [feature]
+│   ├── map.go               # kit map [feature]
 │   └── scaffold_agents.go   # kit scaffold-agents
 ├── internal/
 │   ├── config/config.go     # .kit.yaml loading, project root discovery

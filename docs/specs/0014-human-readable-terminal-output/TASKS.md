@@ -53,7 +53,7 @@ Use markdown checkboxes to track completion:
   - update workflow guidance and editor-launch instructions
   - update command follow-up guidance where needed
 - **ACCEPTANCE**:
-  - help output uses clearer section headings and spacing
+  - root help output uses grouped canonical sections with clearer headings and spacing
   - workflow and guidance text uses consistent semantic emoji markers
 
 ### T004
@@ -63,7 +63,9 @@ Use markdown checkboxes to track completion:
   - update status rendering
   - update feature selectors and input prompts
 - **ACCEPTANCE**:
-  - status keeps the same information with improved section separation
+  - default `status` keeps the active-feature information with improved section separation
+  - `status --all` presents the explicit project overview cleanly
+  - terminal status views may use TTY-only color without changing buffered or JSON output
   - selector screens share consistent headers and prompts
 
 ### T005

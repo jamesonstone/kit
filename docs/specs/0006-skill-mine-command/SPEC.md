@@ -2,7 +2,9 @@
 
 ## SUMMARY
 
-- Add a new `kit skill mine [feature]` command, plus a `skills` alias, that outputs a prompt for an active coding agent to mine reusable procedural skills from a completed feature.
+- Add a new canonical `kit skill mine [feature]` command, plus a deprecated
+  hidden `skills` compatibility alias, that outputs a prompt for an active
+  coding agent to mine reusable procedural skills from a completed feature.
 - The command must follow the same clipboard-first output-prompt contract as `kit implement` and `kit reflect` and write nothing itself except the generated prompt.
 - The command must also accept `--prompt-only` as a consistency flag for regenerating the selected feature prompt without mutating repo docs.
 - Mined skills must use a transferable directory bundle layout that can be consumed by multiple coding agent systems.
@@ -16,7 +18,8 @@
 ## GOALS
 
 - Add a top-level `skill` command with a `mine` subcommand.
-- Add a top-level `skills` command as an alias surface with the same `mine` behavior.
+- Keep `skills` callable as a compatibility surface with the same `mine`
+  behavior while teaching `skill` as the canonical root.
 - Reuse the existing clipboard-first prompt-output contract used by `kit reflect` and `kit implement`.
 - Let users target a feature directly or pick interactively from features that have reached at least `TASKS.md`.
 - Include the feature's spec pipeline, project constraints, git diff instructions, and skill de-duplication instructions in the output prompt.
@@ -45,12 +48,26 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| prompt-output contract | code | `pkg/cli/implement.go`, `pkg/cli/reflect.go` | shared clipboard-first behavior | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | cross-feature theme detection | active |
+| skills directory config | code | `internal/config/config.go` | canonical transferable skills root | active |
+| README | doc | `README.md` | command documentation and alias surface | active |
+
 ## REQUIREMENTS
 
 - [SPEC-01] Add `skills_dir` to `.kit.yaml` config loading with default `.agents/skills`.
 - [SPEC-02] Add `Config.SkillsPath(projectRoot string) string` to resolve the absolute skills directory path.
-- [SPEC-03] Register two top-level Cobra commands: `skill` and `skills`.
-- [SPEC-04] Both top-level commands must expose a `mine` subcommand and route to identical `RunE` behavior.
+- [SPEC-03] Register a canonical top-level Cobra command `skill`.
+- [SPEC-04] Keep `skills` callable as a hidden deprecated compatibility root
+  that exposes the same `mine` behavior.
 - [SPEC-05] The `mine` subcommand must accept zero or one positional feature argument.
 - [SPEC-06] The `mine` subcommand must support `--copy` and `--output-only` flags with the same clipboard-first semantics as `kit reflect`.
 - [SPEC-06a] By default, `kit skill mine` and `kit skills mine` must copy the generated prompt to the clipboard, print an acknowledgement, and not print the prompt body to stdout.
@@ -68,8 +85,11 @@
 - [SPEC-16] The output prompt must explicitly state that the `description` frontmatter describes when the skill should trigger, not what it does.
 - [SPEC-17] The output prompt must explicitly forbid writing anything when no genuinely reusable pattern is found.
 - [SPEC-18] The command must print post-output workflow instructions for reviewing the generated draft and reusing the command later.
-- [SPEC-19] Root help output must include both `skill` and `skills`.
-- [SPEC-20] README command documentation must include both command forms under a Skill Mining heading.
+- [SPEC-19] Root help output must include `skill` and omit visible `skills`
+  from the default surface.
+- [SPEC-20] README command documentation must teach `kit skill mine` as the
+  canonical surface and may mention `kit skills mine` only as migration
+  guidance.
 - [SPEC-21] The output prompt must instruct the active coding agent to read `PROJECT_PROGRESS_SUMMARY.md` to detect recurring themes across multiple features.
 - [SPEC-22] The output prompt must include an explicit novel-insight derivation block covering:
   - spec delta analysis
@@ -107,7 +127,8 @@
 ## ACCEPTANCE
 
 - Running `kit skill mine <feature>` outputs a prompt that references the feature docs, configured canonical skills directory, Claude mirror path, project root, and deterministic draft output path.
-- Running `kit skills mine <feature>` produces the same prompt behavior as `kit skill mine <feature>`.
+- Running `kit skills mine <feature>` produces the same prompt behavior as
+  `kit skill mine <feature>`.
 - Default command output copies the generated prompt to the clipboard, prints an acknowledgement, and does not print the prompt body.
 - `--output-only` prints the raw prompt to stdout, and `--output-only --copy` does both.
 - `kit skill mine --prompt-only <feature>` and `kit skills mine --prompt-only <feature>` are accepted and preserve the existing prompt-only behavior.
@@ -119,7 +140,8 @@
 - The prompt writes canonical skills to `<skills_dir>/<slug>/SKILL.md` and duplicates them to `.claude/skills/<slug>/SKILL.md`.
 - The prompt audits canonical skills from `<skills_dir>/*/SKILL.md` and removes the Claude mirror when a canonical skill is deleted.
 - The prompt starts with a direct task statement and contains no HTTP or API-call instructions.
-- Root help and README both expose the new command surfaces.
+- Root help exposes the canonical `skill` surface and README teaches the
+  canonical command while preserving compatibility notes for `skills`.
 
 ## EDGE-CASES
 

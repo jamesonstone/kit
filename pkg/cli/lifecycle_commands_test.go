@@ -163,15 +163,10 @@ func TestConfirmFeatureRemoval(t *testing.T) {
 }
 
 func TestOutputStatusTextShowsPausedState(t *testing.T) {
-	projectRoot, cfg := setupLifecycleTestProject(t)
-	specsDir := filepath.Join(projectRoot, "docs", "specs")
-	createFeatureFile(t, specsDir, "0001-alpha", "SPEC.md", "# SPEC\n")
-	cfg.SetFeaturePaused("0001-alpha", true)
-
 	status := pausedStatus()
 	out := &bytes.Buffer{}
 
-	if err := outputStatusText(out, status, specsDir, cfg, "v1.2.3"); err != nil {
+	if err := outputStatusText(out, status, "v1.2.3"); err != nil {
 		t.Fatalf("outputStatusText() error = %v", err)
 	}
 
@@ -179,8 +174,8 @@ func TestOutputStatusTextShowsPausedState(t *testing.T) {
 	if !strings.Contains(content, "Paused: yes") {
 		t.Fatalf("expected paused lifecycle section, got %q", content)
 	}
-	if !strings.Contains(content, "PAUSED") || !strings.Contains(content, "| 0001-alpha") {
-		t.Fatalf("expected paused all-features table, got %q", content)
+	if !strings.Contains(content, "Active Feature: 0001-alpha") {
+		t.Fatalf("expected active feature header, got %q", content)
 	}
 }
 

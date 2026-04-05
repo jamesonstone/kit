@@ -53,6 +53,17 @@
   - prompt content becomes an active doc-sync-and-summary workflow
   - `--prompt-only` is accepted as a no-op consistency flag because the command is already prompt-only
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | canonical workflow and document rules | active |
+| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | shipped handoff behavior summary | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | project-wide reconciliation context | active |
+| handoff command | code | `pkg/cli/handoff.go` | selector and prompt wiring | active |
+| handoff prompt builder | code | `pkg/cli/handoff_prompt.go` | document inventory and summary generation | active |
+| README | doc | `README.md` | user-facing command description | active |
+
 ## RISKS
 
 - The prompt can become too verbose if it repeats both inventory data and final-response requirements without structure.

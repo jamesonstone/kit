@@ -26,6 +26,8 @@ This command runs automatically after feature creation/refinement.`,
 }
 
 func init() {
+	rollupCmd.Hidden = true
+	rollupCmd.Deprecated = "maintenance command; lifecycle views refresh automatically during normal workflows"
 	rootCmd.AddCommand(rollupCmd)
 }
 

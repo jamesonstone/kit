@@ -1,8 +1,6 @@
 # TASKS
 
-## TASKS
-
-### PROGRESS TABLE
+## PROGRESS TABLE
 
 | ID   | TASK                                                                     | STATUS | OWNER | DEPENDENCIES     |
 | ---- | ------------------------------------------------------------------------ | ------ | ----- | ---------------- |
@@ -13,7 +11,7 @@
 | T005 | Add tests for templates and spec prompt output                           | done   | agent | T002, T003, T004 |
 | T006 | Split broader spec dependencies from execution-time skills              | done   | agent | T002, T005       |
 
-### TASK LIST
+## TASK LIST
 
 Use markdown checkboxes to track completion:
 
@@ -24,7 +22,7 @@ Use markdown checkboxes to track completion:
 - [x] T005: Add tests for templates and spec prompt output
 - [x] T006: Split broader spec dependencies from execution-time skills
 
-### TASK DETAILS
+## TASK DETAILS
 
 ### T001
 

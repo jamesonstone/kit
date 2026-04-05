@@ -66,6 +66,15 @@
   - prompt-only, passed through the shared clipboard-first helper without subagent suffix text
   - workflow footer via `printWorkflowInstructions(...)`
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| prompt helper | code | `pkg/cli/root.go`, `pkg/cli/implement.go`, `pkg/cli/reflect.go` | clipboard-first prompt output | active |
+| editor input helpers | code | `pkg/cli/editor_input.go` | interactive task capture | active |
+| root help ordering | code | `pkg/cli/root.go` | command visibility | active |
+| README | doc | `README.md` | public command documentation | active |
+
 ## RISKS
 
 - Default interactive capture depends on a vim-compatible editor being available, so missing-editor errors must stay actionable.

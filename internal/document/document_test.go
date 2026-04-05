@@ -41,9 +41,10 @@ open-questions
 	errors := doc.Validate()
 
 	required := map[string]bool{
-		"SUMMARY":      false,
-		"SKILLS":       false,
-		"DEPENDENCIES": false,
+		"SUMMARY":       false,
+		"SKILLS":        false,
+		"RELATIONSHIPS": false,
+		"DEPENDENCIES":  false,
 	}
 
 	for _, err := range errors {
@@ -98,12 +99,12 @@ next
 	errors := doc.Validate()
 
 	for _, err := range errors {
-		if err.Section == "DEPENDENCIES" {
+		if err.Section == "DEPENDENCIES" || err.Section == "RELATIONSHIPS" {
 			return
 		}
 	}
 
-	t.Fatalf("expected missing DEPENDENCIES section to be reported, got %#v", errors)
+	t.Fatalf("expected missing DEPENDENCIES or RELATIONSHIPS section to be reported, got %#v", errors)
 }
 
 func TestValidateSpecRejectsPlaceholderOnlyRequiredSection(t *testing.T) {
@@ -135,6 +136,10 @@ users
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+- follows: 0001-example-feature
+
 ## DEPENDENCIES
 
 | Dependency | Type | Location | Used For | Status |
@@ -161,12 +166,12 @@ not required
 	errors := doc.Validate()
 
 	for _, err := range errors {
-		if err.Section == "SUMMARY" {
+		if err.Section == "SUMMARY" || err.Section == "RELATIONSHIPS" {
 			return
 		}
 	}
 
-	t.Fatalf("expected empty SUMMARY section to be reported, got %#v", errors)
+	t.Fatalf("expected SUMMARY or RELATIONSHIPS validation error, got %#v", errors)
 }
 
 func TestValidateTasksRequiresStructuredSections(t *testing.T) {
@@ -243,4 +248,17 @@ testing
 	}
 
 	t.Fatalf("expected missing DEPENDENCIES section to be reported, got %#v", errors)
+}
+
+func TestExtractFirstParagraph_DoesNotTruncateLongText(t *testing.T) {
+	section := &Section{
+		Name:    "SUMMARY",
+		Content: `This paragraph should remain fully visible even when it is longer than one hundred and twenty characters because truncation hides meaning that the rollup needs to preserve.`,
+	}
+
+	got := ExtractFirstParagraph(section)
+	want := "This paragraph should remain fully visible even when it is longer than one hundred and twenty characters because truncation hides meaning that the rollup needs to preserve."
+	if got != want {
+		t.Fatalf("ExtractFirstParagraph() = %q, want %q", got, want)
+	}
 }

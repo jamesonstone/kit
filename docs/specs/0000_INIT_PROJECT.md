@@ -189,6 +189,7 @@ Required sections for newly generated brainstorm docs and brainstorm docs touche
 
 - SUMMARY
 - USER THESIS
+- RELATIONSHIPS
 - CODEBASE FINDINGS
 - AFFECTED FILES
 - DEPENDENCIES
@@ -200,6 +201,8 @@ Required sections for newly generated brainstorm docs and brainstorm docs touche
 Rules:
 
 - keep file paths concrete whenever possible
+- `## RELATIONSHIPS` must be either `none` or one bullet per explicit cross-feature relationship using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
+- relationship targets must use canonical feature directory identifiers such as `0007-catchup-command`
 - keep supporting inputs in a dependency table with columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`
 - `Status` should distinguish `active`, `optional`, and `stale` inputs
 - when a dependency is a Figma or MCP-driven design source, record the exact URL or file/node reference in `Location`
@@ -216,6 +219,7 @@ Required sections for newly generated specs and specs touched by current workflo
 - NON-GOALS
 - USERS
 - SKILLS
+- RELATIONSHIPS
 - DEPENDENCIES
 - REQUIREMENTS
 - ACCEPTANCE
@@ -228,6 +232,8 @@ Rules:
 - no implementation detail
 - no speculative language
 - keep `## SKILLS` focused on execution-time agent skills
+- `## RELATIONSHIPS` must be either `none` or one bullet per explicit cross-feature relationship using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
+- relationship targets must use canonical feature directory identifiers such as `0007-catchup-command`
 - keep broader supporting inputs in `## DEPENDENCIES`
 
 ---
@@ -296,7 +302,9 @@ Rules:
 - sorted by ID ascending
 - `PHASE` ∈ `brainstorm | spec | plan | tasks | implement | reflect | complete`
 - `PAUSED` ∈ `yes | no`
-- `SUMMARY` ≤ 120 characters
+- `SUMMARY` should prefer the concise `SPEC.md` `SUMMARY` section and only fall back to `PROBLEM` or brainstorm summary when needed
+- `SUMMARY` must preserve the full intended meaning without truncation
+- `SUMMARY` should normalize whitespace so it stays readable in a single markdown table row
 - table is the authoritative project state
 
 #### Required Sections (In Order)
@@ -414,10 +422,45 @@ CLI flags always override `.kit.yaml`.
 - create or reuse the feature directory (uses `0001-feat-name` format)
 - create `BRAINSTORM.md` as the first artifact in the feature directory
 - output a planning-only `/plan` prompt for a coding agent
+- support `--backlog` to capture a deferred brainstorm item without outputting a
+  planning prompt
+- keep `--pickup` as a compatibility path for resuming a deferred backlog item
+  while teaching `kit resume <feature>` or `kit backlog --pickup <feature>` as
+  the canonical resume flows
 - require the agent to keep `BRAINSTORM.md` `## DEPENDENCIES` current with the supporting inputs used during the research phase
 - require the agent to populate every `BRAINSTORM.md` section and replace placeholder-only sections with `not applicable`, `not required`, or `no additional information required`
 - require the agent to use numbered lists, ask clarifying questions in batches of up to 10, include a recommended default/proposed solution/assumption for every question, accept `yes` / `y` as full-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` as numbered approval, support `no` / `n` overrides, state uncertainties, and output percentage-understanding progress after each batch
 - require the agent to continue until the configured understanding threshold is reached and the specification is precise enough for a correct, production-quality solution before writing implementation artifacts
+
+---
+
+#### `kit backlog [feature]`
+
+- list deferred backlog items captured as paused brainstorm-phase features
+- render a concise markdown table with `feature` and `description`
+- use `BRAINSTORM.md` `SUMMARY` for the description when available and fall
+  back to `USER THESIS`
+- support `--pickup` to clear paused state for a backlog item and output the
+  brainstorm planning prompt
+- keep `kit backlog --pickup` as the backlog-specific shortcut while
+  `kit resume` becomes the canonical general resume command
+- without a feature argument under `--pickup`, show an interactive selector of
+  backlog items
+- do not create a new backlog-specific markdown artifact
+
+---
+
+#### `kit resume [feature]`
+
+- act as the canonical command for resuming work
+- when the target is a backlog item, reuse backlog pickup behavior and output
+  the brainstorm planning prompt
+- when the target is not a backlog item, reuse the catch-up prompt behavior
+- without a feature argument, show a mixed selector ordered as:
+  - paused non-backlog features
+  - active in-flight feature
+  - backlog items labeled as backlog
+- support the shared clipboard-first prompt output contract
 
 ---
 
@@ -500,6 +543,32 @@ Flags:
 
 ---
 
+#### `kit map [feature]`
+
+- render a read-only ASCII map of the canonical document hierarchy and current project state
+- without a feature argument, show global docs plus every feature directory, current phase, paused state, canonical docs, and explicit relationship edges
+- with a feature argument, show a feature-scoped view plus incoming or outgoing relationships that touch that feature
+- derive relationship edges from explicit `## RELATIONSHIPS` sections in `BRAINSTORM.md` and `SPEC.md`
+- do not create another persisted markdown graph document
+
+---
+
+#### `kit status`
+
+- default text output remains focused on the active feature only
+- show current summary, phase, paused state, file presence, progress, and next
+  recommended action for the active feature
+- keep the existing default `--json` payload shape for the active-feature view
+- support `--all` as the explicit fleet overview mode
+- `--all` text output shows every feature in a terminal-friendly fixed-width
+  lifecycle matrix with paused or backlog state and available task progress
+- when writing to a terminal, status views may color lifecycle markers and
+  state labels for scanability without changing non-TTY output
+- `--all --json` uses a dedicated all-features payload and does not replace the
+  default `--json` contract
+
+---
+
 ### 8.3 Roll-Up
 
 #### `kit rollup`
@@ -519,6 +588,8 @@ Behavior:
   - current artifact phase (`brainstorm | spec | plan | tasks | implement | reflect | complete`)
   - paused state
   - spec creation date
+- remain callable as a maintenance command, not a primary workflow step taught
+  to new users
 
 `PROJECT_PROGRESS_SUMMARY.md` is intended to be:
 
@@ -569,7 +640,42 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 
 ---
 
-### 8.6 Context Summarization
+### 8.6 Documentation Reconciliation
+
+#### `kit reconcile [feature]`
+
+Purpose:
+
+- audit Kit-managed docs against the current Kit document contract
+- output a prompt for a coding agent to reconcile stale or missing documentation
+- keep v1 scoped to documentation only
+
+Behavior:
+
+- without feature argument: audits the whole project by default
+- with feature argument: audits the selected feature plus related rollup drift
+- emits a short clean result when no reconciliation is needed
+- emits a clipboard-first prompt when reconciliation findings exist
+
+Findings:
+
+- missing required docs or sections
+- placeholder-only required sections
+- malformed `SKILLS`, `DEPENDENCIES`, or `PROGRESS TABLE` tables
+- task-ID drift across `PROGRESS TABLE`, `TASK LIST`, and `TASK DETAILS`
+- stale `RELATIONSHIPS` targets
+- stale `PROJECT_PROGRESS_SUMMARY.md` coverage
+- repository instruction-file drift detectable through append-only planning
+
+Verification:
+
+- run `kit check --all` for project-wide reconciliation or `kit check <feature>` for feature-scoped reconciliation
+- run the maintenance command `kit rollup` when reconciled changes affect
+  `PROJECT_PROGRESS_SUMMARY.md`
+
+---
+
+### 8.7 Context Summarization
 
 #### `kit summarize [feature]`
 
@@ -591,7 +697,7 @@ Fact Retention Principles:
 
 ---
 
-### 8.7 Reflection
+### 8.8 Reflection
 
 #### `kit reflect [feature]`
 
@@ -617,7 +723,7 @@ Reflection Process:
 
 ---
 
-### 8.8 Agent Handoff
+### 8.9 Agent Handoff
 
 #### `kit handoff [feature]`
 

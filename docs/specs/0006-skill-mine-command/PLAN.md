@@ -2,14 +2,17 @@
 
 ## SUMMARY
 
-- Add a new prompt-only CLI surface under `skill mine` and `skills mine`.
+- Add a new prompt-only CLI surface under canonical `skill mine` while keeping
+  `skills mine` as a hidden deprecated compatibility entry point.
 - Reuse existing selection, clipboard-first output, and workflow-instruction patterns so the new command behaves like the current core workflow prompt commands.
 - Add config support for a canonical transferable skills directory, extend the prompt to derive higher-order insights, and add a mandatory stale-skill audit section with Claude mirror cleanup.
 
 ## APPROACH
 
 - [PLAN-01][SPEC-01][SPEC-02][SPEC-32][SPEC-36] Extend config with a configurable canonical skills directory and keep the prompt explicit about the canonical root versus the Claude mirror root.
-- [PLAN-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06] Implement a new `pkg/cli/skill.go` file that registers `skill` and `skills` as separate top-level commands sharing the same `mine` subcommand behavior.
+- [PLAN-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06] Implement `pkg/cli/skill.go`
+  so `skill` is canonical and `skills` remains a hidden deprecated compatibility
+  root sharing the same `mine` behavior.
 - [PLAN-03][SPEC-07][SPEC-08] Reuse the feature-list pattern from `implement`/`reflect`, but filter on `TASKS.md` existence and include phase labels in the selector.
 - [PLAN-04][SPEC-09][SPEC-10][SPEC-11][SPEC-12][SPEC-13][SPEC-14][SPEC-15][SPEC-16][SPEC-17][SPEC-33] Build a deterministic markdown prompt that instructs the coding agent how to analyze the feature pipeline, compare plan vs implementation, de-duplicate against existing skills, write one canonical skill bundle, and duplicate it into the Claude mirror root.
 - [PLAN-05][SPEC-21][SPEC-22][SPEC-23][SPEC-24][SPEC-25] Expand the prompt so it synthesizes across `PROJECT_PROGRESS_SUMMARY.md`, constitution alignment, and emergent workflows, with an explicit signal priority ladder for insight derivation.
@@ -30,11 +33,11 @@
   - define prompt builder and prompt-section helpers
   - define canonical and Claude mirror path text
 - `pkg/cli/root.go`
-  - add command ordering entries
+  - add command ordering entries and canonical help visibility
 - `pkg/cli/skill_test.go`
   - cover prompt generation invariants, canonical-plus-mirror paths, insight signals, and audit requirements
 - `README.md`
-  - add Skill Mining command table section
+  - add canonical Skill Mining command docs with migration guidance for `skills`
 - `.kit.yaml`
   - reflect the canonical skills root when explicitly configured
 
@@ -58,6 +61,15 @@
   - `--output-only`
   - `--prompt-only`
 - Prompt output remains plain markdown passed through the shared clipboard-first helper.
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| configuration model | code | `internal/config/config.go` | skills directory resolution | active |
+| existing prompt commands | code | `pkg/cli/implement.go`, `pkg/cli/reflect.go` | shared prompt-output behavior | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | insight and theme synthesis input | active |
+| root CLI help | code | `pkg/cli/root.go` | alias visibility and command ordering | active |
 
 ## RISKS
 

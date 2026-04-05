@@ -71,8 +71,10 @@ Use markdown checkboxes to track completion:
   - update `pkg/cli/root.go`
   - update `README.md`
 - **ACCEPTANCE**:
-  - root help includes both `skill` and `skills`
-  - README has a Skill Mining section with both command entries
+  - root help includes `skill` as the canonical entry
+  - `skills` remains callable as a hidden deprecated compatibility command
+  - README has a Skill Mining section that teaches `kit skill mine` first and
+    references `kit skills mine` only as migration guidance
 - **NOTES**: keep wording short and aligned with existing command tables
 
 ### T004
@@ -84,7 +86,8 @@ Use markdown checkboxes to track completion:
 - **ACCEPTANCE**:
   - automated tests cover prompt invariants
   - `make vet`, `make test`, and `make build` pass
-  - manual help output confirms both command surfaces
+  - manual help and command checks confirm the canonical `skill` surface and
+    explicit `skills mine` compatibility behavior
 - **NOTES**: confirm `kit skill mine` without args reaches the selector path
 
 ### T005
@@ -122,7 +125,8 @@ Use markdown checkboxes to track completion:
 - **ACCEPTANCE**:
   - tests cover insight-derivation signals and audit criteria
   - `make vet`, `make test`, and `make build` pass
-  - generated help still works for `kit skill mine` and `kit skills mine`
+  - generated help still works for `kit skill mine` and explicit compatibility
+    checks still work for `kit skills mine`
 - **NOTES**: use the existing verification command set
 
 ### T008

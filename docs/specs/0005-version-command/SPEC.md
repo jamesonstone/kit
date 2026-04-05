@@ -40,6 +40,19 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| build metadata | code | `pkg/cli/version.go` | installed version source of truth | active |
+| root CLI help | code | `pkg/cli/root.go` | command visibility and ordering | active |
+| release workflow | code | `.github/workflows/` | versioned release publication | active |
+| README | doc | `README.md` | public command documentation | active |
+
 ## REQUIREMENTS
 
 - Add a new root command: `kit version`.

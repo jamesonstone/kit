@@ -45,6 +45,17 @@
   - `--output-only` prints raw stdout
   - `--output-only --copy` both prints and copies
 
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| clipboard-first helper | code | `pkg/cli/root.go` | shared prompt and output transport behavior | active |
+| human output style | code | `pkg/cli/human_output.go` | clipboard acknowledgement rendering | active |
+| handoff prompt flow | code | `pkg/cli/handoff.go` | output transport for handoff prompts | active |
+| summarize command | code | `pkg/cli/summarize.go` | output transport for summarize prompts | active |
+| code review command | code | `pkg/cli/code_review.go` | output transport for review prompts | active |
+| README | doc | `README.md` | user-facing output contract | active |
+
 ## RISKS
 
 - Users accustomed to reading the full default output in the terminal may need to learn the `--output-only` escape hatch.

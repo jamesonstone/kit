@@ -2,7 +2,11 @@
 
 ## SUMMARY
 
-- Add a new `kit catchup [feature]` command that outputs a prompt for a coding agent to recover the current state of a selected feature before any implementation resumes.
+- Add a new `kit catchup [feature]` command that outputs a prompt for a coding
+  agent to recover the current state of a selected feature before any
+  implementation resumes. After command-surface simplification, `catchup`
+  remains callable as a hidden deprecated compatibility surface while
+  `kit resume` becomes the canonical general resume command.
 - The command must be prompt-only, feature-scoped, and explicitly keep the agent in plan mode until the user approves moving into implementation.
 - Default command output must copy the generated prompt to the clipboard and reserve raw stdout prompt output for `--output-only`.
 
@@ -15,6 +19,7 @@
 ## GOALS
 
 - Add `kit catchup [feature]` as a root-level prompt-output command.
+- Keep `catchup` callable as a compatibility surface after `resume` ships.
 - Show an interactive feature selector when no feature argument is provided.
 - Let the selector include all feature directories under `docs/specs/` and display the phase beside each feature.
 - Derive the selected feature's current stage and state from Kit's existing feature/status model.
@@ -42,9 +47,24 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| feature status model | code | `internal/feature/status.go` | current stage and state derivation | active |
+| prompt-output contract | code | `pkg/cli/implement.go`, `pkg/cli/reflect.go` | clipboard-first prompt behavior | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | current project-state context | active |
+| README | doc | `README.md` | command documentation | active |
+
 ## REQUIREMENTS
 
 - Expose a new root command `kit catchup [feature]`.
+- After command-surface simplification, keep `catchup` hidden from default help
+  and deprecated in favor of `kit resume [feature]`.
 - When no feature argument is provided, show an interactive numbered selector for all features returned by `feature.ListFeatures`.
 - The selector must show each feature's directory name and current phase.
 - The command must support `--copy` and `--output-only` and must use the shared clipboard-first prompt helper.
@@ -78,7 +98,9 @@
 - Default command output copies the generated prompt to the clipboard, prints an acknowledgement, and does not print the prompt body.
 - `--output-only` prints the raw prompt to stdout, and `--output-only --copy` does both.
 - `kit catchup --prompt-only <feature>` is accepted and preserves the existing prompt-only behavior.
-- Help and README document the new command distinctly from `handoff`, `summarize`, and `implement`.
+- Help and README document the new command distinctly from `handoff`,
+  `summarize`, and `implement` until `resume` becomes canonical; after that,
+  docs treat `catchup` as a migration-only compatibility surface.
 
 ## EDGE-CASES
 

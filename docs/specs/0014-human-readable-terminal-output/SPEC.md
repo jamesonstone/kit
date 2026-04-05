@@ -16,7 +16,8 @@
 - Improve scanability of human-facing terminal output.
 - Add semantic emoji markers to human-readable help, status, selection, and guidance surfaces.
 - Increase whitespace and section separation where it improves readability.
-- Preserve current command behavior and clipboard-first semantics.
+- Preserve current command behavior and clipboard-first semantics aside from
+  explicit command-surface simplification changes.
 - Restrict the new presentation layer to human-readable terminal flows.
 
 ## NON-GOALS
@@ -40,6 +41,10 @@
 | ----- | ------ | ---- | ------- | -------- |
 | none | n/a | n/a | no additional skills required | no |
 
+## RELATIONSHIPS
+
+none
+
 ## DEPENDENCIES
 
 | Dependency | Type | Location | Used For | Status |
@@ -51,11 +56,17 @@
 ## REQUIREMENTS
 
 - Human-readable help output must use clearer section headings and spacing.
+- Root help must support grouped command sections without requiring the same
+  grouped layout for subcommand help.
 - Human-readable clipboard acknowledgements must be easier to scan than the current single-line plain text.
 - Human-readable workflow guidance must use consistent section styling and spacing.
 - Human-readable selection prompts must use consistent headers and input prompts across commands.
 - Human-readable editor-launch instructions must remain accurate while becoming easier to scan.
 - Human-readable status output must preserve all current information while improving section separation.
+- Human-readable fleet or progress tables must render as fixed-width terminal
+  columns instead of Markdown-style pipe tables.
+- Human-readable terminal status output may use ANSI color when writing to a
+  TTY, but buffered or non-TTY output must remain readable without color.
 - Existing raw payloads for `--output-only` must remain byte-for-byte unchanged.
 - Existing `--json` output payloads must remain unchanged.
 - Generated coding-agent prompt bodies must remain unchanged.
@@ -64,10 +75,15 @@
 
 ## ACCEPTANCE
 
-- `kit --help` and `kit <command> --help` show clearer section headings and spacing than the shipped default template.
+- `kit --help` shows grouped section headings and spacing for the visible
+  canonical commands, and `kit <command> --help` continues to show clearer
+  section headings and spacing than the shipped default template.
 - Human-readable clipboard acknowledgements include semantic emoji and clearer spacing.
 - Human-readable workflow guidance, selector prompts, and editor-launch guidance use consistent styled headings.
 - `kit status` preserves its current information and becomes easier to scan.
+- `kit status --all` renders its feature matrix as fixed-width terminal columns.
+- terminal `kit status` and `kit status --all` output may use color without
+  changing non-TTY text output expectations.
 - `--output-only` still prints the exact raw prompt or output text.
 - `--json` still returns the same JSON structure.
 - Existing generated coding-agent prompt content remains unchanged.

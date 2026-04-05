@@ -43,6 +43,20 @@
 | ----- | ------ | ---- | ----------------------------- | -------- |
 | none  | n/a    | n/a  | no additional skills required | no       |
 
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| constitution contract | doc | `docs/CONSTITUTION.md` | canonical scaffold behavior and write-mode rules | active |
+| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | shipped scaffold-agents behavior summary | active |
+| scaffold agents command | code | `pkg/cli/scaffold_agents.go` | overwrite confirmation and append-only flow | active |
+| instruction-file merge helpers | code | `pkg/cli/instruction_files.go`, `pkg/cli/instruction_file_merge.go` | deterministic append-only behavior | active |
+| README | doc | `README.md` | user-facing command and flag docs | active |
+
 ## REQUIREMENTS
 
 - `kit scaffold-agents --force` must prompt for confirmation when at least one selected target file already exists.

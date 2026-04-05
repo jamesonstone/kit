@@ -2,7 +2,10 @@
 
 ## SUMMARY
 
-- Add a prompt-only `catchup` command that helps a coding agent resume work on a specific feature without moving directly into implementation.
+- Add a prompt-only `catchup` command that helps a coding agent resume work on
+  a specific feature without moving directly into implementation, then preserve
+  it as a hidden deprecated compatibility path once `resume` becomes the
+  canonical surface.
 - Reuse existing feature status, selector, and clipboard-first prompt-output patterns so the new surface is additive and does not duplicate `handoff`, `summarize`, or `implement`.
 
 ## APPROACH
@@ -11,7 +14,10 @@
 - [PLAN-02][SPEC-05][SPEC-06][SPEC-07][SPEC-08][SPEC-09] Resolve the selected feature with existing feature/status helpers and derive stage plus state from `feature.GetFeatureStatus(...)` and current next-action guidance.
 - [PLAN-03][SPEC-10][SPEC-11][SPEC-12][SPEC-13][SPEC-14][SPEC-15][SPEC-16] Build a feature-scoped `/plan` prompt that tells the coding agent how to catch up on the selected feature, ask questions first, stay in plan mode, and request explicit approval before implementation.
 - [PLAN-04][SPEC-17] Add complete-phase-specific prompt wording so completed features are treated as review/reopen triage rather than resumed implementation.
-- [PLAN-05][SPEC-18] Register the command in help ordering and README with wording that clearly distinguishes it from `handoff`, `summarize`, and `implement`.
+- [PLAN-05][SPEC-18] Register the command in help ordering and README with
+  wording that clearly distinguishes it from `handoff`, `summarize`, and
+  `implement`, then move it to hidden deprecated compatibility status when
+  `resume` becomes canonical.
 - [PLAN-06][SPEC-19] Add focused tests for prompt generation and state rendering, then run the normal verification commands.
 - [PLAN-07] Switch `catchup` to the shared clipboard-first helper while keeping `--output-only` and `--copy` behavior explicit.
 - [PLAN-08] Register the shared `--prompt-only` flag on `catchup` so the command surface matches the rest of Kit's feature-scoped prompt commands.
@@ -28,7 +34,7 @@
 - `pkg/cli/catchup_test.go`
   - prompt-generation tests
 - `pkg/cli/root.go`
-  - command order entry
+  - command order entry and later compatibility visibility handling
 - `README.md`
   - context-management command docs
 
@@ -53,6 +59,15 @@
 - Output shape:
   - prompt-only, passed through the shared clipboard-first prompt helper
   - workflow footer via `printWorkflowInstructions(...)`
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| feature status model | code | `internal/feature/status.go` | stage and state reporting | active |
+| prompt helper | code | `pkg/cli/root.go`, `pkg/cli/implement.go`, `pkg/cli/reflect.go` | clipboard-first prompt output | active |
+| project progress summary | doc | `docs/PROJECT_PROGRESS_SUMMARY.md` | recovery context and state summary | active |
+| root help ordering | code | `pkg/cli/root.go` | command visibility | active |
 
 ## RISKS
 
