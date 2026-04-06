@@ -100,10 +100,16 @@ same
 	}
 
 	content := out.String()
-	if !strings.Contains(content, "| feature | description |") {
-		t.Fatalf("expected backlog table header, got %q", content)
+	if !strings.Contains(content, "Feature") || !strings.Contains(content, "Description") {
+		t.Fatalf("expected fixed-width backlog headers, got %q", content)
 	}
-	if !strings.Contains(content, "| legacy-endpoint-refactor | Need to refactor the legacy endpoint to share normalization. |") {
+	if strings.Contains(content, "| feature | description |") {
+		t.Fatalf("expected fixed-width table instead of markdown, got %q", content)
+	}
+	if !strings.Contains(content, "legacy-endpoint-refactor") {
+		t.Fatalf("expected backlog feature row, got %q", content)
+	}
+	if !strings.Contains(content, "Need to refactor the legacy endpoint to share normalization.") {
 		t.Fatalf("expected backlog row, got %q", content)
 	}
 }

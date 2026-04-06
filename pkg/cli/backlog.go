@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -126,21 +125,8 @@ func printBacklogList(w io.Writer, specsDir string, cfg *config.Config) error {
 		return nil
 	}
 
-	if _, err := fmt.Fprintln(w, "| feature | description |"); err != nil {
+	if err := printBacklogTable(w, entries); err != nil {
 		return err
-	}
-	if _, err := fmt.Fprintln(w, "| ------- | ----------- |"); err != nil {
-		return err
-	}
-	for _, entry := range entries {
-		if _, err := fmt.Fprintf(
-			w,
-			"| %s | %s |\n",
-			entry.Feature.Slug,
-			escapeTableCell(entry.Description),
-		); err != nil {
-			return err
-		}
 	}
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
@@ -153,8 +139,4 @@ func printBacklogList(w io.Writer, specsDir string, cfg *config.Config) error {
 	}
 
 	return nil
-}
-
-func escapeTableCell(text string) string {
-	return strings.ReplaceAll(text, "|", `\|`)
 }
