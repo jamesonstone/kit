@@ -1,0 +1,128 @@
+## Reflection — Feature: alpha
+
+You are in the REFLECT phase for this repo at /repo.
+
+Goal:
+
+- perform a strict code review of the current change set
+- ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent
+
+Context docs (read first):
+
+- CONSTITUTION: /repo/docs/CONSTITUTION.md
+- PROJECT SUMMARY: /repo/docs/PROJECT_PROGRESS_SUMMARY.md
+- SPEC: /repo/docs/specs/0001-alpha/SPEC.md
+- PLAN: /repo/docs/specs/0001-alpha/PLAN.md
+- TASKS: /repo/docs/specs/0001-alpha/TASKS.md
+
+Steps:
+
+1. Snapshot the change set (do not skip)
+   - git status
+   - git diff
+   - git diff --staged
+   - git log -n 20 --oneline --decorate
+2. Build a review map
+   - list changed files
+   - for each file, state the intent in one line
+   - identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
+3. Verify correctness against docs
+   - SPEC: ensure requirements + acceptance are fully satisfied
+   - PLAN: ensure decisions were followed
+   - TASKS: ensure every task marked done is actually done
+   - ensure no scope creep
+4. Quality gates (hard checks)
+   - zero-known-defects gate: do not mark reflection complete until all gates pass with evidence
+   - required evidence gates: unresolved assumptions = 0; acceptance criteria mapped 1:1 to outputs; build/compile succeeds; lint/typecheck/test failures = 0; unrelated diff scope = 0
+   - lint + tests are absolute gates: fix ALL failures before completion, including pre-existing and out-of-scope failures
+   - if any gate fails: stop, report the exact failure, and propose the next fix
+   - correctness: no panics, no silent failures
+   - errors: wrapped/propagated with context, no swallowed errors
+   - IO: paths resolved safely, no surprising writes
+   - determinism: stable ordering in outputs
+   - regression tests: add comprehensive tests for all completed work to prevent future bugs
+     - test happy path, error cases, edge cases, boundary conditions
+     - ensure tests fail without the implementation (tests validate the test itself)
+   - docs: update only if behavior changed
+   - agent-readability: code optimized for agent understanding and future iteration
+5. Correctness checklist
+   - [ ] Code compiles without errors
+   - [ ] Changes implement the intended task(s)
+   - [ ] Implementation matches PLAN.md approach
+   - [ ] Requirements from SPEC.md are satisfied
+   - [ ] Changes respect CONSTITUTION.md constraints
+   - [ ] No syntax errors or typos
+   - [ ] Variable and function names are consistent
+   - [ ] Imports are correct and used
+   - [ ] Error handling is complete
+   - [ ] Edge cases from SPEC.md are handled
+   - [ ] No debug code or TODOs left behind
+   - [ ] Style matches project conventions
+   - [ ] Tests added/updated for all completed work
+   - [ ] Tests cover happy path, error cases, and edge cases
+   - [ ] Tests validate the implementation, not just pass trivially
+   - [ ] Test names clearly describe what is being tested
+   - [ ] All lint and test failures are fixed, including failures outside the feature scope
+   - [ ] Code is written for agent readability and future iteration
+6. Agent-optimized code structure
+   Code should be built for agent readability and understanding, enabling both current and future agents to:
+   - understand intent quickly: clear names, single responsibility, minimal nesting
+   - modify safely: explicit error handling, testable design, clear contracts
+   - extend effectively: composable pieces, discoverable patterns, good examples
+   Checks:
+   - [ ] Function/method names clearly describe what they do
+   - [ ] Functions have single, well-defined responsibility
+   - [ ] Complex logic is broken into named helper functions
+   - [ ] Type names and fields describe their purpose
+   - [ ] Public interfaces are documented with clear examples
+   - [ ] Error paths are explicit, not silent
+   - [ ] Dependencies are injected, not hidden in closures
+   - [ ] Code avoids clever tricks; readability wins over cleverness
+   - [ ] Configuration and magic numbers are named constants
+   - [ ] Similar patterns use consistent approaches across codebase
+7. Cleanliness
+   - remove dead code
+   - remove unused exports and any public surface that is not strictly necessary
+   - if an exported symbol is only used locally, reduce its visibility instead of keeping it exported
+   - remove debug prints
+   - remove unused flags/options
+   - keep public surfaces small
+   - ensure code is written for agent and human understanding
+8. Documentation generation
+   - if exists, use the repositories documentation generation tools to update any affected documentation
+   - always update affected documentation and ensure all touched documents are current and properly formatted
+   - ensure documentation is agent-readable: clear structure, explicit examples, complete contracts
+   - document public APIs with examples showing both normal usage and error handling
+9. Final pass
+   - rerun:
+     - git status
+     - git diff
+     - git diff --staged
+   - summarize remaining issues, if any
+   - propose next steps
+10. Mark reflection complete
+    - once all issues are resolved and confidence is 100%
+    - append the following marker to the end of TASKS.md:
+      <!-- REFLECTION_COMPLETE -->
+    - this marker signals that the feature has completed the full development cycle
+
+Output format:
+
+1. CHANGESET
+   - files changed: <list>
+   - key diffs: <tight bullets>
+2. DOC TRACE
+   - SPEC: pass/fail + notes
+   - PLAN: pass/fail + notes
+   - TASKS: pass/fail + notes
+3. REFLECTION NOTES
+   - risks remaining
+   - follow-ups
+
+## Rules
+
+- be strict
+- no fluff
+- fix issues before reporting them as "known"
+- keep diffs minimal
+- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times

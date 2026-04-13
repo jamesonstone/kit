@@ -37,6 +37,11 @@ func TestRunMap_ProjectWideOutput(t *testing.T) {
 	if !strings.Contains(got, "🗺️ Kit Map") {
 		t.Fatalf("expected heading, got %q", got)
 	}
+	for _, check := range []string{"AGENTS.md", "docs/agents/README.md", "docs/references/README.md"} {
+		if !strings.Contains(got, check) {
+			t.Fatalf("expected project map to contain %q, got %q", check, got)
+		}
+	}
 	if !strings.Contains(got, "0001-alpha [phase: spec] [paused: no]") {
 		t.Fatalf("expected feature summary, got %q", got)
 	}
@@ -70,6 +75,9 @@ func TestRunMap_FeatureScopedOutput(t *testing.T) {
 	if !strings.Contains(got, "🗺️ Kit Map: 0002-beta") {
 		t.Fatalf("expected feature heading, got %q", got)
 	}
+	if !strings.Contains(got, "docs/agents/README.md") {
+		t.Fatalf("expected feature map to contain docs/agents/README.md, got %q", got)
+	}
 	if !strings.Contains(got, "Incoming Relationships") {
 		t.Fatalf("expected incoming section, got %q", got)
 	}
@@ -82,12 +90,19 @@ func setupMapProject(t *testing.T) string {
 	t.Helper()
 
 	projectRoot := t.TempDir()
-	if err := config.Save(projectRoot, config.Default()); err != nil {
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
 	}
 
 	writeMapProjectFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), "# CONSTITUTION\n")
 	writeMapProjectFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), "# PROJECT PROGRESS SUMMARY\n")
+	writeMapProjectFile(t, filepath.Join(projectRoot, "AGENTS.md"), "# AGENTS\n")
+	writeMapProjectFile(t, filepath.Join(projectRoot, "CLAUDE.md"), "# CLAUDE\n")
+	writeMapProjectFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), "# COPILOT\n")
+	writeMapProjectFile(t, filepath.Join(projectRoot, "docs", "agents", "README.md"), "# Agents Docs\n")
+	writeMapProjectFile(t, filepath.Join(projectRoot, "docs", "references", "README.md"), "# References\n")
 	writeMapProjectFile(t, filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"), `# SPEC
 
 ## RELATIONSHIPS

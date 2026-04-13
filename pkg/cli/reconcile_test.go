@@ -123,6 +123,31 @@ func TestBuildReconcilePromptGroupsFindingsByFile(t *testing.T) {
 	}
 }
 
+func TestBuildReconcilePrompt_UsesVersionedInstructionShortcut(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	report := &reconcileReport{
+		ProjectRoot: projectRoot,
+		Findings: []reconcileFinding{
+			{
+				Severity: reconcileSeverityError,
+				FilePath: filepath.Join(projectRoot, "AGENTS.md"),
+				Issue:    "missing Kit-managed repository instruction file",
+			},
+		},
+	}
+
+	prompt := buildReconcilePrompt(report)
+	if !strings.Contains(prompt, "`kit scaffold-agents --version 2 --append-only`") {
+		t.Fatalf("expected prompt to use versioned scaffold shortcut, got %q", prompt)
+	}
+}
+
 func TestBuildReconcileReportFeatureScopeFindsRelationshipAndTaskDrift(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()
@@ -264,6 +289,7 @@ func TestRenderReconcileSummaryShowsCompactTable(t *testing.T) {
 func TestReconcileProjectScopeWithCurrentInstructionFilesIsClean(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
 	}
@@ -273,6 +299,9 @@ func TestReconcileProjectScopeWithCurrentInstructionFilesIsClean(t *testing.T) {
 	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
 	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
 	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
+	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
+		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
+	}
 
 	report, err := buildReconcileReport(projectRoot, cfg, nil)
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/instructions"
 )
 
 type reconcileSeverity string
@@ -244,9 +245,18 @@ func auditFeatureDocuments(projectRoot string, feat *feature.Feature, relationsh
 
 func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFinding {
 	var findings []reconcileFinding
+	version := detectInstructionScaffoldVersion(projectRoot, cfg)
+	if version == instructionScaffoldVersionUnknown {
+		version = config.DefaultInstructionScaffoldVersion
+	}
 
 	for _, relativePath := range instructionFiles(cfg) {
-		plan, err := planInstructionFileWrite(projectRoot, relativePath, instructionFileWriteModeAppendOnly)
+		plan, err := planInstructionFileWrite(
+			projectRoot,
+			relativePath,
+			instructionFileWriteModeAppendOnly,
+			version,
+		)
 		absolutePath := filepath.Join(projectRoot, relativePath)
 		if err != nil {
 			findings = append(findings, newFinding(
@@ -282,6 +292,43 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				"prefer `kit scaffold-agents --append-only` to append the missing Kit-managed sections, then review the result",
 				[]string{
 					"kit scaffold-agents --append-only",
+					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
+				},
+			))
+		}
+	}
+
+	for _, support := range instructions.SupportDocs(config.InstructionScaffoldVersionTOC) {
+		absolutePath := filepath.Join(projectRoot, support.RelativePath)
+		exists := document.Exists(absolutePath)
+		switch version {
+		case config.InstructionScaffoldVersionTOC:
+			if exists {
+				continue
+			}
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				"missing v2 repo-local instruction support document",
+				templateSource(projectRoot),
+				"restore the thin ToC docs tree, typically with `kit scaffold-agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
+				[]string{
+					"kit scaffold-agents --version 2 --append-only",
+					"kit scaffold-agents --version 2 --force",
+				},
+			))
+		case config.InstructionScaffoldVersionVerbose:
+			if !exists {
+				continue
+			}
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				"v2 docs-tree artifact is present in a version 1 instruction model",
+				templateSource(projectRoot),
+				"remove the leftover v2 docs-tree artifact or rerun `kit scaffold-agents --version 1 --force` to finish the downgrade",
+				[]string{
+					"kit scaffold-agents --version 1 --force",
 					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
 				},
 			))

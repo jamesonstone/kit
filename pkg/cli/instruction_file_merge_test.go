@@ -10,11 +10,11 @@ import (
 func TestMergeInstructionFileContent_FailsOnDuplicateRecognizedSections(t *testing.T) {
 	existing := `# AGENTS
 
-## Source of truth
+## Purpose
 
 first
 
-## Source of truth
+## Purpose
 
 second
 `

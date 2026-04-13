@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -61,5 +62,36 @@ func TestBuildImplementationPrompt_WithoutBrainstormSkipsBrainstormReferences(t 
 	}
 	if strings.Contains(prompt, "- BRAINSTORM:") {
 		t.Fatalf("expected prompt to skip brainstorm file listing when file is absent, got %q", prompt)
+	}
+}
+
+func TestBuildImplementationPrompt_IncludesRepoDocsForTOCRepos(t *testing.T) {
+	root := t.TempDir()
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(root, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+	writeFile(t, filepath.Join(root, "docs", "agents", "README.md"), "# Agents Docs\n")
+	writeFile(t, filepath.Join(root, "docs", "references", "README.md"), "# References\n")
+
+	prompt := buildImplementationPrompt(
+		&feature.Feature{Slug: "sample", DirName: "0001-sample"},
+		filepath.Join(root, "docs", "specs", "0001-sample", "BRAINSTORM.md"),
+		filepath.Join(root, "docs", "specs", "0001-sample", "SPEC.md"),
+		filepath.Join(root, "docs", "specs", "0001-sample", "PLAN.md"),
+		filepath.Join(root, "docs", "specs", "0001-sample", "TASKS.md"),
+		"Ship safer implementation handoffs.",
+		root,
+	)
+
+	for _, check := range []string{
+		"docs/agents/README.md",
+		"docs/references/README.md",
+		"Repo-local workflow index",
+	} {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected prompt to contain %q", check)
+		}
 	}
 }

@@ -12,11 +12,12 @@ import (
 )
 
 var checkAll bool
+var checkProject bool
 
 var checkCmd = &cobra.Command{
 	Use:   "check [feature]",
-	Short: "Validate feature documents",
-	Long: `Validate a feature's documents for completeness and correctness.
+	Short: "Validate feature or project documents",
+	Long: `Validate Kit-managed documents for completeness and correctness.
 
 Validates:
   - Optional BRAINSTORM.md when present
@@ -25,17 +26,23 @@ Validates:
   - Traceability between spec → plan → tasks
   - No unresolved placeholders
 
-Use --all to validate all features in the project.`,
+Use --all to validate all features in the project.
+Use --project to validate the repo-level document contract.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runCheck,
 }
 
 func init() {
 	checkCmd.Flags().BoolVar(&checkAll, "all", false, "validate all features in docs/specs/")
+	checkCmd.Flags().BoolVar(&checkProject, "project", false, "validate the repo-level document and instruction contract")
 	rootCmd.AddCommand(checkCmd)
 }
 
 func runCheck(cmd *cobra.Command, args []string) error {
+	if checkProject && len(args) > 0 {
+		return fmt.Errorf("--project cannot be used with a feature argument")
+	}
+
 	// find project root
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
@@ -48,6 +55,10 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	specsDir := cfg.SpecsPath(projectRoot)
+
+	if checkProject {
+		return checkProjectContract(projectRoot, cfg)
+	}
 
 	if checkAll {
 		return checkAllFeatures(specsDir)
@@ -163,6 +174,55 @@ func checkFeature(specsDir string, featureRef string) error {
 	}
 
 	return nil
+}
+
+func checkProjectContract(projectRoot string, cfg *config.Config) error {
+	fmt.Printf("🔎 Checking project contract...\n")
+
+	report, err := buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		return err
+	}
+
+	if len(report.Findings) == 0 {
+		fmt.Printf("  ✅ Project contract is coherent!\n")
+		return nil
+	}
+
+	var errors []reconcileFinding
+	var warnings []reconcileFinding
+	for _, finding := range report.Findings {
+		if finding.Severity == reconcileSeverityError {
+			errors = append(errors, finding)
+			continue
+		}
+		warnings = append(warnings, finding)
+	}
+
+	if len(warnings) > 0 {
+		fmt.Printf("\n⚠️ Warnings (%d):\n", len(warnings))
+		for _, finding := range warnings {
+			fmt.Printf("  - [%s] %s\n", relativeCheckPath(projectRoot, finding.FilePath), finding.Issue)
+		}
+	}
+
+	if len(errors) > 0 {
+		fmt.Printf("\n❌ Errors (%d):\n", len(errors))
+		for _, finding := range errors {
+			fmt.Printf("  - [%s] %s\n", relativeCheckPath(projectRoot, finding.FilePath), finding.Issue)
+		}
+	}
+
+	return fmt.Errorf("project validation failed with %d finding(s)", len(report.Findings))
+}
+
+func relativeCheckPath(projectRoot, path string) string {
+	rel, err := filepath.Rel(projectRoot, path)
+	if err != nil {
+		return path
+	}
+
+	return rel
 }
 
 func checkAllFeatures(specsDir string) error {

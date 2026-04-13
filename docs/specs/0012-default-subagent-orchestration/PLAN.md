@@ -12,6 +12,7 @@
 - [PLAN-03][SPEC-08] Verify that `dispatch` still uses the dedicated no-shared-subagent path.
 - [PLAN-04][SPEC-09] Update README and help-facing wording to reflect the new default and opt-out flag.
 - [PLAN-05] Add focused tests for default suffix behavior, `--single-agent`, legacy flag registration, and dispatch isolation, then rerun verification.
+- [PLAN-06][SPEC-11] Tighten shipped orchestration wording so RLM discovery and dispatch-style execution planning remain distinct.
 
 ## COMPONENTS
 

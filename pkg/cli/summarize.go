@@ -6,6 +6,7 @@ import (
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/promptdoc"
 	"github.com/spf13/cobra"
 )
 
@@ -54,7 +55,7 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to resolve feature: %w", err)
 		}
 
-		instructions = featureScopedSummarizeInstructions(feat.Slug, feat.Path)
+		instructions = featureScopedSummarizeInstructions(projectRoot, feat.Slug, feat.Path)
 	}
 
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
@@ -73,105 +74,121 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 }
 
 func genericSummarizeInstructions() string {
-	return `## Context Summarization Instructions
-
-Summarize the current context window using the following principles:
-
-### Fact Retention Protocol
-- Extract and retain ONLY facts strictly necessary for:
-  - **Strategy**: architectural decisions, design patterns, system constraints
-  - **Implementation**: code structure, dependencies, APIs, data models
-  - **Process**: workflow state, pending tasks, blockers, decisions made
-
-### What to KEEP
-- Concrete decisions and their rationale
-- File paths, function names, type definitions
-- API contracts and data schemas
-- Configuration values and environment requirements
-- Error states and their resolutions
-- Dependencies and version constraints
-- Test requirements and acceptance criteria
-
-### What to DISCARD
-- Conversational pleasantries and acknowledgments
-- Redundant explanations of the same concept
-- Speculative discussions that were not acted upon
-- Verbose error messages (keep only the root cause)
-- Code that was shown but not modified
-- Historical context superseded by later decisions
-
-### Output Format
-Structure the summary as:
-1. **Current State**: what exists now (files, functions, configs)
-2. **Active Work**: what is being implemented or modified
-3. **Decisions Made**: concrete choices with brief rationale
-4. **Pending Items**: unresolved questions or next steps
-5. **Constraints**: hard limits, invariants, non-negotiables
-
-### Rules
-- Use bullet points, not prose
-- One fact per line
-- No filler words or qualifiers
-- Quantify where possible (lines, counts, versions)
-- If a fact cannot be verified from context, mark it [ASSUMED]`
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Heading(2, "Context Summarization Instructions")
+		doc.Paragraph("Summarize the current context window using the following principles:")
+		doc.Heading(3, "Fact Retention Protocol")
+		doc.BulletList(
+			"Extract and retain ONLY facts strictly necessary for:\n  - **Strategy**: architectural decisions, design patterns, system constraints\n  - **Implementation**: code structure, dependencies, APIs, data models\n  - **Process**: workflow state, pending tasks, blockers, decisions made",
+		)
+		doc.Heading(3, "What to KEEP")
+		doc.BulletList(
+			"Concrete decisions and their rationale",
+			"File paths, function names, type definitions",
+			"API contracts and data schemas",
+			"Configuration values and environment requirements",
+			"Error states and their resolutions",
+			"Dependencies and version constraints",
+			"Test requirements and acceptance criteria",
+		)
+		doc.Heading(3, "What to DISCARD")
+		doc.BulletList(
+			"Conversational pleasantries and acknowledgments",
+			"Redundant explanations of the same concept",
+			"Speculative discussions that were not acted upon",
+			"Verbose error messages (keep only the root cause)",
+			"Code that was shown but not modified",
+			"Historical context superseded by later decisions",
+		)
+		doc.Heading(3, "Output Format")
+		doc.Paragraph("Structure the summary as:")
+		doc.OrderedList(1,
+			"**Current State**: what exists now (files, functions, configs)",
+			"**Active Work**: what is being implemented or modified",
+			"**Decisions Made**: concrete choices with brief rationale",
+			"**Pending Items**: unresolved questions or next steps",
+			"**Constraints**: hard limits, invariants, non-negotiables",
+		)
+		doc.Heading(3, "Rules")
+		doc.BulletList(
+			"Use bullet points, not prose",
+			"One fact per line",
+			"No filler words or qualifiers",
+			"Quantify where possible (lines, counts, versions)",
+			"If a fact cannot be verified from context, mark it [ASSUMED]",
+		)
+	})
 }
 
-func featureScopedSummarizeInstructions(featureSlug, featurePath string) string {
-	return fmt.Sprintf(`## Context Summarization Instructions — Feature: %s
+func featureScopedSummarizeInstructions(projectRoot, featureSlug, featurePath string) string {
+	cfg, _ := loadRepoInstructionContext(projectRoot)
+	repoAgentsPath := repoKnowledgeEntrypointPath(projectRoot, cfg)
+	repoReferencesPath := repoReferencesEntrypointPath(projectRoot, cfg)
 
-Summarize the current context window, focusing on feature **%s**.
-
-### Feature Documents
-Review and extract facts from:
-- %s/BRAINSTORM.md — optional research findings, affected files, and strategy
-- %s/SPEC.md — requirements and acceptance criteria
-- %s/PLAN.md — implementation approach and components
-- %s/TASKS.md — work units and their status
-- %s/ANALYSIS.md — understanding state and open questions
-
-### Fact Retention Protocol
-- Extract and retain ONLY facts strictly necessary for:
-  - **Strategy**: architectural decisions, design patterns, system constraints
-  - **Implementation**: code structure, dependencies, APIs, data models
-  - **Process**: workflow state, pending tasks, blockers, decisions made
-
-### What to KEEP
-- Concrete decisions and their rationale
-- File paths, function names, type definitions
-- API contracts and data schemas
-- Configuration values and environment requirements
-- Error states and their resolutions
-- Dependencies and version constraints
-- Test requirements and acceptance criteria
-- Research findings and recommended strategy from BRAINSTORM.md when present
-- Feature-specific constraints from SPEC.md
-- Implementation choices from PLAN.md
-- Task status and dependencies from TASKS.md
-
-### What to DISCARD
-- Conversational pleasantries and acknowledgments
-- Redundant explanations of the same concept
-- Speculative discussions that were not acted upon
-- Verbose error messages (keep only the root cause)
-- Code that was shown but not modified
-- Historical context superseded by later decisions
-- Information unrelated to feature %s
-
-### Output Format
-Structure the summary as:
-1. **Feature Intent**: one-sentence purpose from SPEC.md
-2. **Current State**: what exists now for this feature
-3. **Active Work**: what is being implemented or modified
-4. **Decisions Made**: concrete choices with brief rationale
-5. **Pending Items**: unresolved questions, open tasks
-6. **Constraints**: hard limits, invariants, non-negotiables
-
-### Rules
-- Use bullet points, not prose
-- One fact per line
-- No filler words or qualifiers
-- Quantify where possible (lines, counts, versions)
-- If a fact cannot be verified from context, mark it [ASSUMED]
-- Prioritize facts from feature documents over conversation`, featureSlug, featureSlug,
-		featurePath, featurePath, featurePath, featurePath, featurePath, featureSlug)
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Heading(2, fmt.Sprintf("Context Summarization Instructions — Feature: %s", featureSlug))
+		doc.Paragraph(fmt.Sprintf("Summarize the current context window, focusing on feature **%s**.", featureSlug))
+		doc.Heading(3, "Feature Documents")
+		doc.Paragraph("Review and extract facts from:")
+		items := []string{}
+		if repoAgentsPath != "" {
+			items = append(items, fmt.Sprintf("%s — repo-local entrypoint and workflow map", repoAgentsPath))
+		}
+		if repoReferencesPath != "" {
+			items = append(items, fmt.Sprintf("%s — durable repo-wide references when they materially shape the feature", repoReferencesPath))
+		}
+		items = append(items,
+			fmt.Sprintf("%s/BRAINSTORM.md — optional research findings, affected files, and strategy", featurePath),
+			fmt.Sprintf("%s/SPEC.md — requirements and acceptance criteria", featurePath),
+			fmt.Sprintf("%s/PLAN.md — implementation approach and components", featurePath),
+			fmt.Sprintf("%s/TASKS.md — work units and their status", featurePath),
+			fmt.Sprintf("%s/ANALYSIS.md — understanding state and open questions", featurePath),
+		)
+		doc.BulletList(items...)
+		doc.Heading(3, "Fact Retention Protocol")
+		doc.BulletList("Extract and retain ONLY facts strictly necessary for:\n  - **Strategy**: architectural decisions, design patterns, system constraints\n  - **Implementation**: code structure, dependencies, APIs, data models\n  - **Process**: workflow state, pending tasks, blockers, decisions made")
+		doc.Heading(3, "What to KEEP")
+		doc.BulletList(
+			"Concrete decisions and their rationale",
+			"File paths, function names, type definitions",
+			"API contracts and data schemas",
+			"Configuration values and environment requirements",
+			"Error states and their resolutions",
+			"Dependencies and version constraints",
+			"Test requirements and acceptance criteria",
+			"Research findings and recommended strategy from BRAINSTORM.md when present",
+			"Feature-specific constraints from SPEC.md",
+			"Implementation choices from PLAN.md",
+			"Task status and dependencies from TASKS.md",
+		)
+		doc.Heading(3, "What to DISCARD")
+		doc.BulletList(
+			"Conversational pleasantries and acknowledgments",
+			"Redundant explanations of the same concept",
+			"Speculative discussions that were not acted upon",
+			"Verbose error messages (keep only the root cause)",
+			"Code that was shown but not modified",
+			"Historical context superseded by later decisions",
+			fmt.Sprintf("Information unrelated to feature %s", featureSlug),
+		)
+		doc.Heading(3, "Output Format")
+		doc.Paragraph("Structure the summary as:")
+		doc.OrderedList(1,
+			"**Feature Intent**: one-sentence purpose from SPEC.md",
+			"**Current State**: what exists now for this feature",
+			"**Active Work**: what is being implemented or modified",
+			"**Decisions Made**: concrete choices with brief rationale",
+			"**Pending Items**: unresolved questions, open tasks",
+			"**Constraints**: hard limits, invariants, non-negotiables",
+		)
+		doc.Heading(3, "Rules")
+		doc.BulletList(
+			"Use bullet points, not prose",
+			"One fact per line",
+			"No filler words or qualifiers",
+			"Quantify where possible (lines, counts, versions)",
+			"If a fact cannot be verified from context, mark it [ASSUMED]",
+			"Prioritize facts from repository documents over conversation",
+		)
+	})
 }

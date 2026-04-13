@@ -18,6 +18,7 @@
 | T010 | Expand tests and rerun verification for path changes | done   | agent | T009         |
 | T011 | Switch `skill mine` to clipboard-first prompt output | done   | agent | T010         |
 | T012 | Add `--prompt-only` consistency flag to `skill mine` | done   | agent | T011         |
+| T013 | Switch stale-skill cleanup guidance to approval-gated flow | done   | agent | T012         |
 
 ## TASK LIST
 
@@ -35,6 +36,7 @@ Use markdown checkboxes to track completion:
 - [x] T010: Expand tests and rerun verification for path changes [PLAN-07]
 - [x] T011: Switch `skill mine` to clipboard-first prompt output [PLAN-08]
 - [x] T012: Add `--prompt-only` consistency flag to `skill mine` [PLAN-09]
+- [x] T013: Switch stale-skill cleanup guidance to approval-gated flow [PLAN-06]
 
 ## TASK DETAILS
 
@@ -192,6 +194,19 @@ Use markdown checkboxes to track completion:
   - help/docs describe the shared command-surface contract accurately
 - **NOTES**: this is a consistency flag because the command already only emits prompts
 
+### T013
+
+- **GOAL**: remove destructive stale-skill cleanup from the default prompt contract
+- **SCOPE**:
+  - update `SPEC.md`, `PLAN.md`, and `TASKS.md`
+  - update `pkg/cli/skill_prompt.go`
+  - update tests for approval-gated cleanup wording
+- **ACCEPTANCE**:
+  - the prompt identifies stale-skill removal candidates first
+  - the prompt asks for explicit approval before deleting canonical or mirror roots
+  - tests cover the new safety wording
+- **NOTES**: Kit remains prompt-only and still does not execute deletions itself
+
 ## DEPENDENCIES
 
 - T002 depends on T001 because implementation must follow the approved formal docs.
@@ -203,6 +218,7 @@ Use markdown checkboxes to track completion:
 - T010 depends on T009 because tests and verification validate the canonical-plus-mirror change.
 - T011 depends on T010 because the clipboard-first amendment must follow the existing prompt contract changes.
 - T012 depends on T011 because the shared prompt-only flag is layered onto the existing prompt-output surface.
+- T013 depends on T012 because the stale-skill cleanup amendment follows the existing prompt-output contract.
 
 ## NOTES
 

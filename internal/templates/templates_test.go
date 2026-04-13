@@ -3,6 +3,8 @@ package templates
 import (
 	"strings"
 	"testing"
+
+	"github.com/jamesonstone/kit/internal/config"
 )
 
 func TestBrainstormTemplateIncludesDependenciesTable(t *testing.T) {
@@ -27,9 +29,9 @@ func TestInstructionTemplatesRequirePopulatedSections(t *testing.T) {
 	}
 
 	templates := map[string]string{
-		"AGENTS.md":                       AgentsMD,
-		"CLAUDE.md":                       ClaudeMD,
-		".github/copilot-instructions.md": CopilotInstructionsMD,
+		"AGENTS.md":                       LegacyAgentsMD,
+		"CLAUDE.md":                       LegacyClaudeMD,
+		".github/copilot-instructions.md": LegacyCopilotInstructionsMD,
 	}
 
 	for name, content := range templates {
@@ -44,18 +46,114 @@ func TestInstructionTemplatesRequirePopulatedSections(t *testing.T) {
 func TestInstructionTemplatesIncludeReadinessGate(t *testing.T) {
 	checks := []string{
 		"implementation readiness gate",
-		"If the gate fails, update docs first, then code",
+		"update the canonical docs first",
 	}
 
-	templates := map[string]string{
-		"AGENTS.md":                       AgentsMD,
-		"CLAUDE.md":                       ClaudeMD,
-		".github/copilot-instructions.md": CopilotInstructionsMD,
-	}
-
-	for name, content := range templates {
+	for name, content := range map[string]string{
+		"WORKFLOWS.md": fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/agents/WORKFLOWS.md"),
+	} {
 		for _, check := range checks {
 			if !strings.Contains(content, check) {
+				t.Fatalf("expected %s to contain %q", name, check)
+			}
+		}
+	}
+}
+
+func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
+	checks := map[string][]string{
+		"RLM.md": {
+			"RLM is Kit's repository-scale context-routing pattern",
+			"Use RLM when the task is broad enough",
+			"discovery and context selection first",
+			"do not jump straight into parallel execution",
+			"Always update affected documentation",
+		},
+		"TOOLING.md": {
+			"Use subagents when the work cleanly separates into low-overlap lanes after discovery",
+			"Keep repository-scale discovery in RLM first",
+		},
+	}
+
+	for name, snippets := range checks {
+		content := fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/agents/"+name)
+		for _, snippet := range snippets {
+			if !strings.Contains(content, snippet) {
+				t.Fatalf("expected %s to contain %q", name, snippet)
+			}
+		}
+	}
+}
+
+func TestInstructionTemplatesIncludeDocAndExportHygiene(t *testing.T) {
+	checks := map[string][]string{
+		"GUARDRAILS.md": {
+			"Always update affected documentation",
+			"unused exports",
+			"reduce its visibility",
+		},
+	}
+
+	for name, snippets := range checks {
+		content := fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/agents/"+name)
+		for _, snippet := range snippets {
+			if !strings.Contains(content, snippet) {
+				t.Fatalf("expected %s to contain %q", name, snippet)
+			}
+		}
+	}
+}
+
+func TestDefaultInstructionTemplatesGlossRLMAndCopilotFallback(t *testing.T) {
+	for name, content := range map[string]string{
+		"AGENTS.md": AgentsMD,
+		"CLAUDE.md": ClaudeMD,
+	} {
+		if !strings.Contains(content, "RLM is Kit's repository-scale context-routing pattern") {
+			t.Fatalf("expected %s to define RLM on first use", name)
+		}
+	}
+
+	copilotChecks := []string{
+		"RLM is Kit's repository-scale context-routing pattern",
+		"## Fallback Read Order",
+		"If linked-doc traversal is weak or unavailable",
+		"## Non-Negotiable Rules",
+		"Repo-local docs under `docs/` are the source of truth",
+		"Do not treat `.claude/skills` as canonical discovery input",
+	}
+
+	for _, check := range copilotChecks {
+		if !strings.Contains(CopilotInstructionsMD, check) {
+			t.Fatalf("expected CopilotInstructionsMD to contain %q", check)
+		}
+	}
+}
+
+func TestDefaultInstructionTemplatesUseTOCModel(t *testing.T) {
+	for name, content := range map[string]string{
+		"AGENTS.md": AgentsMD,
+		"CLAUDE.md": ClaudeMD,
+	} {
+		for _, check := range []string{
+			"table of contents",
+			"`docs/agents/README.md`",
+			"`docs/references/README.md`",
+		} {
+			if !strings.Contains(strings.ToLower(content), strings.ToLower(check)) {
+				t.Fatalf("expected %s to contain %q", name, check)
+			}
+		}
+	}
+
+	for name, content := range map[string]string{
+		".github/copilot-instructions.md": CopilotInstructionsMD,
+	} {
+		for _, check := range []string{
+			"`docs/agents/README.md`",
+			"`docs/specs/<feature>/`",
+		} {
+			if !strings.Contains(strings.ToLower(content), strings.ToLower(check)) {
 				t.Fatalf("expected %s to contain %q", name, check)
 			}
 		}
@@ -91,4 +189,14 @@ func TestPlanTemplateIncludesDependenciesTable(t *testing.T) {
 			t.Fatalf("expected Plan to contain %q", check)
 		}
 	}
+}
+
+func fileContentByPath(files []ScaffoldFile, relativePath string) string {
+	for _, file := range files {
+		if file.RelativePath == relativePath {
+			return file.Content
+		}
+	}
+
+	return ""
 }

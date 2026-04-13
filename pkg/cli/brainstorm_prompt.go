@@ -11,6 +11,7 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/promptdoc"
 )
 
 func outputExistingBrainstormPrompt(args []string, projectRoot string, cfg *config.Config, outputOnly bool) error {
@@ -131,92 +132,103 @@ func existingBrainstormThesis(brainstormPath string) string {
 func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis string, goalPct int) string {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 
-	var sb strings.Builder
-	sb.WriteString("/plan\n\n")
-	sb.WriteString(fmt.Sprintf(`You are in planning mode for feature: **%s**
-
-You MUST update the brainstorm file at:
-- **BRAINSTORM**: %s
-- **Feature**: %s
-- **Project Root**: %s
-
-## User Thesis
-
-%s
-
-## Context Docs (read first)
-| File | Purpose |
-|------|---------|
-| CONSTITUTION | %s |
-| BRAINSTORM | %s |
-| Project Root | %s |
-
-## Your Task
-
-1. Stay in planning and information-gathering mode only
-2. Do NOT implement code, write production changes, or move into execution
-3. Read CONSTITUTION.md first to understand project constraints and workflow rules
-4. Read the current BRAINSTORM.md template and treat it as the source of truth for this research phase
-5. Research the entire codebase at %s to identify relevant files, patterns, constraints, interfaces, and adjacent workflows
-`, featureSlug, brainstormPath, featureSlug, projectRoot, thesis, constitutionPath, brainstormPath, projectRoot, projectRoot))
-
-	sb.WriteString(fmt.Sprintf("6. Keep the `## DEPENDENCIES` table in %s current throughout the research phase:\n", brainstormPath))
-	sb.WriteString("   - include every dependency that materially shapes the feature definition, such as skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, and assets\n")
-	sb.WriteString("   - use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`\n")
-	sb.WriteString("   - `Status` must be one of `active`, `optional`, or `stale`\n")
-	sb.WriteString("   - for Figma or other MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`\n")
-	sb.WriteString("   - if a dependency influenced decisions but is no longer current, keep it in the table with `Status` = `stale` instead of deleting it\n")
-	sb.WriteString(fmt.Sprintf("7. Keep the `## RELATIONSHIPS` section in %s current throughout the research phase:\n", brainstormPath))
-	sb.WriteString("   - use `none` when this feature does not build on an existing feature\n")
-	sb.WriteString("   - otherwise record one bullet per explicit feature relationship\n")
-	sb.WriteString("   - supported labels are `builds on`, `depends on`, and `related to`\n")
-	sb.WriteString("   - use canonical feature directory identifiers such as `0007-catchup-command`\n")
-
-	nextStep := appendNumberedSteps(
-		&sb,
-		8,
-		clarificationLoopSteps(
-			goalPct,
-			fmt.Sprintf(
-				"Reassess, update %s with durable findings, and continue with "+
-					"additional batches of up to 10 questions until the specification "+
-					"is precise enough to produce a correct, production-quality solution",
-				brainstormPath,
-			),
+	taskSteps := []string{
+		"Stay in planning and information-gathering mode only",
+		"Do NOT implement code, write production changes, or move into execution",
+		"Read CONSTITUTION.md first to understand project constraints and workflow rules",
+		"Read the current BRAINSTORM.md template and treat it as the source of truth for this research phase",
+		fmt.Sprintf(
+			"Research the entire codebase at %s to identify relevant files, patterns, constraints, interfaces, and adjacent workflows",
+			projectRoot,
+		),
+		fmt.Sprintf(
+			"Keep the `## DEPENDENCIES` table in %s current throughout the research phase:\n"+
+				"- include every dependency that materially shapes the feature definition, such as skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, and assets\n"+
+				"- use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`\n"+
+				"- `Status` must be one of `active`, `optional`, or `stale`\n"+
+				"- for Figma or other MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`\n"+
+				"- if a dependency influenced decisions but is no longer current, keep it in the table with `Status` = `stale` instead of deleting it",
+			brainstormPath,
+		),
+		fmt.Sprintf(
+			"Keep the `## RELATIONSHIPS` section in %s current throughout the research phase:\n"+
+				"- use `none` when this feature does not build on an existing feature\n"+
+				"- otherwise record one bullet per explicit feature relationship\n"+
+				"- supported labels are `builds on`, `depends on`, and `related to`\n"+
+				"- use canonical feature directory identifiers such as `0007-catchup-command`",
+			brainstormPath,
+		),
+	}
+	taskSteps = append(taskSteps, clarificationLoopSteps(
+		goalPct,
+		fmt.Sprintf(
+			"Reassess, update %s with durable findings, and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution",
+			brainstormPath,
+		),
+	)...)
+	taskSteps = append(taskSteps,
+		"Keep every finding filepath-specific whenever possible",
+		fmt.Sprintf(
+			"If you create a tentative plan in chat, fold the durable conclusions back into %s so the file stays current",
+			brainstormPath,
+		),
+		fmt.Sprintf(
+			"Stop before implementation. The next workflow step after this research phase is usually kit spec %s",
+			featureSlug,
 		),
 	)
 
-	sb.WriteString(fmt.Sprintf(`%d. Keep every finding filepath-specific whenever possible
-%d. If you create a tentative plan in chat, fold the durable conclusions back into %s so the file stays current
-%d. Stop before implementation. The next workflow step after this research phase is usually kit spec %s
-
-## BRAINSTORM.md Requirements
-
-The final BRAINSTORM.md must be a detailed, informational, filepath-specific document with:
-- SUMMARY
-- USER THESIS
-- RELATIONSHIPS
-- CODEBASE FINDINGS
-- AFFECTED FILES
-- DEPENDENCIES
-- QUESTIONS
-- OPTIONS
-- RECOMMENDED STRATEGY
-- NEXT STEP
-
-## Rules
-
-- planning only — no implementation
-- no build or execution work intended to advance code changes
-- the purpose of this phase is understanding, not code output
-- use numbered lists for clarifying questions and progress updates
-- continue the clarification loop until confidence reaches ≥%d%% and the specification is precise enough for a correct, production-quality solution
-- preserve facts in BRAINSTORM.md, not just in chat
-- make the final document dense, explicit, and easy for a coding agent to use when drafting SPEC.md
-- keep the ## DEPENDENCIES table aligned with the tools, docs, and design references used during the phase
-- keep the ## RELATIONSHIPS section aligned with any explicit dependency on previously shipped features
-`, nextStep, nextStep+1, brainstormPath, nextStep+2, featureSlug, goalPct))
-	appendNonEmptySectionRules(&sb, "`BRAINSTORM.md`")
-
-	return sb.String()
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Raw("/plan")
+		doc.Paragraph(fmt.Sprintf("You are in planning mode for feature: **%s**", featureSlug))
+		doc.Paragraph("You MUST update the brainstorm file at:")
+		doc.BulletList(
+			fmt.Sprintf("**BRAINSTORM**: %s", brainstormPath),
+			fmt.Sprintf("**Feature**: %s", featureSlug),
+			fmt.Sprintf("**Project Root**: %s", projectRoot),
+		)
+		doc.Heading(2, "User Thesis")
+		doc.Paragraph(thesis)
+		doc.Heading(2, "Context Docs (read first)")
+		doc.Table(
+			[]string{"File", "Purpose"},
+			[][]string{
+				{"CONSTITUTION", constitutionPath},
+				{"BRAINSTORM", brainstormPath},
+				{"Project Root", projectRoot},
+			},
+		)
+		doc.Heading(2, "Your Task")
+		doc.OrderedList(1, taskSteps...)
+		doc.Heading(2, "BRAINSTORM.md Requirements")
+		doc.Paragraph("The final BRAINSTORM.md must be a detailed, informational, filepath-specific document with:")
+		doc.BulletList(
+			"SUMMARY",
+			"USER THESIS",
+			"RELATIONSHIPS",
+			"CODEBASE FINDINGS",
+			"AFFECTED FILES",
+			"DEPENDENCIES",
+			"QUESTIONS",
+			"OPTIONS",
+			"RECOMMENDED STRATEGY",
+			"NEXT STEP",
+		)
+		doc.Heading(2, "Rules")
+		doc.BulletList(
+			"planning only — no implementation",
+			"no build or execution work intended to advance code changes",
+			"the purpose of this phase is understanding, not code output",
+			"use numbered lists for clarifying questions and progress updates",
+			fmt.Sprintf(
+				"continue the clarification loop until confidence reaches ≥%d%% and the specification is precise enough for a correct, production-quality solution",
+				goalPct,
+			),
+			"preserve facts in BRAINSTORM.md, not just in chat",
+			"make the final document dense, explicit, and easy for a coding agent to use when drafting SPEC.md",
+			"keep the ## DEPENDENCIES table aligned with the tools, docs, and design references used during the phase",
+			"keep the ## RELATIONSHIPS section aligned with any explicit dependency on previously shipped features",
+		)
+		doc.Raw(renderNonEmptySectionRules("`BRAINSTORM.md`"))
+	})
 }

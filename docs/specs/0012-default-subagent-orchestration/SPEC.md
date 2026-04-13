@@ -5,6 +5,7 @@
 - Change Kit's shared prompt-orchestration default from single-agent to subagent-first.
 - Add `--single-agent` as the explicit opt-out when a user wants one lane only.
 - Keep `kit dispatch` as the stricter discovery-first queue-planning command with explicit approval before launch.
+- Clarify that repository-scale RLM discovery narrows context first, while dispatch and subagents handle execution planning after discovery.
 
 ## PROBLEM
 
@@ -62,12 +63,16 @@ none
 - [SPEC-08] `kit dispatch` must keep using the no-shared-subagent-suffix output path so its dedicated prompt remains the only orchestration guidance in that command.
 - [SPEC-09] README and help output must describe the new default as “subagents by default” and `--single-agent` as the explicit opt-out.
 - [SPEC-10] The legacy `--subagents` flag may remain only as a hidden compatibility alias and must not be the documented primary interface.
+- [SPEC-11] Shared subagent guidance must distinguish repository-scale discovery from execution planning:
+  - RLM narrows candidate docs, files, and workstreams first
+  - dispatch or subagent execution begins only after that scope is narrowed enough to predict overlap conservatively
 
 ## ACCEPTANCE
 
 - A normal prompt-producing command output includes `## Subagent Orchestration` without requiring any extra flag.
 - Running the same command with `--single-agent` omits that shared orchestration section.
 - The shared subagent section tells the coding agent to default to subagents across distinct areas while still predicting touched files, clustering overlap conservatively, and keeping the main agent responsible for integration.
+- The shared subagent section explains that RLM is discovery-first context narrowing, while dispatch and subagent execution happen only after overlap can be predicted conservatively.
 - `kit dispatch` output remains free of the shared subagent suffix and continues to use its stricter discovery-first queue-planning prompt.
 - README and tests reflect the new default and the `--single-agent` escape hatch.
 

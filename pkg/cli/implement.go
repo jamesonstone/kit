@@ -13,6 +13,7 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/promptdoc"
 )
 
 var implementCopy bool
@@ -171,98 +172,119 @@ func outputImplementationPrompt(feat *feature.Feature, brainstormPath, specPath,
 func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary, projectRoot string) string {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	hasBrainstorm := document.Exists(brainstormPath)
+	cfg, _ := loadRepoInstructionContext(projectRoot)
+	repoAgentsPath := repoKnowledgeEntrypointPath(projectRoot, cfg)
+	repoReferencesPath := repoReferencesEntrypointPath(projectRoot, cfg)
 
-	// build the agent prompt
-	var sb strings.Builder
-
-	sb.WriteString(fmt.Sprintf("You are implementing the feature: %s\n\n## Overview\n", feat.Slug))
-
-	if summary != "" {
-		sb.WriteString(fmt.Sprintf("%s\n\n", summary))
-	} else {
-		sb.WriteString("(Read SPEC.md for feature description)\n\n")
+	steps := []string{}
+	if repoAgentsPath != "" {
+		steps = append(steps, "**If present, read `docs/agents/README.md`** and only the linked workflow docs relevant to this feature")
 	}
-
-	sb.WriteString("## Document Hierarchy\n\n")
-	sb.WriteString("| Document | Contains | Use When |\n")
-	sb.WriteString("|----------|----------|----------|\n")
-	sb.WriteString("| CONSTITUTION.md | Project-wide constraints, principles, priors | Understanding fundamental rules |\n")
+	if repoReferencesPath != "" {
+		steps = append(steps, "**If a repo-wide reference matters, read `docs/references/README.md`** and only the linked reference docs relevant to this feature")
+	}
+	documentOrder := "SPEC → PLAN → TASKS"
 	if hasBrainstorm {
-		sb.WriteString("| BRAINSTORM.md | Upstream research findings, relevant files, strategy options | Recovering problem context before execution |\n")
+		documentOrder = "BRAINSTORM → " + documentOrder
 	}
-	sb.WriteString("| SPEC.md | Requirements, goals, constraints, acceptance criteria | Checking scope, validating completeness |\n")
-	sb.WriteString("| PLAN.md | Architecture, components, interfaces, design decisions | Making implementation choices, understanding structure |\n")
-	sb.WriteString("| TASKS.md | Ordered execution steps with acceptance criteria per task | Knowing what to do next, tracking progress |\n\n")
+	steps = append(steps,
+		"**Read CONSTITUTION.md first** to understand project constraints and principles",
+		fmt.Sprintf("**Read the feature documents in order**: %s", documentOrder),
+		"**Run the implementation readiness gate before writing code**\n- Treat this as an adversarial preflight over the full document set\n- Build a review map for CONSTITUTION.md, optional BRAINSTORM.md, SPEC.md, PLAN.md, and TASKS.md\n- Challenge the docs for contradictions, ambiguous requirements, hidden assumptions, missing edge cases or failure modes, task gaps, and scope creep\n- Verify each planned implementation step still traces back to the binding docs\n- Produce an explicit go/no-go decision before coding",
+		"**If the readiness gate fails, stop and repair the docs first**\n- Do NOT write production code yet\n- Update SPEC.md, PLAN.md, and/or TASKS.md to resolve the exact issue\n- Update PROJECT_PROGRESS_SUMMARY.md when the feature summary or state changes\n- Re-run the implementation readiness gate after the docs are fixed",
+		"**Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict",
+		"**Only after the readiness gate passes, execute tasks from TASKS.md**",
+		"**For each task:**\n- Start with the first incomplete task (marked '- [ ]')\n- Read the task's GOAL, SCOPE, and ACCEPTANCE criteria\n- Implement only what's specified (no gold-plating)\n- Verify acceptance criteria are met before marking complete\n- Update TASKS.md: change '- [ ]' to '- [x]' when done",
+	)
 
-	sb.WriteString("## Your Instructions\n\n")
-	sb.WriteString("1. **Read CONSTITUTION.md first** to understand project constraints and principles\n")
-	sb.WriteString("2. **Read the feature documents in order**: ")
-	if hasBrainstorm {
-		sb.WriteString("BRAINSTORM → ")
-	}
-	sb.WriteString("SPEC → PLAN → TASKS\n")
-	sb.WriteString("3. **Run the implementation readiness gate before writing code**\n")
-	sb.WriteString(`   - Treat this as an adversarial preflight over the full document set
-   - Build a review map for CONSTITUTION.md, optional BRAINSTORM.md, SPEC.md, PLAN.md, and TASKS.md
-   - Challenge the docs for contradictions, ambiguous requirements, hidden assumptions, missing edge cases or failure modes, task gaps, and scope creep
-   - Verify each planned implementation step still traces back to the binding docs
-   - Produce an explicit go/no-go decision before coding
-
-`)
-	sb.WriteString(`4. **If the readiness gate fails, stop and repair the docs first**
-   - Do NOT write production code yet
-   - Update SPEC.md, PLAN.md, and/or TASKS.md to resolve the exact issue
-   - Update PROJECT_PROGRESS_SUMMARY.md when the feature summary or state changes
-   - Re-run the implementation readiness gate after the docs are fixed
-
-`)
-	sb.WriteString("5. **Supplement with your context**: If you have internal plans, prior conversation context, or a Warp plan related to this feature, use that knowledge to inform your implementation — but always defer to CONSTITUTION/SPEC/PLAN/TASKS when there's a conflict\n")
-	sb.WriteString("6. **Only after the readiness gate passes, execute tasks from TASKS.md**\n")
-	sb.WriteString(`7. **For each task:**
-   - Start with the first incomplete task (marked '- [ ]')
-   - Read the task's GOAL, SCOPE, and ACCEPTANCE criteria
-   - Implement only what's specified (no gold-plating)
-   - Verify acceptance criteria are met before marking complete
-   - Update TASKS.md: change '- [ ]' to '- [x]' when done
-
-`)
-
-	sb.WriteString("## Key Files\n")
-	sb.WriteString(fmt.Sprintf("- CONSTITUTION: %s\n", constitutionPath))
-	if hasBrainstorm {
-		sb.WriteString(fmt.Sprintf("- BRAINSTORM: %s\n", brainstormPath))
-	}
-	sb.WriteString(fmt.Sprintf("- SPEC: %s\n", specPath))
-	sb.WriteString(fmt.Sprintf("- PLAN: %s\n", planPath))
-	sb.WriteString(fmt.Sprintf("- TASKS: %s\n", tasksPath))
-	sb.WriteString(fmt.Sprintf("- Project root: %s\n\n", projectRoot))
-
-	sb.WriteString(fmt.Sprintf(`## Rules
-- Respect constraints defined in CONSTITUTION.md
-- Use BRAINSTORM.md as context only; SPEC, PLAN, and TASKS control execution
-- Do not begin coding until the implementation readiness gate passes
-- If the readiness gate fails, report the exact contradiction, ambiguity, missing coverage, or scope issue before editing docs
-- Re-run the readiness gate every time implementation restarts after a doc repair
-- Stay within scope defined in SPEC.md
-- Follow architecture decisions in PLAN.md
-- Complete tasks in dependency order from TASKS.md
-- Quality gate: target zero known defects; do not mark implementation complete until all gates pass with evidence: unresolved assumptions = 0, acceptance criteria mapped 1:1 to outputs, build/compile succeeds, lint/typecheck/test failures = 0, and unrelated diff scope = 0
-- If any gate fails, stop, report the exact failure, and propose the next fix
-- Ask for clarification rather than making assumptions
-- If a task is blocked, explain what's blocking and suggest resolution
-- After completing each task, briefly confirm what was done
-- **Use available tools**: If you have access to MCP servers (e.g., Context7 for documentation, GitHub for issues/PRs, or others), use them to fetch up-to-date documentation, verify API usage, and ensure implementation correctness
-- **Always** update %s/docs/PROJECT_PROGRESS_SUMMARY.md as progress is made and at implementation completion
-- Keep TASKS.md updated with accurate status and ensure that it reflects reality upon completion
-
-## Begin
-Start by running the implementation readiness gate against the document set.
-Do not write code until the gate passes.
-Once it passes, read TASKS.md to identify the first incomplete task (marked with '- [ ]').
-Then read its acceptance criteria and implement it.
-`, projectRoot))
-
-	return sb.String()
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Paragraph(fmt.Sprintf("You are implementing the feature: %s", feat.Slug))
+		doc.Heading(2, "Overview")
+		if summary != "" {
+			doc.Paragraph(summary)
+		} else {
+			doc.Paragraph("(Read SPEC.md for feature description)")
+		}
+		doc.Heading(2, "Document Hierarchy")
+		rows := [][]string{}
+		if repoAgentsPath != "" {
+			rows = append(rows, []string{
+				"docs/agents/README.md",
+				"Repo-local workflow index, guardrails, and RLM routing",
+				"Reconstructing the thin ToC model before feature execution",
+			})
+		}
+		if repoReferencesPath != "" {
+			rows = append(rows, []string{
+				"docs/references/README.md",
+				"Repo-wide references index for durable background context",
+				"A repo-wide reference materially shapes the feature",
+			})
+		}
+		rows = append(rows, []string{
+			"CONSTITUTION.md",
+			"Project-wide constraints, principles, priors",
+			"Understanding fundamental rules",
+		})
+		if hasBrainstorm {
+			rows = append(rows, []string{
+				"BRAINSTORM.md",
+				"Upstream research findings, relevant files, strategy options",
+				"Recovering problem context before execution",
+			})
+		}
+		rows = append(rows,
+			[]string{"SPEC.md", "Requirements, goals, constraints, acceptance criteria", "Checking scope, validating completeness"},
+			[]string{"PLAN.md", "Architecture, components, interfaces, design decisions", "Making implementation choices, understanding structure"},
+			[]string{"TASKS.md", "Ordered execution steps with acceptance criteria per task", "Knowing what to do next, tracking progress"},
+		)
+		doc.Table([]string{"Document", "Contains", "Use When"}, rows)
+		doc.Heading(2, "Your Instructions")
+		doc.OrderedList(1, steps...)
+		doc.Heading(2, "Key Files")
+		keyFiles := []string{}
+		if repoAgentsPath != "" {
+			keyFiles = append(keyFiles, fmt.Sprintf("AGENTS DOCS: %s", repoAgentsPath))
+		}
+		if repoReferencesPath != "" {
+			keyFiles = append(keyFiles, fmt.Sprintf("REFERENCES: %s", repoReferencesPath))
+		}
+		keyFiles = append(keyFiles, fmt.Sprintf("CONSTITUTION: %s", constitutionPath))
+		if hasBrainstorm {
+			keyFiles = append(keyFiles, fmt.Sprintf("BRAINSTORM: %s", brainstormPath))
+		}
+		keyFiles = append(keyFiles,
+			fmt.Sprintf("SPEC: %s", specPath),
+			fmt.Sprintf("PLAN: %s", planPath),
+			fmt.Sprintf("TASKS: %s", tasksPath),
+			fmt.Sprintf("Project root: %s", projectRoot),
+		)
+		doc.BulletList(keyFiles...)
+		doc.Heading(2, "Rules")
+		doc.BulletList(
+			"Respect constraints defined in CONSTITUTION.md",
+			"Use BRAINSTORM.md as context only; SPEC, PLAN, and TASKS control execution",
+			"Do not begin coding until the implementation readiness gate passes",
+			"If the readiness gate fails, report the exact contradiction, ambiguity, missing coverage, or scope issue before editing docs",
+			"Re-run the readiness gate every time implementation restarts after a doc repair",
+			"Stay within scope defined in SPEC.md",
+			"Follow architecture decisions in PLAN.md",
+			"Complete tasks in dependency order from TASKS.md",
+			"Quality gate: target zero known defects; do not mark implementation complete until all gates pass with evidence: unresolved assumptions = 0, acceptance criteria mapped 1:1 to outputs, build/compile succeeds, lint/typecheck/test failures = 0, and unrelated diff scope = 0",
+			"If any gate fails, stop, report the exact failure, and propose the next fix",
+			"Ask for clarification rather than making assumptions",
+			"If a task is blocked, explain what's blocking and suggest resolution",
+			"After completing each task, briefly confirm what was done",
+			"**Use available tools**: If you have access to MCP servers (e.g., Context7 for documentation, GitHub for issues/PRs, or others), use them to fetch up-to-date documentation, verify API usage, and ensure implementation correctness",
+			fmt.Sprintf("**Always** update %s/docs/PROJECT_PROGRESS_SUMMARY.md as progress is made and at implementation completion", projectRoot),
+			"Keep TASKS.md updated with accurate status and ensure that it reflects reality upon completion",
+		)
+		doc.Heading(2, "Begin")
+		doc.Paragraph("Start by running the implementation readiness gate against the document set.")
+		doc.Paragraph("Do not write code until the gate passes.")
+		doc.Paragraph("Once it passes, read TASKS.md to identify the first incomplete task (marked with '- [ ]').")
+		doc.Paragraph("Then read its acceptance criteria and implement it.")
+	})
 }
 
 func printImplementationContext(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress) {

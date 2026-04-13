@@ -17,7 +17,8 @@ func TestPrepareAgentPromptWithoutSubagents(t *testing.T) {
 	checks := []string{
 		"Please review the plan.",
 		"## Skills",
-		"consult the repository instruction files for the active skills workflow before acting",
+		"use the repository instruction entrypoints as a map, not the full manual",
+		"docs/agents/README.md",
 		"read that feature's SPEC.md and the `## SKILLS` table first",
 		"open each referenced `SKILL.md` and use those skills during execution",
 	}
@@ -46,8 +47,10 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 		"## Skills",
 		"## Subagent Orchestration",
 		"drive to understanding first",
+		"do RLM-style discovery first",
 		"then drive task orchestration coordination",
 		"default to subagents when the work spans multiple distinct areas",
+		"do not turn broad discovery into parallel execution",
 		"predict likely touched files or interfaces",
 		"apply the same discovery-first discipline as kit dispatch",
 		"git worktree add ~/worktrees/<repo>-<branch> <branch>",

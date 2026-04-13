@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/promptdoc"
 )
 
 func buildCatchupPrompt(
@@ -19,89 +20,112 @@ func buildCatchupPrompt(
 	specPath := status.Files["spec"].Path
 	planPath := status.Files["plan"].Path
 	tasksPath := status.Files["tasks"].Path
+	cfg, _ := loadRepoInstructionContext(projectRoot)
+	repoAgentsPath := repoKnowledgeEntrypointPath(projectRoot, cfg)
+	repoReferencesPath := repoReferencesEntrypointPath(projectRoot, cfg)
 
-	var sb strings.Builder
-	sb.WriteString("/plan\n\n")
-	sb.WriteString(fmt.Sprintf("Catch up on feature: %s\n\n", feat.Slug))
-	sb.WriteString("## Current Stage And State\n")
-	sb.WriteString(fmt.Sprintf("- Feature: %s\n", feat.DirName))
-	sb.WriteString(fmt.Sprintf("- Current stage: %s\n", status.Phase))
-	sb.WriteString(fmt.Sprintf("- Current state: %s\n", catchupStateSummary(status)))
-	sb.WriteString(fmt.Sprintf("- Next suggested action: %s\n\n", catchupNextAction(status)))
-
-	if status.Summary != "" {
-		sb.WriteString("## Feature Summary\n")
-		sb.WriteString(fmt.Sprintf("%s\n\n", status.Summary))
+	rows := [][]string{
+		{"CONSTITUTION", constitutionPath, "project-wide constraints"},
 	}
-
-	sb.WriteString("## Context Docs\n")
-	sb.WriteString("| File | Path | Use |\n")
-	sb.WriteString("|------|------|-----|\n")
-	sb.WriteString(fmt.Sprintf("| CONSTITUTION | %s | project-wide constraints |\n", constitutionPath))
-	sb.WriteString(fmt.Sprintf("| PROJECT_PROGRESS_SUMMARY | %s | cross-feature context |\n", summaryPath))
+	if repoAgentsPath != "" {
+		rows = append(rows, []string{"AGENTS DOCS", repoAgentsPath, "repo-local entrypoint and read-order guide"})
+	}
+	if repoReferencesPath != "" {
+		rows = append(rows, []string{"REFERENCES", repoReferencesPath, "repo-wide references only when relevant"})
+	}
+	rows = append(rows, []string{"PROJECT_PROGRESS_SUMMARY", summaryPath, "cross-feature context"})
 	if status.Files["brainstorm"].Exists {
-		sb.WriteString(fmt.Sprintf("| BRAINSTORM | %s | upstream research and framing |\n", brainstormPath))
+		rows = append(rows, []string{"BRAINSTORM", brainstormPath, "upstream research and framing"})
 	}
 	if status.Files["spec"].Exists {
-		sb.WriteString(fmt.Sprintf("| SPEC | %s | requirements and acceptance |\n", specPath))
+		rows = append(rows, []string{"SPEC", specPath, "requirements and acceptance"})
 	}
 	if status.Files["plan"].Exists {
-		sb.WriteString(fmt.Sprintf("| PLAN | %s | approach and design decisions |\n", planPath))
+		rows = append(rows, []string{"PLAN", planPath, "approach and design decisions"})
 	}
 	if status.Files["tasks"].Exists {
-		sb.WriteString(fmt.Sprintf("| TASKS | %s | execution status and remaining work |\n", tasksPath))
+		rows = append(rows, []string{"TASKS", tasksPath, "execution status and remaining work"})
 	}
-	sb.WriteString(fmt.Sprintf("| Project Root | %s | repository context |\n\n", projectRoot))
+	rows = append(rows, []string{"Project Root", projectRoot, "repository context"})
 
-	sb.WriteString("## Your Task\n")
-	sb.WriteString("1. Stay in plan mode for this catch-up step\n")
-	sb.WriteString("2. Do NOT implement code, edit files, or begin execution yet\n")
-	sb.WriteString("3. Read `CONSTITUTION.md` first\n")
-	sb.WriteString("4. Read `PROJECT_PROGRESS_SUMMARY.md` for cross-feature context\n")
-	sb.WriteString("5. Read the feature docs in order:\n")
+	featureDocs := []string{}
 	if status.Files["brainstorm"].Exists {
-		sb.WriteString("   - `BRAINSTORM.md`\n")
+		featureDocs = append(featureDocs, "`BRAINSTORM.md`")
 	}
 	if status.Files["spec"].Exists {
-		sb.WriteString("   - `SPEC.md`\n")
+		featureDocs = append(featureDocs, "`SPEC.md`")
 	}
 	if status.Files["plan"].Exists {
-		sb.WriteString("   - `PLAN.md`\n")
+		featureDocs = append(featureDocs, "`PLAN.md`")
 	}
 	if status.Files["tasks"].Exists {
-		sb.WriteString("   - `TASKS.md`\n")
+		featureDocs = append(featureDocs, "`TASKS.md`")
 	}
-	sb.WriteString("6. Reconstruct the current stage and state of the feature from the repository artifacts before making any recommendations\n")
-	sb.WriteString("7. Start by asking clarifying questions in a short numbered batch\n")
-	sb.WriteString("8. For each question, include your current best recommendation, assumption, or default\n")
-	sb.WriteString("9. Use the standard batch-approval syntax for planning questions: " + approvalSyntaxSummary + "\n")
-	sb.WriteString("10. Ask explicitly whether the user wants to continue planning, validate the current state, or move into implementation\n")
-	sb.WriteString("11. Do NOT switch from catch-up/planning into implementation until the user explicitly approves that move\n")
-	sb.WriteString(
-		fmt.Sprintf(
-			"12. If conversation context is missing, you may optionally ask the user to provide a prior summary or use `kit summarize %s`, but treat repository documents and current code as the primary source of truth\n",
-			feat.Slug,
-		),
+
+	steps := []string{
+		"Stay in plan mode for this catch-up step",
+		"Do NOT implement code, edit files, or begin execution yet",
+	}
+	if repoAgentsPath != "" {
+		steps = append(steps, "Read `docs/agents/README.md` and only the linked docs relevant to this feature")
+	}
+	if repoReferencesPath != "" {
+		steps = append(steps, "Read `docs/references/README.md` only if a repo-wide reference materially shapes this feature")
+	}
+	steps = append(steps,
+		"Read `CONSTITUTION.md` first",
+		"Read `PROJECT_PROGRESS_SUMMARY.md` for cross-feature context",
+		"Read the feature docs in order:\n- "+strings.Join(featureDocs, "\n- "),
+		"Reconstruct the current stage and state of the feature from the repository artifacts before making any recommendations",
+		"Start by asking clarifying questions in a short numbered batch",
+		"For each question, include your current best recommendation, assumption, or default",
+		fmt.Sprintf("Use the standard batch-approval syntax for planning questions: %s", approvalSyntaxSummary),
+		"Ask explicitly whether the user wants to continue planning, validate the current state, or move into implementation",
+		"Do NOT switch from catch-up/planning into implementation until the user explicitly approves that move",
+		fmt.Sprintf("If conversation context is missing, you may optionally ask the user to provide a prior summary or use `kit summarize %s`, but treat repository documents and current code as the primary source of truth", feat.Slug),
 	)
 
 	if status.Phase == feature.PhaseComplete {
-		sb.WriteString("13. This feature is already marked `complete`; treat this catch-up as review or reopen triage only\n")
-		sb.WriteString("14. Do not assume implementation should resume unless the user explicitly asks to reopen work on this feature\n")
+		steps = append(steps,
+			"This feature is already marked `complete`; treat this catch-up as review or reopen triage only",
+			"Do not assume implementation should resume unless the user explicitly asks to reopen work on this feature",
+		)
 	} else {
-		sb.WriteString("13. After you have caught up, summarize what stage the feature is in, what is already decided, what is still open, and what the next sensible step would be\n")
-		sb.WriteString("14. Stop after the catch-up summary and questions unless the user explicitly approves moving to implementation\n")
+		steps = append(steps,
+			"After you have caught up, summarize what stage the feature is in, what is already decided, what is still open, and what the next sensible step would be",
+			"Stop after the catch-up summary and questions unless the user explicitly approves moving to implementation",
+		)
 	}
 
-	sb.WriteString("\nRules:\n")
-	sb.WriteString("- this command is feature-scoped; do not broaden into a project-wide handoff unless the user asks\n")
-	sb.WriteString("- do not duplicate the full `kit handoff` workflow\n")
-	sb.WriteString("- do not duplicate the full `kit summarize` workflow\n")
-	sb.WriteString("- do not output implementation instructions like `kit implement` unless the user explicitly asks to proceed\n")
-	sb.WriteString("- repository documents and current code are the source of truth when prior conversation context is incomplete\n")
-	sb.WriteString(fmt.Sprintf("- feature path: %s\n", feat.Path))
-	sb.WriteString(fmt.Sprintf("- project root: %s\n", projectRoot))
-
-	return sb.String()
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Raw("/plan")
+		doc.Paragraph(fmt.Sprintf("Catch up on feature: %s", feat.Slug))
+		doc.Heading(2, "Current Stage And State")
+		doc.BulletList(
+			fmt.Sprintf("Feature: %s", feat.DirName),
+			fmt.Sprintf("Current stage: %s", status.Phase),
+			fmt.Sprintf("Current state: %s", catchupStateSummary(status)),
+			fmt.Sprintf("Next suggested action: %s", catchupNextAction(status)),
+		)
+		if status.Summary != "" {
+			doc.Heading(2, "Feature Summary")
+			doc.Paragraph(status.Summary)
+		}
+		doc.Heading(2, "Context Docs")
+		doc.Table([]string{"File", "Path", "Use"}, rows)
+		doc.Heading(2, "Your Task")
+		doc.OrderedList(1, steps...)
+		doc.Heading(2, "Rules")
+		doc.BulletList(
+			"this command is feature-scoped; do not broaden into a project-wide handoff unless the user asks",
+			"do not duplicate the full `kit handoff` workflow",
+			"do not duplicate the full `kit summarize` workflow",
+			"do not output implementation instructions like `kit implement` unless the user explicitly asks to proceed",
+			"repository documents and current code are the source of truth when prior conversation context is incomplete",
+			fmt.Sprintf("feature path: %s", feat.Path),
+			fmt.Sprintf("project root: %s", projectRoot),
+		)
+	})
 }
 
 func catchupStateSummary(status *feature.FeatureStatus) string {

@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/jamesonstone/kit/internal/promptdoc"
 )
 
 var codeReviewCopy bool
@@ -57,73 +59,49 @@ func runCodeReview(cmd *cobra.Command, args []string) error {
 }
 
 func codeReviewInstructions() string {
-	return `## Code Review Agent Instructions
-
-**IMPORTANT: This is an INFORMATIONAL REVIEW ONLY.**
-- Do NOT modify, edit, or change any code
-- Do NOT create new files or update existing files
-- Your sole task is to ANALYZE and EXPLAIN the changes
-- Output your findings as documentation only
-
-**REVIEW OBJECTIVES: Maximize for 100% CORRECTNESS and PERFORMANCE.**
-
----
-
-### Step 1: Get the Changed Files List
-
-Run: ` + "`git diff --name-only main..HEAD`" + ` (or master if main doesn't exist)
-
-This output is the **ONLY** list of files you will review.
-
-**CRITICAL RULES:**
-- If the output is empty, STOP — there are no changes to review
-- **ONLY** analyze files that appear in this output
-- Do **NOT** review files not in this list
-- Do **NOT** explore or analyze other files in the codebase
-
----
-
-### Step 2: For Each Changed File
-
-For **each file in the list above** (and ONLY those files):
-
-1. **Read the file** as it exists now
-2. **Understand** what it does and how it fits in the codebase
-3. **Analyze for correctness:**
-   - Does the logic work correctly?
-   - Are edge cases handled? (nil, empty, boundaries)
-   - Are errors handled properly? (no swallowed errors)
-   - Any potential panics or crashes?
-   - Any race conditions?
-
-4. **Analyze for performance:**
-   - Is the algorithm efficient?
-   - Any unnecessary allocations or copies?
-   - Any N+1 queries or unbatched I/O?
-
-5. **Check best practices:**
-   - Use MCP tools (Context7) to verify framework best practices
-   - Flag deprecated patterns or anti-patterns
-
-6. **Assess:** Is this change 👍 (net-positive) or 👎 (net-negative)?
-
----
-
-### Step 3: Analyze Test Files (if any changed)
-
-For test files in the changed list:
-- Do they test the right behavior?
-- Do assertions match the application code changes?
-- Do NOT recommend adding more tests
-
----
-
-### Step 4: Output Your Analysis
-
-**Format:**
-
-` + "```" + `markdown
-## Code Review: [branch] → main
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Heading(2, "Code Review Agent Instructions")
+		doc.Paragraph("**IMPORTANT: This is an INFORMATIONAL REVIEW ONLY.**")
+		doc.BulletList(
+			"Do NOT modify, edit, or change any code",
+			"Do NOT create new files or update existing files",
+			"Your sole task is to ANALYZE and EXPLAIN the changes",
+			"Output your findings as documentation only",
+		)
+		doc.Paragraph("**REVIEW OBJECTIVES: Maximize for 100% CORRECTNESS and PERFORMANCE.**")
+		doc.Raw("---")
+		doc.Heading(3, "Step 1: Get the Changed Files List")
+		doc.Paragraph("Run: `git diff --name-only main..HEAD` (or master if main doesn't exist)")
+		doc.Paragraph("This output is the **ONLY** list of files you will review.")
+		doc.Paragraph("**CRITICAL RULES:**")
+		doc.BulletList(
+			"If the output is empty, STOP — there are no changes to review",
+			"**ONLY** analyze files that appear in this output",
+			"Do **NOT** review files not in this list",
+			"Do **NOT** explore or analyze other files in the codebase",
+		)
+		doc.Raw("---")
+		doc.Heading(3, "Step 2: For Each Changed File")
+		doc.Paragraph("For **each file in the list above** (and ONLY those files):")
+		doc.OrderedList(1,
+			"**Read the file** as it exists now",
+			"**Understand** what it does and how it fits in the codebase",
+			"**Analyze for correctness:**\n- Does the logic work correctly?\n- Are edge cases handled? (nil, empty, boundaries)\n- Are errors handled properly? (no swallowed errors)\n- Any potential panics or crashes?\n- Any race conditions?",
+			"**Analyze for performance:**\n- Is the algorithm efficient?\n- Any unnecessary allocations or copies?\n- Any N+1 queries or unbatched I/O?",
+			"**Check best practices:**\n- Use MCP tools (Context7) to verify framework best practices\n- Flag deprecated patterns or anti-patterns",
+			"**Assess:** Is this change 👍 (net-positive) or 👎 (net-negative)?",
+		)
+		doc.Raw("---")
+		doc.Heading(3, "Step 3: Analyze Test Files (if any changed)")
+		doc.BulletList(
+			"For test files in the changed list: do they test the right behavior?",
+			"Do assertions match the application code changes?",
+			"Do NOT recommend adding more tests",
+		)
+		doc.Raw("---")
+		doc.Heading(3, "Step 4: Output Your Analysis")
+		doc.Paragraph("**Format:**")
+		doc.CodeBlock("markdown", `## Code Review: [branch] → main
 
 ### Files Reviewed
 [List ONLY the files from the git diff output]
@@ -145,17 +123,16 @@ For test files in the changed list:
 
 ### Recommendation
 [✅ APPROVE | ⚠️ APPROVE WITH NOTES | ❌ REQUEST CHANGES]
-[If not clean approve, list specific issues]
-` + "```" + `
-
----
-
-### Rules
-
-- **INFORMATIONAL ONLY** — do not modify any code
-- **ONLY REVIEW CHANGED FILES** — files from git diff output, nothing else
-- **DO NOT EXPLORE** other files unless directly imported by a changed file
-- **MAXIMIZE CORRECTNESS** — find all bugs, edge cases, error handling issues
-- **MAXIMIZE PERFORMANCE** — identify inefficiencies
-- Be thorough but stay focused on the changed files`
+[If not clean approve, list specific issues]`)
+		doc.Raw("---")
+		doc.Heading(3, "Rules")
+		doc.BulletList(
+			"**INFORMATIONAL ONLY** — do not modify any code",
+			"**ONLY REVIEW CHANGED FILES** — files from git diff output, nothing else",
+			"**DO NOT EXPLORE** other files unless directly imported by a changed file",
+			"**MAXIMIZE CORRECTNESS** — find all bugs, edge cases, error handling issues",
+			"**MAXIMIZE PERFORMANCE** — identify inefficiencies",
+			"Be thorough but stay focused on the changed files",
+		)
+	})
 }

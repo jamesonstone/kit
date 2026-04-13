@@ -16,7 +16,7 @@
 - [PLAN-03][SPEC-07][SPEC-08] Reuse the feature-list pattern from `implement`/`reflect`, but filter on `TASKS.md` existence and include phase labels in the selector.
 - [PLAN-04][SPEC-09][SPEC-10][SPEC-11][SPEC-12][SPEC-13][SPEC-14][SPEC-15][SPEC-16][SPEC-17][SPEC-33] Build a deterministic markdown prompt that instructs the coding agent how to analyze the feature pipeline, compare plan vs implementation, de-duplicate against existing skills, write one canonical skill bundle, and duplicate it into the Claude mirror root.
 - [PLAN-05][SPEC-21][SPEC-22][SPEC-23][SPEC-24][SPEC-25] Expand the prompt so it synthesizes across `PROJECT_PROGRESS_SUMMARY.md`, constitution alignment, and emergent workflows, with an explicit signal priority ladder for insight derivation.
-- [PLAN-06][SPEC-26][SPEC-27][SPEC-28][SPEC-29][SPEC-30][SPEC-31][SPEC-34][SPEC-35] Add a mandatory stale-skill audit section that evaluates canonical skills under `<skills_dir>/*/SKILL.md`, retains passing canonical bundles unchanged, and removes the Claude mirror whenever a stale canonical skill is deleted.
+- [PLAN-06][SPEC-26][SPEC-27][SPEC-28][SPEC-29][SPEC-30][SPEC-31][SPEC-34][SPEC-35] Add a mandatory stale-skill audit section that evaluates canonical skills under `<skills_dir>/*/SKILL.md`, retains passing canonical bundles unchanged, and switches stale-skill cleanup to an approval-gated flow instead of immediate destructive deletion guidance.
 - [PLAN-07][SPEC-18][SPEC-19][SPEC-20] Keep the existing command surface and workflow instructions intact while rerunning verification.
 - [PLAN-08][SPEC-06][SPEC-06a][SPEC-06b] Switch `skill mine` output to the shared clipboard-first helper while keeping `--output-only` and `--copy` behavior explicit.
 - [PLAN-09][SPEC-06c] Register the shared `--prompt-only` flag on `skill mine` so the command surface stays consistent with the rest of Kit's feature-scoped prompt commands without changing runtime behavior.
@@ -48,7 +48,7 @@
 - Project-wide insight input comes from `docs/PROJECT_PROGRESS_SUMMARY.md`.
 - Canonical skill root is `.agents/skills` by default.
 - Claude discovery mirror root is `.claude/skills`.
-- Audit input path is `<skills_dir>/*/SKILL.md`, with Claude mirror cleanup as a side effect when deleting stale skills.
+- Audit input path is `<skills_dir>/*/SKILL.md`, with Claude mirror cleanup proposed only after explicit approval for stale-skill removal.
 - No new persisted state beyond the config schema and feature docs.
 
 ## INTERFACES
@@ -87,7 +87,7 @@
 - Add unit tests for `buildSkillMinePrompt`.
 - Add or reuse unit tests for clipboard-first prompt output semantics.
 - Verify `kit skill mine --help` and `kit skills mine --help` expose `--prompt-only`.
-- Verify prompt content includes canonical skills directory, Claude mirror directory, directory-based `SKILL.md` paths, git diff instructions, de-duplication instructions, `PROJECT_PROGRESS_SUMMARY.md`, `CONSTITUTION.md`, signal-priority language, `SKILL AUDIT`, audit criteria, deletion instructions for both roots, and `Skill Audit Summary`.
+- Verify prompt content includes canonical skills directory, Claude mirror directory, directory-based `SKILL.md` paths, git diff instructions, de-duplication instructions, `PROJECT_PROGRESS_SUMMARY.md`, `CONSTITUTION.md`, signal-priority language, `SKILL AUDIT`, audit criteria, approval-gated cleanup instructions for both roots, and `Skill Audit Summary`.
 - Verify prompt does not mention API calls or HTTP.
 - Run:
   - `make vet`

@@ -1,6 +1,11 @@
 package templates
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/instructions"
+)
 
 const sharedRepositoryInstructions = sharedRepositoryInstructionsCore + sharedRepositoryInstructionsStandards
 
@@ -31,45 +36,125 @@ const copilotQuickRules = `## Fast rules for chat and code review
 ---
 `
 
+type ScaffoldFile struct {
+	RelativePath string
+	Content      string
+}
+
 func repositoryInstructionDocument(title string) string {
 	return `# ` + title + `
 
 ` + sharedRepositoryInstructions
 }
 
-// AgentPointer returns the comprehensive instruction template for agent files.
-func AgentPointer(agentName string) string {
+func tocInstructionDocument(title string) string {
+	return `# ` + title + `
+
+` + tocRepositoryInstructions(title)
+}
+
+// LegacyAgentPointer returns the comprehensive legacy instruction template for agent files.
+func LegacyAgentPointer(agentName string) string {
 	return repositoryInstructionDocument(agentName)
 }
 
-// AgentsMD is the comprehensive AGENTS.md template with full workflow and standards.
-var AgentsMD = repositoryInstructionDocument("AGENTS")
+// AgentPointer returns the default instruction template for agent files.
+func AgentPointer(agentName string) string {
+	return tocInstructionDocument(agentName)
+}
 
-// ClaudeMD is the comprehensive CLAUDE.md template with full workflow and standards.
-var ClaudeMD = repositoryInstructionDocument("CLAUDE")
+// LegacyAgentsMD is the comprehensive AGENTS.md template with full workflow and standards.
+var LegacyAgentsMD = repositoryInstructionDocument("AGENTS")
 
-// CopilotInstructionsMD is the comprehensive repository-wide Copilot instructions template.
-var CopilotInstructionsMD = `# GitHub Copilot Repository Instructions
+// LegacyClaudeMD is the comprehensive CLAUDE.md template with full workflow and standards.
+var LegacyClaudeMD = repositoryInstructionDocument("CLAUDE")
+
+// LegacyCopilotInstructionsMD is the comprehensive repository-wide Copilot instructions template.
+var LegacyCopilotInstructionsMD = `# GitHub Copilot Repository Instructions
 
 ` + copilotQuickRules + `
 ` + sharedRepositoryInstructions
 
-// InstructionFile returns scaffold content for supported instruction file paths.
+// AgentsMD is the default AGENTS.md scaffold content.
+var AgentsMD = tocInstructionDocument("AGENTS")
+
+// ClaudeMD is the default CLAUDE.md scaffold content.
+var ClaudeMD = tocInstructionDocument("CLAUDE")
+
+// CopilotInstructionsMD is the default Copilot instructions scaffold content.
+var CopilotInstructionsMD = tocCopilotInstructions
+
+// InstructionFile returns default scaffold content for supported instruction file paths.
 func InstructionFile(path string) string {
+	return InstructionFileForVersion(path, config.DefaultInstructionScaffoldVersion)
+}
+
+// InstructionFileForVersion returns scaffold content for supported instruction file paths.
+func InstructionFileForVersion(path string, version int) string {
 	cleanPath := strings.ReplaceAll(path, "\\", "/")
+	useLegacy := version == config.InstructionScaffoldVersionVerbose
 
 	switch {
 	case strings.HasSuffix(cleanPath, "/AGENTS.md") || cleanPath == "AGENTS.md":
+		if useLegacy {
+			return LegacyAgentsMD
+		}
 		return AgentsMD
 	case strings.HasSuffix(cleanPath, "/CLAUDE.md") || cleanPath == "CLAUDE.md":
+		if useLegacy {
+			return LegacyClaudeMD
+		}
 		return ClaudeMD
 	case strings.HasSuffix(cleanPath, "/copilot-instructions.md") || cleanPath == "copilot-instructions.md":
+		if useLegacy {
+			return LegacyCopilotInstructionsMD
+		}
 		return CopilotInstructionsMD
 	default:
 		base := cleanPath
 		if idx := strings.LastIndex(cleanPath, "/"); idx >= 0 {
 			base = cleanPath[idx+1:]
 		}
+		if useLegacy {
+			return LegacyAgentPointer(strings.TrimSuffix(base, ".md"))
+		}
 		return AgentPointer(strings.TrimSuffix(base, ".md"))
+	}
+}
+
+func InstructionSupportFiles(version int) []ScaffoldFile {
+	files := make([]ScaffoldFile, 0, len(instructions.SupportDocs(version)))
+	for _, doc := range instructions.SupportDocs(version) {
+		files = append(files, ScaffoldFile{
+			RelativePath: doc.RelativePath,
+			Content:      instructionSupportContent(doc.RelativePath),
+		})
+	}
+
+	return files
+}
+
+func instructionSupportContent(relativePath string) string {
+	switch relativePath {
+	case "docs/agents/README.md":
+		return agentsREADME
+	case "docs/agents/WORKFLOWS.md":
+		return agentsWorkflows
+	case "docs/agents/RLM.md":
+		return agentsRLM
+	case "docs/agents/TOOLING.md":
+		return agentsTooling
+	case "docs/agents/GUARDRAILS.md":
+		return agentsGuardrails
+	case "docs/references/README.md":
+		return referencesREADME
+	case "docs/references/testing.md":
+		return referencesTesting
+	case "docs/references/tooling.md":
+		return referencesTooling
+	case "docs/references/external-systems.md":
+		return referencesExternalSystems
+	default:
+		return ""
 	}
 }

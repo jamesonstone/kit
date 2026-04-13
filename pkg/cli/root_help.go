@@ -78,6 +78,10 @@ func configureRootHelp() {
 			_ = renderRootHelp(cmd)
 			return
 		}
+		if cmd == scaffoldAgentsCmd {
+			_ = renderScaffoldAgentsHelp(cmd)
+			return
+		}
 		cmd.SetHelpTemplate(helpTemplate(terminalWriterCheck(cmd.OutOrStdout())))
 		defaultHelp(cmd, args)
 	})

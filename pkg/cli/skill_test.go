@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -19,11 +20,28 @@ func TestBuildSkillMinePrompt(t *testing.T) {
 	skillsDir := filepath.Join(projectRoot, ".agents", "skills")
 	canonicalSkillPath := filepath.Join(skillsDir, "skill-mine-command", "SKILL.md")
 	claudeMirrorPath := filepath.Join(projectRoot, ".claude", "skills", "skill-mine-command", "SKILL.md")
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
 
 	if err := os.MkdirAll(featurePath, 0755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 	if err := os.WriteFile(brainstormPath, []byte("# BRAINSTORM\n"), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(projectRoot, "docs", "agents"), 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(projectRoot, "docs", "agents", "README.md"), []byte("# Agents Docs\n"), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(projectRoot, "docs", "references"), 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(projectRoot, "docs", "references", "README.md"), []byte("# References\n"), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -49,6 +67,8 @@ func TestBuildSkillMinePrompt(t *testing.T) {
 		claudeMirrorPath,
 		"PROJECT_PROGRESS_SUMMARY.md",
 		"CONSTITUTION.md",
+		"docs/agents/README.md",
+		"docs/references/README.md",
 		"git diff main",
 		"git diff master",
 		"Read all existing canonical skill bundles",
@@ -67,6 +87,9 @@ func TestBuildSkillMinePrompt(t *testing.T) {
 		"RELEVANCE",
 		"COVERAGE",
 		"TRIGGER CONDITION",
+		"Add the skill to the `Removed` section as a removal candidate",
+		"Do NOT delete the canonical or Claude mirror directories yet",
+		"ask for explicit approval before deleting any removal candidate",
 		"rm -rf " + skillsDir + "/<skill-name>/",
 		"rm -rf .claude/skills/<skill-name>/",
 		"## Skill Audit Summary",

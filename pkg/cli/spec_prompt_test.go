@@ -111,14 +111,57 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 	})
 
 	checks := []string{
-		"Perform a skills discovery phase before asking sign-off questions",
-		"populate the `## SKILLS` table",
+		"Perform a skills discovery phase before treating SPEC.md as complete",
+		"write the selected skills into the `## SKILLS` table",
 		"Populate or refresh the `## DEPENDENCIES` table",
 		"keep the required `none | n/a | n/a | no additional skills required | no` row",
 		"keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`",
 		"the ## SKILLS section is mandatory and must be populated before sign-off",
 		"the ## DEPENDENCIES section must be current before sign-off",
 		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected output to contain %q", check)
+		}
+	}
+}
+
+func TestRunSpecTemplate_IncludesRLMGuidanceWhenBrainstormHintsLargeRepo(t *testing.T) {
+	projectRoot := t.TempDir()
+	homeDir := filepath.Join(projectRoot, "home")
+	codexDir := filepath.Join(homeDir, ".codex")
+
+	t.Setenv("HOME", homeDir)
+	t.Setenv("CODEX_HOME", codexDir)
+
+	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
+	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), "# AGENTS\n")
+	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), "# CLAUDE\n")
+	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), "# COPILOT\n")
+
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0011-repository-audit")
+	specPath := filepath.Join(featurePath, "SPEC.md")
+	brainstormPath := filepath.Join(featurePath, "BRAINSTORM.md")
+	writeFile(t, brainstormPath, "scan repository for auth and FHIR integration points\n")
+
+	restore := chdirForTest(t, projectRoot)
+	defer restore()
+
+	cfg := config.Default()
+	output := captureStdout(t, func() {
+		err := runSpecTemplate(specPath, brainstormPath, "repository-audit", projectRoot, cfg, true)
+		if err != nil {
+			t.Fatalf("runSpecTemplate() error = %v", err)
+		}
+	})
+
+	checks := []string{
+		"# Use RLM Pattern",
+		"parallelization_mode: \"rlm\"",
+		"Index → Filter → Map → Reduce",
+		"add `rlm` to the `## SKILLS` table",
 	}
 
 	for _, check := range checks {
@@ -199,6 +242,52 @@ func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
 		"**PROBLEM**: problem answer",
 		"**EDGE-CASES**: edge-cases answer",
 	}
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected output to contain %q", check)
+		}
+	}
+}
+
+func TestOutputCompiledPrompt_IncludesRLMGuidanceWhenContextRequiresIt(t *testing.T) {
+	projectRoot := t.TempDir()
+	homeDir := filepath.Join(projectRoot, "home")
+	codexDir := filepath.Join(homeDir, ".codex")
+
+	t.Setenv("HOME", homeDir)
+	t.Setenv("CODEX_HOME", codexDir)
+
+	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
+	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), "# AGENTS\n")
+	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), "# CLAUDE\n")
+	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), "# COPILOT\n")
+
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0012-codebase-audit")
+	specPath := filepath.Join(featurePath, "SPEC.md")
+	brainstormPath := filepath.Join(featurePath, "BRAINSTORM.md")
+	writeFile(t, brainstormPath, "# BRAINSTORM\n")
+	writeFile(t, specPath, documentTemplateWithSummary())
+
+	restore := chdirForTest(t, projectRoot)
+	defer restore()
+
+	cfg := config.Default()
+	answers := &specAnswers{Problem: "Need codebase-wide analysis of all FHIR and auth flows."}
+
+	output := captureStdout(t, func() {
+		err := outputCompiledPrompt(specPath, brainstormPath, "codebase-audit", projectRoot, cfg, answers, true)
+		if err != nil {
+			t.Fatalf("outputCompiledPrompt() error = %v", err)
+		}
+	})
+
+	checks := []string{
+		"# Use RLM Pattern",
+		"parallelization_mode: \"rlm\"",
+		"Index → Filter → Map → Reduce",
+		"add `rlm` to the `## SKILLS` table",
+	}
+
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)

@@ -57,11 +57,28 @@ func TestSelectFeatureForHandoffReturnsSelectedFeature(t *testing.T) {
 
 func TestProjectHandoffIncludesProgressSummaryAndStatus(t *testing.T) {
 	projectRoot := t.TempDir()
-	mustWriteFile(t, filepath.Join(projectRoot, ".kit.yaml"), []byte{})
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+	mustWriteFile(t, filepath.Join(projectRoot, "AGENTS.md"), []byte("# AGENTS\n"))
+	mustWriteFile(t, filepath.Join(projectRoot, "CLAUDE.md"), []byte("# CLAUDE\n"))
+	mustWriteFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), []byte("# COPILOT\n"))
 	mustWriteFile(
 		t,
 		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
 		[]byte("# CONSTITUTION\n"),
+	)
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "agents", "README.md"),
+		[]byte("# Agents Docs\n"),
+	)
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "references", "README.md"),
+		[]byte("# References\n"),
 	)
 	mustWriteFile(
 		t,
@@ -94,6 +111,9 @@ func TestProjectHandoffIncludesProgressSummaryAndStatus(t *testing.T) {
 		"## Documentation Inventory",
 		"| File | Full Path | How To Use |",
 		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
+		filepath.Join(projectRoot, "AGENTS.md"),
+		filepath.Join(projectRoot, "docs", "agents", "README.md"),
+		filepath.Join(projectRoot, "docs", "references", "README.md"),
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0002-beta", "TASKS.md"),
@@ -113,11 +133,27 @@ func TestProjectHandoffIncludesProgressSummaryAndStatus(t *testing.T) {
 
 func TestFeatureHandoffIncludesDocSyncInstructions(t *testing.T) {
 	projectRoot := t.TempDir()
-	mustWriteFile(t, filepath.Join(projectRoot, ".kit.yaml"), []byte{})
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+	mustWriteFile(t, filepath.Join(projectRoot, "AGENTS.md"), []byte("# AGENTS\n"))
+	mustWriteFile(t, filepath.Join(projectRoot, "CLAUDE.md"), []byte("# CLAUDE\n"))
 	mustWriteFile(
 		t,
 		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
 		[]byte("# CONSTITUTION\n"),
+	)
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "agents", "README.md"),
+		[]byte("# Agents Docs\n"),
+	)
+	mustWriteFile(
+		t,
+		filepath.Join(projectRoot, "docs", "references", "README.md"),
+		[]byte("# References\n"),
 	)
 	mustWriteFile(
 		t,
@@ -156,6 +192,9 @@ func TestFeatureHandoffIncludesDocSyncInstructions(t *testing.T) {
 		"## Documentation Inventory",
 		"| File | Full Path | How To Use |",
 		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
+		filepath.Join(projectRoot, "AGENTS.md"),
+		filepath.Join(projectRoot, "docs", "agents", "README.md"),
+		filepath.Join(projectRoot, "docs", "references", "README.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "PLAN.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "TASKS.md"),

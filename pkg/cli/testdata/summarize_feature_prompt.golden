@@ -1,0 +1,64 @@
+## Context Summarization Instructions — Feature: alpha
+
+Summarize the current context window, focusing on feature **alpha**.
+
+### Feature Documents
+
+Review and extract facts from:
+
+- /repo/docs/specs/0001-alpha/BRAINSTORM.md — optional research findings, affected files, and strategy
+- /repo/docs/specs/0001-alpha/SPEC.md — requirements and acceptance criteria
+- /repo/docs/specs/0001-alpha/PLAN.md — implementation approach and components
+- /repo/docs/specs/0001-alpha/TASKS.md — work units and their status
+- /repo/docs/specs/0001-alpha/ANALYSIS.md — understanding state and open questions
+
+### Fact Retention Protocol
+
+- Extract and retain ONLY facts strictly necessary for:
+    - **Strategy**: architectural decisions, design patterns, system constraints
+    - **Implementation**: code structure, dependencies, APIs, data models
+    - **Process**: workflow state, pending tasks, blockers, decisions made
+
+### What to KEEP
+
+- Concrete decisions and their rationale
+- File paths, function names, type definitions
+- API contracts and data schemas
+- Configuration values and environment requirements
+- Error states and their resolutions
+- Dependencies and version constraints
+- Test requirements and acceptance criteria
+- Research findings and recommended strategy from BRAINSTORM.md when present
+- Feature-specific constraints from SPEC.md
+- Implementation choices from PLAN.md
+- Task status and dependencies from TASKS.md
+
+### What to DISCARD
+
+- Conversational pleasantries and acknowledgments
+- Redundant explanations of the same concept
+- Speculative discussions that were not acted upon
+- Verbose error messages (keep only the root cause)
+- Code that was shown but not modified
+- Historical context superseded by later decisions
+- Information unrelated to feature alpha
+
+### Output Format
+
+Structure the summary as:
+
+1. **Feature Intent**: one-sentence purpose from SPEC.md
+2. **Current State**: what exists now for this feature
+3. **Active Work**: what is being implemented or modified
+4. **Decisions Made**: concrete choices with brief rationale
+5. **Pending Items**: unresolved questions, open tasks
+6. **Constraints**: hard limits, invariants, non-negotiables
+
+### Rules
+
+- Use bullet points, not prose
+- One fact per line
+- No filler words or qualifiers
+- Quantify where possible (lines, counts, versions)
+- If a fact cannot be verified from context, mark it [ASSUMED]
+- Prioritize facts from repository documents over conversation

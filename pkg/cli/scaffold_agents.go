@@ -19,6 +19,7 @@ var scaffoldAgentsClaude bool
 var scaffoldAgentsAgentsMD bool
 var scaffoldAgentsYes bool
 var scaffoldAgentsAppendOnly bool
+var scaffoldAgentsVersion int
 
 var scaffoldAgentsCmd = &cobra.Command{
 	Use:     "scaffold-agents",
@@ -54,12 +55,18 @@ func init() {
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsAgentsMD, "agentsmd", false, "scaffold only AGENTS.md")
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsClaude, "claude", false, "scaffold only CLAUDE.md")
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsCopilot, "copilot", false, "scaffold only .github/copilot-instructions.md")
+	scaffoldAgentsCmd.Flags().IntVar(&scaffoldAgentsVersion, "version", 0, "instruction scaffold version: 1 = verbose legacy, 2 = thin ToC/RLM model (default)")
 	rootCmd.AddCommand(scaffoldAgentsCmd)
 }
 
 func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 	if scaffoldAgentsYes && !scaffoldAgentsForce {
 		return fmt.Errorf("--yes requires --force")
+	}
+
+	targetVersion, versionExplicit, err := resolveInstructionScaffoldVersionFlag(scaffoldAgentsVersion)
+	if err != nil {
+		return err
 	}
 
 	writeMode, err := determineInstructionFileWriteMode(scaffoldAgentsForce, scaffoldAgentsAppendOnly)
@@ -77,9 +84,26 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	currentVersion := detectInstructionScaffoldVersion(projectRoot, cfg)
+	if !versionExplicit {
+		if currentVersion != instructionScaffoldVersionUnknown {
+			targetVersion = currentVersion
+		} else {
+			targetVersion = config.DefaultInstructionScaffoldVersion
+		}
+	}
+	forceFullModel := instructionVersionChangeRequiresForce(currentVersion, targetVersion)
+	if forceFullModel && writeMode != instructionFileWriteModeOverwrite {
+		return fmt.Errorf(
+			"switching the instruction scaffold from version %d to version %d requires --force. Re-run `kit scaffold-agents --version %d --force` to confirm the repo-wide change",
+			currentVersion,
+			targetVersion,
+			targetVersion,
+		)
+	}
 
-	fmt.Println("🤖 Scaffolding repository instruction files...")
-	targets := selectedInstructionFiles(cfg, selection)
+	fmt.Printf("🤖 Scaffolding repository instruction files (version %d)...\n", targetVersion)
+	targets := instructionArtifactPaths(cfg, selection, targetVersion, forceFullModel)
 
 	if writeMode == instructionFileWriteModeOverwrite && !scaffoldAgentsYes {
 		existing := existingInstructionFiles(projectRoot, targets)
@@ -95,12 +119,17 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	plans, err := planInstructionFileWrites(projectRoot, targets, writeMode)
+	cleanupPlans, err := planInstructionVersionCleanup(projectRoot, currentVersion, targetVersion)
 	if err != nil {
 		return err
 	}
 
-	var created, updated, merged, skipped int
+	plans, err := planInstructionArtifactWrites(projectRoot, targets, writeMode, targetVersion)
+	if err != nil {
+		return err
+	}
+
+	var created, updated, merged, skipped, removed int
 
 	for _, plan := range plans {
 		result, err := applyInstructionFileWritePlan(plan)
@@ -128,8 +157,28 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if len(cleanupPlans) > 0 {
+		cleanupRemoved, err := applyInstructionVersionCleanup(projectRoot, cleanupPlans)
+		if err != nil {
+			return err
+		}
+		removed += cleanupRemoved
+	}
+
+	cfg.InstructionScaffoldVersion = targetVersion
+	if err := config.Save(projectRoot, cfg); err != nil {
+		return err
+	}
+
 	fmt.Printf("\n✅ Instruction scaffolding complete!\n")
-	fmt.Printf("   Created: %d, Updated: %d, Merged: %d, Skipped: %d\n", created, updated, merged, skipped)
+	fmt.Printf(
+		"   Created: %d, Updated: %d, Merged: %d, Removed: %d, Skipped: %d\n",
+		created,
+		updated,
+		merged,
+		removed,
+		skipped,
+	)
 
 	if writeMode == instructionFileWriteModeSkipExisting && skipped > 0 {
 		fmt.Println("   Hint: use --append-only to merge missing Kit-managed sections without overwriting custom content, or --force to replace existing files.")

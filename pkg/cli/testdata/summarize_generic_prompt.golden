@@ -1,0 +1,47 @@
+## Context Summarization Instructions
+
+Summarize the current context window using the following principles:
+
+### Fact Retention Protocol
+
+- Extract and retain ONLY facts strictly necessary for:
+    - **Strategy**: architectural decisions, design patterns, system constraints
+    - **Implementation**: code structure, dependencies, APIs, data models
+    - **Process**: workflow state, pending tasks, blockers, decisions made
+
+### What to KEEP
+
+- Concrete decisions and their rationale
+- File paths, function names, type definitions
+- API contracts and data schemas
+- Configuration values and environment requirements
+- Error states and their resolutions
+- Dependencies and version constraints
+- Test requirements and acceptance criteria
+
+### What to DISCARD
+
+- Conversational pleasantries and acknowledgments
+- Redundant explanations of the same concept
+- Speculative discussions that were not acted upon
+- Verbose error messages (keep only the root cause)
+- Code that was shown but not modified
+- Historical context superseded by later decisions
+
+### Output Format
+
+Structure the summary as:
+
+1. **Current State**: what exists now (files, functions, configs)
+2. **Active Work**: what is being implemented or modified
+3. **Decisions Made**: concrete choices with brief rationale
+4. **Pending Items**: unresolved questions or next steps
+5. **Constraints**: hard limits, invariants, non-negotiables
+
+### Rules
+
+- Use bullet points, not prose
+- One fact per line
+- No filler words or qualifiers
+- Quantify where possible (lines, counts, versions)
+- If a fact cannot be verified from context, mark it [ASSUMED]

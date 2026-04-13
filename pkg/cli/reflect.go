@@ -12,6 +12,7 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/promptdoc"
 	"github.com/spf13/cobra"
 )
 
@@ -53,7 +54,7 @@ func runReflect(cmd *cobra.Command, args []string) error {
 	specsDir := cfg.SpecsPath(projectRoot)
 
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
-	summaryPath := filepath.Join(projectRoot, "PROJECT_PROGRESS_SUMMARY.md")
+	summaryPath := cfg.ProgressSummaryPath(projectRoot)
 	var feat *feature.Feature
 
 	if len(args) == 1 {
@@ -145,224 +146,108 @@ func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
 func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPath, specPath, planPath, tasksPath, featureSlug string) string {
 	featureScoped := featureSlug != ""
 	hasBrainstorm := brainstormPath != "" && document.Exists(brainstormPath)
+	cfg, _ := loadRepoInstructionContext(projectRoot)
+	repoAgentsPath := repoKnowledgeEntrypointPath(projectRoot, cfg)
+	repoReferencesPath := repoReferencesEntrypointPath(projectRoot, cfg)
 
-	var sb strings.Builder
-	step := 0
-	nextStep := func() int { step++; return step }
-	section := byte('A')
-	nextSection := func() string { s := string(section); section++; return s }
-
+	goal := "ensure changes are correct, minimal, and consistent"
 	if featureScoped {
-		sb.WriteString(fmt.Sprintf("## Reflection — Feature: %s\n\n", featureSlug))
-	} else {
-		sb.WriteString("## Reflection\n\n")
+		goal = "ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent"
 	}
 
-	sb.WriteString(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.\n\nGoal:\n- perform a strict code review of the current change set\n", projectRoot))
-
+	contextDocs := []string{fmt.Sprintf("CONSTITUTION: %s", constitutionPath)}
+	if repoAgentsPath != "" {
+		contextDocs = append(contextDocs, fmt.Sprintf("AGENTS DOCS: %s", repoAgentsPath))
+	}
+	if repoReferencesPath != "" {
+		contextDocs = append(contextDocs, fmt.Sprintf("REFERENCES: %s", repoReferencesPath))
+	}
+	contextDocs = append(contextDocs, fmt.Sprintf("PROJECT SUMMARY: %s", summaryPath))
 	if featureScoped {
-		sb.WriteString("- ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent\n")
-		sb.WriteString("\nContext docs (read first):\n")
-		sb.WriteString(fmt.Sprintf("- CONSTITUTION: %s\n", constitutionPath))
-		sb.WriteString(fmt.Sprintf("- PROJECT SUMMARY: %s\n", summaryPath))
 		if hasBrainstorm {
-			sb.WriteString(fmt.Sprintf("- BRAINSTORM: %s\n", brainstormPath))
+			contextDocs = append(contextDocs, fmt.Sprintf("BRAINSTORM: %s", brainstormPath))
 		}
-		sb.WriteString(fmt.Sprintf("- SPEC: %s\n", specPath))
-		sb.WriteString(fmt.Sprintf("- PLAN: %s\n", planPath))
-		sb.WriteString(fmt.Sprintf("- TASKS: %s\n", tasksPath))
-	} else {
-		sb.WriteString("- ensure changes are correct, minimal, and consistent\n")
-		sb.WriteString(fmt.Sprintf("\nContext docs (read first):\n- CONSTITUTION: %s\n- PROJECT SUMMARY: %s\n", constitutionPath, summaryPath))
+		contextDocs = append(contextDocs,
+			fmt.Sprintf("SPEC: %s", specPath),
+			fmt.Sprintf("PLAN: %s", planPath),
+			fmt.Sprintf("TASKS: %s", tasksPath),
+		)
 	}
 
-	sb.WriteString("\nSteps:\n")
-
-	sb.WriteString(fmt.Sprintf(`
-%d) Snapshot the change set (do not skip)
-- git status
-- git diff
-- git diff --staged
-- git log -n 20 --oneline --decorate
-`, nextStep()))
-
-	sb.WriteString(fmt.Sprintf(`
-%d) Build a review map
-- list changed files
-- for each file, state the intent in one line
-- identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
-`, nextStep()))
-
+	steps := []string{
+		"Snapshot the change set (do not skip)\n- git status\n- git diff\n- git diff --staged\n- git log -n 20 --oneline --decorate",
+		"Build a review map\n- list changed files\n- for each file, state the intent in one line\n- identify risk areas (parsing, IO, error handling, concurrency, CLI UX)",
+	}
 	if featureScoped {
-		sb.WriteString(fmt.Sprintf("\n%d) Verify correctness against docs\n", nextStep()))
+		verifyStep := "Verify correctness against docs\n"
 		if hasBrainstorm {
-			sb.WriteString("- BRAINSTORM: ensure the implementation still aligns with the researched problem framing and identified constraints\n")
+			verifyStep += "- BRAINSTORM: ensure the implementation still aligns with the researched problem framing and identified constraints\n"
 		}
-		sb.WriteString("- SPEC: ensure requirements + acceptance are fully satisfied\n")
-		sb.WriteString("- PLAN: ensure decisions were followed\n")
-		sb.WriteString("- TASKS: ensure every task marked done is actually done\n")
-		sb.WriteString("- ensure no scope creep\n")
+		verifyStep += "- SPEC: ensure requirements + acceptance are fully satisfied\n" +
+			"- PLAN: ensure decisions were followed\n" +
+			"- TASKS: ensure every task marked done is actually done\n" +
+			"- ensure no scope creep"
+		steps = append(steps, verifyStep)
 	} else {
-		sb.WriteString(fmt.Sprintf(`
-%d) Verify correctness against docs
-- ensure decisions in code respect CONSTITUTION.md
-- ensure no scope creep
-`, nextStep()))
+		steps = append(steps, "Verify correctness against docs\n- ensure decisions in code respect CONSTITUTION.md\n- ensure no scope creep")
 	}
-
-	sb.WriteString(fmt.Sprintf(`
-%d) Quality gates (hard checks)
-- zero-known-defects gate: do not mark reflection complete until all gates pass with evidence
-- required evidence gates: unresolved assumptions = 0; acceptance criteria mapped 1:1 to outputs; build/compile succeeds; lint/typecheck/test failures = 0; unrelated diff scope = 0
-- lint + tests are absolute gates: fix ALL failures before completion, including pre-existing and out-of-scope failures
-- if any gate fails: stop, report the exact failure, and propose the next fix
-- correctness: no panics, no silent failures
-- errors: wrapped/propagated with context, no swallowed errors
-- IO: paths resolved safely, no surprising writes
-- determinism: stable ordering in outputs
-- regression tests: add comprehensive tests for all completed work to prevent future bugs
-  - test happy path, error cases, edge cases, boundary conditions
-  - ensure tests fail without the implementation (tests validate the test itself)
-- docs: update only if behavior changed
-- agent-readability: code optimized for agent understanding and future iteration
-`, nextStep()))
-
+	steps = append(steps,
+		"Quality gates (hard checks)\n- zero-known-defects gate: do not mark reflection complete until all gates pass with evidence\n- required evidence gates: unresolved assumptions = 0; acceptance criteria mapped 1:1 to outputs; build/compile succeeds; lint/typecheck/test failures = 0; unrelated diff scope = 0\n- lint + tests are absolute gates: fix ALL failures before completion, including pre-existing and out-of-scope failures\n- if any gate fails: stop, report the exact failure, and propose the next fix\n- correctness: no panics, no silent failures\n- errors: wrapped/propagated with context, no swallowed errors\n- IO: paths resolved safely, no surprising writes\n- determinism: stable ordering in outputs\n- regression tests: add comprehensive tests for all completed work to prevent future bugs\n  - test happy path, error cases, edge cases, boundary conditions\n  - ensure tests fail without the implementation (tests validate the test itself)\n- docs: update only if behavior changed\n- agent-readability: code optimized for agent understanding and future iteration",
+	)
 	if featureScoped {
-		sb.WriteString(fmt.Sprintf(`
-%d) Correctness checklist
-- [ ] Code compiles without errors
-- [ ] Changes implement the intended task(s)
-- [ ] Implementation matches PLAN.md approach
-- [ ] Requirements from SPEC.md are satisfied
-- [ ] Changes respect CONSTITUTION.md constraints
-- [ ] No syntax errors or typos
-- [ ] Variable and function names are consistent
-- [ ] Imports are correct and used
-- [ ] Error handling is complete
-- [ ] Edge cases from SPEC.md are handled
-- [ ] No debug code or TODOs left behind
-- [ ] Style matches project conventions
-- [ ] Tests added/updated for all completed work
-- [ ] Tests cover happy path, error cases, and edge cases
-- [ ] Tests validate the implementation, not just pass trivially
-- [ ] Test names clearly describe what is being tested
-- [ ] All lint and test failures are fixed, including failures outside the feature scope
-- [ ] Code is written for agent readability and future iteration
-`, nextStep()))
+		steps = append(steps, "Correctness checklist\n- [ ] Code compiles without errors\n- [ ] Changes implement the intended task(s)\n- [ ] Implementation matches PLAN.md approach\n- [ ] Requirements from SPEC.md are satisfied\n- [ ] Changes respect CONSTITUTION.md constraints\n- [ ] No syntax errors or typos\n- [ ] Variable and function names are consistent\n- [ ] Imports are correct and used\n- [ ] Error handling is complete\n- [ ] Edge cases from SPEC.md are handled\n- [ ] No debug code or TODOs left behind\n- [ ] Style matches project conventions\n- [ ] Tests added/updated for all completed work\n- [ ] Tests cover happy path, error cases, and edge cases\n- [ ] Tests validate the implementation, not just pass trivially\n- [ ] Test names clearly describe what is being tested\n- [ ] All lint and test failures are fixed, including failures outside the feature scope\n- [ ] Code is written for agent readability and future iteration")
 	} else {
-		sb.WriteString(fmt.Sprintf(`
-%d) Correctness checklist
-- [ ] Code compiles without errors
-- [ ] No syntax errors or typos
-- [ ] Variable and function names are consistent
-- [ ] Imports are correct and used
-- [ ] Error handling is complete
-- [ ] Edge cases are handled
-- [ ] Changes match stated intent
-- [ ] Changes respect CONSTITUTION.md constraints
-- [ ] No debug code or TODOs left behind
-- [ ] Style matches project conventions
-- [ ] Tests added/updated for all completed work
-- [ ] Tests cover happy path, error cases, and edge cases
-- [ ] All lint and test failures are fixed, including failures outside the immediate scope
-- [ ] Code is written for agent readability
-`, nextStep()))
+		steps = append(steps, "Correctness checklist\n- [ ] Code compiles without errors\n- [ ] No syntax errors or typos\n- [ ] Variable and function names are consistent\n- [ ] Imports are correct and used\n- [ ] Error handling is complete\n- [ ] Edge cases are handled\n- [ ] Changes match stated intent\n- [ ] Changes respect CONSTITUTION.md constraints\n- [ ] No debug code or TODOs left behind\n- [ ] Style matches project conventions\n- [ ] Tests added/updated for all completed work\n- [ ] Tests cover happy path, error cases, and edge cases\n- [ ] All lint and test failures are fixed, including failures outside the immediate scope\n- [ ] Code is written for agent readability")
 	}
-
-	sb.WriteString(fmt.Sprintf(`
-%d) Agent-optimized code structure
-Code should be built for agent readability and understanding, enabling both current and future agents to:
-- understand intent quickly: clear names, single responsibility, minimal nesting
-- modify safely: explicit error handling, testable design, clear contracts
-- extend effectively: composable pieces, discoverable patterns, good examples
-Checks:
-- [ ] Function/method names clearly describe what they do
-- [ ] Functions have single, well-defined responsibility
-- [ ] Complex logic is broken into named helper functions
-- [ ] Type names and fields describe their purpose
-- [ ] Public interfaces are documented with clear examples
-- [ ] Error paths are explicit, not silent
-- [ ] Dependencies are injected, not hidden in closures
-- [ ] Code avoids clever tricks; readability wins over cleverness
-- [ ] Configuration and magic numbers are named constants
-- [ ] Similar patterns use consistent approaches across codebase
-`, nextStep()))
-
-	sb.WriteString(fmt.Sprintf(`
-%d) Cleanliness
-- remove dead code
-- remove debug prints
-- remove unused flags/options
-- keep public surfaces small
-- ensure code is written for agent and human understanding
-`, nextStep()))
-
+	steps = append(steps,
+		"Agent-optimized code structure\nCode should be built for agent readability and understanding, enabling both current and future agents to:\n- understand intent quickly: clear names, single responsibility, minimal nesting\n- modify safely: explicit error handling, testable design, clear contracts\n- extend effectively: composable pieces, discoverable patterns, good examples\nChecks:\n- [ ] Function/method names clearly describe what they do\n- [ ] Functions have single, well-defined responsibility\n- [ ] Complex logic is broken into named helper functions\n- [ ] Type names and fields describe their purpose\n- [ ] Public interfaces are documented with clear examples\n- [ ] Error paths are explicit, not silent\n- [ ] Dependencies are injected, not hidden in closures\n- [ ] Code avoids clever tricks; readability wins over cleverness\n- [ ] Configuration and magic numbers are named constants\n- [ ] Similar patterns use consistent approaches across codebase",
+		"Cleanliness\n- remove dead code\n- remove unused exports and any public surface that is not strictly necessary\n- if an exported symbol is only used locally, reduce its visibility instead of keeping it exported\n- remove debug prints\n- remove unused flags/options\n- keep public surfaces small\n- ensure code is written for agent and human understanding",
+	)
 	if featureScoped {
-		sb.WriteString(fmt.Sprintf(`
-%d) Documentation generation
-- if exists, use the repositories documentation generation tools to update any affected documentation
-- ensure documentation is agent-readable: clear structure, explicit examples, complete contracts
-- document public APIs with examples showing both normal usage and error handling
-`, nextStep()))
+		steps = append(steps, "Documentation generation\n- if exists, use the repositories documentation generation tools to update any affected documentation\n- always update affected documentation and ensure all touched documents are current and properly formatted\n- ensure documentation is agent-readable: clear structure, explicit examples, complete contracts\n- document public APIs with examples showing both normal usage and error handling")
 	}
-
-	sb.WriteString(fmt.Sprintf(`
-%d) Final pass
-- rerun:
-  - git status
-  - git diff
-  - git diff --staged
-- summarize remaining issues, if any
-- propose next steps
-`, nextStep()))
-
+	steps = append(steps, "Final pass\n- rerun:\n  - git status\n  - git diff\n  - git diff --staged\n- summarize remaining issues, if any\n- propose next steps")
 	if featureScoped {
-		sb.WriteString(fmt.Sprintf(`
-%d) Mark reflection complete
-- once all issues are resolved and confidence is 100%%
-- append the following marker to the end of TASKS.md:
-  <!-- REFLECTION_COMPLETE -->
-- this marker signals that the feature has completed the full development cycle
-`, nextStep()))
+		steps = append(steps, "Mark reflection complete\n- once all issues are resolved and confidence is 100%\n- append the following marker to the end of TASKS.md:\n  <!-- REFLECTION_COMPLETE -->\n- this marker signals that the feature has completed the full development cycle")
 	} else {
-		sb.WriteString(fmt.Sprintf(`
-%d) Mark reflection complete (feature-scoped only)
-- if this is a feature-scoped reflection with a TASKS.md file
-- and all issues are resolved with 100%% confidence
-- append to TASKS.md: <!-- REFLECTION_COMPLETE -->
-`, nextStep()))
+		steps = append(steps, "Mark reflection complete (feature-scoped only)\n- if this is a feature-scoped reflection with a TASKS.md file\n- and all issues are resolved with 100% confidence\n- append to TASKS.md: <!-- REFLECTION_COMPLETE -->")
 	}
 
-	sb.WriteString(fmt.Sprintf(`
-Output format:
-
-%s) CHANGESET
-- files changed: <list>
-- key diffs: <tight bullets>
-`, nextSection()))
-
-	if featureScoped {
-		sb.WriteString(fmt.Sprintf("\n%s) DOC TRACE\n", nextSection()))
-		if hasBrainstorm {
-			sb.WriteString("- BRAINSTORM: pass/fail + notes\n")
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		if featureScoped {
+			doc.Heading(2, fmt.Sprintf("Reflection — Feature: %s", featureSlug))
+		} else {
+			doc.Heading(2, "Reflection")
 		}
-		sb.WriteString("- SPEC: pass/fail + notes\n")
-		sb.WriteString("- PLAN: pass/fail + notes\n")
-		sb.WriteString("- TASKS: pass/fail + notes\n")
-	}
-
-	sb.WriteString(fmt.Sprintf(`
-%s) REFLECTION NOTES
-- risks remaining
-- follow-ups
-
-Rules:
-- be strict
-- no fluff
-- fix issues before reporting them as "known"
-- keep diffs minimal
-- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-`, nextSection()))
-
-	return sb.String()
+		doc.Paragraph(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.", projectRoot))
+		doc.Paragraph("Goal:")
+		doc.BulletList(
+			"perform a strict code review of the current change set",
+			goal,
+		)
+		doc.Paragraph("Context docs (read first):")
+		doc.BulletList(contextDocs...)
+		doc.Paragraph("Steps:")
+		doc.OrderedList(1, steps...)
+		doc.Paragraph("Output format:")
+		outputSections := []string{"CHANGESET\n- files changed: <list>\n- key diffs: <tight bullets>"}
+		if featureScoped {
+			docTrace := "DOC TRACE"
+			if hasBrainstorm {
+				docTrace += "\n- BRAINSTORM: pass/fail + notes"
+			}
+			docTrace += "\n- SPEC: pass/fail + notes\n- PLAN: pass/fail + notes\n- TASKS: pass/fail + notes"
+			outputSections = append(outputSections, docTrace)
+		}
+		outputSections = append(outputSections, "REFLECTION NOTES\n- risks remaining\n- follow-ups")
+		doc.OrderedList(1, outputSections...)
+		doc.Heading(2, "Rules")
+		doc.BulletList(
+			"be strict",
+			"no fluff",
+			`fix issues before reporting them as "known"`,
+			"keep diffs minimal",
+			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
+		)
+	})
 }

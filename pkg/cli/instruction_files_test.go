@@ -50,25 +50,31 @@ func TestRunInit_CreatesRepositoryInstructionFiles(t *testing.T) {
 			t.Fatalf("expected %s to exist: %v", relativePath, err)
 		}
 	}
+	for _, relativePath := range []string{
+		"docs/agents/README.md",
+		"docs/agents/WORKFLOWS.md",
+		"docs/agents/RLM.md",
+		"docs/agents/TOOLING.md",
+		"docs/agents/GUARDRAILS.md",
+		"docs/references/README.md",
+	} {
+		assertFileExists(t, filepath.Join(tempDir, relativePath))
+	}
 	agentsContent, err := os.ReadFile(filepath.Join(tempDir, "AGENTS.md"))
 	if err != nil {
 		t.Fatalf("failed to read AGENTS.md: %v", err)
 	}
-	if !strings.Contains(string(agentsContent), "`git worktree add ~/worktrees/<repo>-<branch> <branch>`") {
-		t.Fatalf("AGENTS.md did not contain the flat worktree guidance")
+	if !strings.Contains(string(agentsContent), "`docs/agents/README.md`") {
+		t.Fatalf("AGENTS.md did not contain the docs/agents entrypoint guidance")
 	}
 
 	claudeContent, err := os.ReadFile(filepath.Join(tempDir, "CLAUDE.md"))
 	if err != nil {
 		t.Fatalf("failed to read CLAUDE.md: %v", err)
 	}
-	if !strings.Contains(string(claudeContent), "## Workflow: Plan → Act → Reflect (Spec-Driven Track)") {
-		t.Fatalf("CLAUDE.md did not contain the comprehensive workflow template")
+	if !strings.Contains(string(claudeContent), "`docs/agents/WORKFLOWS.md`") {
+		t.Fatalf("CLAUDE.md did not contain the workflows entrypoint guidance")
 	}
-	if !strings.Contains(string(claudeContent), "`~/worktrees/`") {
-		t.Fatalf("CLAUDE.md did not contain the flat worktree guidance")
-	}
-
 	copilotContent, err := os.ReadFile(filepath.Join(tempDir, copilotInstructionsPath))
 	if err != nil {
 		t.Fatalf("failed to read %s: %v", copilotInstructionsPath, err)
@@ -76,8 +82,20 @@ func TestRunInit_CreatesRepositoryInstructionFiles(t *testing.T) {
 	if !strings.HasPrefix(string(copilotContent), "# GitHub Copilot Repository Instructions\n\n") {
 		t.Fatalf("%s did not contain the expected heading", copilotInstructionsPath)
 	}
-	if !strings.Contains(string(copilotContent), "`~/worktrees/`") {
-		t.Fatalf("%s did not contain the flat worktree guidance", copilotInstructionsPath)
+	if !strings.Contains(string(copilotContent), "`docs/agents/README.md`") {
+		t.Fatalf("%s did not contain the docs/agents entrypoint guidance", copilotInstructionsPath)
+	}
+
+	cfg, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	if cfg.InstructionScaffoldVersion != config.DefaultInstructionScaffoldVersion {
+		t.Fatalf(
+			"expected instruction scaffold version %d, got %d",
+			config.DefaultInstructionScaffoldVersion,
+			cfg.InstructionScaffoldVersion,
+		)
 	}
 }
 
@@ -136,6 +154,8 @@ func TestRunScaffoldAgents_TargetedSelectionScaffoldsOnlyRequestedFiles(t *testi
 	assertFileExists(t, filepath.Join(tempDir, agentsMDPath))
 	assertFileDoesNotExist(t, filepath.Join(tempDir, claudeMDPath))
 	assertFileDoesNotExist(t, filepath.Join(tempDir, copilotInstructionsPath))
+	assertFileExists(t, filepath.Join(tempDir, "docs/agents/README.md"))
+	assertFileExists(t, filepath.Join(tempDir, "docs/references/README.md"))
 }
 
 func TestRunScaffoldAgents_TargetedSelectionFallsBackToCurrentDirectory(t *testing.T) {
@@ -153,6 +173,8 @@ func TestRunScaffoldAgents_TargetedSelectionFallsBackToCurrentDirectory(t *testi
 	assertFileExists(t, filepath.Join(tempDir, agentsMDPath))
 	assertFileDoesNotExist(t, filepath.Join(tempDir, claudeMDPath))
 	assertFileDoesNotExist(t, filepath.Join(tempDir, copilotInstructionsPath))
+	assertFileExists(t, filepath.Join(tempDir, "docs/agents/README.md"))
+	assertFileExists(t, filepath.Join(tempDir, "docs/references/README.md"))
 }
 
 func TestRunScaffoldAgentsForce_CancelLeavesFilesUnchanged(t *testing.T) {
@@ -230,7 +252,7 @@ func TestRunScaffoldAgentsForceYes_OverwritesWithoutPrompt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read %s: %v", agentsMDPath, err)
 	}
-	if string(content) != templates.InstructionFile(agentsMDPath) {
+	if string(content) != templates.InstructionFileForVersion(agentsMDPath, config.InstructionScaffoldVersionVerbose) {
 		t.Fatalf("expected %s to be overwritten with the scaffold template", agentsMDPath)
 	}
 }
@@ -375,6 +397,102 @@ func TestRunScaffoldAgents_RejectsYesWithoutForce(t *testing.T) {
 	})
 }
 
+func TestRunScaffoldAgents_VersionChangeRequiresForce(t *testing.T) {
+	tempDir := t.TempDir()
+	setWorkingDirectory(t, tempDir)
+
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(tempDir, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+	writeFile(t, filepath.Join(tempDir, agentsMDPath), templates.AgentsMD)
+	writeFile(t, filepath.Join(tempDir, claudeMDPath), templates.ClaudeMD)
+	writeFile(t, filepath.Join(tempDir, copilotInstructionsPath), templates.CopilotInstructionsMD)
+	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
+		writeFile(t, filepath.Join(tempDir, support.RelativePath), support.Content)
+	}
+
+	withScaffoldAgentFlags(t, func() {
+		scaffoldAgentsVersion = config.InstructionScaffoldVersionVerbose
+
+		err := runScaffoldAgents(&cobra.Command{}, nil)
+		if err == nil || !strings.Contains(err.Error(), "requires --force") {
+			t.Fatalf("expected version-change force error, got %v", err)
+		}
+	})
+}
+
+func TestRunScaffoldAgents_Version1ForceRemovesV2DocsTree(t *testing.T) {
+	tempDir := t.TempDir()
+	setWorkingDirectory(t, tempDir)
+
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(tempDir, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+	writeFile(t, filepath.Join(tempDir, agentsMDPath), templates.AgentsMD)
+	writeFile(t, filepath.Join(tempDir, claudeMDPath), templates.ClaudeMD)
+	writeFile(t, filepath.Join(tempDir, copilotInstructionsPath), templates.CopilotInstructionsMD)
+	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
+		writeFile(t, filepath.Join(tempDir, support.RelativePath), support.Content)
+	}
+
+	withScaffoldAgentFlags(t, func() {
+		scaffoldAgentsVersion = config.InstructionScaffoldVersionVerbose
+		scaffoldAgentsForce = true
+		scaffoldAgentsYes = true
+
+		if err := runScaffoldAgents(&cobra.Command{}, nil); err != nil {
+			t.Fatalf("runScaffoldAgents() error = %v", err)
+		}
+	})
+
+	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
+		assertFileDoesNotExist(t, filepath.Join(tempDir, support.RelativePath))
+	}
+
+	agentsContent, err := os.ReadFile(filepath.Join(tempDir, agentsMDPath))
+	if err != nil {
+		t.Fatalf("failed to read %s: %v", agentsMDPath, err)
+	}
+	if string(agentsContent) != templates.InstructionFileForVersion(agentsMDPath, config.InstructionScaffoldVersionVerbose) {
+		t.Fatalf("expected %s to revert to the verbose template", agentsMDPath)
+	}
+
+	updated, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	if updated.InstructionScaffoldVersion != config.InstructionScaffoldVersionVerbose {
+		t.Fatalf("expected version 1 after downgrade, got %d", updated.InstructionScaffoldVersion)
+	}
+}
+
+func TestRenderScaffoldAgentsHelp_IncludesVersionTable(t *testing.T) {
+	var out bytes.Buffer
+	cmd := &cobra.Command{}
+	cmd.SetOut(&out)
+	cmd.Flags().AddFlagSet(scaffoldAgentsCmd.LocalFlags())
+	cmd.PersistentFlags().AddFlagSet(rootCmd.PersistentFlags())
+	cmd.Use = scaffoldAgentsCmd.Use
+	cmd.Short = scaffoldAgentsCmd.Short
+	cmd.Long = scaffoldAgentsCmd.Long
+	cmd.Aliases = scaffoldAgentsCmd.Aliases
+
+	if err := renderScaffoldAgentsHelp(cmd); err != nil {
+		t.Fatalf("renderScaffoldAgentsHelp() error = %v", err)
+	}
+
+	content := out.String()
+	for _, check := range []string{"Version Models", "verbose", "toc/rlm", "--version int"} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected help output to contain %q, got %q", check, content)
+		}
+	}
+}
+
 func TestScaffoldAgentsCmd_IncludesSingularAlias(t *testing.T) {
 	if !slices.Contains(scaffoldAgentsCmd.Aliases, "scaffold-agent") {
 		t.Fatalf("expected scaffold-agents to include scaffold-agent alias")
@@ -390,6 +508,7 @@ func withScaffoldAgentFlags(t *testing.T, run func()) {
 	originalAgentsMD := scaffoldAgentsAgentsMD
 	originalYes := scaffoldAgentsYes
 	originalAppendOnly := scaffoldAgentsAppendOnly
+	originalVersion := scaffoldAgentsVersion
 
 	t.Cleanup(func() {
 		scaffoldAgentsForce = originalForce
@@ -398,6 +517,7 @@ func withScaffoldAgentFlags(t *testing.T, run func()) {
 		scaffoldAgentsAgentsMD = originalAgentsMD
 		scaffoldAgentsYes = originalYes
 		scaffoldAgentsAppendOnly = originalAppendOnly
+		scaffoldAgentsVersion = originalVersion
 	})
 
 	scaffoldAgentsForce = false
@@ -406,6 +526,7 @@ func withScaffoldAgentFlags(t *testing.T, run func()) {
 	scaffoldAgentsAgentsMD = false
 	scaffoldAgentsYes = false
 	scaffoldAgentsAppendOnly = false
+	scaffoldAgentsVersion = 0
 
 	run()
 }

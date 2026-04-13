@@ -4,8 +4,9 @@ skills_dir: .agents/skills
 constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false
 agents:
-  - AGENTS.md
-  - CLAUDE.md
+    - AGENTS.md
+    - CLAUDE.md
+instruction_scaffold_version: 2
 feature_naming:
-  numeric_width: 4
-  separator: '-'
+    numeric_width: 4
+    separator: '-'

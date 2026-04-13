@@ -24,7 +24,7 @@
 - Let users target a feature directly or pick interactively from features that have reached at least `TASKS.md`.
 - Include the feature's spec pipeline, project constraints, git diff instructions, and skill de-duplication instructions in the output prompt.
 - Instruct the active coding agent to derive novel insights from the feature pipeline, git diff, and project-wide progression instead of limiting output to simple pattern extraction.
-- Instruct the active coding agent to audit and remove stale skills that no longer match the current codebase or workflow reality.
+- Instruct the active coding agent to audit stale skills and use approval-gated cleanup when they no longer match the current codebase or workflow reality.
 - Make the canonical skills output directory configurable through `.kit.yaml` with a sensible default.
 - Make the generated prompt place canonical skill bundles in an agent-neutral repo path and duplicate them into Claude's project-local discovery path.
 - Document the new command in CLI help ordering and README command tables.
@@ -111,7 +111,7 @@ none
   - relevance
   - coverage
   - trigger condition validity
-- [SPEC-29] The `SKILL AUDIT` phase must instruct the active coding agent to log deletion reasons before deleting stale skills.
+- [SPEC-29] The `SKILL AUDIT` phase must instruct the active coding agent to log deletion reasons before proposing stale-skill deletion.
 - [SPEC-30] The output prompt must define a `Skill Audit Summary` output format with created, removed, retained, and no-action sections.
 - [SPEC-31] The output prompt rules must state that passing skills must not be modified, incomplete skills are not stale by themselves, and if nothing changes the agent should output `No skill changes - audit complete` and stop.
 - [SPEC-32] The canonical skill bundle layout must be directory-based so it can be transferred across coding agent types:
@@ -119,9 +119,10 @@ none
   - optional bundled resources under the same directory
 - [SPEC-33] The output prompt must instruct the active coding agent to duplicate every newly created canonical skill bundle into `.claude/skills/<skill-name>/` for Claude Code project discovery.
 - [SPEC-34] The `SKILL AUDIT` phase must use `<skills_dir>` as the source of truth, not a hardcoded Claude-only root.
-- [SPEC-35] When deleting a stale skill, the output prompt must instruct the active coding agent to remove both the canonical bundle directory and the Claude mirror directory:
-  - `rm -rf <skills_dir>/<skill-name>/`
-  - `rm -rf .claude/skills/<skill-name>/`
+- [SPEC-35] The output prompt must treat stale-skill deletion as approval-gated cleanup:
+  - identify removal candidates first
+  - summarize the exact reason for each candidate
+  - ask for explicit user approval before removing either the canonical bundle directory or the Claude mirror directory
 - [SPEC-36] The output prompt must identify `<skills_dir>` as the source of truth and `.claude/skills` as the Claude discovery mirror.
 
 ## ACCEPTANCE
@@ -136,7 +137,7 @@ none
 - The prompt includes instructions for `git diff main`, fallback to `master`, skill de-duplication, reusable-pattern filtering, and the required `SKILL.md` format block.
 - The prompt includes `PROJECT_PROGRESS_SUMMARY.md` as an input for cross-feature theme detection.
 - The prompt includes a spec-vs-implementation divergence analysis step and an explicit signal priority order.
-- The prompt includes a mandatory skill-audit section with audit criteria, deletion instructions, and a `Skill Audit Summary` format block.
+- The prompt includes a mandatory skill-audit section with audit criteria, approval-gated cleanup instructions, and a `Skill Audit Summary` format block.
 - The prompt writes canonical skills to `<skills_dir>/<slug>/SKILL.md` and duplicates them to `.claude/skills/<slug>/SKILL.md`.
 - The prompt audits canonical skills from `<skills_dir>/*/SKILL.md` and removes the Claude mirror when a canonical skill is deleted.
 - The prompt starts with a direct task statement and contains no HTTP or API-call instructions.

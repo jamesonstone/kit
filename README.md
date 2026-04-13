@@ -158,6 +158,7 @@ kit remove my-feature --yes
 | `kit status --all`        | Show the project-wide overview as a lifecycle matrix with state and task progress; supports JSON |
 | `kit map [feature]`       | Show a read-only map of canonical docs, lifecycle state, and explicit feature lineage            |
 | `kit check <feature>`     | Validate feature documents and populated required sections                                       |
+| `kit check --project`     | Validate the repo-level document and instruction contract, including versioned instruction docs |
 | `kit reconcile [feature]` | Audit Kit-managed docs for contract drift and output a documentation-reconciliation prompt       |
 
 ### 🧾 Prompt Utilities
@@ -234,6 +235,14 @@ When instruction files already exist:
 - `--append-only` merges missing Kit-managed sections without overwriting matched existing content
 - `--force` overwrites existing files after confirmation
 - `--force --yes` overwrites existing files without prompting for automation use
+
+Instruction scaffold versions:
+
+- `--version 1` keeps the legacy verbose `AGENTS.md` / `CLAUDE.md` model
+- `--version 2` uses thin entrypoints plus `docs/agents/` and `docs/references/` for repo-local ToC and RLM routing
+- new repos default to `v2`
+- existing repos keep their current model unless `--version` explicitly switches them
+- switching models is a repo-wide change and requires `--force`
 
 ## 🗂️ Structured Engine: Artifact Pipeline
 

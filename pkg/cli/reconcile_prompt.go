@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/promptdoc"
 )
 
 type reconcileFileSummary struct {
@@ -22,8 +25,6 @@ type reconcileCategorySummary struct {
 }
 
 func buildReconcilePrompt(report *reconcileReport) string {
-	var sb strings.Builder
-
 	scope := "whole project"
 	verifyCmd := "`kit check --all`"
 	if report.Feature != nil {
@@ -35,64 +36,90 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	categorySummaries := summarizeReconcileCategories(report.Findings)
 	errorCount, warningCount := reconcileSeverityCounts(report.Findings)
 
-	sb.WriteString("/plan\n\n")
-	sb.WriteString(fmt.Sprintf("Reconcile Kit-managed docs for the %s.\n\n", scope))
-	sb.WriteString("Rules:\n")
-	sb.WriteString("- docs only; no product code, test, or runtime changes\n")
-	sb.WriteString("- preserve project wording when it already satisfies the current contract\n")
-	if !singleAgent {
-		sb.WriteString("- use subagents and queue work according to overlapping file changes; keep overlapping files in the same lane\n")
-	}
-	sb.WriteString(fmt.Sprintf("- contract order: %s -> %s -> %s\n\n", templateSource(report.ProjectRoot), constitutionSource(report.ProjectRoot), initProjectSource(report.ProjectRoot)))
-
-	sb.WriteString("Audit snapshot:\n")
-	sb.WriteString(fmt.Sprintf("- findings: %d (%d errors, %d warnings)\n", len(report.Findings), errorCount, warningCount))
-	sb.WriteString(fmt.Sprintf("- files to touch: %d\n", len(fileSummaries)))
-	sb.WriteString(fmt.Sprintf("- verify after edits: %s\n", verifyCmd))
-	if report.NeedsRollup {
-		sb.WriteString("- also run: `kit rollup`\n")
-	} else {
-		sb.WriteString("- also run `kit rollup` only if `PROJECT_PROGRESS_SUMMARY.md` changes\n")
-	}
-	sb.WriteString("\n")
-
-	sb.WriteString("Files to fix:\n")
-	sb.WriteString("| Severity | File | Issues | Focus |\n")
-	sb.WriteString("| -------- | ---- | ------ | ----- |\n")
+	rows := make([][]string, 0, len(fileSummaries))
 	for _, summary := range fileSummaries {
-		sb.WriteString(fmt.Sprintf("| %s | `%s` | %d | %s |\n",
+		rows = append(rows, []string{
 			reconcileSeverityBadge(summary.ErrorCount, summary.WarnCount),
-			summary.Path,
-			len(summary.Issues),
+			fmt.Sprintf("`%s`", summary.Path),
+			fmt.Sprintf("%d", len(summary.Issues)),
 			strings.Join(limitStrings(summary.Actions, 2), "; "),
-		))
+		})
 	}
-	sb.WriteString("\n")
 
-	sb.WriteString("Notable issues:\n")
+	rules := []string{
+		"docs only; no product code, test, or runtime changes",
+		"preserve project wording when it already satisfies the current contract",
+		fmt.Sprintf(
+			"contract order: %s -> %s -> %s",
+			templateSource(report.ProjectRoot),
+			constitutionSource(report.ProjectRoot),
+			initProjectSource(report.ProjectRoot),
+		),
+	}
+	if !singleAgent {
+		rules = append(
+			rules[:2],
+			append(
+				[]string{"use subagents and queue work according to overlapping file changes; keep overlapping files in the same lane"},
+				rules[2:]...,
+			)...,
+		)
+	}
+
+	snapshot := []string{
+		fmt.Sprintf("findings: %d (%d errors, %d warnings)", len(report.Findings), errorCount, warningCount),
+		fmt.Sprintf("files to touch: %d", len(fileSummaries)),
+		fmt.Sprintf("verify after edits: %s", verifyCmd),
+	}
+	if report.NeedsRollup {
+		snapshot = append(snapshot, "also run: `kit rollup`")
+	} else {
+		snapshot = append(snapshot, "also run `kit rollup` only if `PROJECT_PROGRESS_SUMMARY.md` changes")
+	}
+
+	issueBullets := make([]string, 0, len(fileSummaries))
 	for _, summary := range fileSummaries {
-		sb.WriteString(fmt.Sprintf("- `%s`: %s\n",
+		issueBullets = append(issueBullets, fmt.Sprintf(
+			"`%s`: %s",
 			filepath.Base(summary.Path),
 			strings.Join(limitStrings(summary.Issues, issueLimitForScope(report)), "; "),
 		))
 	}
-	sb.WriteString("\n")
 
-	sb.WriteString("Search shortcuts:\n")
+	searchBullets := make([]string, 0, len(categorySummaries)+1)
 	for _, category := range categorySummaries {
-		sb.WriteString(fmt.Sprintf("- %s: %s\n", category.Name, strings.Join(wrapCode(limitStrings(category.SearchHints, 2)), "; ")))
+		searchBullets = append(
+			searchBullets,
+			fmt.Sprintf("%s: %s", category.Name, strings.Join(wrapCode(limitStrings(category.SearchHints, 2)), "; ")),
+		)
 	}
 	if hasInstructionFileFinding(report.Findings) {
-		sb.WriteString("- instruction files: `kit scaffold-agents --append-only`\n")
+		searchBullets = append(searchBullets, fmt.Sprintf(
+			"instruction files: `%s`",
+			reconcileInstructionShortcut(report.ProjectRoot),
+		))
 	}
-	sb.WriteString("\n")
 
-	sb.WriteString("Reply with exactly these sections:\n")
-	sb.WriteString("- `Findings`: bullets for what was stale\n")
-	sb.WriteString("- `Updates`: bullets for what changed; include unresolved questions only if any remain\n")
-	sb.WriteString("- `Verification`: bullets for commands run and whether they passed\n")
-
-	return sb.String()
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Raw("/plan")
+		doc.Paragraph(fmt.Sprintf("Reconcile Kit-managed docs for the %s.", scope))
+		doc.Paragraph("Rules:")
+		doc.BulletList(rules...)
+		doc.Paragraph("Audit snapshot:")
+		doc.BulletList(snapshot...)
+		doc.Paragraph("Files to fix:")
+		doc.Table([]string{"Severity", "File", "Issues", "Focus"}, rows)
+		doc.Paragraph("Notable issues:")
+		doc.BulletList(issueBullets...)
+		doc.Paragraph("Search shortcuts:")
+		doc.BulletList(searchBullets...)
+		doc.Paragraph("Reply with exactly these sections:")
+		doc.BulletList(
+			"`Findings`: bullets for what was stale",
+			"`Updates`: bullets for what changed; include unresolved questions only if any remain",
+			"`Verification`: bullets for commands run and whether they passed",
+		)
+	})
 }
 
 func summarizeReconcileFiles(findings []reconcileFinding) []reconcileFileSummary {
@@ -272,4 +299,14 @@ func hasInstructionFileFinding(findings []reconcileFinding) bool {
 		}
 	}
 	return false
+}
+
+func reconcileInstructionShortcut(projectRoot string) string {
+	cfg := config.LoadOrDefault(projectRoot)
+	version := detectInstructionScaffoldVersion(projectRoot, cfg)
+	if config.IsInstructionScaffoldVersionSupported(version) {
+		return fmt.Sprintf("kit scaffold-agents --version %d --append-only", version)
+	}
+
+	return "kit scaffold-agents --append-only"
 }

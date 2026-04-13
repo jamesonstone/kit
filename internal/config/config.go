@@ -11,16 +11,23 @@ import (
 
 const ConfigFileName = ".kit.yaml"
 
+const (
+	InstructionScaffoldVersionVerbose = 1
+	InstructionScaffoldVersionTOC     = 2
+	DefaultInstructionScaffoldVersion = InstructionScaffoldVersionTOC
+)
+
 // Config represents the .kit.yaml configuration file.
 type Config struct {
-	GoalPercentage   int                              `yaml:"goal_percentage"`
-	SpecsDir         string                           `yaml:"specs_dir"`
-	SkillsDir        string                           `yaml:"skills_dir"`
-	ConstitutionPath string                           `yaml:"constitution_path"`
-	AllowOutOfOrder  bool                             `yaml:"allow_out_of_order"`
-	Agents           []string                         `yaml:"agents"`
-	FeatureNaming    FeatureNaming                    `yaml:"feature_naming"`
-	FeatureState     map[string]FeatureLifecycleState `yaml:"feature_state,omitempty"`
+	GoalPercentage             int                              `yaml:"goal_percentage"`
+	SpecsDir                   string                           `yaml:"specs_dir"`
+	SkillsDir                  string                           `yaml:"skills_dir"`
+	ConstitutionPath           string                           `yaml:"constitution_path"`
+	AllowOutOfOrder            bool                             `yaml:"allow_out_of_order"`
+	Agents                     []string                         `yaml:"agents"`
+	InstructionScaffoldVersion int                              `yaml:"instruction_scaffold_version"`
+	FeatureNaming              FeatureNaming                    `yaml:"feature_naming"`
+	FeatureState               map[string]FeatureLifecycleState `yaml:"feature_state,omitempty"`
 }
 
 type FeatureLifecycleState struct {
@@ -47,6 +54,18 @@ func Default() *Config {
 			Separator:    "-",
 		},
 	}
+}
+
+func IsInstructionScaffoldVersionSupported(version int) bool {
+	return version == InstructionScaffoldVersionVerbose || version == InstructionScaffoldVersionTOC
+}
+
+func (c *Config) EffectiveInstructionScaffoldVersion() int {
+	if c == nil || !IsInstructionScaffoldVersionSupported(c.InstructionScaffoldVersion) {
+		return DefaultInstructionScaffoldVersion
+	}
+
+	return c.InstructionScaffoldVersion
 }
 
 func (c *Config) IsFeaturePaused(dirName string) bool {

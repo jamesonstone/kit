@@ -1,10 +1,12 @@
 package cli
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -96,6 +98,51 @@ func TestBuildCatchupPromptForCompleteFeature(t *testing.T) {
 	for _, check := range checks {
 		if !strings.Contains(prompt, check) {
 			t.Fatalf("expected complete-phase prompt to contain %q", check)
+		}
+	}
+}
+
+func TestBuildCatchupPrompt_IncludesRepoDocsForTOCRepos(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+	writeFile(t, filepath.Join(projectRoot, "docs", "agents", "README.md"), "# Agents Docs\n")
+	writeFile(t, filepath.Join(projectRoot, "docs", "references", "README.md"), "# References\n")
+
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0007-catchup-command")
+	if err := os.MkdirAll(featurePath, 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+	feat := &feature.Feature{
+		Slug:    "catchup-command",
+		DirName: "0007-catchup-command",
+		Path:    featurePath,
+	}
+	status := &feature.FeatureStatus{
+		ID:    "0007",
+		Name:  feat.Slug,
+		Path:  featurePath,
+		Phase: feature.PhasePlan,
+		Files: map[string]feature.FileStatus{
+			"brainstorm": {Exists: false, Path: filepath.Join(featurePath, "BRAINSTORM.md")},
+			"spec":       {Exists: true, Path: filepath.Join(featurePath, "SPEC.md")},
+			"plan":       {Exists: true, Path: filepath.Join(featurePath, "PLAN.md")},
+			"tasks":      {Exists: false, Path: filepath.Join(featurePath, "TASKS.md")},
+		},
+	}
+
+	prompt := buildCatchupPrompt(feat, status, projectRoot)
+	for _, check := range []string{
+		"AGENTS DOCS",
+		"REFERENCES",
+		"`docs/agents/README.md`",
+		"`docs/references/README.md`",
+	} {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected prompt to contain %q", check)
 		}
 	}
 }

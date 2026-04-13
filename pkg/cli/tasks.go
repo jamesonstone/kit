@@ -13,6 +13,7 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/promptdoc"
 	"github.com/jamesonstone/kit/internal/rollup"
 	"github.com/jamesonstone/kit/internal/templates"
 )
@@ -207,55 +208,46 @@ func outputTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Co
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 
-	var sb strings.Builder
-	sb.WriteString("Please review and complete the task plan.\n\n")
-	sb.WriteString("## File References\n")
-	sb.WriteString("| Document | Path |\n")
-	sb.WriteString("|----------|------|\n")
-	sb.WriteString(fmt.Sprintf("| CONSTITUTION | %s |\n", constitutionPath))
-	if hasBrainstorm {
-		sb.WriteString(fmt.Sprintf("| BRAINSTORM | %s |\n", brainstormPath))
+	steps := []string{
+		fmt.Sprintf("Read CONSTITUTION.md (file: %s) to understand project constraints and principles", constitutionPath),
 	}
-	sb.WriteString(fmt.Sprintf("| SPEC | %s |\n", specPath))
-	sb.WriteString(fmt.Sprintf("| PLAN | %s |\n", planPath))
-	sb.WriteString(fmt.Sprintf("| TASKS | %s |\n", tasksPath))
-	sb.WriteString(fmt.Sprintf("| Feature | %s |\n", feat.Slug))
-	sb.WriteString(fmt.Sprintf("| Project Root | %s |\n\n", projectRoot))
-
-	sb.WriteString("Your task:\n")
-	sb.WriteString(fmt.Sprintf("1. Read CONSTITUTION.md (file: %s) to understand project constraints and principles\n", constitutionPath))
-	step := 2
 	if hasBrainstorm {
-		sb.WriteString(fmt.Sprintf("%d. Read BRAINSTORM.md (file: %s) to preserve upstream research context\n", step, brainstormPath))
-		step++
+		steps = append(steps, fmt.Sprintf("Read BRAINSTORM.md (file: %s) to preserve upstream research context", brainstormPath))
 	}
-	sb.WriteString(fmt.Sprintf("%d. Read SPEC.md (file: %s) and PLAN.md (file: %s) fully and treat them as fixed inputs\n", step, specPath, planPath))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Review the TASKS.md (file: %s) template and required sections\n", step, tasksPath))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Derive an atomic, ordered task list that can be executed without ambiguity\n", step))
-	step++
-	sb.WriteString(fmt.Sprintf("%d. Identify missing decisions that block task generation\n", step))
-	step++
-	appendNumberedSteps(
-		&sb,
-		step,
-		clarificationLoopSteps(
-			goalPct,
-			"Reassess and continue with additional batches of up to 10 questions "+
-				"until the task plan is precise enough to produce a correct, "+
-				"production-quality implementation",
-		),
+	steps = append(steps,
+		fmt.Sprintf("Read SPEC.md (file: %s) and PLAN.md (file: %s) fully and treat them as fixed inputs", specPath, planPath),
+		fmt.Sprintf("Review the TASKS.md (file: %s) template and required sections", tasksPath),
+		"Derive an atomic, ordered task list that can be executed without ambiguity",
+		"Identify missing decisions that block task generation",
 	)
-	sb.WriteString("\n")
+	steps = append(steps, clarificationLoopSteps(
+		goalPct,
+		"Reassess and continue with additional batches of up to 10 questions until the task plan is precise enough to produce a correct, production-quality implementation",
+	)...)
 
-	sb.WriteString(fmt.Sprintf(`Before you write or update TASKS.md:
-- after each batch of up to 10 questions, output your current percentage understanding of the task plan so the user can see progress
-- do NOT treat TASKS.md as complete until confidence reaches ≥%d%%
-
-TASKS.md requirements:
-
-A) PROGRESS TABLE (ALWAYS FIRST)
+	prompt := renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Paragraph("Please review and complete the task plan.")
+		doc.Heading(2, "File References")
+		rows := [][]string{{"CONSTITUTION", constitutionPath}}
+		if hasBrainstorm {
+			rows = append(rows, []string{"BRAINSTORM", brainstormPath})
+		}
+		rows = append(rows,
+			[]string{"SPEC", specPath},
+			[]string{"PLAN", planPath},
+			[]string{"TASKS", tasksPath},
+			[]string{"Feature", feat.Slug},
+			[]string{"Project Root", projectRoot},
+		)
+		doc.Table([]string{"Document", "Path"}, rows)
+		doc.Paragraph("Your task:")
+		doc.OrderedList(1, steps...)
+		doc.Paragraph(fmt.Sprintf(
+			"Before you write or update TASKS.md:\n- after each batch of up to 10 questions, output your current percentage understanding of the task plan so the user can see progress\n- do NOT treat TASKS.md as complete until confidence reaches ≥%d%%",
+			goalPct,
+		))
+		doc.Heading(2, "TASKS.md Requirements")
+		doc.Raw(`A) PROGRESS TABLE (ALWAYS FIRST)
 - Fill the top table with one row per task
 - Use stable IDs (T001, T002, …)
 - STATUS ∈ todo | doing | blocked | done
@@ -291,26 +283,23 @@ E) NOTES SECTION
 F) PLAN LINKS (OPTIONAL)
 - Link to PLAN sections using anchors from headings (lowercase, dashes)
 - Examples: [PLAN-APPROACH], [PLAN-COMPONENTS], [PLAN-DATA], [PLAN-RISKS]
-- Include in task descriptions to trace back to plan requirements
-
-Rules:
-- focus on executable steps, not prose
-- use BRAINSTORM.md as research context only; SPEC.md and PLAN.md remain the binding inputs
-- do not invent new requirements or scope beyond SPEC.md
-- tasks must map back to PLAN items via section anchors
-- tasks must imply an unambiguous implementation order
-- Tasks gate: each task must include an explicit done-condition and required evidence artifact(s) before sign-off
-- avoid code unless strictly necessary
-- keep language dense and factual
-- ensure tasks respect constraints defined in CONSTITUTION.md
-- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-
-Output goal:
-- a task list that a coding agent can execute linearly with minimal back-and-forth
-`, goalPct))
-	appendNonEmptySectionRules(&sb, "`TASKS.md`")
-
-	prompt := sb.String()
+- Include in task descriptions to trace back to plan requirements`)
+		doc.Heading(2, "Rules")
+		doc.BulletList(
+			"focus on executable steps, not prose",
+			"use BRAINSTORM.md as research context only; SPEC.md and PLAN.md remain the binding inputs",
+			"do not invent new requirements or scope beyond SPEC.md",
+			"tasks must map back to PLAN items via section anchors",
+			"tasks must imply an unambiguous implementation order",
+			"Tasks gate: each task must include an explicit done-condition and required evidence artifact(s) before sign-off",
+			"avoid code unless strictly necessary",
+			"keep language dense and factual",
+			"ensure tasks respect constraints defined in CONSTITUTION.md",
+			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
+		)
+		doc.Paragraph("Output goal:\n- a task list that a coding agent can execute linearly with minimal back-and-forth")
+		doc.Raw(renderNonEmptySectionRules("`TASKS.md`"))
+	})
 
 	if err := outputPromptWithClipboardDefault(prompt, outputOnly, tasksCopy); err != nil {
 		return err

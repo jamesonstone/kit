@@ -9,6 +9,7 @@ import (
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/internal/promptdoc"
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
@@ -47,7 +48,17 @@ func runInit(cmd *cobra.Command, args []string) error {
 		if err == nil {
 			cfg = existing
 		}
+		if !config.IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
+			cfg.InstructionScaffoldVersion = detectInstructionScaffoldVersion(cwd, cfg)
+			if cfg.InstructionScaffoldVersion == instructionScaffoldVersionUnknown {
+				cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
+			}
+			if err := config.Save(cwd, cfg); err != nil {
+				return fmt.Errorf("failed to update %s: %w", config.ConfigFileName, err)
+			}
+		}
 	} else {
+		cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
 		if err := config.Save(cwd, cfg); err != nil {
 			return fmt.Errorf("failed to create .kit.yaml: %w", err)
 		}
@@ -82,17 +93,27 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	// scaffold repository instruction files
-	for _, instructionFile := range instructionFiles(cfg) {
-		result, err := writeInstructionFile(cwd, instructionFile, false)
+	for _, relativePath := range instructionArtifactPaths(
+		cfg,
+		instructionFileSelection{},
+		cfg.InstructionScaffoldVersion,
+		true,
+	) {
+		result, err := writeInstructionFileWithMode(
+			cwd,
+			relativePath,
+			instructionFileWriteModeSkipExisting,
+			cfg.InstructionScaffoldVersion,
+		)
 		if err != nil {
 			return err
 		}
 
 		switch result {
 		case instructionFileCreated:
-			fmt.Printf("  ✓ Created %s\n", instructionFile)
+			fmt.Printf("  ✓ Created %s\n", relativePath)
 		case instructionFileSkipped:
-			fmt.Printf("  ✓ %s exists, skipping\n", instructionFile)
+			fmt.Printf("  ✓ %s exists, skipping\n", relativePath)
 		}
 	}
 
@@ -105,20 +126,22 @@ func runInit(cmd *cobra.Command, args []string) error {
 	constitutionRelPath := cfg.ConstitutionPath
 	constitutionFullPath := filepath.Join(cwd, constitutionRelPath)
 
-	prompt := fmt.Sprintf(`Please update %s with all patterns, strategy,
-implementation details, process, and long-term vision for this project.
-This document will drive the "rules for development" going forward.
-
-Analyze the codebase at %s to extract:
-- Architectural patterns and conventions
-- Code style and naming conventions  
-- Dependencies and their purposes
-- Non-negotiable constraints
-- Project goals and non-goals
-
-Rules:
-- PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times
-`, constitutionFullPath, cwd)
+	prompt := renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Paragraph(fmt.Sprintf(
+			"Please update %s with all patterns, strategy, implementation details, process, and long-term vision for this project.\nThis document will drive the \"rules for development\" going forward.",
+			constitutionFullPath,
+		))
+		doc.Paragraph(fmt.Sprintf("Analyze the codebase at %s to extract:", cwd))
+		doc.BulletList(
+			"Architectural patterns and conventions",
+			"Code style and naming conventions",
+			"Dependencies and their purposes",
+			"Non-negotiable constraints",
+			"Project goals and non-goals",
+		)
+		doc.Paragraph("Rules:")
+		doc.BulletList("PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times")
+	})
 
 	if err := outputPrompt(prompt, false, false); err != nil {
 		return err

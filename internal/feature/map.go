@@ -7,6 +7,7 @@ import (
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/internal/instructions"
 )
 
 type MapDocument struct {
@@ -50,22 +51,7 @@ func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error
 	}
 
 	projectMap := &ProjectMap{
-		GlobalDocuments: []MapDocument{
-			{
-				Name:      "CONSTITUTION.md",
-				Path:      cfg.ConstitutionPath,
-				Required:  true,
-				Exists:    document.Exists(cfg.ConstitutionAbsPath(projectRoot)),
-				ManagedBy: "kit init",
-			},
-			{
-				Name:      "PROJECT_PROGRESS_SUMMARY.md",
-				Path:      relativePath(projectRoot, cfg.ProgressSummaryPath(projectRoot)),
-				Required:  true,
-				Exists:    document.Exists(cfg.ProgressSummaryPath(projectRoot)),
-				ManagedBy: "kit rollup",
-			},
-		},
+		GlobalDocuments: projectGlobalDocuments(projectRoot, cfg),
 	}
 
 	for _, feat := range features {
@@ -136,6 +122,46 @@ func loadRelationshipEdges(feat Feature, knownFeatures map[string]struct{}) ([]R
 	return sortedEdges(edges), nil
 }
 
+func projectGlobalDocuments(projectRoot string, cfg *config.Config) []MapDocument {
+	docs := []MapDocument{
+		{
+			Name:      "CONSTITUTION.md",
+			Path:      cfg.ConstitutionPath,
+			Required:  true,
+			Exists:    document.Exists(cfg.ConstitutionAbsPath(projectRoot)),
+			ManagedBy: "kit init",
+		},
+		{
+			Name:      "PROJECT_PROGRESS_SUMMARY.md",
+			Path:      relativePath(projectRoot, cfg.ProgressSummaryPath(projectRoot)),
+			Required:  true,
+			Exists:    document.Exists(cfg.ProgressSummaryPath(projectRoot)),
+			ManagedBy: "kit rollup",
+		},
+	}
+
+	version := detectInstructionScaffoldVersion(projectRoot, cfg)
+	if version == instructionScaffoldVersionUnknown {
+		return docs
+	}
+
+	docs = appendMapDocuments(projectRoot, docs, instructions.InstructionDocs(cfg, version))
+
+	if version != config.InstructionScaffoldVersionTOC {
+		return docs
+	}
+
+	docs = appendMapDocuments(projectRoot, docs, instructions.SupportDocs(version))
+
+	return docs
+}
+
+const instructionScaffoldVersionUnknown = instructions.UnknownVersion
+
+func detectInstructionScaffoldVersion(projectRoot string, cfg *config.Config) int {
+	return instructions.DetectVersion(projectRoot, cfg)
+}
+
 func featureDocuments(projectRoot string, feat Feature) []MapDocument {
 	return []MapDocument{
 		{
@@ -203,4 +229,18 @@ func sortedEdges(edges []RelationshipEdge) []RelationshipEdge {
 	})
 
 	return edges
+}
+
+func appendMapDocuments(projectRoot string, docs []MapDocument, registryDocs []instructions.Doc) []MapDocument {
+	for _, doc := range registryDocs {
+		docs = append(docs, MapDocument{
+			Name:      filepath.Base(doc.RelativePath),
+			Path:      doc.RelativePath,
+			Required:  doc.Required,
+			Exists:    document.Exists(filepath.Join(projectRoot, filepath.FromSlash(doc.RelativePath))),
+			ManagedBy: doc.ManagedBy,
+		})
+	}
+
+	return docs
 }

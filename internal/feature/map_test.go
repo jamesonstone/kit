@@ -14,6 +14,11 @@ func TestBuildProjectMap_CollectsRelationshipsAndIncomingEdges(t *testing.T) {
 	if err := os.MkdirAll(specsDir, 0755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionVerbose
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
 
 	writeMapFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), "# CONSTITUTION\n")
 	writeMapFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), "# PROJECT PROGRESS SUMMARY\n")
@@ -41,7 +46,7 @@ func TestBuildProjectMap_CollectsRelationshipsAndIncomingEdges(t *testing.T) {
 none
 `)
 
-	projectMap, err := BuildProjectMap(projectRoot, config.Default())
+	projectMap, err := BuildProjectMap(projectRoot, cfg)
 	if err != nil {
 		t.Fatalf("BuildProjectMap() error = %v", err)
 	}
@@ -78,18 +83,23 @@ func TestBuildProjectMap_IncludesDocumentMetadata(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(specsDir, "0001-alpha"), 0755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionVerbose
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
 
 	writeMapFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), "# CONSTITUTION\n")
 	writeMapFile(t, filepath.Join(specsDir, "0001-alpha", "BRAINSTORM.md"), "# BRAINSTORM\n\n## RELATIONSHIPS\n\nnone\n")
 	writeMapFile(t, filepath.Join(specsDir, "0001-alpha", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\nnone\n")
 
-	projectMap, err := BuildProjectMap(projectRoot, config.Default())
+	projectMap, err := BuildProjectMap(projectRoot, cfg)
 	if err != nil {
 		t.Fatalf("BuildProjectMap() error = %v", err)
 	}
 
-	if len(projectMap.GlobalDocuments) != 2 {
-		t.Fatalf("global document count = %d, want 2", len(projectMap.GlobalDocuments))
+	if len(projectMap.GlobalDocuments) != 5 {
+		t.Fatalf("global document count = %d, want 5", len(projectMap.GlobalDocuments))
 	}
 	if len(projectMap.Features) != 1 {
 		t.Fatalf("feature count = %d, want 1", len(projectMap.Features))
@@ -107,6 +117,57 @@ func TestBuildProjectMap_IncludesDocumentMetadata(t *testing.T) {
 	}
 	if docs[2].Exists || !docs[2].Required {
 		t.Fatalf("plan metadata = %+v, want required missing document", docs[2])
+	}
+}
+
+func TestBuildProjectMap_IncludesTOCGlobalDocuments(t *testing.T) {
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	if err := os.MkdirAll(filepath.Join(specsDir, "0001-alpha"), 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), "# CONSTITUTION\n")
+	writeMapFile(t, filepath.Join(projectRoot, "AGENTS.md"), "# AGENTS\n")
+	writeMapFile(t, filepath.Join(projectRoot, "CLAUDE.md"), "# CLAUDE\n")
+	writeMapFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), "# COPILOT\n")
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "agents", "README.md"), "# Agents Docs\n")
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "references", "README.md"), "# References\n")
+	writeMapFile(t, filepath.Join(specsDir, "0001-alpha", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\nnone\n")
+
+	projectMap, err := BuildProjectMap(projectRoot, cfg)
+	if err != nil {
+		t.Fatalf("BuildProjectMap() error = %v", err)
+	}
+
+	globalPaths := make([]string, 0, len(projectMap.GlobalDocuments))
+	for _, doc := range projectMap.GlobalDocuments {
+		globalPaths = append(globalPaths, doc.Path)
+	}
+
+	for _, expected := range []string{
+		"AGENTS.md",
+		"CLAUDE.md",
+		".github/copilot-instructions.md",
+		"docs/agents/README.md",
+		"docs/references/README.md",
+	} {
+		found := false
+		for _, path := range globalPaths {
+			if path == expected {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("expected global documents to include %q, got %v", expected, globalPaths)
+		}
 	}
 }
 

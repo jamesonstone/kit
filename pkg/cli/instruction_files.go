@@ -6,13 +6,14 @@ import (
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/internal/instructions"
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
 const (
-	agentsMDPath            = "AGENTS.md"
-	claudeMDPath            = "CLAUDE.md"
-	copilotInstructionsPath = ".github/copilot-instructions.md"
+	agentsMDPath            = instructions.AgentsMDPath
+	claudeMDPath            = instructions.ClaudeMDPath
+	copilotInstructionsPath = instructions.CopilotInstructionsPath
 )
 
 type instructionFileWriteResult string
@@ -48,12 +49,7 @@ func (s instructionFileSelection) any() bool {
 }
 
 func instructionFiles(cfg *config.Config) []string {
-	files := make([]string, 0, len(cfg.Agents)+1)
-	for _, file := range cfg.Agents {
-		files = appendInstructionFile(files, file)
-	}
-	files = appendInstructionFile(files, copilotInstructionsPath)
-	return files
+	return instructions.InstructionRelativePaths(cfg)
 }
 
 func selectedInstructionFiles(cfg *config.Config, selection instructionFileSelection) []string {
@@ -91,11 +87,16 @@ func writeInstructionFile(projectRoot, relativePath string, overwrite bool) (ins
 		mode = instructionFileWriteModeOverwrite
 	}
 
-	return writeInstructionFileWithMode(projectRoot, relativePath, mode)
+	return writeInstructionFileWithMode(projectRoot, relativePath, mode, config.DefaultInstructionScaffoldVersion)
 }
 
-func writeInstructionFileWithMode(projectRoot, relativePath string, mode instructionFileWriteMode) (instructionFileWriteResult, error) {
-	plan, err := planInstructionFileWrite(projectRoot, relativePath, mode)
+func writeInstructionFileWithMode(
+	projectRoot,
+	relativePath string,
+	mode instructionFileWriteMode,
+	version int,
+) (instructionFileWriteResult, error) {
+	plan, err := planInstructionFileWrite(projectRoot, relativePath, mode, version)
 	if err != nil {
 		return "", err
 	}
@@ -131,9 +132,18 @@ func existingInstructionFiles(projectRoot string, relativePaths []string) []stri
 }
 
 func planInstructionFileWrites(projectRoot string, relativePaths []string, mode instructionFileWriteMode) ([]instructionFileWritePlan, error) {
+	return planInstructionArtifactWrites(projectRoot, relativePaths, mode, config.DefaultInstructionScaffoldVersion)
+}
+
+func planInstructionArtifactWrites(
+	projectRoot string,
+	relativePaths []string,
+	mode instructionFileWriteMode,
+	version int,
+) ([]instructionFileWritePlan, error) {
 	plans := make([]instructionFileWritePlan, 0, len(relativePaths))
 	for _, relativePath := range relativePaths {
-		plan, err := planInstructionFileWrite(projectRoot, relativePath, mode)
+		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, version)
 		if err != nil {
 			return nil, err
 		}
@@ -143,10 +153,27 @@ func planInstructionFileWrites(projectRoot string, relativePaths []string, mode 
 	return plans, nil
 }
 
-func planInstructionFileWrite(projectRoot, relativePath string, mode instructionFileWriteMode) (instructionFileWritePlan, error) {
+func planInstructionFileWrite(
+	projectRoot,
+	relativePath string,
+	mode instructionFileWriteMode,
+	version int,
+) (instructionFileWritePlan, error) {
+	return planInstructionArtifactWrite(projectRoot, relativePath, mode, version)
+}
+
+func planInstructionArtifactWrite(
+	projectRoot,
+	relativePath string,
+	mode instructionFileWriteMode,
+	version int,
+) (instructionFileWritePlan, error) {
 	absolutePath := filepath.Join(projectRoot, relativePath)
 	existed := document.Exists(absolutePath)
-	content := templates.InstructionFile(relativePath)
+	content, supportFile, err := instructionArtifactContent(relativePath, version)
+	if err != nil {
+		return instructionFileWritePlan{}, err
+	}
 
 	switch mode {
 	case instructionFileWriteModeSkipExisting:
@@ -183,6 +210,13 @@ func planInstructionFileWrite(projectRoot, relativePath string, mode instruction
 				result:       instructionFileCreated,
 			}, nil
 		}
+		if supportFile {
+			return instructionFileWritePlan{
+				relativePath: relativePath,
+				absolutePath: absolutePath,
+				result:       instructionFileSkipped,
+			}, nil
+		}
 
 		existingContent, err := readInstructionFile(absolutePath)
 		if err != nil {
@@ -215,6 +249,42 @@ func planInstructionFileWrite(projectRoot, relativePath string, mode instruction
 	default:
 		return instructionFileWritePlan{}, fmt.Errorf("unsupported instruction file write mode %q", mode)
 	}
+}
+
+func instructionArtifactPaths(
+	cfg *config.Config,
+	selection instructionFileSelection,
+	version int,
+	forceFullModel bool,
+) []string {
+	relativePaths := selectedInstructionFiles(cfg, selection)
+	if forceFullModel {
+		relativePaths = instructionFiles(cfg)
+	}
+
+	if version != config.InstructionScaffoldVersionTOC {
+		return relativePaths
+	}
+
+	for _, support := range instructions.SupportDocs(version) {
+		relativePaths = appendInstructionFile(relativePaths, support.RelativePath)
+	}
+
+	return relativePaths
+}
+
+func instructionArtifactContent(relativePath string, version int) (string, bool, error) {
+	for _, support := range templates.InstructionSupportFiles(version) {
+		if support.RelativePath == relativePath {
+			return support.Content, true, nil
+		}
+	}
+
+	if !config.IsInstructionScaffoldVersionSupported(version) {
+		return "", false, fmt.Errorf("unsupported instruction scaffold version %d", version)
+	}
+
+	return templates.InstructionFileForVersion(relativePath, version), false, nil
 }
 
 func applyInstructionFileWritePlan(plan instructionFileWritePlan) (instructionFileWriteResult, error) {

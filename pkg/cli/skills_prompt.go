@@ -20,13 +20,22 @@ func appendSkillPromptSuffix(prompt string) string {
 }
 
 func skillPromptSuffix() string {
-	paths := repoInstructionPromptPaths()
+	paths, version := repoInstructionPromptPaths()
 
 	var sb strings.Builder
 	sb.WriteString("## Skills\n")
-	sb.WriteString("- consult the repository instruction files for the active skills workflow before acting\n")
+	if version == config.InstructionScaffoldVersionTOC {
+		sb.WriteString("- use the repository instruction entrypoints as a map, not the full manual\n")
+	} else {
+		sb.WriteString("- consult the repository instruction files for the active skills workflow before acting\n")
+	}
 	for _, path := range paths {
 		sb.WriteString(fmt.Sprintf("- repository instruction file: %s\n", path))
+	}
+	if version == config.InstructionScaffoldVersionTOC {
+		sb.WriteString(fmt.Sprintf("- repo-local entrypoint: %s\n", filepath.Join(projectRootForPrompt(), "docs", "agents", "README.md")))
+		sb.WriteString("- load only the relevant docs under `docs/agents/*`, `docs/specs/*`, and `docs/references/*`\n")
+		sb.WriteString("- treat documented global inputs as secondary context after repo-local docs are exhausted\n")
 	}
 	sb.WriteString("- if the work is feature-scoped, read that feature's SPEC.md and the `## SKILLS` table first\n")
 	sb.WriteString("- open each referenced `SKILL.md` and use those skills during execution\n")
@@ -34,17 +43,18 @@ func skillPromptSuffix() string {
 	return sb.String()
 }
 
-func repoInstructionPromptPaths() []string {
+func repoInstructionPromptPaths() ([]string, int) {
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
 		return []string{
 			"AGENTS.md",
 			"CLAUDE.md",
 			".github/copilot-instructions.md",
-		}
+		}, config.DefaultInstructionScaffoldVersion
 	}
 
 	cfg := config.LoadOrDefault(projectRoot)
+	version := detectInstructionScaffoldVersion(projectRoot, cfg)
 	relativePaths := repoInstructionPaths(projectRoot, cfg)
 
 	var existing []string
@@ -54,10 +64,18 @@ func repoInstructionPromptPaths() []string {
 		}
 	}
 	if len(existing) > 0 {
-		return existing
+		return existing, version
 	}
 
-	return relativePaths
+	return relativePaths, version
+}
+
+func projectRootForPrompt() string {
+	projectRoot, err := config.FindProjectRoot()
+	if err != nil {
+		return "."
+	}
+	return projectRoot
 }
 
 func codexHome() string {
