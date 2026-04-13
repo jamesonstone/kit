@@ -48,7 +48,7 @@ func Default() *Config {
 		SkillsDir:        ".agents/skills",
 		ConstitutionPath: "docs/CONSTITUTION.md",
 		AllowOutOfOrder:  false,
-		Agents:           []string{"AGENTS.md", "CLAUDE.md"},
+		Agents:           []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
 		FeatureNaming: FeatureNaming{
 			NumericWidth: 4,
 			Separator:    "-",

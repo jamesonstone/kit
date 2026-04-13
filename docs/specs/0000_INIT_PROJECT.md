@@ -383,9 +383,10 @@ feature_state:
 agents:
   - AGENTS.md
   - CLAUDE.md
+  - .github/copilot-instructions.md
 ```
 
-`agents` controls agent-specific files only. Repo-wide Copilot instructions always scaffold to `.github/copilot-instructions.md`.
+`agents` lists the repository instruction files Kit keeps aligned by default.
 
 ### 7.3 Feature Naming
 

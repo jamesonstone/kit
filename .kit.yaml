@@ -6,6 +6,7 @@ allow_out_of_order: false
 agents:
     - AGENTS.md
     - CLAUDE.md
+    - .github/copilot-instructions.md
 instruction_scaffold_version: 2
 feature_naming:
     numeric_width: 4

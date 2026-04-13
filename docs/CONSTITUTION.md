@@ -460,6 +460,7 @@ allow_out_of_order: false
 agents:
   - AGENTS.md
   - CLAUDE.md
+  - .github/copilot-instructions.md
 
 # Feature directory naming
 feature_naming:

@@ -352,7 +352,7 @@ func writeFile(t *testing.T, path, content string) {
 }
 
 func defaultKitConfig() string {
-	return "goal_percentage: 95\nspecs_dir: docs/specs\nskills_dir: .agents/skills\nconstitution_path: docs/CONSTITUTION.md\nallow_out_of_order: false\nagents:\n  - AGENTS.md\n  - CLAUDE.md\nfeature_naming:\n  numeric_width: 4\n  separator: '-'\n"
+	return "goal_percentage: 95\nspecs_dir: docs/specs\nskills_dir: .agents/skills\nconstitution_path: docs/CONSTITUTION.md\nallow_out_of_order: false\nagents:\n  - AGENTS.md\n  - CLAUDE.md\n  - .github/copilot-instructions.md\nfeature_naming:\n  numeric_width: 4\n  separator: '-'\n"
 }
 
 func documentTemplateWithSummary() string {

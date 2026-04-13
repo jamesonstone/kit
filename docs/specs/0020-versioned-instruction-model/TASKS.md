@@ -72,6 +72,7 @@ Use markdown checkboxes to track completion:
   - the shared code-hygiene guidance now covers dead code, unused exports, and public surfaces that are not strictly necessary
   - `RLM.md`, `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` now define RLM behaviorally on first use so newcomer agents do not have to infer the acronym
   - `.github/copilot-instructions.md` includes a compact fallback read order and inline non-negotiable rules for weaker doc-traversal environments
+  - the default `.kit.yaml` contract now lists `.github/copilot-instructions.md` alongside `AGENTS.md` and `CLAUDE.md` so repository instruction files are explicit in config as well as runtime prompt context
 
 ### T005
 - **GOAL**: enforce the correct instruction contract per repo version
