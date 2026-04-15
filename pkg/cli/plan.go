@@ -328,6 +328,7 @@ func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *f
 	}
 	steps = append(steps,
 		fmt.Sprintf("Read SPEC.md (file: %s) fully and treat it as a fixed contract", specPath),
+		relatedFeatureContextStepText(projectRoot, planPath),
 		fmt.Sprintf("Review the PLAN.md (file: %s) template and required sections", planPath),
 		"Identify any missing design decisions required for execution",
 		planDependencyInventoryStepText(planPath, specPath, brainstormPath, hasBrainstorm),
@@ -432,6 +433,7 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 	steps = append(steps,
 		"Read the Warp plan you created and extract the key design decisions",
 		fmt.Sprintf("Read SPEC.md (file: %s) to ensure alignment with requirements", specPath),
+		relatedFeatureContextStepText(projectRoot, planPath),
 		planDependencyInventoryStepText(planPath, specPath, brainstormPath, hasBrainstorm),
 		fmt.Sprintf(
 			"Fill out each section of PLAN.md (file: %s), adding implementation details beyond what's in the Warp plan:\n"+

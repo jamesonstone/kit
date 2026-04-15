@@ -26,6 +26,13 @@ type RelationshipEdge struct {
 	Resolved        bool
 }
 
+type MapWarning struct {
+	FeatureID string
+	Document  string
+	Line      string
+	Message   string
+}
+
 type FeatureMap struct {
 	Feature   Feature
 	Documents []MapDocument
@@ -36,6 +43,7 @@ type FeatureMap struct {
 type ProjectMap struct {
 	GlobalDocuments []MapDocument
 	Features        []FeatureMap
+	Warnings        []MapWarning
 }
 
 func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error) {
@@ -55,7 +63,7 @@ func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error
 	}
 
 	for _, feat := range features {
-		outgoing, err := loadRelationshipEdges(feat, knownFeatures)
+		outgoing, warnings, err := loadRelationshipEdges(feat, knownFeatures)
 		if err != nil {
 			return nil, err
 		}
@@ -64,6 +72,7 @@ func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error
 			Documents: featureDocuments(projectRoot, feat),
 			Outgoing:  outgoing,
 		})
+		projectMap.Warnings = append(projectMap.Warnings, warnings...)
 	}
 
 	incomingByTarget := make(map[string][]RelationshipEdge)
@@ -77,11 +86,12 @@ func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error
 		projectMap.Features[i].Incoming = sortedEdges(incomingByTarget[projectMap.Features[i].Feature.DirName])
 		projectMap.Features[i].Outgoing = sortedEdges(projectMap.Features[i].Outgoing)
 	}
+	projectMap.Warnings = sortedWarnings(projectMap.Warnings)
 
 	return projectMap, nil
 }
 
-func loadRelationshipEdges(feat Feature, knownFeatures map[string]struct{}) ([]RelationshipEdge, error) {
+func loadRelationshipEdges(feat Feature, knownFeatures map[string]struct{}) ([]RelationshipEdge, []MapWarning, error) {
 	sources := []struct {
 		name    string
 		path    string
@@ -92,6 +102,7 @@ func loadRelationshipEdges(feat Feature, knownFeatures map[string]struct{}) ([]R
 	}
 
 	var edges []RelationshipEdge
+	var warnings []MapWarning
 	for _, source := range sources {
 		if !document.Exists(source.path) {
 			continue
@@ -99,12 +110,17 @@ func loadRelationshipEdges(feat Feature, knownFeatures map[string]struct{}) ([]R
 
 		doc, err := document.ParseFile(source.path, source.docType)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse %s for %s: %w", source.name, feat.DirName, err)
+			return nil, nil, fmt.Errorf("failed to parse %s for %s: %w", source.name, feat.DirName, err)
 		}
 
-		relationships, err := document.ParseRelationshipsSection(doc.GetSection("RELATIONSHIPS"))
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse RELATIONSHIPS in %s for %s: %w", source.name, feat.DirName, err)
+		relationships, parseWarnings := document.ParseRelationshipsSectionRelaxed(doc.GetSection("RELATIONSHIPS"))
+		for _, parseWarning := range parseWarnings {
+			warnings = append(warnings, MapWarning{
+				FeatureID: feat.DirName,
+				Document:  source.name,
+				Line:      parseWarning.Line,
+				Message:   parseWarning.Message,
+			})
 		}
 
 		for _, relationship := range relationships {
@@ -119,7 +135,7 @@ func loadRelationshipEdges(feat Feature, knownFeatures map[string]struct{}) ([]R
 		}
 	}
 
-	return sortedEdges(edges), nil
+	return sortedEdges(edges), warnings, nil
 }
 
 func projectGlobalDocuments(projectRoot string, cfg *config.Config) []MapDocument {
@@ -229,6 +245,27 @@ func sortedEdges(edges []RelationshipEdge) []RelationshipEdge {
 	})
 
 	return edges
+}
+
+func sortedWarnings(warnings []MapWarning) []MapWarning {
+	if len(warnings) == 0 {
+		return nil
+	}
+
+	sort.Slice(warnings, func(i, j int) bool {
+		if warnings[i].FeatureID != warnings[j].FeatureID {
+			return warnings[i].FeatureID < warnings[j].FeatureID
+		}
+		if warnings[i].Document != warnings[j].Document {
+			return warnings[i].Document < warnings[j].Document
+		}
+		if warnings[i].Line != warnings[j].Line {
+			return warnings[i].Line < warnings[j].Line
+		}
+		return warnings[i].Message < warnings[j].Message
+	})
+
+	return warnings
 }
 
 func appendMapDocuments(projectRoot string, docs []MapDocument, registryDocs []instructions.Doc) []MapDocument {

@@ -65,6 +65,10 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 		"RLM.md": {
 			"RLM is Kit's repository-scale context-routing pattern",
 			"Use RLM when the task is broad enough",
+			"docs/PROJECT_PROGRESS_SUMMARY.md",
+			"conditional reads only",
+			"shared interface or contract",
+			"Inspect at most 5 prior feature directories",
 			"discovery and context selection first",
 			"do not jump straight into parallel execution",
 			"Always update affected documentation",

@@ -137,8 +137,9 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 		"Do NOT implement code, write production changes, or move into execution",
 		"Read CONSTITUTION.md first to understand project constraints and workflow rules",
 		"Read the current BRAINSTORM.md template and treat it as the source of truth for this research phase",
+		relatedFeatureContextStepText(projectRoot, brainstormPath),
 		fmt.Sprintf(
-			"Research the entire codebase at %s to identify relevant files, patterns, constraints, interfaces, and adjacent workflows",
+			"Research the filtered relevant areas of the codebase at %s to identify the files, patterns, constraints, interfaces, and adjacent workflows that matter to this feature; expand beyond that set only when the evidence requires it",
 			projectRoot,
 		),
 		fmt.Sprintf(

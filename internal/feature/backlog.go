@@ -34,7 +34,7 @@ func ListBacklogFeatures(specsDir string, cfg *config.Config) ([]Feature, error)
 	return backlog, nil
 }
 
-// FindActiveFeatureWithState returns the newest non-backlog feature
+// FindActiveFeatureWithState returns the newest in-flight non-backlog feature.
 func FindActiveFeatureWithState(specsDir string, cfg *config.Config) (*Feature, error) {
 	features, err := ListFeaturesWithState(specsDir, cfg)
 	if err != nil {
@@ -43,6 +43,9 @@ func FindActiveFeatureWithState(specsDir string, cfg *config.Config) (*Feature, 
 
 	for i := len(features) - 1; i >= 0; i-- {
 		if IsBacklogItem(features[i]) {
+			continue
+		}
+		if features[i].Phase == PhaseComplete {
 			continue
 		}
 

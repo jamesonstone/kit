@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/cobra"
+
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
 )
@@ -130,6 +132,62 @@ func TestMarkFeaturesCompleteAllTargets(t *testing.T) {
 	}
 	if _, statErr := os.Stat(filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md")); statErr != nil {
 		t.Fatalf("expected PROJECT_PROGRESS_SUMMARY.md to be written, got %v", statErr)
+	}
+}
+
+func TestRunComplete_RemovesCompletedFeatureFromActiveStatus(t *testing.T) {
+	projectRoot, _ := setupLifecycleTestProject(t)
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	createFeatureTasks(t, specsDir, "0001-latest-complete", "- [x] done\n")
+
+	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
+	if err != nil {
+		t.Fatalf("ensureHandoffTestWorkingDirectory() error = %v", err)
+	}
+	defer restoreWD()
+
+	previousForce, previousAll := completeForce, completeAll
+	completeForce = false
+	completeAll = false
+	defer func() {
+		completeForce = previousForce
+		completeAll = previousAll
+	}()
+
+	completeCmd := &cobra.Command{}
+	completeOut := &bytes.Buffer{}
+	completeCmd.SetOut(completeOut)
+	completeCmd.SetErr(&bytes.Buffer{})
+
+	if err := runComplete(completeCmd, []string{"latest-complete"}); err != nil {
+		t.Fatalf("runComplete() error = %v", err)
+	}
+
+	statusCmd := &cobra.Command{}
+	statusCmd.Flags().Bool("json", false, "")
+	statusCmd.Flags().Bool("all", false, "")
+	if err := statusCmd.Flags().Set("all", "true"); err != nil {
+		t.Fatalf("Flags().Set(all) error = %v", err)
+	}
+	statusOut := &bytes.Buffer{}
+	statusCmd.SetOut(statusOut)
+
+	if err := runStatus(statusCmd, nil); err != nil {
+		t.Fatalf("runStatus() error = %v", err)
+	}
+
+	content := statusOut.String()
+	if !strings.Contains(content, "Active feature: none in progress") {
+		t.Fatalf("expected no active feature after completion, got %q", content)
+	}
+	if !strings.Contains(content, "0001-latest-complete") {
+		t.Fatalf("expected completed feature in status output, got %q", content)
+	}
+	if !strings.Contains(content, "COMPLETE") {
+		t.Fatalf("expected completed state in status output, got %q", content)
+	}
+	if strings.Contains(content, "ACTIVE") {
+		t.Fatalf("expected completed feature row to avoid ACTIVE state, got %q", content)
 	}
 }
 

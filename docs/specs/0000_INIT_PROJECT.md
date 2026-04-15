@@ -202,6 +202,7 @@ Rules:
 
 - keep file paths concrete whenever possible
 - `## RELATIONSHIPS` must be either `none` or one bullet per explicit cross-feature relationship using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
+- inline-code-wrapped targets after `builds on:`, `depends on:`, or `related to:` are valid, but Kit must normalize them back to the canonical feature ID
 - relationship targets must use canonical feature directory identifiers such as `0007-catchup-command`
 - keep supporting inputs in a dependency table with columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`
 - `Status` should distinguish `active`, `optional`, and `stale` inputs
@@ -233,6 +234,7 @@ Rules:
 - no speculative language
 - keep `## SKILLS` focused on execution-time agent skills
 - `## RELATIONSHIPS` must be either `none` or one bullet per explicit cross-feature relationship using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
+- inline-code-wrapped targets after `builds on:`, `depends on:`, or `related to:` are valid, but Kit must normalize them back to the canonical feature ID
 - relationship targets must use canonical feature directory identifiers such as `0007-catchup-command`
 - keep broader supporting inputs in `## DEPENDENCIES`
 
@@ -428,6 +430,16 @@ CLI flags always override `.kit.yaml`.
 - keep `--pickup` as a compatibility path for resuming a deferred backlog item
   while teaching `kit resume <feature>` or `kit backlog --pickup <feature>` as
   the canonical resume flows
+- require the agent to use indices first for prior work discovery: `kit map
+  <feature>` and `docs/PROJECT_PROGRESS_SUMMARY.md`
+- require prior feature docs to be conditional reads gated by explicit
+  relevance: shared interfaces or contracts, overlapping files or modules,
+  migrations or data shape, acceptance criteria, or explicit relationship or
+  dependency links
+- require the agent to inspect at most 5 prior feature directories before
+  narrowing further or asking a clarifying question
+- require the agent to extract only concrete decision-shaping facts from prior
+  work instead of replaying full historical docs into chat or active artifacts
 - require the agent to keep `BRAINSTORM.md` `## DEPENDENCIES` current with the supporting inputs used during the research phase
 - require the agent to populate every `BRAINSTORM.md` section and replace placeholder-only sections with `not applicable`, `not required`, or `no additional information required`
 - require the agent to use numbered lists, ask clarifying questions in batches of up to 10, include a recommended default/proposed solution/assumption for every question, accept `yes` / `y` as full-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` as numbered approval, support `no` / `n` overrides, state uncertainties, and output percentage-understanding progress after each batch
@@ -470,6 +482,12 @@ CLI flags always override `.kit.yaml`.
 - scaffold `SPEC.md` template for manual editing
 - template includes section headers with placeholder comments (e.g., `<!-- TODO: describe the problem -->`)
 - template includes `## SKILLS` and `## DEPENDENCIES` tables for newly generated specs
+- prompt instructions require indices-first prior work discovery through
+  `kit map <feature>` and `docs/PROJECT_PROGRESS_SUMMARY.md`
+- prompt instructions require prior feature docs to stay conditional and
+  relevance-gated before widening codebase discovery
+- prompt instructions require extracted prior-work facts to stay concise and
+  decision-shaping rather than historical replay
 - prompt instructions require every `SPEC.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - create feature directory if missing (uses `0001-feat-name` format)
 - update `docs/PROJECT_PROGRESS_SUMMARY.md`
@@ -480,6 +498,12 @@ CLI flags always override `.kit.yaml`.
 
 - scaffold `PLAN.md` template for manual editing
 - scaffold includes a `## DEPENDENCIES` table for implementation-strategy inputs
+- prompt instructions require indices-first prior work discovery through
+  `kit map <feature>` and `docs/PROJECT_PROGRESS_SUMMARY.md`
+- prompt instructions require prior feature docs to stay conditional and
+  relevance-gated so only the docs that materially shape the plan are loaded
+- prompt instructions require extracted prior-work facts to stay concise and
+  decision-shaping rather than historical replay
 - prompt instructions require every `PLAN.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - plan items link to spec items using `[SPEC-01]` syntax
 - update `PROJECT_PROGRESS_SUMMARY.md`
@@ -516,6 +540,13 @@ Flags:
 - output implementation context for a coding agent
 - begin with an implementation readiness gate before any code execution instructions
 - require an adversarial preflight across `CONSTITUTION.md`, optional `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md`
+- require the coding agent to use indices-first prior work discovery through
+  `kit map <feature>` and `docs/PROJECT_PROGRESS_SUMMARY.md`
+- require prior feature docs to stay conditional and relevance-gated so only
+  the docs that materially shape the implementation or refactor surface are
+  loaded
+- require extracted prior-work facts to stay concise and decision-shaping
+  rather than historical replay
 - require the coding agent to challenge contradictions, ambiguity, hidden assumptions, missing edge cases, missing task coverage, and scope creep before coding
 - if the readiness gate fails, require the agent to update `SPEC.md`, `PLAN.md`, and/or `TASKS.md` first, refresh `PROJECT_PROGRESS_SUMMARY.md` when needed, then rerun the gate
 - only after the readiness gate passes should the agent begin with the first incomplete task in `TASKS.md`
@@ -546,10 +577,13 @@ Flags:
 
 #### `kit map [feature]`
 
-- render a read-only ASCII map of the canonical document hierarchy and current project state
+- render a read-only terminal graph of the canonical document hierarchy and current project state
 - without a feature argument, show global docs plus every feature directory, current phase, paused state, canonical docs, and explicit relationship edges
 - with a feature argument, show a feature-scoped view plus incoming or outgoing relationships that touch that feature
 - derive relationship edges from explicit `## RELATIONSHIPS` sections in `BRAINSTORM.md` and `SPEC.md`
+- normalize harmless inline-code formatting around relationship targets before validating or rendering them
+- if a relationship line is malformed, keep the valid map output and surface the skipped line as a warning instead of failing the read-only command
+- when writing to a terminal, map output may color labels and state markers for scanability without changing non-TTY output
 - do not create another persisted markdown graph document
 
 ---

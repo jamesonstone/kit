@@ -93,7 +93,8 @@ all decisions.
    - `SPEC.md`: SUMMARY, PROBLEM, GOALS, NON-GOALS, USERS, SKILLS, RELATIONSHIPS, DEPENDENCIES, REQUIREMENTS, ACCEPTANCE, EDGE-CASES, OPEN-QUESTIONS
    - `PLAN.md`: SUMMARY, APPROACH, COMPONENTS, DATA, INTERFACES, RISKS, TESTING
    - `TASKS.md`: PROGRESS TABLE, TASK LIST, TASK DETAILS, DEPENDENCIES, NOTES
-   - `RELATIONSHIPS` in `BRAINSTORM.md` and `SPEC.md` must be either `none` or explicit bullets using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
+- `RELATIONSHIPS` in `BRAINSTORM.md` and `SPEC.md` must be either `none` or explicit bullets using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
+- inline-code-wrapped relationship targets are valid if they normalize back to a canonical feature directory identifier
 
 4. **Single Feature Per Directory**
    - Never mix features in one `docs/specs/<feature>/` directory
@@ -307,6 +308,8 @@ The read-only structural view rendered by `kit map`:
 
 - Shows global docs, feature docs, lifecycle state, and explicit feature-to-feature relationships
 - Derives its state from canonical markdown docs and the filesystem
+- Normalizes harmless inline-code formatting around relationship targets and warns on malformed lines instead of failing the whole map
+- May color terminal output for scanability, while keeping non-TTY output plain
 - Does not create another persisted graph document in the repository
 
 ---

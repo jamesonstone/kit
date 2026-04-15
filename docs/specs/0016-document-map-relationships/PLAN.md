@@ -16,8 +16,12 @@ and keep relationship parsing lightweight and deterministic.
   intermediate state
 - add a small relationship parser that reads explicit bullets from
   `BRAINSTORM.md` and `SPEC.md`
+- normalize harmless inline-code formatting around relationship targets while
+  still rejecting real prose in validation paths
 - implement `kit map` as a terminal-first renderer over canonical docs and
   feature state
+- keep read-only map rendering resilient by warning on malformed relationship
+  lines instead of failing the entire view
 - keep the map read-only and avoid introducing persisted derived graph files
 - update practical docs and command help after the command shape is stable
 
@@ -73,10 +77,12 @@ and keep relationship parsing lightweight and deterministic.
 - relationship syntax in docs:
   - `none`
   - `- builds on: 0007-catchup-command`
+  - `- builds on: <feature>` with the target optionally wrapped in inline code
   - `- depends on: 0009-spec-skills-discovery`
   - `- related to: 0011-handoff-document-sync`
 - first-pass output:
-  - human-readable ASCII only
+  - human-readable terminal text graph with box drawing by default
+  - ASCII-safe fallback when the environment cannot render Unicode reliably
   - no `--json`
   - no persisted markdown output
 

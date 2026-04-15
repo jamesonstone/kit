@@ -67,9 +67,10 @@ none
 ## REQUIREMENTS
 
 - `kit map` must be a new top-level read-only command
-- running `kit map` with no feature argument must render a project-wide ASCII
-  map to stdout
-- running `kit map <feature>` must render a feature-scoped ASCII map for the
+- running `kit map` with no feature argument must render a project-wide
+  terminal-friendly graphical text map to stdout
+- running `kit map <feature>` must render a feature-scoped terminal-friendly
+  graphical text map for the
   resolved feature and include declared incoming or outgoing feature
   relationships that touch that feature
 - the project-wide map must show:
@@ -90,12 +91,20 @@ none
 - each relationship bullet must begin with a relationship type label followed
   by a canonical feature directory identifier, for example
   `builds on: 0007-catchup-command`
+- relationship targets may be wrapped in inline code for readability, but
+  validation and rendering must normalize them back to the canonical feature
+  directory identifier
 - supported relationship types in this phase must be:
   - `builds on`
   - `depends on`
   - `related to`
 - `kit map` must parse relationship edges only from explicit
   `## RELATIONSHIPS` content
+- `kit map` must tolerate malformed relationship lines by rendering the valid
+  edges, skipping only the invalid lines, and surfacing those skips as
+  warnings in the map output
+- when writing to a terminal, `kit map` may color labels, doc-state markers,
+  and relationship state for scanability without changing non-TTY output
 - if a referenced feature identifier does not exist, `kit map` must still show
   the declared edge and label it as unresolved rather than silently dropping it
 - newly generated brainstorm and spec templates must seed `## RELATIONSHIPS`
@@ -111,12 +120,16 @@ none
 
 ## ACCEPTANCE
 
-- `kit map` prints a stable project-wide ASCII map that shows the current
+- `kit map` prints a stable project-wide terminal graph that shows the current
   canonical document hierarchy and feature state without mutating repo files
-- `kit map <feature>` prints a stable feature-scoped ASCII map for that feature
+- `kit map <feature>` prints a stable feature-scoped terminal graph for that feature
 - features with `RELATIONSHIPS` entries show explicit edges to related features
   in the map output
 - features with `RELATIONSHIPS` set to `none` show no cross-feature edges
+- harmless inline-code formatting around relationship targets stays valid after
+  normalization
+- malformed relationship lines remain visible as map warnings without blocking
+  the rest of the read-only output
 - non-existent relationship targets remain visible in map output as unresolved
 - new brainstorm and spec templates include `## RELATIONSHIPS` with `none`
 - existing brainstorm and spec docs in the repository gain a populated

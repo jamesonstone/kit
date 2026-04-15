@@ -198,3 +198,24 @@ func appendSpecRelationshipsStep(sb *strings.Builder, step int, specPath string)
 	sb.WriteString(fmt.Sprintf("%d. %s\n", step, strings.ReplaceAll(specRelationshipsStepText(specPath), "\n", "\n   ")))
 	return step + 1
 }
+
+func relatedFeatureContextStepText(projectRoot, currentDocPath string) string {
+	featureDir := filepath.Dir(currentDocPath)
+	featureID := filepath.Base(featureDir)
+	specsDir := filepath.ToSlash(filepath.Dir(featureDir))
+	summaryPath := filepath.ToSlash(filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"))
+
+	lines := []string{
+		fmt.Sprintf("Use an RLM-style prior-work discovery pass over `%s` before broad repository reads:", specsDir),
+		"- must-read inputs stay small: CONSTITUTION.md plus the current feature docs already in scope",
+		fmt.Sprintf("- use indices first: start with `kit map %s` and `%s` to shortlist candidate prior features", featureID, summaryPath),
+		fmt.Sprintf("- if `kit map` is unavailable, inspect `%s` directly and use the current feature's `## RELATIONSHIPS` and `## DEPENDENCIES` entries as your index", specsDir),
+		"- prior feature docs, repo references, and secondary global inputs are conditional reads only",
+		"- open a prior feature doc only if it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or dependency link",
+		"- inspect at most 5 prior feature directories before narrowing further or asking a clarifying question",
+		"- extract only the concrete facts that change the current feature's requirements, strategy, interfaces, refactor surface, or tests",
+		"- do not paraphrase entire prior docs into chat or copy irrelevant historical context into the current artifact",
+	}
+
+	return strings.Join(lines, "\n")
+}

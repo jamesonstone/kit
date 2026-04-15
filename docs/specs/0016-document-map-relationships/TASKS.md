@@ -48,14 +48,16 @@ Use markdown checkboxes to track completion:
 - **ACCEPTANCE**: relationship parsing is deterministic and does not require
   hidden state or inference
 - **NOTES**: keep conflicting brainstorm/spec declarations visible rather than
-  merging them away
+  merging them away; normalize harmless inline-code wrappers around canonical
+  feature IDs
 
 ### T004
 - **GOAL**: give users an on-demand structural view of the project
 - **SCOPE**: add `kit map [feature]`, feature resolution, project-wide and
-  feature-scoped ASCII rendering, and help integration
+  feature-scoped graphical terminal rendering, and help integration
 - **ACCEPTANCE**: the command prints stable read-only output for both scopes
-- **NOTES**: do not add JSON or Mermaid in this phase
+- **NOTES**: do not add JSON or Mermaid in this phase; malformed relationship
+  lines should become visible warnings rather than hard failures
 
 ### T005
 - **GOAL**: keep docs and prompt guidance aligned with the new relationship metadata
@@ -90,5 +92,7 @@ Use markdown checkboxes to track completion:
 - `RELATIONSHIPS` is canonical only when explicitly recorded in
   `BRAINSTORM.md` or `SPEC.md`
 - `none` is the required empty-state value for relationship sections
+- inline-code-wrapped relationship targets normalize back to canonical feature
+  IDs during validation and rendering
 
 <!-- REFLECTION_COMPLETE -->

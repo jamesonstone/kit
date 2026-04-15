@@ -70,7 +70,8 @@ func outputCompiledPrompt(
 	}
 	steps = append(steps,
 		fmt.Sprintf("Read the current SPEC.md (file: %s) and understand the required sections", specPath),
-		fmt.Sprintf("Analyze the codebase at %s to understand existing patterns", projectRoot),
+		relatedFeatureContextStepText(projectRoot, specPath),
+		fmt.Sprintf("Analyze only the relevant code and docs surfaced by that filtered prior-work set at %s; widen the search only when the current evidence is insufficient", projectRoot),
 	)
 	if useRLM {
 		steps = append(steps, rlmSpecGuidanceStepText(specPath))

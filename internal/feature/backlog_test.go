@@ -49,6 +49,29 @@ func TestFindActiveFeatureWithState_SkipsBacklogItems(t *testing.T) {
 	}
 }
 
+func TestFindActiveFeatureWithState_SkipsCompletedFeatures(t *testing.T) {
+	specsDir := t.TempDir()
+	cfg := config.Default()
+
+	createFeatureDir(t, specsDir, "0001-active-feature", map[string]string{
+		"SPEC.md": "# SPEC\n",
+	})
+	createFeatureDir(t, specsDir, "0002-completed-feature", map[string]string{
+		"TASKS.md": "- [x] done\n\n" + ReflectionCompleteMarker + "\n",
+	})
+
+	active, err := FindActiveFeatureWithState(specsDir, cfg)
+	if err != nil {
+		t.Fatalf("FindActiveFeatureWithState() error = %v", err)
+	}
+	if active == nil {
+		t.Fatal("expected active feature")
+	}
+	if active.DirName != "0001-active-feature" {
+		t.Fatalf("active.DirName = %q, want %q", active.DirName, "0001-active-feature")
+	}
+}
+
 func createFeatureDir(t *testing.T, specsDir, dirName string, files map[string]string) {
 	t.Helper()
 

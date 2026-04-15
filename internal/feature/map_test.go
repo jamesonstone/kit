@@ -36,7 +36,7 @@ func TestBuildProjectMap_CollectsRelationshipsAndIncomingEdges(t *testing.T) {
 
 ## RELATIONSHIPS
 
-- builds on: 0002-beta
+- builds on: `+"`0002-beta`"+`
 - depends on: 9999-missing-feature
 `)
 	writeMapFile(t, filepath.Join(betaDir, "SPEC.md"), `# SPEC
@@ -74,6 +74,59 @@ none
 	}
 	if beta.Incoming[0].SourceFeatureID != "0001-alpha" {
 		t.Fatalf("beta incoming source = %s, want 0001-alpha", beta.Incoming[0].SourceFeatureID)
+	}
+}
+
+func TestBuildProjectMap_KeepsValidEdgesAndWarnsOnMalformedRelationshipLines(t *testing.T) {
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	if err := os.MkdirAll(filepath.Join(specsDir, "0001-alpha"), 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionVerbose
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), "# CONSTITUTION\n")
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), "# PROJECT PROGRESS SUMMARY\n")
+	writeMapFile(t, filepath.Join(specsDir, "0001-alpha", "SPEC.md"), `# SPEC
+
+## RELATIONSHIPS
+
+- builds on: 0002-beta
+- follows: 0003-gamma
+`)
+	writeMapFile(t, filepath.Join(specsDir, "0002-beta", "SPEC.md"), `# SPEC
+
+## RELATIONSHIPS
+
+none
+`)
+
+	projectMap, err := BuildProjectMap(projectRoot, cfg)
+	if err != nil {
+		t.Fatalf("BuildProjectMap() error = %v", err)
+	}
+
+	if len(projectMap.Features) != 2 {
+		t.Fatalf("BuildProjectMap() feature count = %d, want 2", len(projectMap.Features))
+	}
+	if len(projectMap.Features[0].Outgoing) != 1 {
+		t.Fatalf("alpha outgoing len = %d, want 1 valid edge", len(projectMap.Features[0].Outgoing))
+	}
+	if len(projectMap.Warnings) != 1 {
+		t.Fatalf("map warnings len = %d, want 1", len(projectMap.Warnings))
+	}
+	if projectMap.Warnings[0].FeatureID != "0001-alpha" {
+		t.Fatalf("warning feature = %s, want 0001-alpha", projectMap.Warnings[0].FeatureID)
+	}
+	if projectMap.Warnings[0].Document != "SPEC.md" {
+		t.Fatalf("warning document = %s, want SPEC.md", projectMap.Warnings[0].Document)
+	}
+	if projectMap.Warnings[0].Line != "- follows: 0003-gamma" {
+		t.Fatalf("warning line = %q, want invalid line", projectMap.Warnings[0].Line)
 	}
 }
 
