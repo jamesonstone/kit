@@ -82,6 +82,8 @@ none
   - the feature's paused state
   - declared feature-to-feature relationship edges
   - which Kit command creates or updates each canonical document
+- the project-wide map may use `builds on` and `depends on` edges to order
+  prerequisites before dependents while keeping the canonical directory names unchanged
 - `kit map` must derive state from the filesystem and canonical markdown docs
   rather than adding new hidden state
 - `BRAINSTORM.md` must gain a required `## RELATIONSHIPS` section
@@ -131,6 +133,8 @@ none
 - malformed relationship lines remain visible as map warnings without blocking
   the rest of the read-only output
 - non-existent relationship targets remain visible in map output as unresolved
+- project-wide map rendering can present prerequisites before dependents without
+  renumbering feature directories
 - new brainstorm and spec templates include `## RELATIONSHIPS` with `none`
 - existing brainstorm and spec docs in the repository gain a populated
   `## RELATIONSHIPS` section

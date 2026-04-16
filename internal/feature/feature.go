@@ -137,7 +137,10 @@ func ListFeatures(specsDir string) ([]Feature, error) {
 
 	// sort by number ascending
 	sort.Slice(features, func(i, j int) bool {
-		return features[i].Number < features[j].Number
+		if features[i].Number != features[j].Number {
+			return features[i].Number < features[j].Number
+		}
+		return features[i].DirName < features[j].DirName
 	})
 
 	return features, nil
@@ -218,18 +221,15 @@ func parseTaskProgressFromPath(tasksPath string) (struct{ Total, Complete int },
 	return progress, hasReflectionMarker, scanner.Err()
 }
 
-// NextNumber returns the next available feature number.
-func NextNumber(specsDir string) (int, error) {
+// NextNumber returns the next available feature number, coordinating across
+// worktrees from the same clone when a shared Git common dir is available.
+func NextNumber(projectRoot, specsDir string) (int, error) {
 	features, err := ListFeatures(specsDir)
 	if err != nil {
 		return 0, err
 	}
 
-	if len(features) == 0 {
-		return 1, nil
-	}
-
-	return features[len(features)-1].Number + 1, nil
+	return reserveNextFeatureNumber(projectRoot, highestFeatureNumber(features))
 }
 
 // FormatDirName formats a feature directory name from number and slug.
@@ -294,7 +294,7 @@ func Resolve(specsDir string, ref string) (*Feature, error) {
 }
 
 // Create creates a new feature directory with the given slug.
-func Create(cfg *config.Config, specsDir string, slug string) (*Feature, error) {
+func Create(cfg *config.Config, projectRoot, specsDir string, slug string) (*Feature, error) {
 	// validate slug
 	if err := ValidateSlug(slug); err != nil {
 		return nil, err
@@ -307,7 +307,7 @@ func Create(cfg *config.Config, specsDir string, slug string) (*Feature, error) 
 	}
 
 	// get next number
-	num, err := NextNumber(specsDir)
+	num, err := NextNumber(projectRoot, specsDir)
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +332,7 @@ func Create(cfg *config.Config, specsDir string, slug string) (*Feature, error) 
 }
 
 // EnsureExists ensures a feature exists, creating it if necessary.
-func EnsureExists(cfg *config.Config, specsDir string, ref string) (*Feature, bool, error) {
+func EnsureExists(cfg *config.Config, projectRoot, specsDir string, ref string) (*Feature, bool, error) {
 	// try to resolve existing
 	feat, err := Resolve(specsDir, ref)
 	if err == nil {
@@ -345,10 +345,46 @@ func EnsureExists(cfg *config.Config, specsDir string, ref string) (*Feature, bo
 		return nil, false, err
 	}
 
-	feat, err = Create(cfg, specsDir, slug)
+	feat, err = Create(cfg, projectRoot, specsDir, slug)
 	if err != nil {
 		return nil, false, err
 	}
 
 	return feat, true, nil
+}
+
+func highestFeatureNumber(features []Feature) int {
+	if len(features) == 0 {
+		return 0
+	}
+
+	return features[len(features)-1].Number
+}
+
+func DuplicateNumberGroups(features []Feature) map[int][]Feature {
+	if len(features) == 0 {
+		return nil
+	}
+
+	groups := make(map[int][]Feature)
+	for _, feat := range features {
+		groups[feat.Number] = append(groups[feat.Number], feat)
+	}
+
+	duplicates := make(map[int][]Feature)
+	for number, group := range groups {
+		if len(group) < 2 {
+			continue
+		}
+		sort.Slice(group, func(i, j int) bool {
+			return group[i].DirName < group[j].DirName
+		})
+		duplicates[number] = group
+	}
+
+	if len(duplicates) == 0 {
+		return nil
+	}
+
+	return duplicates
 }

@@ -174,6 +174,48 @@ func TestOutputAllFeaturesStatusText_UsesANSIColorWhenTerminalEnabled(t *testing
 	}
 }
 
+func TestOutputAllFeaturesStatusText_DoesNotMarkDuplicateNumericIDsAsActive(t *testing.T) {
+	active := &feature.FeatureStatus{
+		ID:    "0012",
+		Name:  "implement-readiness-gate",
+		Path:  "/repo/docs/specs/0012-implement-readiness-gate",
+		Phase: feature.PhasePlan,
+	}
+	entries := []allFeatureStatusEntry{
+		{
+			Status: &feature.FeatureStatus{
+				ID:    "0012",
+				Name:  "default-subagent-orchestration",
+				Path:  "/repo/docs/specs/0012-default-subagent-orchestration",
+				Phase: feature.PhaseSpec,
+				Files: map[string]feature.FileStatus{},
+			},
+		},
+		{
+			Status: &feature.FeatureStatus{
+				ID:    "0012",
+				Name:  "implement-readiness-gate",
+				Path:  "/repo/docs/specs/0012-implement-readiness-gate",
+				Phase: feature.PhasePlan,
+				Files: map[string]feature.FileStatus{},
+			},
+		},
+	}
+
+	out := &bytes.Buffer{}
+	if err := outputAllFeaturesStatusText(out, active, entries, 0, "v1.2.3"); err != nil {
+		t.Fatalf("outputAllFeaturesStatusText() error = %v", err)
+	}
+
+	content := out.String()
+	if strings.Count(content, "ACTIVE") != 1 {
+		t.Fatalf("expected exactly one ACTIVE row, got %q", content)
+	}
+	if !strings.Contains(content, "0012-implement-readiness-gate") {
+		t.Fatalf("expected active feature row, got %q", content)
+	}
+}
+
 func TestRunStatusAllJSONUsesDedicatedShape(t *testing.T) {
 	projectRoot, cfg := setupLifecycleTestProject(t)
 	specsDir := filepath.Join(projectRoot, "docs", "specs")

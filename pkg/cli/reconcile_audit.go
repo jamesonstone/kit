@@ -60,6 +60,7 @@ func buildReconcileReport(projectRoot string, cfg *config.Config, feat *feature.
 	}
 
 	if feat == nil {
+		report.Findings = append(report.Findings, auditDuplicateFeatureNumbers(cfg.SpecsPath(projectRoot), projectRoot, features)...)
 		report.Findings = append(report.Findings, auditConstitution(projectRoot)...)
 		report.Findings = append(report.Findings, auditProjectProgressSummary(projectRoot, features)...)
 		for i := range features {
@@ -153,6 +154,34 @@ func auditFeatureRollupCoverage(projectRoot string, feat *feature.Feature) []rec
 		return nil
 	}
 	return auditFeatureRollupCoverageFromContent(projectRoot, string(content), feat)
+}
+
+func auditDuplicateFeatureNumbers(specsPath, projectRoot string, features []feature.Feature) []reconcileFinding {
+	duplicates := feature.DuplicateNumberGroups(features)
+	if len(duplicates) == 0 {
+		return nil
+	}
+
+	var findings []reconcileFinding
+	for number, group := range duplicates {
+		names := make([]string, 0, len(group))
+		for _, feat := range group {
+			names = append(names, feat.DirName)
+		}
+		findings = append(findings, newFinding(
+			reconcileSeverityError,
+			specsPath,
+			fmt.Sprintf("feature number `%04d` is duplicated by %s", number, strings.Join(names, ", ")),
+			initProjectSource(projectRoot),
+			"renumber or merge the conflicting feature directories so each numeric prefix is unique across `docs/specs/`",
+			[]string{
+				fmt.Sprintf("ls %s", specsPath),
+				fmt.Sprintf("rg -n \"^# (BRAINSTORM|SPEC|PLAN|TASKS)\" %s", specsPath),
+			},
+		))
+	}
+
+	return findings
 }
 
 func auditFeatureRollupCoverageFromContent(projectRoot, content string, feat *feature.Feature) []reconcileFinding {

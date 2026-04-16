@@ -58,7 +58,7 @@ func runScaffold(cmd *cobra.Command, args []string) error {
 	}
 
 	// create or find feature
-	feat, created, err := feature.EnsureExists(cfg, specsDir, featureRef)
+	feat, created, err := feature.EnsureExists(cfg, projectRoot, specsDir, featureRef)
 	if err != nil {
 		return err
 	}

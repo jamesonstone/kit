@@ -80,7 +80,7 @@ func allFeaturesStateLabel(entry allFeatureStatusEntry, activeStatus *feature.Fe
 	if entry.Status.Paused {
 		return "PAUSED"
 	}
-	if activeStatus != nil && entry.Status.ID == activeStatus.ID {
+	if sameFeatureStatus(entry.Status, activeStatus) {
 		return "ACTIVE"
 	}
 	if entry.Status.Phase == feature.PhaseComplete {
@@ -183,7 +183,7 @@ func statusMatrixFeatureColor(entry allFeatureStatusEntry, activeStatus *feature
 	if entry.Status.Paused {
 		return constitution
 	}
-	if activeStatus != nil && entry.Status.ID == activeStatus.ID {
+	if sameFeatureStatus(entry.Status, activeStatus) {
 		return whiteBold
 	}
 	if entry.Status.Phase == feature.PhaseComplete {
@@ -199,7 +199,7 @@ func statusMatrixStateColor(entry allFeatureStatusEntry, activeStatus *feature.F
 	if entry.Status.Paused {
 		return constitution
 	}
-	if activeStatus != nil && entry.Status.ID == activeStatus.ID {
+	if sameFeatureStatus(entry.Status, activeStatus) {
 		return spec
 	}
 	if entry.Status.Phase == feature.PhaseComplete {
@@ -216,6 +216,16 @@ func statusMatrixProgressColor(status *feature.FeatureStatus) string {
 		return plan
 	}
 	return implement
+}
+
+func sameFeatureStatus(a, b *feature.FeatureStatus) bool {
+	if a == nil || b == nil {
+		return false
+	}
+	if a.Path != "" && b.Path != "" {
+		return a.Path == b.Path
+	}
+	return a.ID == b.ID && a.Name == b.Name
 }
 
 func truncateString(s string, maxLen int) string {

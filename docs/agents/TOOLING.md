@@ -18,6 +18,9 @@
 
 - When isolated checkouts are needed, keep worktrees flat under `~/worktrees/`
 - Use `git worktree add ~/worktrees/<repo>-<branch> <branch>` or `git worktree add -b <branch> ~/worktrees/<repo>-<branch> <base-ref>`
+- New feature numbers should stay numeric and human-readable; do not renumber them to match dependency order
+- When Git common dir state is available, Kit reserves the next feature number from shared clone-local allocator state so sibling worktrees do not collide
+- Dependency order should come from `builds on` and `depends on` relationships, not from rewriting directory prefixes
 
 ## Secondary Global Inputs
 

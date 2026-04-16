@@ -423,6 +423,7 @@ CLI flags always override `.kit.yaml`.
 
 - prompt interactively for a feature name and short issue or feature thesis
 - create or reuse the feature directory (uses `0001-feat-name` format)
+- when Git common-dir state is available, reserve the next feature number from the shared clone-local allocator before creating the directory
 - create `BRAINSTORM.md` as the first artifact in the feature directory
 - output a planning-only `/plan` prompt for a coding agent
 - support `--backlog` to capture a deferred brainstorm item without outputting a
@@ -490,6 +491,7 @@ CLI flags always override `.kit.yaml`.
   decision-shaping rather than historical replay
 - prompt instructions require every `SPEC.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - create feature directory if missing (uses `0001-feat-name` format)
+- when Git common-dir state is available, reserve the next feature number from the shared clone-local allocator before creating the directory
 - update `docs/PROJECT_PROGRESS_SUMMARY.md`
 
 ---
@@ -579,6 +581,7 @@ Flags:
 
 - render a read-only terminal graph of the canonical document hierarchy and current project state
 - without a feature argument, show global docs plus every feature directory, current phase, paused state, canonical docs, and explicit relationship edges
+- order project-wide feature rendering by `builds on` and `depends on` relationships when those edges provide a usable dependency order
 - with a feature argument, show a feature-scoped view plus incoming or outgoing relationships that touch that feature
 - derive relationship edges from explicit `## RELATIONSHIPS` sections in `BRAINSTORM.md` and `SPEC.md`
 - normalize harmless inline-code formatting around relationship targets before validating or rendering them

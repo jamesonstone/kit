@@ -54,9 +54,9 @@ none
 		t.Fatalf("BuildProjectMap() feature count = %d, want 2", len(projectMap.Features))
 	}
 
-	alpha := projectMap.Features[0]
+	alpha := featureMapByDirName(t, projectMap.Features, "0001-alpha")
 	if alpha.Feature.DirName != "0001-alpha" {
-		t.Fatalf("first feature = %s, want 0001-alpha", alpha.Feature.DirName)
+		t.Fatalf("alpha feature = %s, want 0001-alpha", alpha.Feature.DirName)
 	}
 	if len(alpha.Outgoing) != 2 {
 		t.Fatalf("alpha outgoing len = %d, want 2", len(alpha.Outgoing))
@@ -68,7 +68,7 @@ none
 		t.Fatalf("expected unresolved relationship for %s", alpha.Outgoing[1].TargetFeatureID)
 	}
 
-	beta := projectMap.Features[1]
+	beta := featureMapByDirName(t, projectMap.Features, "0002-beta")
 	if len(beta.Incoming) != 1 {
 		t.Fatalf("beta incoming len = %d, want 1", len(beta.Incoming))
 	}
@@ -113,8 +113,9 @@ none
 	if len(projectMap.Features) != 2 {
 		t.Fatalf("BuildProjectMap() feature count = %d, want 2", len(projectMap.Features))
 	}
-	if len(projectMap.Features[0].Outgoing) != 1 {
-		t.Fatalf("alpha outgoing len = %d, want 1 valid edge", len(projectMap.Features[0].Outgoing))
+	alpha := featureMapByDirName(t, projectMap.Features, "0001-alpha")
+	if len(alpha.Outgoing) != 1 {
+		t.Fatalf("alpha outgoing len = %d, want 1 valid edge", len(alpha.Outgoing))
 	}
 	if len(projectMap.Warnings) != 1 {
 		t.Fatalf("map warnings len = %d, want 1", len(projectMap.Warnings))
@@ -224,6 +225,45 @@ func TestBuildProjectMap_IncludesTOCGlobalDocuments(t *testing.T) {
 	}
 }
 
+func TestBuildProjectMap_UsesDependencyOrderForProjectGraph(t *testing.T) {
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	for _, dirName := range []string{"0001-ui", "0002-auth", "0003-api"} {
+		if err := os.MkdirAll(filepath.Join(specsDir, dirName), 0755); err != nil {
+			t.Fatalf("MkdirAll(%q) error = %v", dirName, err)
+		}
+	}
+
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionVerbose
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), "# CONSTITUTION\n")
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), "# PROJECT PROGRESS SUMMARY\n")
+	writeMapFile(t, filepath.Join(specsDir, "0001-ui", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\n- depends on: 0003-api\n")
+	writeMapFile(t, filepath.Join(specsDir, "0002-auth", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\nnone\n")
+	writeMapFile(t, filepath.Join(specsDir, "0003-api", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\n- builds on: 0002-auth\n")
+
+	projectMap, err := BuildProjectMap(projectRoot, cfg)
+	if err != nil {
+		t.Fatalf("BuildProjectMap() error = %v", err)
+	}
+
+	got := []string{
+		projectMap.Features[0].Feature.DirName,
+		projectMap.Features[1].Feature.DirName,
+		projectMap.Features[2].Feature.DirName,
+	}
+	want := []string{"0002-auth", "0003-api", "0001-ui"}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("feature order[%d] = %s, want %s (full order %v)", i, got[i], want[i], got)
+		}
+	}
+}
+
 func writeMapFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
@@ -232,4 +272,16 @@ func writeMapFile(t *testing.T, path, content string) {
 	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 		t.Fatalf("WriteFile(%q) error = %v", path, err)
 	}
+}
+
+func featureMapByDirName(t *testing.T, featureMaps []FeatureMap, dirName string) FeatureMap {
+	t.Helper()
+	for _, featureMap := range featureMaps {
+		if featureMap.Feature.DirName == dirName {
+			return featureMap
+		}
+	}
+
+	t.Fatalf("feature map %q not found", dirName)
+	return FeatureMap{}
 }
