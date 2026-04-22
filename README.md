@@ -79,7 +79,10 @@ commit is blocked.
 
 ```bash
 # initialize the project
+# copies a CONSTITUTION.md drafting prompt to your clipboard
 kit init
+
+# paste the copied prompt into your coding agent to build docs/CONSTITUTION.md
 
 # optionally capture research first
 kit brainstorm my-feature
@@ -193,10 +196,10 @@ discovery report, overlap clustering, and explicit approval before launch.
 
 ### 📋 Output Behavior
 
-Prompt-producing commands that expose `--output-only` copy their generated
-output to the clipboard by default. Pass `--output-only` to print the raw
-prompt or output to stdout instead, or combine `--output-only --copy` to do
-both.
+Prompt-producing commands, including the constitution prompt emitted by
+`kit init`, copy their generated output to the clipboard by default. Pass
+`--output-only` to print the raw prompt or output to stdout instead, or combine
+`--output-only --copy` to do both.
 
 In interactive terminals, Kit also uses clearer section spacing and semantic
 emoji markers for help, status, selectors, and other human-readable guidance.

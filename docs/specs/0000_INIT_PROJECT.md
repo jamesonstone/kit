@@ -414,6 +414,11 @@ CLI flags always override `.kit.yaml`.
 - create `docs/CONSTITUTION.md` if missing
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, attempt to merge (preserve existing content, add missing sections)
+- output a prepared prompt for drafting `docs/CONSTITUTION.md`
+- by default, copy that prompt to the clipboard instead of printing the prompt body
+- make the first visible next step: paste the copied prompt into the agent to draft `docs/CONSTITUTION.md`
+- support `--output-only` to print the raw prompt to stdout instead of copying it
+- support `--copy` to also copy the prompt when `--output-only` is set
 
 ---
 

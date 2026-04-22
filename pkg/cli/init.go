@@ -13,6 +13,9 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
+var initCopy bool
+var initOutputOnly bool
+
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize a new Kit project",
@@ -24,11 +27,20 @@ Creates:
 	- Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
 
 If files already exist, Kit attempts to merge by preserving existing
-content and adding any missing required sections.`,
+content and adding any missing required sections.
+
+Modes:
+  Default:        Copy the prepared CONSTITUTION.md prompt to the clipboard and show next steps
+
+Flags:
+  --output-only:  Output the raw prompt to stdout instead of copying it to the clipboard
+  --copy:         Copy prompt to clipboard even with --output-only`,
 	RunE: runInit,
 }
 
 func init() {
+	initCmd.Flags().BoolVar(&initCopy, "copy", false, "copy prompt to clipboard even with --output-only")
+	initCmd.Flags().BoolVar(&initOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -38,12 +50,16 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
 
-	fmt.Println("🎒 Initializing Kit project...")
+	if !initOutputOnly {
+		fmt.Println("🎒 Initializing Kit project...")
+	}
 
 	// create or merge .kit.yaml
 	cfg := config.Default()
 	if config.Exists(cwd) {
-		fmt.Println("  ✓ .kit.yaml exists, merging...")
+		if !initOutputOnly {
+			fmt.Println("  ✓ .kit.yaml exists, merging...")
+		}
 		existing, err := config.Load(cwd)
 		if err == nil {
 			cfg = existing
@@ -62,7 +78,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 		if err := config.Save(cwd, cfg); err != nil {
 			return fmt.Errorf("failed to create .kit.yaml: %w", err)
 		}
-		fmt.Println("  ✓ Created .kit.yaml")
+		if !initOutputOnly {
+			fmt.Println("  ✓ Created .kit.yaml")
+		}
 	}
 
 	// ensure docs directory exists
@@ -76,12 +94,16 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if err := os.MkdirAll(specsDir, 0755); err != nil {
 		return fmt.Errorf("failed to create specs directory: %w", err)
 	}
-	fmt.Println("  ✓ Created docs/specs/")
+	if !initOutputOnly {
+		fmt.Println("  ✓ Created docs/specs/")
+	}
 
 	// create or merge CONSTITUTION.md
 	constitutionPath := cfg.ConstitutionAbsPath(cwd)
 	if document.Exists(constitutionPath) {
-		fmt.Println("  ✓ docs/CONSTITUTION.md exists, merging...")
+		if !initOutputOnly {
+			fmt.Println("  ✓ docs/CONSTITUTION.md exists, merging...")
+		}
 		if err := document.MergeDocument(constitutionPath, templates.Constitution, document.TypeConstitution); err != nil {
 			return fmt.Errorf("failed to merge CONSTITUTION.md: %w", err)
 		}
@@ -89,7 +111,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 		if err := document.Write(constitutionPath, templates.Constitution); err != nil {
 			return fmt.Errorf("failed to create CONSTITUTION.md: %w", err)
 		}
-		fmt.Println("  ✓ Created docs/CONSTITUTION.md")
+		if !initOutputOnly {
+			fmt.Println("  ✓ Created docs/CONSTITUTION.md")
+		}
 	}
 
 	// scaffold repository instruction files
@@ -111,16 +135,19 @@ func runInit(cmd *cobra.Command, args []string) error {
 
 		switch result {
 		case instructionFileCreated:
-			fmt.Printf("  ✓ Created %s\n", relativePath)
+			if !initOutputOnly {
+				fmt.Printf("  ✓ Created %s\n", relativePath)
+			}
 		case instructionFileSkipped:
-			fmt.Printf("  ✓ %s exists, skipping\n", relativePath)
+			if !initOutputOnly {
+				fmt.Printf("  ✓ %s exists, skipping\n", relativePath)
+			}
 		}
 	}
 
-	fmt.Println("\n✅ Kit project initialized!")
-	fmt.Println("\nNext steps:")
-	fmt.Println("  1. Edit docs/CONSTITUTION.md to define project constraints")
-	fmt.Println("  2. Run 'kit spec <feature-name>' to create your first feature")
+	if !initOutputOnly {
+		fmt.Println("\n✅ Kit project initialized!")
+	}
 
 	// output easy-to-copy instruction for coding agents
 	constitutionRelPath := cfg.ConstitutionPath
@@ -143,8 +170,16 @@ func runInit(cmd *cobra.Command, args []string) error {
 		doc.BulletList("PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times")
 	})
 
-	if err := outputPrompt(prompt, false, false); err != nil {
+	if err := outputPromptWithClipboardDefault(prompt, initOutputOnly, initCopy); err != nil {
 		return err
+	}
+
+	if !initOutputOnly {
+		printNumberedNextSteps([]string{
+			"Paste the copied prompt into your agent to draft docs/CONSTITUTION.md",
+			"Review and refine docs/CONSTITUTION.md to define project constraints",
+			"Run `kit spec <feature-name>` to create your first feature",
+		})
 	}
 
 	return nil
