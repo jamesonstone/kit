@@ -40,6 +40,14 @@ func TestRunInit_CreatesRepositoryInstructionFiles(t *testing.T) {
 	tempDir := t.TempDir()
 	setWorkingDirectory(t, tempDir)
 
+	previous := clipboardCopyFunc
+	t.Cleanup(func() {
+		clipboardCopyFunc = previous
+	})
+	clipboardCopyFunc = func(text string) error {
+		return nil
+	}
+
 	if err := runInit(initCmd, nil); err != nil {
 		t.Fatalf("runInit() error = %v", err)
 	}
