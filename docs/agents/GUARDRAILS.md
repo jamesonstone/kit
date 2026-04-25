@@ -12,6 +12,10 @@
 - Populate all required sections in `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md`
 - Replace placeholder-only sections with `not applicable`, `not required`, or `no additional information required`
 - Always update affected documentation and ensure touched docs are current and properly formatted before calling work complete
+- Never claim tests passed unless they ran
+- Never claim files were inspected unless they were inspected
+- Never guess file contents, APIs, or behavior
+- If validation cannot run, state why
 - Fix relevant lint and test failures before calling work complete
 - Keep dependency and relationship sections current when those docs are touched
 

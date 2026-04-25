@@ -38,8 +38,13 @@ func TestBuildCatchupPrompt(t *testing.T) {
 	checks := []string{
 		"/plan",
 		"Catch up on feature: catchup-command",
-		"Current stage: reflect",
+		"Active feature: 0007-catchup-command",
+		"Current phase: reflect",
 		"Current state:",
+		"Next canonical artifact: TASKS.md",
+		"Next recommended command:",
+		"Known blockers: none recorded in Kit artifacts",
+		"Validation state: unknown from current artifacts",
 		"task progress 7/10 complete",
 		"CONSTITUTION.md",
 		"PROJECT_PROGRESS_SUMMARY.md",
@@ -90,7 +95,8 @@ func TestBuildCatchupPromptForCompleteFeature(t *testing.T) {
 
 	prompt := buildCatchupPrompt(feat, status, projectRoot)
 	checks := []string{
-		"Current stage: complete",
+		"Current phase: complete",
+		"Next canonical artifact: TASKS.md reflection marker",
 		"This feature is already marked `complete`; treat this catch-up as review or reopen triage only",
 		"Do not assume implementation should resume unless the user explicitly asks to reopen work on this feature",
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
@@ -26,6 +27,16 @@ type RelationshipEdge struct {
 	Resolved        bool
 }
 
+type DependencyLink struct {
+	SourceFeatureID string
+	SourceDoc       string
+	Dependency      string
+	Type            string
+	Location        string
+	UsedFor         string
+	Status          string
+}
+
 type MapWarning struct {
 	FeatureID string
 	Document  string
@@ -34,10 +45,11 @@ type MapWarning struct {
 }
 
 type FeatureMap struct {
-	Feature   Feature
-	Documents []MapDocument
-	Outgoing  []RelationshipEdge
-	Incoming  []RelationshipEdge
+	Feature      Feature
+	Documents    []MapDocument
+	Outgoing     []RelationshipEdge
+	Incoming     []RelationshipEdge
+	Dependencies []DependencyLink
 }
 
 type ProjectMap struct {
@@ -67,10 +79,15 @@ func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error
 		if err != nil {
 			return nil, err
 		}
+		dependencies, err := loadDependencyLinks(feat)
+		if err != nil {
+			return nil, err
+		}
 		projectMap.Features = append(projectMap.Features, FeatureMap{
-			Feature:   feat,
-			Documents: featureDocuments(projectRoot, feat),
-			Outgoing:  outgoing,
+			Feature:      feat,
+			Documents:    featureDocuments(projectRoot, feat),
+			Outgoing:     outgoing,
+			Dependencies: dependencies,
 		})
 		projectMap.Warnings = append(projectMap.Warnings, warnings...)
 	}
@@ -90,6 +107,106 @@ func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error
 	projectMap.Warnings = sortedWarnings(projectMap.Warnings)
 
 	return projectMap, nil
+}
+
+func loadDependencyLinks(feat Feature) ([]DependencyLink, error) {
+	sources := []struct {
+		name    string
+		path    string
+		docType document.DocumentType
+	}{
+		{name: "BRAINSTORM.md", path: filepath.Join(feat.Path, "BRAINSTORM.md"), docType: document.TypeBrainstorm},
+		{name: "SPEC.md", path: filepath.Join(feat.Path, "SPEC.md"), docType: document.TypeSpec},
+		{name: "PLAN.md", path: filepath.Join(feat.Path, "PLAN.md"), docType: document.TypePlan},
+	}
+
+	var links []DependencyLink
+	for _, source := range sources {
+		if !document.Exists(source.path) {
+			continue
+		}
+
+		doc, err := document.ParseFile(source.path, source.docType)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse %s dependencies for %s: %w", source.name, feat.DirName, err)
+		}
+
+		for _, link := range dependencyLinksFromSection(doc.GetSection("DEPENDENCIES")) {
+			link.SourceFeatureID = feat.DirName
+			link.SourceDoc = source.name
+			links = append(links, link)
+		}
+	}
+
+	return sortedDependencyLinks(links), nil
+}
+
+func dependencyLinksFromSection(section *document.Section) []DependencyLink {
+	if section == nil {
+		return nil
+	}
+
+	rows := dependencyTableRows(section.Content)
+	if len(rows) < 3 {
+		return nil
+	}
+
+	header := dependencyHeaderIndex(rows[0])
+	required := []string{"dependency", "type", "location", "used for", "status"}
+	for _, key := range required {
+		if _, ok := header[key]; !ok {
+			return nil
+		}
+	}
+
+	var links []DependencyLink
+	for _, row := range rows[2:] {
+		dependency := dependencyCell(row, header["dependency"])
+		if dependency == "" || strings.EqualFold(dependency, "none") {
+			continue
+		}
+		links = append(links, DependencyLink{
+			Dependency: dependency,
+			Type:       dependencyCell(row, header["type"]),
+			Location:   dependencyCell(row, header["location"]),
+			UsedFor:    dependencyCell(row, header["used for"]),
+			Status:     dependencyCell(row, header["status"]),
+		})
+	}
+
+	return links
+}
+
+func dependencyTableRows(content string) [][]string {
+	var rows [][]string
+	for _, rawLine := range strings.Split(content, "\n") {
+		line := strings.TrimSpace(rawLine)
+		if !strings.HasPrefix(line, "|") || !strings.Contains(strings.Trim(line, "|"), "|") {
+			continue
+		}
+		cells := strings.Split(strings.Trim(line, "|"), "|")
+		for i := range cells {
+			cells[i] = strings.TrimSpace(cells[i])
+		}
+		rows = append(rows, cells)
+	}
+
+	return rows
+}
+
+func dependencyHeaderIndex(header []string) map[string]int {
+	index := make(map[string]int, len(header))
+	for i, cell := range header {
+		index[strings.ToLower(strings.TrimSpace(cell))] = i
+	}
+	return index
+}
+
+func dependencyCell(row []string, index int) string {
+	if index < 0 || index >= len(row) {
+		return ""
+	}
+	return strings.TrimSpace(row[index])
 }
 
 func loadRelationshipEdges(feat Feature, knownFeatures map[string]struct{}) ([]RelationshipEdge, []MapWarning, error) {
@@ -246,6 +363,27 @@ func sortedEdges(edges []RelationshipEdge) []RelationshipEdge {
 	})
 
 	return edges
+}
+
+func sortedDependencyLinks(links []DependencyLink) []DependencyLink {
+	if len(links) == 0 {
+		return nil
+	}
+
+	sort.Slice(links, func(i, j int) bool {
+		if links[i].SourceFeatureID != links[j].SourceFeatureID {
+			return links[i].SourceFeatureID < links[j].SourceFeatureID
+		}
+		if links[i].SourceDoc != links[j].SourceDoc {
+			return links[i].SourceDoc < links[j].SourceDoc
+		}
+		if links[i].Dependency != links[j].Dependency {
+			return links[i].Dependency < links[j].Dependency
+		}
+		return links[i].Location < links[j].Location
+	})
+
+	return links
 }
 
 func sortedWarnings(warnings []MapWarning) []MapWarning {

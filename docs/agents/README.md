@@ -2,26 +2,25 @@
 
 ## Purpose
 
-- This directory is the repo-local knowledge entrypoint for coding agents
-- Top-level instruction files should route here instead of carrying the full operating manual
-- Start with this index, then read only the linked docs needed for the current task
+- Start here for repo-local agent guidance
+- Classify the task, then load only the linked doc needed for the current decision
+- Avoid reading all agent docs by default
 
-## Read Order
+## Runtime Routing
 
-1. `docs/CONSTITUTION.md`
-2. `docs/agents/WORKFLOWS.md`
-3. `docs/agents/GUARDRAILS.md`
-4. `docs/agents/TOOLING.md`
-5. `docs/agents/RLM.md` when the task is repository-scale
-6. relevant `docs/specs/<feature>/` docs when work is feature-scoped
-7. `docs/references/*` only when a durable repo-local reference is relevant
+- `WORKFLOWS.md` → classify spec-driven vs ad hoc work and resolve source-of-truth order
+- `GUARDRAILS.md` → completion, safety, validation, and hard rules
+- `RLM.md` → context routing and progressive disclosure
+- `TOOLING.md` → skills, dispatch, worktrees, and secondary inputs
+- `docs/references/*` → durable reference material only when relevant
+- `docs/specs/<feature>/*` → active feature artifacts only
 
-## Directory Map
+## Loading Rule
 
-- `WORKFLOWS.md` — when to use the spec-driven or ad hoc path
-- `RLM.md` — Kit's repository-scale context-routing pattern for broad discovery with progressive disclosure
-- `TOOLING.md` — skills, dispatch, worktrees, and secondary global inputs
-- `GUARDRAILS.md` — hard constraints, completion bar, and safety rules
+- Identify the immediate decision before opening another file
+- Prefer a specific section over a full file
+- Stop loading once the decision is supported
+- Treat repo-local docs as primary and global model/vendor instructions as secondary
 
 ## System Of Record
 

@@ -38,7 +38,7 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	checks := []string{
 		"Populate or refresh the `## DEPENDENCIES` table",
 		"`Status` must be one of `active`, `optional`, or `stale`",
-		"Use an RLM-style prior-work discovery pass over",
+		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
@@ -86,7 +86,7 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	checks := []string{
 		"Populate or refresh the `## DEPENDENCIES` table",
 		"DEPENDENCIES: the resources that shape the implementation strategy",
-		"Use an RLM-style prior-work discovery pass over",
+		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",

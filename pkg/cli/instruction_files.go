@@ -170,7 +170,7 @@ func planInstructionArtifactWrite(
 ) (instructionFileWritePlan, error) {
 	absolutePath := filepath.Join(projectRoot, relativePath)
 	existed := document.Exists(absolutePath)
-	content, supportFile, err := instructionArtifactContent(relativePath, version)
+	content, _, err := instructionArtifactContent(relativePath, version)
 	if err != nil {
 		return instructionFileWritePlan{}, err
 	}
@@ -208,13 +208,6 @@ func planInstructionArtifactWrite(
 				absolutePath: absolutePath,
 				content:      content,
 				result:       instructionFileCreated,
-			}, nil
-		}
-		if supportFile {
-			return instructionFileWritePlan{
-				relativePath: relativePath,
-				absolutePath: absolutePath,
-				result:       instructionFileSkipped,
 			}, nil
 		}
 

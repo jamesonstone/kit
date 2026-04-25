@@ -63,8 +63,13 @@ func TestInstructionTemplatesIncludeReadinessGate(t *testing.T) {
 func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 	checks := map[string][]string{
 		"RLM.md": {
-			"RLM is Kit's repository-scale context-routing pattern",
-			"Use RLM when the task is broad enough",
+			"RLM is Kit's just-in-time context-routing pattern",
+			"Use it for any task where loading full context would be noisy or wasteful",
+			"## Runtime Loop",
+			"identify the immediate decision",
+			"stop loading once the decision is supported",
+			"## Context Budget Rules",
+			"specific section over full file",
 			"docs/PROJECT_PROGRESS_SUMMARY.md",
 			"conditional reads only",
 			"shared interface or contract",
@@ -75,7 +80,7 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 		},
 		"TOOLING.md": {
 			"Use subagents when the work cleanly separates into low-overlap lanes after discovery",
-			"Keep repository-scale discovery in RLM first",
+			"Keep broad or noisy discovery in RLM first",
 		},
 	}
 
@@ -113,15 +118,14 @@ func TestDefaultInstructionTemplatesGlossRLMAndCopilotFallback(t *testing.T) {
 		"AGENTS.md": AgentsMD,
 		"CLAUDE.md": ClaudeMD,
 	} {
-		if !strings.Contains(content, "RLM is Kit's repository-scale context-routing pattern") {
-			t.Fatalf("expected %s to define RLM on first use", name)
+		if !strings.Contains(content, "just-in-time context loading") {
+			t.Fatalf("expected %s to route to RLM guidance on first use", name)
 		}
 	}
 
 	copilotChecks := []string{
-		"RLM is Kit's repository-scale context-routing pattern",
-		"## Fallback Read Order",
-		"If linked-doc traversal is weak or unavailable",
+		"Use `docs/agents/RLM.md` when full-context loading would be noisy or wasteful",
+		"## Runtime Routing",
 		"## Non-Negotiable Rules",
 		"Repo-local docs under `docs/` are the source of truth",
 		"Do not treat `.claude/skills` as canonical discovery input",
@@ -140,7 +144,7 @@ func TestDefaultInstructionTemplatesUseTOCModel(t *testing.T) {
 		"CLAUDE.md": ClaudeMD,
 	} {
 		for _, check := range []string{
-			"table of contents",
+			"routing table",
 			"`docs/agents/README.md`",
 			"`docs/references/README.md`",
 		} {

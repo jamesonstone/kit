@@ -3,42 +3,39 @@ package templates
 func tocRepositoryInstructions(title string) string {
 	return `## Purpose
 
-- This file is a table of contents, not the full manual
+- This file is a routing table, not the full manual
+- Start at ` + "`docs/agents/README.md`" + `, then load only the docs needed for the current decision
 - Repo-local markdown under ` + "`docs/`" + ` is the system of record
-- Start here, then load only the docs relevant to the current task
 
-## Read This Next
+## Runtime Routing
 
-- ` + "`docs/agents/README.md`" + ` for the repo-local entrypoint
-- ` + "`docs/CONSTITUTION.md`" + ` for project-wide constraints and invariants
-- the relevant ` + "`docs/specs/<feature>/`" + ` files when the work is feature-scoped
+- ` + "`docs/agents/README.md`" + ` — classify the task and choose the next document
+- ` + "`docs/agents/WORKFLOWS.md`" + ` — spec-driven versus ad hoc flow
+- ` + "`docs/agents/GUARDRAILS.md`" + ` — completion, safety, and hard rules
+- ` + "`docs/agents/RLM.md`" + ` — just-in-time context loading when broad context would be noisy
+- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, worktrees, and secondary inputs
 
-## Work Routing
+## Conditional Context
 
-- Use ` + "`docs/agents/WORKFLOWS.md`" + ` to classify work as spec-driven or ad hoc
-- Use ` + "`docs/agents/RLM.md`" + ` when the task is repository-scale or needs broad discovery; RLM is Kit's repository-scale context-routing pattern
-- Use ` + "`docs/agents/GUARDRAILS.md`" + ` for hard constraints that must not be relaxed
+- ` + "`docs/specs/<feature>/`" + ` — active feature artifacts only
+- ` + "`docs/references/README.md`" + ` — durable repo references only when relevant
+- ` + "`docs/CONSTITUTION.md`" + ` — project invariants when a decision depends on them
 
 ## Repo Knowledge Map
 
-- ` + "`docs/agents/README.md`" + ` — entrypoint and navigation guide
-- ` + "`docs/agents/WORKFLOWS.md`" + ` — spec-driven, ad hoc, and readiness-gate flow
-- ` + "`docs/agents/RLM.md`" + ` — repository-scale discovery and progressive disclosure
+- ` + "`docs/agents/README.md`" + ` — runtime routing index
+- ` + "`docs/agents/WORKFLOWS.md`" + ` — work classification and source-of-truth semantics
+- ` + "`docs/agents/RLM.md`" + ` — progressive disclosure and context budget rules
 - ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, worktrees, and secondary global inputs
-- ` + "`docs/agents/GUARDRAILS.md`" + ` — completion bar, safety rules, and non-negotiable invariants
+- ` + "`docs/agents/GUARDRAILS.md`" + ` — completion bar, safety rules, and validation expectations
 - ` + "`docs/references/README.md`" + ` — durable repo-local references that are broader than one feature
 - ` + "`docs/specs/<feature>/`" + ` — feature-level source of truth for requirements, plans, and tasks
 
-## Runtime Context
+## Constraints
 
-- Start small and load only the docs, skills, and files relevant to the task
-- Treat global Claude or Codex files as secondary inputs after repo-local docs
-- If docs, skills, or references materially shape a feature, record them in the feature dependency tables
-
-## Tool-Specific Notes
-
-- ` + title + ` should stay short and stable so it fits easily into injected context
+- Keep ` + title + ` short and stable so it fits easily into injected context
 - Put durable workflow guidance in ` + "`docs/agents/*`" + ` rather than expanding this file
+- Do not add an always-loaded monolithic instruction file
 `
 }
 
@@ -47,16 +44,18 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 ## Quick Rules
 
 - Use this file as a map, not the full manual
-- Start with ` + "`docs/agents/README.md`" + ` and then open only the relevant linked docs
+- Start with ` + "`docs/agents/README.md`" + ` and then open only the linked docs needed for the current decision
 - Treat ` + "`docs/specs/<feature>/`" + ` as the feature system of record
-- Use ` + "`docs/agents/RLM.md`" + ` only when the task is repository-scale; RLM is Kit's repository-scale context-routing pattern
+- Use ` + "`docs/agents/RLM.md`" + ` when full-context loading would be noisy or wasteful
 - Keep context minimal and source-attributed
 
-## Fallback Read Order
+## Runtime Routing
 
-- If linked-doc traversal is weak or unavailable, read ` + "`docs/CONSTITUTION.md`" + ` first
-- Then read the relevant ` + "`docs/specs/<feature>/`" + ` docs for the task in scope
-- Use ` + "`docs/agents/RLM.md`" + ` only when the task is broad enough that loading the whole repo context would be noisy or wasteful
+- ` + "`docs/agents/README.md`" + ` — classify the task and choose the next document
+- ` + "`docs/agents/WORKFLOWS.md`" + ` — workflow and source-of-truth rules
+- ` + "`docs/agents/GUARDRAILS.md`" + ` — hard completion and safety rules
+- ` + "`docs/agents/RLM.md`" + ` — just-in-time context routing
+- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, worktrees, and secondary inputs
 
 ## Non-Negotiable Rules
 
@@ -65,6 +64,7 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - Keep context minimal and load only the docs and files relevant to the task
 - Remove dead code and unnecessary exports or public surface when they are not strictly needed
 - Do not treat ` + "`.claude/skills`" + ` as canonical discovery input
+- Do not add an always-loaded monolithic instruction file
 
 ## Repo Knowledge Map
 
@@ -81,26 +81,25 @@ const agentsREADME = `# Agents Docs
 
 ## Purpose
 
-- This directory is the repo-local knowledge entrypoint for coding agents
-- Top-level instruction files should route here instead of carrying the full operating manual
-- Start with this index, then read only the linked docs needed for the current task
+- Start here for repo-local agent guidance
+- Classify the task, then load only the linked doc needed for the current decision
+- Avoid reading all agent docs by default
 
-## Read Order
+## Runtime Routing
 
-1. ` + "`docs/CONSTITUTION.md`" + `
-2. ` + "`docs/agents/WORKFLOWS.md`" + `
-3. ` + "`docs/agents/GUARDRAILS.md`" + `
-4. ` + "`docs/agents/TOOLING.md`" + `
-5. ` + "`docs/agents/RLM.md`" + ` when the task is repository-scale
-6. relevant ` + "`docs/specs/<feature>/`" + ` docs when work is feature-scoped
-7. ` + "`docs/references/*`" + ` only when a durable repo-local reference is relevant
+- ` + "`WORKFLOWS.md`" + ` → classify spec-driven vs ad hoc work and resolve source-of-truth order
+- ` + "`GUARDRAILS.md`" + ` → completion, safety, validation, and hard rules
+- ` + "`RLM.md`" + ` → context routing and progressive disclosure
+- ` + "`TOOLING.md`" + ` → skills, dispatch, worktrees, and secondary inputs
+- ` + "`docs/references/*`" + ` → durable reference material only when relevant
+- ` + "`docs/specs/<feature>/*`" + ` → active feature artifacts only
 
-## Directory Map
+## Loading Rule
 
-- ` + "`WORKFLOWS.md`" + ` — when to use the spec-driven or ad hoc path
-- ` + "`RLM.md`" + ` — Kit's repository-scale context-routing pattern for broad discovery with progressive disclosure
-- ` + "`TOOLING.md`" + ` — skills, dispatch, worktrees, and secondary global inputs
-- ` + "`GUARDRAILS.md`" + ` — hard constraints, completion bar, and safety rules
+- Identify the immediate decision before opening another file
+- Prefer a specific section over a full file
+- Stop loading once the decision is supported
+- Treat repo-local docs as primary and global model/vendor instructions as secondary
 
 ## System Of Record
 
@@ -114,15 +113,49 @@ const agentsWorkflows = `# Workflows
 ## Spec-Driven Work
 
 - Use this path for new features, substantial behavioral changes, cross-component changes, or work that already has feature docs
-- Read ` + "`BRAINSTORM.md`" + ` when present, then ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + `
+- Do not load every artifact up front
+- Start from ` + "`TASKS.md`" + ` to identify the next action
+- Recurse into the relevant ` + "`PLAN.md`" + ` section for approach
+- Recurse into the relevant ` + "`SPEC.md`" + ` requirement for scope and acceptance
+- Use ` + "`BRAINSTORM.md`" + ` only for unresolved rationale
+- Use prior feature docs only through explicit dependency or relationship links
 - Ask clarification questions until confidence is high and unresolved assumptions are zero
 - Run the implementation readiness gate before writing code
 - Update docs first when the implementation changes behavior, requirements, or approach
 
+## Source Of Truth
+
+Authority order:
+
+1. safety and permission constraints
+2. current user request
+3. ` + "`docs/CONSTITUTION.md`" + `
+4. ` + "`SPEC.md`" + `
+5. ` + "`PLAN.md`" + `
+6. ` + "`TASKS.md`" + `
+7. ` + "`BRAINSTORM.md`" + `
+8. repo conventions
+
+Execution order for feature work:
+
+1. ` + "`TASKS.md`" + `
+2. relevant ` + "`PLAN.md`" + ` section
+3. relevant ` + "`SPEC.md`" + ` requirement
+4. ` + "`docs/CONSTITUTION.md`" + ` only when needed
+
+- ` + "`TASKS.md`" + ` controls next action
+- ` + "`PLAN.md`" + ` controls approach
+- ` + "`SPEC.md`" + ` controls requirements
+- ` + "`CONSTITUTION.md`" + ` controls project invariants
+- ` + "`BRAINSTORM.md`" + ` is non-binding research context
+
 ## Ad Hoc Work
 
 - Use this path for contained bug fixes, reviews, dependency updates, config changes, or small refinements
-- Follow understand -> implement -> verify
+- Inspect relevant files before editing
+- Use existing repo patterns
+- Verify directly with the smallest relevant checks
+- Do not create feature docs unless scope requires it
 - Update only the practical docs that changed, unless existing feature docs must also change
 
 ## Readiness Gate
@@ -140,10 +173,9 @@ const agentsRLM = `# RLM
 
 ## Purpose
 
-- RLM is Kit's repository-scale context-routing pattern: discover broadly, narrow to the smallest relevant context, then synthesize from sourced reads
-- Use this pattern for repository-scale analysis, broad audits, or tasks that span many files or services
-- Use RLM when the task is broad enough that loading the whole repo context would be noisy or wasteful
-- The goal is progressive disclosure: load only the relevant subset of repo knowledge instead of flooding context
+- RLM is Kit's just-in-time context-routing pattern
+- Use it for any task where loading full context would be noisy or wasteful
+- The goal is progressive disclosure: load only the smallest relevant subset of repo knowledge needed for the immediate decision
 
 ## Trigger Signals
 
@@ -152,19 +184,30 @@ const agentsRLM = `# RLM
 - audit all integrations
 - many files or services
 - high uncertainty about where the relevant logic lives
+- feature work with many possible prior docs or references
+- any request where broad upfront reading would slow correctness
 
-## Execution Pattern
+## Runtime Loop
 
-1. index candidate docs, files, skills, and references
-2. filter to the smallest set likely to matter
-3. map bounded reads or file-scoped workers across the filtered set
-4. reduce those results into a sourced synthesis
+1. identify the immediate decision
+2. load the smallest relevant artifact
+3. extract only required facts
+4. act if context is sufficient
+5. recurse only when uncertainty remains
+6. stop loading once the decision is supported
+
+## Context Budget Rules
+
+- specific section over full file
+- current feature over all features
+- explicit dependency link over broad search
+- repo-local docs before global model/vendor instructions
 
 ## Rules
 
 - Keep map work file-scoped or narrowly bounded so synthesis stays deterministic
 - Prefer repo-local docs before secondary global inputs
-- For feature-scoped work, keep must-read inputs small: ` + "`CONSTITUTION.md`" + ` plus the current feature docs already in scope
+- For feature-scoped work, keep must-read inputs small: the current ` + "`TASKS.md`" + ` entry plus the linked ` + "`PLAN.md`" + ` and ` + "`SPEC.md`" + ` sections
 - Use indices first: start with ` + "`kit map <feature>`" + ` and ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` to shortlist candidate prior features under ` + "`docs/specs/`" + `
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
 - Open a prior feature doc only when it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or dependency link
@@ -188,7 +231,7 @@ const agentsTooling = `# Tooling
 
 - Use ` + "`kit dispatch`" + ` when broad work must be turned into safe multi-lane execution
 - Use subagents when the work cleanly separates into low-overlap lanes after discovery
-- Keep repository-scale discovery in RLM first; use dispatch or direct subagent execution only after the relevant workstreams are narrow enough to predict overlap
+- Keep broad or noisy discovery in RLM first; use dispatch or direct subagent execution only after the relevant workstreams are narrow enough to predict overlap
 - Predict overlap conservatively before parallelizing
 - Keep the main agent responsible for synthesis, integration, validation, and communication
 
@@ -222,6 +265,10 @@ const agentsGuardrails = `# Guardrails
 - Populate all required sections in ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + `
 - Replace placeholder-only sections with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + `
 - Always update affected documentation and ensure touched docs are current and properly formatted before calling work complete
+- Never claim tests passed unless they ran
+- Never claim files were inspected unless they were inspected
+- Never guess file contents, APIs, or behavior
+- If validation cannot run, state why
 - Fix relevant lint and test failures before calling work complete
 - Keep dependency and relationship sections current when those docs are touched
 

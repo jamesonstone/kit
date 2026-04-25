@@ -3,16 +3,18 @@
 ## Quick Rules
 
 - Use this file as a map, not the full manual
-- Start with `docs/agents/README.md` and then open only the relevant linked docs
+- Start with `docs/agents/README.md` and then open only the linked docs needed for the current decision
 - Treat `docs/specs/<feature>/` as the feature system of record
-- Use `docs/agents/RLM.md` only when the task is repository-scale; RLM is Kit's repository-scale context-routing pattern
+- Use `docs/agents/RLM.md` when full-context loading would be noisy or wasteful
 - Keep context minimal and source-attributed
 
-## Fallback Read Order
+## Runtime Routing
 
-- If linked-doc traversal is weak or unavailable, read `docs/CONSTITUTION.md` first
-- Then read the relevant `docs/specs/<feature>/` docs for the task in scope
-- Use `docs/agents/RLM.md` only when the task is broad enough that loading the whole repo context would be noisy or wasteful
+- `docs/agents/README.md` — classify the task and choose the next document
+- `docs/agents/WORKFLOWS.md` — workflow and source-of-truth rules
+- `docs/agents/GUARDRAILS.md` — hard completion and safety rules
+- `docs/agents/RLM.md` — just-in-time context routing
+- `docs/agents/TOOLING.md` — skills, dispatch, worktrees, and secondary inputs
 
 ## Non-Negotiable Rules
 
@@ -21,6 +23,7 @@
 - Keep context minimal and load only the docs and files relevant to the task
 - Remove dead code and unnecessary exports or public surface when they are not strictly needed
 - Do not treat `.claude/skills` as canonical discovery input
+- Do not add an always-loaded monolithic instruction file
 
 ## Repo Knowledge Map
 

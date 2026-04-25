@@ -53,7 +53,7 @@ func subagentPromptSuffix() string {
 		"## Subagent Orchestration",
 		"- preserve the command-specific rules above; this section adds routing guidance and does not relax phase, scope, or safety constraints",
 		"- drive to understanding first: read the available context, identify uncertainties, and confirm scope before proposing or executing changes",
-		"- when the task is repository-scale, do RLM-style discovery first: index candidates, filter to the smallest relevant set, and only then decide whether multiple workstreams exist",
+		"- when full-context loading would be noisy or wasteful, do RLM-style discovery first: identify the immediate decision, load the smallest relevant artifact, and stop once the decision is supported",
 		"- then drive task orchestration coordination: turn the work into explicit workstreams and manage them centrally",
 		"- use intelligent routing to identify the different areas of change or analysis and default to subagents when the work spans multiple distinct areas",
 		"- do not turn broad discovery into parallel execution until the scope is narrow enough to predict overlap with reasonable confidence",

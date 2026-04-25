@@ -10,7 +10,7 @@
 
 - Use `kit dispatch` when broad work must be turned into safe multi-lane execution
 - Use subagents when the work cleanly separates into low-overlap lanes after discovery
-- Keep repository-scale discovery in RLM first; use dispatch or direct subagent execution only after the relevant workstreams are narrow enough to predict overlap
+- Keep broad or noisy discovery in RLM first; use dispatch or direct subagent execution only after the relevant workstreams are narrow enough to predict overlap
 - Predict overlap conservatively before parallelizing
 - Keep the main agent responsible for synthesis, integration, validation, and communication
 

@@ -35,7 +35,7 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"/tmp/project/docs/CONSTITUTION.md",
 		"## DEPENDENCIES",
 		"`Dependency`, `Type`, `Location`, `Used For`, and `Status`",
-		"Use an RLM-style prior-work discovery pass over `/tmp/docs/specs` before broad repository reads",
+		"Use an RLM-style just-in-time prior-work pass over `/tmp/docs/specs` before broad repository reads",
 		"/tmp/project/docs/PROJECT_PROGRESS_SUMMARY.md",
 		"conditional reads only",
 		"shared interface or contract",

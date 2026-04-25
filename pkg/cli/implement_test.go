@@ -33,15 +33,20 @@ func TestBuildImplementationPrompt_IncludesReadinessGate(t *testing.T) {
 		"Update SPEC.md, PLAN.md, and/or TASKS.md to resolve the exact issue",
 		"Re-run the implementation readiness gate after the docs are fixed",
 		"Do not begin coding until the implementation readiness gate passes",
-		"Use an RLM-style prior-work discovery pass over",
+		"Open `TASKS.md` first",
+		"Load only the relevant `PLAN.md` section",
+		"Load only the relevant `SPEC.md` requirement",
+		"Load `CONSTITUTION.md` only when required",
+		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(root, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"Start by running the implementation readiness gate against the document set.",
-		"Once it passes, read TASKS.md to identify the first incomplete task",
-		"BRAINSTORM.md | Upstream research findings, relevant files, strategy options | Recovering problem context before execution |",
+		"Inspect the relevant code before editing",
+		"Run relevant validation before completion",
+		"Start by opening TASKS.md and selecting the first incomplete task",
+		"Only for unresolved rationale; non-binding context",
 	}
 
 	for _, check := range checks {
@@ -94,7 +99,7 @@ func TestBuildImplementationPrompt_IncludesRepoDocsForTOCRepos(t *testing.T) {
 	for _, check := range []string{
 		"docs/agents/README.md",
 		"docs/references/README.md",
-		"Repo-local workflow index",
+		"Repo-local runtime routing index",
 	} {
 		if !strings.Contains(prompt, check) {
 			t.Fatalf("expected prompt to contain %q", check)

@@ -18,28 +18,27 @@ const (
 func printImplementDocumentReferenceTable() {
 	rows := []implementDocumentReferenceRow{
 		{
-			document: "SPEC.md",
+			document: "TASKS.md",
 			lines: []string{
-				"WHAT: Requirements, constraints, acceptance criteria",
-				"- Consult when unsure if something is in scope",
-				"- Do NOT add features not specified here",
+				"EXECUTE: Next action and acceptance criteria",
+				"- Read first; select the next incomplete task",
+				"- Mark tasks complete with [x] only when acceptance is met",
 			},
 		},
 		{
 			document: "PLAN.md",
 			lines: []string{
 				"HOW: Architecture, components, data structures",
-				"- Follow the design decisions made here",
+				"- Load only the section linked from the selected task",
 				"- If blocked, check RISKS section for mitigations",
 			},
 		},
 		{
-			document: "TASKS.md",
+			document: "SPEC.md",
 			lines: []string{
-				"EXECUTE: Ordered task list with acceptance criteria",
-				"- Do NOT execute tasks until the readiness gate passes",
-				"- Work through tasks in order (respect dependencies)",
-				"- Mark tasks complete with [x] when acceptance met",
+				"WHAT: Requirements, constraints, acceptance criteria",
+				"- Load only the requirement linked from PLAN.md",
+				"- Do NOT add features not specified here",
 			},
 		},
 	}

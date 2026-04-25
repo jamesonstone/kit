@@ -84,6 +84,7 @@ func outputProjectMap(out io.Writer, projectMap *feature.ProjectMap) error {
 			}
 			renderFeatureCard(out, style, glyphs, featureMap)
 			renderProjectEdges(out, style, glyphs, featureMap.Outgoing)
+			renderDependencyLinks(out, style, glyphs, featureMap.Dependencies, "no dependency links")
 		}
 	}
 
@@ -111,6 +112,10 @@ func outputFeatureMap(out io.Writer, globalDocs []feature.MapDocument, featureMa
 	_, _ = fmt.Fprintln(out)
 	_, _ = fmt.Fprintln(out, style.label("Outgoing Relationships"))
 	renderProjectEdges(out, style, glyphs, featureMap.Outgoing)
+
+	_, _ = fmt.Fprintln(out)
+	_, _ = fmt.Fprintln(out, style.label("Dependency Links"))
+	renderDependencyLinks(out, style, glyphs, featureMap.Dependencies, "none")
 
 	outputMapWarnings(out, style, glyphs, warnings)
 
@@ -320,6 +325,51 @@ func renderIncomingEdges(out io.Writer, style humanOutputStyle, glyphs mapGlyphs
 			formatEdgeTarget(style, edge),
 		)
 	}
+}
+
+func renderDependencyLinks(out io.Writer, style humanOutputStyle, glyphs mapGlyphs, links []feature.DependencyLink, emptyText string) {
+	if len(links) == 0 {
+		_, _ = fmt.Fprintf(out, "  %s %s\n", mapTreePrefix(style, glyphs.Last), mapMutedIfEnabled(style, emptyText))
+		return
+	}
+
+	for i, link := range links {
+		prefix := glyphs.TreeMid
+		if i == len(links)-1 {
+			prefix = glyphs.TreeLast
+		}
+		_, _ = fmt.Fprintf(
+			out,
+			"  %s %s dependency %s %s [%s] for %s\n",
+			mapTreePrefix(style, prefix),
+			mapEdgeSourceDoc(style, link.SourceDoc),
+			mapDependencyName(style, link.Dependency),
+			mapMutedIfEnabled(style, formatDependencyLocation(link)),
+			mapDependencyStatus(style, link.Status),
+			mapMutedIfEnabled(style, nonEmptyMapValue(link.UsedFor, "unspecified use")),
+		)
+	}
+}
+
+func formatDependencyLocation(link feature.DependencyLink) string {
+	parts := []string{}
+	if strings.TrimSpace(link.Type) != "" {
+		parts = append(parts, strings.TrimSpace(link.Type))
+	}
+	if strings.TrimSpace(link.Location) != "" && !strings.EqualFold(strings.TrimSpace(link.Location), "n/a") {
+		parts = append(parts, strings.TrimSpace(link.Location))
+	}
+	if len(parts) == 0 {
+		return "(no location)"
+	}
+	return "(" + strings.Join(parts, ", ") + ")"
+}
+
+func nonEmptyMapValue(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return strings.TrimSpace(value)
 }
 
 func outputMapWarnings(out io.Writer, style humanOutputStyle, glyphs mapGlyphs, warnings []feature.MapWarning) {
@@ -550,6 +600,26 @@ func mapRelationshipType(style humanOutputStyle, rel string) string {
 		return rel
 	}
 	return dim + rel + reset
+}
+
+func mapDependencyName(style humanOutputStyle, text string) string {
+	if !style.enabled {
+		return text
+	}
+	return whiteBold + text + reset
+}
+
+func mapDependencyStatus(style humanOutputStyle, text string) string {
+	if strings.EqualFold(strings.TrimSpace(text), "stale") {
+		if !style.enabled {
+			return text
+		}
+		return implement + text + reset
+	}
+	if !style.enabled {
+		return text
+	}
+	return dim + text + reset
 }
 
 func mapUnresolvedLabel(style humanOutputStyle, text string) string {

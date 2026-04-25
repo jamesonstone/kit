@@ -52,6 +52,9 @@ func TestRunMap_ProjectWideOutput(t *testing.T) {
 	if !strings.Contains(got, "SPEC.md builds on ▶ 0002-beta") {
 		t.Fatalf("expected relationship edge, got %q", got)
 	}
+	if !strings.Contains(got, "SPEC.md dependency docs/agents/RLM.md") || !strings.Contains(got, "[stale]") {
+		t.Fatalf("expected dependency links, got %q", got)
+	}
 	if !strings.Contains(got, "Warnings") || !strings.Contains(got, `skipped invalid RELATIONSHIPS line "- follows: 0003-gamma"`) {
 		t.Fatalf("expected warning output, got %q", got)
 	}
@@ -90,6 +93,9 @@ func TestRunMap_FeatureScopedOutput(t *testing.T) {
 	}
 	if !strings.Contains(got, "0001-alpha SPEC.md builds on ▶ 0002-beta") {
 		t.Fatalf("expected incoming relationship, got %q", got)
+	}
+	if !strings.Contains(got, "Dependency Links") {
+		t.Fatalf("expected dependency links section, got %q", got)
 	}
 }
 
@@ -153,6 +159,13 @@ func setupMapProject(t *testing.T) string {
 
 - builds on: `+"`0002-beta`"+`
 - follows: 0003-gamma
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| docs/agents/RLM.md | doc | docs/agents/RLM.md | context routing | active |
+| old-context.md | doc | docs/old-context.md | legacy context | stale |
 `)
 	writeMapProjectFile(t, filepath.Join(projectRoot, "docs", "specs", "0002-beta", "SPEC.md"), `# SPEC
 

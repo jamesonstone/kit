@@ -118,7 +118,7 @@ func specSkillDiscoveryStepText(projectRoot string, cfg *config.Config, specPath
 	if detectInstructionScaffoldVersion(projectRoot, cfg) == config.InstructionScaffoldVersionTOC {
 		lines = append(lines,
 			fmt.Sprintf("- start at `%s` and load only the relevant linked docs for this feature", filepath.Join(projectRoot, "docs", "agents", "README.md")),
-			fmt.Sprintf("- use `%s` when the work is repository-scale and needs broad discovery", filepath.Join(projectRoot, "docs", "agents", "RLM.md")),
+			fmt.Sprintf("- use `%s` when full-context loading would be noisy or wasteful", filepath.Join(projectRoot, "docs", "agents", "RLM.md")),
 		)
 	}
 	lines = append(lines, fmt.Sprintf("- inspect repo-local canonical skills under `%s/*/SKILL.md`", skillsDir))
@@ -206,8 +206,8 @@ func relatedFeatureContextStepText(projectRoot, currentDocPath string) string {
 	summaryPath := filepath.ToSlash(filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"))
 
 	lines := []string{
-		fmt.Sprintf("Use an RLM-style prior-work discovery pass over `%s` before broad repository reads:", specsDir),
-		"- must-read inputs stay small: CONSTITUTION.md plus the current feature docs already in scope",
+		fmt.Sprintf("Use an RLM-style just-in-time prior-work pass over `%s` before broad repository reads:", specsDir),
+		"- must-read inputs stay small: the current task or section plus explicit relationships and dependencies already in scope",
 		fmt.Sprintf("- use indices first: start with `kit map %s` and `%s` to shortlist candidate prior features", featureID, summaryPath),
 		fmt.Sprintf("- if `kit map` is unavailable, inspect `%s` directly and use the current feature's `## RELATIONSHIPS` and `## DEPENDENCIES` entries as your index", specsDir),
 		"- prior feature docs, repo references, and secondary global inputs are conditional reads only",

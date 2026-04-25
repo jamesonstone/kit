@@ -86,7 +86,7 @@ func SupportDocs(version int) []Doc {
 		{
 			Label:        "AGENTS DOCS",
 			RelativePath: "docs/agents/README.md",
-			Use:          "repo-local entrypoint and read-order guide",
+			Use:          "repo-local runtime routing index",
 			Required:     true,
 			ManagedBy:    "kit scaffold-agents",
 		},
@@ -100,7 +100,7 @@ func SupportDocs(version int) []Doc {
 		{
 			Label:        "RLM",
 			RelativePath: "docs/agents/RLM.md",
-			Use:          "repository-scale discovery and progressive disclosure",
+			Use:          "just-in-time context routing and progressive disclosure",
 			Required:     true,
 			ManagedBy:    "kit scaffold-agents",
 		},

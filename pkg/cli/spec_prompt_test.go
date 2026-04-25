@@ -68,7 +68,7 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 		"Perform a skills discovery phase before treating SPEC.md as complete",
 		"write the selected skills into the `## SKILLS` table",
 		"Populate or refresh the `## DEPENDENCIES` table",
-		"Use an RLM-style prior-work discovery pass over",
+		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
@@ -120,7 +120,7 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 		"Perform a skills discovery phase before treating SPEC.md as complete",
 		"write the selected skills into the `## SKILLS` table",
 		"Populate or refresh the `## DEPENDENCIES` table",
-		"Use an RLM-style prior-work discovery pass over",
+		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
@@ -172,7 +172,7 @@ func TestRunSpecTemplate_IncludesRLMGuidanceWhenBrainstormHintsLargeRepo(t *test
 	checks := []string{
 		"# Use RLM Pattern",
 		"parallelization_mode: \"rlm\"",
-		"Index → Filter → Map → Reduce",
+		"immediate decision → smallest artifact → required facts → act or recurse",
 		"add `rlm` to the `## SKILLS` table",
 	}
 
@@ -296,7 +296,7 @@ func TestOutputCompiledPrompt_IncludesRLMGuidanceWhenContextRequiresIt(t *testin
 	checks := []string{
 		"# Use RLM Pattern",
 		"parallelization_mode: \"rlm\"",
-		"Index → Filter → Map → Reduce",
+		"immediate decision → smallest artifact → required facts → act or recurse",
 		"add `rlm` to the `## SKILLS` table",
 	}
 

@@ -82,6 +82,63 @@ func TestRunCheckProjectPassesWhenRepoIsCoherent(t *testing.T) {
 	}
 }
 
+func TestRunCheckProjectFailsWhenV2RootIsVerboseManual(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.LegacyAgentsMD)
+	setWorkingDirectory(t, projectRoot)
+
+	checkProject = true
+	checkAll = false
+	t.Cleanup(func() {
+		checkProject = false
+		checkAll = false
+	})
+
+	cmd := &cobra.Command{}
+	err := runCheck(cmd, nil)
+	if err == nil || !strings.Contains(err.Error(), "project validation failed") {
+		t.Fatalf("expected project validation failure, got %v", err)
+	}
+}
+
+func TestRunCheckProjectFailsWhenRLMGuidanceDrifts(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	writeFile(t, filepath.Join(projectRoot, "docs", "agents", "RLM.md"), "# RLM\n\n## Purpose\n\n- stale guidance\n")
+	setWorkingDirectory(t, projectRoot)
+
+	checkProject = true
+	checkAll = false
+	t.Cleanup(func() {
+		checkProject = false
+		checkAll = false
+	})
+
+	cmd := &cobra.Command{}
+	err := runCheck(cmd, nil)
+	if err == nil || !strings.Contains(err.Error(), "project validation failed") {
+		t.Fatalf("expected project validation failure, got %v", err)
+	}
+}
+
+func TestRunCheckProjectFailsWhenRootRequiresVendorTool(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD+"\n- must use Codex for every change\n")
+	setWorkingDirectory(t, projectRoot)
+
+	checkProject = true
+	checkAll = false
+	t.Cleanup(func() {
+		checkProject = false
+		checkAll = false
+	})
+
+	cmd := &cobra.Command{}
+	err := runCheck(cmd, nil)
+	if err == nil || !strings.Contains(err.Error(), "project validation failed") {
+		t.Fatalf("expected project validation failure, got %v", err)
+	}
+}
+
 func TestRunCheckProjectFailsOnDuplicateFeatureNumbers(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()
@@ -114,4 +171,26 @@ func TestRunCheckProjectFailsOnDuplicateFeatureNumbers(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "project validation failed") {
 		t.Fatalf("expected duplicate-number project validation failure, got %v", err)
 	}
+}
+
+func setupCoherentProjectForCheck(t *testing.T) string {
+	t.Helper()
+
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	writeFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), validConstitution())
+	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
+	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
+	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
+	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
+	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
+		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
+	}
+
+	return projectRoot
 }

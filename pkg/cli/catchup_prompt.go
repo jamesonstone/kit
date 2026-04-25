@@ -102,10 +102,13 @@ func buildCatchupPrompt(
 		doc.Paragraph(fmt.Sprintf("Catch up on feature: %s", feat.Slug))
 		doc.Heading(2, "Current Stage And State")
 		doc.BulletList(
-			fmt.Sprintf("Feature: %s", feat.DirName),
-			fmt.Sprintf("Current stage: %s", status.Phase),
+			fmt.Sprintf("Active feature: %s", feat.DirName),
+			fmt.Sprintf("Current phase: %s", status.Phase),
 			fmt.Sprintf("Current state: %s", catchupStateSummary(status)),
-			fmt.Sprintf("Next suggested action: %s", catchupNextAction(status)),
+			fmt.Sprintf("Next canonical artifact: %s", resumeNextCanonicalArtifact(status)),
+			fmt.Sprintf("Next recommended command: %s", resumeNextRecommendedCommand(status)),
+			fmt.Sprintf("Known blockers: %s", resumeKnownBlockers(status)),
+			fmt.Sprintf("Validation state: %s", resumeValidationState(status)),
 		)
 		if status.Summary != "" {
 			doc.Heading(2, "Feature Summary")
@@ -152,6 +155,61 @@ func catchupNextAction(status *feature.FeatureStatus) string {
 		return "Feature is complete; confirm whether the user wants review only or to reopen work"
 	}
 	return determineNextAction(status)
+}
+
+func resumeNextCanonicalArtifact(status *feature.FeatureStatus) string {
+	if status == nil {
+		return "unknown"
+	}
+	if status.Phase == feature.PhaseComplete {
+		return "TASKS.md reflection marker"
+	}
+	if !status.Files["spec"].Exists {
+		return "SPEC.md"
+	}
+	if !status.Files["plan"].Exists {
+		return "PLAN.md"
+	}
+	if !status.Files["tasks"].Exists {
+		return "TASKS.md"
+	}
+	return "TASKS.md"
+}
+
+func resumeNextRecommendedCommand(status *feature.FeatureStatus) string {
+	if status == nil {
+		return "inspect feature artifacts"
+	}
+	return catchupNextAction(status)
+}
+
+func resumeKnownBlockers(status *feature.FeatureStatus) string {
+	if status == nil {
+		return "unknown"
+	}
+	if status.Paused {
+		return "feature is paused"
+	}
+	if !status.Files["spec"].Exists {
+		return "SPEC.md is missing"
+	}
+	if !status.Files["plan"].Exists {
+		return "PLAN.md is missing"
+	}
+	if !status.Files["tasks"].Exists {
+		return "TASKS.md is missing"
+	}
+	if status.Progress == nil || !status.Progress.HasTasks() {
+		return "TASKS.md has no markdown checkbox tasks"
+	}
+	return "none recorded in Kit artifacts"
+}
+
+func resumeValidationState(status *feature.FeatureStatus) string {
+	if status == nil {
+		return "unknown"
+	}
+	return fmt.Sprintf("unknown from current artifacts; run `kit check %s` when validation is needed", status.Name)
 }
 
 func presenceWord(exists bool) string {
