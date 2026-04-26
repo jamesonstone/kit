@@ -131,12 +131,22 @@ func existingBrainstormThesis(brainstormPath string) string {
 
 func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis string, goalPct int) string {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	notesPath := featureNotesPath(projectRoot, featureNotesDirName(brainstormPath, featureSlug))
 
 	taskSteps := []string{
 		"Stay in planning and information-gathering mode only",
 		"Do NOT implement code, write production changes, or move into execution",
 		"Read CONSTITUTION.md first to understand project constraints and workflow rules",
 		"Read the current BRAINSTORM.md template and treat it as the source of truth for this research phase",
+		fmt.Sprintf(
+			"Inspect the feature notes directory at %s for optional pre-brainstorm inputs:\n"+
+				"- ignore `.gitkeep` and empty placeholder files\n"+
+				"- if files other than `.gitkeep` exist, read only the notes relevant to the user thesis\n"+
+				"- copy durable conclusions into BRAINSTORM.md instead of leaving them only in notes or chat\n"+
+				"- record specific note files that shaped the brainstorm in `## DEPENDENCIES` with `Status` = `active`\n"+
+				"- leave the notes directory dependency as `optional` when no usable note files exist",
+			notesPath,
+		),
 		relatedFeatureContextStepText(projectRoot, brainstormPath),
 		fmt.Sprintf(
 			"Research the filtered relevant areas of the codebase at %s to identify the files, patterns, constraints, interfaces, and adjacent workflows that matter to this feature; expand beyond that set only when the evidence requires it",
@@ -185,6 +195,7 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 		doc.Paragraph("You MUST update the brainstorm file at:")
 		doc.BulletList(
 			fmt.Sprintf("**BRAINSTORM**: %s", brainstormPath),
+			fmt.Sprintf("**Feature Notes**: %s", notesPath),
 			fmt.Sprintf("**Feature**: %s", featureSlug),
 			fmt.Sprintf("**Project Root**: %s", projectRoot),
 		)
@@ -196,6 +207,7 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 			[][]string{
 				{"CONSTITUTION", constitutionPath},
 				{"BRAINSTORM", brainstormPath},
+				{"FEATURE NOTES", notesPath},
 				{"Project Root", projectRoot},
 			},
 		)

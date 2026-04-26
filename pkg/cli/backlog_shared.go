@@ -113,6 +113,14 @@ func resumeBacklogFeature(
 	}
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
+	_, notesRelPath, err := ensureFeatureNotesDir(projectRoot, feat.DirName)
+	if err != nil {
+		return err
+	}
+	if _, err := ensureBrainstormNotesDependency(brainstormPath, notesRelPath); err != nil {
+		return err
+	}
+
 	thesis := existingBrainstormThesis(brainstormPath)
 	wasPaused := feat.Paused
 

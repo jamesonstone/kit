@@ -71,6 +71,9 @@ kit spec sample
 	if !strings.Contains(output, "Need better import validation for malformed CSV uploads.") {
 		t.Fatalf("expected regenerated prompt to reuse thesis, got %q", output)
 	}
+	if !strings.Contains(output, filepath.Join(projectRoot, "docs", "notes", "0001-sample")) {
+		t.Fatalf("expected regenerated prompt to mention feature notes directory, got %q", output)
+	}
 
 	content, err := os.ReadFile(brainstormPath)
 	if err != nil {
@@ -78,6 +81,9 @@ kit spec sample
 	}
 	if string(content) != original {
 		t.Fatalf("expected BRAINSTORM.md to remain unchanged")
+	}
+	if _, err := os.Stat(filepath.Join(projectRoot, "docs", "notes", "0001-sample")); !os.IsNotExist(err) {
+		t.Fatalf("expected --prompt-only to avoid creating notes directory, got %v", err)
 	}
 }
 

@@ -32,6 +32,7 @@ planning-only prompt for a coding agent.
 
 Creates:
 	- Feature directory (e.g., docs/specs/0001-my-feature/)
+	- Feature notes directory (e.g., docs/notes/0001-my-feature/.gitkeep)
 	- BRAINSTORM.md as the first feature-scoped artifact
 
 Interactive flow:
@@ -129,16 +130,27 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	}
 	feature.ApplyLifecycleState(feat, cfg)
 
+	_, notesRelPath, err := ensureFeatureNotesDir(projectRoot, feat.DirName)
+	if err != nil {
+		return err
+	}
+
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	if !document.Exists(brainstormPath) {
-		if err := document.Write(brainstormPath, templates.BuildBrainstormArtifact(thesis)); err != nil {
+		content := seedBrainstormNotesDependency(templates.BuildBrainstormArtifact(thesis), notesRelPath)
+		if err := document.Write(brainstormPath, content); err != nil {
 			return fmt.Errorf("failed to create BRAINSTORM.md: %w", err)
 		}
 		if !outputOnly {
 			fmt.Println("  ✓ Created BRAINSTORM.md")
 		}
-	} else if !outputOnly {
-		fmt.Println("  ✓ BRAINSTORM.md already exists")
+	} else {
+		if _, err := ensureBrainstormNotesDependency(brainstormPath, notesRelPath); err != nil {
+			return err
+		}
+		if !outputOnly {
+			fmt.Println("  ✓ BRAINSTORM.md already exists")
+		}
 	}
 
 	if !outputOnly {

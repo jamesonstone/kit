@@ -52,6 +52,12 @@ func TestRunBrainstormBacklog_CreatesPausedBacklogItem(t *testing.T) {
 	if !strings.Contains(string(content), "- related to: 0001-current-endpoint") {
 		t.Fatalf("expected relationship to active feature, got %q", string(content))
 	}
+	if !strings.Contains(string(content), "| Feature notes | notes | docs/notes/0002-legacy-endpoint-refactor | optional pre-brainstorm research input | optional |") {
+		t.Fatalf("expected feature notes dependency, got %q", string(content))
+	}
+	if _, err := os.Stat(filepath.Join(projectRoot, "docs", "notes", "0002-legacy-endpoint-refactor", ".gitkeep")); err != nil {
+		t.Fatalf("expected backlog notes .gitkeep, got %v", err)
+	}
 
 	summaryPath := cfg.ProgressSummaryPath(projectRoot)
 	summary, err := os.ReadFile(summaryPath)

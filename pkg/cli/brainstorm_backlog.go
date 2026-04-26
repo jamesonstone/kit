@@ -43,6 +43,11 @@ func runBrainstormBacklog(
 		)
 	}
 
+	_, notesRelPath, err := ensureFeatureNotesDir(projectRoot, feat.DirName)
+	if err != nil {
+		return err
+	}
+
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	createdBrainstorm := false
 	if !document.Exists(brainstormPath) {
@@ -52,10 +57,15 @@ func runBrainstormBacklog(
 		if err != nil {
 			return err
 		}
-		if err := document.Write(brainstormPath, templates.BuildBrainstormArtifact(thesis)); err != nil {
+		content := seedBrainstormNotesDependency(templates.BuildBrainstormArtifact(thesis), notesRelPath)
+		if err := document.Write(brainstormPath, content); err != nil {
 			return fmt.Errorf("failed to create BRAINSTORM.md: %w", err)
 		}
 		createdBrainstorm = true
+	} else {
+		if _, err := ensureBrainstormNotesDependency(brainstormPath, notesRelPath); err != nil {
+			return err
+		}
 	}
 
 	linked, err := addBacklogRelationship(brainstormPath, currentActive, feat)
