@@ -87,6 +87,9 @@ kit init
 # optionally capture research first
 kit brainstorm my-feature
 
+# for frontend-heavy work, opt into frontend-specific prompt guidance
+kit brainstorm dashboard-redesign --profile=frontend
+
 # capture out-of-scope follow-up work without changing the active lane
 kit brainstorm --backlog shared-refactor
 
@@ -188,6 +191,13 @@ default help or primary docs: `kit update`, `kit skills`, `kit catchup`, `kit sc
 
 Prompt-producing commands default to subagent orchestration guidance. Pass
 `--single-agent` when you explicitly want to keep the work in one lane.
+
+Prompt-producing commands also support `--profile=frontend` for frontend-heavy
+work. The profile keeps Kit's normal RLM flow, but adds frontend-specific
+guidance for design-system fit, domain-appropriate UI, visual assets,
+responsive behavior, browser or screenshot validation, interaction states, and
+common generated-UI pitfalls. Feature-scoped commands can carry the profile
+forward through the feature's dependency table once it has been recorded.
 
 Use `kit dispatch` when you need the full overlap-clustering and queue-planning
 workflow for a raw task set. Use the default prompt path when the agent should
@@ -353,6 +363,9 @@ canonical docs first, then rerun the gate before implementing.
 # interactive brainstorm for a new feature
 kit brainstorm my-feature
 
+# frontend-heavy brainstorm with design-material scaffolding
+kit brainstorm dashboard-redesign --profile=frontend
+
 # capture a deferred follow-up feature and leave it in backlog
 kit brainstorm --backlog shared-refactor
 
@@ -402,6 +415,15 @@ to opt back into terminal multiline entry.
 docs/
   CONSTITUTION.md            # project-wide constraints
   PROJECT_PROGRESS_SUMMARY.md
+  notes/
+    0001-my-feature/
+      .gitkeep
+      design/                # frontend materials when --profile=frontend is used
+        .gitkeep
+        screenshots/
+          .gitkeep
+        references/
+          .gitkeep
   specs/
     0001-my-feature/
       BRAINSTORM.md         # optional research artifact
