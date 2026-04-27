@@ -125,6 +125,14 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	} else if !outputOnly {
 		fmt.Println("  ✓ PLAN.md already exists")
 	}
+	if effectivePromptProfile(feat.Path) == promptProfileFrontend {
+		if _, err := ensureFrontendProfileDependencyRows(specPath, document.TypeSpec, feat.DirName); err != nil {
+			return err
+		}
+		if _, err := ensureFrontendProfileDependencyRows(planPath, document.TypePlan, feat.DirName); err != nil {
+			return err
+		}
+	}
 
 	wasPaused := feat.Paused
 	if err := clearPausedForExplicitResume(projectRoot, cfg, feat); err != nil {
@@ -410,7 +418,7 @@ func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *f
 		doc.Raw(renderNonEmptySectionRules("`PLAN.md`"))
 	})
 
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, planCopy); err != nil {
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, planCopy); err != nil {
 		return fmt.Errorf("failed to output prompt: %w", err)
 	}
 
@@ -501,7 +509,7 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 		fmt.Printf("  • SPEC.md: %s\n\n", specPath)
 	}
 
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, planCopy); err != nil {
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, planCopy); err != nil {
 		return fmt.Errorf("failed to output prompt: %w", err)
 	}
 

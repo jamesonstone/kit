@@ -93,7 +93,7 @@ func runReflect(cmd *cobra.Command, args []string) error {
 		})
 	}
 
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, reflectCopy); err != nil {
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, reflectCopy); err != nil {
 		return err
 	}
 

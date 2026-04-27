@@ -35,6 +35,7 @@ func init() {
 
 func runSummarize(cmd *cobra.Command, args []string) error {
 	instructions := genericSummarizeInstructions()
+	featurePath := ""
 
 	if len(args) == 1 {
 		featureRef := args[0]
@@ -56,6 +57,7 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 		}
 
 		instructions = featureScopedSummarizeInstructions(projectRoot, feat.Slug, feat.Path)
+		featurePath = feat.Path
 	}
 
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
@@ -66,6 +68,12 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 		})
 	}
 
+	if featurePath != "" {
+		if err := outputPromptForFeatureWithClipboardDefault(instructions, featurePath, outputOnly, summarizeCopy); err != nil {
+			return err
+		}
+		return nil
+	}
 	if err := outputPromptWithClipboardDefault(instructions, outputOnly, summarizeCopy); err != nil {
 		return err
 	}

@@ -87,6 +87,91 @@ kit spec sample
 	}
 }
 
+func TestOutputExistingBrainstormPromptFrontendProfileMentionsDesignWithoutMutating(t *testing.T) {
+	projectRoot := t.TempDir()
+	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
+
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-dashboard")
+	brainstormPath := filepath.Join(featurePath, "BRAINSTORM.md")
+	original := `# BRAINSTORM
+
+## SUMMARY
+
+Need a dashboard redesign.
+
+## USER THESIS
+
+Need a dashboard redesign.
+
+## CODEBASE FINDINGS
+
+findings
+
+## AFFECTED FILES
+
+files
+
+## DEPENDENCIES
+
+| Dependency | Type | Location | Used For | Status |
+| ---------- | ---- | -------- | -------- | ------ |
+| none | n/a | n/a | no phase dependencies recorded yet | active |
+
+## QUESTIONS
+
+questions
+
+## OPTIONS
+
+options
+
+## RECOMMENDED STRATEGY
+
+strategy
+
+## NEXT STEP
+
+kit spec dashboard
+`
+	writeFile(t, brainstormPath, original)
+
+	restore := chdirForTest(t, projectRoot)
+	defer restore()
+	restorePromptProfileState(t, promptProfileFrontend, true)
+
+	cfg := config.Default()
+	output := captureStdout(t, func() {
+		err := outputExistingBrainstormPrompt([]string{"dashboard"}, projectRoot, cfg, true)
+		if err != nil {
+			t.Fatalf("outputExistingBrainstormPrompt() error = %v", err)
+		}
+	})
+
+	designPath := filepath.Join(projectRoot, "docs", "notes", "0001-dashboard", "design")
+	checks := []string{
+		"DESIGN MATERIALS",
+		designPath,
+		"ignore `.gitkeep`",
+		"## Frontend Profile",
+	}
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected frontend prompt-only output to contain %q, got:\n%s", check, output)
+		}
+	}
+
+	content, err := os.ReadFile(brainstormPath)
+	if err != nil {
+		t.Fatalf("os.ReadFile() error = %v", err)
+	}
+	if string(content) != original {
+		t.Fatal("expected BRAINSTORM.md to remain unchanged")
+	}
+	if _, err := os.Stat(designPath); !os.IsNotExist(err) {
+		t.Fatalf("expected --prompt-only frontend profile to avoid creating design directory, got %v", err)
+	}
+}
+
 func TestOutputExistingBrainstormPrompt_SelectsExistingBrainstormFeature(t *testing.T) {
 	projectRoot := t.TempDir()
 	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())

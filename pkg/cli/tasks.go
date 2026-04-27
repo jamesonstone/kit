@@ -301,7 +301,7 @@ F) PLAN LINKS (OPTIONAL)
 		doc.Raw(renderNonEmptySectionRules("`TASKS.md`"))
 	})
 
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, tasksCopy); err != nil {
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, tasksCopy); err != nil {
 		return err
 	}
 

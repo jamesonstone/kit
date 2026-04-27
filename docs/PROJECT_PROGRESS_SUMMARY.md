@@ -28,10 +28,11 @@
 | 0021 | project-validation-and-instruction-registry | `docs/specs/0021-project-validation-and-instruction-registry` | reflect | no | 2026-04-12 | - Centralize Kit's instruction-model metadata in one internal registry and add a project-scoped validation mode so repo-level contract drift is checked mechanically instead of being spread across prompt builders. |
 | 0022 | typed-prompt-ir | `docs/specs/0022-typed-prompt-ir` | reflect | no | 2026-04-13 | - Replace ad hoc string-built prompt construction with a typed prompt IR across Kit's prompt-producing commands, while keeping the current output wrappers and shared prompt decorators intact. |
 | 0023 | worktree-safe-feature-allocation | `docs/specs/0023-worktree-safe-feature-allocation` | reflect | no | 2026-04-16 | Reserve feature numbers from a repo-shared allocator so multiple worktrees from the same clone cannot create duplicate numbered feature directories. |
+| 0024 | frontend-profile | `docs/specs/0024-frontend-profile` | reflect | no | 2026-04-27 | Add an explicit `--profile=frontend` prompt profile that applies frontend-specific guidance through Kit's existing prompt-output flow without adding commands, root-instruction bloat, or automatic frontend detection. Frontend brainstorms must keep design materials under `docs/notes/<feature-dir>/design/` and expose them through just-in-time dependency routing rather than inlining all assets by default. |
 
 ## PROJECT INTENT
 
-<!-- TODO: describe the overall project purpose -->
+Kit is a document-first workflow harness for disciplined thought work. It keeps durable project context in canonical markdown artifacts so humans and coding agents can move from research to specification, planning, tasks, implementation, reflection, and completion with explicit traceability.
 
 ## GLOBAL CONSTRAINTS
 
@@ -255,6 +256,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - none
 - **POINTERS**: `docs/specs/0023-worktree-safe-feature-allocation/SPEC.md`, `docs/specs/0023-worktree-safe-feature-allocation/PLAN.md`, `docs/specs/0023-worktree-safe-feature-allocation/TASKS.md`
 
+### frontend-profile
+
+- **STATUS**: reflect
+- **PAUSED**: no
+- **INTENT**: - Kit's current prompts treat frontend implementation like ordinary code work, but frontend success depends on additional criteria: design-system fit, visual taste, responsive behavior, asset handling, interaction states, browser verification, and avoiding common generated-UI failures. - Users need a way to opt into those frontend-specific expectations without adding a new command, expanding root instruction files, or making every Kit prompt carry frontend guidance. - Feature-specific research and design materials need an organized location that stays mostly ignored unless a frontend profile or explicit dependency makes them relevant.
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04] Add a root persistent `--profile` flag backed by an enum-like flag value that accepts only empty or `frontend`, so invalid values fail during flag parsing before any command `RunE` mutates files. - [PLAN-02][SPEC-05][SPEC-06][SPEC-07][SPEC-19][SPEC-20][SPEC-21][SPEC-22] Introduce a shared prompt-profile decorator that appends a single `## Frontend Profile` section after `## Skills` and before `## Subagent Orchestration`; keep OpenAI-inspired guidance encoded in Kit-owned text and do not require agents to fetch OpenAI docs at runtime. - [PLAN-03][SPEC-08][SPEC-09][SPEC-10][SPEC-33][SPEC-34] Route prompt-producing commands through profile-aware preparation with explicit profile taking precedence over feature-artifact inference; use feature path context where commands already resolve a feature, and use explicit profile only for project-wide or generic prompts. - [PLAN-04][SPEC-11][SPEC-12][SPEC-13][SPEC-14] Add shared dependency-table helpers for `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` that append or preserve `Frontend profile` and `Design materials` rows, remove the default `none` row when real rows exist, avoid duplicates, and leave stale rows intact. - [PLAN-05][SPEC-15][SPEC-16][SPEC-17][SPEC-18] Extend the brainstorm notes path so `kit brainstorm --profile=frontend` creates the design-material directory tree and seeds dependency rows, while `--prompt-only --profile=frontend` only mentions expected paths in generated guidance and performs no filesystem or markdown mutations. - [PLAN-06][SPEC-23][SPEC-24][SPEC-25][SPEC-26][SPEC-27][SPEC-28][SPEC-29][SPEC-30][SPEC-31] Keep the frontend profile guidance concise but materially different from backend prompting: RLM context routing first, existing design-system inspection, actual usable UI output, state/control coverage, relevant visual assets, responsive/browser/screenshot validation, and layout/text/palette checks before completion. - [PLAN-07][SPEC-32] Do not modify `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, scaffolded root instruction templates, or add any always-loaded profile manual. - [PLAN-08][SPEC-36][SPEC-37] Add focused tests around flag parsing, prompt composition, frontend quality constraints, feature dependency inference, brainstorm design scaffolding, prompt-only non-mutation, and default no-profile behavior; finish with feature-doc validation and the normal Go test suite.
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0024-frontend-profile/BRAINSTORM.md`, `docs/specs/0024-frontend-profile/SPEC.md`, `docs/specs/0024-frontend-profile/PLAN.md`, `docs/specs/0024-frontend-profile/TASKS.md`
+
 ## LAST UPDATED
 
-2026-04-16 14:20:32 EDT
+2026-04-27 11:48:00 EDT

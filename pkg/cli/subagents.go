@@ -29,12 +29,25 @@ func prepareAgentPrompt(prompt string) string {
 	return preparePrompt(prompt, !singleAgent)
 }
 
+func prepareAgentPromptForFeature(prompt, featurePath string) string {
+	return preparePromptForFeature(prompt, !singleAgent, featurePath)
+}
+
 func preparePromptWithoutSubagents(prompt string) string {
 	return preparePrompt(prompt, false)
 }
 
 func preparePrompt(prompt string, includeSubagents bool) string {
+	return preparePromptWithProfile(prompt, includeSubagents, currentPromptProfile())
+}
+
+func preparePromptForFeature(prompt string, includeSubagents bool, featurePath string) string {
+	return preparePromptWithProfile(prompt, includeSubagents, effectivePromptProfile(featurePath))
+}
+
+func preparePromptWithProfile(prompt string, includeSubagents bool, profile promptProfile) string {
 	prompt = appendSkillPromptSuffix(prompt)
+	prompt = appendPromptProfileSuffix(prompt, profile)
 
 	if !includeSubagents {
 		return prompt

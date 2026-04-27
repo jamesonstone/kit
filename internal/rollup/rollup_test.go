@@ -3,9 +3,11 @@ package rollup
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -68,5 +70,16 @@ func TestExtractFeatureSummary_PrefersSpecSummaryForTableAndProblemForIntent(t *
 	}
 	if got.Intent != "- Detailed intent text that is longer and should stay in the feature summary section." {
 		t.Fatalf("Intent = %q", got.Intent)
+	}
+}
+
+func TestGenerateContentWritesConcreteProjectIntent(t *testing.T) {
+	content := generateContent(nil, config.Default())
+
+	if !strings.Contains(content, "## PROJECT INTENT\n\nKit is a document-first workflow harness") {
+		t.Fatalf("expected concrete project intent, got:\n%s", content)
+	}
+	if strings.Contains(content, "TODO") {
+		t.Fatalf("expected generated content to avoid TODO placeholders, got:\n%s", content)
 	}
 }

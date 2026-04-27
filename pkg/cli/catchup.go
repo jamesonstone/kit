@@ -86,7 +86,7 @@ func outputCatchupPromptForFeature(
 	}
 
 	prompt := buildCatchupPrompt(feat, status, projectRoot)
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, copy); err != nil {
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, copy); err != nil {
 		return err
 	}
 

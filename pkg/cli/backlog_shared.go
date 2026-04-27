@@ -132,7 +132,7 @@ func resumeBacklogFeature(
 	}
 
 	prompt := buildBrainstormPrompt(brainstormPath, feat.Slug, projectRoot, thesis, cfg.GoalPercentage)
-	preparedPrompt := prepareAgentPrompt(prompt)
+	preparedPrompt := prepareAgentPromptForFeature(prompt, feat.Path)
 	if outputPath != "" {
 		if err := document.Write(outputPath, preparedPrompt); err != nil {
 			return fmt.Errorf("failed to write prompt file: %w", err)

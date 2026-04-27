@@ -100,20 +100,25 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 }
 
 func featureHandoff(featureRef string) (string, error) {
+	output, _, err := featureHandoffWithPath(featureRef)
+	return output, err
+}
+
+func featureHandoffWithPath(featureRef string) (string, string, error) {
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	cfg, err := config.Load(projectRoot)
 	if err != nil {
-		return "", fmt.Errorf("failed to load config: %w", err)
+		return "", "", fmt.Errorf("failed to load config: %w", err)
 	}
 
 	specsDir := cfg.SpecsPath(projectRoot)
 	feat, err := loadFeatureWithState(specsDir, cfg, featureRef)
 	if err != nil {
-		return "", fmt.Errorf("feature '%s' not found: %w", featureRef, err)
+		return "", "", fmt.Errorf("feature '%s' not found: %w", featureRef, err)
 	}
 
 	docs := featureHandoffDocuments(projectRoot, cfg, feat)
@@ -167,7 +172,7 @@ func featureHandoff(featureRef string) (string, error) {
 		)
 	})
 
-	return output, nil
+	return output, feat.Path, nil
 }
 
 func genericHandoffInstructions() string {

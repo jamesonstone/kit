@@ -43,12 +43,13 @@ func init() {
 
 func runHandoff(cmd *cobra.Command, args []string) error {
 	var output string
+	var featurePath string
 	var err error
 
 	if len(args) == 1 {
-		output, err = featureHandoff(args[0])
+		output, featurePath, err = featureHandoffWithPath(args[0])
 	} else {
-		output, err = interactiveHandoff()
+		output, featurePath, err = interactiveHandoffWithPath()
 	}
 
 	if err != nil {
@@ -62,30 +63,39 @@ func runHandoff(cmd *cobra.Command, args []string) error {
 		})
 	}
 
+	if featurePath != "" {
+		return outputPromptForFeatureWithClipboardDefault(output, featurePath, outputOnly, handoffCopy)
+	}
 	return outputPromptWithClipboardDefault(output, outputOnly, handoffCopy)
 }
 
 func interactiveHandoff() (string, error) {
+	output, _, err := interactiveHandoffWithPath()
+	return output, err
+}
+
+func interactiveHandoffWithPath() (string, string, error) {
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
-		return genericHandoffInstructions(), nil
+		return genericHandoffInstructions(), "", nil
 	}
 
 	cfg, err := config.Load(projectRoot)
 	if err != nil {
-		return "", fmt.Errorf("failed to load config: %w", err)
+		return "", "", fmt.Errorf("failed to load config: %w", err)
 	}
 
 	feat, projectWide, err := selectFeatureForHandoff(cfg.SpecsPath(projectRoot))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	if projectWide || feat == nil {
-		return projectHandoffWithConfig(projectRoot, cfg)
+		output, err := projectHandoffWithConfig(projectRoot, cfg)
+		return output, "", err
 	}
 
-	return featureHandoff(feat.Slug)
+	return featureHandoffWithPath(feat.Slug)
 }
 
 func selectFeatureForHandoff(specsDir string) (*feature.Feature, bool, error) {

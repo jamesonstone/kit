@@ -133,7 +133,7 @@ func runSkillMine(cmd *cobra.Command, args []string) error {
 		projectRoot,
 	)
 
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, skillCopy); err != nil {
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, skillCopy); err != nil {
 		return err
 	}
 

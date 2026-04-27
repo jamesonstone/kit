@@ -110,6 +110,73 @@ func TestRunBrainstorm_CreatesFeatureNotesDirAndSeedsDependency(t *testing.T) {
 	}
 }
 
+func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsDependencies(t *testing.T) {
+	projectRoot, _ := setupLifecycleTestProject(t)
+
+	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
+	if err != nil {
+		t.Fatalf("ensureHandoffTestWorkingDirectory() error = %v", err)
+	}
+	defer restoreWD()
+
+	restoreEditor := stubBrainstormEditor(t, "Need a responsive dashboard redesign.")
+	defer restoreEditor()
+	restoreFlags := setBrainstormFlagState(false, false, "", false, false, false, false)
+	defer restoreFlags()
+	restorePromptProfileState(t, promptProfileFrontend, true)
+
+	cmd := newBrainstormTestCommand()
+	if err := cmd.Flags().Set("output-only", "true"); err != nil {
+		t.Fatalf("Flags().Set() error = %v", err)
+	}
+	output := captureStdout(t, func() {
+		if err := runBrainstorm(cmd, []string{"dashboard-redesign"}); err != nil {
+			t.Fatalf("runBrainstorm() error = %v", err)
+		}
+	})
+
+	featureDir := "0001-dashboard-redesign"
+	designPath := filepath.Join(projectRoot, "docs", "notes", featureDir, "design")
+	for _, path := range []string{
+		filepath.Join(designPath, ".gitkeep"),
+		filepath.Join(designPath, "screenshots", ".gitkeep"),
+		filepath.Join(designPath, "references", ".gitkeep"),
+	} {
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("expected frontend design placeholder %s, got %v", path, err)
+		}
+	}
+
+	brainstormPath := filepath.Join(projectRoot, "docs", "specs", featureDir, "BRAINSTORM.md")
+	content, err := os.ReadFile(brainstormPath)
+	if err != nil {
+		t.Fatalf("os.ReadFile() error = %v", err)
+	}
+	text := string(content)
+	checks := []string{
+		"| Feature notes | notes | docs/notes/0001-dashboard-redesign | optional pre-brainstorm research input | optional |",
+		"| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |",
+		"| Design materials | design | docs/notes/0001-dashboard-redesign/design | optional frontend design input | optional |",
+	}
+	for _, check := range checks {
+		if !strings.Contains(text, check) {
+			t.Fatalf("expected BRAINSTORM.md to contain %q, got:\n%s", check, text)
+		}
+	}
+
+	promptChecks := []string{
+		"DESIGN MATERIALS",
+		designPath,
+		"ignore `.gitkeep`",
+		"## Frontend Profile",
+	}
+	for _, check := range promptChecks {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected frontend brainstorm prompt to contain %q, got:\n%s", check, output)
+		}
+	}
+}
+
 func TestEnsureBrainstormNotesDependency_AppendsWithoutRemovingExistingRows(t *testing.T) {
 	projectRoot := t.TempDir()
 	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())

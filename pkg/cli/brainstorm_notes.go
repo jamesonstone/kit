@@ -19,22 +19,51 @@ func featureNotesPath(projectRoot, featureDirName string) string {
 	return filepath.Join(projectRoot, "docs", "notes", featureDirName)
 }
 
+func featureDesignMaterialsPath(projectRoot, featureDirName string) string {
+	return filepath.Join(featureNotesPath(projectRoot, featureDirName), "design")
+}
+
 func ensureFeatureNotesDir(projectRoot, featureDirName string) (string, string, error) {
 	notesPath := featureNotesPath(projectRoot, featureDirName)
 	if err := os.MkdirAll(notesPath, 0755); err != nil {
 		return "", "", fmt.Errorf("failed to create feature notes directory: %w", err)
 	}
 
-	gitkeepPath := filepath.Join(notesPath, ".gitkeep")
-	file, err := os.OpenFile(gitkeepPath, os.O_RDONLY|os.O_CREATE, 0644)
-	if err != nil {
+	if err := ensurePlaceholderFile(notesPath); err != nil {
 		return "", "", fmt.Errorf("failed to create feature notes placeholder: %w", err)
-	}
-	if err := file.Close(); err != nil {
-		return "", "", fmt.Errorf("failed to close feature notes placeholder: %w", err)
 	}
 
 	return notesPath, featureNotesRelPath(featureDirName), nil
+}
+
+func ensureFeatureDesignMaterialsDirs(projectRoot, featureDirName string) (string, string, error) {
+	designPath := featureDesignMaterialsPath(projectRoot, featureDirName)
+	for _, dir := range []string{
+		designPath,
+		filepath.Join(designPath, "screenshots"),
+		filepath.Join(designPath, "references"),
+	} {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return "", "", fmt.Errorf("failed to create frontend design materials directory: %w", err)
+		}
+		if err := ensurePlaceholderFile(dir); err != nil {
+			return "", "", fmt.Errorf("failed to create frontend design materials placeholder: %w", err)
+		}
+	}
+
+	return designPath, designMaterialsRelPath(featureDirName), nil
+}
+
+func ensurePlaceholderFile(dir string) error {
+	gitkeepPath := filepath.Join(dir, ".gitkeep")
+	file, err := os.OpenFile(gitkeepPath, os.O_RDONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	if err := file.Close(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func featureNotesDirName(brainstormPath, fallbackSlug string) string {

@@ -151,7 +151,7 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 
 	// project intent
 	b.WriteString("## PROJECT INTENT\n\n")
-	b.WriteString("<!-- TODO: describe the overall project purpose -->\n\n")
+	b.WriteString(projectIntentSummary() + "\n\n")
 
 	// global constraints
 	b.WriteString("## GLOBAL CONSTRAINTS\n\n")
@@ -188,6 +188,10 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 	b.WriteString(fmt.Sprintf("%s\n", time.Now().Format("2006-01-02 15:04:05 MST")))
 
 	return b.String()
+}
+
+func projectIntentSummary() string {
+	return "Kit is a document-first workflow harness for disciplined thought work. It keeps durable project context in canonical markdown artifacts so humans and coding agents can move from research to specification, planning, tasks, implementation, reflection, and completion with explicit traceability."
 }
 
 // Update is an alias for Generate (updates the existing file).

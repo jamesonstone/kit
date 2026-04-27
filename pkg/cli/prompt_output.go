@@ -26,6 +26,10 @@ func outputPromptWithClipboardDefault(prompt string, outputOnly, copy bool) erro
 	return writePromptWithClipboardDefault(prepareAgentPrompt(prompt), outputOnly, copy)
 }
 
+func outputPromptForFeatureWithClipboardDefault(prompt, featurePath string, outputOnly, copy bool) error {
+	return writePromptWithClipboardDefault(prepareAgentPromptForFeature(prompt, featurePath), outputOnly, copy)
+}
+
 func outputPromptWithoutSubagentsWithClipboardDefault(prompt string, outputOnly, copy bool) error {
 	return writePromptWithClipboardDefault(preparePromptWithoutSubagents(prompt), outputOnly, copy)
 }

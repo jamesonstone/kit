@@ -162,7 +162,7 @@ func outputImplementationPrompt(feat *feature.Feature, brainstormPath, specPath,
 		printImplementationContext(feat, brainstormPath, specPath, planPath, tasksPath, summary, progress)
 	}
 
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, implementCopy); err != nil {
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, implementCopy); err != nil {
 		return err
 	}
 

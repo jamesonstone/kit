@@ -166,7 +166,7 @@ func runSpecTemplate(
 		fmt.Println()
 	}
 
-	if err := outputPromptWithClipboardDefault(prompt, outputOnly, specCopy); err != nil {
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, filepath.Dir(specPath), outputOnly, specCopy); err != nil {
 		return err
 	}
 	if !outputOnly {

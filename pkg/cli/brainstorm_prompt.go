@@ -46,7 +46,7 @@ func outputExistingBrainstormPrompt(args []string, projectRoot string, cfg *conf
 
 	thesis := existingBrainstormThesis(brainstormPath)
 	prompt := buildBrainstormPrompt(brainstormPath, feat.Slug, projectRoot, thesis, cfg.GoalPercentage)
-	preparedPrompt := prepareAgentPrompt(prompt)
+	preparedPrompt := prepareAgentPromptForFeature(prompt, feat.Path)
 
 	if brainstormOutput != "" {
 		if err := document.Write(brainstormOutput, preparedPrompt); err != nil {
@@ -131,7 +131,10 @@ func existingBrainstormThesis(brainstormPath string) string {
 
 func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis string, goalPct int) string {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
-	notesPath := featureNotesPath(projectRoot, featureNotesDirName(brainstormPath, featureSlug))
+	featureDirName := featureNotesDirName(brainstormPath, featureSlug)
+	notesPath := featureNotesPath(projectRoot, featureDirName)
+	designPath := featureDesignMaterialsPath(projectRoot, featureDirName)
+	frontendProfileActive := effectivePromptProfile(filepath.Dir(brainstormPath)) == promptProfileFrontend
 
 	taskSteps := []string{
 		"Stay in planning and information-gathering mode only",
@@ -147,6 +150,20 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 				"- leave the notes directory dependency as `optional` when no usable note files exist",
 			notesPath,
 		),
+	}
+	if frontendProfileActive {
+		taskSteps = append(taskSteps, fmt.Sprintf(
+			"Inspect optional frontend design materials at %s just in time:\n"+
+				"- ignore `.gitkeep` and empty placeholder files\n"+
+				"- list available files only to decide whether any are relevant to the user thesis\n"+
+				"- read only the specific screenshots, references, or design notes needed for the current decision\n"+
+				"- copy durable design conclusions into BRAINSTORM.md instead of leaving them only in notes or chat\n"+
+				"- record specific design files or external design refs that shaped the brainstorm in `## DEPENDENCIES` with `Status` = `active`\n"+
+				"- leave the design materials directory dependency as `optional` when no usable design files exist",
+			designPath,
+		))
+	}
+	taskSteps = append(taskSteps,
 		relatedFeatureContextStepText(projectRoot, brainstormPath),
 		fmt.Sprintf(
 			"Research the filtered relevant areas of the codebase at %s to identify the files, patterns, constraints, interfaces, and adjacent workflows that matter to this feature; expand beyond that set only when the evidence requires it",
@@ -169,7 +186,7 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 				"- use canonical feature directory identifiers such as `0007-catchup-command`",
 			brainstormPath,
 		),
-	}
+	)
 	taskSteps = append(taskSteps, clarificationLoopSteps(
 		goalPct,
 		fmt.Sprintf(
@@ -189,6 +206,16 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 		),
 	)
 
+	contextRows := [][]string{
+		{"CONSTITUTION", constitutionPath},
+		{"BRAINSTORM", brainstormPath},
+		{"FEATURE NOTES", notesPath},
+	}
+	if frontendProfileActive {
+		contextRows = append(contextRows, []string{"DESIGN MATERIALS", designPath})
+	}
+	contextRows = append(contextRows, []string{"Project Root", projectRoot})
+
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Raw("/plan")
 		doc.Paragraph(fmt.Sprintf("You are in planning mode for feature: **%s**", featureSlug))
@@ -204,12 +231,7 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 		doc.Heading(2, "Context Docs (read first)")
 		doc.Table(
 			[]string{"File", "Purpose"},
-			[][]string{
-				{"CONSTITUTION", constitutionPath},
-				{"BRAINSTORM", brainstormPath},
-				{"FEATURE NOTES", notesPath},
-				{"Project Root", projectRoot},
-			},
+			contextRows,
 		)
 		doc.Heading(2, "Your Task")
 		doc.OrderedList(1, taskSteps...)

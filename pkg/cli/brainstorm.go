@@ -134,10 +134,19 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	frontendProfileActive := effectivePromptProfile(feat.Path) == promptProfileFrontend
+	if frontendProfileActive {
+		if _, _, err := ensureFeatureDesignMaterialsDirs(projectRoot, feat.DirName); err != nil {
+			return err
+		}
+	}
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	if !document.Exists(brainstormPath) {
 		content := seedBrainstormNotesDependency(templates.BuildBrainstormArtifact(thesis), notesRelPath)
+		if frontendProfileActive {
+			content = seedFrontendProfileDependencyRows(content, document.TypeBrainstorm, feat.DirName)
+		}
 		if err := document.Write(brainstormPath, content); err != nil {
 			return fmt.Errorf("failed to create BRAINSTORM.md: %w", err)
 		}
@@ -147,6 +156,11 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	} else {
 		if _, err := ensureBrainstormNotesDependency(brainstormPath, notesRelPath); err != nil {
 			return err
+		}
+		if frontendProfileActive {
+			if _, err := ensureFrontendProfileDependencyRows(brainstormPath, document.TypeBrainstorm, feat.DirName); err != nil {
+				return err
+			}
 		}
 		if !outputOnly {
 			fmt.Println("  ✓ BRAINSTORM.md already exists")
@@ -177,7 +191,7 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	}
 
 	prompt := buildBrainstormPrompt(brainstormPath, feat.Slug, projectRoot, thesis, cfg.GoalPercentage)
-	preparedPrompt := prepareAgentPrompt(prompt)
+	preparedPrompt := prepareAgentPromptForFeature(prompt, feat.Path)
 
 	if brainstormOutput != "" {
 		if err := document.Write(brainstormOutput, preparedPrompt); err != nil {

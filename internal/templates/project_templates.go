@@ -44,11 +44,11 @@ const ProjectProgressSummary = `# PROJECT PROGRESS SUMMARY
 
 ## PROJECT INTENT
 
-<!-- TODO: describe the overall project purpose -->
+Kit is a document-first workflow harness for disciplined thought work. It keeps durable project context in canonical markdown artifacts so humans and coding agents can move from research to specification, planning, tasks, implementation, reflection, and completion with explicit traceability.
 
 ## GLOBAL CONSTRAINTS
 
-<!-- TODO: summarize key constraints from CONSTITUTION.md -->
+See docs/CONSTITUTION.md for project-wide constraints and principles.
 
 ## FEATURE SUMMARIES
 

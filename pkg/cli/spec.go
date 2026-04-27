@@ -132,6 +132,11 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	} else if !outputOnly {
 		fmt.Println("  ✓ SPEC.md already exists")
 	}
+	if effectivePromptProfile(feat.Path) == promptProfileFrontend {
+		if _, err := ensureFrontendProfileDependencyRows(specPath, document.TypeSpec, feat.DirName); err != nil {
+			return err
+		}
+	}
 
 	// determine if we should run interactive mode
 	// default is non-interactive (template mode), unless --interactive is explicitly set
