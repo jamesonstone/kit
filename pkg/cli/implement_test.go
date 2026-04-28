@@ -45,7 +45,13 @@ func TestBuildImplementationPrompt_IncludesReadinessGate(t *testing.T) {
 		"do not paraphrase entire prior docs into chat",
 		"Inspect the relevant code before editing",
 		"Run relevant validation before completion",
-		"Start by opening TASKS.md and selecting the first incomplete task",
+		"Start by opening TASKS.md and selecting the first incomplete unblocked task",
+		"Continue the task loop until every non-blocked task in TASKS.md is complete",
+		"Select the next incomplete unblocked task in dependency order",
+		"Repeat with the next incomplete task",
+		"Do not stop after one task",
+		"Complete every non-blocked task in dependency order from TASKS.md before reporting implementation complete",
+		"until every non-blocked task in TASKS.md is complete",
 		"Only for unresolved rationale; non-binding context",
 	}
 

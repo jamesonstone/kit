@@ -184,7 +184,7 @@ func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, 
 		steps = append(steps, "**If a repo-wide reference matters, read `docs/references/README.md` and only the linked reference docs relevant to the selected task**")
 	}
 	steps = append(steps,
-		"**Open `TASKS.md` first** and select the next incomplete task marked `- [ ]`",
+		"**Open `TASKS.md` first** and select the next incomplete unblocked task marked `- [ ]`",
 		"**Read only the selected task details**: GOAL, SCOPE, ACCEPTANCE, DEPENDENCIES, and NOTES",
 		"**Load only the relevant `PLAN.md` section** referenced by the selected task's `[PLAN-XX]` links",
 		"**Load only the relevant `SPEC.md` requirement** referenced by that plan section's `[SPEC-XX]` links",
@@ -196,7 +196,8 @@ func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, 
 		"**If the readiness gate fails, stop and repair the docs first**\n- Do NOT write production code yet\n- Update SPEC.md, PLAN.md, and/or TASKS.md to resolve the exact issue\n- Update PROJECT_PROGRESS_SUMMARY.md when the feature summary or state changes\n- Re-run the implementation readiness gate after the docs are fixed",
 		"**Supplement with your context**: If you have internal plans or prior conversation context related to this feature, use that knowledge to inform your implementation — but always defer to the authority order when there's a conflict",
 		"**Only after the readiness gate passes, execute tasks from TASKS.md**",
-		"**For each task:**\n- Start with the first incomplete task (marked '- [ ]')\n- Read the task's GOAL, SCOPE, and ACCEPTANCE criteria\n- Implement only what's specified (no gold-plating)\n- Verify acceptance criteria are met before marking complete\n- Update TASKS.md: change '- [ ]' to '- [x]' when done",
+		"**Continue the task loop until every non-blocked task in TASKS.md is complete:**\n- Select the next incomplete unblocked task in dependency order\n- Read that task's GOAL, SCOPE, ACCEPTANCE, DEPENDENCIES, and NOTES\n- Load only the linked context needed for that task\n- Run the readiness gate for that task\n- Implement only what's specified (no gold-plating)\n- Verify acceptance criteria are met before marking complete\n- Update TASKS.md: change '- [ ]' to '- [x]' when done\n- Update PROJECT_PROGRESS_SUMMARY.md if progress changed\n- Repeat with the next incomplete task",
+		"**Do not stop after one task** unless blocked, validation fails, clarification is required, or the user explicitly asks you to stop",
 		"**Run relevant validation before completion**\n- Run the smallest build, lint, or test command that proves the touched behavior\n- Never claim tests passed unless they ran\n- If validation cannot run, state why",
 	)
 
@@ -273,7 +274,7 @@ func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, 
 			"Re-run the readiness gate every time implementation restarts after a doc repair",
 			"Stay within scope defined in SPEC.md",
 			"Follow architecture decisions in PLAN.md",
-			"Complete tasks in dependency order from TASKS.md",
+			"Complete every non-blocked task in dependency order from TASKS.md before reporting implementation complete",
 			"Quality gate: target zero known defects; do not mark implementation complete until all gates pass with evidence: unresolved assumptions = 0, acceptance criteria mapped 1:1 to outputs, build/compile succeeds, lint/typecheck/test failures = 0, and unrelated diff scope = 0",
 			"If any gate fails, stop, report the exact failure, and propose the next fix",
 			"Ask for clarification rather than making assumptions",
@@ -283,9 +284,10 @@ func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, 
 			"Keep TASKS.md updated with accurate status and ensure that it reflects reality upon completion",
 		)
 		doc.Heading(2, "Begin")
-		doc.Paragraph("Start by opening TASKS.md and selecting the first incomplete task marked with '- [ ]'.")
+		doc.Paragraph("Start by opening TASKS.md and selecting the first incomplete unblocked task marked with '- [ ]'.")
 		doc.Paragraph("Load only the linked PLAN and SPEC sections needed for that task, then run the readiness gate.")
 		doc.Paragraph("Do not write code until the gate passes and the relevant code has been inspected.")
+		doc.Paragraph("After a task is complete, repeat the same loop for the next incomplete unblocked task until every non-blocked task in TASKS.md is complete.")
 	})
 }
 
