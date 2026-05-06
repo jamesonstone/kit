@@ -28,6 +28,7 @@ type Config struct {
 	InstructionScaffoldVersion int                              `yaml:"instruction_scaffold_version"`
 	FeatureNaming              FeatureNaming                    `yaml:"feature_naming"`
 	FeatureState               map[string]FeatureLifecycleState `yaml:"feature_state,omitempty"`
+	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
 }
 
 type FeatureLifecycleState struct {

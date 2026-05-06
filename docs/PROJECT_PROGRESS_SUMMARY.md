@@ -29,6 +29,7 @@
 | 0022 | typed-prompt-ir | `docs/specs/0022-typed-prompt-ir` | reflect | no | 2026-04-13 | - Replace ad hoc string-built prompt construction with a typed prompt IR across Kit's prompt-producing commands, while keeping the current output wrappers and shared prompt decorators intact. |
 | 0023 | worktree-safe-feature-allocation | `docs/specs/0023-worktree-safe-feature-allocation` | reflect | no | 2026-04-16 | Reserve feature numbers from a repo-shared allocator so multiple worktrees from the same clone cannot create duplicate numbered feature directories. |
 | 0024 | frontend-profile | `docs/specs/0024-frontend-profile` | reflect | no | 2026-04-27 | Add an explicit `--profile=frontend` prompt profile that applies frontend-specific guidance through Kit's existing prompt-output flow without adding commands, root-instruction bloat, or automatic frontend detection. Frontend brainstorms must keep design materials under `docs/notes/<feature-dir>/design/` and expose them through just-in-time dependency routing rather than inlining all assets by default. |
+| 0025 | v0-prompt-library | `docs/specs/0025-v0-prompt-library` | reflect | no | 2026-05-06 | Add a layered prompt library that exposes reusable prompts through `kit prompt <noun> <verb>` and editable local/global prompt storage through `kit set prompt <noun> <verb>`. Prompt lookup must be explicit, filesystem-backed, clipboard-friendly, interactive by default, and compatible with Kit's existing prompt-generation and editor workflows. |
 
 ## PROJECT INTENT
 
@@ -265,6 +266,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - none
 - **POINTERS**: `docs/specs/0024-frontend-profile/BRAINSTORM.md`, `docs/specs/0024-frontend-profile/SPEC.md`, `docs/specs/0024-frontend-profile/PLAN.md`, `docs/specs/0024-frontend-profile/TASKS.md`
 
+### v0-prompt-library
+
+- **STATUS**: reflect
+- **PAUSED**: no
+- **INTENT**: Kit has many prompt-producing commands, and the user also maintains separate one-off prompts outside Kit. Those prompts are not discoverable through one hierarchy, are not configurable at project and user scope, and do not share Kit's existing clipboard, editor, prompt profile, skills, subagent, and help-output conventions.
+- **APPROACH**: - [PLAN-01][SPEC-11][SPEC-12][SPEC-17] Extend the config layer additively so existing `.kit.yaml` files continue to load, global config can be absent, `kit init` can populate missing global defaults, and prompt entries are read from `prompts.<noun>.<verb>`. - [PLAN-02][SPEC-15][SPEC-16][SPEC-61] Normalize prompt identities once at the boundary using lowercase kebab-case, reject empty or colliding normalized identities, and sort all registry views deterministically. - [PLAN-03][SPEC-17][SPEC-18][SPEC-20] Build an effective prompt registry by merging built-in, global, and local sources in that order while retaining lower-precedence matches for shadow/override reporting. - [PLAN-04][SPEC-43][SPEC-52] Keep built-in prompt text in provider adapters under `pkg/cli`, not in config, so static toolbox prompts are embedded once and current Kit workflow/support prompts delegate to existing builders. - [PLAN-05][SPEC-29][SPEC-33] Add a prompt-library output helper instead of changing `writePromptWithClipboardDefault`; the new helper must copy the resolved prompt body by default, print origin and shadow metadata, then print the body in a delimited block. - [PLAN-06][SPEC-38][SPEC-42] Implement prompt editing through the existing `readEditorText` path and keep stdin and `--file` out of v0. - [PLAN-07][SPEC-53][SPEC-55] Model built-in prompts that need runtime context as providers with explicit context requirements; infer context where existing command helpers can, otherwise ask whether the user can provide it and capture it through the editor. - [PLAN-08][SPEC-56][SPEC-63] Integrate `prompt`, `prompt list`, `set`, and `set prompt` into the human-readable CLI surface with table/list output and root-help placement. - [PLAN-09][SPEC-64][SPEC-67] Update docs and tests alongside the implementation so command behavior, YAML schema, precedence, output flags, editor semantics, help grouping, and dynamic context paths are mechanically covered. - Planning metadata: `parallelization_mode: "rlm"`. - Tradeoff decisions: use nested YAML instead of per-prompt files; reserve `kit prompt list` as the discovery command; do not add a source selector, non-copy flag, stdin setter, file setter, auto-paste, or clipboard restore path in v0.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0025-v0-prompt-library/BRAINSTORM.md`, `docs/specs/0025-v0-prompt-library/SPEC.md`, `docs/specs/0025-v0-prompt-library/PLAN.md`, `docs/specs/0025-v0-prompt-library/TASKS.md`
+
 ## LAST UPDATED
 
-2026-04-27 11:48:00 EDT
+2026-05-06 11:28:32 EDT

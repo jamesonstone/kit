@@ -31,6 +31,8 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"Inspect & Repair",
 		"Prompt Utilities",
 		"Utilities",
+		"prompt",
+		"set",
 		"resume",
 		"status",
 		"upgrade",
@@ -80,6 +82,76 @@ func TestDeprecatedCommandsRemainRegisteredAndHidden(t *testing.T) {
 			t.Fatalf("expected %q deprecation to contain %q, got %q", tt.name, tt.want, cmd.Deprecated)
 		}
 	}
+}
+
+func TestPromptLibraryCommandsRemainRegisteredAndDiscoverable(t *testing.T) {
+	tests := [][]string{
+		{"prompt"},
+		{"prompt", "list"},
+		{"set"},
+		{"set", "prompt"},
+	}
+
+	for _, args := range tests {
+		cmd, _, err := rootCmd.Find(args)
+		if err != nil {
+			t.Fatalf("rootCmd.Find(%v) error = %v", args, err)
+		}
+		if cmd == nil {
+			t.Fatalf("expected command %v to be registered", args)
+		}
+		if cmd.Hidden {
+			t.Fatalf("expected command %v to be visible", args)
+		}
+	}
+}
+
+func TestPromptLibraryHelpShowsSupportedFlagsOnly(t *testing.T) {
+	promptHelp := executeHelp(t, []string{"prompt", "--help"})
+	for _, check := range []string{"list", "--copy", "--output-only"} {
+		if !strings.Contains(promptHelp, check) {
+			t.Fatalf("expected prompt help to contain %q, got %q", check, promptHelp)
+		}
+	}
+	for _, unsupported := range []string{"--source", "--no-copy"} {
+		if strings.Contains(promptHelp, unsupported) {
+			t.Fatalf("expected prompt help to omit %q, got %q", unsupported, promptHelp)
+		}
+	}
+
+	setPromptHelp := executeHelp(t, []string{"set", "prompt", "--help"})
+	for _, check := range []string{"--local", "--global"} {
+		if !strings.Contains(setPromptHelp, check) {
+			t.Fatalf("expected set prompt help to contain %q, got %q", check, setPromptHelp)
+		}
+	}
+	for _, unsupported := range []string{"--file", "--source", "--no-copy"} {
+		if strings.Contains(setPromptHelp, unsupported) {
+			t.Fatalf("expected set prompt help to omit %q, got %q", unsupported, setPromptHelp)
+		}
+	}
+}
+
+func executeHelp(t *testing.T, args []string) string {
+	t.Helper()
+
+	previousOut := rootCmd.OutOrStdout()
+	previousErr := rootCmd.ErrOrStderr()
+	defer func() {
+		rootCmd.SetOut(previousOut)
+		rootCmd.SetErr(previousErr)
+		rootCmd.SetArgs(nil)
+	}()
+
+	out := &bytes.Buffer{}
+	rootCmd.SetOut(out)
+	rootCmd.SetErr(out)
+	rootCmd.SetArgs(args)
+
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatalf("rootCmd.Execute(%v) error = %v", args, err)
+	}
+	return out.String()
 }
 
 func TestSkillsMineAliasCarriesDeprecationGuidance(t *testing.T) {

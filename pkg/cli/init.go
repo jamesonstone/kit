@@ -23,8 +23,9 @@ var initCmd = &cobra.Command{
 
 Creates:
   - .kit.yaml configuration file
+  - ~/.config/kit/.kit.yaml global configuration file
   - docs/CONSTITUTION.md
-	- Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
+  - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
 
 If files already exist, Kit attempts to merge by preserving existing
 content and adding any missing required sections.
@@ -55,7 +56,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	// create or merge .kit.yaml
-	cfg := config.Default()
+	cfg := defaultInitConfig()
 	if config.Exists(cwd) {
 		if !initOutputOnly {
 			fmt.Println("  ✓ .kit.yaml exists, merging...")
@@ -74,13 +75,16 @@ func runInit(cmd *cobra.Command, args []string) error {
 			}
 		}
 	} else {
-		cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
 		if err := config.Save(cwd, cfg); err != nil {
 			return fmt.Errorf("failed to create .kit.yaml: %w", err)
 		}
 		if !initOutputOnly {
 			fmt.Println("  ✓ Created .kit.yaml")
 		}
+	}
+
+	if err := populateGlobalConfig(initOutputOnly); err != nil {
+		return err
 	}
 
 	// ensure docs directory exists
@@ -152,23 +156,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	// output easy-to-copy instruction for coding agents
 	constitutionRelPath := cfg.ConstitutionPath
 	constitutionFullPath := filepath.Join(cwd, constitutionRelPath)
-
-	prompt := renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph(fmt.Sprintf(
-			"Please update %s with all patterns, strategy, implementation details, process, and long-term vision for this project.\nThis document will drive the \"rules for development\" going forward.",
-			constitutionFullPath,
-		))
-		doc.Paragraph(fmt.Sprintf("Analyze the codebase at %s to extract:", cwd))
-		doc.BulletList(
-			"Architectural patterns and conventions",
-			"Code style and naming conventions",
-			"Dependencies and their purposes",
-			"Non-negotiable constraints",
-			"Project goals and non-goals",
-		)
-		doc.Paragraph("Rules:")
-		doc.BulletList("PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times")
-	})
+	prompt := buildProjectInitPrompt(cwd, constitutionFullPath)
 
 	if err := outputPromptWithClipboardDefault(prompt, initOutputOnly, initCopy); err != nil {
 		return err
@@ -183,4 +171,46 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func defaultInitConfig() *config.Config {
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
+	return cfg
+}
+
+func populateGlobalConfig(outputOnly bool) error {
+	configPath, changed, err := config.PopulateGlobalConfig(defaultInitConfig())
+	if err != nil {
+		return fmt.Errorf("failed to populate global config: %w", err)
+	}
+
+	if outputOnly {
+		return nil
+	}
+	if changed {
+		fmt.Printf("  ✓ Populated %s\n", configPath)
+		return nil
+	}
+	fmt.Printf("  ✓ %s exists\n", configPath)
+	return nil
+}
+
+func buildProjectInitPrompt(projectRoot, constitutionFullPath string) string {
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Paragraph(fmt.Sprintf(
+			"Please update %s with all patterns, strategy, implementation details, process, and long-term vision for this project.\nThis document will drive the \"rules for development\" going forward.",
+			constitutionFullPath,
+		))
+		doc.Paragraph(fmt.Sprintf("Analyze the codebase at %s to extract:", projectRoot))
+		doc.BulletList(
+			"Architectural patterns and conventions",
+			"Code style and naming conventions",
+			"Dependencies and their purposes",
+			"Non-negotiable constraints",
+			"Project goals and non-goals",
+		)
+		doc.Paragraph("Rules:")
+		doc.BulletList("PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times")
+	})
 }

@@ -204,7 +204,7 @@ Kit explicitly does NOT:
 ### Process & Execution
 
 - ❌ Execute code or run tests
-- ❌ Manage agents directly or maintain prompt registries
+- ❌ Manage agents directly or maintain hidden prompt registries outside YAML files
 - ❌ Merge branches or manage PRs
 - ❌ Replace CI/CD systems
 
@@ -446,30 +446,61 @@ Kit intentionally keeps dependencies minimal:
 
 ### `.kit.yaml` Full Schema
 
+The same top-level schema is used for project-local `.kit.yaml` and global
+`~/.config/kit/.kit.yaml`. `kit init` populates both locations, while command
+state such as `feature_state` remains project-local in practice.
+
 ```yaml
 # Understanding threshold percentage (0-100)
 goal_percentage: 95
 
 # Location of feature specs relative to project root
 specs_dir: docs/specs
+# Location of reusable agent skills relative to project root
+skills_dir: .agents/skills
 
 # Location of constitution file
 constitution_path: docs/CONSTITUTION.md
 
 # If true, kit plan/tasks create missing prerequisites
 allow_out_of_order: false
+# Repository instruction scaffold model
+instruction_scaffold_version: 2
 
 # Agent pointer files to scaffold on kit init
 agents:
   - AGENTS.md
   - CLAUDE.md
   - .github/copilot-instructions.md
+# Feature lifecycle state
+feature_state:
+  0001-feat-name:
+    paused: false
 
 # Feature directory naming
 feature_naming:
   numeric_width: 4 # Pads to 0001, 0002, etc.
   separator: '-' # Between number and slug
+
+# Local prompt library entries
+prompts:
+  coding-agent:
+    short:
+      content: |
+        Clarify the task, inspect the codebase, then propose the next change.
+      description: Short coding-agent planning prompt
 ```
+
+Prompt library rules:
+
+- Project-local `.kit.yaml` entries have highest precedence.
+- Global prompt entries live in `~/.config/kit/.kit.yaml` and override built-ins when no local prompt exists.
+- `kit init` creates or updates the global config with missing default fields without replacing existing prompt entries.
+- Built-in prompts have lowest precedence.
+- Prompt identities normalize to lowercase kebab-case.
+- Prompt entries require `content` and may include `description`.
+- Unknown prompt metadata must not break reads.
+- v0 does not support `--source`, `--no-copy`, auto-paste, clipboard restore, stdin setters, or file setters.
 
 ---
 

@@ -5,10 +5,13 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/jamesonstone/kit/internal/config"
 )
 
 func TestRunInit_DefaultCopiesConstitutionPromptAndShowsPasteStep(t *testing.T) {
 	tempDir := t.TempDir()
+	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -53,6 +56,7 @@ func TestRunInit_DefaultCopiesConstitutionPromptAndShowsPasteStep(t *testing.T) 
 
 func TestRunInit_OutputOnlyPrintsRawPromptAndSkipsDefaultCopy(t *testing.T) {
 	tempDir := t.TempDir()
+	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -95,6 +99,7 @@ func TestRunInit_OutputOnlyPrintsRawPromptAndSkipsDefaultCopy(t *testing.T) {
 
 func TestRunInit_OutputOnlyAndCopyDoesBoth(t *testing.T) {
 	tempDir := t.TempDir()
+	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
 	withInitFlags(t, func() {
 		initOutputOnly = true
@@ -126,6 +131,41 @@ func TestRunInit_OutputOnlyAndCopyDoesBoth(t *testing.T) {
 	})
 }
 
+func TestRunInit_PopulatesGlobalConfig(t *testing.T) {
+	tempDir := t.TempDir()
+	homeDir := setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+
+		configPath := filepath.Join(homeDir, ".config", "kit", config.ConfigFileName)
+		if _, err := os.Stat(configPath); err != nil {
+			t.Fatalf("expected global config at %s: %v", configPath, err)
+		}
+
+		cfg, found, err := config.LoadGlobal()
+		if err != nil {
+			t.Fatalf("config.LoadGlobal() error = %v", err)
+		}
+		if !found {
+			t.Fatal("config.LoadGlobal() found = false, want true")
+		}
+		if cfg.GoalPercentage != 95 {
+			t.Fatalf("GoalPercentage = %d, want 95", cfg.GoalPercentage)
+		}
+		if cfg.InstructionScaffoldVersion != config.DefaultInstructionScaffoldVersion {
+			t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, config.DefaultInstructionScaffoldVersion)
+		}
+	})
+}
+
 func withInitFlags(t *testing.T, run func()) {
 	t.Helper()
 
@@ -141,4 +181,12 @@ func withInitFlags(t *testing.T, run func()) {
 	initOutputOnly = false
 
 	run()
+}
+
+func setupInitHome(t *testing.T) string {
+	t.Helper()
+
+	homeDir := t.TempDir()
+	t.Setenv("HOME", homeDir)
+	return homeDir
 }

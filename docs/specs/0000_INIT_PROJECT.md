@@ -374,6 +374,7 @@ specs_dir: docs/specs
 skills_dir: .agents/skills
 constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false # if true, kit plan/tasks create missing prerequisites
+instruction_scaffold_version: 2
 feature_state:
   0001-feat-name:
     paused: false
@@ -392,13 +393,38 @@ agents:
 
 ### 7.3 Feature Naming
 
-```plaintext
+```yaml
 feature_naming:
   numeric_width: 4
   separator: "-"
 ```
 
 Feature names always use numeric prefix + slug format (e.g., `0001-feat-name`).
+
+### 7.4 Prompt Library
+
+Project-local prompt entries live in project-root `.kit.yaml`. Global prompt
+entries use the same shape in `~/.config/kit/.kit.yaml`. `kit init` creates or
+updates the global config with missing default fields without replacing existing
+prompt entries.
+
+```yaml
+prompts:
+  custom:
+    review:
+      content: |
+        Review the current changes for correctness, edge cases, and tests.
+      description: Custom review prompt
+```
+
+Rules:
+
+- `content` is required.
+- `description` is optional.
+- noun and verb keys normalize to lowercase kebab-case.
+- local prompts override global prompts with the same noun and verb.
+- global prompts override built-in prompts when no local prompt exists.
+- built-in prompts are the lowest-precedence fallback.
 
 CLI flags always override `.kit.yaml`.
 
@@ -411,6 +437,7 @@ CLI flags always override `.kit.yaml`.
 #### `kit init`
 
 - create `.kit.yaml` if missing
+- create or populate `~/.config/kit/.kit.yaml` with missing default fields
 - create `docs/CONSTITUTION.md` if missing
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, attempt to merge (preserve existing content, add missing sections)
@@ -612,7 +639,61 @@ Flags:
 
 ---
 
-### 8.3 Roll-Up
+### 8.3 Prompt Library
+
+#### `kit prompt [noun] [verb]`
+
+- resolve reusable prompts by explicit noun and verb
+- with no args, show a noun selector followed by a verb selector
+- with one arg, show the verb selector for that noun
+- with two args, resolve directly or fail with nearest-match guidance
+- copy the selected prompt body to the clipboard by default
+- print command name, origin, override metadata, and a delimited prompt body in human-readable default mode
+- support `--output-only` to print only the raw prompt body and skip copying
+- support `--output-only --copy` to print and copy the same raw prompt body
+
+#### `kit prompt list`
+
+- render the effective merged prompt library as a deterministic table
+- include command name, description, origin, and override metadata
+- show only effective prompts after precedence is applied
+
+#### `kit set`
+
+- delegate to `kit set prompt` in v0 because `prompt` is the only configurable resource
+
+#### `kit set prompt [noun] [verb]`
+
+- create or update prompt entries through the existing vim-compatible editor flow
+- default to project-local `.kit.yaml` when run inside a Kit project
+- ask whether to save globally when run outside a Kit project with no scope flag
+- support `--local`, `--global`, and `--local --global`
+- write global prompts to `~/.config/kit/.kit.yaml`, creating the file when needed
+- confirm before overwriting each selected scope
+- reject stdin, `--file`, auto-paste, clipboard restore, `--source`, and `--no-copy` in v0
+
+Prompt precedence:
+
+1. project-local `.kit.yaml`
+2. global `~/.config/kit/.kit.yaml`
+3. built-in Kit prompts
+
+Prompt entries use nested YAML object form:
+
+```yaml
+prompts:
+  custom:
+    review:
+      content: |
+        Review the current changes for correctness, edge cases, and tests.
+      description: Custom review prompt
+```
+
+Nouns and verbs normalize to lowercase kebab-case.
+
+---
+
+### 8.4 Roll-Up
 
 #### `kit rollup`
 
@@ -644,7 +725,7 @@ This command is also executed automatically as the final stage of feature creati
 
 ---
 
-### 8.4 Verification
+### 8.5 Verification
 
 #### `kit check <feature>`
 
@@ -663,7 +744,7 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 
 ---
 
-### 8.5 Agent Scaffolding
+### 8.6 Agent Scaffolding
 
 #### `kit scaffold-agents`
 
@@ -683,7 +764,7 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 
 ---
 
-### 8.6 Documentation Reconciliation
+### 8.7 Documentation Reconciliation
 
 #### `kit reconcile [feature]`
 
@@ -718,7 +799,7 @@ Verification:
 
 ---
 
-### 8.7 Context Summarization
+### 8.8 Context Summarization
 
 #### `kit summarize [feature]`
 
@@ -740,7 +821,7 @@ Fact Retention Principles:
 
 ---
 
-### 8.8 Reflection
+### 8.9 Reflection
 
 #### `kit reflect [feature]`
 
@@ -766,7 +847,7 @@ Reflection Process:
 
 ---
 
-### 8.9 Agent Handoff
+### 8.10 Agent Handoff
 
 #### `kit handoff [feature]`
 
@@ -837,7 +918,7 @@ Kit explicitly does not:
 
 - execute code
 - manage agents directly
-- maintain prompt registries
+- maintain hidden prompt registries outside YAML files
 - invent new document formats
 - define understanding rubrics
 - replace CI/CD systems

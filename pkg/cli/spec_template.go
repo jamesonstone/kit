@@ -14,6 +14,36 @@ func runSpecTemplate(
 	cfg *config.Config,
 	outputOnly bool,
 ) error {
+	prompt := buildSpecTemplatePrompt(specPath, brainstormPath, featureSlug, projectRoot, cfg)
+
+	if !outputOnly {
+		fmt.Println()
+		fmt.Println(dim + "⚠️ IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
+		fmt.Println(dim + "   with details about your feature. The more context you provide, the" + reset)
+		fmt.Println(dim + "   better the agent can help you write the specification." + reset)
+		fmt.Println()
+		fmt.Println(dim + "   Tip: Run 'kit spec <feature> --interactive' for a guided" + reset)
+		fmt.Println(dim + "   editor-first experience, or add '--inline' for terminal multiline entry." + reset)
+		fmt.Println()
+	}
+
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, filepath.Dir(specPath), outputOnly, specCopy); err != nil {
+		return err
+	}
+	if !outputOnly {
+		printNumberedNextSteps([]string{
+			fmt.Sprintf("Edit %s to define the specification", specPath),
+			fmt.Sprintf("Run 'kit plan %s' to create the implementation plan", featureSlug),
+		})
+	}
+
+	return nil
+}
+
+func buildSpecTemplatePrompt(
+	specPath, brainstormPath, featureSlug, projectRoot string,
+	cfg *config.Config,
+) string {
 	goalPct := cfg.GoalPercentage
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	hasBrainstorm := document.Exists(brainstormPath)
@@ -92,7 +122,7 @@ func runSpecTemplate(
 			"- EDGE-CASES: What unusual scenarios must be handled?",
 	)
 
-	prompt := renderPromptDocument(func(doc *promptdoc.Document) {
+	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Paragraph(fmt.Sprintf("Please review and complete the specification at %s.", specPath))
 		doc.Paragraph(fmt.Sprintf("This is a new feature: %s", featureSlug))
 		doc.Heading(2, "Context Docs (read first)")
@@ -154,27 +184,4 @@ func runSpecTemplate(
 		)
 		doc.Raw(renderNonEmptySectionRules("`SPEC.md`"))
 	})
-
-	if !outputOnly {
-		fmt.Println()
-		fmt.Println(dim + "⚠️ IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
-		fmt.Println(dim + "   with details about your feature. The more context you provide, the" + reset)
-		fmt.Println(dim + "   better the agent can help you write the specification." + reset)
-		fmt.Println()
-		fmt.Println(dim + "   Tip: Run 'kit spec <feature> --interactive' for a guided" + reset)
-		fmt.Println(dim + "   editor-first experience, or add '--inline' for terminal multiline entry." + reset)
-		fmt.Println()
-	}
-
-	if err := outputPromptForFeatureWithClipboardDefault(prompt, filepath.Dir(specPath), outputOnly, specCopy); err != nil {
-		return err
-	}
-	if !outputOnly {
-		printNumberedNextSteps([]string{
-			fmt.Sprintf("Edit %s to define the specification", specPath),
-			fmt.Sprintf("Run 'kit plan %s' to create the implementation plan", featureSlug),
-		})
-	}
-
-	return nil
 }

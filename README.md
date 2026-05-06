@@ -78,7 +78,8 @@ commit is blocked.
 ## 🚀 Quick Start
 
 ```bash
-# initialize the project
+# initialize the project and user config
+# creates/updates .kit.yaml and ~/.config/kit/.kit.yaml
 # copies a CONSTITUTION.md drafting prompt to your clipboard
 kit init
 
@@ -137,7 +138,7 @@ kit remove my-feature --yes
 
 | Command               | Description                                           |
 | --------------------- | ----------------------------------------------------- |
-| `kit init`            | Initialize a new Kit project                          |
+| `kit init`            | Initialize a new Kit project and user config          |
 | `kit scaffold-agents` | Create or refresh repository instruction files safely |
 
 ### 🔁 Workflow
@@ -164,18 +165,21 @@ kit remove my-feature --yes
 | `kit status --all`        | Show the project-wide overview as a lifecycle matrix with state and task progress; supports JSON |
 | `kit map [feature]`       | Show a read-only map of canonical docs, lifecycle state, and explicit feature lineage            |
 | `kit check <feature>`     | Validate feature documents and populated required sections                                       |
-| `kit check --project`     | Validate the repo-level document and instruction contract, including versioned instruction docs |
+| `kit check --project`     | Validate the repo-level document and instruction contract, including versioned instruction docs  |
 | `kit reconcile [feature]` | Audit Kit-managed docs for contract drift and output a documentation-reconciliation prompt       |
 
 ### 🧾 Prompt Utilities
 
-| Command                    | Description                                                                                  |
-| -------------------------- | -------------------------------------------------------------------------------------------- |
-| `kit handoff [feature]`    | Prompt the current agent session to sync docs, dependency inventories, and prepare a handoff |
-| `kit summarize [feature]`  | Output context summarization instructions                                                    |
-| `kit dispatch`             | Output a discovery-first prompt for clustering tasks and queueing subagents                  |
-| `kit code-review`          | Output instructions for branch code review                                                   |
-| `kit skill mine [feature]` | Output skill extraction prompt for the active coding agent                                   |
+| Command                        | Description                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| `kit prompt [noun] [verb]`     | Resolve and copy a reusable prompt from local, global, or built-in prompt libraries          |
+| `kit prompt list`              | List effective merged prompts with origin and override metadata                              |
+| `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor                                 |
+| `kit handoff [feature]`        | Prompt the current agent session to sync docs, dependency inventories, and prepare a handoff |
+| `kit summarize [feature]`      | Output context summarization instructions                                                    |
+| `kit dispatch`                 | Output a discovery-first prompt for clustering tasks and queueing subagents                  |
+| `kit code-review`              | Output instructions for branch code review                                                   |
+| `kit skill mine [feature]`     | Output skill extraction prompt for the active coding agent                                   |
 
 ### 🔧 Utilities
 
@@ -211,6 +215,11 @@ Prompt-producing commands, including the constitution prompt emitted by
 `--output-only` to print the raw prompt or output to stdout instead, or combine
 `--output-only --copy` to do both.
 
+`kit prompt <noun> <verb>` follows the same raw-output flags, but its default
+human-readable output also prints the selected prompt body in a delimited block
+with command, origin, and override metadata. v0 does not support `--source`,
+`--no-copy`, auto-paste, or clipboard restore.
+
 In interactive terminals, Kit also uses clearer section spacing and semantic
 emoji markers for help, status, selectors, and other human-readable guidance.
 Status views may also use ANSI color in a real terminal to highlight lifecycle
@@ -233,6 +242,53 @@ selected feature's prompt without mutating repository docs:
 `brainstorm`, `spec`, `plan`, and `tasks`, `--prompt-only` skips scaffolding
 and rollup writes, requires the existing artifact set, and uses the normal
 existing-feature selector when no feature argument is provided.
+
+### 📚 Prompt Library
+
+`kit prompt` resolves reusable prompts by explicit noun and verb:
+
+```bash
+# direct lookup
+kit prompt coding-agent short
+
+# interactive noun and verb selectors
+kit prompt
+kit prompt coding-agent
+
+# discovery
+kit prompt list
+
+# create or update prompts through the editor
+kit set prompt custom review
+kit set prompt custom review --global
+kit set prompt custom review --local --global
+```
+
+Prompt precedence is:
+
+1. project-local `.kit.yaml`
+2. global `~/.config/kit/.kit.yaml`
+3. built-in Kit prompts
+
+`kit init` creates or updates the global config with missing default fields
+without replacing existing prompt entries.
+
+Prompt entries use nested YAML object form:
+
+```yaml
+prompts:
+  custom:
+    review:
+      content: |
+        Review the current changes for correctness, edge cases, and tests.
+      description: Custom review prompt
+```
+
+Nouns and verbs normalize to lowercase kebab-case. `kit set prompt` defaults to
+local save inside a Kit project, asks before saving globally outside a project,
+and confirms before overwriting each selected scope. Built-ins include
+`coding-agent short`, `coding-agent long`, `coding-agent instructions`,
+workflow prompts, support prompts, `skill mine`, and `project init`.
 
 ### ⛏️ Skill Mining
 
@@ -411,7 +467,7 @@ to opt back into terminal multiline entry.
 ## 🏛️ Project Structure
 
 ```text
-.kit.yaml                    # configuration
+.kit.yaml                    # configuration and local prompt overrides
 docs/
   CONSTITUTION.md            # project-wide constraints
   PROJECT_PROGRESS_SUMMARY.md

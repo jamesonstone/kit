@@ -32,6 +32,8 @@ var commandOrder = map[string]int{
 	"summarize":       32,
 	"catchup":         33,
 	"dispatch":        34,
+	"prompt":          35,
+	"set":             36,
 	"skill":           40,
 	"skills":          40,
 	"upgrade":         88,
@@ -66,7 +68,7 @@ var rootCommandSections = []commandSection{
 		},
 	},
 	{title: "Inspect & Repair", commands: []string{"status", "map", "check", "reconcile"}},
-	{title: "Prompt Utilities", commands: []string{"handoff", "summarize", "dispatch", "code-review", "skill"}},
+	{title: "Prompt Utilities", commands: []string{"prompt", "set", "handoff", "summarize", "dispatch", "code-review", "skill"}},
 	{title: "Utilities", commands: []string{"upgrade", "version", "completion", "help"}},
 }
 

@@ -199,6 +199,16 @@ func runTasksPromptOnly(args []string, projectRoot string, cfg *config.Config, o
 }
 
 func outputTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Config, outputOnly bool) error {
+	prompt := buildTasksPrompt(feat, projectRoot, cfg)
+
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, tasksCopy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func buildTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Config) string {
 	// output easy-to-copy instruction for coding agents
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
@@ -225,7 +235,7 @@ func outputTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Co
 		"Reassess and continue with additional batches of up to 10 questions until the task plan is precise enough to produce a correct, production-quality implementation",
 	)...)
 
-	prompt := renderPromptDocument(func(doc *promptdoc.Document) {
+	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Paragraph("Please review and complete the task plan.")
 		doc.Heading(2, "File References")
 		rows := [][]string{{"CONSTITUTION", constitutionPath}}
@@ -300,12 +310,6 @@ F) PLAN LINKS (OPTIONAL)
 		doc.Paragraph("Output goal:\n- a task list that a coding agent can execute linearly with minimal back-and-forth")
 		doc.Raw(renderNonEmptySectionRules("`TASKS.md`"))
 	})
-
-	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, tasksCopy); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // selectFeatureForTasks shows an interactive numbered list of features

@@ -323,7 +323,27 @@ func planDependencyInventoryStepText(planPath, specPath, brainstormPath string, 
 
 // outputStandardPlanPrompt outputs the standard coding agent prompt.
 func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) error {
-	projectRoot, _ := config.FindProjectRoot()
+	projectRoot, err := config.FindProjectRoot()
+	if err != nil {
+		return err
+	}
+	prompt := buildStandardPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, projectRoot)
+
+	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, planCopy); err != nil {
+		return fmt.Errorf("failed to output prompt: %w", err)
+	}
+
+	return nil
+}
+
+func buildStandardPlanPrompt(
+	planPath string,
+	specPath string,
+	brainstormPath string,
+	feat *feature.Feature,
+	cfg *config.Config,
+	projectRoot string,
+) string {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
 	hasBrainstorm := document.Exists(brainstormPath)
@@ -347,7 +367,7 @@ func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *f
 	)...)
 	steps = append(steps, "Commit to concrete design decisions that make execution unambiguous")
 
-	prompt := renderPromptDocument(func(doc *promptdoc.Document) {
+	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Paragraph("Please review and complete the implementation plan.")
 		doc.Heading(2, "File References")
 		rows := [][]string{{"CONSTITUTION", constitutionPath}}
@@ -417,17 +437,14 @@ func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *f
 		doc.Paragraph("The output of PLAN.md must make TASKS.md obvious and deterministic.")
 		doc.Raw(renderNonEmptySectionRules("`PLAN.md`"))
 	})
-
-	if err := outputPromptForFeatureWithClipboardDefault(prompt, feat.Path, outputOnly, planCopy); err != nil {
-		return fmt.Errorf("failed to output prompt: %w", err)
-	}
-
-	return nil
 }
 
 // outputWarpPlanPrompt outputs a prompt for Warp coding agent to fill PLAN.md from Warp plan.
 func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) error {
-	projectRoot, _ := config.FindProjectRoot()
+	projectRoot, err := config.FindProjectRoot()
+	if err != nil {
+		return err
+	}
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	goalPct := cfg.GoalPercentage
 	hasBrainstorm := document.Exists(brainstormPath)
