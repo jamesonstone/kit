@@ -2,9 +2,10 @@
 
 ## SUMMARY
 
-Add a persisted paused flag in `.kit.yaml`, wire new `pause` and `remove`
-commands into the CLI, and update lifecycle views so status and rollup reflect
-paused state without changing the underlying phase model.
+Add persisted lifecycle metadata in `.kit.yaml`, wire new `pause` and `remove`
+commands into the CLI, expose `rm` as the primary removal command, and update
+lifecycle views so status, rollup, paused state, and removed feature history
+stay consistent without changing the underlying active phase model.
 
 ## APPROACH
 
@@ -15,8 +16,11 @@ paused state without changing the underlying phase model.
   commands
 - implement `kit pause` as a non-destructive lifecycle toggle for non-complete
   features
-- implement `kit remove` as a destructive lifecycle command with confirmation,
+- implement `kit rm` as a destructive lifecycle command with confirmation,
   directory deletion, state cleanup, and rollup regeneration
+- keep `kit remove` as a compatibility alias for the same destructive flow
+- record removed-feature tombstones in `.kit.yaml` so deleted feature docs are
+  gone but `PROJECT_PROGRESS_SUMMARY.md` still shows the feature as removed
 - update rollup and status rendering to surface paused state separately from
   phase
 - keep default `status` active-feature focused and move the fleet view into the
@@ -27,18 +31,21 @@ paused state without changing the underlying phase model.
 ## COMPONENTS
 
 - `internal/config/config.go`
-  - persist per-feature paused state in `.kit.yaml`
+  - persist per-feature paused state and removed-feature tombstones in
+    `.kit.yaml`
 - `internal/feature/feature.go`
   - attach paused state to feature listings and helpers
 - `internal/feature/status.go`
   - include paused state in the feature status payload while keeping active
     feature selection number-based
 - `internal/rollup/rollup.go`
-  - render paused state in the progress table and feature summaries
+  - render paused state and removed feature tombstones in the progress table and
+    feature summaries
 - `pkg/cli/pause.go`
   - add pause command, selection, validation, persistence, and rollup update
 - `pkg/cli/remove.go`
-  - add remove command, confirmation, deletion, state cleanup, and rollup update
+  - add rm/remove command surface, confirmation, deletion, state cleanup,
+    removed tombstone persistence, and rollup update
 - existing explicit feature-scoped commands
   - clear pause before continuing work on an explicitly targeted feature
 - `pkg/cli/status_output.go`
@@ -51,25 +58,31 @@ paused state without changing the underlying phase model.
 - `.kit.yaml`
   - add `feature_state` map keyed by feature directory name
   - each entry stores `paused: true|false`
+  - add `removed_features` tombstones keyed by feature directory metadata for
+    history after docs are deleted
 - `feature.Feature`
   - add `Paused bool`
 - `feature.FeatureStatus`
   - add `Paused bool`
 - `rollup.FeatureSummary`
   - add `Paused bool`
+  - add `Removed bool` and removed timestamp support
 
 ## INTERFACES
 
 - new command: `kit pause [feature]`
   - no feature argument: interactive selector over non-complete features
   - explicit feature: pause that feature
-- new command: `kit remove [feature] [--yes]`
+- new command: `kit rm [feature] [--yes]`
   - no feature argument: interactive selector over all existing features
   - confirmation required unless `--yes` is set
+- compatibility alias: `kit remove [feature] [--yes]`
+  - invokes the same command path as `kit rm`
 - status json payload
   - include `paused` under `active_feature`
 - progress summary table
   - add `PAUSED` column next to `PHASE`
+  - render removed tombstones with `PHASE` set to `removed`
 
 ## DEPENDENCIES
 
@@ -86,6 +99,10 @@ paused state without changing the underlying phase model.
   - mitigate by adding shared helpers in `internal/feature`
 - removing a feature without clearing persisted state could leave stale config
   - mitigate by making removal clean up `.kit.yaml` before regenerating rollup
+- deleting feature docs would otherwise remove all rollup evidence that the
+  feature existed
+  - mitigate by storing a minimal tombstone outside the deleted feature
+    directory
 - paused-state rendering could conflict with existing phase assumptions in docs
   - mitigate by updating the core project spec and keeping paused as a separate
     flag, not a replacement phase
@@ -99,6 +116,8 @@ paused state without changing the underlying phase model.
 - CLI tests for `kit pause` selection, rejection of complete features, and
   idempotence
 - CLI tests for auto-unpause on explicit feature-scoped workflow commands
-- CLI tests for `kit remove` confirmation, `--yes`, directory deletion, and
-  state cleanup
+- CLI tests for `kit remove` confirmation, `--yes`, directory deletion, state
+  cleanup, tombstone persistence, and removed rollup rendering
 - status and rollup tests for the new paused column and paused summary output
+- rollup tests for removed tombstones when the feature directory no longer
+  exists

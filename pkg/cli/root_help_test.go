@@ -35,6 +35,7 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"set",
 		"resume",
 		"status",
+		"\n  rm ",
 		"upgrade",
 		"skill",
 	}
@@ -103,6 +104,27 @@ func TestPromptLibraryCommandsRemainRegisteredAndDiscoverable(t *testing.T) {
 		if cmd.Hidden {
 			t.Fatalf("expected command %v to be visible", args)
 		}
+	}
+}
+
+func TestRemoveCommandSupportsRmAndRemove(t *testing.T) {
+	rmCommand, _, err := rootCmd.Find([]string{"rm"})
+	if err != nil {
+		t.Fatalf("rootCmd.Find(rm) error = %v", err)
+	}
+	if rmCommand == nil {
+		t.Fatal("expected rm command to be registered")
+	}
+	if rmCommand.Name() != "rm" {
+		t.Fatalf("expected rm command name, got %q", rmCommand.Name())
+	}
+
+	removeCommand, _, err := rootCmd.Find([]string{"remove"})
+	if err != nil {
+		t.Fatalf("rootCmd.Find(remove) error = %v", err)
+	}
+	if removeCommand != rmCommand {
+		t.Fatalf("expected remove alias to resolve to rm command")
 	}
 }
 

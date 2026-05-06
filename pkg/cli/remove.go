@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -17,9 +18,11 @@ import (
 var removeYes bool
 
 var removeCmd = &cobra.Command{
-	Use:   "remove [feature]",
-	Short: "Remove a feature and its lifecycle state",
-	Long: `Remove a feature directory and its persisted lifecycle state.
+	Use:     "rm [feature]",
+	Aliases: []string{"remove"},
+	Short:   "Remove a feature and all its docs",
+	Long: `Remove a feature directory, all files under it, and its persisted
+lifecycle state.
 
 If no feature is specified, shows an interactive selection of existing
 features.`,
@@ -73,8 +76,8 @@ func runRemove(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to remove feature directory %s: %w", feat.Path, err)
 	}
 
-	if err := feature.ClearPersistedState(projectRoot, cfg, feat); err != nil {
-		return fmt.Errorf("feature '%s' was removed but failed to clear persisted lifecycle state: %w", feat.Slug, err)
+	if err := feature.PersistRemoved(projectRoot, cfg, feat, time.Now()); err != nil {
+		return fmt.Errorf("feature '%s' was removed but failed to record removed lifecycle state: %w", feat.Slug, err)
 	}
 
 	if err := rollup.Update(projectRoot, cfg); err != nil {

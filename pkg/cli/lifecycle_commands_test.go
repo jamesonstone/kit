@@ -126,14 +126,24 @@ func TestRunRemove_RemovesFeatureAndClearsState(t *testing.T) {
 	if updated.IsFeaturePaused("0001-alpha") {
 		t.Fatalf("expected persisted lifecycle state to be cleared")
 	}
+	if len(updated.RemovedFeatures) != 1 {
+		t.Fatalf("expected one removed feature tombstone, got %d", len(updated.RemovedFeatures))
+	}
+	if updated.RemovedFeatures[0].DirName != "0001-alpha" {
+		t.Fatalf("removed feature DirName = %q, want 0001-alpha", updated.RemovedFeatures[0].DirName)
+	}
 
 	summaryPath := cfg.ProgressSummaryPath(projectRoot)
 	data, err := os.ReadFile(summaryPath)
 	if err != nil {
 		t.Fatalf("ReadFile(%q) error = %v", summaryPath, err)
 	}
-	if strings.Contains(string(data), "alpha") {
-		t.Fatalf("expected removed feature to disappear from rollup, got %q", string(data))
+	content := string(data)
+	if !strings.Contains(content, "| 0001 | alpha | `docs/specs/0001-alpha` | removed | no |") {
+		t.Fatalf("expected removed feature row in rollup, got %q", content)
+	}
+	if !strings.Contains(content, "- **STATUS**: removed") {
+		t.Fatalf("expected removed feature summary in rollup, got %q", content)
 	}
 }
 
@@ -145,7 +155,11 @@ func TestConfirmFeatureRemoval(t *testing.T) {
 	if err != nil {
 		t.Fatalf("os.Pipe() error = %v", err)
 	}
-	defer reader.Close()
+	t.Cleanup(func() {
+		if err := reader.Close(); err != nil {
+			t.Errorf("reader.Close() error = %v", err)
+		}
+	})
 
 	if _, err := writer.WriteString("yes\n"); err != nil {
 		t.Fatalf("WriteString() error = %v", err)

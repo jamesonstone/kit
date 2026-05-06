@@ -300,11 +300,13 @@ Purpose:
 
 Rules:
 
-- one row per feature
+- one row per live feature plus one row per removed feature tombstone
 - sorted by ID ascending
-- `PHASE` ∈ `brainstorm | spec | plan | tasks | implement | reflect | complete`
+- `PHASE` ∈ `brainstorm | spec | plan | tasks | implement | reflect | complete | removed`
 - `PAUSED` ∈ `yes | no`
 - `SUMMARY` should prefer the concise `SPEC.md` `SUMMARY` section and only fall back to `PROBLEM` or brainstorm summary when needed
+- removed feature rows use the retained tombstone metadata because their
+  feature docs no longer exist
 - `SUMMARY` must preserve the full intended meaning without truncation
 - `SUMMARY` should normalize whitespace so it stays readable in a single markdown table row
 - table is the authoritative project state
@@ -378,6 +380,12 @@ instruction_scaffold_version: 2
 feature_state:
   0001-feat-name:
     paused: false
+removed_features:
+  - number: 1
+    slug: feat-name
+    dir_name: 0001-feat-name
+    created_at: "2026-04-05T00:00:00Z"
+    removed_at: "2026-05-06T12:00:00Z"
 ```
 
 ### 7.2 Agents
@@ -598,14 +606,22 @@ Flags:
 
 ---
 
-#### `kit remove [feature]`
+#### `kit rm [feature]`
 
 - resolve the target feature using existing feature reference rules
 - without a feature argument, show an interactive selector of existing features
 - require explicit confirmation before deletion unless `--yes` is set
 - delete the feature directory and all files under it
-- remove any persisted lifecycle state for the deleted feature from `.kit.yaml`
+- remove any persisted paused lifecycle state for the deleted feature from
+  `.kit.yaml`
+- record a removed-feature tombstone in `.kit.yaml`
 - update `PROJECT_PROGRESS_SUMMARY.md`
+- retain the feature in `PROJECT_PROGRESS_SUMMARY.md` with `PHASE` set to
+  `removed`
+
+#### `kit remove [feature]`
+
+- compatibility alias for `kit rm [feature]`
 
 ---
 
@@ -709,9 +725,11 @@ Behavior:
   - feature name
   - directory path
   - short summary
-  - current artifact phase (`brainstorm | spec | plan | tasks | implement | reflect | complete`)
+  - current artifact phase (`brainstorm | spec | plan | tasks | implement | reflect | complete | removed`)
   - paused state
   - spec creation date
+- include removed feature tombstones from `.kit.yaml` even after the feature
+  docs are deleted
 - remain callable as a maintenance command, not a primary workflow step taught
   to new users
 

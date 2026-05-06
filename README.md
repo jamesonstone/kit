@@ -128,8 +128,9 @@ kit pause my-feature
 # mark all eligible active features complete
 kit complete --all
 
-# remove a feature and its lifecycle state
-kit remove my-feature --yes
+# remove a feature and all docs under its feature directory
+# keeps a removed row in PROJECT_PROGRESS_SUMMARY.md
+kit rm my-feature --yes
 ```
 
 ## 🧰 Commands
@@ -155,7 +156,7 @@ kit remove my-feature --yes
 | `kit reflect [feature]`    | Output reflection and verification instructions                                           |
 | `kit pause [feature]`      | Pause an in-flight feature without changing its underlying phase                          |
 | `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features                |
-| `kit remove [feature]`     | Remove a feature directory and its persisted lifecycle state                              |
+| `kit rm [feature]`         | Remove feature docs, clear active state, and retain a removed summary row; `kit remove` also works |
 
 ### 🔎 Inspect & Repair
 

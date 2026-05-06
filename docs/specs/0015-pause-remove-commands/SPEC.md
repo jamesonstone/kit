@@ -2,9 +2,9 @@
 
 ## SUMMARY
 
-Add `kit pause` and `kit remove` so users can explicitly pause in-flight work
-or remove a feature cleanly while keeping Kit's generated progress views and
-selectors consistent.
+Add `kit pause`, `kit rm`, and the `kit remove` compatibility alias so users
+can explicitly pause in-flight work or remove a feature's docs while keeping
+Kit's generated progress views, removed-history rows, and selectors consistent.
 
 ## PROBLEM
 
@@ -17,20 +17,24 @@ leave stale active-feature views behind.
 ## GOALS
 
 - add `kit pause [feature]` to persist a paused flag for non-complete features
-- add `kit remove [feature]` to delete a feature directory after confirmation
+- add `kit rm [feature]` to delete a feature directory after confirmation
+- keep `kit remove [feature]` available as a compatibility alias for `kit rm`
 - keep paused state separate from the underlying workflow phase
 - show paused state in `kit status` and `PROJECT_PROGRESS_SUMMARY.md`
 - exclude paused features from active-only multi-feature flows other than
   `kit status` and the new explicit `kit status --all` overview mode
 - automatically clear paused state when a user resumes a feature through an
   explicit feature-scoped workflow command
-- remove deleted features from generated lifecycle views and persisted state
+- remove deleted features from active selectors and status views
+- retain removed feature tombstones so `PROJECT_PROGRESS_SUMMARY.md` shows the
+  feature as `removed` after its docs are deleted
 
 ## NON-GOALS
 
 - redesign the lifecycle model beyond the paused flag and explicit resume
   commands
 - preserve removed feature numbers for future feature allocation
+- preserve removed feature documents after `kit rm`
 - rewrite arbitrary historical markdown outside Kit-managed lifecycle views
 - add bulk remove or bulk pause flows
 
@@ -86,16 +90,21 @@ none
   stable, generated way
 - active-only multi-feature flows other than `kit status` must exclude paused
   features by default
-- `kit remove [feature]` must resolve the feature by existing feature reference
+- `kit rm [feature]` must resolve the feature by existing feature reference
   rules and must support interactive selection when no feature argument is
   provided
-- `kit remove` must require explicit confirmation before deletion and must
+- `kit remove [feature]` must invoke the same removal flow as `kit rm [feature]`
+- `kit rm` must require explicit confirmation before deletion and must
   support `--yes` to skip the confirmation prompt
-- `kit remove` must delete the target feature directory and all files under it
-- `kit remove` must remove any persisted paused state for the deleted feature
-- `kit remove` must regenerate `PROJECT_PROGRESS_SUMMARY.md` after deletion
-- deleted features must disappear from `kit status`, selectors, and generated
-  lifecycle views after removal
+- `kit rm` must delete the target feature directory and all files under it
+- `kit rm` must remove any persisted paused state for the deleted feature
+- `kit rm` must persist a removed-feature tombstone outside the deleted feature
+  directory with enough metadata to render project history
+- `kit rm` must regenerate `PROJECT_PROGRESS_SUMMARY.md` after deletion
+- `PROJECT_PROGRESS_SUMMARY.md` must retain a row for removed features with
+  `PHASE` set to `removed`
+- deleted features must disappear from `kit status` and active selectors after
+  removal while remaining visible in project progress history
 - adding pause support must not change the meaning of existing workflow phases
   for unpaused features
 
@@ -118,14 +127,19 @@ none
   table and a paused field in each generated feature summary
 - paused features are excluded from active-only flows such as handoff's active
   feature set and `kit complete --all`
-- running `kit remove <feature>` asks for confirmation, deletes the feature
+- running `kit rm <feature>` asks for confirmation, deletes the feature
   directory on approval, clears any persisted state for that feature, and
   regenerates `PROJECT_PROGRESS_SUMMARY.md`
-- running `kit remove <feature> --yes` performs the same deletion without
+- running `kit rm <feature> --yes` performs the same deletion without
   prompting
-- removed features no longer appear in status views or generated lifecycle docs
+- running `kit remove <feature> --yes` performs the same deletion through the
+  compatibility alias
+- removed features no longer appear in status views or selectors
+- removed features remain in `PROJECT_PROGRESS_SUMMARY.md` with `PHASE` set to
+  `removed`
 - automated tests cover pause persistence, auto-unpause on explicit resume,
-  remove confirmation and deletion, and paused-state rendering in status/rollup
+  remove confirmation and deletion, removed tombstone rendering, and
+  paused-state rendering in status/rollup
 
 ## EDGE-CASES
 
@@ -137,6 +151,8 @@ none
 - removing the current highest-numbered feature
 - removing a feature when `PROJECT_PROGRESS_SUMMARY.md` does not yet exist
 - removing a feature that has only a subset of workflow artifacts
+- removing a feature after it was paused
+- rendering removed feature history after the feature docs no longer exist
 - explicit workflow commands targeting a paused feature by partial or numeric
   reference
 - interactive pause or remove selection with invalid input

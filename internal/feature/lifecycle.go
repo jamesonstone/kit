@@ -2,6 +2,7 @@ package feature
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jamesonstone/kit/internal/config"
 )
@@ -56,4 +57,32 @@ func ClearPersistedState(projectRoot string, cfg *config.Config, feat *Feature) 
 
 	feat.Paused = false
 	return nil
+}
+
+func PersistRemoved(projectRoot string, cfg *config.Config, feat *Feature, removedAt time.Time) error {
+	if feat == nil {
+		return fmt.Errorf("feature is required")
+	}
+
+	cfg.RecordRemovedFeature(config.RemovedFeature{
+		Number:    feat.Number,
+		Slug:      feat.Slug,
+		DirName:   feat.DirName,
+		CreatedAt: formatLifecycleTimestamp(feat.CreatedAt),
+		RemovedAt: formatLifecycleTimestamp(removedAt),
+	})
+	if err := config.Save(projectRoot, cfg); err != nil {
+		return err
+	}
+
+	feat.Paused = false
+	return nil
+}
+
+func formatLifecycleTimestamp(ts time.Time) string {
+	if ts.IsZero() {
+		return ""
+	}
+
+	return ts.UTC().Format(time.RFC3339)
 }

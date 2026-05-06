@@ -83,3 +83,38 @@ func TestGenerateContentWritesConcreteProjectIntent(t *testing.T) {
 		t.Fatalf("expected generated content to avoid TODO placeholders, got:\n%s", content)
 	}
 }
+
+func TestGenerateIncludesRemovedFeatureTombstones(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	cfg.RemovedFeatures = []config.RemovedFeature{
+		{
+			Number:    1,
+			Slug:      "alpha",
+			DirName:   "0001-alpha",
+			CreatedAt: "2026-04-05T00:00:00Z",
+			RemovedAt: "2026-05-06T12:00:00Z",
+		},
+	}
+
+	if err := Generate(projectRoot, cfg); err != nil {
+		t.Fatalf("Generate() error = %v", err)
+	}
+
+	content, err := os.ReadFile(cfg.ProgressSummaryPath(projectRoot))
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	text := string(content)
+	checks := []string{
+		"| 0001 | alpha | `docs/specs/0001-alpha` | removed | no | 2026-04-05 | Removed by kit rm on 2026-05-06. |",
+		"- **STATUS**: removed",
+		"- **REMOVED AT**: 2026-05-06",
+		"- **POINTERS**: removed; original docs path was `docs/specs/0001-alpha`",
+	}
+	for _, check := range checks {
+		if !strings.Contains(text, check) {
+			t.Fatalf("expected rollup to contain %q, got:\n%s", check, text)
+		}
+	}
+}

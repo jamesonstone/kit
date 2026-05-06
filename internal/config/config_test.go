@@ -96,6 +96,43 @@ prompts:
 	}
 }
 
+func TestRecordRemovedFeatureClearsPausedStateAndReplacesTombstone(t *testing.T) {
+	cfg := Default()
+	cfg.SetFeaturePaused("0002-bravo", true)
+	cfg.RecordRemovedFeature(RemovedFeature{
+		Number:    2,
+		Slug:      "bravo",
+		DirName:   "0002-bravo",
+		CreatedAt: "2026-04-05T00:00:00Z",
+		RemovedAt: "2026-05-06T12:00:00Z",
+	})
+
+	if cfg.IsFeaturePaused("0002-bravo") {
+		t.Fatalf("expected removed feature to clear paused state")
+	}
+	if len(cfg.RemovedFeatures) != 1 {
+		t.Fatalf("RemovedFeatures length = %d, want 1", len(cfg.RemovedFeatures))
+	}
+	if cfg.RemovedFeatures[0].RemovedAt != "2026-05-06T12:00:00Z" {
+		t.Fatalf("RemovedAt = %q, want first timestamp", cfg.RemovedFeatures[0].RemovedAt)
+	}
+
+	cfg.RecordRemovedFeature(RemovedFeature{
+		Number:    2,
+		Slug:      "bravo",
+		DirName:   "0002-bravo",
+		CreatedAt: "2026-04-05T00:00:00Z",
+		RemovedAt: "2026-05-07T12:00:00Z",
+	})
+
+	if len(cfg.RemovedFeatures) != 1 {
+		t.Fatalf("RemovedFeatures length after replace = %d, want 1", len(cfg.RemovedFeatures))
+	}
+	if cfg.RemovedFeatures[0].RemovedAt != "2026-05-07T12:00:00Z" {
+		t.Fatalf("RemovedAt = %q, want replacement timestamp", cfg.RemovedFeatures[0].RemovedAt)
+	}
+}
+
 func TestFindProjectRootOptionalReturnsRootWhenConfigExists(t *testing.T) {
 	projectRoot := t.TempDir()
 	nested := filepath.Join(projectRoot, "a", "b")

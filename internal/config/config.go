@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"gopkg.in/yaml.v3"
 )
@@ -28,11 +29,19 @@ type Config struct {
 	InstructionScaffoldVersion int                              `yaml:"instruction_scaffold_version"`
 	FeatureNaming              FeatureNaming                    `yaml:"feature_naming"`
 	FeatureState               map[string]FeatureLifecycleState `yaml:"feature_state,omitempty"`
+	RemovedFeatures            []RemovedFeature                 `yaml:"removed_features,omitempty"`
 	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
 }
 
 type FeatureLifecycleState struct {
 	Paused bool `yaml:"paused,omitempty"`
+}
+type RemovedFeature struct {
+	Number    int    `yaml:"number"`
+	Slug      string `yaml:"slug"`
+	DirName   string `yaml:"dir_name"`
+	CreatedAt string `yaml:"created_at,omitempty"`
+	RemovedAt string `yaml:"removed_at"`
 }
 
 // FeatureNaming defines how feature directories are named.
@@ -99,6 +108,33 @@ func (c *Config) SetFeaturePaused(dirName string, paused bool) {
 
 func (c *Config) RemoveFeatureState(dirName string) {
 	c.SetFeaturePaused(dirName, false)
+}
+func (c *Config) RecordRemovedFeature(record RemovedFeature) {
+	if c == nil || record.DirName == "" {
+		return
+	}
+
+	c.RemoveFeatureState(record.DirName)
+	for i := range c.RemovedFeatures {
+		if c.RemovedFeatures[i].DirName != record.DirName {
+			continue
+		}
+		c.RemovedFeatures[i] = record
+		c.sortRemovedFeatures()
+		return
+	}
+
+	c.RemovedFeatures = append(c.RemovedFeatures, record)
+	c.sortRemovedFeatures()
+}
+
+func (c *Config) sortRemovedFeatures() {
+	sort.SliceStable(c.RemovedFeatures, func(i, j int) bool {
+		if c.RemovedFeatures[i].Number != c.RemovedFeatures[j].Number {
+			return c.RemovedFeatures[i].Number < c.RemovedFeatures[j].Number
+		}
+		return c.RemovedFeatures[i].DirName < c.RemovedFeatures[j].DirName
+	})
 }
 
 // FindProjectRoot traverses upward from the current directory to find .kit.yaml.
