@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"path/filepath"
+	"sort"
 
 	"github.com/spf13/cobra"
 
@@ -28,6 +30,64 @@ Use --all for a project-wide overview.`,
 	RunE: runStatus,
 }
 
+func attachFeatureNotesStatus(projectRoot string, status *feature.FeatureStatus, dirName string) {
+	if status == nil || dirName == "" {
+		return
+	}
+
+	status.Notes = &feature.FileStatus{
+		Exists: featureNotesPathExists(projectRoot, dirName),
+		Path:   featureNotesPath(projectRoot, dirName),
+	}
+}
+
+func removedFeatureStatus(projectRoot string, cfg *config.Config, removed config.RemovedFeature) *feature.FeatureStatus {
+	number := removed.Number
+	slug := removed.Slug
+	if number == 0 || slug == "" {
+		parsedNumber, parsedSlug, ok := feature.ParseDirName(removed.DirName)
+		if ok {
+			if number == 0 {
+				number = parsedNumber
+			}
+			if slug == "" {
+				slug = parsedSlug
+			}
+		}
+	}
+
+	featurePath := filepath.Join(projectRoot, cfg.SpecsDir, removed.DirName)
+	status := &feature.FeatureStatus{
+		ID:        formatStatusFeatureID(number),
+		Name:      slug,
+		Path:      featurePath,
+		Phase:     feature.PhaseRemoved,
+		Removed:   true,
+		RemovedAt: removed.RemovedAt,
+		Files: map[string]feature.FileStatus{
+			"brainstorm": {Exists: false, Path: filepath.Join(featurePath, "BRAINSTORM.md")},
+			"spec":       {Exists: false, Path: filepath.Join(featurePath, "SPEC.md")},
+			"plan":       {Exists: false, Path: filepath.Join(featurePath, "PLAN.md")},
+			"tasks":      {Exists: false, Path: filepath.Join(featurePath, "TASKS.md")},
+		},
+	}
+	attachFeatureNotesStatus(projectRoot, status, removed.DirName)
+	return status
+}
+
+func sortAllFeatureStatusEntries(entries []allFeatureStatusEntry) {
+	sort.SliceStable(entries, func(i, j int) bool {
+		if entries[i].Status.ID != entries[j].Status.ID {
+			return entries[i].Status.ID < entries[j].Status.ID
+		}
+		return entries[i].Status.Name < entries[j].Status.Name
+	})
+}
+
+func formatStatusFeatureID(number int) string {
+	return fmt.Sprintf("%04d", number)
+}
+
 func init() {
 	statusCmd.Flags().Bool("json", false, "output status as JSON")
 	statusCmd.Flags().Bool("all", false, "show all features instead of only the active feature")
@@ -37,6 +97,7 @@ func init() {
 type allFeatureStatusEntry struct {
 	Status     *feature.FeatureStatus `json:"status"`
 	IsBacklog  bool                   `json:"is_backlog"`
+	IsRemoved  bool                   `json:"is_removed,omitempty"`
 	NextAction string                 `json:"next_action"`
 }
 
@@ -58,7 +119,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	specsDir := cfg.SpecsPath(projectRoot)
 
 	if allOutput {
-		return runStatusAll(cmd, specsDir, cfg, jsonOutput, version)
+		return runStatusAll(cmd, projectRoot, specsDir, cfg, jsonOutput, version)
 	}
 
 	// find active feature
@@ -80,6 +141,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get feature status: %w", err)
 	}
+	attachFeatureNotesStatus(projectRoot, status, feat.DirName)
 
 	if jsonOutput {
 		return outputStatusJSON(cmd.OutOrStdout(), status, version)
@@ -90,6 +152,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 
 func runStatusAll(
 	cmd *cobra.Command,
+	projectRoot string,
 	specsDir string,
 	cfg *config.Config,
 	jsonOutput bool,
@@ -106,9 +169,10 @@ func runStatusAll(
 		if err != nil {
 			return fmt.Errorf("failed to get active feature status: %w", err)
 		}
+		attachFeatureNotesStatus(projectRoot, activeStatus, activeFeat.DirName)
 	}
 
-	entries, backlogCount, err := buildAllFeatureStatusEntries(specsDir, cfg)
+	entries, backlogCount, err := buildAllFeatureStatusEntries(projectRoot, specsDir, cfg)
 	if err != nil {
 		return err
 	}
@@ -120,7 +184,7 @@ func runStatusAll(
 	return outputAllFeaturesStatusText(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version)
 }
 
-func buildAllFeatureStatusEntries(specsDir string, cfg *config.Config) ([]allFeatureStatusEntry, int, error) {
+func buildAllFeatureStatusEntries(projectRoot string, specsDir string, cfg *config.Config) ([]allFeatureStatusEntry, int, error) {
 	features, err := feature.ListFeaturesWithState(specsDir, cfg)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list features: %w", err)
@@ -128,11 +192,14 @@ func buildAllFeatureStatusEntries(specsDir string, cfg *config.Config) ([]allFea
 
 	entries := make([]allFeatureStatusEntry, 0, len(features))
 	backlogCount := 0
+	liveFeatureDirs := make(map[string]struct{}, len(features))
 	for i := range features {
+		liveFeatureDirs[features[i].DirName] = struct{}{}
 		status, err := feature.GetFeatureStatus(&features[i])
 		if err != nil {
 			return nil, 0, fmt.Errorf("failed to get feature status for %s: %w", features[i].DirName, err)
 		}
+		attachFeatureNotesStatus(projectRoot, status, features[i].DirName)
 
 		isBacklog := feature.IsBacklogItem(features[i])
 		if isBacklog {
@@ -145,11 +212,33 @@ func buildAllFeatureStatusEntries(specsDir string, cfg *config.Config) ([]allFea
 			NextAction: determineNextAction(status),
 		})
 	}
+	for _, removed := range cfg.RemovedFeatures {
+		if removed.DirName == "" {
+			continue
+		}
+		if _, exists := liveFeatureDirs[removed.DirName]; exists {
+			continue
+		}
+
+		status := removedFeatureStatus(projectRoot, cfg, removed)
+		entries = append(entries, allFeatureStatusEntry{
+			Status:     status,
+			IsRemoved:  true,
+			NextAction: determineNextAction(status),
+		})
+	}
+	sortAllFeatureStatusEntries(entries)
 
 	return entries, backlogCount, nil
 }
 
 func determineNextAction(status *feature.FeatureStatus) string {
+	if status.Removed {
+		if status.Notes != nil && status.Notes.Exists {
+			return fmt.Sprintf("Feature is removed. Retained notes are available at %s for follow-up work.", status.Notes.Path)
+		}
+		return "Feature is removed. No retained notes are available."
+	}
 	nextAction := determineUnpausedNextAction(status)
 	if !status.Paused {
 		return nextAction

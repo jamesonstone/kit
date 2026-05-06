@@ -96,6 +96,10 @@ func TestGenerateIncludesRemovedFeatureTombstones(t *testing.T) {
 			RemovedAt: "2026-05-06T12:00:00Z",
 		},
 	}
+	notesDir := filepath.Join(projectRoot, "docs", "notes", "0001-alpha")
+	if err := os.MkdirAll(notesDir, 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
 
 	if err := Generate(projectRoot, cfg); err != nil {
 		t.Fatalf("Generate() error = %v", err)
@@ -110,7 +114,7 @@ func TestGenerateIncludesRemovedFeatureTombstones(t *testing.T) {
 		"| 0001 | alpha | `docs/specs/0001-alpha` | removed | no | 2026-04-05 | Removed by kit rm on 2026-05-06. |",
 		"- **STATUS**: removed",
 		"- **REMOVED AT**: 2026-05-06",
-		"- **POINTERS**: removed; original docs path was `docs/specs/0001-alpha`",
+		"- **POINTERS**: removed; original docs path was `docs/specs/0001-alpha`; retained notes at `docs/notes/0001-alpha`",
 	}
 	for _, check := range checks {
 		if !strings.Contains(text, check) {

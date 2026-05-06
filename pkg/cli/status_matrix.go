@@ -18,6 +18,7 @@ func printAllFeaturesProgressMatrix(
 		featureWidth  = 28
 		stateWidth    = 9
 		progressWidth = 5
+		notesWidth    = 5
 	)
 
 	header := statusMatrixField(style, "Feature", featureWidth, whiteBold, false) + "  " +
@@ -29,7 +30,8 @@ func printAllFeaturesProgressMatrix(
 		statusMatrixField(style, "REFL", 4, reflect, false) + " " +
 		statusMatrixField(style, "DONE", 4, plan, false) + "  " +
 		statusMatrixField(style, "State", stateWidth, whiteBold, false) + "  " +
-		statusMatrixField(style, "Prog", progressWidth, whiteBold, true)
+		statusMatrixField(style, "Prog", progressWidth, whiteBold, true) + "  " +
+		statusMatrixField(style, "Notes", notesWidth, whiteBold, true)
 	if _, err := fmt.Fprintln(w, header); err != nil {
 		return err
 	}
@@ -43,7 +45,8 @@ func printAllFeaturesProgressMatrix(
 		strings.Repeat("-", 4) + " " +
 		strings.Repeat("-", 4) + "  " +
 		strings.Repeat("-", stateWidth) + "  " +
-		strings.Repeat("-", progressWidth)
+		strings.Repeat("-", progressWidth) + "  " +
+		strings.Repeat("-", notesWidth)
 	if _, err := fmt.Fprintln(w, style.muted(separator)); err != nil {
 		return err
 	}
@@ -64,7 +67,8 @@ func printAllFeaturesProgressMatrix(
 			phaseProgressField(style, entry.Status.Phase, feature.PhaseReflect, 4) + " " +
 			phaseProgressField(style, entry.Status.Phase, feature.PhaseComplete, 4) + "  " +
 			statusMatrixField(style, allFeaturesStateLabel(entry, activeStatus), stateWidth, statusMatrixStateColor(entry, activeStatus), false) + "  " +
-			statusMatrixField(style, allFeaturesProgressLabel(entry.Status), progressWidth, statusMatrixProgressColor(entry.Status), true)
+			statusMatrixField(style, allFeaturesProgressLabel(entry.Status), progressWidth, statusMatrixProgressColor(entry.Status), true) + "  " +
+			statusMatrixField(style, allFeaturesNotesLabel(entry.Status), notesWidth, statusMatrixNotesColor(entry.Status), true)
 		if _, err := fmt.Fprintln(w, line); err != nil {
 			return err
 		}
@@ -73,7 +77,24 @@ func printAllFeaturesProgressMatrix(
 	return nil
 }
 
+func allFeaturesNotesLabel(status *feature.FeatureStatus) string {
+	if status.Notes != nil && status.Notes.Exists {
+		return "yes"
+	}
+	return "no"
+}
+
+func statusMatrixNotesColor(status *feature.FeatureStatus) string {
+	if status.Notes != nil && status.Notes.Exists {
+		return brainstorm
+	}
+	return dim
+}
+
 func allFeaturesStateLabel(entry allFeatureStatusEntry, activeStatus *feature.FeatureStatus) string {
+	if entry.IsRemoved || entry.Status.Removed {
+		return "REMOVED"
+	}
 	if entry.IsBacklog {
 		return "BACKLOG"
 	}
@@ -90,6 +111,9 @@ func allFeaturesStateLabel(entry allFeatureStatusEntry, activeStatus *feature.Fe
 }
 
 func allFeaturesProgressLabel(status *feature.FeatureStatus) string {
+	if status.Removed {
+		return "-"
+	}
 	if status.Progress != nil && status.Progress.HasTasks() {
 		return fmt.Sprintf("%d/%d", status.Progress.Complete, status.Progress.Total)
 	}
@@ -177,6 +201,9 @@ func statusMatrixField(style humanOutputStyle, text string, width int, color str
 }
 
 func statusMatrixFeatureColor(entry allFeatureStatusEntry, activeStatus *feature.FeatureStatus) string {
+	if entry.IsRemoved || entry.Status.Removed {
+		return dim
+	}
 	if entry.IsBacklog {
 		return brainstorm
 	}
@@ -193,6 +220,9 @@ func statusMatrixFeatureColor(entry allFeatureStatusEntry, activeStatus *feature
 }
 
 func statusMatrixStateColor(entry allFeatureStatusEntry, activeStatus *feature.FeatureStatus) string {
+	if entry.IsRemoved || entry.Status.Removed {
+		return dim
+	}
 	if entry.IsBacklog {
 		return brainstorm
 	}
@@ -209,6 +239,9 @@ func statusMatrixStateColor(entry allFeatureStatusEntry, activeStatus *feature.F
 }
 
 func statusMatrixProgressColor(status *feature.FeatureStatus) string {
+	if status.Removed {
+		return dim
+	}
 	if status.Progress == nil || !status.Progress.HasTasks() {
 		return dim
 	}

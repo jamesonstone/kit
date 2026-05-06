@@ -32,6 +32,56 @@ func TestOutputStatusJSONIncludesKitVersion(t *testing.T) {
 	}
 }
 
+func TestRunStatusAllIncludesRemovedFeatureTombstones(t *testing.T) {
+	projectRoot, cfg := setupLifecycleTestProject(t)
+	if _, _, err := ensureFeatureNotesDir(projectRoot, "0001-alpha"); err != nil {
+		t.Fatalf("ensureFeatureNotesDir() error = %v", err)
+	}
+	cfg.RecordRemovedFeature(config.RemovedFeature{
+		Number:    1,
+		Slug:      "alpha",
+		DirName:   "0001-alpha",
+		CreatedAt: "2026-04-05T00:00:00Z",
+		RemovedAt: "2026-05-06T12:00:00Z",
+	})
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
+	if err != nil {
+		t.Fatalf("ensureHandoffTestWorkingDirectory() error = %v", err)
+	}
+	defer restoreWD()
+
+	cmd := &cobra.Command{}
+	cmd.Flags().Bool("json", false, "")
+	cmd.Flags().Bool("all", false, "")
+	if err := cmd.Flags().Set("all", "true"); err != nil {
+		t.Fatalf("Flags().Set(all) error = %v", err)
+	}
+
+	out := &bytes.Buffer{}
+	cmd.SetOut(out)
+
+	if err := runStatus(cmd, nil); err != nil {
+		t.Fatalf("runStatus() error = %v", err)
+	}
+
+	content := out.String()
+	for _, check := range []string{
+		"Active feature: none in progress",
+		"0001-alpha",
+		"REMOVED",
+		"Notes",
+		"yes",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected output to contain %q, got %q", check, content)
+		}
+	}
+}
+
 func TestOutputStatusTextIncludesKitVersion(t *testing.T) {
 	status := &feature.FeatureStatus{
 		ID:   "0001",
@@ -125,9 +175,10 @@ func TestOutputAllFeaturesStatusText(t *testing.T) {
 		"DONE",
 		"State",
 		"Prog",
+		"Notes",
 		"0003-gamma",
 		"BACKLOG",
-		"Legend: ● complete, ◐ current phase, ○ not reached",
+		"Legend: ● complete, ◐ current phase, ○ not reached; Notes=yes means docs/notes are retained",
 		"Kit version: v1.2.3",
 	}
 	for _, check := range checks {

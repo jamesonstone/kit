@@ -23,11 +23,17 @@ type FeatureSummary struct {
 	Removed       bool
 	Created       time.Time
 	RemovedAt     time.Time
+	HasNotes      bool
+	NotesPath     string
 	HasBrainstorm bool
 	Summary       string
 	Intent        string
 	Approach      string
 	OpenItems     string
+}
+
+func removedFeatureNotesPath(dirName string) string {
+	return filepath.ToSlash(filepath.Join("docs", "notes", dirName))
 }
 
 // Generate creates or updates the PROJECT_PROGRESS_SUMMARY.md file.
@@ -52,7 +58,7 @@ func Generate(projectRoot string, cfg *config.Config) error {
 		if _, exists := liveFeatureDirs[removed.DirName]; exists {
 			continue
 		}
-		summaries = append(summaries, removedFeatureSummary(removed, cfg.SpecsDir))
+		summaries = append(summaries, removedFeatureSummary(projectRoot, removed, cfg.SpecsDir))
 	}
 	sortFeatureSummaries(summaries)
 
@@ -142,7 +148,7 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 	return summary
 }
 
-func removedFeatureSummary(removed config.RemovedFeature, specsDir string) FeatureSummary {
+func removedFeatureSummary(projectRoot string, removed config.RemovedFeature, specsDir string) FeatureSummary {
 	number := removed.Number
 	slug := removed.Slug
 	if number == 0 || slug == "" {
@@ -163,6 +169,7 @@ func removedFeatureSummary(removed config.RemovedFeature, specsDir string) Featu
 	if !removedAt.IsZero() {
 		summary = fmt.Sprintf("Removed by kit rm on %s.", removedAt.Format("2006-01-02"))
 	}
+	notesPath := removedFeatureNotesPath(removed.DirName)
 
 	return FeatureSummary{
 		ID:        fmt.Sprintf("%04d", number),
@@ -171,6 +178,8 @@ func removedFeatureSummary(removed config.RemovedFeature, specsDir string) Featu
 		Removed:   true,
 		Created:   createdAt,
 		RemovedAt: removedAt,
+		HasNotes:  document.Exists(filepath.Join(projectRoot, notesPath)),
+		NotesPath: notesPath,
 		Summary:   summary,
 		Intent:    summary,
 		Approach:  "Feature directory and docs were deleted wholesale by `kit rm`; tombstone retained for project history.",
@@ -248,7 +257,11 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 		writef(&b, "- **APPROACH**: %s\n", s.Approach)
 		writef(&b, "- **OPEN ITEMS**: %s\n", s.OpenItems)
 		if s.Removed {
-			writef(&b, "- **POINTERS**: removed; original docs path was `%s`\n\n", s.Path)
+			pointers := fmt.Sprintf("removed; original docs path was `%s`", s.Path)
+			if s.HasNotes {
+				pointers += fmt.Sprintf("; retained notes at `%s`", s.NotesPath)
+			}
+			writef(&b, "- **POINTERS**: %s\n\n", pointers)
 			continue
 		}
 		var pointers []string

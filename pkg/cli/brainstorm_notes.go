@@ -18,6 +18,21 @@ func featureNotesRelPath(featureDirName string) string {
 func featureNotesPath(projectRoot, featureDirName string) string {
 	return filepath.Join(projectRoot, "docs", "notes", featureDirName)
 }
+func featureNotesPathExists(projectRoot, featureDirName string) bool {
+	_, err := os.Stat(featureNotesPath(projectRoot, featureDirName))
+	return err == nil
+}
+
+func removeFeatureNotesDir(projectRoot, featureDirName string) (string, bool, error) {
+	notesPath := featureNotesPath(projectRoot, featureDirName)
+	if !featureNotesPathExists(projectRoot, featureDirName) {
+		return notesPath, false, nil
+	}
+	if err := os.RemoveAll(notesPath); err != nil {
+		return notesPath, false, fmt.Errorf("failed to remove feature notes directory: %w", err)
+	}
+	return notesPath, true, nil
+}
 
 func featureDesignMaterialsPath(projectRoot, featureDirName string) string {
 	return filepath.Join(featureNotesPath(projectRoot, featureDirName), "design")

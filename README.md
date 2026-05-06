@@ -129,8 +129,11 @@ kit pause my-feature
 kit complete --all
 
 # remove a feature and all docs under its feature directory
-# keeps a removed row in PROJECT_PROGRESS_SUMMARY.md
+# keeps notes by default and shows the feature as removed in history/status
 kit rm my-feature --yes
+
+# remove the feature notes too
+kit rm my-feature --yes --notes
 ```
 
 ## 🧰 Commands
@@ -156,7 +159,7 @@ kit rm my-feature --yes
 | `kit reflect [feature]`    | Output reflection and verification instructions                                           |
 | `kit pause [feature]`      | Pause an in-flight feature without changing its underlying phase                          |
 | `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features                |
-| `kit rm [feature]`         | Remove feature docs, clear active state, and retain a removed summary row; `kit remove` also works |
+| `kit rm [feature]`         | Remove feature docs, retain notes by default, and show removed state in history/status; `kit remove` also works |
 
 ### 🔎 Inspect & Repair
 
@@ -228,9 +231,9 @@ markers, state labels, file presence, and progress without changing non-TTY
 output.
 Raw `--output-only` payloads and `--json` output stay unchanged.
 
-Lifecycle views surface paused work explicitly. `kit status` keeps the active
-feature in focus, `kit status --all` provides the project overview as a
-fixed-width lifecycle matrix, and
+Lifecycle views surface paused and removed work explicitly. `kit status` keeps
+the active feature in focus, `kit status --all` provides the project overview
+as a fixed-width lifecycle matrix with retained notes visibility, and
 deferred brainstorm items stay available through `kit backlog`,
 `kit backlog --pickup`, or `kit resume`.
 

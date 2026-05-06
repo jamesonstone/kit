@@ -235,7 +235,7 @@ func outputAllFeaturesStatusText(
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(w, style.muted("Legend: ● complete, ◐ current phase, ○ not reached")); err != nil {
+	if _, err := fmt.Fprintln(w, style.muted("Legend: ● complete, ◐ current phase, ○ not reached; Notes=yes means docs/notes are retained")); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprintln(w); err != nil {

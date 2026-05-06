@@ -21,8 +21,12 @@ stay consistent without changing the underlying active phase model.
 - keep `kit remove` as a compatibility alias for the same destructive flow
 - record removed-feature tombstones in `.kit.yaml` so deleted feature docs are
   gone but `PROJECT_PROGRESS_SUMMARY.md` still shows the feature as removed
+- keep `docs/notes/<feature>` by default so follow-up features can reuse notes,
+  with interactive and `--notes` deletion paths for users who want full cleanup
 - update rollup and status rendering to surface paused state separately from
   phase
+- update `kit status --all` and `kit rm` output so removed tombstones are
+  visible instead of hidden
 - keep default `status` active-feature focused and move the fleet view into the
   explicit `status --all` mode
 - exclude paused features from active-only multi-feature flows except `status`
@@ -36,16 +40,17 @@ stay consistent without changing the underlying active phase model.
 - `internal/feature/feature.go`
   - attach paused state to feature listings and helpers
 - `internal/feature/status.go`
-  - include paused state in the feature status payload while keeping active
-    feature selection number-based
+  - include paused state, removed metadata, and optional notes status in the
+    feature status payload while keeping active feature selection number-based
 - `internal/rollup/rollup.go`
   - render paused state and removed feature tombstones in the progress table and
-    feature summaries
+    feature summaries, including retained notes pointers when available
 - `pkg/cli/pause.go`
   - add pause command, selection, validation, persistence, and rollup update
 - `pkg/cli/remove.go`
   - add rm/remove command surface, confirmation, deletion, state cleanup,
-    removed tombstone persistence, and rollup update
+    removed tombstone persistence, notes retention/removal, removed history
+    output, and rollup update
 - existing explicit feature-scoped commands
   - clear pause before continuing work on an explicitly targeted feature
 - `pkg/cli/status_output.go`
@@ -63,7 +68,7 @@ stay consistent without changing the underlying active phase model.
 - `feature.Feature`
   - add `Paused bool`
 - `feature.FeatureStatus`
-  - add `Paused bool`
+  - add `Paused bool`, removed metadata, and optional notes status
 - `rollup.FeatureSummary`
   - add `Paused bool`
   - add `Removed bool` and removed timestamp support
@@ -76,6 +81,9 @@ stay consistent without changing the underlying active phase model.
 - new command: `kit rm [feature] [--yes]`
   - no feature argument: interactive selector over all existing features
   - confirmation required unless `--yes` is set
+  - notes under `docs/notes/<feature>` are retained by default
+  - interactive runs ask whether to remove notes when notes exist
+  - `--notes` removes notes too
 - compatibility alias: `kit remove [feature] [--yes]`
   - invokes the same command path as `kit rm`
 - status json payload
@@ -83,6 +91,9 @@ stay consistent without changing the underlying active phase model.
 - progress summary table
   - add `PAUSED` column next to `PHASE`
   - render removed tombstones with `PHASE` set to `removed`
+- status all-features matrix
+  - render removed tombstones with `State` set to `REMOVED`
+  - include whether notes are retained
 
 ## DEPENDENCIES
 
@@ -108,6 +119,9 @@ stay consistent without changing the underlying active phase model.
     flag, not a replacement phase
 - destructive remove flow could delete the wrong feature
   - mitigate with clear selector labeling and confirmation that names the target
+- users may need removed-feature notes for a follow-up feature
+  - mitigate by retaining notes by default and requiring an explicit interactive
+    choice or `--notes` flag to delete them
 
 ## TESTING
 
@@ -117,7 +131,9 @@ stay consistent without changing the underlying active phase model.
   idempotence
 - CLI tests for auto-unpause on explicit feature-scoped workflow commands
 - CLI tests for `kit remove` confirmation, `--yes`, directory deletion, state
-  cleanup, tombstone persistence, and removed rollup rendering
+  cleanup, tombstone persistence, notes retention/removal, and removed rollup
+  rendering
 - status and rollup tests for the new paused column and paused summary output
 - rollup tests for removed tombstones when the feature directory no longer
   exists
+- status tests for removed tombstones and notes retention in `kit status --all`

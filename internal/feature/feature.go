@@ -37,6 +37,7 @@ const (
 	PhaseImplement  Phase = "implement"
 	PhaseReflect    Phase = "reflect"
 	PhaseComplete   Phase = "complete"
+	PhaseRemoved    Phase = "removed"
 )
 
 // ReflectionCompleteMarker is the marker that indicates reflection is complete.
@@ -199,7 +200,6 @@ func parseTaskProgressFromPath(tasksPath string) (struct{ Total, Complete int },
 	if err != nil {
 		return progress, false, err
 	}
-	defer file.Close()
 
 	incompletePattern := regexp.MustCompile(`^\s*-\s*\[\s*\]`)
 	completePattern := regexp.MustCompile(`^\s*-\s*\[[xX]\]`)
@@ -218,7 +218,14 @@ func parseTaskProgressFromPath(tasksPath string) (struct{ Total, Complete int },
 		}
 	}
 
-	return progress, hasReflectionMarker, scanner.Err()
+	if err := scanner.Err(); err != nil {
+		_ = file.Close()
+		return progress, hasReflectionMarker, err
+	}
+	if err := file.Close(); err != nil {
+		return progress, hasReflectionMarker, err
+	}
+	return progress, hasReflectionMarker, nil
 }
 
 // NextNumber returns the next available feature number, coordinating across

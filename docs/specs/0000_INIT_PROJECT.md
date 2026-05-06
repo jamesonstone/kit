@@ -307,6 +307,8 @@ Rules:
 - `SUMMARY` should prefer the concise `SPEC.md` `SUMMARY` section and only fall back to `PROBLEM` or brainstorm summary when needed
 - removed feature rows use the retained tombstone metadata because their
   feature docs no longer exist
+- removed feature summaries should point to retained `docs/notes/<feature>`
+  content when it still exists
 - `SUMMARY` must preserve the full intended meaning without truncation
 - `SUMMARY` should normalize whitespace so it stays readable in a single markdown table row
 - table is the authoritative project state
@@ -612,12 +614,22 @@ Flags:
 - without a feature argument, show an interactive selector of existing features
 - require explicit confirmation before deletion unless `--yes` is set
 - delete the feature directory and all files under it
+- retain `docs/notes/<feature>` by default so follow-up features can reuse
+  research notes
+- when running interactively and notes exist, ask whether to remove the notes
+  as part of the same removal flow
+- support `--notes` to remove `docs/notes/<feature>` along with the feature
+  docs
 - remove any persisted paused lifecycle state for the deleted feature from
   `.kit.yaml`
 - record a removed-feature tombstone in `.kit.yaml`
 - update `PROJECT_PROGRESS_SUMMARY.md`
 - retain the feature in `PROJECT_PROGRESS_SUMMARY.md` with `PHASE` set to
   `removed`
+- print removal output that makes the final `removed` state and notes
+  retention or deletion visible
+- when no feature argument is provided, show already-removed tombstones as
+  removed history alongside the live removal selector
 
 #### `kit remove [feature]`
 
@@ -648,6 +660,8 @@ Flags:
 - support `--all` as the explicit fleet overview mode
 - `--all` text output shows every feature in a terminal-friendly fixed-width
   lifecycle matrix with paused or backlog state and available task progress
+- `--all` includes removed feature tombstones with `State` set to `REMOVED`
+  and a notes-retention marker
 - when writing to a terminal, status views may color lifecycle markers and
   state labels for scanability without changing non-TTY output
 - `--all --json` uses a dedicated all-features payload and does not replace the
@@ -730,6 +744,8 @@ Behavior:
   - spec creation date
 - include removed feature tombstones from `.kit.yaml` even after the feature
   docs are deleted
+- include retained notes pointers for removed features when
+  `docs/notes/<feature>` still exists
 - remain callable as a maintenance command, not a primary workflow step taught
   to new users
 

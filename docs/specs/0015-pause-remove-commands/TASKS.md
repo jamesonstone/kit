@@ -12,6 +12,7 @@
 | T006 | Add regression tests and verify command behavior | done | codex | T003, T004, T005 |
 | T007 | Promote `kit rm` as the feature removal command while preserving `kit remove` | done | oz | T004 |
 | T008 | Retain removed feature tombstones in project progress summary | done | oz | T004, T007 |
+| T009 | Surface removed features in status/rm and add notes removal controls | done | oz | T008 |
 
 ## TASK LIST
 
@@ -25,6 +26,7 @@ Use markdown checkboxes to track completion:
 - [x] T006: Add regression tests and verify command behavior
 - [x] T007: Promote `kit rm` as the feature removal command while preserving `kit remove`
 - [x] T008: Retain removed feature tombstones in project progress summary
+- [x] T009: Surface removed features in status/rm and add notes removal controls
 
 ## TASK DETAILS
 
@@ -97,6 +99,17 @@ Use markdown checkboxes to track completion:
   retains the feature with `PHASE` set to `removed`
 - **NOTES**: do not preserve the deleted feature docs themselves
 
+### T009
+- **GOAL**: keep removed features and retained notes visible after docs are
+  deleted
+- **SCOPE**: update `kit rm` output and interactive prompts, add `--notes`,
+  retain `docs/notes/<feature>` by default, and include removed tombstones in
+  `kit status --all`
+- **ACCEPTANCE**: removed features show `REMOVED` in `kit status --all`, `kit rm`
+  reports removed status and notes retention/removal, notes are kept by default,
+  and notes are removed only through the interactive prompt or `--notes`
+- **NOTES**: default retention preserves follow-up research context
+
 ## DEPENDENCIES
 
 - T002 depends on the lifecycle contract captured in T001
@@ -105,6 +118,7 @@ Use markdown checkboxes to track completion:
 - T006 depends on the completed command and rendering changes from T003-T005
 - T007 depends on the existing remove flow from T004
 - T008 depends on the existing remove flow and primary `rm` surface
+- T009 depends on removed tombstones and feature notes paths
 
 ## NOTES
 
@@ -112,5 +126,6 @@ Use markdown checkboxes to track completion:
 - feature numbering continues to derive from existing directories
 - `kit status` remains latest-feature-first even when the latest feature is
   paused
+- removed feature notes are retained by default for follow-up work
 
 <!-- REFLECTION_COMPLETE -->

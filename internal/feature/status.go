@@ -54,7 +54,6 @@ func ParseTaskProgress(tasksPath string) (TaskProgress, error) {
 	if err != nil {
 		return progress, err
 	}
-	defer file.Close()
 
 	// patterns for markdown checkboxes
 	incompletePattern := regexp.MustCompile(`^\s*-\s*\[\s*\]`)
@@ -71,7 +70,14 @@ func ParseTaskProgress(tasksPath string) (TaskProgress, error) {
 		}
 	}
 
-	return progress, scanner.Err()
+	if err := scanner.Err(); err != nil {
+		_ = file.Close()
+		return progress, err
+	}
+	if err := file.Close(); err != nil {
+		return progress, err
+	}
+	return progress, nil
 }
 
 // ExtractSpecSummary extracts the SUMMARY section from SPEC.md.
@@ -118,14 +124,17 @@ type FileStatus struct {
 
 // FeatureStatus holds complete status information for a feature.
 type FeatureStatus struct {
-	ID       string                `json:"id"`
-	Name     string                `json:"name"`
-	Path     string                `json:"path"`
-	Summary  string                `json:"summary,omitempty"`
-	Phase    Phase                 `json:"phase"`
-	Paused   bool                  `json:"paused"`
-	Files    map[string]FileStatus `json:"files"`
-	Progress *TaskProgress         `json:"progress,omitempty"`
+	ID        string                `json:"id"`
+	Name      string                `json:"name"`
+	Path      string                `json:"path"`
+	Summary   string                `json:"summary,omitempty"`
+	Phase     Phase                 `json:"phase"`
+	Paused    bool                  `json:"paused"`
+	Removed   bool                  `json:"removed,omitempty"`
+	RemovedAt string                `json:"removed_at,omitempty"`
+	Files     map[string]FileStatus `json:"files"`
+	Notes     *FileStatus           `json:"notes,omitempty"`
+	Progress  *TaskProgress         `json:"progress,omitempty"`
 }
 
 // GetFeatureStatus returns complete status information for a feature.

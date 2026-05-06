@@ -25,6 +25,25 @@ func TestDetermineNextAction_BrainstormOnly(t *testing.T) {
 	}
 }
 
+func TestDetermineNextAction_RemovedFeatureMentionsRetainedNotes(t *testing.T) {
+	status := &feature.FeatureStatus{
+		Name:    "patient-import",
+		Removed: true,
+		Notes: &feature.FileStatus{
+			Exists: true,
+			Path:   "/repo/docs/notes/0001-patient-import",
+		},
+	}
+
+	got := determineNextAction(status)
+	if !strings.Contains(got, "Feature is removed") {
+		t.Fatalf("expected removed guidance, got %q", got)
+	}
+	if !strings.Contains(got, "/repo/docs/notes/0001-patient-import") {
+		t.Fatalf("expected retained notes path, got %q", got)
+	}
+}
+
 func TestDetermineNextAction_NoSpecSuggestsBrainstormOrSpec(t *testing.T) {
 	status := &feature.FeatureStatus{
 		Name: "patient-import",

@@ -4,7 +4,8 @@
 
 Add `kit pause`, `kit rm`, and the `kit remove` compatibility alias so users
 can explicitly pause in-flight work or remove a feature's docs while keeping
-Kit's generated progress views, removed-history rows, and selectors consistent.
+Kit's generated progress views, removed-history rows, retained notes, and
+selectors consistent.
 
 ## PROBLEM
 
@@ -28,6 +29,9 @@ leave stale active-feature views behind.
 - remove deleted features from active selectors and status views
 - retain removed feature tombstones so `PROJECT_PROGRESS_SUMMARY.md` shows the
   feature as `removed` after its docs are deleted
+- show removed tombstones in `kit status --all` and `kit rm` history output
+- retain feature notes by default when removing docs, with an explicit
+  interactive choice and `--notes` flag to delete notes too
 
 ## NON-GOALS
 
@@ -35,6 +39,7 @@ leave stale active-feature views behind.
   commands
 - preserve removed feature numbers for future feature allocation
 - preserve removed feature documents after `kit rm`
+- delete feature notes by default when feature docs are removed
 - rewrite arbitrary historical markdown outside Kit-managed lifecycle views
 - add bulk remove or bulk pause flows
 
@@ -98,13 +103,23 @@ none
   support `--yes` to skip the confirmation prompt
 - `kit rm` must delete the target feature directory and all files under it
 - `kit rm` must remove any persisted paused state for the deleted feature
+- `kit rm` must retain `docs/notes/<feature>` by default
+- `kit rm` must offer an interactive notes-removal prompt when notes exist and
+  deletion is not running under `--yes`
+- `kit rm --notes` must remove `docs/notes/<feature>` along with the feature
+  docs without changing the meaning of `--yes`
+- `kit rm` output must make the final `removed` state and notes
+  retention/deletion visible
 - `kit rm` must persist a removed-feature tombstone outside the deleted feature
   directory with enough metadata to render project history
 - `kit rm` must regenerate `PROJECT_PROGRESS_SUMMARY.md` after deletion
 - `PROJECT_PROGRESS_SUMMARY.md` must retain a row for removed features with
   `PHASE` set to `removed`
-- deleted features must disappear from `kit status` and active selectors after
-  removal while remaining visible in project progress history
+- deleted features must disappear from default active `kit status` and active
+  selectors after removal while remaining visible in `kit status --all`, `kit rm`
+  removed history, and project progress history
+- `kit status --all` must include removed tombstones with state `REMOVED` and a
+  notes-retention marker
 - adding pause support must not change the meaning of existing workflow phases
   for unpaused features
 
@@ -134,9 +149,14 @@ none
   prompting
 - running `kit remove <feature> --yes` performs the same deletion through the
   compatibility alias
-- removed features no longer appear in status views or selectors
+- removed features no longer appear in default active status or active selectors
 - removed features remain in `PROJECT_PROGRESS_SUMMARY.md` with `PHASE` set to
   `removed`
+- removed features appear in `kit status --all` as `REMOVED`
+- removed features appear in `kit rm` removed-history output
+- feature notes are retained by default after `kit rm <feature> --yes`
+- feature notes are removed when `kit rm <feature> --yes --notes` is used
+- interactive removal asks whether to remove notes when notes exist
 - automated tests cover pause persistence, auto-unpause on explicit resume,
   remove confirmation and deletion, removed tombstone rendering, and
   paused-state rendering in status/rollup
@@ -153,6 +173,8 @@ none
 - removing a feature that has only a subset of workflow artifacts
 - removing a feature after it was paused
 - rendering removed feature history after the feature docs no longer exist
+- rendering removed feature history when feature notes are retained
+- removing feature notes during interactive and flag-driven removal
 - explicit workflow commands targeting a paused feature by partial or numeric
   reference
 - interactive pause or remove selection with invalid input

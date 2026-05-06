@@ -126,6 +126,9 @@ func TestRemoveCommandSupportsRmAndRemove(t *testing.T) {
 	if removeCommand != rmCommand {
 		t.Fatalf("expected remove alias to resolve to rm command")
 	}
+	if flag := rmCommand.Flags().Lookup("notes"); flag == nil {
+		t.Fatal("expected rm command to expose --notes")
+	}
 }
 
 func TestPromptLibraryHelpShowsSupportedFlagsOnly(t *testing.T) {
