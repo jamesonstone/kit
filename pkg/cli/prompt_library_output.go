@@ -7,6 +7,8 @@ import (
 	"github.com/jamesonstone/kit/internal/promptlib"
 )
 
+const codingAgentPromptPrefix = "---\n"
+
 func outputPromptLibraryPrompt(prompt promptlib.EffectivePrompt, outputOnly, copy bool) error {
 	body, err := renderPromptLibraryBody(prompt)
 	if err != nil {
@@ -37,7 +39,7 @@ func outputPromptLibraryPrompt(prompt promptlib.EffectivePrompt, outputOnly, cop
 	}
 	fmt.Println()
 	fmt.Println("Prompt:")
-	fmt.Print(formatAgentInstructionBlock(body))
+	fmt.Print(formatPromptLibraryBodyForDisplay(prompt, body))
 	return nil
 }
 
@@ -59,7 +61,28 @@ func renderPromptLibraryBody(prompt promptlib.EffectivePrompt) (string, error) {
 	if strings.TrimSpace(body) == "" {
 		return "", fmt.Errorf("prompt %q has empty content", prompt.CommandName())
 	}
-	return body, nil
+	return applyPromptLibraryOutputConventions(prompt, body), nil
+}
+
+func applyPromptLibraryOutputConventions(prompt promptlib.EffectivePrompt, body string) string {
+	if !isCodingAgentPrompt(prompt) {
+		return body
+	}
+	if strings.HasPrefix(body, codingAgentPromptPrefix) {
+		return body
+	}
+	return codingAgentPromptPrefix + body
+}
+
+func formatPromptLibraryBodyForDisplay(prompt promptlib.EffectivePrompt, body string) string {
+	if isCodingAgentPrompt(prompt) && strings.HasPrefix(body, codingAgentPromptPrefix) {
+		return formatAgentInstructionBlock(strings.TrimPrefix(body, codingAgentPromptPrefix))
+	}
+	return formatAgentInstructionBlock(body)
+}
+
+func isCodingAgentPrompt(prompt promptlib.EffectivePrompt) bool {
+	return prompt.Prompt.Identity.Noun == "coding-agent"
 }
 
 func promptLibraryOrigin(prompt promptlib.EffectivePrompt) string {

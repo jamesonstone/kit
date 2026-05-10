@@ -229,7 +229,9 @@ emoji markers for help, status, selectors, and other human-readable guidance.
 Status views may also use ANSI color in a real terminal to highlight lifecycle
 markers, state labels, file presence, and progress without changing non-TTY
 output.
-Raw `--output-only` payloads and `--json` output stay unchanged.
+Raw `--output-only` payloads and `--json` output avoid human-readable wrappers;
+prompt-library `coding-agent` payloads intentionally begin with `---` so they
+can be pasted directly as instruction blocks.
 
 Lifecycle views surface paused and removed work explicitly. `kit status` keeps
 the active feature in focus, `kit status --all` provides the project overview

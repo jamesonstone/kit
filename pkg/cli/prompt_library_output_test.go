@@ -22,7 +22,7 @@ func TestOutputPromptLibraryPrompt_DefaultCopiesAndPrintsMetadataAndBody(t *test
 
 	prompt := promptlib.EffectivePrompt{
 		Prompt: promptlib.Prompt{
-			Identity:    promptlib.Identity{Noun: "coding-agent", Verb: "short"},
+			Identity:    promptlib.Identity{Noun: "custom", Verb: "review"},
 			Content:     "prompt text",
 			Description: "short prompt",
 		},
@@ -46,7 +46,7 @@ func TestOutputPromptLibraryPrompt_DefaultCopiesAndPrintsMetadataAndBody(t *test
 	checks := []string{
 		"Copied the prepared text to the clipboard.",
 		"Prompt Library",
-		"Command: coding-agent short",
+		"Command: custom review",
 		"Origin: local (/repo/.kit.yaml)",
 		"Overrides: local overrides global, builtin",
 		"---\nprompt text\n---",
@@ -72,7 +72,7 @@ func TestOutputPromptLibraryPrompt_OutputOnlySkipsDefaultCopy(t *testing.T) {
 
 	prompt := promptlib.EffectivePrompt{
 		Prompt: promptlib.Prompt{
-			Identity: promptlib.Identity{Noun: "coding-agent", Verb: "short"},
+			Identity: promptlib.Identity{Noun: "custom", Verb: "review"},
 			Content:  "prompt text",
 		},
 		Kind: promptlib.SourceBuiltin,
@@ -106,7 +106,7 @@ func TestOutputPromptLibraryPrompt_OutputOnlyCopyDoesBoth(t *testing.T) {
 
 	prompt := promptlib.EffectivePrompt{
 		Prompt: promptlib.Prompt{
-			Identity: promptlib.Identity{Noun: "coding-agent", Verb: "short"},
+			Identity: promptlib.Identity{Noun: "custom", Verb: "review"},
 			Render: func() (string, error) {
 				return "rendered prompt", nil
 			},
@@ -140,7 +140,7 @@ func TestOutputPromptLibraryPrompt_CopyFailureSkipsDefaultOutput(t *testing.T) {
 
 	prompt := promptlib.EffectivePrompt{
 		Prompt: promptlib.Prompt{
-			Identity: promptlib.Identity{Noun: "coding-agent", Verb: "short"},
+			Identity: promptlib.Identity{Noun: "custom", Verb: "review"},
 			Content:  "prompt text",
 		},
 		Kind: promptlib.SourceBuiltin,
@@ -158,5 +158,96 @@ func TestOutputPromptLibraryPrompt_CopyFailureSkipsDefaultOutput(t *testing.T) {
 
 	if output != "" {
 		t.Fatalf("expected no default output when copy fails, got %q", output)
+	}
+}
+
+func TestOutputPromptLibraryPrompt_CodingAgentOutputOnlyPrependsInstructionDelimiter(t *testing.T) {
+	previous := clipboardCopyFunc
+	t.Cleanup(func() {
+		clipboardCopyFunc = previous
+	})
+
+	copied := false
+	clipboardCopyFunc = func(text string) error {
+		copied = true
+		return nil
+	}
+
+	prompt := promptlib.EffectivePrompt{
+		Prompt: promptlib.Prompt{
+			Identity: promptlib.Identity{Noun: "coding-agent", Verb: "short"},
+			Content:  "prompt text",
+		},
+		Kind: promptlib.SourceBuiltin,
+	}
+
+	output := captureStdout(t, func() {
+		if err := outputPromptLibraryPrompt(prompt, true, false); err != nil {
+			t.Fatalf("outputPromptLibraryPrompt() error = %v", err)
+		}
+	})
+
+	if copied {
+		t.Fatalf("expected output-only to skip default clipboard copy")
+	}
+	if output != "---\nprompt text" {
+		t.Fatalf("output = %q, want coding-agent instruction delimiter", output)
+	}
+}
+
+func TestOutputPromptLibraryPrompt_CodingAgentDoesNotDuplicateInstructionDelimiter(t *testing.T) {
+	prompt := promptlib.EffectivePrompt{
+		Prompt: promptlib.Prompt{
+			Identity: promptlib.Identity{Noun: "coding-agent", Verb: "short"},
+			Content:  "---\nprompt text",
+		},
+		Kind: promptlib.SourceBuiltin,
+	}
+
+	output := captureStdout(t, func() {
+		if err := outputPromptLibraryPrompt(prompt, true, false); err != nil {
+			t.Fatalf("outputPromptLibraryPrompt() error = %v", err)
+		}
+	})
+
+	if output != "---\nprompt text" {
+		t.Fatalf("output = %q, want exactly one instruction delimiter", output)
+	}
+}
+
+func TestOutputPromptLibraryPrompt_CodingAgentDefaultCopiesDelimitedPrompt(t *testing.T) {
+	previous := clipboardCopyFunc
+	t.Cleanup(func() {
+		clipboardCopyFunc = previous
+	})
+
+	var copied string
+	clipboardCopyFunc = func(text string) error {
+		copied = text
+		return nil
+	}
+
+	prompt := promptlib.EffectivePrompt{
+		Prompt: promptlib.Prompt{
+			Identity: promptlib.Identity{Noun: "coding-agent", Verb: "short"},
+			Content:  "prompt text",
+		},
+		Kind: promptlib.SourceBuiltin,
+	}
+
+	output := captureStdout(t, func() {
+		if err := outputPromptLibraryPrompt(prompt, false, false); err != nil {
+			t.Fatalf("outputPromptLibraryPrompt() error = %v", err)
+		}
+	})
+
+	if copied != "---\nprompt text" {
+		t.Fatalf("clipboard copy = %q, want delimited coding-agent prompt", copied)
+	}
+	if strings.Contains(output, "---\n---\n") {
+		t.Fatalf("expected default display to avoid duplicate delimiters, got %q", output)
+	}
+	if !strings.Contains(output, "Prompt:\n---\nprompt text\n---\n") {
+		t.Fatalf("expected output to display delimited prompt, got %q", output)
 	}
 }

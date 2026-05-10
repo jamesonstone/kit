@@ -25,6 +25,9 @@ func TestRunPromptWithOptions_DirectBuiltInCopiesAndPrintsMetadata(t *testing.T)
 	if copied == "" {
 		t.Fatalf("expected prompt to be copied")
 	}
+	if !strings.HasPrefix(copied, "---\n") {
+		t.Fatalf("expected copied coding-agent prompt to start with instruction delimiter, got %q", copied)
+	}
 	if strings.Contains(copied, "pbcopy") || strings.Contains(copied, "osascript") {
 		t.Fatalf("expected copied prompt body to exclude wrapper commands, got %q", copied)
 	}
@@ -60,6 +63,9 @@ func TestRunPromptWithOptions_DirectCodingAgentBuiltIns(t *testing.T) {
 					t.Fatalf("runPromptWithOptions() error = %v", err)
 				}
 			})
+			if !strings.HasPrefix(output, "---\n") {
+				t.Fatalf("expected output to start with instruction delimiter, got %q", output)
+			}
 			if !strings.Contains(output, tt.wantText) {
 				t.Fatalf("expected output to contain %q, got %q", tt.wantText, output)
 			}
@@ -91,6 +97,9 @@ func TestRunPromptWithOptions_OutputOnlyCopyCopiesRawBuiltIn(t *testing.T) {
 	if copied != output {
 		t.Fatalf("clipboard payload = %q, want stdout %q", copied, output)
 	}
+	if !strings.HasPrefix(output, "---\n") {
+		t.Fatalf("expected output to start with instruction delimiter, got %q", output)
+	}
 }
 
 func TestRunPromptWithOptions_OutputOnlyPrintsRawBuiltIn(t *testing.T) {
@@ -113,6 +122,9 @@ func TestRunPromptWithOptions_OutputOnlyPrintsRawBuiltIn(t *testing.T) {
 	}
 	if output == "" {
 		t.Fatalf("expected raw prompt output")
+	}
+	if !strings.HasPrefix(output, "---\n") {
+		t.Fatalf("expected raw coding-agent output to start with instruction delimiter, got %q", output)
 	}
 	if strings.Contains(output, "Prompt Library") || strings.Contains(output, "Command:") {
 		t.Fatalf("expected raw output without metadata, got %q", output)
