@@ -264,6 +264,63 @@ func TestBuildProjectMap_UsesDependencyOrderForProjectGraph(t *testing.T) {
 	}
 }
 
+func TestBuildProjectMap_ReadsFrontMatterRelationshipsAndDependencies(t *testing.T) {
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	for _, dirName := range []string{"0001-ui", "0002-api"} {
+		if err := os.MkdirAll(filepath.Join(specsDir, dirName), 0755); err != nil {
+			t.Fatalf("MkdirAll(%q) error = %v", dirName, err)
+		}
+	}
+
+	cfg := config.Default()
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), "# CONSTITUTION\n")
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), "# PROJECT PROGRESS SUMMARY\n")
+	writeMapFile(t, filepath.Join(specsDir, "0001-ui", "SPEC.md"), `---
+kit_metadata_version: 1
+artifact: spec
+feature:
+  id: "0001"
+  slug: ui
+  dir: 0001-ui
+relationships:
+  - type: depends_on
+    target: 0002-api
+dependencies:
+  - name: Design brief
+    type: doc
+    location: docs/notes/0001-ui/design/brief.md
+    used_for: UI constraints
+    status: active
+---
+# SPEC
+
+## RELATIONSHIPS
+
+Relationships are tracked in front matter.
+
+## DEPENDENCIES
+
+Dependencies are tracked in front matter.
+`)
+	writeMapFile(t, filepath.Join(specsDir, "0002-api", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\nnone\n")
+
+	projectMap, err := BuildProjectMap(projectRoot, cfg)
+	if err != nil {
+		t.Fatalf("BuildProjectMap() error = %v", err)
+	}
+	ui := featureMapByDirName(t, projectMap.Features, "0001-ui")
+	if len(ui.Outgoing) != 1 || ui.Outgoing[0].Type != "depends on" || ui.Outgoing[0].TargetFeatureID != "0002-api" {
+		t.Fatalf("unexpected outgoing relationships: %#v", ui.Outgoing)
+	}
+	if len(ui.Dependencies) != 1 || ui.Dependencies[0].Dependency != "Design brief" || ui.Dependencies[0].Location != "docs/notes/0001-ui/design/brief.md" {
+		t.Fatalf("unexpected dependencies: %#v", ui.Dependencies)
+	}
+}
+
 func writeMapFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {

@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0015"
+  slug: "pause-remove-commands"
+  dir: "0015-pause-remove-commands"
+dependencies:
+  - name: "config persistence"
+    type: "code"
+    location: "internal/config/config.go"
+    used_for: "storing lifecycle state"
+    status: "active"
+  - name: "feature selectors"
+    type: "code"
+    location: "internal/feature/feature.go`, `pkg/cli/*"
+    used_for: "consistent resolution and filtering"
+    status: "active"
+  - name: "rollup contract"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "canonical progress-summary format"
+    status: "active"
+  - name: "existing lifecycle flows"
+    type: "code"
+    location: "pkg/cli/status.go`, `pkg/cli/complete.go`, `pkg/cli/handoff_prompt.go"
+    used_for: "pause-aware behavior"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

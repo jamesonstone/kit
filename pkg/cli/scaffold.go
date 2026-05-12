@@ -70,13 +70,14 @@ func runScaffold(cmd *cobra.Command, args []string) error {
 	}
 
 	// scaffold all pipeline documents
+	featureMeta := document.FeatureMetadataFromDir(feat.DirName)
 	docs := []struct {
 		name     string
 		template string
 	}{
-		{"SPEC.md", templates.Spec},
-		{"PLAN.md", templates.Plan},
-		{"TASKS.md", templates.Tasks},
+		{"SPEC.md", templates.BuildSpecArtifactForFeature(featureMeta)},
+		{"PLAN.md", templates.BuildPlanArtifactForFeature(featureMeta)},
+		{"TASKS.md", templates.BuildTasksArtifactForFeature(featureMeta)},
 		{"ANALYSIS.md", templates.Analysis},
 	}
 

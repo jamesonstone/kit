@@ -1,3 +1,22 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0012"
+  slug: "default-subagent-orchestration"
+  dir: "0012-default-subagent-orchestration"
+dependencies:
+  - name: "shared prompt helper"
+    type: "code"
+    location: "/Users/jamesonstone/go/src/github.com/jamesonstone/kit/pkg/cli/subagents.go"
+    used_for: "implement the default orchestration switch"
+    status: "active"
+  - name: "dispatch output helper"
+    type: "code"
+    location: "/Users/jamesonstone/go/src/github.com/jamesonstone/kit/pkg/cli/root.go"
+    used_for: "preserve dispatch's no-shared-suffix behavior"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

@@ -1,3 +1,42 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0009"
+  slug: "spec-skills-discovery"
+  dir: "0009-spec-skills-discovery"
+dependencies:
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "canonical workflow and section requirements"
+    status: "active"
+  - name: "init project spec"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "canonical skills and dependency inventory contract"
+    status: "active"
+  - name: "spec template"
+    type: "code"
+    location: "internal/templates/templates.go"
+    used_for: "required `SPEC.md` section shapes"
+    status: "active"
+  - name: "spec validation"
+    type: "code"
+    location: "internal/document/document.go"
+    used_for: "required section parsing and validation"
+    status: "active"
+  - name: "spec prompt flow"
+    type: "code"
+    location: "pkg/cli/spec.go"
+    used_for: "skills discovery and prompt output behavior"
+    status: "active"
+  - name: "shared skills guidance"
+    type: "code"
+    location: "pkg/cli/subagents.go"
+    used_for: "execution-time skill instructions in prompt output"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

@@ -1,3 +1,37 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0001"
+  slug: "refactor-plan-command"
+  dir: "0001-refactor-plan-command"
+dependencies:
+  - name: "plan command"
+    type: "code"
+    location: "pkg/cli/plan.go"
+    used_for: "command flow, prompts, and prerequisite handling"
+    status: "active"
+  - name: "feature resolution helpers"
+    type: "code"
+    location: "internal/feature/feature.go"
+    used_for: "feature lookup and selection"
+    status: "active"
+  - name: "plan template"
+    type: "code"
+    location: "internal/templates/templates.go"
+    used_for: "canonical plan structure"
+    status: "active"
+  - name: "rollup generator"
+    type: "code"
+    location: "internal/rollup/rollup.go"
+    used_for: "lifecycle summary refresh"
+    status: "active"
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "workflow constraints and traceability rules"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

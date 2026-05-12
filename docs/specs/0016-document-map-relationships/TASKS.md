@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0016"
+  slug: "document-map-relationships"
+  dir: "0016-document-map-relationships"
+---
 # TASKS
 
 ## PROGRESS TABLE

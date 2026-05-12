@@ -36,8 +36,12 @@ func TestRunSpecFrontendProfilePersistsDependencies(t *testing.T) {
 	}
 	text := string(content)
 	checks := []string{
-		"| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |",
-		"| Design materials | design | docs/notes/0001-dashboard/design | optional frontend design input | optional |",
+		"name: Frontend profile",
+		"location: --profile=frontend",
+		"used_for: apply frontend-specific coding-agent instruction set",
+		"name: Design materials",
+		"location: docs/notes/0001-dashboard/design",
+		"used_for: optional frontend design input",
 	}
 	for _, check := range checks {
 		if !strings.Contains(text, check) {
@@ -80,10 +84,10 @@ func TestRunPlanFrontendProfilePersistsSpecAndPlanDependencies(t *testing.T) {
 			t.Fatalf("os.ReadFile(%q) error = %v", path, err)
 		}
 		text := string(content)
-		if !strings.Contains(text, "| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |") {
+		if !strings.Contains(text, "name: Frontend profile") || !strings.Contains(text, "location: --profile=frontend") {
 			t.Fatalf("expected %s to contain frontend profile dependency, got:\n%s", path, text)
 		}
-		if !strings.Contains(text, "| Design materials | design | docs/notes/0001-dashboard/design | optional frontend design input | optional |") {
+		if !strings.Contains(text, "name: Design materials") || !strings.Contains(text, "location: docs/notes/0001-dashboard/design") {
 			t.Fatalf("expected %s to contain design materials dependency, got:\n%s", path, text)
 		}
 	}

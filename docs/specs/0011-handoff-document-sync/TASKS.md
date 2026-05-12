@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0011"
+  slug: "handoff-document-sync"
+  dir: "0011-handoff-document-sync"
+---
 # TASKS
 
 ## TASKS

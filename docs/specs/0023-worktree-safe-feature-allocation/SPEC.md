@@ -1,3 +1,39 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0023"
+  slug: "worktree-safe-feature-allocation"
+  dir: "0023-worktree-safe-feature-allocation"
+relationships:
+  - type: "builds_on"
+    target: "0004-brainstorm-first-workflow"
+  - type: "builds_on"
+    target: "0016-document-map-relationships"
+  - type: "builds_on"
+    target: "0021-project-validation-and-instruction-registry"
+dependencies:
+  - name: "feature creation model"
+    type: "code"
+    location: "internal/feature/feature.go"
+    used_for: "current numbering and directory creation flow"
+    status: "active"
+  - name: "project validation"
+    type: "code"
+    location: "pkg/cli/check.go`, `pkg/cli/reconcile_audit.go"
+    used_for: "duplicate prefix detection"
+    status: "active"
+  - name: "map renderer"
+    type: "code"
+    location: "internal/feature/map.go`, `pkg/cli/map.go"
+    used_for: "dependency-based project ordering"
+    status: "active"
+  - name: "Git common dir"
+    type: "tool"
+    location: "git rev-parse --git-common-dir"
+    used_for: "shared allocator state across worktrees in one clone"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

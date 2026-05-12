@@ -92,6 +92,8 @@ func checkFeature(specsDir string, featureRef string) error {
 			for _, e := range doc.Validate() {
 				errors = append(errors, e.Error())
 			}
+			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
 				warnings = append(warnings, "BRAINSTORM.md has unresolved TODO placeholders")
 			}
@@ -110,6 +112,8 @@ func checkFeature(specsDir string, featureRef string) error {
 			for _, e := range doc.Validate() {
 				errors = append(errors, e.Error())
 			}
+			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
 				warnings = append(warnings, "SPEC.md has unresolved TODO placeholders")
 			}
@@ -128,6 +132,8 @@ func checkFeature(specsDir string, featureRef string) error {
 			for _, e := range doc.Validate() {
 				errors = append(errors, e.Error())
 			}
+			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
 				warnings = append(warnings, "PLAN.md has unresolved TODO placeholders")
 			}
@@ -146,6 +152,8 @@ func checkFeature(specsDir string, featureRef string) error {
 			for _, e := range doc.Validate() {
 				errors = append(errors, e.Error())
 			}
+			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
 				warnings = append(warnings, "TASKS.md has unresolved TODO placeholders")
 			}
@@ -174,6 +182,48 @@ func checkFeature(specsDir string, featureRef string) error {
 	}
 
 	return nil
+}
+
+func featureMetadataIdentityErrors(doc *document.Document, featureDirName string) []string {
+	if doc.Metadata == nil {
+		return nil
+	}
+
+	expected := document.FeatureMetadataFromDir(featureDirName)
+	var errors []string
+	if doc.Metadata.Feature.ID != "" && doc.Metadata.Feature.ID != expected.ID {
+		errors = append(errors, fmt.Sprintf(
+			"%s: front matter feature.id %q does not match containing feature directory id %q",
+			doc.Path,
+			doc.Metadata.Feature.ID,
+			expected.ID,
+		))
+	}
+	if doc.Metadata.Feature.Slug != "" && doc.Metadata.Feature.Slug != expected.Slug {
+		errors = append(errors, fmt.Sprintf(
+			"%s: front matter feature.slug %q does not match containing feature directory slug %q",
+			doc.Path,
+			doc.Metadata.Feature.Slug,
+			expected.Slug,
+		))
+	}
+	if doc.Metadata.Feature.Dir != "" && doc.Metadata.Feature.Dir != expected.Dir {
+		errors = append(errors, fmt.Sprintf(
+			"%s: front matter feature.dir %q does not match containing feature directory %q",
+			doc.Path,
+			doc.Metadata.Feature.Dir,
+			expected.Dir,
+		))
+	}
+	return errors
+}
+
+func metadataConflictWarnings(doc *document.Document) []string {
+	warnings := make([]string, 0, len(doc.MetadataConflictWarnings))
+	for _, conflict := range doc.MetadataConflictWarnings {
+		warnings = append(warnings, fmt.Sprintf("%s: %s", doc.Path, conflict.Message))
+	}
+	return warnings
 }
 
 func checkProjectContract(projectRoot string, cfg *config.Config) error {

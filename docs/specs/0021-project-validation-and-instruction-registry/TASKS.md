@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0021"
+  slug: "project-validation-and-instruction-registry"
+  dir: "0021-project-validation-and-instruction-registry"
+---
 # TASKS
 
 ## PROGRESS TABLE

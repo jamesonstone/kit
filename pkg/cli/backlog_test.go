@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 )
 
 func TestRunBrainstormBacklog_CreatesPausedBacklogItem(t *testing.T) {
@@ -49,11 +50,14 @@ func TestRunBrainstormBacklog_CreatesPausedBacklogItem(t *testing.T) {
 	if !strings.Contains(string(content), "Need to refactor the legacy endpoint to share normalization.") {
 		t.Fatalf("expected thesis in brainstorm, got %q", string(content))
 	}
-	if !strings.Contains(string(content), "- related to: 0001-current-endpoint") {
-		t.Fatalf("expected relationship to active feature, got %q", string(content))
+	doc := document.Parse(string(content), brainstormPath, document.TypeBrainstorm)
+	relationships, warnings := doc.Relationships()
+	if len(warnings) > 0 || len(relationships) != 1 || relationships[0].Type != "related to" || relationships[0].Target != "0001-current-endpoint" {
+		t.Fatalf("expected front matter relationship to active feature, got relationships=%#v warnings=%#v content=%q", relationships, warnings, string(content))
 	}
-	if !strings.Contains(string(content), "| Feature notes | notes | docs/notes/0002-legacy-endpoint-refactor | optional pre-brainstorm research input | optional |") {
-		t.Fatalf("expected feature notes dependency, got %q", string(content))
+	dependencies := doc.Dependencies()
+	if len(dependencies) == 0 || dependencies[0].Name != featureNotesDependencyName || dependencies[0].Location != "docs/notes/0002-legacy-endpoint-refactor" {
+		t.Fatalf("expected feature notes dependency, got %#v content=%q", dependencies, string(content))
 	}
 	if _, err := os.Stat(filepath.Join(projectRoot, "docs", "notes", "0002-legacy-endpoint-refactor", ".gitkeep")); err != nil {
 		t.Fatalf("expected backlog notes .gitkeep, got %v", err)

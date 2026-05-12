@@ -44,5 +44,5 @@
 - Extract only the concrete facts that change the current feature; do not paraphrase entire prior docs into chat or copy irrelevant history into the active artifact
 - Treat RLM as discovery and context selection first; do not jump straight into parallel execution while the candidate set is still broad
 - Always update affected documentation and ensure touched documents stay current and properly formatted before finishing the work
-- Record the docs, skills, and references that materially shaped the feature in dependency tables
+- Record the docs, skills, and references that materially shaped the feature in canonical front matter dependencies, falling back to legacy dependency tables only when front matter is absent
 - Use `kit dispatch` only when the work moves from broad discovery into multi-lane execution planning

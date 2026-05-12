@@ -123,7 +123,8 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	// create SPEC.md if it doesn't exist
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	if !document.Exists(specPath) {
-		if err := document.Write(specPath, templates.Spec); err != nil {
+		content := templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+		if err := document.Write(specPath, content); err != nil {
 			return fmt.Errorf("failed to create SPEC.md: %w", err)
 		}
 		if !outputOnly {

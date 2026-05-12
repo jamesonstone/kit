@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0004"
+  slug: "brainstorm-first-workflow"
+  dir: "0004-brainstorm-first-workflow"
+dependencies:
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "workflow constraints and prompt contract updates"
+    status: "active"
+  - name: "core artifact templates"
+    type: "code"
+    location: "internal/templates/templates.go"
+    used_for: "brainstorm and downstream prompt scaffolding"
+    status: "active"
+  - name: "project progress summary"
+    type: "doc"
+    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
+    used_for: "brainstorm-aware phase and summary reporting"
+    status: "active"
+  - name: "repository instruction files"
+    type: "doc"
+    location: "AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md"
+    used_for: "alignment of the repo's workflow contract"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

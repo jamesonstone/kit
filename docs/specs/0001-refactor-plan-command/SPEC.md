@@ -1,3 +1,37 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0001"
+  slug: "refactor-plan-command"
+  dir: "0001-refactor-plan-command"
+dependencies:
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "workflow constraints and plan-stage rules"
+    status: "active"
+  - name: "init project spec"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "canonical `kit plan` behavior and artifact model"
+    status: "active"
+  - name: "plan command"
+    type: "code"
+    location: "pkg/cli/plan.go"
+    used_for: "shipped command behavior, prerequisite handling, and prompt contract"
+    status: "active"
+  - name: "plan template"
+    type: "code"
+    location: "internal/templates/templates.go"
+    used_for: "required `PLAN.md` sections"
+    status: "active"
+  - name: "rollup generator"
+    type: "code"
+    location: "internal/rollup/rollup.go"
+    used_for: "project summary updates after plan creation"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

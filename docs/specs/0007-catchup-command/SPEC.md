@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0007"
+  slug: "catchup-command"
+  dir: "0007-catchup-command"
+dependencies:
+  - name: "feature status model"
+    type: "code"
+    location: "internal/feature/status.go"
+    used_for: "current stage and state derivation"
+    status: "active"
+  - name: "prompt-output contract"
+    type: "code"
+    location: "pkg/cli/implement.go`, `pkg/cli/reflect.go"
+    used_for: "clipboard-first prompt behavior"
+    status: "active"
+  - name: "project progress summary"
+    type: "doc"
+    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
+    used_for: "current project-state context"
+    status: "active"
+  - name: "README"
+    type: "doc"
+    location: "README.md"
+    used_for: "command documentation"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

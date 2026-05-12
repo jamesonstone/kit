@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0013"
+  slug: "scaffold-agents-safe-merge"
+  dir: "0013-scaffold-agents-safe-merge"
+---
 # TASKS
 
 ## TASKS

@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/jamesonstone/kit/internal/document"
 )
 
 func TestBuildBrainstormPrompt(t *testing.T) {
@@ -40,8 +42,8 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"record specific note files that shaped the brainstorm",
 		"leave the notes directory dependency as `optional`",
 		"/tmp/project/docs/CONSTITUTION.md",
-		"## DEPENDENCIES",
-		"`Dependency`, `Type`, `Location`, `Used For`, and `Status`",
+		"canonical front matter dependencies",
+		"`name`, `type`, `location`, `used_for`, and `status`",
 		"Use an RLM-style just-in-time prior-work pass over `/tmp/docs/specs` before broad repository reads",
 		"/tmp/project/docs/PROJECT_PROGRESS_SUMMARY.md",
 		"conditional reads only",
@@ -49,7 +51,7 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
 		"for Figma or other MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
-		"`Status` = `stale`",
+		"`status: stale`",
 		"no section in `BRAINSTORM.md` may remain empty or contain only an HTML TODO comment",
 		"`not applicable`, `not required`, or `no additional information required`",
 	}
@@ -100,8 +102,14 @@ func TestRunBrainstorm_CreatesFeatureNotesDirAndSeedsDependency(t *testing.T) {
 		t.Fatalf("os.ReadFile() error = %v", err)
 	}
 	checks := []string{
+		"kit_metadata_version: 1",
+		"artifact: brainstorm",
+		"dir: 0001-sample-feature",
 		"Need better import validation for malformed CSV uploads.",
-		"| Feature notes | notes | docs/notes/0001-sample-feature | optional pre-brainstorm research input | optional |",
+		"name: Feature notes",
+		"location: docs/notes/0001-sample-feature",
+		"used_for: optional pre-brainstorm research input",
+		"status: optional",
 	}
 	for _, check := range checks {
 		if !strings.Contains(string(content), check) {
@@ -154,9 +162,12 @@ func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsDependencies(
 	}
 	text := string(content)
 	checks := []string{
-		"| Feature notes | notes | docs/notes/0001-dashboard-redesign | optional pre-brainstorm research input | optional |",
-		"| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |",
-		"| Design materials | design | docs/notes/0001-dashboard-redesign/design | optional frontend design input | optional |",
+		"name: Feature notes",
+		"location: docs/notes/0001-dashboard-redesign",
+		"name: Frontend profile",
+		"location: --profile=frontend",
+		"name: Design materials",
+		"location: docs/notes/0001-dashboard-redesign/design",
 	}
 	for _, check := range checks {
 		if !strings.Contains(text, check) {
@@ -227,7 +238,10 @@ questions
 	text := string(content)
 	checks := []string{
 		"| Existing note | notes | docs/notes/0001-sample/old.md | prior observation | stale |",
-		"| Feature notes | notes | docs/notes/0001-sample | optional pre-brainstorm research input | optional |",
+		"name: Existing note",
+		"location: docs/notes/0001-sample/old.md",
+		"name: Feature notes",
+		"location: docs/notes/0001-sample",
 		"<!-- keep this comment -->",
 	}
 	for _, check := range checks {
@@ -235,8 +249,38 @@ questions
 			t.Fatalf("expected updated BRAINSTORM.md to contain %q, got %q", check, text)
 		}
 	}
-	if count := strings.Count(text, "| Feature notes | notes | docs/notes/0001-sample | optional pre-brainstorm research input | optional |"); count != 1 {
-		t.Fatalf("expected one feature notes dependency row, got %d in %q", count, text)
+	doc := document.Parse(text, brainstormPath, document.TypeBrainstorm)
+	count := 0
+	for _, dependency := range doc.Dependencies() {
+		if dependency.Name == featureNotesDependencyName && dependency.Location == "docs/notes/0001-sample" {
+			count++
+		}
+	}
+	if count != 1 {
+		t.Fatalf("expected one feature notes dependency in front matter, got %d in %q", count, text)
+	}
+}
+
+func TestEnsureBrainstormNotesDependency_ErrorsOnMalformedFrontMatter(t *testing.T) {
+	projectRoot := t.TempDir()
+	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
+	brainstormPath := filepath.Join(projectRoot, "docs", "specs", "0001-sample", "BRAINSTORM.md")
+	writeFile(t, brainstormPath, `---
+kit_metadata_version: 1
+artifact: brainstorm
+feature:
+  id: "0001"
+  slug: sample
+  dir: 0001-sample
+# BRAINSTORM
+`)
+
+	changed, err := ensureBrainstormNotesDependency(brainstormPath, "docs/notes/0001-sample")
+	if err == nil {
+		t.Fatal("ensureBrainstormNotesDependency() error = nil, want malformed front matter error")
+	}
+	if changed {
+		t.Fatal("ensureBrainstormNotesDependency() changed = true, want false")
 	}
 }
 

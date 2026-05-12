@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0010"
+  slug: "support-command-clipboard-defaults"
+  dir: "0010-support-command-clipboard-defaults"
+---
 # TASKS
 
 ## TASKS

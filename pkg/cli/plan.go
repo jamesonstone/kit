@@ -102,7 +102,8 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	if !document.Exists(specPath) {
 		if planForce || cfg.AllowOutOfOrder {
 			// create empty SPEC.md
-			if err := document.Write(specPath, templates.Spec); err != nil {
+			content := templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+			if err := document.Write(specPath, content); err != nil {
 				return fmt.Errorf("failed to create SPEC.md: %w", err)
 			}
 			if !outputOnly {
@@ -116,7 +117,8 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	// create PLAN.md if it doesn't exist
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	if !document.Exists(planPath) {
-		if err := document.Write(planPath, templates.Plan); err != nil {
+		content := templates.BuildPlanArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+		if err := document.Write(planPath, content); err != nil {
 			return fmt.Errorf("failed to create PLAN.md: %w", err)
 		}
 		if !outputOnly {
@@ -304,7 +306,7 @@ func appendPlanDependencyInventoryStep(
 
 func planDependencyInventoryStepText(planPath, specPath, brainstormPath string, hasBrainstorm bool) string {
 	lines := []string{
-		fmt.Sprintf("Populate or refresh the `## DEPENDENCIES` table in `%s` before sign-off:", planPath),
+		fmt.Sprintf("Populate or refresh canonical front matter `dependencies` in `%s` before sign-off, using the legacy `## DEPENDENCIES` table only when front matter is absent:", planPath),
 		fmt.Sprintf("- carry forward still-relevant dependencies from `%s`", specPath),
 	}
 	if hasBrainstorm {
@@ -312,11 +314,11 @@ func planDependencyInventoryStepText(planPath, specPath, brainstormPath string, 
 	}
 	lines = append(lines,
 		"- include skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, assets, and other resources that shape the implementation strategy",
-		"- use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`",
-		"- `Status` must be one of `active`, `optional`, or `stale`",
-		"- for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
-		"- if a dependency influenced the implementation strategy but is no longer current, keep it in the table with `Status` = `stale`",
-		"- if no additional dependencies apply, keep the default `none` row",
+		"- use `name`, `type`, `location`, `used_for`, and `status`",
+		"- `status` must be one of `active`, `optional`, or `stale`",
+		"- for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
+		"- if a dependency influenced the implementation strategy but is no longer current, keep it with `status: stale`",
+		"- if no additional dependencies apply, leave front matter dependencies empty or keep the legacy `none` row in documents without front matter",
 	)
 	return strings.Join(lines, "\n")
 }
@@ -426,7 +428,7 @@ func buildStandardPlanPrompt(
 			"use BRAINSTORM.md as research context only; SPEC.md remains the binding contract",
 			"do not restate requirements",
 			"do not introduce new scope beyond SPEC.md",
-			"the ## DEPENDENCIES section must be current before sign-off and must keep exact locations for external design inputs",
+			"canonical front matter `dependencies` must be current before sign-off and must keep exact locations for external design inputs; use the legacy ## DEPENDENCIES table only when front matter is absent",
 			"do not write tasks",
 			"avoid code unless strictly necessary",
 			"keep language dense and factual",
@@ -508,7 +510,7 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 			"use BRAINSTORM.md as research context only; SPEC.md remains the binding contract",
 			"do not restate requirements verbatim",
 			"do not introduce new scope beyond the Warp plan and SPEC.md",
-			"the ## DEPENDENCIES section must be current before sign-off and must keep exact locations for external design inputs",
+			"canonical front matter `dependencies` must be current before sign-off and must keep exact locations for external design inputs; use the legacy ## DEPENDENCIES table only when front matter is absent",
 			"keep language dense and factual",
 			"Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off",
 			"ensure plan respects constraints defined in CONSTITUTION.md",

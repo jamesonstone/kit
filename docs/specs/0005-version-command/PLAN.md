@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0005"
+  slug: "version-command"
+  dir: "0005-version-command"
+dependencies:
+  - name: "version source"
+    type: "code"
+    location: "pkg/cli/version.go"
+    used_for: "command output resolution"
+    status: "active"
+  - name: "root command ordering"
+    type: "code"
+    location: "pkg/cli/root.go"
+    used_for: "help visibility"
+    status: "active"
+  - name: "build pipeline"
+    type: "code"
+    location: "Makefile"
+    used_for: "default version injection for local builds"
+    status: "active"
+  - name: "README"
+    type: "doc"
+    location: "README.md"
+    used_for: "user-facing command documentation"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

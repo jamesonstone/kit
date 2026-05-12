@@ -66,21 +66,21 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 		filepath.Join(codexDir, "instructions.md"),
 		filepath.Join(codexDir, "skills", "*", "SKILL.md"),
 		"Perform a skills discovery phase before treating SPEC.md as complete",
-		"write the selected skills into the `## SKILLS` table",
-		"Populate or refresh the `## DEPENDENCIES` table",
+		"write the selected skills into canonical front matter `skills`",
+		"Populate or refresh canonical front matter `dependencies`",
 		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`",
-		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
+		"keep `skills` focused on execution-time agent skills and track broader supporting inputs in `dependencies`",
+		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
 		"do not use `.claude/skills` as canonical discovery input",
 		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
 		"`not applicable`, `not required`, or `no additional information required`",
 		"## Skills",
-		"read that feature's SPEC.md and the `## SKILLS` table first",
+		"read that feature's canonical front matter `skills` first",
 	}
 
 	for _, check := range checks {
@@ -118,18 +118,18 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 
 	checks := []string{
 		"Perform a skills discovery phase before treating SPEC.md as complete",
-		"write the selected skills into the `## SKILLS` table",
-		"Populate or refresh the `## DEPENDENCIES` table",
+		"write the selected skills into canonical front matter `skills`",
+		"Populate or refresh canonical front matter `dependencies`",
 		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"keep the required `none | n/a | n/a | no additional skills required | no` row",
-		"keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`",
-		"the ## SKILLS section is mandatory and must be populated before sign-off",
-		"the ## DEPENDENCIES section must be current before sign-off",
+		"leave front matter skills empty or keep the legacy `none | n/a | n/a | no additional skills required | no` row",
+		"keep `skills` focused on execution-time agent skills and track broader supporting inputs in `dependencies`",
+		"canonical front matter `skills` is mandatory when front matter exists",
+		"canonical front matter `dependencies` must be current",
 		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
 	}
 
@@ -173,7 +173,7 @@ func TestRunSpecTemplate_IncludesRLMGuidanceWhenBrainstormHintsLargeRepo(t *test
 		"# Use RLM Pattern",
 		"parallelization_mode: \"rlm\"",
 		"immediate decision → smallest artifact → required facts → act or recurse",
-		"add `rlm` to the `## SKILLS` table",
+		"add `rlm` to canonical front matter `skills`",
 	}
 
 	for _, check := range checks {
@@ -297,7 +297,7 @@ func TestOutputCompiledPrompt_IncludesRLMGuidanceWhenContextRequiresIt(t *testin
 		"# Use RLM Pattern",
 		"parallelization_mode: \"rlm\"",
 		"immediate decision → smallest artifact → required facts → act or recurse",
-		"add `rlm` to the `## SKILLS` table",
+		"add `rlm` to canonical front matter `skills`",
 	}
 
 	for _, check := range checks {

@@ -1,3 +1,42 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0015"
+  slug: "pause-remove-commands"
+  dir: "0015-pause-remove-commands"
+dependencies:
+  - name: "feature lifecycle model"
+    type: "code"
+    location: "internal/feature/feature.go"
+    used_for: "phase derivation and feature resolution"
+    status: "active"
+  - name: "feature status model"
+    type: "code"
+    location: "internal/feature/status.go"
+    used_for: "active-feature selection and status payloads"
+    status: "active"
+  - name: "project rollup generator"
+    type: "code"
+    location: "internal/rollup/rollup.go"
+    used_for: "`PROJECT_PROGRESS_SUMMARY.md` regeneration"
+    status: "active"
+  - name: "status output"
+    type: "code"
+    location: "pkg/cli/status.go`, `pkg/cli/status_output.go"
+    used_for: "user-facing lifecycle views"
+    status: "active"
+  - name: "complete command"
+    type: "code"
+    location: "pkg/cli/complete.go"
+    used_for: "active-only lifecycle flow behavior"
+    status: "active"
+  - name: "project spec"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "canonical progress-summary contract"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

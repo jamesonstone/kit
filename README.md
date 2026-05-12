@@ -47,6 +47,11 @@ The artifact model is broader than software:
 | `reflect`                                        | verification and regression review     | results review                        | retro and validation                | revision review and critique            |
 | `reconcile` / `resume` / `summarize` / `handoff` | reconcile, resume, or transfer context | reconcile or resume the investigation | reconcile or transfer project state | reconcile or transfer editorial context |
 
+Feature artifacts use typed YAML front matter for canonical metadata such as
+artifact identity, feature identity, relationships, dependencies, skills, and
+summary/intent. Legacy markdown body sections remain readable during migration,
+but newly generated docs write canonical metadata in front matter.
+
 The names may be software-flavored today, but the structure is general:
 constraints, research, specification, planning, execution, verification, and
 transfer are common to most serious thought work.
@@ -379,8 +384,8 @@ Then Kit:
 
 - creates or reuses `docs/specs/<feature>/`
 - creates `BRAINSTORM.md` as the first artifact in that directory
-- requires the coding agent to keep the `## RELATIONSHIPS` section current with explicit prior-feature lineage or `none`
-- requires the coding agent to keep the `## DEPENDENCIES` table current with the inputs used during the brainstorm phase
+- requires the coding agent to keep front matter `relationships` current with explicit prior-feature lineage, falling back to `## RELATIONSHIPS` only for legacy docs without front matter
+- requires the coding agent to keep front matter `dependencies` current with the inputs used during the brainstorm phase, falling back to `## DEPENDENCIES` only for legacy docs without front matter
 - opens a vim-compatible editor by default for the multiline thesis, with step instructions and a press-any-key launch gate
 - supports `--inline` to use terminal multiline entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
 - keeps `--vim` and `--editor=vim` as explicit editor controls, though vim-mode is already the default for multiline free-text responses
@@ -494,6 +499,11 @@ docs/
       TASKS.md
       ANALYSIS.md            # optional
 ```
+
+New `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md` files include
+front matter. `kit map`, `kit status`, `kit rollup`, `kit check`, and
+prompt-producing commands read front matter first and fall back to legacy body
+metadata when front matter is absent.
 
 ## ✨ Positioning
 

@@ -16,7 +16,6 @@
 | 0010 | support-command-clipboard-defaults | `docs/specs/0010-support-command-clipboard-defaults` | reflect | no | 2026-04-05 | - Change `kit handoff`, `kit summarize`, and `kit code-review` to copy generated output to the clipboard by default. - Reserve raw stdout prompt output for explicit `--output-only` usage while keeping `--copy` as an explicit override for `--output-only`. |
 | 0011 | handoff-document-sync | `docs/specs/0011-handoff-document-sync` | reflect | no | 2026-04-05 | - Change `kit handoff` from a passive “new session context dump” into an active prompt for the current coding agent session to reconcile feature docs with implementation reality before transfer. - Require the generated prompt to produce a concise final response that confirms documentation sync, includes a full-path document table, and summarizes the most recent conversation context. |
 | 0012 | default-subagent-orchestration | `docs/specs/0012-default-subagent-orchestration` | reflect | no | 2026-04-05 | - Change Kit's shared prompt-orchestration default from single-agent to subagent-first. - Add `--single-agent` as the explicit opt-out when a user wants one lane only. - Keep `kit dispatch` as the stricter discovery-first queue-planning command with explicit approval before launch. - Clarify that repository-scale RLM discovery narrows context first, while dispatch and subagents handle execution planning after discovery. |
-| 0012 | implement-readiness-gate | `docs/specs/0012-implement-readiness-gate` | reflect | no | 2026-04-05 | - Add an implementation-readiness gate inside `kit implement` that requires an adversarial preflight over the feature docs before coding begins. - Keep the workflow as a gate, not a new lifecycle phase, command, or artifact type. |
 | 0013 | scaffold-agents-safe-merge | `docs/specs/0013-scaffold-agents-safe-merge` | reflect | no | 2026-04-05 | - Make `kit scaffold-agents` safer when repository instruction files already exist by adding an overwrite confirmation gate and an explicit append-only mode. - Keep append-only deterministic and constrained to known Kit-managed sections; do not attempt fuzzy free-form merges. |
 | 0014 | human-readable-terminal-output | `docs/specs/0014-human-readable-terminal-output` | reflect | no | 2026-04-05 | - Improve human-readable terminal output with clearer spacing, semantic emoji markers, and more readable help sections. - Keep generated coding-agent prompts, scaffolded agent instruction files, `--output-only` raw stdout, and `--json` output unchanged. |
 | 0015 | pause-remove-commands | `docs/specs/0015-pause-remove-commands` | complete | no | 2026-04-05 | Add `kit pause`, `kit rm`, and the `kit remove` compatibility alias so users can explicitly pause in-flight work or remove a feature's docs while keeping Kit's generated progress views, removed-history rows, retained notes, and selectors consistent. |
@@ -30,6 +29,8 @@
 | 0023 | worktree-safe-feature-allocation | `docs/specs/0023-worktree-safe-feature-allocation` | reflect | no | 2026-04-16 | Reserve feature numbers from a repo-shared allocator so multiple worktrees from the same clone cannot create duplicate numbered feature directories. |
 | 0024 | frontend-profile | `docs/specs/0024-frontend-profile` | reflect | no | 2026-04-27 | Add an explicit `--profile=frontend` prompt profile that applies frontend-specific guidance through Kit's existing prompt-output flow without adding commands, root-instruction bloat, or automatic frontend detection. Frontend brainstorms must keep design materials under `docs/notes/<feature-dir>/design/` and expose them through just-in-time dependency routing rather than inlining all assets by default. |
 | 0025 | v0-prompt-library | `docs/specs/0025-v0-prompt-library` | reflect | no | 2026-05-06 | Add a layered prompt library that exposes reusable prompts through `kit prompt <noun> <verb>` and editable local/global prompt storage through `kit set prompt <noun> <verb>`. Prompt lookup must be explicit, filesystem-backed, clipboard-friendly, interactive by default, and compatible with Kit's existing prompt-generation and editor workflows. |
+| 0026 | front-matter-integration | `docs/specs/0026-front-matter-integration` | reflect | no | 2026-05-12 | Adds typed YAML front matter as the canonical metadata layer for Kit feature artifacts while preserving legacy markdown-body fallback during migration. The feature covers relationships, dependencies, skills, artifact identity, file links, validation, mapping, prompts, and workflow readers without adding a new migration command or hidden state. |
+| 0027 | implement-readiness-gate | `docs/specs/0027-implement-readiness-gate` | reflect | no | 2026-04-05 | - Add an implementation-readiness gate inside `kit implement` that requires an adversarial preflight over the feature docs before coding begins. - Keep the workflow as a gate, not a new lifecycle phase, command, or artifact type. |
 
 ## PROJECT INTENT
 
@@ -149,15 +150,6 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - none
 - **POINTERS**: `docs/specs/0012-default-subagent-orchestration/SPEC.md`, `docs/specs/0012-default-subagent-orchestration/PLAN.md`, `docs/specs/0012-default-subagent-orchestration/TASKS.md`
 
-### implement-readiness-gate
-
-- **STATUS**: reflect
-- **PAUSED**: no
-- **INTENT**: - `kit implement` currently moves directly from document reading to task execution. - That leaves no explicit semantic challenge step to catch contradictions, ambiguity, weak task coverage, or missing failure cases before code is written. - The existing `kit check` command validates document structure, but it does not serve as a pre-implementation adversarial review.
-- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06] Record the approved readiness-gate contract in feature docs before changing code. - [PLAN-02][SPEC-07][SPEC-08][SPEC-09][SPEC-10][SPEC-11] Rewrite the `kit implement` prompt so it begins with an implementation-readiness gate and adversarial preflight instructions. - [PLAN-03][SPEC-12][SPEC-13] Update adjacent workflow wording in `kit status`, `README.md`, `docs/CONSTITUTION.md`, `docs/specs/0000_INIT_PROJECT.md`, and scaffolded instruction templates without introducing a new phase. - [PLAN-04][SPEC-14] Leave `kit check` unchanged for v1. - [PLAN-05][SPEC-15][SPEC-16] Add focused tests for the implement prompt and status wording, then run verification.
-- **OPEN ITEMS**: - none
-- **POINTERS**: `docs/specs/0012-implement-readiness-gate/SPEC.md`, `docs/specs/0012-implement-readiness-gate/PLAN.md`, `docs/specs/0012-implement-readiness-gate/TASKS.md`
-
 ### scaffold-agents-safe-merge
 
 - **STATUS**: reflect
@@ -275,6 +267,24 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0025-v0-prompt-library/BRAINSTORM.md`, `docs/specs/0025-v0-prompt-library/SPEC.md`, `docs/specs/0025-v0-prompt-library/PLAN.md`, `docs/specs/0025-v0-prompt-library/TASKS.md`
 
+### front-matter-integration
+
+- **STATUS**: reflect
+- **PAUSED**: no
+- **INTENT**: Kit stores machine-readable feature metadata in markdown body sections and tables. Relationships, dependencies, skills, notes links, design links, and prompt-routing inputs are parsed from human prose structures, which makes command behavior brittle, duplicates parsing logic, and forces validators, maps, prompts, and rollups to depend on body formatting instead of a typed document contract.
+- **APPROACH**: Sequence the implementation in four passes: establish the shared document metadata layer, migrate readers to front-matter-first accessors, migrate writers/templates/prompts to seed canonical metadata, then harden validation and tests around the dual-read migration.
+- **OPEN ITEMS**: none; brainstorm decision batches 1-3 resolved the migration scope, schema, precedence, validation, and command-surface assumptions.
+- **POINTERS**: `docs/specs/0026-front-matter-integration/BRAINSTORM.md`, `docs/specs/0026-front-matter-integration/SPEC.md`, `docs/specs/0026-front-matter-integration/PLAN.md`, `docs/specs/0026-front-matter-integration/TASKS.md`
+
+### implement-readiness-gate
+
+- **STATUS**: reflect
+- **PAUSED**: no
+- **INTENT**: - `kit implement` currently moves directly from document reading to task execution. - That leaves no explicit semantic challenge step to catch contradictions, ambiguity, weak task coverage, or missing failure cases before code is written. - The existing `kit check` command validates document structure, but it does not serve as a pre-implementation adversarial review.
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06] Record the approved readiness-gate contract in feature docs before changing code. - [PLAN-02][SPEC-07][SPEC-08][SPEC-09][SPEC-10][SPEC-11] Rewrite the `kit implement` prompt so it begins with an implementation-readiness gate and adversarial preflight instructions. - [PLAN-03][SPEC-12][SPEC-13] Update adjacent workflow wording in `kit status`, `README.md`, `docs/CONSTITUTION.md`, `docs/specs/0000_INIT_PROJECT.md`, and scaffolded instruction templates without introducing a new phase. - [PLAN-04][SPEC-14] Leave `kit check` unchanged for v1. - [PLAN-05][SPEC-15][SPEC-16] Add focused tests for the implement prompt and status wording, then run verification.
+- **OPEN ITEMS**: - none
+- **POINTERS**: `docs/specs/0027-implement-readiness-gate/SPEC.md`, `docs/specs/0027-implement-readiness-gate/PLAN.md`, `docs/specs/0027-implement-readiness-gate/TASKS.md`
+
 ## LAST UPDATED
 
-2026-05-06 15:02:46 EDT
+2026-05-12 14:01:49 EDT

@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0003"
+  slug: "inplace-upgrade-update"
+  dir: "0003-inplace-upgrade-update"
+dependencies:
+  - name: "release artifacts"
+    type: "code"
+    location: ".github/workflows/`, `.goreleaser.yaml"
+    used_for: "stable release downloads for self-update"
+    status: "active"
+  - name: "version command"
+    type: "code"
+    location: "pkg/cli/version.go"
+    used_for: "local installed-version resolution"
+    status: "active"
+  - name: "project docs"
+    type: "doc"
+    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
+    used_for: "update-related user guidance and status references"
+    status: "active"
+  - name: "GitHub Releases"
+    type: "external"
+    location: "https://github.com/jamesonstone/kit/releases"
+    used_for: "latest-release lookup and artifact download"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

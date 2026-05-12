@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0023"
+  slug: "worktree-safe-feature-allocation"
+  dir: "0023-worktree-safe-feature-allocation"
+---
 # TASKS
 
 ## PROGRESS TABLE

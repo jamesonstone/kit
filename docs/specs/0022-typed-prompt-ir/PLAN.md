@@ -1,3 +1,27 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0022"
+  slug: "typed-prompt-ir"
+  dir: "0022-typed-prompt-ir"
+dependencies:
+  - name: "prompt output wrappers"
+    type: "code"
+    location: "pkg/cli/prompt_output.go"
+    used_for: "preserve rendering boundary and existing clipboard behavior"
+    status: "active"
+  - name: "prompt builders"
+    type: "code"
+    location: "`pkg/cli/*.go` prompt surfaces"
+    used_for: "migration targets"
+    status: "active"
+  - name: "current prompt tests"
+    type: "code"
+    location: "pkg/cli/*test.go"
+    used_for: "retain current semantic coverage during migration"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

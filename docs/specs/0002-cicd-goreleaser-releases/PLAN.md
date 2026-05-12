@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0002"
+  slug: "cicd-goreleaser-releases"
+  dir: "0002-cicd-goreleaser-releases"
+dependencies:
+  - name: "GitHub Actions workflows"
+    type: "code"
+    location: ".github/workflows/"
+    used_for: "main-branch release orchestration and tag publication"
+    status: "active"
+  - name: "GoReleaser config"
+    type: "code"
+    location: ".goreleaser.yaml"
+    used_for: "artifact matrix, checksums, and release packaging"
+    status: "active"
+  - name: "release versioning model"
+    type: "doc"
+    location: "docs/specs/0005-version-command/SPEC.md"
+    used_for: "semantic version surface used by the release flow"
+    status: "active"
+  - name: "project progress summary"
+    type: "doc"
+    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
+    used_for: "project-state visibility after release changes"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

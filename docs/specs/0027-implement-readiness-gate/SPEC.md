@@ -1,3 +1,42 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0027"
+  slug: "implement-readiness-gate"
+  dir: "0027-implement-readiness-gate"
+dependencies:
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "canonical workflow rules and implementation gate contract"
+    status: "active"
+  - name: "init project spec"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "shipped workflow summary and gate wording"
+    status: "active"
+  - name: "implement command"
+    type: "code"
+    location: "pkg/cli/implement.go"
+    used_for: "readiness-gate prompt behavior"
+    status: "active"
+  - name: "status command"
+    type: "code"
+    location: "pkg/cli/status.go"
+    used_for: "next-step wording for completed work"
+    status: "active"
+  - name: "repository instruction templates"
+    type: "code"
+    location: "internal/templates/templates.go"
+    used_for: "scaffolded workflow guidance"
+    status: "active"
+  - name: "README"
+    type: "doc"
+    location: "README.md"
+    used_for: "user-facing workflow wording"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

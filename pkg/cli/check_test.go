@@ -139,6 +139,77 @@ func TestRunCheckProjectFailsWhenRootRequiresVendorTool(t *testing.T) {
 	}
 }
 
+func TestBuildReconcileReportReportsLegacyMissingFrontMatter(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	writeFile(t, filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"), validSpecWithRelationships("none\n"))
+
+	report, err := buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+	issues := findingsIssues(report.Findings)
+	if !strings.Contains(issues, "feature artifact is missing canonical YAML front matter") {
+		t.Fatalf("expected legacy front matter migration warning, got:\n%s", issues)
+	}
+}
+
+func TestCheckFeatureFailsOnMalformedPresentFrontMatter(t *testing.T) {
+	specsDir := filepath.Join(t.TempDir(), "docs", "specs")
+	featurePath := filepath.Join(specsDir, "0001-alpha")
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), `---
+kit_metadata_version: 1
+artifact: spec
+feature:
+  id: "0001"
+  slug: alpha
+  dir: 0001-alpha
+# missing closing delimiter
+# SPEC
+
+## SUMMARY
+
+summary
+`)
+
+	err := checkFeature(specsDir, "alpha")
+	if err == nil || !strings.Contains(err.Error(), "validation failed") {
+		t.Fatalf("expected malformed front matter validation failure, got %v", err)
+	}
+}
+
+func TestCheckFeatureAllowsLegacyDocsWithoutFrontMatter(t *testing.T) {
+	specsDir := filepath.Join(t.TempDir(), "docs", "specs")
+	featurePath := filepath.Join(specsDir, "0001-alpha")
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validSpecWithRelationships("none\n"))
+
+	if err := checkFeature(specsDir, "alpha"); err != nil {
+		t.Fatalf("expected legacy missing front matter to be tolerated, got %v", err)
+	}
+}
+
+func TestCheckFeatureFailsWhenFrontMatterIdentityDriftsFromDirectory(t *testing.T) {
+	specsDir := filepath.Join(t.TempDir(), "docs", "specs")
+	featurePath := filepath.Join(specsDir, "0001-alpha")
+	content := strings.Replace(
+		withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-alpha"),
+		`  id: "0001"
+  slug: alpha`,
+		`  id: "0002"
+  slug: beta`,
+		1,
+	)
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), content)
+
+	err := checkFeature(specsDir, "alpha")
+	if err == nil || !strings.Contains(err.Error(), "validation failed") {
+		t.Fatalf("expected feature identity validation failure, got %v", err)
+	}
+}
+
 func TestRunCheckProjectFailsOnDuplicateFeatureNumbers(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()

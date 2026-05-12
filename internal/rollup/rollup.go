@@ -88,16 +88,12 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 	// try to extract info from SPEC.md
 	specPath := filepath.Join(f.Path, "SPEC.md")
 	if doc, err := document.ParseFile(specPath, document.TypeSpec); err == nil {
-		if section := doc.GetSection("SUMMARY"); section != nil {
-			summary.Summary = document.ExtractFirstParagraph(section)
-		}
+		summary.Summary = doc.SummaryText()
 
 		// extract problem section as intent
-		if section := doc.GetSection("PROBLEM"); section != nil {
-			summary.Intent = document.ExtractFirstParagraph(section)
-			if summary.Summary == "" {
-				summary.Summary = summary.Intent
-			}
+		summary.Intent = doc.IntentText("PROBLEM")
+		if summary.Summary == "" {
+			summary.Summary = summary.Intent
 		}
 
 		// extract open questions
@@ -115,6 +111,9 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 		}
 
 		if doc, err := document.ParseFile(brainstormPath, document.TypeBrainstorm); err == nil {
+			if summary.Intent == "" {
+				summary.Intent = doc.IntentText("USER THESIS")
+			}
 			if summary.OpenItems == "" {
 				if section := doc.GetSection("QUESTIONS"); section != nil {
 					summary.OpenItems = document.ExtractFirstParagraph(section)
@@ -126,9 +125,7 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 	// try to extract approach from PLAN.md
 	planPath := filepath.Join(f.Path, "PLAN.md")
 	if doc, err := document.ParseFile(planPath, document.TypePlan); err == nil {
-		if section := doc.GetSection("APPROACH"); section != nil {
-			summary.Approach = document.ExtractFirstParagraph(section)
-		}
+		summary.Approach = doc.IntentText("APPROACH")
 	}
 
 	// set defaults for missing fields

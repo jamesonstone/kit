@@ -103,7 +103,8 @@ func runTasks(cmd *cobra.Command, args []string) error {
 		if tasksForce || cfg.AllowOutOfOrder {
 			// create SPEC.md if missing
 			if !document.Exists(specPath) {
-				if err := document.Write(specPath, templates.Spec); err != nil {
+				content := templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+				if err := document.Write(specPath, content); err != nil {
 					return fmt.Errorf("failed to create SPEC.md: %w", err)
 				}
 				if !outputOnly {
@@ -111,7 +112,8 @@ func runTasks(cmd *cobra.Command, args []string) error {
 				}
 			}
 			// create PLAN.md
-			if err := document.Write(planPath, templates.Plan); err != nil {
+			content := templates.BuildPlanArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+			if err := document.Write(planPath, content); err != nil {
 				return fmt.Errorf("failed to create PLAN.md: %w", err)
 			}
 			if !outputOnly {
@@ -125,7 +127,8 @@ func runTasks(cmd *cobra.Command, args []string) error {
 	// create TASKS.md if it doesn't exist
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 	if !document.Exists(tasksPath) {
-		if err := document.Write(tasksPath, templates.Tasks); err != nil {
+		content := templates.BuildTasksArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+		if err := document.Write(tasksPath, content); err != nil {
 			return fmt.Errorf("failed to create TASKS.md: %w", err)
 		}
 		if !outputOnly {

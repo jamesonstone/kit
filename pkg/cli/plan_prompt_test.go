@@ -36,17 +36,17 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	})
 
 	checks := []string{
-		"Populate or refresh the `## DEPENDENCIES` table",
-		"`Status` must be one of `active`, `optional`, or `stale`",
+		"Populate or refresh canonical front matter `dependencies`",
+		"`status` must be one of `active`, `optional`, or `stale`",
 		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
+		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
 		"- DEPENDENCIES",
-		"the ## DEPENDENCIES section must be current before sign-off",
+		"canonical front matter `dependencies` must be current before sign-off",
 		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
 	}
 
@@ -84,7 +84,7 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	})
 
 	checks := []string{
-		"Populate or refresh the `## DEPENDENCIES` table",
+		"Populate or refresh canonical front matter `dependencies`",
 		"DEPENDENCIES: the resources that shape the implementation strategy",
 		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
@@ -92,8 +92,8 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
-		"the ## DEPENDENCIES section must be current before sign-off",
+		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
+		"canonical front matter `dependencies` must be current before sign-off",
 		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
 	}
 

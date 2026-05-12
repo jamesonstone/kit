@@ -88,11 +88,7 @@ func ExtractSpecSummary(specPath string) (string, error) {
 		return "", err
 	}
 
-	if section := doc.GetSection("SUMMARY"); section != nil {
-		return document.ExtractFirstParagraph(section), nil
-	}
-
-	return "", nil
+	return doc.SummaryText(), nil
 }
 
 // ExtractBrainstormSummary extracts the SUMMARY section from BRAINSTORM.md.
@@ -103,17 +99,11 @@ func ExtractBrainstormSummary(brainstormPath string) (string, error) {
 		return "", err
 	}
 
-	if section := doc.GetSection("SUMMARY"); section != nil {
-		if summary := document.ExtractFirstParagraph(section); summary != "" {
-			return summary, nil
-		}
+	if summary := doc.SummaryText(); summary != "" {
+		return summary, nil
 	}
 
-	if section := doc.GetSection("USER THESIS"); section != nil {
-		return document.ExtractFirstParagraph(section), nil
-	}
-
-	return "", nil
+	return doc.IntentText("USER THESIS"), nil
 }
 
 // FileStatus represents the existence status of a feature file.

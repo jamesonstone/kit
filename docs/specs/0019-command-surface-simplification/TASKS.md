@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0019"
+  slug: "command-surface-simplification"
+  dir: "0019-command-surface-simplification"
+---
 # TASKS
 
 ## PROGRESS TABLE

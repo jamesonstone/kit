@@ -90,15 +90,14 @@ func featureNotesDirName(brainstormPath, fallbackSlug string) string {
 }
 
 func seedBrainstormNotesDependency(content, notesRelPath string) string {
-	row := featureNotesDependencyRow(notesRelPath)
-	defaultRow := "| none | n/a | n/a | no phase dependencies recorded yet | active |"
-	if brainstormNotesDependencyExists(content, notesRelPath) {
+	updated, changed, err := appendBrainstormNotesDependency(content, notesRelPath)
+	if err != nil {
 		return content
 	}
-	if strings.Contains(content, defaultRow) {
-		return strings.Replace(content, defaultRow, row, 1)
+	if !changed {
+		return content
 	}
-	return content
+	return updated
 }
 
 func ensureBrainstormNotesDependency(brainstormPath, notesRelPath string) (bool, error) {
@@ -107,7 +106,10 @@ func ensureBrainstormNotesDependency(brainstormPath, notesRelPath string) (bool,
 		return false, fmt.Errorf("failed to read %s: %w", brainstormPath, err)
 	}
 
-	updated, changed := appendBrainstormNotesDependency(string(content), notesRelPath)
+	updated, changed, err := appendBrainstormNotesDependency(string(content), notesRelPath)
+	if err != nil {
+		return false, fmt.Errorf("failed to update notes dependency in %s: %w", brainstormPath, err)
+	}
 	if !changed {
 		return false, nil
 	}
@@ -119,88 +121,49 @@ func ensureBrainstormNotesDependency(brainstormPath, notesRelPath string) (bool,
 	return true, nil
 }
 
-func appendBrainstormNotesDependency(content, notesRelPath string) (string, bool) {
+func appendBrainstormNotesDependency(content, notesRelPath string) (string, bool, error) {
 	if brainstormNotesDependencyExists(content, notesRelPath) {
-		return content, false
+		return content, false, nil
 	}
 
-	row := featureNotesDependencyRow(notesRelPath)
-	doc := document.Parse(content, "", document.TypeBrainstorm)
-	section := doc.GetSection("DEPENDENCIES")
-	if section == nil {
-		sectionBody := strings.Join([]string{
-			"| Dependency | Type | Location | Used For | Status |",
-			"| ---------- | ---- | -------- | -------- | ------ |",
-			row,
-		}, "\n")
-		trimmed := strings.TrimRight(content, "\n")
-		return trimmed + "\n\n## DEPENDENCIES\n\n" + sectionBody + "\n", true
+	featureMeta := document.FeatureMetadataFromDir(featureDirNameFromNotesRelPath(notesRelPath))
+	updated, changed, err := document.UpsertMetadata(content, document.TypeBrainstorm, document.MetadataUpsert{
+		Feature:      featureMeta,
+		Dependencies: dependenciesForMetadataUpsert(content, document.TypeBrainstorm, []document.MetadataDependency{featureNotesDependency(notesRelPath)}),
+	})
+	if err != nil {
+		return content, false, err
 	}
-
-	sectionBody, changed := appendDependencyTableRow(section.Content, row)
-	if !changed {
-		return content, false
-	}
-
-	updated, ok := replaceMarkdownSection(content, "DEPENDENCIES", sectionBody)
-	if !ok || updated == content {
-		return content, false
-	}
-	return updated, true
+	return updated, changed, nil
 }
 
-func appendDependencyTableRow(sectionContent, row string) (string, bool) {
-	lines := strings.Split(sectionContent, "\n")
-	lastTableLine := -1
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if strings.HasPrefix(trimmed, "|") && strings.HasSuffix(trimmed, "|") {
-			lastTableLine = i
-		}
+func featureNotesDependency(notesRelPath string) document.MetadataDependency {
+	return document.MetadataDependency{
+		Name:     featureNotesDependencyName,
+		Type:     "notes",
+		Location: notesRelPath,
+		UsedFor:  "optional pre-brainstorm research input",
+		Status:   document.DependencyStatusOptional,
 	}
-
-	if lastTableLine == -1 {
-		table := strings.Join([]string{
-			"| Dependency | Type | Location | Used For | Status |",
-			"| ---------- | ---- | -------- | -------- | ------ |",
-			row,
-		}, "\n")
-		trimmed := strings.TrimRight(sectionContent, "\n")
-		if strings.TrimSpace(trimmed) == "" {
-			return table, true
-		}
-		return trimmed + "\n\n" + table, true
-	}
-
-	updatedLines := make([]string, 0, len(lines)+1)
-	updatedLines = append(updatedLines, lines[:lastTableLine+1]...)
-	updatedLines = append(updatedLines, row)
-	updatedLines = append(updatedLines, lines[lastTableLine+1:]...)
-	return strings.Join(updatedLines, "\n"), true
 }
 
-func featureNotesDependencyRow(notesRelPath string) string {
-	return fmt.Sprintf(
-		"| %s | notes | %s | optional pre-brainstorm research input | optional |",
-		featureNotesDependencyName,
-		notesRelPath,
-	)
+func featureDirNameFromNotesRelPath(notesRelPath string) string {
+	parts := strings.Split(filepath.ToSlash(notesRelPath), "/")
+	for i, part := range parts {
+		if part == "notes" && i+1 < len(parts) {
+			return parts[i+1]
+		}
+	}
+	return ""
 }
 
 func brainstormNotesDependencyExists(content, notesRelPath string) bool {
-	for _, rawLine := range strings.Split(content, "\n") {
-		line := strings.TrimSpace(rawLine)
-		if !strings.HasPrefix(line, "|") || !strings.HasSuffix(line, "|") {
-			continue
-		}
-		cells := strings.Split(strings.Trim(line, "|"), "|")
-		if len(cells) < 3 {
-			continue
-		}
-		for i := range cells {
-			cells[i] = strings.TrimSpace(cells[i])
-		}
-		if cells[0] == featureNotesDependencyName && cells[2] == notesRelPath {
+	doc := document.Parse(content, "", document.TypeBrainstorm)
+	if !doc.FrontMatterPresent || doc.Metadata == nil {
+		return false
+	}
+	for _, dependency := range doc.Metadata.Dependencies {
+		if dependency.Name == featureNotesDependencyName && dependency.Location == notesRelPath {
 			return true
 		}
 	}

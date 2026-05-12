@@ -136,8 +136,8 @@ func specSkillDiscoveryStepText(projectRoot string, cfg *config.Config, specPath
 	}
 	lines = append(lines,
 		"- choose the minimal relevant set of skills for this feature",
-		fmt.Sprintf("- write the selected skills into the `## SKILLS` table in `%s`", specPath),
-		"- if no additional skills apply, keep the required `none | n/a | n/a | no additional skills required | no` row",
+		fmt.Sprintf("- write the selected skills into canonical front matter `skills` in `%s`; use the legacy `## SKILLS` table only when front matter is absent", specPath),
+		"- if no additional skills apply, leave front matter skills empty or keep the legacy `none | n/a | n/a | no additional skills required | no` row in documents without front matter",
 		"- do not use `.claude/skills` as canonical discovery input",
 	)
 	return strings.Join(lines, "\n")
@@ -156,19 +156,19 @@ func appendSpecSkillDiscoveryStep(
 
 func specDependencyInventoryStepText(specPath, brainstormPath string, hasBrainstorm bool) string {
 	lines := []string{
-		fmt.Sprintf("Populate or refresh the `## DEPENDENCIES` table in `%s` before sign-off:", specPath),
+		fmt.Sprintf("Populate or refresh canonical front matter `dependencies` in `%s` before sign-off, using the legacy `## DEPENDENCIES` table only when front matter is absent:", specPath),
 	}
 	if hasBrainstorm {
 		lines = append(lines, fmt.Sprintf("- carry forward still-relevant dependencies from `%s`", brainstormPath))
 	}
 	lines = append(lines,
-		"- keep `## SKILLS` focused on execution-time agent skills and track broader supporting inputs in `## DEPENDENCIES`",
+		"- keep `skills` focused on execution-time agent skills and track broader supporting inputs in `dependencies`",
 		"- include skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, assets, and other resources that shaped the feature definition",
-		"- use the columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`",
-		"- `Status` must be one of `active`, `optional`, or `stale`",
-		"- for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
-		"- if a dependency influenced decisions but is no longer current, keep it in the table with `Status` = `stale`",
-		"- if no additional dependencies apply, keep the default `none` row",
+		"- use `name`, `type`, `location`, `used_for`, and `status`",
+		"- `status` must be one of `active`, `optional`, or `stale`",
+		"- for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
+		"- if a dependency influenced decisions but is no longer current, keep it with `status: stale`",
+		"- if no additional dependencies apply, leave front matter dependencies empty or keep the legacy `none` row in documents without front matter",
 	)
 	return strings.Join(lines, "\n")
 }
@@ -186,10 +186,10 @@ func appendSpecDependencyInventoryStep(
 
 func specRelationshipsStepText(specPath string) string {
 	return strings.Join([]string{
-		fmt.Sprintf("Populate or refresh the `## RELATIONSHIPS` section in `%s` before sign-off:", specPath),
-		"- use `none` when this feature does not build on an existing feature",
-		"- otherwise record one bullet per explicit feature relationship",
-		"- supported labels are `builds on`, `depends on`, and `related to`",
+		fmt.Sprintf("Populate or refresh canonical front matter `relationships` in `%s` before sign-off, using the legacy `## RELATIONSHIPS` section only when front matter is absent:", specPath),
+		"- omit relationships or use `none` only in legacy body metadata when this feature does not build on an existing feature",
+		"- otherwise record one entry per explicit feature relationship",
+		"- supported front matter types are `builds_on`, `depends_on`, and `related_to`; supported legacy labels are `builds on`, `depends on`, and `related to`",
 		"- use canonical feature directory identifiers such as `0007-catchup-command`",
 	}, "\n")
 }
@@ -209,7 +209,7 @@ func relatedFeatureContextStepText(projectRoot, currentDocPath string) string {
 		fmt.Sprintf("Use an RLM-style just-in-time prior-work pass over `%s` before broad repository reads:", specsDir),
 		"- must-read inputs stay small: the current task or section plus explicit relationships and dependencies already in scope",
 		fmt.Sprintf("- use indices first: start with `kit map %s` and `%s` to shortlist candidate prior features", featureID, summaryPath),
-		fmt.Sprintf("- if `kit map` is unavailable, inspect `%s` directly and use the current feature's `## RELATIONSHIPS` and `## DEPENDENCIES` entries as your index", specsDir),
+		fmt.Sprintf("- if `kit map` is unavailable, inspect `%s` directly and use the current feature's canonical front matter relationships/dependencies, falling back to legacy `## RELATIONSHIPS` and `## DEPENDENCIES` entries only when front matter is absent", specsDir),
 		"- prior feature docs, repo references, and secondary global inputs are conditional reads only",
 		"- open a prior feature doc only if it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or dependency link",
 		"- inspect at most 5 prior feature directories before narrowing further or asking a clarifying question",

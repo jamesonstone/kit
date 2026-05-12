@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0004"
+  slug: "brainstorm-first-workflow"
+  dir: "0004-brainstorm-first-workflow"
+dependencies:
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "workflow model and prompt semantics"
+    status: "active"
+  - name: "document templates"
+    type: "code"
+    location: "internal/templates/templates.go"
+    used_for: "brainstorm artifact and prompt scaffolding"
+    status: "active"
+  - name: "rollup generator"
+    type: "code"
+    location: "internal/rollup/rollup.go"
+    used_for: "brainstorm-aware project summary output"
+    status: "active"
+  - name: "instruction templates"
+    type: "doc"
+    location: "AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md"
+    used_for: "repository instruction alignment"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

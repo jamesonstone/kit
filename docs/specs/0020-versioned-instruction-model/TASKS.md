@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0020"
+  slug: "versioned-instruction-model"
+  dir: "0020-versioned-instruction-model"
+---
 # TASKS
 
 ## PROGRESS TABLE

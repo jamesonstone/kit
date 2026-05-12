@@ -123,8 +123,10 @@ func TestEnsureFrontendProfileDependencyRowsAppendsIdempotently(t *testing.T) {
 	checks := []string{
 		"| Frontend profile | profile | --profile=frontend | previous profile experiment | stale |",
 		"| Existing API | api | https://example.test | prior input | active |",
-		"| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |",
-		"| Design materials | design | docs/notes/0001-ui/design | optional frontend design input | optional |",
+		"name: Frontend profile",
+		"used_for: apply frontend-specific coding-agent instruction set",
+		"name: Design materials",
+		"location: docs/notes/0001-ui/design",
 		"<!-- keep this comment -->",
 	}
 	for _, check := range checks {
@@ -132,11 +134,12 @@ func TestEnsureFrontendProfileDependencyRowsAppendsIdempotently(t *testing.T) {
 			t.Fatalf("expected updated dependency table to contain %q, got:\n%s", check, text)
 		}
 	}
-	if strings.Contains(text, "| none | n/a | n/a |") {
-		t.Fatalf("expected placeholder none row to be removed, got:\n%s", text)
+	doc := document.Parse(text, specPath, document.TypeSpec)
+	if !hasDependency(doc.Dependencies(), frontendProfileDependencyName, frontendProfileDependencyLocation, document.DependencyStatusActive) {
+		t.Fatalf("expected one active frontend profile dependency in front matter, got %#v", doc.Dependencies())
 	}
-	if count := strings.Count(text, "| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |"); count != 1 {
-		t.Fatalf("expected one active frontend profile row, got %d in:\n%s", count, text)
+	if !hasDependency(doc.Dependencies(), "Existing API", "https://example.test", document.DependencyStatusActive) {
+		t.Fatalf("expected existing legacy dependency to be carried into front matter, got %#v", doc.Dependencies())
 	}
 }
 
@@ -166,17 +169,53 @@ func TestEnsureFrontendProfileDependencyRowsRefreshesCanonicalRows(t *testing.T)
 		t.Fatalf("os.ReadFile() error = %v", err)
 	}
 	text := string(content)
-	if strings.Contains(text, "old wording") || strings.Contains(text, "old design wording") {
-		t.Fatalf("expected old canonical row wording to be refreshed, got:\n%s", text)
+	doc := document.Parse(text, specPath, document.TypeSpec)
+	if !hasDependencyWithUsedFor(doc.Dependencies(), frontendProfileDependencyName, frontendProfileDependencyLocation, "apply frontend-specific coding-agent instruction set") {
+		t.Fatalf("expected frontend profile dependency wording to be refreshed in front matter, got %#v", doc.Dependencies())
 	}
-	for _, check := range []string{
-		"| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |",
-		"| Design materials | design | docs/notes/0001-ui/design | optional frontend design input | optional |",
-	} {
-		if count := strings.Count(text, check); count != 1 {
-			t.Fatalf("expected one refreshed row %q, got %d in:\n%s", check, count, text)
+	if !hasDependencyWithUsedFor(doc.Dependencies(), designMaterialsDependencyName, "docs/notes/0001-ui/design", "optional frontend design input") {
+		t.Fatalf("expected design dependency wording to be refreshed in front matter, got %#v", doc.Dependencies())
+	}
+}
+
+func TestEnsureFrontendProfileDependencyRowsErrorsOnMalformedFrontMatter(t *testing.T) {
+	featurePath := filepath.Join(t.TempDir(), "docs", "specs", "0001-ui")
+	specPath := filepath.Join(featurePath, "SPEC.md")
+	writeFile(t, specPath, `---
+kit_metadata_version: 1
+artifact: spec
+feature:
+  id: "0001"
+  slug: ui
+  dir: 0001-ui
+# SPEC
+`)
+
+	changed, err := ensureFrontendProfileDependencyRows(specPath, document.TypeSpec, "0001-ui")
+	if err == nil {
+		t.Fatal("ensureFrontendProfileDependencyRows() error = nil, want malformed front matter error")
+	}
+	if changed {
+		t.Fatal("ensureFrontendProfileDependencyRows() changed = true, want false")
+	}
+}
+
+func hasDependency(dependencies []document.MetadataDependency, name, location, status string) bool {
+	for _, dependency := range dependencies {
+		if dependency.Name == name && dependency.Location == location && dependency.Status == status {
+			return true
 		}
 	}
+	return false
+}
+
+func hasDependencyWithUsedFor(dependencies []document.MetadataDependency, name, location, usedFor string) bool {
+	for _, dependency := range dependencies {
+		if dependency.Name == name && dependency.Location == location && dependency.UsedFor == usedFor {
+			return true
+		}
+	}
+	return false
 }
 
 func dependencyDoc(row string) string {

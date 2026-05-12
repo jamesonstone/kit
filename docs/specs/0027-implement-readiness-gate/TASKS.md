@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0027"
+  slug: "implement-readiness-gate"
+  dir: "0027-implement-readiness-gate"
+---
 # TASKS
 
 ## TASKS
@@ -28,7 +36,7 @@
 
 - **GOAL**: Capture the approved readiness-gate contract before changing workflow behavior
 - **SCOPE**:
-  - add `docs/specs/0012-implement-readiness-gate/`
+  - add `docs/specs/0027-implement-readiness-gate/`
   - write `SPEC.md`, `PLAN.md`, and `TASKS.md`
 - **ACCEPTANCE**:
   - the new feature docs exist with complete sections

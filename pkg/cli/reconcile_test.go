@@ -186,6 +186,50 @@ func TestBuildReconcileReportFeatureScopeFindsRelationshipAndTaskDrift(t *testin
 	}
 }
 
+func TestBuildReconcileReportFeatureScopeFindsFrontMatterIdentityDrift(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-sample")
+	content := strings.Replace(
+		withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-sample"),
+		`  id: "0001"
+  slug: sample`,
+		`  id: "0002"
+  slug: other`,
+		1,
+	)
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), content)
+	writeFile(t, filepath.Join(featurePath, "PLAN.md"), withFeatureFrontMatter(validPlan(), "plan", "0001-sample"))
+	writeFile(t, filepath.Join(featurePath, "TASKS.md"), withFeatureFrontMatter(validTasks(), "tasks", "0001-sample"))
+	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("0001", "sample"))
+
+	feat := &feature.Feature{
+		Number:  1,
+		Slug:    "sample",
+		DirName: "0001-sample",
+		Path:    featurePath,
+	}
+
+	report, err := buildReconcileReport(projectRoot, cfg, feat)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+
+	issues := findingsIssues(report.Findings)
+	for _, check := range []string{
+		"front matter feature.id `0002` does not match containing feature directory id `0001`",
+		"front matter feature.slug `other` does not match containing feature directory slug `sample`",
+	} {
+		if !strings.Contains(issues, check) {
+			t.Fatalf("expected identity drift finding %q, got %q", check, issues)
+		}
+	}
+}
+
 func TestBuildReconcileReportProjectScopeFindsInstructionFileDrift(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()
@@ -226,9 +270,9 @@ func TestRunReconcileCleanFeaturePrintsSuccess(t *testing.T) {
 	}
 
 	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-sample")
-	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validSpecWithRelationships("none\n"))
-	writeFile(t, filepath.Join(featurePath, "PLAN.md"), validPlan())
-	writeFile(t, filepath.Join(featurePath, "TASKS.md"), validTasks())
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-sample"))
+	writeFile(t, filepath.Join(featurePath, "PLAN.md"), withFeatureFrontMatter(validPlan(), "plan", "0001-sample"))
+	writeFile(t, filepath.Join(featurePath, "TASKS.md"), withFeatureFrontMatter(validTasks(), "tasks", "0001-sample"))
 	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("0001", "sample"))
 
 	setWorkingDirectory(t, projectRoot)

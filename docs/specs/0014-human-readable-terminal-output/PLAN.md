@@ -1,3 +1,47 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0014"
+  slug: "human-readable-terminal-output"
+  dir: "0014-human-readable-terminal-output"
+dependencies:
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "canonical command and output rules"
+    status: "active"
+  - name: "init project spec"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "shipped terminal-output behavior summary"
+    status: "active"
+  - name: "root command wiring"
+    type: "code"
+    location: "pkg/cli/root.go"
+    used_for: "help and usage template updates"
+    status: "active"
+  - name: "human output helpers"
+    type: "code"
+    location: "pkg/cli/human_output.go"
+    used_for: "shared formatting and TTY detection"
+    status: "active"
+  - name: "status output"
+    type: "code"
+    location: "pkg/cli/status_output.go"
+    used_for: "human-readable status rendering"
+    status: "active"
+  - name: "editor input"
+    type: "code"
+    location: "pkg/cli/editor_input.go"
+    used_for: "editor-launch guidance formatting"
+    status: "active"
+  - name: "README"
+    type: "doc"
+    location: "README.md"
+    used_for: "user-facing output behavior notes"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

@@ -1,3 +1,49 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0018"
+  slug: "backlog-command"
+  dir: "0018-backlog-command"
+relationships:
+  - type: "builds_on"
+    target: "0004-brainstorm-first-workflow"
+  - type: "builds_on"
+    target: "0015-pause-remove-commands"
+  - type: "related_to"
+    target: "0007-catchup-command"
+dependencies:
+  - name: "brainstorm command"
+    type: "code"
+    location: "pkg/cli/brainstorm.go"
+    used_for: "capture and resume deferred brainstorm items"
+    status: "active"
+  - name: "feature lifecycle state"
+    type: "code"
+    location: "internal/config/config.go`, `internal/feature/lifecycle.go"
+    used_for: "paused-state persistence and resume behavior"
+    status: "active"
+  - name: "feature model"
+    type: "code"
+    location: "internal/feature/feature.go`, `internal/feature/status.go"
+    used_for: "phase derivation and active-feature selection"
+    status: "active"
+  - name: "rollup generator"
+    type: "code"
+    location: "internal/rollup/rollup.go"
+    used_for: "generated project summary after backlog mutations"
+    status: "active"
+  - name: "status command"
+    type: "code"
+    location: "pkg/cli/status.go`, `pkg/cli/status_output.go"
+    used_for: "active-feature presentation after backlog capture"
+    status: "active"
+  - name: "project command contract"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "canonical CLI behavior updates"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

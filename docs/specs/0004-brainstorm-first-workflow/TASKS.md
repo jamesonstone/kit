@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0004"
+  slug: "brainstorm-first-workflow"
+  dir: "0004-brainstorm-first-workflow"
+---
 # TASKS
 
 ## TASKS

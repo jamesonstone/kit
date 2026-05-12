@@ -1,3 +1,37 @@
+---
+kit_metadata_version: 1
+artifact: "brainstorm"
+feature:
+  id: "0016"
+  slug: "document-map-relationships"
+  dir: "0016-document-map-relationships"
+dependencies:
+  - name: "root help pipeline diagram"
+    type: "code"
+    location: "pkg/cli/root.go"
+    used_for: "current conceptual hierarchy surface"
+    status: "active"
+  - name: "document validator"
+    type: "code"
+    location: "internal/document/document.go"
+    used_for: "required section enforcement"
+    status: "active"
+  - name: "document templates"
+    type: "code"
+    location: "internal/templates/templates.go"
+    used_for: "new section scaffolding"
+    status: "active"
+  - name: "feature listing and status"
+    type: "code"
+    location: "internal/feature/feature.go`, `internal/feature/status.go"
+    used_for: "phase and existence state for map output"
+    status: "active"
+  - name: "progress summary generator"
+    type: "code"
+    location: "internal/rollup/rollup.go"
+    used_for: "contrast with existing derived state view"
+    status: "active"
+---
 # BRAINSTORM
 
 ## SUMMARY

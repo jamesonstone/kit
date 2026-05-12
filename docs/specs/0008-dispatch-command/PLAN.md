@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0008"
+  slug: "dispatch-command"
+  dir: "0008-dispatch-command"
+dependencies:
+  - name: "prompt helper"
+    type: "code"
+    location: "pkg/cli/root.go`, `pkg/cli/implement.go`, `pkg/cli/reflect.go"
+    used_for: "clipboard-first prompt output"
+    status: "active"
+  - name: "editor input helpers"
+    type: "code"
+    location: "pkg/cli/editor_input.go"
+    used_for: "interactive task capture"
+    status: "active"
+  - name: "root help ordering"
+    type: "code"
+    location: "pkg/cli/root.go"
+    used_for: "command visibility"
+    status: "active"
+  - name: "README"
+    type: "doc"
+    location: "README.md"
+    used_for: "public command documentation"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

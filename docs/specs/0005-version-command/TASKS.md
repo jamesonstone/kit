@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0005"
+  slug: "version-command"
+  dir: "0005-version-command"
+---
 # TASKS
 
 ## TASKS

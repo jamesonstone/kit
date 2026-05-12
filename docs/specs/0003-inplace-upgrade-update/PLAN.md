@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0003"
+  slug: "inplace-upgrade-update"
+  dir: "0003-inplace-upgrade-update"
+dependencies:
+  - name: "release workflow"
+    type: "code"
+    location: ".github/workflows/"
+    used_for: "stable-release source and artifact publication"
+    status: "active"
+  - name: "GoReleaser config"
+    type: "code"
+    location: ".goreleaser.yaml"
+    used_for: "release asset naming and checksums"
+    status: "active"
+  - name: "version command"
+    type: "code"
+    location: "pkg/cli/version.go"
+    used_for: "local version comparison and reporting"
+    status: "active"
+  - name: "GitHub Releases"
+    type: "external"
+    location: "https://github.com/jamesonstone/kit/releases"
+    used_for: "update metadata and asset retrieval"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0018"
+  slug: "backlog-command"
+  dir: "0018-backlog-command"
+dependencies:
+  - name: "feature paused-state persistence"
+    type: "code"
+    location: "internal/feature/lifecycle.go"
+    used_for: "defer and pickup mutations"
+    status: "active"
+  - name: "brainstorm prompt generation"
+    type: "code"
+    location: "pkg/cli/brainstorm.go"
+    used_for: "resumed backlog prompt output"
+    status: "active"
+  - name: "brainstorm summary extraction"
+    type: "code"
+    location: "internal/feature/status.go"
+    used_for: "backlog description rendering"
+    status: "active"
+  - name: "rollup generation"
+    type: "code"
+    location: "internal/rollup/rollup.go"
+    used_for: "post-mutation project summary refresh"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

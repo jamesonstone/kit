@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0018"
+  slug: "backlog-command"
+  dir: "0018-backlog-command"
+---
 # TASKS
 
 ## PROGRESS TABLE

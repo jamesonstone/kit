@@ -73,6 +73,52 @@ func TestExtractFeatureSummary_PrefersSpecSummaryForTableAndProblemForIntent(t *
 	}
 }
 
+func TestExtractFeatureSummary_PrefersFrontMatterSummaryAndIntent(t *testing.T) {
+	tempDir := t.TempDir()
+	featureDir := filepath.Join(tempDir, "0001-example-feature")
+	if err := os.MkdirAll(featureDir, 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+
+	spec := `---
+kit_metadata_version: 1
+artifact: spec
+feature:
+  id: "0001"
+  slug: example-feature
+  dir: 0001-example-feature
+summary: Metadata summary.
+intent: Metadata intent.
+---
+# SPEC
+
+## SUMMARY
+
+Body summary.
+
+## PROBLEM
+
+Body problem.
+`
+	if err := os.WriteFile(filepath.Join(featureDir, "SPEC.md"), []byte(spec), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	got := extractFeatureSummary(feature.Feature{
+		Number:  1,
+		Slug:    "example-feature",
+		DirName: "0001-example-feature",
+		Path:    featureDir,
+	}, filepath.Dir(featureDir))
+
+	if got.Summary != "Metadata summary." {
+		t.Fatalf("Summary = %q", got.Summary)
+	}
+	if got.Intent != "Metadata intent." {
+		t.Fatalf("Intent = %q", got.Intent)
+	}
+}
+
 func TestGenerateContentWritesConcreteProjectIntent(t *testing.T) {
 	content := generateContent(nil, config.Default())
 

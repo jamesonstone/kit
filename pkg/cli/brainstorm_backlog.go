@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
@@ -57,7 +56,11 @@ func runBrainstormBacklog(
 		if err != nil {
 			return err
 		}
-		content := seedBrainstormNotesDependency(templates.BuildBrainstormArtifact(thesis), notesRelPath)
+		content := templates.BuildBrainstormArtifactForFeature(
+			thesis,
+			document.FeatureMetadataFromDir(feat.DirName),
+			[]document.MetadataDependency{featureNotesDependency(notesRelPath)},
+		)
 		if err := document.Write(brainstormPath, content); err != nil {
 			return fmt.Errorf("failed to create BRAINSTORM.md: %w", err)
 		}
@@ -165,25 +168,41 @@ func addBacklogRelationship(
 		return false, fmt.Errorf("failed to read %s: %w", brainstormPath, err)
 	}
 
-	relation := fmt.Sprintf("- related to: %s", currentActive.DirName)
+	relationship := document.MetadataRelationship{
+		Type:   document.RelationshipRelatedTo,
+		Target: currentActive.DirName,
+	}
 	doc := document.Parse(string(content), brainstormPath, document.TypeBrainstorm)
-	section := doc.GetSection("RELATIONSHIPS")
-	if section == nil {
+	existingRelationships, _ := doc.Relationships()
+	for _, existing := range existingRelationships {
+		if existing.Type == "related to" && existing.Target == currentActive.DirName {
+			return false, nil
+		}
+	}
+	if containsMetadataRelationship(doc.Metadata, relationship) {
 		return false, nil
 	}
 
-	current := strings.TrimSpace(section.Content)
-	if strings.Contains(current, relation) {
-		return false, nil
+	relationships := []document.MetadataRelationship{relationship}
+	for _, existing := range existingRelationships {
+		machine, ok := document.RelationshipHumanToMachine(existing.Type)
+		if !ok || existing.Target == "" {
+			continue
+		}
+		relationships = append(relationships, document.MetadataRelationship{
+			Type:   machine,
+			Target: existing.Target,
+		})
 	}
 
-	updatedSection := relation
-	if current != "" && !strings.EqualFold(current, "none") {
-		updatedSection = current + "\n" + relation
+	updated, changed, err := document.UpsertMetadata(string(content), document.TypeBrainstorm, document.MetadataUpsert{
+		Feature:       document.FeatureMetadataFromDir(backlogFeat.DirName),
+		Relationships: relationships,
+	})
+	if err != nil {
+		return false, fmt.Errorf("failed to update relationships in %s: %w", brainstormPath, err)
 	}
-
-	updated, ok := replaceMarkdownSection(string(content), "RELATIONSHIPS", updatedSection)
-	if !ok || updated == string(content) {
+	if !changed {
 		return false, nil
 	}
 
@@ -194,37 +213,14 @@ func addBacklogRelationship(
 	return true, nil
 }
 
-func replaceMarkdownSection(content, sectionName, sectionBody string) (string, bool) {
-	lines := strings.Split(content, "\n")
-	header := "## " + sectionName
-	start := -1
-	end := len(lines)
-
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if start == -1 {
-			if trimmed == header {
-				start = i
-			}
-			continue
-		}
-		if strings.HasPrefix(trimmed, "## ") {
-			end = i
-			break
+func containsMetadataRelationship(metadata *document.Metadata, relationship document.MetadataRelationship) bool {
+	if metadata == nil {
+		return false
+	}
+	for _, existing := range metadata.Relationships {
+		if existing.Type == relationship.Type && existing.Target == relationship.Target {
+			return true
 		}
 	}
-
-	if start == -1 {
-		return content, false
-	}
-
-	replacementLines := []string{header, ""}
-	replacementLines = append(replacementLines, strings.Split(sectionBody, "\n")...)
-	replacementLines = append(replacementLines, "")
-
-	updatedLines := append([]string{}, lines[:start]...)
-	updatedLines = append(updatedLines, replacementLines...)
-	updatedLines = append(updatedLines, lines[end:]...)
-
-	return strings.Join(updatedLines, "\n"), true
+	return false
 }

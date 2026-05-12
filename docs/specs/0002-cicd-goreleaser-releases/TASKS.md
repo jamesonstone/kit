@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0002"
+  slug: "cicd-goreleaser-releases"
+  dir: "0002-cicd-goreleaser-releases"
+---
 # TASKS
 
 ## PROGRESS TABLE

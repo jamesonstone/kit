@@ -1,3 +1,42 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0011"
+  slug: "handoff-document-sync"
+  dir: "0011-handoff-document-sync"
+dependencies:
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "canonical workflow and document rules"
+    status: "active"
+  - name: "init project spec"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "shipped handoff behavior summary"
+    status: "active"
+  - name: "project progress summary"
+    type: "doc"
+    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
+    used_for: "project-wide reconciliation context"
+    status: "active"
+  - name: "handoff command"
+    type: "code"
+    location: "pkg/cli/handoff.go"
+    used_for: "selector and prompt wiring"
+    status: "active"
+  - name: "handoff prompt builder"
+    type: "code"
+    location: "pkg/cli/handoff_prompt.go"
+    used_for: "document inventory and summary generation"
+    status: "active"
+  - name: "README"
+    type: "doc"
+    location: "README.md"
+    used_for: "user-facing command description"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

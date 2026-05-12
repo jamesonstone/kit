@@ -3,7 +3,7 @@
 ## Skills
 
 - Repo-local canonical skills live under `.agents/skills/*/SKILL.md`
-- For feature-scoped work, start with the current feature's `SPEC.md` `## SKILLS` table
+- For feature-scoped work, start with the current feature's canonical front matter `skills`, falling back to the legacy `SPEC.md` `## SKILLS` table only when front matter is absent
 - Keep the selected skill set minimal and actionable
 
 ## Dispatch

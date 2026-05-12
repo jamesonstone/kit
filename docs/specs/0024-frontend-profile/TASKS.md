@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0024"
+  slug: "frontend-profile"
+  dir: "0024-frontend-profile"
+---
 # TASKS
 
 ## PROGRESS TABLE

@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0007"
+  slug: "catchup-command"
+  dir: "0007-catchup-command"
+---
 # TASKS
 
 ## TASKS

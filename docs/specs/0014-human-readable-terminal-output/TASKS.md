@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0014"
+  slug: "human-readable-terminal-output"
+  dir: "0014-human-readable-terminal-output"
+---
 # TASKS
 
 ## PROGRESS TABLE

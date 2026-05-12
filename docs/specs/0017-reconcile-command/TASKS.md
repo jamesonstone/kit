@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0017"
+  slug: "reconcile-command"
+  dir: "0017-reconcile-command"
+---
 # TASKS
 
 ## PROGRESS TABLE

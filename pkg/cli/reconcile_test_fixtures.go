@@ -10,6 +10,22 @@ func findingsIssues(findings []reconcileFinding) string {
 	return strings.Join(parts, "\n")
 }
 
+func withFeatureFrontMatter(content, artifact, dirName string) string {
+	id, slug, ok := strings.Cut(dirName, "-")
+	if !ok {
+		id = ""
+		slug = dirName
+	}
+	return "---\n" +
+		"kit_metadata_version: 1\n" +
+		"artifact: " + artifact + "\n" +
+		"feature:\n" +
+		"  id: \"" + id + "\"\n" +
+		"  slug: " + slug + "\n" +
+		"  dir: " + dirName + "\n" +
+		"---\n" + content
+}
+
 func validConstitution() string {
 	return `# CONSTITUTION
 

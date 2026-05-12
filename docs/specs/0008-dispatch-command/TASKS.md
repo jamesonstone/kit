@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0008"
+  slug: "dispatch-command"
+  dir: "0008-dispatch-command"
+---
 # TASKS
 
 ## TASKS

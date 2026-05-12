@@ -19,7 +19,7 @@ func TestPrepareAgentPromptWithoutSubagents(t *testing.T) {
 		"## Skills",
 		"use the repository instruction entrypoints as a map, not the full manual",
 		"docs/agents/README.md",
-		"read that feature's SPEC.md and the `## SKILLS` table first",
+		"read that feature's canonical front matter `skills` first",
 		"open each referenced `SKILL.md` and use those skills during execution",
 	}
 

@@ -1,7 +1,11 @@
 // package templates provides embedded document templates for Kit.
 package templates
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/jamesonstone/kit/internal/document"
+)
 
 // Constitution template per spec section 6.1
 const Constitution = `# CONSTITUTION
@@ -105,6 +109,86 @@ func BuildBrainstormArtifact(userThesis string) string {
 		userThesis,
 		1,
 	)
+}
+
+// BuildBrainstormArtifactForFeature seeds a new brainstorm document with typed
+// front matter for the feature-specific metadata Kit can know at creation time.
+func BuildBrainstormArtifactForFeature(userThesis string, feature document.FeatureMetadata, dependencies []document.MetadataDependency) string {
+	content := BuildBrainstormArtifact(userThesis)
+	content = replaceTemplateSection(content, "RELATIONSHIPS", "Relationships are tracked in front matter.")
+	content = replaceTemplateSection(content, "DEPENDENCIES", "Dependencies are tracked in front matter.")
+	updated, _, err := document.UpsertMetadata(content, document.TypeBrainstorm, document.MetadataUpsert{
+		Feature:      feature,
+		Dependencies: dependencies,
+	})
+	if err != nil {
+		return content
+	}
+	return updated
+}
+
+func BuildSpecArtifactForFeature(feature document.FeatureMetadata) string {
+	content := replaceTemplateSection(Spec, "SKILLS", "Skills are tracked in front matter.")
+	content = replaceTemplateSection(content, "RELATIONSHIPS", "Relationships are tracked in front matter.")
+	content = replaceTemplateSection(content, "DEPENDENCIES", "Dependencies are tracked in front matter.")
+	updated, _, err := document.UpsertMetadata(content, document.TypeSpec, document.MetadataUpsert{
+		Feature: feature,
+	})
+	if err != nil {
+		return content
+	}
+	return updated
+}
+
+func BuildPlanArtifactForFeature(feature document.FeatureMetadata) string {
+	content := replaceTemplateSection(Plan, "DEPENDENCIES", "Dependencies are tracked in front matter.")
+	updated, _, err := document.UpsertMetadata(content, document.TypePlan, document.MetadataUpsert{
+		Feature: feature,
+	})
+	if err != nil {
+		return content
+	}
+	return updated
+}
+
+func BuildTasksArtifactForFeature(feature document.FeatureMetadata) string {
+	updated, _, err := document.UpsertMetadata(Tasks, document.TypeTasks, document.MetadataUpsert{
+		Feature: feature,
+	})
+	if err != nil {
+		return Tasks
+	}
+	return updated
+}
+
+func replaceTemplateSection(content, sectionName, sectionBody string) string {
+	lines := strings.Split(content, "\n")
+	header := "## " + sectionName
+	start := -1
+	end := len(lines)
+
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if start == -1 {
+			if trimmed == header {
+				start = i
+			}
+			continue
+		}
+		if strings.HasPrefix(trimmed, "## ") {
+			end = i
+			break
+		}
+	}
+	if start == -1 {
+		return content
+	}
+
+	replacementLines := []string{header, "", sectionBody, ""}
+	updatedLines := append([]string{}, lines[:start]...)
+	updatedLines = append(updatedLines, replacementLines...)
+	updatedLines = append(updatedLines, lines[end:]...)
+	return strings.Join(updatedLines, "\n")
 }
 
 // Spec template per spec section 6.2

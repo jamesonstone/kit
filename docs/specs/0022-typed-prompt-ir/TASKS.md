@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0022"
+  slug: "typed-prompt-ir"
+  dir: "0022-typed-prompt-ir"
+---
 # TASKS
 
 ## PROGRESS TABLE

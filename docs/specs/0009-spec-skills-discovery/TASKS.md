@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0009"
+  slug: "spec-skills-discovery"
+  dir: "0009-spec-skills-discovery"
+---
 # TASKS
 
 ## PROGRESS TABLE

@@ -54,7 +54,7 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 		workSteps = append(workSteps,
 			"For each active feature, compare current implementation reality, task state, repository findings, and phase dependency inventories against the listed feature docs.",
 			"Update any stale feature docs first. If implementation reality diverges from the docs, fix the docs before handoff.",
-			"For every touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`, make sure the `## DEPENDENCIES` table lists current `active`, `optional`, and `stale` dependencies with exact locations.",
+			"For every touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`, make sure canonical front matter dependencies list current `active`, `optional`, and `stale` dependencies with exact locations; use legacy `## DEPENDENCIES` tables only when front matter is absent.",
 			"Update `PROJECT_PROGRESS_SUMMARY.md` so it reflects the reconciled state of every active feature.",
 			"Keep changes limited to documentation and handoff accuracy. Do not begin unrelated implementation work.",
 			"If a listed doc is stale, update it before producing your final handoff response.",
@@ -63,7 +63,7 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 	} else {
 		workSteps = append(workSteps,
 			"Compare the project summary and repository findings to confirm there is no undocumented active work.",
-			"If you touch any feature docs during reconciliation, make sure each touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keeps its `## DEPENDENCIES` table current with exact locations.",
+			"If you touch any feature docs during reconciliation, make sure each touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keeps canonical front matter dependencies current with exact locations; use legacy `## DEPENDENCIES` tables only when front matter is absent.",
 			"Update any stale project docs first so the handoff is accurate.",
 			"Keep changes limited to documentation and handoff accuracy. Do not begin unrelated implementation work.",
 			"If a listed doc is stale, update it before producing your final handoff response.",
@@ -90,7 +90,7 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 		doc.Heading(2, "Final Response Contract")
 		doc.Paragraph("After the documentation is reconciled, reply in stdout/chat with exactly these sections:")
 		doc.OrderedList(1,
-			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and dependency inventories have been updated and are up to date\n- if you updated docs or dependency tables, name the files you changed in that paragraph",
+			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and dependency inventories have been updated and are up to date\n- if you updated docs or dependency metadata, name the files you changed in that paragraph",
 			"`Documentation Files`\n- a markdown table with columns `File`, `Full Path`, and `How To Use`\n- include the reconciled project docs and every relevant active-feature doc",
 			"`Recent Context`\n- flat bullets for decisions made, blockers, validation results, open questions, and next steps\n- keep this concise and factual",
 		)
@@ -136,7 +136,7 @@ func featureHandoffWithPath(featureRef string) (string, string, error) {
 	workSteps = append(workSteps,
 		"Compare current implementation reality, task status, repository findings, and phase dependency inventories against each feature document.",
 		"If any feature specification document is stale, update it first so it matches reality. Do this before preparing the handoff summary.",
-		"Verify that `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keep their `## DEPENDENCIES` tables current with exact locations and `active`, `optional`, or `stale` status values when those docs exist.",
+		"Verify that `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keep canonical front matter dependencies current with exact locations and `active`, `optional`, or `stale` status values when those docs exist; use legacy `## DEPENDENCIES` tables only when front matter is absent.",
 		"Keep `PROJECT_PROGRESS_SUMMARY.md` aligned with the reconciled feature state.",
 		"Limit your work to documentation reconciliation and handoff preparation. Do not start unrelated implementation work.",
 	)
@@ -166,7 +166,7 @@ func featureHandoffWithPath(featureRef string) (string, string, error) {
 		doc.Heading(2, "Final Response Contract")
 		doc.Paragraph("After the documentation is reconciled, reply in stdout/chat with exactly these sections:")
 		doc.OrderedList(1,
-			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and dependency inventories have been updated and are up to date\n- if you updated docs or dependency tables, name the files you changed in that paragraph",
+			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and dependency inventories have been updated and are up to date\n- if you updated docs or dependency metadata, name the files you changed in that paragraph",
 			"`Documentation Files`\n- a markdown table with columns `File`, `Full Path`, and `How To Use`\n- include every reconciled feature document and relevant project-level doc",
 			"`Recent Context`\n- flat bullets for decisions made, blockers, validation results, open questions, and next steps\n- keep this concise and factual",
 		)
@@ -185,7 +185,7 @@ func genericHandoffInstructions() string {
 			"Summarize that recent context into high-signal facts covering decisions made, blockers, validation results, open questions, and next steps",
 			"Identify the authoritative project documents and make sure they reflect current implementation reality before handoff",
 			"If this is a Kit project, use `kit handoff` from the project root to generate a feature-aware documentation inventory",
-			"If the relevant docs include `## DEPENDENCIES` tables, make sure they reflect current `active`, `optional`, and `stale` dependencies with exact locations",
+			"If the relevant docs include canonical front matter dependencies or legacy `## DEPENDENCIES` tables, make sure they reflect current `active`, `optional`, and `stale` dependencies with exact locations",
 			"Prefer repository files and current code over memory when they disagree",
 		)
 		doc.Heading(2, "Final Response Contract")

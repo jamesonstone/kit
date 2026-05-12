@@ -215,7 +215,7 @@ const agentsRLM = `# RLM
 - Extract only the concrete facts that change the current feature; do not paraphrase entire prior docs into chat or copy irrelevant history into the active artifact
 - Treat RLM as discovery and context selection first; do not jump straight into parallel execution while the candidate set is still broad
 - Always update affected documentation and ensure touched documents stay current and properly formatted before finishing the work
-- Record the docs, skills, and references that materially shaped the feature in dependency tables
+- Record the docs, skills, and references that materially shaped the feature in canonical front matter dependencies, falling back to legacy dependency tables only when front matter is absent
 - Use ` + "`kit dispatch`" + ` only when the work moves from broad discovery into multi-lane execution planning
 `
 
@@ -224,7 +224,7 @@ const agentsTooling = `# Tooling
 ## Skills
 
 - Repo-local canonical skills live under ` + "`.agents/skills/*/SKILL.md`" + `
-- For feature-scoped work, start with the current feature's ` + "`SPEC.md`" + ` ` + "`## SKILLS`" + ` table
+- For feature-scoped work, start with the current feature's canonical front matter ` + "`skills`" + `, falling back to the legacy ` + "`SPEC.md`" + ` ` + "`## SKILLS`" + ` table only when front matter is absent
 - Keep the selected skill set minimal and actionable
 
 ## Dispatch
@@ -270,7 +270,7 @@ const agentsGuardrails = `# Guardrails
 - Never guess file contents, APIs, or behavior
 - If validation cannot run, state why
 - Fix relevant lint and test failures before calling work complete
-- Keep dependency and relationship sections current when those docs are touched
+- Keep canonical front matter dependencies and relationships current when those docs are touched, falling back to legacy body sections only when front matter is absent
 
 ## Code Hygiene
 
@@ -291,7 +291,7 @@ const referencesREADME = `# References
 
 - This directory holds durable repo-local references that are broader than one feature
 - Keep long-lived background context here instead of in injected top-level instruction files
-- Link these files from feature dependency tables when they materially shape work
+- Link these files from feature front matter dependencies when they materially shape work, falling back to legacy dependency tables only when front matter is absent
 
 ## Starter Files
 
@@ -329,7 +329,7 @@ const referencesExternalSystems = `# External Systems Reference
 ## Purpose
 
 - Record durable notes about external systems, APIs, providers, or design sources that recur across features
-- Keep feature-specific dependency details in feature docs and dependency tables
+- Keep feature-specific dependency details in feature docs as canonical front matter dependencies, falling back to legacy dependency tables only when front matter is absent
 
 ## Current State
 

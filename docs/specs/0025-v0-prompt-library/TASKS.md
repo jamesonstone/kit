@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0025"
+  slug: "v0-prompt-library"
+  dir: "0025-v0-prompt-library"
+---
 # TASKS
 
 ## PROGRESS TABLE

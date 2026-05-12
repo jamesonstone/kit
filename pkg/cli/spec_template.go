@@ -171,9 +171,9 @@ func buildSpecTemplatePrompt(
 		doc.BulletList(
 			"Keep language precise",
 			"Avoid implementation details (focus on WHAT, not HOW)",
-			"the ## SKILLS section is mandatory and must be populated before sign-off",
-			"the ## RELATIONSHIPS section is mandatory and must be set to none or explicit bullets using canonical feature identifiers before sign-off",
-			"the ## DEPENDENCIES section must be current before sign-off and must keep exact locations for external design inputs",
+			"canonical front matter `skills` is mandatory when front matter exists; use the legacy ## SKILLS table only when front matter is absent",
+			"canonical front matter `relationships` must be set to explicit entries or omitted when none apply; use the legacy ## RELATIONSHIPS section only when front matter is absent",
+			"canonical front matter `dependencies` must be current and keep exact locations for external design inputs; use the legacy ## DEPENDENCIES table only when front matter is absent",
 			"use repo-local docs and canonical skills first during the skills discovery phase",
 			"treat documented global inputs as secondary context after repo-local docs are exhausted",
 			"keep the selected skill set minimal and actionable",

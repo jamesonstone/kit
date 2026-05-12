@@ -1,3 +1,47 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0009"
+  slug: "spec-skills-discovery"
+  dir: "0009-spec-skills-discovery"
+dependencies:
+  - name: "constitution contract"
+    type: "doc"
+    location: "docs/CONSTITUTION.md"
+    used_for: "canonical workflow and section requirements"
+    status: "active"
+  - name: "init project spec"
+    type: "doc"
+    location: "docs/specs/0000_INIT_PROJECT.md"
+    used_for: "canonical skills and dependency inventory contract"
+    status: "active"
+  - name: "spec template"
+    type: "code"
+    location: "internal/templates/templates.go"
+    used_for: "required `SPEC.md` and prompt section shapes"
+    status: "active"
+  - name: "document validation"
+    type: "code"
+    location: "internal/document/document.go"
+    used_for: "required section parsing and validation"
+    status: "active"
+  - name: "spec prompt flow"
+    type: "code"
+    location: "pkg/cli/spec.go"
+    used_for: "skills discovery prompt content"
+    status: "active"
+  - name: "shared skills guidance"
+    type: "code"
+    location: "pkg/cli/subagents.go"
+    used_for: "prompt-output skills instruction block"
+    status: "active"
+  - name: "repository instruction files"
+    type: "doc"
+    location: "AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md"
+    used_for: "checked-in workflow contract alignment"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

@@ -29,6 +29,9 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 	}
 
 	var findings []reconcileFinding
+	findings = append(findings, auditMetadataDiagnostics(path, doc, projectRoot)...)
+	findings = append(findings, auditMetadataMigrationState(path, doc, projectRoot)...)
+
 	for _, section := range expectedSectionsFor(docType) {
 		entry := doc.GetSection(section)
 		if entry == nil {
@@ -55,6 +58,9 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 	}
 
 	for _, expectation := range tableExpectationsFor(docType) {
+		if doc.FrontMatterPresent && metadataSectionTableMigratedToFrontMatter(expectation.Section) {
+			continue
+		}
 		entry := doc.GetSection(expectation.Section)
 		if entry == nil {
 			continue
@@ -78,22 +84,139 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 	return findings
 }
 
+func auditMetadataDiagnostics(path string, doc *document.Document, projectRoot string) []reconcileFinding {
+	var findings []reconcileFinding
+	for _, diagnostic := range doc.MetadataDiagnostics {
+		severity := reconcileSeverityWarning
+		if diagnostic.Severity == document.MetadataDiagnosticError {
+			severity = reconcileSeverityError
+		}
+		findings = append(findings, newFinding(
+			severity,
+			path,
+			fmt.Sprintf("front matter metadata issue: %s", diagnostic.Message),
+			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
+			diagnostic.Fix,
+			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
+		))
+	}
+	for _, conflict := range doc.MetadataConflictWarnings {
+		findings = append(findings, newFinding(
+			reconcileSeverityWarning,
+			path,
+			fmt.Sprintf("front matter/body metadata conflict: %s", conflict.Message),
+			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
+			"treat front matter as canonical and update or remove the stale body metadata",
+			[]string{fmt.Sprintf("sed -n '1,140p' %s", path)},
+		))
+	}
+	if doc.Metadata != nil {
+		actualDir := filepath.Base(filepath.Dir(path))
+		if actualDir != "." {
+			expected := document.FeatureMetadataFromDir(actualDir)
+			findings = append(findings, metadataIdentityFindings(path, doc, projectRoot, expected)...)
+		}
+	}
+	return findings
+}
+
+func metadataIdentityFindings(path string, doc *document.Document, projectRoot string, expected document.FeatureMetadata) []reconcileFinding {
+	if doc.Metadata == nil {
+		return nil
+	}
+
+	var findings []reconcileFinding
+	if doc.Metadata.Feature.ID != "" && doc.Metadata.Feature.ID != expected.ID {
+		findings = append(findings, newFinding(
+			reconcileSeverityError,
+			path,
+			fmt.Sprintf("front matter feature.id `%s` does not match containing feature directory id `%s`", doc.Metadata.Feature.ID, expected.ID),
+			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
+			"update front matter feature identity to match the canonical feature directory",
+			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
+		))
+	}
+	if doc.Metadata.Feature.Slug != "" && doc.Metadata.Feature.Slug != expected.Slug {
+		findings = append(findings, newFinding(
+			reconcileSeverityError,
+			path,
+			fmt.Sprintf("front matter feature.slug `%s` does not match containing feature directory slug `%s`", doc.Metadata.Feature.Slug, expected.Slug),
+			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
+			"update front matter feature identity to match the canonical feature directory",
+			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
+		))
+	}
+	if doc.Metadata.Feature.Dir != "" && doc.Metadata.Feature.Dir != expected.Dir {
+		findings = append(findings, newFinding(
+			reconcileSeverityError,
+			path,
+			fmt.Sprintf("front matter feature.dir `%s` does not match containing feature directory `%s`", doc.Metadata.Feature.Dir, expected.Dir),
+			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
+			"update front matter feature identity to match the canonical feature directory",
+			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
+		))
+	}
+	return findings
+}
+
+func auditMetadataMigrationState(path string, doc *document.Document, projectRoot string) []reconcileFinding {
+	if !featureArtifactType(doc.Type) || doc.FrontMatterPresent {
+		return nil
+	}
+	return []reconcileFinding{newFinding(
+		reconcileSeverityWarning,
+		path,
+		"feature artifact is missing canonical YAML front matter and is using legacy markdown metadata fallback",
+		contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
+		"add typed front matter for artifact identity, feature identity, relationships, dependencies, and skills as applicable",
+		[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
+	)}
+}
+
+func featureArtifactType(docType document.DocumentType) bool {
+	switch docType {
+	case document.TypeBrainstorm, document.TypeSpec, document.TypePlan, document.TypeTasks:
+		return true
+	default:
+		return false
+	}
+}
+
+func metadataSectionTableMigratedToFrontMatter(section string) bool {
+	switch section {
+	case "RELATIONSHIPS", "DEPENDENCIES", "SKILLS":
+		return true
+	default:
+		return false
+	}
+}
+
 func auditRelationships(path string, doc *document.Document, projectRoot string, relationshipTargets map[string]bool) []reconcileFinding {
 	section := doc.GetSection("RELATIONSHIPS")
 	if section == nil || !meaningfulSectionContent(section.Content) {
 		return nil
 	}
 
-	relationships, err := document.ParseRelationshipsSection(section)
-	if err != nil {
-		return []reconcileFinding{newFinding(
-			reconcileSeverityError,
-			path,
-			fmt.Sprintf("invalid `RELATIONSHIPS` content: %v", err),
-			constitutionSource(projectRoot),
-			"rewrite `## RELATIONSHIPS` to use `none` or explicit `- builds on:`, `- depends on:`, or `- related to:` bullets",
-			searchHintsForSection(projectRoot, path, "RELATIONSHIPS"),
-		)}
+	var relationships []document.Relationship
+	if doc.FrontMatterPresent {
+		var parseWarnings []document.RelationshipParseWarning
+		relationships, parseWarnings = doc.Relationships()
+		if len(parseWarnings) > 0 {
+			return nil
+		}
+	} else {
+		parsedRelationships, err := document.ParseRelationshipsSection(section)
+		if err != nil {
+			return []reconcileFinding{newFinding(
+				reconcileSeverityError,
+				path,
+				fmt.Sprintf("invalid `RELATIONSHIPS` content: %v", err),
+				constitutionSource(projectRoot),
+				"rewrite `## RELATIONSHIPS` to use `none` or explicit `- builds on:`, `- depends on:`, or `- related to:` bullets",
+				searchHintsForSection(projectRoot, path, "RELATIONSHIPS"),
+			)}
+		}
+		relationships = parsedRelationships
 	}
 
 	var findings []reconcileFinding

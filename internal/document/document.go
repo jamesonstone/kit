@@ -51,10 +51,16 @@ type Section struct {
 
 // Document represents a parsed Kit document.
 type Document struct {
-	Type     DocumentType
-	Path     string
-	Content  string
-	Sections []Section
+	Type                     DocumentType
+	Path                     string
+	Content                  string
+	Body                     string
+	FrontMatterRaw           string
+	FrontMatterPresent       bool
+	Metadata                 *Metadata
+	MetadataDiagnostics      []MetadataDiagnostic
+	MetadataConflictWarnings []MetadataConflict
+	Sections                 []Section
 }
 
 // ParseFile reads and parses a document from the filesystem.
@@ -69,19 +75,39 @@ func ParseFile(path string, docType DocumentType) (*Document, error) {
 
 // Parse parses a document from its content.
 func Parse(content string, path string, docType DocumentType) *Document {
+	block := splitLeadingFrontMatter(content)
 	doc := &Document{
-		Type:    docType,
-		Path:    path,
-		Content: content,
+		Type:               docType,
+		Path:               path,
+		Content:            content,
+		Body:               block.Body,
+		FrontMatterRaw:     block.Raw,
+		FrontMatterPresent: block.Present,
+	}
+	if doc.Body == "" && content != "" && !block.Present {
+		doc.Body = content
+	}
+	if doc.FrontMatterPresent {
+		if block.Err != nil {
+			doc.MetadataDiagnostics = append(doc.MetadataDiagnostics, MetadataDiagnostic{
+				Severity: MetadataDiagnosticError,
+				Field:    "front_matter",
+				Message:  block.Err.Error(),
+				Fix:      "add a closing `---` delimiter for the YAML front matter block",
+			})
+		}
+		metadata, diagnostics := parseMetadata(doc.FrontMatterRaw, docType)
+		doc.Metadata = metadata
+		doc.MetadataDiagnostics = append(doc.MetadataDiagnostics, diagnostics...)
 	}
 
 	// find all section headers
-	matches := sectionPattern.FindAllStringSubmatchIndex(content, -1)
-	lines := strings.Split(content, "\n")
+	body := doc.Body
+	matches := sectionPattern.FindAllStringSubmatchIndex(body, -1)
 
 	for i, match := range matches {
-		name := content[match[2]:match[3]]
-		startLine := strings.Count(content[:match[0]], "\n") + 1
+		name := body[match[2]:match[3]]
+		startLine := strings.Count(body[:match[0]], "\n") + block.BodyStartLine
 
 		// find content between this header and the next (or end)
 		contentStart := match[1]
@@ -89,10 +115,10 @@ func Parse(content string, path string, docType DocumentType) *Document {
 		if i+1 < len(matches) {
 			contentEnd = matches[i+1][0]
 		} else {
-			contentEnd = len(content)
+			contentEnd = len(body)
 		}
 
-		sectionContent := strings.TrimSpace(content[contentStart:contentEnd])
+		sectionContent := strings.TrimSpace(body[contentStart:contentEnd])
 
 		doc.Sections = append(doc.Sections, Section{
 			Name:    name,
@@ -101,8 +127,7 @@ func Parse(content string, path string, docType DocumentType) *Document {
 		})
 	}
 
-	// for line counting
-	_ = lines
+	doc.MetadataConflictWarnings = doc.metadataConflicts()
 
 	return doc
 }
@@ -125,6 +150,17 @@ func (e ValidationError) Error() string {
 // Validate checks a document for required sections and other constraints.
 func (d *Document) Validate() []ValidationError {
 	var errors []ValidationError
+	for _, diagnostic := range d.MetadataDiagnostics {
+		if diagnostic.Severity != MetadataDiagnosticError {
+			continue
+		}
+		errors = append(errors, ValidationError{
+			Document: d.Path,
+			Section:  "FRONT MATTER",
+			Message:  diagnostic.Message,
+			Fix:      diagnostic.Fix,
+		})
+	}
 
 	// check required sections
 	required := RequiredSections[d.Type]
@@ -160,7 +196,7 @@ func (d *Document) Validate() []ValidationError {
 				),
 			})
 		}
-		if requiresRelationshipSectionValidation(d.Type, key) {
+		if requiresRelationshipSectionValidation(d.Type, key) && !d.FrontMatterPresent {
 			section := sections[key]
 			if _, err := ParseRelationshipsSection(&section); err != nil {
 				errors = append(errors, ValidationError{
@@ -178,12 +214,12 @@ func (d *Document) Validate() []ValidationError {
 
 // HasUnresolvedPlaceholders checks if the document has TODO placeholders.
 func (d *Document) HasUnresolvedPlaceholders() bool {
-	return placeholderPattern.MatchString(d.Content)
+	return placeholderPattern.MatchString(d.Body)
 }
 
 // GetUnresolvedPlaceholders returns all unresolved placeholders.
 func (d *Document) GetUnresolvedPlaceholders() []string {
-	return placeholderPattern.FindAllString(d.Content, -1)
+	return placeholderPattern.FindAllString(d.Body, -1)
 }
 
 // GetSection returns a section by name (case-insensitive).
@@ -204,7 +240,7 @@ func (d *Document) HasSection(name string) bool {
 
 // GetLinks returns all traceability links in the document.
 func (d *Document) GetLinks() []string {
-	return linkPattern.FindAllString(d.Content, -1)
+	return linkPattern.FindAllString(d.Body, -1)
 }
 
 // Exists checks if a document file exists.

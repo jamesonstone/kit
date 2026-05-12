@@ -1,3 +1,37 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0019"
+  slug: "command-surface-simplification"
+  dir: "0019-command-surface-simplification"
+dependencies:
+  - name: "backlog resume helper"
+    type: "code"
+    location: "pkg/cli/backlog_shared.go"
+    used_for: "canonical backlog resume path"
+    status: "active"
+  - name: "catchup prompt behavior"
+    type: "code"
+    location: "pkg/cli/catchup.go`, `pkg/cli/catchup_prompt.go"
+    used_for: "non-backlog resume path"
+    status: "active"
+  - name: "backlog classification"
+    type: "code"
+    location: "internal/feature/backlog.go"
+    used_for: "selector routing and status labeling"
+    status: "active"
+  - name: "status model"
+    type: "code"
+    location: "internal/feature/status.go"
+    used_for: "per-feature overview data"
+    status: "active"
+  - name: "Cobra hidden/deprecated support"
+    type: "library"
+    location: "github.com/spf13/cobra"
+    used_for: "compatibility command and flag migration"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

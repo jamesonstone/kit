@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0002"
+  slug: "cicd-goreleaser-releases"
+  dir: "0002-cicd-goreleaser-releases"
+dependencies:
+  - name: "release workflow"
+    type: "code"
+    location: ".github/workflows/"
+    used_for: "release publication and tag automation"
+    status: "active"
+  - name: "GoReleaser config"
+    type: "code"
+    location: ".goreleaser.yaml"
+    used_for: "cross-platform artifact matrix and archive settings"
+    status: "active"
+  - name: "version command"
+    type: "code"
+    location: "pkg/cli/version.go"
+    used_for: "installed-version surface referenced by release docs"
+    status: "active"
+  - name: "project progress summary"
+    type: "doc"
+    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
+    used_for: "release visibility and project-state reporting"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

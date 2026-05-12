@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0001"
+  slug: "refactor-plan-command"
+  dir: "0001-refactor-plan-command"
+---
 # TASKS
 
 ## PROGRESS TABLE

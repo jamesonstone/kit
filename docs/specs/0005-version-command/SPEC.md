@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0005"
+  slug: "version-command"
+  dir: "0005-version-command"
+dependencies:
+  - name: "build metadata"
+    type: "code"
+    location: "pkg/cli/version.go"
+    used_for: "installed version source of truth"
+    status: "active"
+  - name: "root CLI help"
+    type: "code"
+    location: "pkg/cli/root.go"
+    used_for: "command visibility and ordering"
+    status: "active"
+  - name: "release workflow"
+    type: "code"
+    location: ".github/workflows/"
+    used_for: "versioned release publication"
+    status: "active"
+  - name: "README"
+    type: "doc"
+    location: "README.md"
+    used_for: "public command documentation"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

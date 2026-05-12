@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0006"
+  slug: "skill-mine-command"
+  dir: "0006-skill-mine-command"
+dependencies:
+  - name: "prompt-output contract"
+    type: "code"
+    location: "pkg/cli/implement.go`, `pkg/cli/reflect.go"
+    used_for: "shared clipboard-first behavior"
+    status: "active"
+  - name: "project progress summary"
+    type: "doc"
+    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
+    used_for: "cross-feature theme detection"
+    status: "active"
+  - name: "skills directory config"
+    type: "code"
+    location: "internal/config/config.go"
+    used_for: "canonical transferable skills root"
+    status: "active"
+  - name: "README"
+    type: "doc"
+    location: "README.md"
+    used_for: "command documentation and alias surface"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

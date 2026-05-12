@@ -1,3 +1,22 @@
+---
+kit_metadata_version: 1
+artifact: "spec"
+feature:
+  id: "0012"
+  slug: "default-subagent-orchestration"
+  dir: "0012-default-subagent-orchestration"
+dependencies:
+  - name: "shared prompt helper"
+    type: "code"
+    location: "/Users/jamesonstone/go/src/github.com/jamesonstone/kit/pkg/cli/subagents.go"
+    used_for: "control the default orchestration suffix"
+    status: "active"
+  - name: "dispatch command spec"
+    type: "doc"
+    location: "/Users/jamesonstone/go/src/github.com/jamesonstone/kit/docs/specs/0008-dispatch-command/SPEC.md"
+    used_for: "preserve the stricter queue-planning role of `kit dispatch`"
+    status: "active"
+---
 # SPEC
 
 ## SUMMARY

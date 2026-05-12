@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0003"
+  slug: "inplace-upgrade-update"
+  dir: "0003-inplace-upgrade-update"
+---
 # TASKS
 
 ## TASKS

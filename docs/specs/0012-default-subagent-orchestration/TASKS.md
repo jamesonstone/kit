@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0012"
+  slug: "default-subagent-orchestration"
+  dir: "0012-default-subagent-orchestration"
+---
 # TASKS
 
 ## TASKS

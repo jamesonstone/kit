@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0006"
+  slug: "skill-mine-command"
+  dir: "0006-skill-mine-command"
+---
 # TASKS
 
 ## TASKS

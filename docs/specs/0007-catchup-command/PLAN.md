@@ -1,3 +1,32 @@
+---
+kit_metadata_version: 1
+artifact: "plan"
+feature:
+  id: "0007"
+  slug: "catchup-command"
+  dir: "0007-catchup-command"
+dependencies:
+  - name: "feature status model"
+    type: "code"
+    location: "internal/feature/status.go"
+    used_for: "stage and state reporting"
+    status: "active"
+  - name: "prompt helper"
+    type: "code"
+    location: "pkg/cli/root.go`, `pkg/cli/implement.go`, `pkg/cli/reflect.go"
+    used_for: "clipboard-first prompt output"
+    status: "active"
+  - name: "project progress summary"
+    type: "doc"
+    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
+    used_for: "recovery context and state summary"
+    status: "active"
+  - name: "root help ordering"
+    type: "code"
+    location: "pkg/cli/root.go"
+    used_for: "command visibility"
+    status: "active"
+---
 # PLAN
 
 ## SUMMARY

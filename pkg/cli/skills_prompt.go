@@ -37,7 +37,7 @@ func skillPromptSuffix() string {
 		sb.WriteString("- load only the relevant docs under `docs/agents/*`, `docs/specs/*`, and `docs/references/*`\n")
 		sb.WriteString("- treat documented global inputs as secondary context after repo-local docs are exhausted\n")
 	}
-	sb.WriteString("- if the work is feature-scoped, read that feature's SPEC.md and the `## SKILLS` table first\n")
+	sb.WriteString("- if the work is feature-scoped, read that feature's canonical front matter `skills` first, falling back to the legacy SPEC.md `## SKILLS` table only when front matter is absent\n")
 	sb.WriteString("- open each referenced `SKILL.md` and use those skills during execution\n")
 	sb.WriteString("- if the prompt provides explicit skill paths directly, open and use them\n")
 	return sb.String()

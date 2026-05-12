@@ -1,3 +1,11 @@
+---
+kit_metadata_version: 1
+artifact: "tasks"
+feature:
+  id: "0015"
+  slug: "pause-remove-commands"
+  dir: "0015-pause-remove-commands"
+---
 # TASKS
 
 ## PROGRESS TABLE
