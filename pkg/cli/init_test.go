@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/templates"
 )
 
 func TestRunInit_DefaultCopiesConstitutionPromptAndShowsPasteStep(t *testing.T) {
@@ -162,6 +163,59 @@ func TestRunInit_PopulatesGlobalConfig(t *testing.T) {
 		}
 		if cfg.InstructionScaffoldVersion != config.DefaultInstructionScaffoldVersion {
 			t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, config.DefaultInstructionScaffoldVersion)
+		}
+	})
+}
+
+func TestRunInit_CreatesCodeRabbitConfig(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+
+		content, err := os.ReadFile(filepath.Join(tempDir, codeRabbitConfigPath))
+		if err != nil {
+			t.Fatalf("expected %s to be created: %v", codeRabbitConfigPath, err)
+		}
+		if string(content) != templates.CodeRabbitConfig {
+			t.Fatalf("%s content = %q, want %q", codeRabbitConfigPath, content, templates.CodeRabbitConfig)
+		}
+	})
+}
+
+func TestRunInit_PreservesExistingCodeRabbitConfig(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	existing := "reviews:\n  auto_review:\n    enabled: false\n"
+	if err := os.WriteFile(filepath.Join(tempDir, codeRabbitConfigPath), []byte(existing), 0644); err != nil {
+		t.Fatalf("failed to seed %s: %v", codeRabbitConfigPath, err)
+	}
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+
+		content, err := os.ReadFile(filepath.Join(tempDir, codeRabbitConfigPath))
+		if err != nil {
+			t.Fatalf("failed to read %s: %v", codeRabbitConfigPath, err)
+		}
+		if string(content) != existing {
+			t.Fatalf("%s content = %q, want %q", codeRabbitConfigPath, content, existing)
 		}
 	})
 }

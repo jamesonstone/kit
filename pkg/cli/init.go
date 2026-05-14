@@ -23,6 +23,7 @@ var initCmd = &cobra.Command{
 
 Creates:
   - .kit.yaml configuration file
+  - .coderabbit.yaml review configuration file
   - ~/.config/kit/.kit.yaml global configuration file
   - docs/CONSTITUTION.md
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
@@ -84,6 +85,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := populateGlobalConfig(initOutputOnly); err != nil {
+		return err
+	}
+	if err := scaffoldCodeRabbitConfig(cwd, initOutputOnly); err != nil {
 		return err
 	}
 
@@ -193,6 +197,26 @@ func populateGlobalConfig(outputOnly bool) error {
 		return nil
 	}
 	fmt.Printf("  ✓ %s exists\n", configPath)
+	return nil
+}
+
+const codeRabbitConfigPath = ".coderabbit.yaml"
+
+func scaffoldCodeRabbitConfig(projectRoot string, outputOnly bool) error {
+	path := filepath.Join(projectRoot, codeRabbitConfigPath)
+	if document.Exists(path) {
+		if !outputOnly {
+			fmt.Printf("  ✓ %s exists, skipping\n", codeRabbitConfigPath)
+		}
+		return nil
+	}
+
+	if err := document.Write(path, templates.CodeRabbitConfig); err != nil {
+		return fmt.Errorf("failed to create %s: %w", codeRabbitConfigPath, err)
+	}
+	if !outputOnly {
+		fmt.Printf("  ✓ Created %s\n", codeRabbitConfigPath)
+	}
 	return nil
 }
 

@@ -85,6 +85,7 @@ commit is blocked.
 ```bash
 # initialize the project and user config
 # creates/updates .kit.yaml and ~/.config/kit/.kit.yaml
+# creates .coderabbit.yaml if missing
 # copies a CONSTITUTION.md drafting prompt to your clipboard
 kit init
 
@@ -147,7 +148,7 @@ kit rm my-feature --yes --notes
 
 | Command               | Description                                           |
 | --------------------- | ----------------------------------------------------- |
-| `kit init`            | Initialize a new Kit project and user config          |
+| `kit init`            | Initialize a project, user config, and review config  |
 | `kit scaffold-agents` | Create or refresh repository instruction files safely |
 
 ### 🔁 Workflow
