@@ -59,7 +59,7 @@ dependencies:
 - Keep the change as workflow semantics only: no new lifecycle phase, no new feature artifact, and no new top-level command.
 - Keep `kit check` structural for v1 rather than turning it into a semantic/adversarial validator.
 - Update workflow docs and user-facing wording so `kit implement` clearly communicates the readiness gate.
-- Keep scaffolded repository instruction templates aligned with the readiness gate so `kit scaffold-agent` and `kit scaffold-agents` generate current workflow guidance.
+- Keep scaffolded repository instruction templates aligned with the readiness gate so `kit scaffold agents` generates current workflow guidance.
 
 ## NON-GOALS
 
@@ -121,7 +121,7 @@ none
 - The visible workflow model must remain `brainstorm → spec → plan → tasks → implement → reflect`.
 - `kit status` may update its next-step wording to mention the readiness gate, but it must not introduce a new phase or readiness substate.
 - `README.md`, `docs/CONSTITUTION.md`, and `docs/specs/0000_INIT_PROJECT.md` must describe the readiness gate consistently with the shipped behavior.
-- The repository instruction templates used by `kit scaffold-agent` / `kit scaffold-agents` must include the readiness-gate workflow guidance so regenerated files stay aligned with the checked-in instruction files.
+- The repository instruction templates used by `kit scaffold agents` must include the readiness-gate workflow guidance so regenerated files stay aligned with the checked-in instruction files.
 
 ## ACCEPTANCE
 
@@ -133,7 +133,7 @@ none
 - `kit status` guidance for task-complete features can mention the readiness gate without creating a new lifecycle state.
 - `kit check` behavior remains structural in this feature.
 - Workflow docs describe the readiness gate without adding a new phase.
-- `kit scaffold-agent` and `kit scaffold-agents` generate instruction files that include the readiness gate.
+- `kit scaffold agents` generates instruction files that include the readiness gate.
 - Automated tests cover the new `kit implement` prompt contract and any status wording changes.
 
 ## EDGE-CASES

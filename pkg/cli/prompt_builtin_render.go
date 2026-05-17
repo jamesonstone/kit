@@ -232,3 +232,12 @@ func renderProjectInitPrompt() (string, error) {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	return prepareAgentPrompt(buildProjectInitPrompt(projectRoot, constitutionPath)), nil
 }
+
+func renderProjectRefreshPrompt() (string, error) {
+	projectRoot, cfg, err := promptProjectContext()
+	if err != nil {
+		return "", err
+	}
+
+	return prepareAgentPrompt(buildProjectRefreshPrompt(projectRoot, cfg)), nil
+}

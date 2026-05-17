@@ -91,6 +91,9 @@ kit init
 
 # paste the copied prompt into your coding agent to build docs/CONSTITUTION.md
 
+# later, after the repo has real contents, refresh durable project-level docs
+kit prompt project refresh
+
 # optionally capture research first
 kit brainstorm my-feature
 
@@ -146,10 +149,10 @@ kit rm my-feature --yes --notes
 
 ### 🏁 Setup
 
-| Command               | Description                                           |
-| --------------------- | ----------------------------------------------------- |
-| `kit init`            | Initialize a project, user config, and review config  |
-| `kit scaffold-agents` | Create or refresh repository instruction files safely |
+| Command        | Description                                                                       |
+| -------------- | --------------------------------------------------------------------------------- |
+| `kit init`     | Initialize a project, user config, and review config                              |
+| `kit scaffold` | Create empty workflow document structures, support directories, and agent files   |
 
 ### 🔁 Workflow
 
@@ -184,6 +187,7 @@ kit rm my-feature --yes --notes
 | ------------------------------ | -------------------------------------------------------------------------------------------- |
 | `kit prompt [noun] [verb]`     | Resolve and copy a reusable prompt from local, global, or built-in prompt libraries          |
 | `kit prompt list`              | List effective merged prompts with origin and override metadata                              |
+| `kit prompt project refresh`   | Prompt an agent to refresh durable project-level docs after the repo matures                 |
 | `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor                                 |
 | `kit handoff [feature]`        | Prompt the current agent session to sync docs, dependency inventories, and prepare a handoff |
 | `kit summarize [feature]`      | Output context summarization instructions                                                    |
@@ -308,7 +312,10 @@ workflow prompts, support prompts, `skill mine`, and `project init`.
 | -------------------------- | ---------------------------------------------------------- |
 | `kit skill mine [feature]` | Output skill extraction prompt for the active coding agent |
 
-`kit scaffold-agents` also supports the singular alias `kit scaffold-agent`.
+`kit scaffold agents` creates or refreshes repository instruction files.
+`kit scaffold brainstorm`, `kit scaffold spec`, `kit scaffold plan`, and
+`kit scaffold tasks` create empty workflow document scaffolds without emitting
+agent prompts.
 
 When instruction files already exist:
 
@@ -334,6 +341,8 @@ discovery, planning, and execution control in any domain.
 ### 🏗️ Project Initialization
 
 Run once, then refine as the project matures:
+
+- use `kit prompt project refresh` when early feature work reveals durable project-level rules, vocabulary, or constraints that should update `CONSTITUTION.md`
 
 ```text
 ┌──────────────┐
@@ -430,6 +439,9 @@ canonical docs first, then rerun the gate before implementing.
 ```bash
 # interactive brainstorm for a new feature
 kit brainstorm my-feature
+
+# prepare notes and BRAINSTORM.md before starting the brainstorm prompt
+kit brainstorm my-feature --prepare
 
 # frontend-heavy brainstorm with design-material scaffolding
 kit brainstorm dashboard-redesign --profile=frontend

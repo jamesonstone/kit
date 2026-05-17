@@ -305,8 +305,8 @@ func reconcileInstructionShortcut(projectRoot string) string {
 	cfg := config.LoadOrDefault(projectRoot)
 	version := detectInstructionScaffoldVersion(projectRoot, cfg)
 	if config.IsInstructionScaffoldVersionSupported(version) {
-		return fmt.Sprintf("kit scaffold-agents --version %d --append-only", version)
+		return fmt.Sprintf("kit scaffold agents --version %d --append-only", version)
 	}
 
-	return "kit scaffold-agents --append-only"
+	return "kit scaffold agents --append-only"
 }

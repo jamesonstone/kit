@@ -21,6 +21,7 @@ var (
 	brainstormOutput     string
 	brainstormOutputOnly bool
 	brainstormPickup     bool
+	brainstormPrepare    bool
 	brainstormUseVim     bool
 )
 
@@ -62,6 +63,7 @@ func init() {
 	brainstormCmd.Flags().StringVarP(&brainstormOutput, "output", "o", "", "write output to file")
 	brainstormCmd.Flags().BoolVar(&brainstormOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	brainstormCmd.Flags().BoolVar(&brainstormPickup, "pickup", false, "resume a paused backlog item instead of starting a new brainstorm capture")
+	brainstormCmd.Flags().BoolVar(&brainstormPrepare, "prepare", false, "create brainstorm directories and files without outputting the brainstorm prompt")
 	if flag := brainstormCmd.Flags().Lookup("pickup"); flag != nil {
 		flag.Hidden = true
 		flag.Deprecated = "use `kit resume <feature>` or `kit backlog --pickup <feature>`"
@@ -91,6 +93,26 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 
 	if brainstormBacklog && brainstormPickup {
 		return fmt.Errorf("--backlog and --pickup cannot be used together")
+	}
+
+	if brainstormPrepare {
+		if promptOnly {
+			return fmt.Errorf("--prepare cannot be used with --prompt-only")
+		}
+		if brainstormUseVim || brainstormEditor != "" || brainstormInline || brainstormBacklog || brainstormPickup {
+			return fmt.Errorf("--prepare cannot be used with --vim, --editor, --inline, --backlog, or --pickup")
+		}
+		if brainstormOutput != "" || outputOnly || brainstormCopy {
+			return fmt.Errorf("--prepare does not output a prompt; remove --output, --output-only, and --copy")
+		}
+		if len(args) != 1 {
+			return fmt.Errorf("--prepare requires a feature name")
+		}
+		result, err := scaffoldBrainstormWorkflow(args[0])
+		if err != nil {
+			return err
+		}
+		return printScaffoldWorkflowResult(cmd.OutOrStdout(), "brainstorm", result)
 	}
 
 	if promptOnly {

@@ -93,14 +93,18 @@ Steps:
    - always update affected documentation and ensure all touched documents are current and properly formatted
    - ensure documentation is agent-readable: clear structure, explicit examples, complete contracts
    - document public APIs with examples showing both normal usage and error handling
-9. Final pass
-   - rerun:
-     - git status
-     - git diff
-     - git diff --staged
-   - summarize remaining issues, if any
-   - propose next steps
-10. Mark reflection complete
+9. Project refresh advisory gate
+   - decide whether this work revealed durable project-wide rules, constraints, vocabulary, conventions, or workflow changes
+   - if yes, run `kit prompt project refresh` and refresh project-level docs before final handoff
+   - if no, state `no project refresh needed` in the reflection notes
+10. Final pass
+    - rerun:
+      - git status
+      - git diff
+      - git diff --staged
+    - summarize remaining issues, if any
+    - propose next steps
+11. Mark reflection complete
     - once all issues are resolved and confidence is 100%
     - append the following marker to the end of TASKS.md:
       <!-- REFLECTION_COMPLETE -->

@@ -22,9 +22,8 @@ var scaffoldAgentsAppendOnly bool
 var scaffoldAgentsVersion int
 
 var scaffoldAgentsCmd = &cobra.Command{
-	Use:     "scaffold-agents",
-	Aliases: []string{"scaffold-agent"},
-	Short:   "Create or refresh repository instruction files",
+	Use:   "agents",
+	Short: "Create or refresh repository instruction files",
 	Long: `Create missing repository instruction files and optionally overwrite existing ones.
 
 Repository instruction files include:
@@ -56,7 +55,7 @@ func init() {
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsClaude, "claude", false, "scaffold only CLAUDE.md")
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsCopilot, "copilot", false, "scaffold only .github/copilot-instructions.md")
 	scaffoldAgentsCmd.Flags().IntVar(&scaffoldAgentsVersion, "version", 0, "instruction scaffold version: 1 = verbose legacy, 2 = thin ToC/RLM model (default)")
-	rootCmd.AddCommand(scaffoldAgentsCmd)
+	scaffoldCmd.AddCommand(scaffoldAgentsCmd)
 }
 
 func runScaffoldAgents(cmd *cobra.Command, args []string) error {
@@ -95,7 +94,7 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 	forceFullModel := instructionVersionChangeRequiresForce(currentVersion, targetVersion)
 	if forceFullModel && writeMode != instructionFileWriteModeOverwrite {
 		return fmt.Errorf(
-			"switching the instruction scaffold from version %d to version %d requires --force. Re-run `kit scaffold-agents --version %d --force` to confirm the repo-wide change",
+			"switching the instruction scaffold from version %d to version %d requires --force. Re-run `kit scaffold agents --version %d --force` to confirm the repo-wide change",
 			currentVersion,
 			targetVersion,
 			targetVersion,
@@ -179,6 +178,7 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 		removed,
 		skipped,
 	)
+	fmt.Printf(scaffoldPrepareMessage, "agents", "agents")
 
 	if writeMode == instructionFileWriteModeSkipExisting && skipped > 0 {
 		fmt.Println("   Hint: use --append-only to merge missing Kit-managed sections without overwriting custom content, or --force to replace existing files.")

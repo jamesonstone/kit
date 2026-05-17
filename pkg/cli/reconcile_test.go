@@ -143,7 +143,7 @@ func TestBuildReconcilePrompt_UsesVersionedInstructionShortcut(t *testing.T) {
 	}
 
 	prompt := buildReconcilePrompt(report)
-	if !strings.Contains(prompt, "`kit scaffold-agents --version 2 --append-only`") {
+	if !strings.Contains(prompt, "`kit scaffold agents --version 2 --append-only`") {
 		t.Fatalf("expected prompt to use versioned scaffold shortcut, got %q", prompt)
 	}
 }

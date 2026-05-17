@@ -28,6 +28,7 @@ func builtInKitPromptSource() promptlib.Source {
 			builtInPrompt("support", "code-review", "Generate branch code-review instructions.", renderSupportCodeReviewPrompt),
 			dynamicBuiltInPrompt("skill", "mine", "Generate a reusable-skill mining prompt for a feature.", []string{promptContextActiveFeature}, renderSkillMinePrompt),
 			builtInPrompt("project", "init", "Generate project constitution drafting instructions.", renderProjectInitPrompt),
+			dynamicBuiltInPrompt("project", "refresh", "Generate project-level documentation refresh instructions.", []string{promptContextProject}, renderProjectRefreshPrompt),
 		},
 	}
 }

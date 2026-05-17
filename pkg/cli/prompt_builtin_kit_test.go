@@ -40,6 +40,7 @@ func TestBuiltInKitPromptSourceCatalog(t *testing.T) {
 		"support code-review",
 		"skill mine",
 		"project init",
+		"project refresh",
 	}
 	for _, command := range expected {
 		if !prompts[command] {
@@ -85,5 +86,29 @@ func TestBuiltInKitStaticRenderAdapters(t *testing.T) {
 
 	if len(tests) != 0 {
 		t.Fatalf("static render adapter tests did not run for %v", tests)
+	}
+}
+
+func TestBuildProjectRefreshPrompt(t *testing.T) {
+	projectRoot := t.TempDir()
+	prompt := buildProjectRefreshPrompt(projectRoot, defaultInitConfig())
+
+	checks := []string{
+		"/plan",
+		"## Project Refresh",
+		"docs only; do not change product code",
+		"docs/CONSTITUTION.md",
+		"kit reconcile --all",
+		"kit rollup",
+		"kit check --project",
+		"`Findings`",
+		"`Updates`",
+		"`Verification`",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected project refresh prompt to contain %q, got %q", check, prompt)
+		}
 	}
 }

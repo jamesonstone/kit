@@ -17,6 +17,7 @@ import (
 const (
 	promptContextActiveFeature        = "active feature"
 	promptContextOptionalFeature      = "optional feature"
+	promptContextProject              = "Kit project"
 	promptContextTaskList             = "task list"
 	promptContextReconciliationReport = "reconciliation findings"
 )

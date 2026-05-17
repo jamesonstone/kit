@@ -64,6 +64,7 @@ func setBrainstormFlagState(
 	previousInline := brainstormInline
 	previousUseVim := brainstormUseVim
 	previousEditor := brainstormEditor
+	previousPrepare := brainstormPrepare
 
 	brainstormBacklog = backlog
 	brainstormPickup = pickup
@@ -73,6 +74,7 @@ func setBrainstormFlagState(
 	brainstormInline = inline
 	brainstormUseVim = useVim
 	brainstormEditor = ""
+	brainstormPrepare = false
 
 	return func() {
 		brainstormBacklog = previousBacklog
@@ -83,6 +85,7 @@ func setBrainstormFlagState(
 		brainstormInline = previousInline
 		brainstormUseVim = previousUseVim
 		brainstormEditor = previousEditor
+		brainstormPrepare = previousPrepare
 	}
 }
 

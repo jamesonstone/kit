@@ -218,10 +218,12 @@ func markFeaturesComplete(
 
 	if err := rollup.Update(projectRoot, cfg); err != nil {
 		_, _ = fmt.Fprintf(errOut, "  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
-		return nil
+		return printProjectRefreshAdvisory(out)
 	}
-	_, err := fmt.Fprintln(out, "  ✓ Updated PROJECT_PROGRESS_SUMMARY.md")
-	return err
+	if _, err := fmt.Fprintln(out, "  ✓ Updated PROJECT_PROGRESS_SUMMARY.md"); err != nil {
+		return err
+	}
+	return printProjectRefreshAdvisory(out)
 }
 
 // appendReflectionMarker appends the REFLECTION_COMPLETE marker to a TASKS.md file.

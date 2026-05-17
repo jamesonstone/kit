@@ -293,7 +293,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"repository instruction file drift cannot be reconciled safely with append-only planning",
 				templateSource(projectRoot),
-				"inspect the file manually and add the missing Kit-managed sections, or use `kit scaffold-agents --force` only if overwrite is acceptable",
+				"inspect the file manually and add the missing Kit-managed sections, or use `kit scaffold agents --force` only if overwrite is acceptable",
 				[]string{
 					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
 					fmt.Sprintf("sed -n '1,240p' %s", templateSource(projectRoot)),
@@ -309,8 +309,8 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"missing Kit-managed repository instruction file",
 				templateSource(projectRoot),
-				"prefer `kit scaffold-agents --append-only` to create the missing file without replacing existing instruction files",
-				[]string{"kit scaffold-agents --append-only"},
+				"prefer `kit scaffold agents --append-only` to create the missing file without replacing existing instruction files",
+				[]string{"kit scaffold agents --append-only"},
 			))
 		case instructionFileMerged:
 			findings = append(findings, newFinding(
@@ -318,9 +318,9 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"repository instruction file is missing current Kit-managed sections",
 				templateSource(projectRoot),
-				"prefer `kit scaffold-agents --append-only` to append the missing Kit-managed sections, then review the result",
+				"prefer `kit scaffold agents --append-only` to append the missing Kit-managed sections, then review the result",
 				[]string{
-					"kit scaffold-agents --append-only",
+					"kit scaffold agents --append-only",
 					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
 				},
 			))
@@ -340,10 +340,10 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"missing v2 repo-local instruction support document",
 				templateSource(projectRoot),
-				"restore the thin ToC docs tree, typically with `kit scaffold-agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
+				"restore the thin ToC docs tree, typically with `kit scaffold agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
 				[]string{
-					"kit scaffold-agents --version 2 --append-only",
-					"kit scaffold-agents --version 2 --force",
+					"kit scaffold agents --version 2 --append-only",
+					"kit scaffold agents --version 2 --force",
 				},
 			))
 		case config.InstructionScaffoldVersionVerbose:
@@ -355,9 +355,9 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"v2 docs-tree artifact is present in a version 1 instruction model",
 				templateSource(projectRoot),
-				"remove the leftover v2 docs-tree artifact or rerun `kit scaffold-agents --version 1 --force` to finish the downgrade",
+				"remove the leftover v2 docs-tree artifact or rerun `kit scaffold agents --version 1 --force` to finish the downgrade",
 				[]string{
-					"kit scaffold-agents --version 1 --force",
+					"kit scaffold agents --version 1 --force",
 					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
 				},
 			))
@@ -420,8 +420,8 @@ func auditV2InstructionEntrypoints(projectRoot string, alreadyAudited map[string
 					absolutePath,
 					"missing v2 root instruction entrypoint",
 					templateSource(projectRoot),
-					"restore the thin v2 root files with `kit scaffold-agents --version 2 --append-only`",
-					[]string{"kit scaffold-agents --version 2 --append-only"},
+					"restore the thin v2 root files with `kit scaffold agents --version 2 --append-only`",
+					[]string{"kit scaffold agents --version 2 --append-only"},
 				))
 				continue
 			}
@@ -443,9 +443,9 @@ func auditV2InstructionEntrypoints(projectRoot string, alreadyAudited map[string
 				absolutePath,
 				"v2 root instruction file does not route through `docs/agents/README.md`",
 				templateSource(projectRoot),
-				"restore the thin routing entrypoint with `kit scaffold-agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
+				"restore the thin routing entrypoint with `kit scaffold agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
 				[]string{
-					"kit scaffold-agents --version 2 --append-only",
+					"kit scaffold agents --version 2 --append-only",
 					fmt.Sprintf("rg -n \"docs/agents/README.md\" %s", absolutePath),
 				},
 			))
@@ -542,9 +542,9 @@ func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
 				absolutePath,
 				fmt.Sprintf("v2 instruction support document is missing required guidance %q", snippet),
 				templateSource(projectRoot),
-				"refresh the v2 docs tree with `kit scaffold-agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
+				"refresh the v2 docs tree with `kit scaffold agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
 				[]string{
-					"kit scaffold-agents --version 2 --append-only",
+					"kit scaffold agents --version 2 --append-only",
 					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
 				},
 			))
@@ -577,7 +577,7 @@ func auditV2PromptEntrypoints(projectRoot string, cfg *config.Config) []reconcil
 		"generated prompt routing cannot find the v2 repo-local entrypoint",
 		templateSource(projectRoot),
 		"restore `docs/agents/README.md` so prompts can use just-in-time context loading",
-		[]string{"kit scaffold-agents --version 2 --append-only"},
+		[]string{"kit scaffold agents --version 2 --append-only"},
 	)}
 }
 

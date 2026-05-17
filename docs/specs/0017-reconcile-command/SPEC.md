@@ -87,7 +87,7 @@ dependencies:
 - Automatically filling missing document content from code in v1.
 - Producing machine-readable JSON, SARIF, or migration reports in v1.
 - Changing product code as part of reconciliation instructions.
-- Replacing `kit check`, `kit handoff`, `kit catchup`, or `kit scaffold-agents`.
+- Replacing `kit check`, `kit handoff`, `kit catchup`, or `kit scaffold agents`.
 
 ## USERS
 
@@ -181,7 +181,7 @@ dependencies:
   - `Findings`
   - `Updates`
   - `Verification`
-- The prompt must tell the agent when to use `kit scaffold-agents --append-only` instead of manual instruction-file edits.
+- The prompt must tell the agent when to use `kit scaffold agents --append-only` instead of manual instruction-file edits.
 - The prompt must require verification after documentation changes with:
   - `kit check --all` for whole-project mode or `kit check <feature>` for feature mode
   - `kit rollup` when reconciled changes affect `PROJECT_PROGRESS_SUMMARY.md`

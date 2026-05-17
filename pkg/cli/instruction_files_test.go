@@ -154,8 +154,13 @@ func TestRunScaffoldAgents_TargetedSelectionScaffoldsOnlyRequestedFiles(t *testi
 	withScaffoldAgentFlags(t, func() {
 		scaffoldAgentsAgentsMD = true
 
-		if err := runScaffoldAgents(scaffoldAgentsCmd, nil); err != nil {
-			t.Fatalf("runScaffoldAgents() error = %v", err)
+		output := captureStdout(t, func() {
+			if err := runScaffoldAgents(scaffoldAgentsCmd, nil); err != nil {
+				t.Fatalf("runScaffoldAgents() error = %v", err)
+			}
+		})
+		if !strings.Contains(output, "♻️ agents directory and files empty scaffolding created.") {
+			t.Fatalf("expected agents scaffold completion wording, got %q", output)
 		}
 	})
 
@@ -544,9 +549,12 @@ func TestRenderScaffoldAgentsHelp_IncludesVersionTable(t *testing.T) {
 	}
 }
 
-func TestScaffoldAgentsCmd_IncludesSingularAlias(t *testing.T) {
-	if !slices.Contains(scaffoldAgentsCmd.Aliases, "scaffold-agent") {
-		t.Fatalf("expected scaffold-agents to include scaffold-agent alias")
+func TestScaffoldAgentsCmd_UsesScaffoldNamespace(t *testing.T) {
+	if scaffoldAgentsCmd.Use != "agents" {
+		t.Fatalf("expected scaffold agents subcommand use, got %q", scaffoldAgentsCmd.Use)
+	}
+	if slices.Contains(scaffoldAgentsCmd.Aliases, "scaffold-agent") {
+		t.Fatal("expected legacy scaffold-agent alias to be removed")
 	}
 }
 

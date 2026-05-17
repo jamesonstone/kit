@@ -31,6 +31,7 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"Inspect & Repair",
 		"Prompt Utilities",
 		"Utilities",
+		"scaffold",
 		"prompt",
 		"set",
 		"resume",
@@ -49,7 +50,7 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"\n  update ",
 		"\n  skills ",
 		"\n  catchup ",
-		"\n  scaffold ",
+		"\n  scaffold-agents ",
 		"\n  rollup ",
 	}
 	for _, check := range hiddenChecks {
@@ -67,7 +68,6 @@ func TestDeprecatedCommandsRemainRegisteredAndHidden(t *testing.T) {
 		{name: "update", want: "kit upgrade"},
 		{name: "skills", want: "kit skill mine"},
 		{name: "catchup", want: "kit resume"},
-		{name: "scaffold", want: "kit brainstorm"},
 		{name: "rollup", want: "maintenance command"},
 	}
 
@@ -82,6 +82,25 @@ func TestDeprecatedCommandsRemainRegisteredAndHidden(t *testing.T) {
 		if !strings.Contains(cmd.Deprecated, tt.want) {
 			t.Fatalf("expected %q deprecation to contain %q, got %q", tt.name, tt.want, cmd.Deprecated)
 		}
+	}
+}
+
+func TestScaffoldAgentsRootCommandIsNotRegistered(t *testing.T) {
+	for _, cmd := range rootCmd.Commands() {
+		if cmd.Name() == "scaffold-agents" {
+			t.Fatal("expected scaffold-agents root command to be removed")
+		}
+	}
+
+	cmd, _, err := rootCmd.Find([]string{"scaffold", "agents"})
+	if err != nil {
+		t.Fatalf("rootCmd.Find(scaffold agents) error = %v", err)
+	}
+	if cmd != scaffoldAgentsCmd {
+		t.Fatalf("expected scaffold agents to resolve to scaffoldAgentsCmd, got %q", cmd.CommandPath())
+	}
+	if cmd.Hidden {
+		t.Fatal("expected scaffold agents to be visible")
 	}
 }
 

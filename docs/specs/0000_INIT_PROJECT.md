@@ -44,6 +44,7 @@ domains:
 **Project Initialization** (run once, update as needed):
 
 1. **Constitution** — strategy, patterns, long-term vision (kept updated with priors)
+2. **Project refresh prompt** — `kit prompt project refresh` asks an agent to re-analyze the maturing repository and update durable project-level docs without rerunning init
 
 **Optional Research Step**:
 
@@ -83,6 +84,7 @@ Each feature lives in its own directory:
 
 ```bash
 docs/specs/<feature>/
+  BRAINSTORM.md (optional)
   SPEC.md
   PLAN.md
   TASKS.md
@@ -93,11 +95,11 @@ Defaults:
 
 - `<feature>` uses the format `0001-feat-name`
 - directory is created on first reference
-- feature number is auto-assigned by scanning `docs/specs/` and incrementing
+- feature number is reserved by Kit's allocator, using repo-shared Git common-dir state when available and falling back to local `docs/specs/` inspection
 
 Slug validation:
 
-- numeric prefix (auto-assigned)
+- numeric prefix (allocator-reserved)
 - lowercase only
 - kebab-case
 - max 5 words
@@ -470,6 +472,8 @@ CLI flags always override `.kit.yaml`.
 - output a planning-only `/plan` prompt for a coding agent
 - support `--backlog` to capture a deferred brainstorm item without outputting a
   planning prompt
+- support `--prepare` to create the brainstorm document structure and notes
+  directory before starting the prompt-driven brainstorm workflow
 - keep `--pickup` as a compatibility path for resuming a deferred backlog item
   while teaching `kit resume <feature>` or `kit backlog --pickup <feature>` as
   the canonical resume flows
@@ -688,6 +692,12 @@ Flags:
 - include command name, description, origin, and override metadata
 - show only effective prompts after precedence is applied
 
+Built-in project prompts:
+
+- `project init` drafts the initial `docs/CONSTITUTION.md` prompt
+- `project refresh` refreshes durable project-level docs after the repository has real contents
+- `project refresh` is docs-only, starts with `/plan`, uses `kit reconcile --all` for structural drift, and verifies with `kit check --project`
+
 #### `kit set`
 
 - delegate to `kit set prompt` in v0 because `prompt` is the only configurable resource
@@ -778,9 +788,42 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 
 ---
 
-### 8.6 Agent Scaffolding
+### 8.6 Empty Workflow Scaffolding
 
-#### `kit scaffold-agents`
+#### `kit scaffold`
+
+Purpose:
+
+- create empty workflow document structures and supporting directories
+- do not output workflow prompts
+- do not start an agent phase
+
+Subcommands:
+
+- `kit scaffold brainstorm <feature>` — create or reuse the feature directory, create `BRAINSTORM.md`, and create `docs/notes/<feature>/.gitkeep`
+- `kit scaffold spec <feature>` — create or reuse the feature directory and create `SPEC.md`
+- `kit scaffold plan <feature>` — require `SPEC.md` and create `PLAN.md`
+- `kit scaffold tasks <feature>` — require `PLAN.md` and create `TASKS.md`
+- `kit scaffold agents` — create or refresh repository instruction files
+
+Completion output:
+
+- `♻️ <doc_type/workflow> directory and files empty scaffolding created. Please prepare your notes, documents, images, and examples for the <doc_type/workflow> phase`
+
+#### `kit brainstorm <feature> --prepare`
+
+- aliases the brainstorm workflow scaffold behavior
+- creates `BRAINSTORM.md` and `docs/notes/<feature>/.gitkeep`
+- when the frontend profile is active, also creates design-materials directories
+- does not ask for a brainstorm thesis
+- does not output or copy the brainstorm prompt
+- rejects prompt-output flags and interactive thesis flags
+
+---
+
+### 8.7 Agent Scaffolding
+
+#### `kit scaffold agents`
 
 - create missing repository instruction files
 - overwrite existing repository instruction files only when `--force` is set
@@ -788,7 +831,6 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 - support `--yes` / `-y` to skip the overwrite confirmation prompt when `--force` is used
 - support `--append-only` to merge missing Kit-managed sections without overwriting matched existing content
 - scaffold `.github/copilot-instructions.md` alongside configured agent files
-- support the alias `kit scaffold-agent`
 - without targeted flags, scaffold configured agent files plus `.github/copilot-instructions.md`
 - `--agentsmd` scaffolds only `AGENTS.md`
 - `--claude` scaffolds only `CLAUDE.md`
@@ -798,7 +840,7 @@ Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. R
 
 ---
 
-### 8.7 Documentation Reconciliation
+### 8.8 Documentation Reconciliation
 
 #### `kit reconcile [feature]`
 
@@ -833,7 +875,7 @@ Verification:
 
 ---
 
-### 8.8 Context Summarization
+### 8.9 Context Summarization
 
 #### `kit summarize [feature]`
 
@@ -855,7 +897,7 @@ Fact Retention Principles:
 
 ---
 
-### 8.9 Reflection
+### 8.10 Reflection
 
 #### `kit reflect [feature]`
 
@@ -877,11 +919,16 @@ Reflection Process:
 3. cross-reference with repository context and codebase
 4. verify correctness checklist (compiles, no errors, edge cases handled)
 5. run lint and tests, then fix ALL failures (including out-of-scope failures) before completion
-6. do not run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
+6. run the soft project-refresh advisory gate: if work revealed durable project-level rules, run `kit prompt project refresh`; otherwise state no project refresh is needed
+7. do not run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
+
+Completion advisory:
+
+- after `kit complete` succeeds, Kit prints a non-blocking reminder to run `kit prompt project refresh` if the completed work changed durable project-level truth
 
 ---
 
-### 8.10 Agent Handoff
+### 8.11 Agent Handoff
 
 #### `kit handoff [feature]`
 

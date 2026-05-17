@@ -130,6 +130,9 @@ func TestMarkFeaturesCompleteAllTargets(t *testing.T) {
 	if errOut.Len() != 0 {
 		t.Fatalf("expected no stderr output, got %q", errOut.String())
 	}
+	if got := strings.Count(out.String(), "kit prompt project refresh"); got != 1 {
+		t.Fatalf("expected one project refresh advisory, got %d in %q", got, out.String())
+	}
 	if _, statErr := os.Stat(filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md")); statErr != nil {
 		t.Fatalf("expected PROJECT_PROGRESS_SUMMARY.md to be written, got %v", statErr)
 	}

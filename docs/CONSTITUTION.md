@@ -93,8 +93,8 @@ all decisions.
    - `SPEC.md`: SUMMARY, PROBLEM, GOALS, NON-GOALS, USERS, SKILLS, RELATIONSHIPS, DEPENDENCIES, REQUIREMENTS, ACCEPTANCE, EDGE-CASES, OPEN-QUESTIONS
    - `PLAN.md`: SUMMARY, APPROACH, COMPONENTS, DATA, INTERFACES, RISKS, TESTING
    - `TASKS.md`: PROGRESS TABLE, TASK LIST, TASK DETAILS, DEPENDENCIES, NOTES
-- `RELATIONSHIPS` in `BRAINSTORM.md` and `SPEC.md` must be either `none` or explicit bullets using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
-- inline-code-wrapped relationship targets are valid if they normalize back to a canonical feature directory identifier
+   - `RELATIONSHIPS` in `BRAINSTORM.md` and `SPEC.md` must be either `none` or explicit bullets using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
+   - inline-code-wrapped relationship targets are valid if they normalize back to a canonical feature directory identifier
 
 4. **Single Feature Per Directory**
    - Never mix features in one `docs/specs/<feature>/` directory
@@ -130,7 +130,7 @@ all decisions.
 2. **Package Structure**
    - `cmd/kit/` — main entry point only
    - `pkg/cli/` — command implementations
-   - `internal/` — private packages (config, document, feature, rollup, templates)
+   - `internal/` — private packages for config, documents, features, instruction contracts, prompts, rollups, and templates
    - No circular dependencies
 
 3. **Error Messages**
@@ -256,7 +256,7 @@ The ordered sequence of documents that drive development:
 
 A self-contained unit of work with its own directory under `docs/specs/`. Identified by:
 
-- **Numeric prefix**: Auto-assigned sequential number (e.g., `0001`)
+- **Numeric prefix**: Reserved by Kit's feature allocator, using repo-shared Git common-dir state when available and falling back to local `docs/specs/` inspection (e.g., `0001`)
 - **Slug**: Lowercase kebab-case name, max 5 words (e.g., `init-project`)
 - **Directory**: Combined format (e.g., `0001-init-project`)
 
@@ -268,7 +268,10 @@ The current state of a feature in the artifact pipeline:
 - `spec` — Has SPEC.md only, optionally preceded by BRAINSTORM.md
 - `plan` — Has SPEC.md and PLAN.md, optionally preceded by BRAINSTORM.md
 - `tasks` — Has SPEC.md, PLAN.md, and TASKS.md, optionally preceded by BRAINSTORM.md
-- `implement` — Beyond Kit's scope
+- `implement` — Has executable task work in progress beyond Kit's document-generation scope
+- `reflect` — Has implementation work ready for verification and documentation sync
+- `complete` — Marked complete after reflection and lifecycle completion
+- `removed` — Removed from `docs/specs/` but retained as history through `.kit.yaml`
 
 ### Understanding Percentage
 
@@ -302,6 +305,15 @@ The process of scanning all features and generating `PROJECT_PROGRESS_SUMMARY.md
 - Sufficient to onboard or fork the project
 - Primary context input for any coding agent
 
+### Project Refresh
+
+The semantic refresh flow for updating durable project-level truth after a repository matures:
+
+- Invoked with `kit prompt project refresh`
+- Updates `docs/CONSTITUTION.md` only when durable project-wide rules, vocabulary, constraints, or conventions changed
+- Uses `kit reconcile --all` for structural contract drift instead of duplicating reconciliation
+- Remains advisory and docs-only; it does not rerun `kit init` or block lifecycle commands
+
 ### Map
 
 The read-only structural view rendered by `kit map`:
@@ -320,44 +332,61 @@ The read-only structural view rendered by `kit map`:
 
 ```bash
 kit/
-├── cmd/kit/main.go          # Entry point (5 lines)
-├── pkg/cli/                  # Public CLI commands
-│   ├── root.go              # Root command, banner, colors
-│   ├── init.go              # kit init
-│   ├── brainstorm.go        # kit brainstorm [feature]
-│   ├── spec.go              # kit spec <feature>
-│   ├── plan.go              # kit plan <feature>
-│   ├── tasks.go             # kit tasks <feature>
-│   ├── check.go             # kit check [feature]
-│   ├── rollup.go            # kit rollup
-│   ├── reconcile.go         # kit reconcile [feature]
-│   ├── handoff.go           # kit handoff [feature]
-│   ├── summarize.go         # kit summarize [feature]
-│   ├── reflect.go           # kit reflect [feature]
-│   ├── map.go               # kit map [feature]
-│   └── scaffold_agents.go   # kit scaffold-agents
+├── cmd/kit/main.go          # thin entry point
+├── pkg/cli/                 # public CLI commands, prompt builders, and human output
+│   ├── root*.go             # root command, banner, help, profiles
+│   ├── brainstorm*.go       # brainstorm, backlog capture, notes, prompts
+│   ├── spec*.go             # specification workflow and interactive inputs
+│   ├── plan*.go             # plan workflow and prompt generation
+│   ├── tasks*.go            # task workflow and prompt generation
+│   ├── implement*.go        # readiness-gated implementation prompts
+│   ├── reflect.go           # reflection prompt and refresh advisory
+│   ├── status*.go           # active and project-wide lifecycle views
+│   ├── map.go               # document map and relationship rendering
+│   ├── reconcile*.go        # structural doc drift audit and prompt
+│   ├── prompt*.go           # prompt library, profiles, IR helpers, output wrappers
+│   ├── scaffold.go          # empty workflow document structure scaffolding
+│   ├── scaffold_agents*.go  # repository instruction scaffolding under kit scaffold agents
+│   ├── complete.go          # completion lifecycle command
+│   ├── pause.go             # pause lifecycle command
+│   ├── remove.go            # remove lifecycle command
+│   ├── resume.go            # canonical resume routing
+│   ├── dispatch*.go         # task clustering and subagent dispatch prompt
+│   ├── handoff*.go          # handoff prompt and doc-sync guidance
+│   ├── summarize.go         # summarization prompt
+│   ├── skill*.go            # skill mining prompts
+│   ├── upgrade*.go          # self-upgrade support
+│   └── version.go           # version command
 ├── internal/
-│   ├── config/config.go     # .kit.yaml loading, project root discovery
-│   ├── document/document.go # Markdown parsing, validation, section extraction
-│   ├── feature/feature.go   # Feature numbering, slug validation, directory management
-│   ├── rollup/rollup.go     # PROJECT_PROGRESS_SUMMARY.md generation
-│   └── templates/templates.go # Embedded document templates
+│   ├── config/              # .kit.yaml loading, project root discovery, prompt config
+│   ├── document/            # Markdown parsing, metadata, relationships, validation
+│   ├── feature/             # feature identity, allocator, lifecycle, map, status
+│   ├── instructions/        # versioned repository instruction registry
+│   ├── promptdoc/           # typed prompt document rendering
+│   ├── promptlib/           # prompt library merge, normalize, resolve, suggest
+│   ├── rollup/              # PROJECT_PROGRESS_SUMMARY.md generation
+│   └── templates/           # embedded project and instruction templates
 └── docs/
-    ├── CONSTITUTION.md      # This file
+    ├── CONSTITUTION.md      # this file
     ├── PROJECT_PROGRESS_SUMMARY.md
-    └── specs/               # Feature directories
+    ├── agents/              # repo-local agent routing docs
+    ├── future/              # non-binding future architecture notes
+    ├── references/          # durable repo references
+    └── specs/               # feature directories and core spec
 ```
 
 ### Command Pattern
 
-Each command follows the same structure:
+Most stateful workflow commands follow the same structure:
 
-1. Find project root via `config.FindProjectRoot()`
+1. Find project root via `config.FindProjectRoot()` when project context is required
 2. Load configuration via `config.Load(projectRoot)`
-3. Resolve feature via `feature.Resolve()` or `feature.EnsureExists()`
-4. Perform action (create/validate documents)
-5. Update rollup via `rollup.Update()`
-6. Output next steps and agent prompts
+3. Resolve feature or project scope via feature helpers when needed
+4. Perform the action: scaffold, validate, render, prompt, or mutate lifecycle docs
+5. Update rollup only when feature or project summary state can change
+6. Output next steps, validation results, or agent prompts
+
+Prompt-only and inspection commands may skip feature resolution, document writes, or rollup updates by design.
 
 ### Error Handling Pattern
 
@@ -421,24 +450,27 @@ if doc.HasUnresolvedPlaceholders() {
 
 ## DEPENDENCIES
 
-| Dependency               | Purpose                    | Version |
-| ------------------------ | -------------------------- | ------- |
-| `github.com/spf13/cobra` | CLI framework              | v1.10.2 |
-| `gopkg.in/yaml.v3`       | YAML parsing for .kit.yaml | v3.0.1  |
+| Dependency                   | Purpose                             | Version |
+| ---------------------------- | ----------------------------------- | ------- |
+| `github.com/chzyer/readline` | Interactive terminal input support  | v1.5.1  |
+| `github.com/spf13/cobra`     | CLI framework                       | v1.10.2 |
+| `golang.org/x/term`          | Terminal capability and TTY helpers | v0.41.0 |
+| `gopkg.in/yaml.v3`           | YAML parsing for `.kit.yaml`        | v3.0.1  |
 
 ### Why These Dependencies?
 
 - **Cobra**: Industry standard for Go CLIs. Provides subcommands, flags, help generation.
 - **YAML v3**: Required for `.kit.yaml` configuration. v3 has better error messages.
+- **readline / x/term**: Support interactive terminal flows, editor gates, and terminal-aware output.
 
-### No Additional Dependencies
+### Dependency Constraints
 
-Kit intentionally keeps dependencies minimal:
+Kit intentionally keeps direct dependencies small:
 
 - No database drivers
-- No HTTP clients
-- No external services
+- No service-specific SDKs
 - No testing frameworks beyond stdlib
+- Transitive dependencies are accepted only through direct dependencies that serve current CLI needs
 
 ---
 
@@ -476,6 +508,12 @@ agents:
 feature_state:
   0001-feat-name:
     paused: false
+removed_features:
+  - number: 1
+    slug: feat-name
+    dir_name: 0001-feat-name
+    created_at: "2026-01-01"
+    removed_at: "2026-01-02"
 
 # Feature directory naming
 feature_naming:
@@ -510,9 +548,12 @@ Prompt library rules:
 
 - ✅ Document-centered workflow
 - ✅ Feature lifecycle management
-- ✅ Agent portability via pointer files
-- ✅ Validation and rollup generation
-- ✅ Context handoff between agents
+- ✅ Front-matter-first metadata with legacy body fallback
+- ✅ Prompt library with built-in, global, and project-local prompt precedence
+- ✅ Agent portability via versioned pointer files and repo-local routing docs
+- ✅ Validation, reconciliation, mapping, and rollup generation
+- ✅ Context resume, handoff, summarization, review, and dispatch prompts
+- ✅ Soft project refresh advisory for mature repositories
 
 ### Kit 1.x (Near-term)
 
@@ -520,6 +561,7 @@ Prompt library rules:
 - [ ] Plugin system for custom validators
 - [ ] Multi-language support for agent prompts
 - [ ] Integration with common editors (VS Code, Neovim)
+- [ ] Formalize selected future architecture notes from `docs/future/` into normal feature specs
 
 ### Kit 2.0 (Future)
 
@@ -527,6 +569,20 @@ Prompt library rules:
 - [ ] Specification diffing and versioning
 - [ ] AI-assisted spec completion (opt-in)
 - [ ] Metrics and insights (local only, no telemetry)
+
+### V1 Next-Generation Direction
+
+`docs/future/V1_NEXT_GEN.md` is non-binding until converted into normal feature specs.
+It records a possible evolution from static prompt generation toward a local intent and alignment runtime:
+
+- compact intent contracts for current work sessions
+- provider-neutral event streams for observed agent activity
+- deterministic policy checks before model-backed supervision
+- narrow interventions such as context injection, nudges, pauses, or blocks
+- host adapters for coding-agent CLIs, desktop agents, MCP-capable clients, Warp, and PTY fallback
+- visible local runtime files that remain inspectable and removable
+
+Current Kit workflows remain document-first and prompt-centered until a formal feature spec changes the shipped product contract.
 
 ### Guiding Principle
 
@@ -561,4 +617,4 @@ This constitution should be updated when:
 - Constraints prove too restrictive or too loose
 - Definitions need clarification
 
-Last reviewed: 2026-01-19
+Last reviewed: 2026-05-17
