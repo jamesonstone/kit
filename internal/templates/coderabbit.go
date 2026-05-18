@@ -6,3 +6,16 @@ const CodeRabbitConfig = `reviews:
     - "!AGENTS.md"
     - "!CLAUDE.md"
 `
+
+const PullRequestTemplate = `## Description
+
+-
+
+## How to Test
+
+1.
+
+## Ticket
+
+Closes #[ticket number]
+`

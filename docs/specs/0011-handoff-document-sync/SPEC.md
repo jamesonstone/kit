@@ -5,32 +5,42 @@ feature:
   id: "0011"
   slug: "handoff-document-sync"
   dir: "0011-handoff-document-sync"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "canonical workflow and document rules"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "shipped handoff behavior summary"
-    status: "active"
-  - name: "project progress summary"
-    type: "doc"
-    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
-    used_for: "project-wide reconciliation context"
-    status: "active"
-  - name: "handoff command flow"
-    type: "code"
-    location: "pkg/cli/handoff.go"
-    used_for: "selector and prompt wiring"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "user-facing command description"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical workflow and document rules
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: shipped handoff behavior summary
+    status: active
+  - name: project progress summary
+    type: doc
+    target: docs/PROJECT_PROGRESS_SUMMARY.md
+    relation: informs
+    read_policy: conditional
+    used_for: project-wide reconciliation context
+    status: active
+  - name: handoff command flow
+    type: code
+    target: pkg/cli/handoff.go
+    relation: implements
+    read_policy: conditional
+    used_for: selector and prompt wiring
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: implements
+    read_policy: conditional
+    used_for: user-facing command description
+    status: active
 ---
 # SPEC
 
@@ -65,7 +75,7 @@ dependencies:
   - file name
   - full absolute filesystem path
   - concise guidance for how to use the document
-- Require the prompt to verify dependency inventories in touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` docs before handoff.
+- Require the prompt to verify reference inventories in touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` docs before handoff.
 - Require the prompted agent's final response to:
   - confirm documentation sync in stdout/chat
   - include a concise documentation table with full paths
@@ -132,7 +142,7 @@ none
   - open questions
   - next steps
 - The prompt must define a final response contract that tells the agent to output:
-  - a concise confirmation that documentation files and dependency inventories are up to date
+  - a concise confirmation that documentation files and reference inventories are up to date
   - a markdown table of documentation files with full paths and usage guidance
   - a concise recent-context summary
 - If docs are not up to date, the prompt must instruct the agent to update them first and only then produce the final confirmation/table/summary.
@@ -149,7 +159,7 @@ none
   - documentation-sync confirmation
   - documentation table
   - recent conversation-context summary
-- The prompt explicitly requires dependency inventory verification for touched feature docs.
+- The prompt explicitly requires reference inventory verification for touched feature docs.
 - The prompt includes explicit instructions for summarizing recent conversation context into high-signal facts.
 - `kit handoff --prompt-only <feature>` is accepted and preserves the existing prompt-only behavior.
 

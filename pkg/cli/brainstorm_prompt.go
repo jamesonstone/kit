@@ -146,8 +146,8 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 				"- ignore `.gitkeep` and empty placeholder files\n"+
 				"- if files other than `.gitkeep` exist, read only the notes relevant to the user thesis\n"+
 				"- copy durable conclusions into BRAINSTORM.md instead of leaving them only in notes or chat\n"+
-				"- record specific note files that shaped the brainstorm in canonical front matter dependencies with `status: active`; use the legacy `## DEPENDENCIES` table only when the document has no front matter\n"+
-				"- leave the notes directory dependency as `optional` when no usable note files exist",
+				"- record specific note files that shaped the brainstorm in canonical front matter references with `status: active`\n"+
+				"- leave the notes directory reference as `optional` when no usable note files exist",
 			notesPath,
 		),
 	}
@@ -158,8 +158,8 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 				"- list available files only to decide whether any are relevant to the user thesis\n"+
 				"- read only the specific screenshots, references, or design notes needed for the current decision\n"+
 				"- copy durable design conclusions into BRAINSTORM.md instead of leaving them only in notes or chat\n"+
-				"- record specific design files or external design refs that shaped the brainstorm in canonical front matter dependencies with `status: active`; use the legacy `## DEPENDENCIES` table only when the document has no front matter\n"+
-				"- leave the design materials directory dependency as `optional` when no usable design files exist",
+				"- record specific design files or external design refs that shaped the brainstorm in canonical front matter references with `status: active`\n"+
+				"- leave the design materials directory reference as `optional` when no usable design files exist",
 			designPath,
 		))
 	}
@@ -170,12 +170,16 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 			projectRoot,
 		),
 		fmt.Sprintf(
-			"Keep canonical front matter dependencies in %s current throughout the research phase, using the legacy `## DEPENDENCIES` table only when front matter is absent:\n"+
-				"- include every dependency that materially shapes the feature definition, such as skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, and assets\n"+
-				"- use `name`, `type`, `location`, `used_for`, and `status`\n"+
+			"Keep canonical front matter references in %s current throughout the research phase:\n"+
+				"- include every reference that materially shapes the feature definition, such as skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, and assets\n"+
+				"- use `name`, `type`, `target`, `relation`, `read_policy`, `used_for`, and `status`\n"+
+				"- add a stable `id` when the reference may need to be updated later\n"+
+				"- `selector_type` must be one of `artifact`, `heading`, `symbol`, `command`, `url`, or `node_id` when `selector` is set\n"+
+				"- `relation` describes the referenced target's role relative to the source artifact, such as `constrains`, `guides`, `informs`, `implements`, `verifies`, or `uses`\n"+
+				"- `read_policy` must be one of `must`, `conditional`, `evidence`, or `skip`\n"+
 				"- `status` must be one of `active`, `optional`, or `stale`\n"+
-				"- for Figma or other MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`\n"+
-				"- if a dependency influenced decisions but is no longer current, keep it with `status: stale` instead of deleting it",
+				"- for Figma or other MCP-driven design references, store the exact design URL or file/node reference in `target` and use stable selectors when needed\n"+
+				"- if a reference influenced decisions but is no longer current, keep it with `status: stale` and `read_policy: skip` instead of deleting it",
 			brainstormPath,
 		),
 		fmt.Sprintf(
@@ -261,7 +265,7 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 			),
 			"preserve facts in BRAINSTORM.md, not just in chat",
 			"make the final document dense, explicit, and easy for a coding agent to use when drafting SPEC.md",
-			"keep canonical front matter dependencies aligned with the tools, docs, and design references used during the phase; preserve legacy body fallback only for documents without front matter",
+			"keep canonical front matter references aligned with the tools, docs, and design references used during the phase",
 			"keep canonical front matter relationships aligned with any explicit dependency on previously shipped features; preserve legacy body fallback only for documents without front matter",
 		)
 		doc.Raw(renderNonEmptySectionRules("`BRAINSTORM.md`"))

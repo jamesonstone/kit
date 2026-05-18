@@ -24,12 +24,13 @@ var initCmd = &cobra.Command{
 Creates:
   - .kit.yaml configuration file
   - .coderabbit.yaml review configuration file
+  - .github/pull_request_template.md pull request template
   - ~/.config/kit/.kit.yaml global configuration file
   - docs/CONSTITUTION.md
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
 
-If files already exist, Kit attempts to merge by preserving existing
-content and adding any missing required sections.
+If files already exist, Kit preserves them. Kit-managed markdown documents may
+be merged by adding missing required sections.
 
 Modes:
   Default:        Copy the prepared CONSTITUTION.md prompt to the clipboard and show next steps
@@ -88,6 +89,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if err := scaffoldCodeRabbitConfig(cwd, initOutputOnly); err != nil {
+		return err
+	}
+	if err := scaffoldPullRequestTemplate(cwd, initOutputOnly); err != nil {
 		return err
 	}
 
@@ -201,6 +205,7 @@ func populateGlobalConfig(outputOnly bool) error {
 }
 
 const codeRabbitConfigPath = ".coderabbit.yaml"
+const pullRequestTemplatePath = ".github/pull_request_template.md"
 
 func scaffoldCodeRabbitConfig(projectRoot string, outputOnly bool) error {
 	path := filepath.Join(projectRoot, codeRabbitConfigPath)
@@ -216,6 +221,24 @@ func scaffoldCodeRabbitConfig(projectRoot string, outputOnly bool) error {
 	}
 	if !outputOnly {
 		fmt.Printf("  ✓ Created %s\n", codeRabbitConfigPath)
+	}
+	return nil
+}
+
+func scaffoldPullRequestTemplate(projectRoot string, outputOnly bool) error {
+	path := filepath.Join(projectRoot, pullRequestTemplatePath)
+	if document.Exists(path) {
+		if !outputOnly {
+			fmt.Printf("  ✓ %s exists, skipping\n", pullRequestTemplatePath)
+		}
+		return nil
+	}
+
+	if err := document.Write(path, templates.PullRequestTemplate); err != nil {
+		return fmt.Errorf("failed to create %s: %w", pullRequestTemplatePath, err)
+	}
+	if !outputOnly {
+		fmt.Printf("  ✓ Created %s\n", pullRequestTemplatePath)
 	}
 	return nil
 }

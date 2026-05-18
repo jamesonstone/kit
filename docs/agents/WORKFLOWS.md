@@ -56,4 +56,4 @@ Execution order for feature work:
 ## Feature Docs
 
 - `docs/specs/<feature>/` remains the source of truth for feature-scoped work
-- Keep dependencies, relationships, and skills tables current when those docs are touched
+- Keep references, relationships, and skills metadata current when those docs are touched

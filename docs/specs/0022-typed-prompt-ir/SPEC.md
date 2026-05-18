@@ -12,22 +12,28 @@ relationships:
     target: "0020-versioned-instruction-model"
   - type: "related_to"
     target: "0012-default-subagent-orchestration"
-dependencies:
-  - name: "prompt output flow"
-    type: "code"
-    location: "pkg/cli/prompt_output.go"
-    used_for: "preserve current rendering-plus-decorator boundary"
-    status: "active"
-  - name: "prompt-producing commands"
-    type: "code"
-    location: "pkg/cli/implement.go`, `pkg/cli/reflect.go`, `pkg/cli/catchup_prompt.go`, `pkg/cli/handoff_prompt.go`, `pkg/cli/reconcile_prompt.go`, `pkg/cli/dispatch_prompt.go`, `pkg/cli/skill_prompt.go`, `pkg/cli/brainstorm_prompt.go`, `pkg/cli/plan.go`, `pkg/cli/tasks.go`, `pkg/cli/spec_template.go`, `pkg/cli/spec_output.go`, `pkg/cli/summarize.go`, `pkg/cli/code_review.go`, `pkg/cli/init.go"
-    used_for: "current string-built prompt surfaces to migrate"
-    status: "active"
-  - name: "shared prompt decorators"
-    type: "code"
-    location: "pkg/cli/skills_prompt.go`, `pkg/cli/subagents.go"
-    used_for: "keep skills and subagent augmentation outside the IR rendering step"
-    status: "active"
+references:
+  - name: prompt output flow
+    type: code
+    target: pkg/cli/prompt_output.go
+    relation: implements
+    read_policy: conditional
+    used_for: preserve current rendering-plus-decorator boundary
+    status: active
+  - name: prompt-producing commands
+    type: code
+    target: pkg/cli/implement.go`, `pkg/cli/reflect.go`, `pkg/cli/catchup_prompt.go`, `pkg/cli/handoff_prompt.go`, `pkg/cli/reconcile_prompt.go`, `pkg/cli/dispatch_prompt.go`, `pkg/cli/skill_prompt.go`, `pkg/cli/brainstorm_prompt.go`, `pkg/cli/plan.go`, `pkg/cli/tasks.go`, `pkg/cli/spec_template.go`, `pkg/cli/spec_output.go`, `pkg/cli/summarize.go`, `pkg/cli/code_review.go`, `pkg/cli/init.go
+    relation: implements
+    read_policy: conditional
+    used_for: current string-built prompt surfaces to migrate
+    status: active
+  - name: shared prompt decorators
+    type: code
+    target: pkg/cli/skills_prompt.go`, `pkg/cli/subagents.go
+    relation: implements
+    read_policy: conditional
+    used_for: keep skills and subagent augmentation outside the IR rendering step
+    status: active
 ---
 # SPEC
 

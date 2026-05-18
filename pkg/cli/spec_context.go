@@ -156,19 +156,23 @@ func appendSpecSkillDiscoveryStep(
 
 func specDependencyInventoryStepText(specPath, brainstormPath string, hasBrainstorm bool) string {
 	lines := []string{
-		fmt.Sprintf("Populate or refresh canonical front matter `dependencies` in `%s` before sign-off, using the legacy `## DEPENDENCIES` table only when front matter is absent:", specPath),
+		fmt.Sprintf("Populate or refresh canonical front matter `references` in `%s` before sign-off:", specPath),
 	}
 	if hasBrainstorm {
-		lines = append(lines, fmt.Sprintf("- carry forward still-relevant dependencies from `%s`", brainstormPath))
+		lines = append(lines, fmt.Sprintf("- carry forward still-relevant references from `%s`", brainstormPath))
 	}
 	lines = append(lines,
-		"- keep `skills` focused on execution-time agent skills and track broader supporting inputs in `dependencies`",
+		"- keep `skills` focused on execution-time agent skills and track broader supporting inputs in `references`",
 		"- include skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, assets, and other resources that shaped the feature definition",
-		"- use `name`, `type`, `location`, `used_for`, and `status`",
+		"- use `name`, `type`, `target`, `relation`, `read_policy`, `used_for`, and `status`",
+		"- add a stable `id` when the reference may need to be updated later",
+		"- `selector_type` must be one of `artifact`, `heading`, `symbol`, `command`, `url`, or `node_id` when `selector` is set",
+		"- `relation` describes the referenced target's role relative to the source artifact, such as `constrains`, `guides`, `informs`, `implements`, `verifies`, or `uses`",
+		"- `read_policy` must be one of `must`, `conditional`, `evidence`, or `skip`",
 		"- `status` must be one of `active`, `optional`, or `stale`",
-		"- for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
-		"- if a dependency influenced decisions but is no longer current, keep it with `status: stale`",
-		"- if no additional dependencies apply, leave front matter dependencies empty or keep the legacy `none` row in documents without front matter",
+		"- for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target` and use stable selectors when needed",
+		"- if a reference influenced decisions but is no longer current, keep it with `status: stale` and `read_policy: skip`",
+		"- if no additional references apply, leave front matter references empty and keep the body `## DEPENDENCIES` section prose-only",
 	)
 	return strings.Join(lines, "\n")
 }
@@ -207,11 +211,11 @@ func relatedFeatureContextStepText(projectRoot, currentDocPath string) string {
 
 	lines := []string{
 		fmt.Sprintf("Use an RLM-style just-in-time prior-work pass over `%s` before broad repository reads:", specsDir),
-		"- must-read inputs stay small: the current task or section plus explicit relationships and dependencies already in scope",
+		"- must-read inputs stay small: the current task or section plus explicit relationships and references already in scope",
 		fmt.Sprintf("- use indices first: start with `kit map %s` and `%s` to shortlist candidate prior features", featureID, summaryPath),
-		fmt.Sprintf("- if `kit map` is unavailable, inspect `%s` directly and use the current feature's canonical front matter relationships/dependencies, falling back to legacy `## RELATIONSHIPS` and `## DEPENDENCIES` entries only when front matter is absent", specsDir),
+		fmt.Sprintf("- if `kit map` is unavailable, inspect `%s` directly and use the current feature's canonical front matter relationships and references", specsDir),
 		"- prior feature docs, repo references, and secondary global inputs are conditional reads only",
-		"- open a prior feature doc only if it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or dependency link",
+		"- open a prior feature doc only if it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or reference link",
 		"- inspect at most 5 prior feature directories before narrowing further or asking a clarifying question",
 		"- extract only the concrete facts that change the current feature's requirements, strategy, interfaces, refactor surface, or tests",
 		"- do not paraphrase entire prior docs into chat or copy irrelevant historical context into the current artifact",

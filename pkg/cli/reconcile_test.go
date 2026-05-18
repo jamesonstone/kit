@@ -70,6 +70,28 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 	}
 }
 
+func TestBuildReconcilePromptIncludesReferenceMigrationRules(t *testing.T) {
+	report := &reconcileReport{
+		ProjectRoot:        t.TempDir(),
+		ReferenceMigration: true,
+	}
+
+	prompt := buildReconcilePrompt(report)
+	checks := []string{
+		"Migration target: replace deprecated front matter `dependencies` with canonical graph-like `references`",
+		"reference migration: enabled",
+		"map `location` to `target`",
+		"add a graph `relation`",
+		"add `read_policy`",
+		"prefer `read_policy: must` for constraints",
+	}
+	for _, check := range checks {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected migration prompt to contain %q, got %q", check, prompt)
+		}
+	}
+}
+
 func TestBuildReconcilePrompt_OmitsSubagentInstructionForSingleAgent(t *testing.T) {
 	previousSingleAgent := singleAgent
 	singleAgent = true

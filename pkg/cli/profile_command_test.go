@@ -8,9 +8,11 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+
+	"github.com/jamesonstone/kit/internal/document"
 )
 
-func TestRunSpecFrontendProfilePersistsDependencies(t *testing.T) {
+func TestRunSpecFrontendProfilePersistsReferences(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	restore := chdirForTest(t, projectRoot)
 	defer restore()
@@ -37,10 +39,10 @@ func TestRunSpecFrontendProfilePersistsDependencies(t *testing.T) {
 	text := string(content)
 	checks := []string{
 		"name: Frontend profile",
-		"location: --profile=frontend",
+		"target: --profile=frontend",
 		"used_for: apply frontend-specific coding-agent instruction set",
 		"name: Design materials",
-		"location: docs/notes/0001-dashboard/design",
+		"target: docs/notes/0001-dashboard/design",
 		"used_for: optional frontend design input",
 	}
 	for _, check := range checks {
@@ -53,7 +55,7 @@ func TestRunSpecFrontendProfilePersistsDependencies(t *testing.T) {
 	}
 }
 
-func TestRunPlanFrontendProfilePersistsSpecAndPlanDependencies(t *testing.T) {
+func TestRunPlanFrontendProfilePersistsSpecAndPlanReferences(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	restore := chdirForTest(t, projectRoot)
 	defer restore()
@@ -84,11 +86,11 @@ func TestRunPlanFrontendProfilePersistsSpecAndPlanDependencies(t *testing.T) {
 			t.Fatalf("os.ReadFile(%q) error = %v", path, err)
 		}
 		text := string(content)
-		if !strings.Contains(text, "name: Frontend profile") || !strings.Contains(text, "location: --profile=frontend") {
-			t.Fatalf("expected %s to contain frontend profile dependency, got:\n%s", path, text)
+		if !strings.Contains(text, "name: Frontend profile") || !strings.Contains(text, "target: --profile=frontend") {
+			t.Fatalf("expected %s to contain frontend profile reference, got:\n%s", path, text)
 		}
-		if !strings.Contains(text, "name: Design materials") || !strings.Contains(text, "location: docs/notes/0001-dashboard/design") {
-			t.Fatalf("expected %s to contain design materials dependency, got:\n%s", path, text)
+		if !strings.Contains(text, "name: Design materials") || !strings.Contains(text, "target: docs/notes/0001-dashboard/design") {
+			t.Fatalf("expected %s to contain design materials reference, got:\n%s", path, text)
 		}
 	}
 	if !strings.Contains(output, "## Frontend Profile") {
@@ -129,7 +131,7 @@ func TestRootInvalidProfileFailsBeforeBrainstormFileCreation(t *testing.T) {
 func TestRunSummarizeGenericUsesExplicitFrontendProfileOnly(t *testing.T) {
 	projectRoot := t.TempDir()
 	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
-	writeFile(t, filepath.Join(projectRoot, "docs", "specs", "0001-dashboard", "SPEC.md"), dependencyDoc("| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |"))
+	writeFile(t, filepath.Join(projectRoot, "docs", "specs", "0001-dashboard", "SPEC.md"), frontendProfileReferenceDoc(frontendProfileReferenceTarget, document.ReferenceStatusActive))
 	restore := chdirForTest(t, projectRoot)
 	defer restore()
 	restorePromptProfileState(t, promptProfileNone, false)

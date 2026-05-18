@@ -5,27 +5,35 @@ feature:
   id: "0023"
   slug: "worktree-safe-feature-allocation"
   dir: "0023-worktree-safe-feature-allocation"
-dependencies:
-  - name: "Git CLI"
-    type: "tool"
-    location: "git rev-parse --git-common-dir"
-    used_for: "shared clone-local allocator location"
-    status: "active"
-  - name: "feature creation entrypoints"
-    type: "code"
-    location: "pkg/cli/brainstorm.go`, `pkg/cli/spec.go`, `pkg/cli/scaffold.go"
-    used_for: "shared reservation consumers"
-    status: "active"
-  - name: "reconcile report"
-    type: "code"
-    location: "pkg/cli/reconcile_audit.go"
-    used_for: "duplicate-prefix enforcement"
-    status: "active"
-  - name: "status matrix"
-    type: "code"
-    location: "pkg/cli/status_matrix.go"
-    used_for: "active-row correctness with legacy duplicates"
-    status: "active"
+references:
+  - name: Git CLI
+    type: tool
+    target: git rev-parse --git-common-dir
+    relation: uses
+    read_policy: conditional
+    used_for: shared clone-local allocator location
+    status: active
+  - name: feature creation entrypoints
+    type: code
+    target: pkg/cli/brainstorm.go`, `pkg/cli/spec.go`, `pkg/cli/scaffold.go
+    relation: implements
+    read_policy: conditional
+    used_for: shared reservation consumers
+    status: active
+  - name: reconcile report
+    type: code
+    target: pkg/cli/reconcile_audit.go
+    relation: implements
+    read_policy: conditional
+    used_for: duplicate-prefix enforcement
+    status: active
+  - name: status matrix
+    type: code
+    target: pkg/cli/status_matrix.go
+    relation: implements
+    read_policy: conditional
+    used_for: active-row correctness with legacy duplicates
+    status: active
 ---
 # PLAN
 

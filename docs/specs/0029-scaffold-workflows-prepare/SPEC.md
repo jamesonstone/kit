@@ -12,37 +12,49 @@ relationships:
     target: "0019-command-surface-simplification"
   - type: "related_to"
     target: "0004-brainstorm-first-workflow"
-dependencies:
-  - name: "brainstorm command"
-    type: "code"
-    location: "pkg/cli/brainstorm.go, pkg/cli/brainstorm_notes.go"
-    used_for: "prepare-mode feature and notes scaffolding"
-    status: "active"
-  - name: "scaffold command"
-    type: "code"
-    location: "pkg/cli/scaffold.go"
-    used_for: "new scaffold namespace and workflow subcommands"
-    status: "active"
-  - name: "scaffold agents command"
-    type: "code"
-    location: "pkg/cli/scaffold_agents.go"
-    used_for: "existing repository instruction scaffolding behavior to move under scaffold agents"
-    status: "active"
-  - name: "artifact templates"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "empty workflow document scaffolds"
-    status: "active"
-  - name: "root help"
-    type: "code"
-    location: "pkg/cli/root_help.go"
-    used_for: "visible command grouping and removed command behavior"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "canonical command behavior"
-    status: "active"
+references:
+  - name: brainstorm command
+    type: code
+    target: pkg/cli/brainstorm.go, pkg/cli/brainstorm_notes.go
+    relation: implements
+    read_policy: conditional
+    used_for: prepare-mode feature and notes scaffolding
+    status: active
+  - name: scaffold command
+    type: code
+    target: pkg/cli/scaffold.go
+    relation: implements
+    read_policy: conditional
+    used_for: new scaffold namespace and workflow subcommands
+    status: active
+  - name: scaffold agents command
+    type: code
+    target: pkg/cli/scaffold_agents.go
+    relation: implements
+    read_policy: conditional
+    used_for: existing repository instruction scaffolding behavior to move under scaffold agents
+    status: active
+  - name: artifact templates
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: empty workflow document scaffolds
+    status: active
+  - name: root help
+    type: code
+    target: pkg/cli/root_help.go
+    relation: implements
+    read_policy: conditional
+    used_for: visible command grouping and removed command behavior
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: implements
+    read_policy: conditional
+    used_for: canonical command behavior
+    status: active
 ---
 # SPEC
 

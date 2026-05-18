@@ -93,6 +93,7 @@ func checkFeature(specsDir string, featureRef string) error {
 				errors = append(errors, e.Error())
 			}
 			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			warnings = append(warnings, metadataDiagnosticWarnings(doc)...)
 			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
 				warnings = append(warnings, "BRAINSTORM.md has unresolved TODO placeholders")
@@ -113,6 +114,7 @@ func checkFeature(specsDir string, featureRef string) error {
 				errors = append(errors, e.Error())
 			}
 			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			warnings = append(warnings, metadataDiagnosticWarnings(doc)...)
 			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
 				warnings = append(warnings, "SPEC.md has unresolved TODO placeholders")
@@ -133,6 +135,7 @@ func checkFeature(specsDir string, featureRef string) error {
 				errors = append(errors, e.Error())
 			}
 			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			warnings = append(warnings, metadataDiagnosticWarnings(doc)...)
 			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
 				warnings = append(warnings, "PLAN.md has unresolved TODO placeholders")
@@ -153,6 +156,7 @@ func checkFeature(specsDir string, featureRef string) error {
 				errors = append(errors, e.Error())
 			}
 			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			warnings = append(warnings, metadataDiagnosticWarnings(doc)...)
 			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
 				warnings = append(warnings, "TASKS.md has unresolved TODO placeholders")
@@ -222,6 +226,17 @@ func metadataConflictWarnings(doc *document.Document) []string {
 	warnings := make([]string, 0, len(doc.MetadataConflictWarnings))
 	for _, conflict := range doc.MetadataConflictWarnings {
 		warnings = append(warnings, fmt.Sprintf("%s: %s", doc.Path, conflict.Message))
+	}
+	return warnings
+}
+
+func metadataDiagnosticWarnings(doc *document.Document) []string {
+	var warnings []string
+	for _, diagnostic := range doc.MetadataDiagnostics {
+		if diagnostic.Severity != document.MetadataDiagnosticWarning {
+			continue
+		}
+		warnings = append(warnings, fmt.Sprintf("%s: %s. %s", doc.Path, diagnostic.Message, diagnostic.Fix))
 	}
 	return warnings
 }

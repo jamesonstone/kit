@@ -40,17 +40,17 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"ignore `.gitkeep`",
 		"read only the notes relevant to the user thesis",
 		"record specific note files that shaped the brainstorm",
-		"leave the notes directory dependency as `optional`",
+		"leave the notes directory reference as `optional`",
 		"/tmp/project/docs/CONSTITUTION.md",
-		"canonical front matter dependencies",
-		"`name`, `type`, `location`, `used_for`, and `status`",
+		"canonical front matter references",
+		"`name`, `type`, `target`, `relation`, `read_policy`, `used_for`, and `status`",
 		"Use an RLM-style just-in-time prior-work pass over `/tmp/docs/specs` before broad repository reads",
 		"/tmp/project/docs/PROJECT_PROGRESS_SUMMARY.md",
 		"conditional reads only",
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"for Figma or other MCP-driven design dependencies, store the exact design URL or file/node reference in `Location`",
+		"for Figma or other MCP-driven design references, store the exact design URL or file/node reference in `target` and use stable selectors when needed",
 		"`status: stale`",
 		"no section in `BRAINSTORM.md` may remain empty or contain only an HTML TODO comment",
 		"`not applicable`, `not required`, or `no additional information required`",
@@ -67,7 +67,7 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 	}
 }
 
-func TestRunBrainstorm_CreatesFeatureNotesDirAndSeedsDependency(t *testing.T) {
+func TestRunBrainstorm_CreatesFeatureNotesDirAndSeedsReference(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 
 	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
@@ -107,7 +107,9 @@ func TestRunBrainstorm_CreatesFeatureNotesDirAndSeedsDependency(t *testing.T) {
 		"dir: 0001-sample-feature",
 		"Need better import validation for malformed CSV uploads.",
 		"name: Feature notes",
-		"location: docs/notes/0001-sample-feature",
+		"target: docs/notes/0001-sample-feature",
+		"relation: informs",
+		"read_policy: conditional",
 		"used_for: optional pre-brainstorm research input",
 		"status: optional",
 	}
@@ -118,7 +120,7 @@ func TestRunBrainstorm_CreatesFeatureNotesDirAndSeedsDependency(t *testing.T) {
 	}
 }
 
-func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsDependencies(t *testing.T) {
+func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsReferences(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 
 	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
@@ -163,11 +165,11 @@ func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsDependencies(
 	text := string(content)
 	checks := []string{
 		"name: Feature notes",
-		"location: docs/notes/0001-dashboard-redesign",
+		"target: docs/notes/0001-dashboard-redesign",
 		"name: Frontend profile",
-		"location: --profile=frontend",
+		"target: --profile=frontend",
 		"name: Design materials",
-		"location: docs/notes/0001-dashboard-redesign/design",
+		"target: docs/notes/0001-dashboard-redesign/design",
 	}
 	for _, check := range checks {
 		if !strings.Contains(text, check) {
@@ -188,7 +190,7 @@ func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsDependencies(
 	}
 }
 
-func TestEnsureBrainstormNotesDependency_AppendsWithoutRemovingExistingRows(t *testing.T) {
+func TestEnsureBrainstormNotesDependency_AppendsReferenceWithoutRemovingExistingBodyRows(t *testing.T) {
 	projectRoot := t.TempDir()
 	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
 	brainstormPath := filepath.Join(projectRoot, "docs", "specs", "0001-sample", "BRAINSTORM.md")
@@ -221,14 +223,14 @@ questions
 		t.Fatalf("ensureBrainstormNotesDependency() error = %v", err)
 	}
 	if !changed {
-		t.Fatal("expected notes dependency to be appended")
+		t.Fatal("expected notes reference to be appended")
 	}
 	changed, err = ensureBrainstormNotesDependency(brainstormPath, notesRelPath)
 	if err != nil {
 		t.Fatalf("second ensureBrainstormNotesDependency() error = %v", err)
 	}
 	if changed {
-		t.Fatal("expected second notes dependency ensure to be a no-op")
+		t.Fatal("expected second notes reference ensure to be a no-op")
 	}
 
 	content, err := os.ReadFile(brainstormPath)
@@ -238,10 +240,8 @@ questions
 	text := string(content)
 	checks := []string{
 		"| Existing note | notes | docs/notes/0001-sample/old.md | prior observation | stale |",
-		"name: Existing note",
-		"location: docs/notes/0001-sample/old.md",
 		"name: Feature notes",
-		"location: docs/notes/0001-sample",
+		"target: docs/notes/0001-sample",
 		"<!-- keep this comment -->",
 	}
 	for _, check := range checks {
@@ -251,13 +251,13 @@ questions
 	}
 	doc := document.Parse(text, brainstormPath, document.TypeBrainstorm)
 	count := 0
-	for _, dependency := range doc.Dependencies() {
-		if dependency.Name == featureNotesDependencyName && dependency.Location == "docs/notes/0001-sample" {
+	for _, reference := range doc.References() {
+		if reference.Name == featureNotesReferenceName && reference.Target == "docs/notes/0001-sample" {
 			count++
 		}
 	}
 	if count != 1 {
-		t.Fatalf("expected one feature notes dependency in front matter, got %d in %q", count, text)
+		t.Fatalf("expected one feature notes reference in front matter, got %d in %q", count, text)
 	}
 }
 

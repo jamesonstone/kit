@@ -86,10 +86,12 @@ intent: optional one-line intent
 relationships:
   - type: builds_on
     target: 0016-document-map-relationships
-dependencies:
+references:
   - name: Feature notes
     type: notes
-    location: docs/notes/0026-front-matter-integration
+    target: docs/notes/0026-front-matter-integration
+    relation: informs
+    read_policy: conditional
     used_for: optional pre-brainstorm research input
     status: optional
 skills:
@@ -105,7 +107,7 @@ Enums:
 - `artifact`: `brainstorm`, `spec`, `plan`, `tasks`.
 - `relationship.type`: `builds_on`, `depends_on`, `related_to`.
 - Human relationship labels: `builds on`, `depends on`, `related to`.
-- `dependency.status`: `active`, `optional`, `stale`.
+- `reference.status`: `active`, `optional`, `stale`.
 
 Derived state:
 
@@ -141,7 +143,7 @@ Diagnostics:
 
 - `kit map [feature]`
   - Output contract unchanged.
-  - Reads relationships/dependencies through shared metadata accessors.
+  - Reads relationships/references through shared metadata accessors.
   - Continues to render unresolved relationship targets and warnings deterministically.
 
 - `kit check <feature>`
@@ -173,7 +175,7 @@ Diagnostics:
 | Agent routing docs | doc | docs/agents/README.md, docs/agents/WORKFLOWS.md, docs/agents/RLM.md, docs/agents/GUARDRAILS.md, docs/agents/TOOLING.md | RLM discovery, source-of-truth order, validation expectations | active |
 | Project progress summary | doc | docs/PROJECT_PROGRESS_SUMMARY.md | current feature phase and prior-feature shortlist | active |
 | Kit map output | command output | `go run ./cmd/kit map 0026-front-matter-integration` | relationship/dependency baseline and scope confirmation | active |
-| Brainstorm-first workflow | prior feature doc | docs/specs/0004-brainstorm-first-workflow/SPEC.md, docs/specs/0004-brainstorm-first-workflow/PLAN.md | dependency inventory and workflow artifact precedents | active |
+| Brainstorm-first workflow | prior feature doc | docs/specs/0004-brainstorm-first-workflow/SPEC.md, docs/specs/0004-brainstorm-first-workflow/PLAN.md | reference inventory and workflow artifact precedents | active |
 | Document map relationships | prior feature doc | docs/specs/0016-document-map-relationships/SPEC.md, docs/specs/0016-document-map-relationships/PLAN.md | existing relationship contract and map rendering behavior | active |
 | Reconcile command | prior feature doc | docs/specs/0017-reconcile-command/SPEC.md, docs/specs/0017-reconcile-command/PLAN.md | prompt-only audit behavior and relationship-target drift checks | active |
 | Project validation and instruction registry | prior feature doc | docs/specs/0021-project-validation-and-instruction-registry/SPEC.md, docs/specs/0021-project-validation-and-instruction-registry/PLAN.md | project-level validation and shared registry precedent | active |
@@ -224,7 +226,7 @@ Diagnostics:
   - unknown-field preservation on write
 
 - Unit tests for metadata accessors:
-  - front-matter relationships/dependencies/skills
+  - front-matter relationships/references/skills
   - legacy fallback
   - front-matter/body conflict precedence
   - inline-code legacy relationship target normalization

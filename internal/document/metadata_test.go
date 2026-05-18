@@ -131,6 +131,50 @@ kit_metadata_version: [
 ## SUMMARY
 
 summary
+
+## PROBLEM
+
+problem
+
+## GOALS
+
+goals
+
+## NON-GOALS
+
+not applicable
+
+## USERS
+
+users
+
+## SKILLS
+
+skills are tracked in front matter.
+
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+References are tracked in front matter.
+
+## REQUIREMENTS
+
+requirements
+
+## ACCEPTANCE
+
+acceptance
+
+## EDGE-CASES
+
+not applicable
+
+## OPEN-QUESTIONS
+
+not required
 `, "SPEC.md", TypeSpec)
 
 	var found bool
@@ -155,10 +199,14 @@ feature:
 relationships:
   - type: follows
     target: 0002-beta
-dependencies:
+references:
   - name: Thing
     type: doc
-    location: docs/thing.md
+    target: docs/thing.md
+    selector_type: line
+    selector: 12
+    relation: adjacent
+    read_policy: maybe
     used_for: context
     status: maybe
 ---
@@ -167,19 +215,173 @@ dependencies:
 ## SUMMARY
 
 summary
+
+## PROBLEM
+
+problem
+
+## GOALS
+
+goals
+
+## NON-GOALS
+
+not applicable
+
+## USERS
+
+users
+
+## SKILLS
+
+skills are tracked in front matter.
+
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+References are tracked in front matter.
+
+## REQUIREMENTS
+
+requirements
+
+## ACCEPTANCE
+
+acceptance
+
+## EDGE-CASES
+
+not applicable
+
+## OPEN-QUESTIONS
+
+not required
 `, "SPEC.md", TypeSpec)
 
-	var relationshipError, dependencyError bool
+	var relationshipError, referenceError bool
 	for _, err := range doc.Validate() {
 		if strings.Contains(err.Message, "invalid relationship type") {
 			relationshipError = true
 		}
-		if strings.Contains(err.Message, "invalid dependency status") {
-			dependencyError = true
+		if strings.Contains(err.Message, "invalid reference relation") ||
+			strings.Contains(err.Message, "invalid reference read_policy") ||
+			strings.Contains(err.Message, "invalid reference selector_type") ||
+			strings.Contains(err.Message, "invalid reference status") {
+			referenceError = true
 		}
 	}
-	if !relationshipError || !dependencyError {
-		t.Fatalf("Validate() relationship error = %v, dependency error = %v, errors = %#v", relationshipError, dependencyError, doc.Validate())
+	if !relationshipError || !referenceError {
+		t.Fatalf("Validate() relationship error = %v, reference error = %v, errors = %#v", relationshipError, referenceError, doc.Validate())
+	}
+}
+
+func TestValidateWarnsForReferencePolicyMismatches(t *testing.T) {
+	doc := Parse(`---
+kit_metadata_version: 1
+artifact: spec
+feature:
+  id: "0001"
+  slug: alpha
+  dir: 0001-alpha
+references:
+  - name: Stale doc
+    type: doc
+    target: docs/stale.md
+    relation: informs
+    read_policy: conditional
+    used_for: old context
+    status: stale
+  - name: Constraint
+    type: doc
+    target: docs/constraint.md
+    relation: constrains
+    read_policy: conditional
+    used_for: constraints
+    status: active
+  - name: Evidence
+    type: doc
+    target: docs/evidence.md
+    selector: Results
+    relation: verifies
+    read_policy: conditional
+    used_for: verification
+    status: active
+---
+# SPEC
+
+## SUMMARY
+
+summary
+
+## PROBLEM
+
+problem
+
+## GOALS
+
+goals
+
+## NON-GOALS
+
+not applicable
+
+## USERS
+
+users
+
+## SKILLS
+
+skills are tracked in front matter.
+
+## RELATIONSHIPS
+
+none
+
+## DEPENDENCIES
+
+References are tracked in front matter.
+
+## REQUIREMENTS
+
+requirements
+
+## ACCEPTANCE
+
+acceptance
+
+## EDGE-CASES
+
+not applicable
+
+## OPEN-QUESTIONS
+
+not required
+`, "SPEC.md", TypeSpec)
+
+	var staleWarning, constraintWarning, evidenceWarning, selectorWarning bool
+	for _, diagnostic := range doc.MetadataDiagnostics {
+		if diagnostic.Severity != MetadataDiagnosticWarning {
+			continue
+		}
+		switch {
+		case strings.Contains(diagnostic.Message, "stale reference should normally be skipped"):
+			staleWarning = true
+		case strings.Contains(diagnostic.Message, "constraining reference should normally be must-read"):
+			constraintWarning = true
+		case strings.Contains(diagnostic.Message, "verification reference should normally be evidence-read"):
+			evidenceWarning = true
+		case strings.Contains(diagnostic.Message, "reference selector is set without selector_type"):
+			selectorWarning = true
+		}
+	}
+	if !staleWarning || !constraintWarning || !evidenceWarning || !selectorWarning {
+		t.Fatalf("warnings stale=%v constraint=%v evidence=%v selector=%v diagnostics=%#v", staleWarning, constraintWarning, evidenceWarning, selectorWarning, doc.MetadataDiagnostics)
+	}
+	if errors := doc.Validate(); len(errors) != 0 {
+		t.Fatalf("Validate() errors = %#v, want warnings only", errors)
 	}
 }
 
@@ -194,10 +396,12 @@ feature:
 relationships:
   - type: depends_on
     target: 0002-beta
-dependencies:
+references:
   - name: Front
     type: doc
-    location: docs/front.md
+    target: docs/front.md
+    relation: informs
+    read_policy: conditional
     used_for: front matter
     status: active
 skills:
@@ -233,14 +437,14 @@ skills:
 	if len(relationships) != 1 || relationships[0].Type != "depends on" || relationships[0].Target != "0002-beta" {
 		t.Fatalf("Relationships() = %#v, want front matter relationship", relationships)
 	}
-	if got := doc.Dependencies(); len(got) != 1 || got[0].Name != "Front" {
-		t.Fatalf("Dependencies() = %#v, want front matter dependency", got)
+	if got := doc.References(); len(got) != 1 || got[0].Name != "Front" || got[0].Target != "docs/front.md" {
+		t.Fatalf("References() = %#v, want front matter reference", got)
 	}
 	if got := doc.Skills(); len(got) != 1 || got[0].Name != "rlm" || !got[0].Required {
 		t.Fatalf("Skills() = %#v, want front matter skill", got)
 	}
-	if len(doc.MetadataConflictWarnings) != 3 {
-		t.Fatalf("MetadataConflictWarnings len = %d, want 3: %#v", len(doc.MetadataConflictWarnings), doc.MetadataConflictWarnings)
+	if len(doc.MetadataConflictWarnings) != 2 {
+		t.Fatalf("MetadataConflictWarnings len = %d, want 2: %#v", len(doc.MetadataConflictWarnings), doc.MetadataConflictWarnings)
 	}
 }
 
@@ -271,8 +475,8 @@ func TestMetadataAccessorsFallbackToLegacySections(t *testing.T) {
 	if len(relationships) != 1 || relationships[0].Target != "0002-beta" {
 		t.Fatalf("Relationships() = %#v, want legacy relationship", relationships)
 	}
-	if got := doc.Dependencies(); len(got) != 1 || got[0].Name != "Legacy" {
-		t.Fatalf("Dependencies() = %#v, want legacy dependency", got)
+	if got := doc.References(); len(got) != 0 {
+		t.Fatalf("References() = %#v, want no legacy dependency fallback", got)
 	}
 	if got := doc.Skills(); len(got) != 1 || got[0].Name != "rlm" || !got[0].Required {
 		t.Fatalf("Skills() = %#v, want legacy skill", got)
@@ -297,12 +501,15 @@ summary
 `
 
 	updated, changed, err := UpsertMetadata(content, TypeSpec, MetadataUpsert{
-		Dependencies: []MetadataDependency{{
-			Name:     "Feature notes",
-			Type:     "notes",
-			Location: "docs/notes/0001-alpha",
-			UsedFor:  "optional pre-brainstorm input",
-			Status:   DependencyStatusOptional,
+		References: []MetadataReference{{
+			ID:         "feature-notes",
+			Name:       "Feature notes",
+			Type:       "notes",
+			Target:     "docs/notes/0001-alpha",
+			Relation:   ReferenceRelationInforms,
+			ReadPolicy: ReferenceReadPolicyConditional,
+			UsedFor:    "optional pre-brainstorm input",
+			Status:     ReferenceStatusOptional,
 		}},
 	})
 	if err != nil {
@@ -319,8 +526,11 @@ summary
 	}
 
 	doc := Parse(updated, "SPEC.md", TypeSpec)
-	if got := doc.Dependencies(); len(got) != 1 || got[0].Name != "Feature notes" {
-		t.Fatalf("Dependencies() = %#v, want upserted dependency", got)
+	if got := doc.References(); len(got) != 1 || got[0].Name != "Feature notes" || got[0].Target != "docs/notes/0001-alpha" {
+		t.Fatalf("References() = %#v, want upserted reference", got)
+	}
+	if got := doc.References()[0].ID; got != "feature-notes" {
+		t.Fatalf("reference ID = %q, want feature-notes", got)
 	}
 }
 
@@ -336,12 +546,14 @@ feature:
 `
 
 	_, changed, err := UpsertMetadata(content, TypeSpec, MetadataUpsert{
-		Dependencies: []MetadataDependency{{
-			Name:     "Feature notes",
-			Type:     "notes",
-			Location: "docs/notes/0001-alpha",
-			UsedFor:  "optional pre-brainstorm input",
-			Status:   DependencyStatusOptional,
+		References: []MetadataReference{{
+			Name:       "Feature notes",
+			Type:       "notes",
+			Target:     "docs/notes/0001-alpha",
+			Relation:   ReferenceRelationInforms,
+			ReadPolicy: ReferenceReadPolicyConditional,
+			UsedFor:    "optional pre-brainstorm input",
+			Status:     ReferenceStatusOptional,
 		}},
 	})
 	if err == nil {

@@ -17,7 +17,7 @@
 - Never guess file contents, APIs, or behavior
 - If validation cannot run, state why
 - Fix relevant lint and test failures before calling work complete
-- Keep canonical front matter dependencies and relationships current when those docs are touched, falling back to legacy body sections only when front matter is absent
+- Keep canonical front matter references and relationships current when those docs are touched
 
 ## Code Hygiene
 

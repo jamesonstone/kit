@@ -36,7 +36,7 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	})
 
 	checks := []string{
-		"Populate or refresh canonical front matter `dependencies`",
+		"Populate or refresh canonical front matter `references`",
 		"`status` must be one of `active`, `optional`, or `stale`",
 		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
@@ -44,9 +44,9 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
+		"for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target`",
 		"- DEPENDENCIES",
-		"canonical front matter `dependencies` must be current before sign-off",
+		"canonical front matter `references` must be current before sign-off",
 		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
 	}
 
@@ -84,16 +84,16 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	})
 
 	checks := []string{
-		"Populate or refresh canonical front matter `dependencies`",
-		"DEPENDENCIES: the resources that shape the implementation strategy",
+		"Populate or refresh canonical front matter `references`",
+		"DEPENDENCIES: prose summary of the resources that shape the implementation strategy",
 		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
-		"canonical front matter `dependencies` must be current before sign-off",
+		"for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target`",
+		"canonical front matter `references` must be current before sign-off",
 		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
 	}
 

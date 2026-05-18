@@ -12,47 +12,63 @@ relationships:
     target: "0011-handoff-document-sync"
   - type: "builds_on"
     target: "0013-scaffold-agents-safe-merge"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "canonical workflow and document invariants"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "canonical document-model details"
-    status: "active"
-  - name: "current templates"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "current section and table contract"
-    status: "active"
-  - name: "document parser"
-    type: "code"
-    location: "internal/document/document.go"
-    used_for: "section parsing and placeholder validation"
-    status: "active"
-  - name: "check command"
-    type: "code"
-    location: "pkg/cli/check.go"
-    used_for: "baseline validation behavior and gaps"
-    status: "active"
-  - name: "handoff prompt flow"
-    type: "code"
-    location: "pkg/cli/handoff.go"
-    used_for: "project-vs-feature prompt structure"
-    status: "active"
-  - name: "scaffold agents"
-    type: "code"
-    location: "pkg/cli/instruction_files.go"
-    used_for: "instruction-file drift planning"
-    status: "active"
-  - name: "rollup generator"
-    type: "code"
-    location: "internal/rollup/rollup.go"
-    used_for: "rollup drift expectations"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical workflow and document invariants
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical document-model details
+    status: active
+  - name: current templates
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: current section and table contract
+    status: active
+  - name: document parser
+    type: code
+    target: internal/document/document.go
+    relation: implements
+    read_policy: conditional
+    used_for: section parsing and placeholder validation
+    status: active
+  - name: check command
+    type: code
+    target: pkg/cli/check.go
+    relation: implements
+    read_policy: conditional
+    used_for: baseline validation behavior and gaps
+    status: active
+  - name: handoff prompt flow
+    type: code
+    target: pkg/cli/handoff.go
+    relation: implements
+    read_policy: conditional
+    used_for: project-vs-feature prompt structure
+    status: active
+  - name: scaffold agents
+    type: code
+    target: pkg/cli/instruction_files.go
+    relation: implements
+    read_policy: conditional
+    used_for: instruction-file drift planning
+    status: active
+  - name: rollup generator
+    type: code
+    target: internal/rollup/rollup.go
+    relation: implements
+    read_policy: conditional
+    used_for: rollup drift expectations
+    status: active
 ---
 # SPEC
 
@@ -196,7 +212,7 @@ dependencies:
 - The prompt is documentation-scoped, includes exact file paths, and forbids unrelated code changes.
 - The raw prompt stays compact by grouping findings by file, deduplicating search shortcuts, and avoiding repeated boilerplate.
 - The default prompt explicitly tells the coding agent to use subagents and queue work according to overlapping file changes, without conflicting with `--single-agent`.
-- Missing `RELATIONSHIPS`, malformed dependency tables, and mismatched task IDs are surfaced as findings.
+- Missing `RELATIONSHIPS`, malformed front matter references, and mismatched task IDs are surfaced as findings.
 - Instruction-file drift is surfaced without mutating instruction files.
 - Interactive terminal output may show a compact graphical audit summary before the clipboard acknowledgement, while `--output-only` stays plain compact text.
 - A clean project prints a short success result and does not emit or copy a prompt.

@@ -12,27 +12,35 @@ relationships:
     target: "0016-document-map-relationships"
   - type: "builds_on"
     target: "0021-project-validation-and-instruction-registry"
-dependencies:
-  - name: "feature creation model"
-    type: "code"
-    location: "internal/feature/feature.go"
-    used_for: "current numbering and directory creation flow"
-    status: "active"
-  - name: "project validation"
-    type: "code"
-    location: "pkg/cli/check.go`, `pkg/cli/reconcile_audit.go"
-    used_for: "duplicate prefix detection"
-    status: "active"
-  - name: "map renderer"
-    type: "code"
-    location: "internal/feature/map.go`, `pkg/cli/map.go"
-    used_for: "dependency-based project ordering"
-    status: "active"
-  - name: "Git common dir"
-    type: "tool"
-    location: "git rev-parse --git-common-dir"
-    used_for: "shared allocator state across worktrees in one clone"
-    status: "active"
+references:
+  - name: feature creation model
+    type: code
+    target: internal/feature/feature.go
+    relation: implements
+    read_policy: conditional
+    used_for: current numbering and directory creation flow
+    status: active
+  - name: project validation
+    type: code
+    target: pkg/cli/check.go`, `pkg/cli/reconcile_audit.go
+    relation: implements
+    read_policy: conditional
+    used_for: duplicate prefix detection
+    status: active
+  - name: map renderer
+    type: code
+    target: internal/feature/map.go`, `pkg/cli/map.go
+    relation: implements
+    read_policy: conditional
+    used_for: dependency-based project ordering
+    status: active
+  - name: Git common dir
+    type: tool
+    target: git rev-parse --git-common-dir
+    relation: uses
+    read_policy: conditional
+    used_for: shared allocator state across worktrees in one clone
+    status: active
 ---
 # SPEC
 

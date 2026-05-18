@@ -5,32 +5,42 @@ feature:
   id: "0016"
   slug: "document-map-relationships"
   dir: "0016-document-map-relationships"
-dependencies:
-  - name: "feature enumeration"
-    type: "code"
-    location: "internal/feature/feature.go"
-    used_for: "current repo feature list and phase state"
-    status: "active"
-  - name: "lifecycle state"
-    type: "code"
-    location: "internal/config/config.go`, `internal/feature/lifecycle.go"
-    used_for: "paused-state annotation in map output"
-    status: "active"
-  - name: "document parser"
-    type: "code"
-    location: "internal/document/document.go"
-    used_for: "section extraction and validation"
-    status: "active"
-  - name: "templates"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "seeded relationship sections"
-    status: "active"
-  - name: "root help surface"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "command ordering and user discovery"
-    status: "active"
+references:
+  - name: feature enumeration
+    type: code
+    target: internal/feature/feature.go
+    relation: implements
+    read_policy: conditional
+    used_for: current repo feature list and phase state
+    status: active
+  - name: lifecycle state
+    type: code
+    target: internal/config/config.go`, `internal/feature/lifecycle.go
+    relation: implements
+    read_policy: conditional
+    used_for: paused-state annotation in map output
+    status: active
+  - name: document parser
+    type: code
+    target: internal/document/document.go
+    relation: implements
+    read_policy: conditional
+    used_for: section extraction and validation
+    status: active
+  - name: templates
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: seeded relationship sections
+    status: active
+  - name: root help surface
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: command ordering and user discovery
+    status: active
 ---
 # PLAN
 

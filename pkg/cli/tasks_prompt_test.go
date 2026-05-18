@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -46,7 +47,7 @@ func TestOutputTasksPrompt_IncludesInferredFrontendProfile(t *testing.T) {
 	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
 
 	featurePath := filepath.Join(projectRoot, "docs", "specs", "0012-dashboard")
-	writeFile(t, filepath.Join(featurePath, "SPEC.md"), dependencyDoc("| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |"))
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), frontendProfileReferenceDoc(frontendProfileReferenceTarget, document.ReferenceStatusActive))
 	writeFile(t, filepath.Join(featurePath, "PLAN.md"), "# PLAN\n")
 	writeFile(t, filepath.Join(featurePath, "TASKS.md"), "# TASKS\n")
 

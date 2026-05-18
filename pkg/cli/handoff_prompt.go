@@ -52,9 +52,9 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 	}
 	if len(activeFeatures) > 0 {
 		workSteps = append(workSteps,
-			"For each active feature, compare current implementation reality, task state, repository findings, and phase dependency inventories against the listed feature docs.",
+			"For each active feature, compare current implementation reality, task state, repository findings, and phase reference inventories against the listed feature docs.",
 			"Update any stale feature docs first. If implementation reality diverges from the docs, fix the docs before handoff.",
-			"For every touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`, make sure canonical front matter dependencies list current `active`, `optional`, and `stale` dependencies with exact locations; use legacy `## DEPENDENCIES` tables only when front matter is absent.",
+			"For every touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`, make sure canonical front matter references list current `active`, `optional`, and `stale` references with exact targets, stable ids when needed, selector types, stable selectors, relations, and read policies.",
 			"Update `PROJECT_PROGRESS_SUMMARY.md` so it reflects the reconciled state of every active feature.",
 			"Keep changes limited to documentation and handoff accuracy. Do not begin unrelated implementation work.",
 			"If a listed doc is stale, update it before producing your final handoff response.",
@@ -63,7 +63,7 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 	} else {
 		workSteps = append(workSteps,
 			"Compare the project summary and repository findings to confirm there is no undocumented active work.",
-			"If you touch any feature docs during reconciliation, make sure each touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keeps canonical front matter dependencies current with exact locations; use legacy `## DEPENDENCIES` tables only when front matter is absent.",
+			"If you touch any feature docs during reconciliation, make sure each touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keeps canonical front matter references current with exact targets, stable ids when needed, selector types, stable selectors, relations, and read policies.",
 			"Update any stale project docs first so the handoff is accurate.",
 			"Keep changes limited to documentation and handoff accuracy. Do not begin unrelated implementation work.",
 			"If a listed doc is stale, update it before producing your final handoff response.",
@@ -90,7 +90,7 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 		doc.Heading(2, "Final Response Contract")
 		doc.Paragraph("After the documentation is reconciled, reply in stdout/chat with exactly these sections:")
 		doc.OrderedList(1,
-			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and dependency inventories have been updated and are up to date\n- if you updated docs or dependency metadata, name the files you changed in that paragraph",
+			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and reference inventories have been updated and are up to date\n- if you updated docs or reference metadata, name the files you changed in that paragraph",
 			"`Documentation Files`\n- a markdown table with columns `File`, `Full Path`, and `How To Use`\n- include the reconciled project docs and every relevant active-feature doc",
 			"`Recent Context`\n- flat bullets for decisions made, blockers, validation results, open questions, and next steps\n- keep this concise and factual",
 		)
@@ -134,9 +134,9 @@ func featureHandoffWithPath(featureRef string) (string, string, error) {
 		workSteps = append(workSteps, "Read the listed docs in order, starting with `CONSTITUTION.md`, then the feature docs, then `PROJECT_PROGRESS_SUMMARY.md`.")
 	}
 	workSteps = append(workSteps,
-		"Compare current implementation reality, task status, repository findings, and phase dependency inventories against each feature document.",
+		"Compare current implementation reality, task status, repository findings, and phase reference inventories against each feature document.",
 		"If any feature specification document is stale, update it first so it matches reality. Do this before preparing the handoff summary.",
-		"Verify that `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keep canonical front matter dependencies current with exact locations and `active`, `optional`, or `stale` status values when those docs exist; use legacy `## DEPENDENCIES` tables only when front matter is absent.",
+		"Verify that `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keep canonical front matter references current with exact targets, stable ids when needed, selector types, stable selectors, relations, read policies, and `active`, `optional`, or `stale` status values when those docs exist.",
 		"Keep `PROJECT_PROGRESS_SUMMARY.md` aligned with the reconciled feature state.",
 		"Limit your work to documentation reconciliation and handoff preparation. Do not start unrelated implementation work.",
 	)
@@ -166,7 +166,7 @@ func featureHandoffWithPath(featureRef string) (string, string, error) {
 		doc.Heading(2, "Final Response Contract")
 		doc.Paragraph("After the documentation is reconciled, reply in stdout/chat with exactly these sections:")
 		doc.OrderedList(1,
-			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and dependency inventories have been updated and are up to date\n- if you updated docs or dependency metadata, name the files you changed in that paragraph",
+			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and reference inventories have been updated and are up to date\n- if you updated docs or reference metadata, name the files you changed in that paragraph",
 			"`Documentation Files`\n- a markdown table with columns `File`, `Full Path`, and `How To Use`\n- include every reconciled feature document and relevant project-level doc",
 			"`Recent Context`\n- flat bullets for decisions made, blockers, validation results, open questions, and next steps\n- keep this concise and factual",
 		)
@@ -185,13 +185,13 @@ func genericHandoffInstructions() string {
 			"Summarize that recent context into high-signal facts covering decisions made, blockers, validation results, open questions, and next steps",
 			"Identify the authoritative project documents and make sure they reflect current implementation reality before handoff",
 			"If this is a Kit project, use `kit handoff` from the project root to generate a feature-aware documentation inventory",
-			"If the relevant docs include canonical front matter dependencies or legacy `## DEPENDENCIES` tables, make sure they reflect current `active`, `optional`, and `stale` dependencies with exact locations",
+			"If the relevant docs include canonical front matter references, make sure they reflect current `active`, `optional`, and `stale` references with exact targets, stable ids when needed, selector types, stable selectors, relations, and read policies",
 			"Prefer repository files and current code over memory when they disagree",
 		)
 		doc.Heading(2, "Final Response Contract")
 		doc.Paragraph("After the docs are reconciled, reply in stdout/chat with:")
 		doc.OrderedList(1,
-			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and dependency inventories have been updated and are up to date",
+			"`Documentation Sync`\n- one concise paragraph confirming all relevant documentation files and reference inventories have been updated and are up to date",
 			"`Documentation Files`\n- a markdown table with columns `File`, `Full Path`, and `How To Use`",
 			"`Recent Context`\n- flat bullets for decisions made, blockers, validation results, open questions, and next steps",
 		)
@@ -286,9 +286,9 @@ func featureScopedDocuments(feat *feature.Feature) []handoffDocument {
 		name string
 		use  string
 	}{
-		{"BRAINSTORM.md", fmt.Sprintf("Upstream research for %s; preserve validated findings, affected-file context, and the phase dependency inventory", feat.Slug)},
-		{"SPEC.md", fmt.Sprintf("Feature requirements for %s; keep scope, acceptance, edge cases, and the dependency inventory aligned with reality", feat.Slug)},
-		{"PLAN.md", fmt.Sprintf("Implementation approach for %s; update the written design and planning dependency inventory when execution diverges", feat.Slug)},
+		{"BRAINSTORM.md", fmt.Sprintf("Upstream research for %s; preserve validated findings, affected-file context, and the phase reference inventory", feat.Slug)},
+		{"SPEC.md", fmt.Sprintf("Feature requirements for %s; keep scope, acceptance, edge cases, and the reference inventory aligned with reality", feat.Slug)},
+		{"PLAN.md", fmt.Sprintf("Implementation approach for %s; update the written design and planning reference inventory when execution diverges", feat.Slug)},
 		{"TASKS.md", fmt.Sprintf("Execution state for %s; keep task status and evidence aligned with actual progress", feat.Slug)},
 		{"ANALYSIS.md", fmt.Sprintf("Optional scratchpad for %s; keep open questions and assumptions current if present", feat.Slug)},
 	}

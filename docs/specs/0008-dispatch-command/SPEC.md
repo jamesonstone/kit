@@ -5,27 +5,35 @@ feature:
   id: "0008"
   slug: "dispatch-command"
   dir: "0008-dispatch-command"
-dependencies:
-  - name: "prompt-output contract"
-    type: "code"
-    location: "pkg/cli/implement.go`, `pkg/cli/reflect.go"
-    used_for: "clipboard-first prompt behavior"
-    status: "active"
-  - name: "editor input helpers"
-    type: "code"
-    location: "pkg/cli/editor_input.go"
-    used_for: "default interactive capture path"
-    status: "active"
-  - name: "root CLI help"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "command visibility and ordering"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "command documentation"
-    status: "active"
+references:
+  - name: prompt-output contract
+    type: code
+    target: pkg/cli/implement.go`, `pkg/cli/reflect.go
+    relation: implements
+    read_policy: conditional
+    used_for: clipboard-first prompt behavior
+    status: active
+  - name: editor input helpers
+    type: code
+    target: pkg/cli/editor_input.go
+    relation: implements
+    read_policy: conditional
+    used_for: default interactive capture path
+    status: active
+  - name: root CLI help
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: command visibility and ordering
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: implements
+    read_policy: conditional
+    used_for: command documentation
+    status: active
 ---
 # SPEC
 

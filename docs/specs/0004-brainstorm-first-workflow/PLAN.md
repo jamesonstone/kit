@@ -5,27 +5,35 @@ feature:
   id: "0004"
   slug: "brainstorm-first-workflow"
   dir: "0004-brainstorm-first-workflow"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "workflow model and prompt semantics"
-    status: "active"
-  - name: "document templates"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "brainstorm artifact and prompt scaffolding"
-    status: "active"
-  - name: "rollup generator"
-    type: "code"
-    location: "internal/rollup/rollup.go"
-    used_for: "brainstorm-aware project summary output"
-    status: "active"
-  - name: "instruction templates"
-    type: "doc"
-    location: "AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md"
-    used_for: "repository instruction alignment"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: workflow model and prompt semantics
+    status: active
+  - name: document templates
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: brainstorm artifact and prompt scaffolding
+    status: active
+  - name: rollup generator
+    type: code
+    target: internal/rollup/rollup.go
+    relation: implements
+    read_policy: conditional
+    used_for: brainstorm-aware project summary output
+    status: active
+  - name: instruction templates
+    type: doc
+    target: AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md
+    relation: informs
+    read_policy: conditional
+    used_for: repository instruction alignment
+    status: active
 ---
 # PLAN
 
@@ -38,7 +46,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 1. formalize the workflow contract in repo docs and generated templates
 2. add `BRAINSTORM.md` support and a dedicated brainstorm phase in feature/status/rollup logic
 3. refactor `kit brainstorm` into the interactive, planning-only feature entrypoint
-4. thread `BRAINSTORM.md` through downstream prompts as optional upstream context and phase dependency source
+4. thread `BRAINSTORM.md` through downstream prompts as optional upstream context and phase reference source
 5. keep prompt output behavior command-scoped by adding a clipboard-first helper for the core workflow commands without changing support utilities
 6. add a shared `--prompt-only` flag for feature-scoped prompt commands and branch artifact-writing commands into side-effect-free regeneration mode
 7. make supported multiline free-text prompts editor-default and add an explicit `--inline` opt-out where inline entry already exists
@@ -71,7 +79,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 - `internal/templates/templates.go`
   - brainstorm artifact template
   - generated agent pointer/template updates
-  - dependency inventory tables for brainstorm and plan docs
+  - reference inventory tables for brainstorm and plan docs
 - `internal/feature/feature.go`
   - brainstorm phase constant
   - phase detection based on `BRAINSTORM.md`
@@ -163,7 +171,7 @@ Introduce a real brainstorm artifact and visible brainstorm phase, then rewire C
 
 - unit tests for brainstorm phase detection and ordering
 - unit tests for brainstorm prompt generation, including `/plan` prefix plus numbered-list, approval-syntax, and percentage-progress clarification requirements
-- unit tests for brainstorm and plan dependency-inventory guidance
+- unit tests for brainstorm and plan reference-inventory guidance
 - unit tests for clipboard-first prompt output semantics, including default-copy acknowledgement and `--output-only` raw stdout behavior
 - unit tests for prompt-only regeneration, including existing-feature selectors and missing-artifact failures
 - unit tests for multiline input translation, including `Shift+Enter` escape handling and blank-line preservation hooks

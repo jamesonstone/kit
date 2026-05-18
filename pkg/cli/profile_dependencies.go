@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	frontendProfileDependencyName     = "Frontend profile"
-	frontendProfileDependencyType     = "profile"
-	frontendProfileDependencyLocation = "--profile=frontend"
-	designMaterialsDependencyName     = "Design materials"
-	designMaterialsDependencyType     = "design"
+	frontendProfileDependencyName  = "Frontend profile"
+	frontendProfileDependencyType  = "profile"
+	frontendProfileReferenceTarget = "--profile=frontend"
+	designMaterialsDependencyName  = "Design materials"
+	designMaterialsDependencyType  = "design"
 )
 
 type profileDependencyRow struct {
@@ -39,7 +39,7 @@ func featureHasActiveFrontendProfileDependency(featurePath string) bool {
 			continue
 		}
 		doc := document.Parse(string(content), source.path, source.docType)
-		if hasActiveFrontendProfileDependency(doc.Dependencies()) {
+		if hasActiveFrontendProfileReference(doc.References()) {
 			return true
 		}
 	}
@@ -54,14 +54,14 @@ func ensureFrontendProfileDependencyRows(docPath string, docType document.Docume
 
 	updated, changed, err := appendFrontendProfileDependencyRows(string(content), docType, featureDirName)
 	if err != nil {
-		return false, fmt.Errorf("failed to update frontend profile dependencies in %s: %w", docPath, err)
+		return false, fmt.Errorf("failed to update frontend profile references in %s: %w", docPath, err)
 	}
 	if !changed {
 		return false, nil
 	}
 
 	if err := document.Write(docPath, updated); err != nil {
-		return false, fmt.Errorf("failed to update frontend profile dependencies in %s: %w", docPath, err)
+		return false, fmt.Errorf("failed to update frontend profile references in %s: %w", docPath, err)
 	}
 
 	return true, nil
@@ -77,8 +77,8 @@ func seedFrontendProfileDependencyRows(content string, docType document.Document
 
 func appendFrontendProfileDependencyRows(content string, docType document.DocumentType, featureDirName string) (string, bool, error) {
 	updated, changed, err := document.UpsertMetadata(content, docType, document.MetadataUpsert{
-		Feature:      document.FeatureMetadataFromDir(featureDirName),
-		Dependencies: dependenciesForMetadataUpsert(content, docType, canonicalFrontendProfileDependencies(featureDirName)),
+		Feature:    document.FeatureMetadataFromDir(featureDirName),
+		References: referencesForMetadataUpsert(content, docType, canonicalFrontendProfileReferences(featureDirName)),
 	})
 	if err != nil {
 		return content, false, err
@@ -86,41 +86,52 @@ func appendFrontendProfileDependencyRows(content string, docType document.Docume
 	return updated, changed, nil
 }
 
-func dependenciesForMetadataUpsert(content string, docType document.DocumentType, newDependencies []document.MetadataDependency) []document.MetadataDependency {
+func referencesForMetadataUpsert(content string, docType document.DocumentType, newReferences []document.MetadataReference) []document.MetadataReference {
 	doc := document.Parse(content, "", docType)
 	if doc.FrontMatterPresent {
-		return newDependencies
+		return newReferences
 	}
-	dependencies := append([]document.MetadataDependency{}, doc.Dependencies()...)
-	dependencies = append(dependencies, newDependencies...)
-	return dependencies
+	return newReferences
 }
 
-func hasActiveFrontendProfileDependency(dependencies []document.MetadataDependency) bool {
-	for _, dependency := range dependencies {
-		if dependencyCellMatches(dependency.Name, frontendProfileDependencyName) &&
-			dependencyCellMatches(dependency.Type, frontendProfileDependencyType) &&
-			dependencyCellMatches(dependency.Location, frontendProfileDependencyLocation) &&
-			strings.EqualFold(normalizeDependencyCell(dependency.Status), document.DependencyStatusActive) {
+func hasActiveFrontendProfileReference(references []document.MetadataReference) bool {
+	for _, reference := range references {
+		if dependencyCellMatches(reference.Name, frontendProfileDependencyName) &&
+			dependencyCellMatches(reference.Type, frontendProfileDependencyType) &&
+			dependencyCellMatches(reference.Target, frontendProfileReferenceTarget) &&
+			strings.EqualFold(normalizeDependencyCell(reference.Status), document.ReferenceStatusActive) {
 			return true
 		}
 	}
 	return false
 }
 
-func canonicalFrontendProfileDependencies(featureDirName string) []document.MetadataDependency {
+func canonicalFrontendProfileReferences(featureDirName string) []document.MetadataReference {
 	rows := canonicalFrontendProfileDependencyRows(featureDirName)
-	dependencies := make([]document.MetadataDependency, 0, len(rows))
+	references := make([]document.MetadataReference, 0, len(rows))
 	for _, row := range rows {
-		dependencies = append(dependencies, document.MetadataDependency{
-			Name:     row.Dependency,
-			Type:     row.Type,
-			Location: row.Location,
-			UsedFor:  row.UsedFor,
-			Status:   row.Status,
+		references = append(references, document.MetadataReference{
+			ID:         frontendProfileReferenceID(row.Dependency),
+			Name:       row.Dependency,
+			Type:       row.Type,
+			Target:     row.Location,
+			Relation:   document.ReferenceRelationGuides,
+			ReadPolicy: document.ReferenceReadPolicyConditional,
+			UsedFor:    row.UsedFor,
+			Status:     row.Status,
 		})
 	}
-	return dependencies
+	return references
+}
+
+func frontendProfileReferenceID(name string) string {
+	if dependencyCellMatches(name, frontendProfileDependencyName) {
+		return "frontend-profile"
+	}
+	if dependencyCellMatches(name, designMaterialsDependencyName) {
+		return "frontend-design-materials"
+	}
+	return ""
 }
 
 func canonicalFrontendProfileDependencyRows(featureDirName string) []profileDependencyRow {
@@ -128,7 +139,7 @@ func canonicalFrontendProfileDependencyRows(featureDirName string) []profileDepe
 		{
 			Dependency: frontendProfileDependencyName,
 			Type:       frontendProfileDependencyType,
-			Location:   frontendProfileDependencyLocation,
+			Location:   frontendProfileReferenceTarget,
 			UsedFor:    "apply frontend-specific coding-agent instruction set",
 			Status:     "active",
 		},

@@ -66,7 +66,7 @@ Use markdown checkboxes to track completion:
 ### T006
 
 - **GOAL**: keep the spec workflow explicit about broader supporting dependencies without overloading `## SKILLS`
-- **SCOPE**: update `SPEC.md` templates and prompt guidance to add a separate dependency inventory
+- **SCOPE**: update `SPEC.md` templates and prompt guidance to add a separate reference inventory
 - **ACCEPTANCE**: `kit spec` prompts keep `## SKILLS` and `## DEPENDENCIES` separate and require exact design locations
 
 ## DEPENDENCIES

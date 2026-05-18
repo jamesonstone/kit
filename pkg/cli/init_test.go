@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
@@ -191,6 +192,30 @@ func TestRunInit_CreatesCodeRabbitConfig(t *testing.T) {
 	})
 }
 
+func TestRunInit_CreatesPullRequestTemplate(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+
+		content, err := os.ReadFile(filepath.Join(tempDir, pullRequestTemplatePath))
+		if err != nil {
+			t.Fatalf("expected %s to be created: %v", pullRequestTemplatePath, err)
+		}
+		if string(content) != templates.PullRequestTemplate {
+			t.Fatalf("%s content = %q, want %q", pullRequestTemplatePath, content, templates.PullRequestTemplate)
+		}
+	})
+}
+
 func TestRunInit_PreservesExistingCodeRabbitConfig(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
@@ -216,6 +241,35 @@ func TestRunInit_PreservesExistingCodeRabbitConfig(t *testing.T) {
 		}
 		if string(content) != existing {
 			t.Fatalf("%s content = %q, want %q", codeRabbitConfigPath, content, existing)
+		}
+	})
+}
+
+func TestRunInit_PreservesExistingPullRequestTemplate(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	existing := "## Summary\n\nCustom template\n"
+	if err := document.Write(filepath.Join(tempDir, pullRequestTemplatePath), existing); err != nil {
+		t.Fatalf("failed to seed %s: %v", pullRequestTemplatePath, err)
+	}
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+
+		content, err := os.ReadFile(filepath.Join(tempDir, pullRequestTemplatePath))
+		if err != nil {
+			t.Fatalf("failed to read %s: %v", pullRequestTemplatePath, err)
+		}
+		if string(content) != existing {
+			t.Fatalf("%s content = %q, want %q", pullRequestTemplatePath, content, existing)
 		}
 	})
 }

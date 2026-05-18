@@ -12,37 +12,49 @@ relationships:
     target: "0015-pause-remove-commands"
   - type: "related_to"
     target: "0007-catchup-command"
-dependencies:
-  - name: "brainstorm command"
-    type: "code"
-    location: "pkg/cli/brainstorm.go"
-    used_for: "capture and resume deferred brainstorm items"
-    status: "active"
-  - name: "feature lifecycle state"
-    type: "code"
-    location: "internal/config/config.go`, `internal/feature/lifecycle.go"
-    used_for: "paused-state persistence and resume behavior"
-    status: "active"
-  - name: "feature model"
-    type: "code"
-    location: "internal/feature/feature.go`, `internal/feature/status.go"
-    used_for: "phase derivation and active-feature selection"
-    status: "active"
-  - name: "rollup generator"
-    type: "code"
-    location: "internal/rollup/rollup.go"
-    used_for: "generated project summary after backlog mutations"
-    status: "active"
-  - name: "status command"
-    type: "code"
-    location: "pkg/cli/status.go`, `pkg/cli/status_output.go"
-    used_for: "active-feature presentation after backlog capture"
-    status: "active"
-  - name: "project command contract"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "canonical CLI behavior updates"
-    status: "active"
+references:
+  - name: brainstorm command
+    type: code
+    target: pkg/cli/brainstorm.go
+    relation: implements
+    read_policy: conditional
+    used_for: capture and resume deferred brainstorm items
+    status: active
+  - name: feature lifecycle state
+    type: code
+    target: internal/config/config.go`, `internal/feature/lifecycle.go
+    relation: implements
+    read_policy: conditional
+    used_for: paused-state persistence and resume behavior
+    status: active
+  - name: feature model
+    type: code
+    target: internal/feature/feature.go`, `internal/feature/status.go
+    relation: implements
+    read_policy: conditional
+    used_for: phase derivation and active-feature selection
+    status: active
+  - name: rollup generator
+    type: code
+    target: internal/rollup/rollup.go
+    relation: implements
+    read_policy: conditional
+    used_for: generated project summary after backlog mutations
+    status: active
+  - name: status command
+    type: code
+    target: pkg/cli/status.go`, `pkg/cli/status_render.go
+    relation: implements
+    read_policy: conditional
+    used_for: active-feature presentation after backlog capture
+    status: active
+  - name: project command contract
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical CLI behavior updates
+    status: active
 ---
 # SPEC
 
@@ -110,7 +122,7 @@ items later, or resuming one without it taking over the active feature lane.
 | feature lifecycle state | code | `internal/config/config.go`, `internal/feature/lifecycle.go` | paused-state persistence and resume behavior | active |
 | feature model | code | `internal/feature/feature.go`, `internal/feature/status.go` | phase derivation and active-feature selection | active |
 | rollup generator | code | `internal/rollup/rollup.go` | generated project summary after backlog mutations | active |
-| status command | code | `pkg/cli/status.go`, `pkg/cli/status_output.go` | active-feature presentation after backlog capture | active |
+| status command | code | `pkg/cli/status.go`, `pkg/cli/status_render.go` | active-feature presentation after backlog capture | active |
 | project command contract | doc | `docs/specs/0000_INIT_PROJECT.md` | canonical CLI behavior updates | active |
 
 ## REQUIREMENTS

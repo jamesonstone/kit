@@ -5,32 +5,42 @@ feature:
   id: "0010"
   slug: "support-command-clipboard-defaults"
   dir: "0010-support-command-clipboard-defaults"
-dependencies:
-  - name: "clipboard-first helper"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "shared prompt and output transport behavior"
-    status: "active"
-  - name: "human output style"
-    type: "code"
-    location: "pkg/cli/human_output.go"
-    used_for: "clipboard acknowledgement rendering"
-    status: "active"
-  - name: "handoff command spec"
-    type: "doc"
-    location: "docs/specs/0011-handoff-document-sync/SPEC.md"
-    used_for: "handoff prompt content ownership"
-    status: "active"
-  - name: "support command workflow"
-    type: "doc"
-    location: "docs/specs/0004-brainstorm-first-workflow/SPEC.md"
-    used_for: "prompt-output contract alignment"
-    status: "active"
-  - name: "repository instruction files"
-    type: "doc"
-    location: "AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md"
-    used_for: "shipped workflow wording alignment"
-    status: "active"
+references:
+  - name: clipboard-first helper
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: shared prompt and output transport behavior
+    status: active
+  - name: human output style
+    type: code
+    target: pkg/cli/human_output.go
+    relation: implements
+    read_policy: conditional
+    used_for: clipboard acknowledgement rendering
+    status: active
+  - name: handoff command spec
+    type: doc
+    target: docs/specs/0011-handoff-document-sync/SPEC.md
+    relation: informs
+    read_policy: conditional
+    used_for: handoff prompt content ownership
+    status: active
+  - name: support command workflow
+    type: doc
+    target: docs/specs/0004-brainstorm-first-workflow/SPEC.md
+    relation: informs
+    read_policy: conditional
+    used_for: prompt-output contract alignment
+    status: active
+  - name: repository instruction files
+    type: doc
+    target: AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md
+    relation: informs
+    read_policy: conditional
+    used_for: shipped workflow wording alignment
+    status: active
 ---
 # SPEC
 

@@ -11,50 +11,59 @@ import (
 )
 
 type MapDocument struct {
-	Name      string
-	Path      string
-	Required  bool
-	Exists    bool
-	ManagedBy string
+	Name      string `json:"name"`
+	Path      string `json:"path"`
+	Required  bool   `json:"required"`
+	Exists    bool   `json:"exists"`
+	ManagedBy string `json:"managed_by"`
 }
 
 type RelationshipEdge struct {
-	SourceFeatureID string
-	SourceDoc       string
-	Type            string
-	TargetFeatureID string
-	Resolved        bool
+	SourceFeatureID string `json:"source_feature_id"`
+	SourceDoc       string `json:"source_doc"`
+	Type            string `json:"type"`
+	TargetFeatureID string `json:"target_feature_id"`
+	Resolved        bool   `json:"resolved"`
 }
 
-type DependencyLink struct {
-	SourceFeatureID string
-	SourceDoc       string
-	Dependency      string
-	Type            string
-	Location        string
-	UsedFor         string
-	Status          string
+type ReferenceLink struct {
+	ID              string `json:"id,omitempty"`
+	SourceFeatureID string `json:"source_feature_id"`
+	SourceDoc       string `json:"source_doc"`
+	Reference       string `json:"reference"`
+	Type            string `json:"type"`
+	Target          string `json:"target"`
+	SelectorType    string `json:"selector_type,omitempty"`
+	Selector        string `json:"selector,omitempty"`
+	Relation        string `json:"relation"`
+	ReadPolicy      string `json:"read_policy"`
+	UsedFor         string `json:"used_for"`
+	Status          string `json:"status"`
+	NodeID          string `json:"node_id"`
+	Resolved        bool   `json:"resolved"`
+	Resolution      string `json:"resolution,omitempty"`
+	ResolutionError string `json:"resolution_error,omitempty"`
 }
 
 type MapWarning struct {
-	FeatureID string
-	Document  string
-	Line      string
-	Message   string
+	FeatureID string `json:"feature_id"`
+	Document  string `json:"document"`
+	Line      string `json:"line,omitempty"`
+	Message   string `json:"message"`
 }
 
 type FeatureMap struct {
-	Feature      Feature
-	Documents    []MapDocument
-	Outgoing     []RelationshipEdge
-	Incoming     []RelationshipEdge
-	Dependencies []DependencyLink
+	Feature    Feature            `json:"feature"`
+	Documents  []MapDocument      `json:"documents"`
+	Outgoing   []RelationshipEdge `json:"outgoing"`
+	Incoming   []RelationshipEdge `json:"incoming"`
+	References []ReferenceLink    `json:"references"`
 }
 
 type ProjectMap struct {
-	GlobalDocuments []MapDocument
-	Features        []FeatureMap
-	Warnings        []MapWarning
+	GlobalDocuments []MapDocument `json:"global_documents"`
+	Features        []FeatureMap  `json:"features"`
+	Warnings        []MapWarning  `json:"warnings"`
 }
 
 func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error) {
@@ -78,17 +87,18 @@ func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error
 		if err != nil {
 			return nil, err
 		}
-		dependencies, err := loadDependencyLinks(feat)
+		references, referenceWarnings, err := loadReferenceLinks(projectRoot, cfg, feat)
 		if err != nil {
 			return nil, err
 		}
 		projectMap.Features = append(projectMap.Features, FeatureMap{
-			Feature:      feat,
-			Documents:    featureDocuments(projectRoot, feat),
-			Outgoing:     outgoing,
-			Dependencies: dependencies,
+			Feature:    feat,
+			Documents:  featureDocuments(projectRoot, feat),
+			Outgoing:   outgoing,
+			References: references,
 		})
 		projectMap.Warnings = append(projectMap.Warnings, warnings...)
+		projectMap.Warnings = append(projectMap.Warnings, referenceWarnings...)
 	}
 
 	incomingByTarget := make(map[string][]RelationshipEdge)
@@ -108,7 +118,7 @@ func BuildProjectMap(projectRoot string, cfg *config.Config) (*ProjectMap, error
 	return projectMap, nil
 }
 
-func loadDependencyLinks(feat Feature) ([]DependencyLink, error) {
+func loadReferenceLinks(projectRoot string, cfg *config.Config, feat Feature) ([]ReferenceLink, []MapWarning, error) {
 	sources := []struct {
 		name    string
 		path    string
@@ -117,9 +127,11 @@ func loadDependencyLinks(feat Feature) ([]DependencyLink, error) {
 		{name: "BRAINSTORM.md", path: filepath.Join(feat.Path, "BRAINSTORM.md"), docType: document.TypeBrainstorm},
 		{name: "SPEC.md", path: filepath.Join(feat.Path, "SPEC.md"), docType: document.TypeSpec},
 		{name: "PLAN.md", path: filepath.Join(feat.Path, "PLAN.md"), docType: document.TypePlan},
+		{name: "TASKS.md", path: filepath.Join(feat.Path, "TASKS.md"), docType: document.TypeTasks},
 	}
 
-	var links []DependencyLink
+	var links []ReferenceLink
+	var warnings []MapWarning
 	for _, source := range sources {
 		if !document.Exists(source.path) {
 			continue
@@ -127,23 +139,42 @@ func loadDependencyLinks(feat Feature) ([]DependencyLink, error) {
 
 		doc, err := document.ParseFile(source.path, source.docType)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse %s dependencies for %s: %w", source.name, feat.DirName, err)
+			return nil, nil, fmt.Errorf("failed to parse %s references for %s: %w", source.name, feat.DirName, err)
 		}
 
-		for _, dependency := range doc.Dependencies() {
-			links = append(links, DependencyLink{
+		for _, reference := range doc.References() {
+			resolution := resolveReference(projectRoot, cfg, reference)
+			links = append(links, ReferenceLink{
+				ID:              reference.ID,
 				SourceFeatureID: feat.DirName,
 				SourceDoc:       source.name,
-				Dependency:      dependency.Name,
-				Type:            dependency.Type,
-				Location:        dependency.Location,
-				UsedFor:         dependency.UsedFor,
-				Status:          dependency.Status,
+				Reference:       reference.Name,
+				Type:            reference.Type,
+				Target:          reference.Target,
+				SelectorType:    reference.SelectorType,
+				Selector:        reference.Selector,
+				Relation:        reference.Relation,
+				ReadPolicy:      reference.ReadPolicy,
+				UsedFor:         reference.UsedFor,
+				Status:          reference.Status,
+				NodeID:          resolution.NodeID,
+				Resolved:        resolution.Resolved,
+				Resolution:      resolution.Kind,
+				ResolutionError: resolution.Error,
 			})
+			if !resolution.Resolved &&
+				reference.ReadPolicy != document.ReferenceReadPolicySkip &&
+				reference.Status == document.ReferenceStatusActive {
+				warnings = append(warnings, MapWarning{
+					FeatureID: feat.DirName,
+					Document:  source.name,
+					Message:   fmt.Sprintf("unresolved reference %q: %s", reference.Name, resolution.Error),
+				})
+			}
 		}
 	}
 
-	return sortedDependencyLinks(links), nil
+	return sortedReferenceLinks(links), sortedWarnings(warnings), nil
 }
 
 func loadRelationshipEdges(feat Feature, knownFeatures map[string]struct{}) ([]RelationshipEdge, []MapWarning, error) {
@@ -302,7 +333,7 @@ func sortedEdges(edges []RelationshipEdge) []RelationshipEdge {
 	return edges
 }
 
-func sortedDependencyLinks(links []DependencyLink) []DependencyLink {
+func sortedReferenceLinks(links []ReferenceLink) []ReferenceLink {
 	if len(links) == 0 {
 		return nil
 	}
@@ -314,10 +345,13 @@ func sortedDependencyLinks(links []DependencyLink) []DependencyLink {
 		if links[i].SourceDoc != links[j].SourceDoc {
 			return links[i].SourceDoc < links[j].SourceDoc
 		}
-		if links[i].Dependency != links[j].Dependency {
-			return links[i].Dependency < links[j].Dependency
+		if links[i].Reference != links[j].Reference {
+			return links[i].Reference < links[j].Reference
 		}
-		return links[i].Location < links[j].Location
+		if links[i].Target != links[j].Target {
+			return links[i].Target < links[j].Target
+		}
+		return links[i].NodeID < links[j].NodeID
 	})
 
 	return links

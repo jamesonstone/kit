@@ -5,27 +5,35 @@ feature:
   id: "0002"
   slug: "cicd-goreleaser-releases"
   dir: "0002-cicd-goreleaser-releases"
-dependencies:
-  - name: "GitHub Actions workflows"
-    type: "code"
-    location: ".github/workflows/"
-    used_for: "main-branch release orchestration and tag publication"
-    status: "active"
-  - name: "GoReleaser config"
-    type: "code"
-    location: ".goreleaser.yaml"
-    used_for: "artifact matrix, checksums, and release packaging"
-    status: "active"
-  - name: "release versioning model"
-    type: "doc"
-    location: "docs/specs/0005-version-command/SPEC.md"
-    used_for: "semantic version surface used by the release flow"
-    status: "active"
-  - name: "project progress summary"
-    type: "doc"
-    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
-    used_for: "project-state visibility after release changes"
-    status: "active"
+references:
+  - name: GitHub Actions workflows
+    type: code
+    target: .github/workflows/
+    relation: implements
+    read_policy: conditional
+    used_for: main-branch release orchestration and tag publication
+    status: active
+  - name: GoReleaser config
+    type: code
+    target: .goreleaser.yaml
+    relation: implements
+    read_policy: conditional
+    used_for: artifact matrix, checksums, and release packaging
+    status: active
+  - name: release versioning model
+    type: doc
+    target: docs/specs/0005-version-command/SPEC.md
+    relation: implements
+    read_policy: conditional
+    used_for: semantic version surface used by the release flow
+    status: active
+  - name: project progress summary
+    type: doc
+    target: docs/PROJECT_PROGRESS_SUMMARY.md
+    relation: informs
+    read_policy: conditional
+    used_for: project-state visibility after release changes
+    status: active
 ---
 # PLAN
 

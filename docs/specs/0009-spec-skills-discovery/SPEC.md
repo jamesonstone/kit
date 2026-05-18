@@ -5,37 +5,49 @@ feature:
   id: "0009"
   slug: "spec-skills-discovery"
   dir: "0009-spec-skills-discovery"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "canonical workflow and section requirements"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "canonical skills and dependency inventory contract"
-    status: "active"
-  - name: "spec template"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "required `SPEC.md` section shapes"
-    status: "active"
-  - name: "spec validation"
-    type: "code"
-    location: "internal/document/document.go"
-    used_for: "required section parsing and validation"
-    status: "active"
-  - name: "spec prompt flow"
-    type: "code"
-    location: "pkg/cli/spec.go"
-    used_for: "skills discovery and prompt output behavior"
-    status: "active"
-  - name: "shared skills guidance"
-    type: "code"
-    location: "pkg/cli/subagents.go"
-    used_for: "execution-time skill instructions in prompt output"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical workflow and section requirements
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical skills and reference inventory contract
+    status: active
+  - name: spec template
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: required `SPEC.md` section shapes
+    status: active
+  - name: spec validation
+    type: code
+    target: internal/document/document.go
+    relation: implements
+    read_policy: conditional
+    used_for: required section parsing and validation
+    status: active
+  - name: spec prompt flow
+    type: code
+    target: pkg/cli/spec.go
+    relation: implements
+    read_policy: conditional
+    used_for: skills discovery and prompt output behavior
+    status: active
+  - name: shared skills guidance
+    type: code
+    target: pkg/cli/subagents.go
+    relation: implements
+    read_policy: conditional
+    used_for: execution-time skill instructions in prompt output
+    status: active
 ---
 # SPEC
 
@@ -82,7 +94,7 @@ none
 | Dependency | Type | Location | Used For | Status |
 | ---------- | ---- | -------- | -------- | ------ |
 | constitution contract | doc | `docs/CONSTITUTION.md` | canonical workflow and section requirements | active |
-| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | canonical skills and dependency inventory contract | active |
+| init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | canonical skills and reference inventory contract | active |
 | spec template | code | `internal/templates/templates.go` | required `SPEC.md` section shapes | active |
 | spec validation | code | `internal/document/document.go` | required section parsing and validation | active |
 | spec prompt flow | code | `pkg/cli/spec.go` | skills discovery and prompt output behavior | active |

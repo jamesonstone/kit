@@ -5,27 +5,35 @@ feature:
   id: "0015"
   slug: "pause-remove-commands"
   dir: "0015-pause-remove-commands"
-dependencies:
-  - name: "config persistence"
-    type: "code"
-    location: "internal/config/config.go"
-    used_for: "storing lifecycle state"
-    status: "active"
-  - name: "feature selectors"
-    type: "code"
-    location: "internal/feature/feature.go`, `pkg/cli/*"
-    used_for: "consistent resolution and filtering"
-    status: "active"
-  - name: "rollup contract"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "canonical progress-summary format"
-    status: "active"
-  - name: "existing lifecycle flows"
-    type: "code"
-    location: "pkg/cli/status.go`, `pkg/cli/complete.go`, `pkg/cli/handoff_prompt.go"
-    used_for: "pause-aware behavior"
-    status: "active"
+references:
+  - name: config persistence
+    type: code
+    target: internal/config/config.go
+    relation: implements
+    read_policy: conditional
+    used_for: storing lifecycle state
+    status: active
+  - name: feature selectors
+    type: code
+    target: internal/feature/feature.go`, `pkg/cli/*
+    relation: implements
+    read_policy: conditional
+    used_for: consistent resolution and filtering
+    status: active
+  - name: rollup contract
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical progress-summary format
+    status: active
+  - name: existing lifecycle flows
+    type: code
+    target: pkg/cli/status.go`, `pkg/cli/complete.go`, `pkg/cli/handoff_prompt.go
+    relation: implements
+    read_policy: conditional
+    used_for: pause-aware behavior
+    status: active
 ---
 # PLAN
 
@@ -82,7 +90,7 @@ stay consistent without changing the underlying active phase model.
     output, and rollup update
 - existing explicit feature-scoped commands
   - clear pause before continuing work on an explicitly targeted feature
-- `pkg/cli/status_output.go`
+- `pkg/cli/status_render.go`
   - render paused state in both active-feature and all-features views
 - `pkg/cli/complete.go`, `pkg/cli/handoff_prompt.go`
   - exclude paused features from active-only flows

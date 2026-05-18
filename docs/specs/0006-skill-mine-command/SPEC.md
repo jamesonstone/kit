@@ -5,27 +5,35 @@ feature:
   id: "0006"
   slug: "skill-mine-command"
   dir: "0006-skill-mine-command"
-dependencies:
-  - name: "prompt-output contract"
-    type: "code"
-    location: "pkg/cli/implement.go`, `pkg/cli/reflect.go"
-    used_for: "shared clipboard-first behavior"
-    status: "active"
-  - name: "project progress summary"
-    type: "doc"
-    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
-    used_for: "cross-feature theme detection"
-    status: "active"
-  - name: "skills directory config"
-    type: "code"
-    location: "internal/config/config.go"
-    used_for: "canonical transferable skills root"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "command documentation and alias surface"
-    status: "active"
+references:
+  - name: prompt-output contract
+    type: code
+    target: pkg/cli/implement.go`, `pkg/cli/reflect.go
+    relation: implements
+    read_policy: conditional
+    used_for: shared clipboard-first behavior
+    status: active
+  - name: project progress summary
+    type: doc
+    target: docs/PROJECT_PROGRESS_SUMMARY.md
+    relation: informs
+    read_policy: conditional
+    used_for: cross-feature theme detection
+    status: active
+  - name: skills directory config
+    type: code
+    target: internal/config/config.go
+    relation: implements
+    read_policy: conditional
+    used_for: canonical transferable skills root
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: implements
+    read_policy: conditional
+    used_for: command documentation and alias surface
+    status: active
 ---
 # SPEC
 

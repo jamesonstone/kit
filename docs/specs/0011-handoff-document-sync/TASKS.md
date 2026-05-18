@@ -19,7 +19,7 @@ feature:
 | T003 | Rewrite `kit handoff` prompt generation                | done   | agent | T001, T002   |
 | T004 | Add handoff tests and update docs                      | done   | agent | T003         |
 | T005 | Run verification                                       | done   | agent | T003, T004   |
-| T006 | Verify dependency inventories during handoff           | done   | agent | T003, T004   |
+| T006 | Verify reference inventories during handoff           | done   | agent | T003, T004   |
 | T007 | Add `--prompt-only` consistency flag to `handoff`      | done   | agent | T006         |
 
 ## TASK LIST
@@ -29,7 +29,7 @@ feature:
 - [x] T003: Rewrite `kit handoff` prompt generation [PLAN-02] [PLAN-03] [PLAN-04] [PLAN-05]
 - [x] T004: Add handoff tests and update docs [PLAN-06]
 - [x] T005: Run verification [PLAN-06]
-- [x] T006: Verify dependency inventories during handoff [PLAN-05] [PLAN-06]
+- [x] T006: Verify reference inventories during handoff [PLAN-05] [PLAN-06]
 - [x] T007: Add `--prompt-only` consistency flag to `handoff` [PLAN-07]
 
 ## TASK DETAILS
@@ -87,13 +87,13 @@ feature:
 
 ### T006
 
-- **GOAL**: make handoff reconciliation include the phase dependency inventories in touched docs
+- **GOAL**: make handoff reconciliation include the phase reference inventories in touched docs
 - **SCOPE**:
   - update `pkg/cli/handoff_prompt.go`
   - update `pkg/cli/handoff_test.go`
 - **ACCEPTANCE**:
-  - handoff prompts tell the agent to refresh dependency inventories in touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`
-  - the final response contract confirms documentation and dependency inventory sync
+  - handoff prompts tell the agent to refresh reference inventories in touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`
+  - the final response contract confirms documentation and reference inventory sync
 
 ### T007
 

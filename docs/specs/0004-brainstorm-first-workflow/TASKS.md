@@ -24,7 +24,7 @@ feature:
 | T008 | Add pre-editor instructions and keypress gating for editor-backed input    | done   | agent | T003, T007             |
 | T009 | Switch `brainstorm`/`spec`/`plan`/`tasks` to clipboard-first prompt output | done   | agent | T003, T004, T007       |
 | T010 | Extend clipboard-first prompt output to `implement` and `reflect`          | done   | agent | T004, T009             |
-| T011 | Add phase dependency inventories to brainstorm and plan workflow prompts   | done   | agent | T003, T004             |
+| T011 | Add phase reference inventories to brainstorm and plan workflow prompts   | done   | agent | T003, T004             |
 | T012 | Add side-effect-free `--prompt-only` regeneration to core workflow commands  | done   | agent | T003, T004, T009, T010 |
 | T013 | Make supported multiline free-text flows vim-default with `--inline` opt-out | done   | agent | T003, T004, T008       |
 
@@ -42,7 +42,7 @@ Use markdown checkboxes to track completion:
 - [x] T008: Add pre-editor instructions and keypress gating for editor-backed input
 - [x] T009: Switch `brainstorm`, `spec`, `plan`, and `tasks` to clipboard-first prompt output
 - [x] T010: Extend clipboard-first prompt output to `implement` and `reflect`
-- [x] T011: Add phase dependency inventories to brainstorm and plan workflow prompts
+- [x] T011: Add phase reference inventories to brainstorm and plan workflow prompts
 - [x] T012: Add side-effect-free `--prompt-only` regeneration to core workflow commands
 - [x] T013: Make supported multiline free-text flows vim-default with `--inline` opt-out
 
@@ -189,7 +189,7 @@ Use markdown checkboxes to track completion:
 - **SCOPE**:
   - update brainstorm prompt requirements
   - update plan prompt requirements
-  - add dependency inventory tables to canonical templates
+  - add reference inventory tables to canonical templates
 - **ACCEPTANCE**:
   - newly generated or touched `BRAINSTORM.md` docs track phase dependencies
   - `kit plan` prompts require `PLAN.md` to track implementation-strategy dependencies

@@ -18,42 +18,56 @@ relationships:
     target: "0015-pause-remove-commands"
   - type: "builds_on"
     target: "0018-backlog-command"
-dependencies:
-  - name: "root command wiring"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "grouped help and canonical command ordering"
-    status: "active"
-  - name: "human-readable help/output helpers"
-    type: "code"
-    location: "pkg/cli/human_output.go"
-    used_for: "grouped root help rendering"
-    status: "active"
-  - name: "catchup command"
-    type: "code"
-    location: "pkg/cli/catchup.go"
-    used_for: "non-backlog resume prompt behavior"
-    status: "active"
-  - name: "backlog command and helpers"
-    type: "code"
-    location: "pkg/cli/backlog.go`, `pkg/cli/backlog_shared.go"
-    used_for: "backlog-specific resume behavior"
-    status: "active"
-  - name: "backlog classification"
-    type: "code"
-    location: "internal/feature/backlog.go"
-    used_for: "canonical backlog identification"
-    status: "active"
-  - name: "status command"
-    type: "code"
-    location: "pkg/cli/status.go`, `pkg/cli/status_output.go"
-    used_for: "active-feature and all-features status rendering"
-    status: "active"
-  - name: "README and init project spec"
-    type: "doc"
-    location: "README.md`, `docs/specs/0000_INIT_PROJECT.md"
-    used_for: "user-facing command documentation"
-    status: "active"
+references:
+  - name: root command wiring
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: grouped help and canonical command ordering
+    status: active
+  - name: human-readable help/output helpers
+    type: code
+    target: pkg/cli/human_output.go
+    relation: implements
+    read_policy: conditional
+    used_for: grouped root help rendering
+    status: active
+  - name: catchup command
+    type: code
+    target: pkg/cli/catchup.go
+    relation: implements
+    read_policy: conditional
+    used_for: non-backlog resume prompt behavior
+    status: active
+  - name: backlog command and helpers
+    type: code
+    target: pkg/cli/backlog.go`, `pkg/cli/backlog_shared.go
+    relation: implements
+    read_policy: conditional
+    used_for: backlog-specific resume behavior
+    status: active
+  - name: backlog classification
+    type: code
+    target: internal/feature/backlog.go
+    relation: implements
+    read_policy: conditional
+    used_for: canonical backlog identification
+    status: active
+  - name: status command
+    type: code
+    target: pkg/cli/status.go`, `pkg/cli/status_render.go
+    relation: implements
+    read_policy: conditional
+    used_for: active-feature and all-features status rendering
+    status: active
+  - name: README and init project spec
+    type: doc
+    target: README.md`, `docs/specs/0000_INIT_PROJECT.md
+    relation: implements
+    read_policy: conditional
+    used_for: user-facing command documentation
+    status: active
 ---
 # SPEC
 
@@ -127,7 +141,7 @@ forward.
 | catchup command | code | `pkg/cli/catchup.go` | non-backlog resume prompt behavior | active |
 | backlog command and helpers | code | `pkg/cli/backlog.go`, `pkg/cli/backlog_shared.go` | backlog-specific resume behavior | active |
 | backlog classification | code | `internal/feature/backlog.go` | canonical backlog identification | active |
-| status command | code | `pkg/cli/status.go`, `pkg/cli/status_output.go` | active-feature and all-features status rendering | active |
+| status command | code | `pkg/cli/status.go`, `pkg/cli/status_render.go` | active-feature and all-features status rendering | active |
 | README and init project spec | doc | `README.md`, `docs/specs/0000_INIT_PROJECT.md` | user-facing command documentation | active |
 
 ## REQUIREMENTS

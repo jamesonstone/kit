@@ -5,27 +5,35 @@ feature:
   id: "0007"
   slug: "catchup-command"
   dir: "0007-catchup-command"
-dependencies:
-  - name: "feature status model"
-    type: "code"
-    location: "internal/feature/status.go"
-    used_for: "stage and state reporting"
-    status: "active"
-  - name: "prompt helper"
-    type: "code"
-    location: "pkg/cli/root.go`, `pkg/cli/implement.go`, `pkg/cli/reflect.go"
-    used_for: "clipboard-first prompt output"
-    status: "active"
-  - name: "project progress summary"
-    type: "doc"
-    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
-    used_for: "recovery context and state summary"
-    status: "active"
-  - name: "root help ordering"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "command visibility"
-    status: "active"
+references:
+  - name: feature status model
+    type: code
+    target: internal/feature/status.go
+    relation: implements
+    read_policy: conditional
+    used_for: stage and state reporting
+    status: active
+  - name: prompt helper
+    type: code
+    target: pkg/cli/root.go`, `pkg/cli/implement.go`, `pkg/cli/reflect.go
+    relation: implements
+    read_policy: conditional
+    used_for: clipboard-first prompt output
+    status: active
+  - name: project progress summary
+    type: doc
+    target: docs/PROJECT_PROGRESS_SUMMARY.md
+    relation: informs
+    read_policy: conditional
+    used_for: recovery context and state summary
+    status: active
+  - name: root help ordering
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: command visibility
+    status: active
 ---
 # PLAN
 

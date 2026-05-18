@@ -165,11 +165,11 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	if !document.Exists(brainstormPath) {
-		dependencies := []document.MetadataDependency{featureNotesDependency(notesRelPath)}
+		references := []document.MetadataReference{featureNotesReference(notesRelPath)}
 		content := templates.BuildBrainstormArtifactForFeature(
 			thesis,
 			document.FeatureMetadataFromDir(feat.DirName),
-			dependencies,
+			references,
 		)
 		if frontendProfileActive {
 			content = seedFrontendProfileDependencyRows(content, document.TypeBrainstorm, feat.DirName)

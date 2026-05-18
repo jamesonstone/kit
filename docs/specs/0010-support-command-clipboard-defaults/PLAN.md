@@ -5,37 +5,49 @@ feature:
   id: "0010"
   slug: "support-command-clipboard-defaults"
   dir: "0010-support-command-clipboard-defaults"
-dependencies:
-  - name: "clipboard-first helper"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "shared prompt and output transport behavior"
-    status: "active"
-  - name: "human output style"
-    type: "code"
-    location: "pkg/cli/human_output.go"
-    used_for: "clipboard acknowledgement rendering"
-    status: "active"
-  - name: "handoff prompt flow"
-    type: "code"
-    location: "pkg/cli/handoff.go"
-    used_for: "output transport for handoff prompts"
-    status: "active"
-  - name: "summarize command"
-    type: "code"
-    location: "pkg/cli/summarize.go"
-    used_for: "output transport for summarize prompts"
-    status: "active"
-  - name: "code review command"
-    type: "code"
-    location: "pkg/cli/code_review.go"
-    used_for: "output transport for review prompts"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "user-facing output contract"
-    status: "active"
+references:
+  - name: clipboard-first helper
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: shared prompt and output transport behavior
+    status: active
+  - name: human output style
+    type: code
+    target: pkg/cli/human_output.go
+    relation: implements
+    read_policy: conditional
+    used_for: clipboard acknowledgement rendering
+    status: active
+  - name: handoff prompt flow
+    type: code
+    target: pkg/cli/handoff.go
+    relation: implements
+    read_policy: conditional
+    used_for: output transport for handoff prompts
+    status: active
+  - name: summarize command
+    type: code
+    target: pkg/cli/summarize.go
+    relation: implements
+    read_policy: conditional
+    used_for: output transport for summarize prompts
+    status: active
+  - name: code review command
+    type: code
+    target: pkg/cli/code_review.go
+    relation: implements
+    read_policy: conditional
+    used_for: output transport for review prompts
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: informs
+    read_policy: conditional
+    used_for: user-facing output contract
+    status: active
 ---
 # PLAN
 

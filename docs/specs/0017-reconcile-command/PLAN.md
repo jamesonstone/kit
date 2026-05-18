@@ -5,32 +5,42 @@ feature:
   id: "0017"
   slug: "reconcile-command"
   dir: "0017-reconcile-command"
-dependencies:
-  - name: "command wiring patterns"
-    type: "code"
-    location: "pkg/cli/handoff.go"
-    used_for: "project-vs-feature prompt command shape"
-    status: "active"
-  - name: "check validation"
-    type: "code"
-    location: "pkg/cli/check.go"
-    used_for: "base document validation rules"
-    status: "active"
-  - name: "instruction append-only planning"
-    type: "code"
-    location: "pkg/cli/instruction_files.go"
-    used_for: "instruction-file drift detection"
-    status: "active"
-  - name: "template contract"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "current required sections and table shapes"
-    status: "active"
-  - name: "rollup generation"
-    type: "code"
-    location: "internal/rollup/rollup.go"
-    used_for: "progress-summary expectations"
-    status: "active"
+references:
+  - name: command wiring patterns
+    type: code
+    target: pkg/cli/handoff.go
+    relation: implements
+    read_policy: conditional
+    used_for: project-vs-feature prompt command shape
+    status: active
+  - name: check validation
+    type: code
+    target: pkg/cli/check.go
+    relation: implements
+    read_policy: conditional
+    used_for: base document validation rules
+    status: active
+  - name: instruction append-only planning
+    type: code
+    target: pkg/cli/instruction_files.go
+    relation: implements
+    read_policy: conditional
+    used_for: instruction-file drift detection
+    status: active
+  - name: template contract
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: current required sections and table shapes
+    status: active
+  - name: rollup generation
+    type: code
+    target: internal/rollup/rollup.go
+    relation: implements
+    read_policy: conditional
+    used_for: progress-summary expectations
+    status: active
 ---
 # PLAN
 

@@ -17,13 +17,13 @@ import (
 
 // Feature represents a feature directory and its metadata.
 type Feature struct {
-	Number    int
-	Slug      string
-	DirName   string
-	Path      string
-	CreatedAt time.Time
-	Phase     Phase
-	Paused    bool
+	Number    int       `json:"number"`
+	Slug      string    `json:"slug"`
+	DirName   string    `json:"dir_name"`
+	Path      string    `json:"path"`
+	CreatedAt time.Time `json:"-"`
+	Phase     Phase     `json:"phase"`
+	Paused    bool      `json:"paused"`
 }
 
 // Phase represents the current phase of a feature in the artifact pipeline.

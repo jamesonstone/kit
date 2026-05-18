@@ -306,19 +306,23 @@ func appendPlanDependencyInventoryStep(
 
 func planDependencyInventoryStepText(planPath, specPath, brainstormPath string, hasBrainstorm bool) string {
 	lines := []string{
-		fmt.Sprintf("Populate or refresh canonical front matter `dependencies` in `%s` before sign-off, using the legacy `## DEPENDENCIES` table only when front matter is absent:", planPath),
-		fmt.Sprintf("- carry forward still-relevant dependencies from `%s`", specPath),
+		fmt.Sprintf("Populate or refresh canonical front matter `references` in `%s` before sign-off:", planPath),
+		fmt.Sprintf("- carry forward still-relevant references from `%s`", specPath),
 	}
 	if hasBrainstorm {
-		lines = append(lines, fmt.Sprintf("- carry forward still-relevant dependencies from `%s`", brainstormPath))
+		lines = append(lines, fmt.Sprintf("- carry forward still-relevant references from `%s`", brainstormPath))
 	}
 	lines = append(lines,
 		"- include skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, assets, and other resources that shape the implementation strategy",
-		"- use `name`, `type`, `location`, `used_for`, and `status`",
+		"- use `name`, `type`, `target`, `relation`, `read_policy`, `used_for`, and `status`",
+		"- add a stable `id` when the reference may need to be updated later",
+		"- `selector_type` must be one of `artifact`, `heading`, `symbol`, `command`, `url`, or `node_id` when `selector` is set",
+		"- `relation` describes the referenced target's role relative to the source artifact, such as `constrains`, `guides`, `informs`, `implements`, `verifies`, or `uses`",
+		"- `read_policy` must be one of `must`, `conditional`, `evidence`, or `skip`",
 		"- `status` must be one of `active`, `optional`, or `stale`",
-		"- for Figma or MCP-driven design dependencies, store the exact design URL or file/node reference in `location`",
-		"- if a dependency influenced the implementation strategy but is no longer current, keep it with `status: stale`",
-		"- if no additional dependencies apply, leave front matter dependencies empty or keep the legacy `none` row in documents without front matter",
+		"- for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target` and use stable selectors when needed",
+		"- if a reference influenced the implementation strategy but is no longer current, keep it with `status: stale` and `read_policy: skip`",
+		"- if no additional references apply, leave front matter references empty and keep the body `## DEPENDENCIES` section prose-only",
 	)
 	return strings.Join(lines, "\n")
 }
@@ -412,8 +416,8 @@ func buildStandardPlanPrompt(
 
 - DEPENDENCIES
   - the docs, tools, design refs, APIs, libraries, datasets, assets, and other resources shaping the implementation strategy
-  - keep exact URLs or file/node refs in the Location column
-  - use Status = active, optional, or stale
+  - keep exact URLs or file/node refs in front matter references
+  - use status = active, optional, or stale
 
 - RISKS
   - top technical or design risks
@@ -428,7 +432,7 @@ func buildStandardPlanPrompt(
 			"use BRAINSTORM.md as research context only; SPEC.md remains the binding contract",
 			"do not restate requirements",
 			"do not introduce new scope beyond SPEC.md",
-			"canonical front matter `dependencies` must be current before sign-off and must keep exact locations for external design inputs; use the legacy ## DEPENDENCIES table only when front matter is absent",
+			"canonical front matter `references` must be current before sign-off and must keep exact targets and stable selectors for external design inputs",
 			"do not write tasks",
 			"avoid code unless strictly necessary",
 			"keep language dense and factual",
@@ -469,7 +473,7 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 				"- COMPONENTS: logical modules with clear responsibility boundaries\n"+
 				"- DATA: data shapes, structures, and storage decisions\n"+
 				"- INTERFACES: commands, inputs, outputs, side effects\n"+
-				"- DEPENDENCIES: the resources that shape the implementation strategy, with exact URLs or file/node refs in `Location`\n"+
+				"- DEPENDENCIES: prose summary of the resources that shape the implementation strategy; canonical pointers belong in front matter `references`\n"+
 				"- RISKS: technical risks with mitigation strategies\n"+
 				"- TESTING: validation strategy and test types",
 			planPath,
@@ -510,7 +514,7 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 			"use BRAINSTORM.md as research context only; SPEC.md remains the binding contract",
 			"do not restate requirements verbatim",
 			"do not introduce new scope beyond the Warp plan and SPEC.md",
-			"canonical front matter `dependencies` must be current before sign-off and must keep exact locations for external design inputs; use the legacy ## DEPENDENCIES table only when front matter is absent",
+			"canonical front matter `references` must be current before sign-off and must keep exact targets and stable selectors for external design inputs",
 			"keep language dense and factual",
 			"Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off",
 			"ensure plan respects constraints defined in CONSTITUTION.md",

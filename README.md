@@ -151,7 +151,7 @@ kit rm my-feature --yes --notes
 
 | Command        | Description                                                                       |
 | -------------- | --------------------------------------------------------------------------------- |
-| `kit init`     | Initialize a project, user config, and review config                              |
+| `kit init`     | Initialize project, user config, review config, and GitHub PR template            |
 | `kit scaffold` | Create empty workflow document structures, support directories, and agent files   |
 
 ### 🔁 Workflow
@@ -189,7 +189,7 @@ kit rm my-feature --yes --notes
 | `kit prompt list`              | List effective merged prompts with origin and override metadata                              |
 | `kit prompt project refresh`   | Prompt an agent to refresh durable project-level docs after the repo matures                 |
 | `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor                                 |
-| `kit handoff [feature]`        | Prompt the current agent session to sync docs, dependency inventories, and prepare a handoff |
+| `kit handoff [feature]`        | Prompt the current agent session to sync docs, reference inventories, and prepare a handoff |
 | `kit summarize [feature]`      | Output context summarization instructions                                                    |
 | `kit dispatch`                 | Output a discovery-first prompt for clustering tasks and queueing subagents                  |
 | `kit code-review`              | Output instructions for branch code review                                                   |
@@ -215,7 +215,7 @@ work. The profile keeps Kit's normal RLM flow, but adds frontend-specific
 guidance for design-system fit, domain-appropriate UI, visual assets,
 responsive behavior, browser or screenshot validation, interaction states, and
 common generated-UI pitfalls. Feature-scoped commands can carry the profile
-forward through the feature's dependency table once it has been recorded.
+forward through the feature's front matter references once it has been recorded.
 
 Use `kit dispatch` when you need the full overlap-clustering and queue-planning
 workflow for a raw task set. Use the default prompt path when the agent should
@@ -395,7 +395,7 @@ Then Kit:
 - creates or reuses `docs/specs/<feature>/`
 - creates `BRAINSTORM.md` as the first artifact in that directory
 - requires the coding agent to keep front matter `relationships` current with explicit prior-feature lineage, falling back to `## RELATIONSHIPS` only for legacy docs without front matter
-- requires the coding agent to keep front matter `dependencies` current with the inputs used during the brainstorm phase, falling back to `## DEPENDENCIES` only for legacy docs without front matter
+- requires the coding agent to keep front matter `references` current with the inputs used during the brainstorm phase, including `target`, `relation`, and `read_policy`
 - opens a vim-compatible editor by default for the multiline thesis, with step instructions and a press-any-key launch gate
 - supports `--inline` to use terminal multiline entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
 - keeps `--vim` and `--editor=vim` as explicit editor controls, though vim-mode is already the default for multiline free-text responses

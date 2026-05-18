@@ -14,77 +14,105 @@ relationships:
     target: "0019-command-surface-simplification"
   - type: "related_to"
     target: "0021-project-validation-and-instruction-registry"
-dependencies:
-  - name: "Feature notes"
-    type: "notes"
-    location: "docs/notes/0024-frontend-profile"
-    used_for: "optional pre-brainstorm research input"
-    status: "optional"
-  - name: "Frontend profile"
-    type: "profile"
-    location: "--profile=frontend"
-    used_for: "apply frontend-specific coding-agent instruction set"
-    status: "active"
-  - name: "OpenAI frontend prompt instructions"
-    type: "external doc"
-    location: "https://developers.openai.com/api/docs/guides/frontend-prompt"
-    used_for: "frontend-specific prompting requirements and design-quality guidance"
-    status: "active"
-  - name: "OpenAI prompt guidance frontend section"
-    type: "external doc"
-    location: "https://developers.openai.com/api/docs/guides/prompt-guidance#frontend-engineering-and-visual-taste"
-    used_for: "frontend visual-taste guidance and verification expectations"
-    status: "active"
-  - name: "Constitution"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "workflow classification, command-surface principles, explicit state, and source-of-truth rules"
-    status: "active"
-  - name: "Agent workflow docs"
-    type: "doc"
-    location: "docs/agents/WORKFLOWS.md, docs/agents/RLM.md, docs/agents/GUARDRAILS.md"
-    used_for: "just-in-time context routing and completion constraints for this brainstorm"
-    status: "active"
-  - name: "Command-surface simplification"
-    type: "prior feature"
-    location: "docs/specs/0019-command-surface-simplification/SPEC.md"
-    used_for: "avoid new commands and keep canonical CLI surface restrained"
-    status: "active"
-  - name: "Spec skills discovery"
-    type: "prior feature"
-    location: "docs/specs/0009-spec-skills-discovery/SPEC.md"
-    used_for: "dependency-table model for skills, design refs, and external inputs"
-    status: "active"
-  - name: "Typed prompt IR"
-    type: "prior feature"
-    location: "docs/specs/0022-typed-prompt-ir/SPEC.md"
-    used_for: "shared prompt-output decorator boundary and prompt-producing command inventory"
-    status: "active"
-  - name: "Project validation and instruction registry"
-    type: "prior feature"
-    location: "docs/specs/0021-project-validation-and-instruction-registry/SPEC.md"
-    used_for: "avoid instruction drift and preserve thin routing docs"
-    status: "active"
-  - name: "Prompt output wrapper"
-    type: "code"
-    location: "pkg/cli/prompt_output.go"
-    used_for: "central profile insertion point before clipboard/stdout output"
-    status: "active"
-  - name: "Shared prompt suffixes"
-    type: "code"
-    location: "pkg/cli/subagents.go, pkg/cli/skills_prompt.go"
-    used_for: "existing prompt augmentation precedent and suffix ordering"
-    status: "active"
-  - name: "Brainstorm notes helpers"
-    type: "code"
-    location: "pkg/cli/brainstorm_notes.go, pkg/cli/brainstorm.go, pkg/cli/brainstorm_prompt.go"
-    used_for: "extend notes pattern for optional frontend design materials"
-    status: "active"
-  - name: "Design materials"
-    type: "design"
-    location: "docs/notes/0024-frontend-profile/design"
-    used_for: "optional frontend design input for this feature"
-    status: "optional"
+references:
+  - name: Feature notes
+    type: notes
+    target: docs/notes/0024-frontend-profile
+    relation: guides
+    read_policy: conditional
+    used_for: optional pre-brainstorm research input
+    status: optional
+  - name: Frontend profile
+    type: profile
+    target: --profile=frontend
+    relation: guides
+    read_policy: conditional
+    used_for: apply frontend-specific coding-agent instruction set
+    status: active
+  - name: OpenAI frontend prompt instructions
+    type: external doc
+    target: https://developers.openai.com/api/docs/guides/frontend-prompt
+    relation: guides
+    read_policy: conditional
+    used_for: frontend-specific prompting requirements and design-quality guidance
+    status: active
+  - name: OpenAI prompt guidance frontend section
+    type: external doc
+    target: https://developers.openai.com/api/docs/guides/prompt-guidance#frontend-engineering-and-visual-taste
+    relation: verifies
+    read_policy: evidence
+    used_for: frontend visual-taste guidance and verification expectations
+    status: active
+  - name: Constitution
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: implements
+    read_policy: conditional
+    used_for: workflow classification, command-surface principles, explicit state, and source-of-truth rules
+    status: active
+  - name: Agent workflow docs
+    type: doc
+    target: docs/agents/WORKFLOWS.md, docs/agents/RLM.md, docs/agents/GUARDRAILS.md
+    relation: informs
+    read_policy: conditional
+    used_for: just-in-time context routing and completion constraints for this brainstorm
+    status: active
+  - name: Command-surface simplification
+    type: prior feature
+    target: docs/specs/0019-command-surface-simplification/SPEC.md
+    relation: implements
+    read_policy: conditional
+    used_for: avoid new commands and keep canonical CLI surface restrained
+    status: active
+  - name: Spec skills discovery
+    type: prior feature
+    target: docs/specs/0009-spec-skills-discovery/SPEC.md
+    relation: guides
+    read_policy: conditional
+    used_for: dependency-table model for skills, design refs, and external inputs
+    status: active
+  - name: Typed prompt IR
+    type: prior feature
+    target: docs/specs/0022-typed-prompt-ir/SPEC.md
+    relation: implements
+    read_policy: conditional
+    used_for: shared prompt-output decorator boundary and prompt-producing command inventory
+    status: active
+  - name: Project validation and instruction registry
+    type: prior feature
+    target: docs/specs/0021-project-validation-and-instruction-registry/SPEC.md
+    relation: informs
+    read_policy: conditional
+    used_for: avoid instruction drift and preserve thin routing docs
+    status: active
+  - name: Prompt output wrapper
+    type: code
+    target: pkg/cli/prompt_output.go
+    relation: guides
+    read_policy: conditional
+    used_for: central profile insertion point before clipboard/stdout output
+    status: active
+  - name: Shared prompt suffixes
+    type: code
+    target: pkg/cli/subagents.go, pkg/cli/skills_prompt.go
+    relation: implements
+    read_policy: conditional
+    used_for: existing prompt augmentation precedent and suffix ordering
+    status: active
+  - name: Brainstorm notes helpers
+    type: code
+    target: pkg/cli/brainstorm_notes.go, pkg/cli/brainstorm.go, pkg/cli/brainstorm_prompt.go
+    relation: guides
+    read_policy: conditional
+    used_for: extend notes pattern for optional frontend design materials
+    status: active
+  - name: Design materials
+    type: design
+    target: docs/notes/0024-frontend-profile/design
+    relation: guides
+    read_policy: conditional
+    used_for: optional frontend design input for this feature
+    status: optional
 ---
 # BRAINSTORM
 
@@ -106,7 +134,7 @@ Reason: frontend work has materially different success criteria: visual taste, l
 - Should not be inserted into root `AGENTS.md`, `CLAUDE.md`, or Copilot files.
 - Should be appended only to prompt-producing commands through the existing prompt pipeline around [prompt_output.go](/Users/jamesonstone/go/src/github.com/jamesonstone/kit/pkg/cli/prompt_output.go:25) and [subagents.go](/Users/jamesonstone/go/src/github.com/jamesonstone/kit/pkg/cli/subagents.go:28).
 
-I would not auto-detect frontend work as the primary mechanism. It will be wrong often enough to be annoying. Use explicit `--profile=frontend`, then optionally record that profile into the feature dependency table so later commands can carry it forward.
+I would not auto-detect frontend work as the primary mechanism. It will be wrong often enough to be annoying. Use explicit `--profile=frontend`, then optionally record that profile into the feature front matter references so later commands can carry it forward.
 
 **How It Should Behave**
 Example:
@@ -221,7 +249,7 @@ Approved defaults:
 
 1. Register `--profile` as a root persistent flag, but apply it only in prompt-producing output paths.
 2. Reject unsupported profile values early with enum-like validation.
-3. Persist the selected frontend profile and design-material dependencies into feature dependency tables when profile-aware commands create or touch feature artifacts, while allowing explicit flags to override.
+3. Persist the selected frontend profile and design-material dependencies into feature front matter references when profile-aware commands create or touch feature artifacts, while allowing explicit flags to override.
 4. For frontend brainstorms, create:
    - `docs/notes/<feature>/design/.gitkeep`
    - `docs/notes/<feature>/design/screenshots/.gitkeep`
@@ -273,7 +301,7 @@ Use Option A for the first implementation.
 - Prefer a central shared prompt decorator so `brainstorm`, `spec`, `plan`, `tasks`, `implement`, `resume`, `handoff`, `summarize`, `code-review`, `dispatch`, and `skill mine` can share behavior through existing output wrappers.
 - Keep frontend guidance conditional and absent from root instruction files.
 - Reject unsupported profile values early.
-- Record the selected profile and design-material directory in dependency tables when profile-aware commands create or touch feature artifacts.
+- Record the selected profile and design-material directory in front matter references when profile-aware commands create or touch feature artifacts.
 - Extend `docs/notes/<feature>/` with `design/`, `design/screenshots/`, and `design/references/` for frontend materials rather than introducing `docs/design/` in v1.
 - Make prompt-only paths non-mutating: they may mention the expected design-material path but should not create directories or patch docs.
 - Add tests that verify profile suffix insertion, no duplicate suffixes, unsupported profile rejection, frontend design-material scaffolding, dependency rows, and `--prompt-only` non-mutation.

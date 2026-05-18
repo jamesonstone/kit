@@ -73,11 +73,7 @@ none
 
 ## DEPENDENCIES
 
-| Dependency | Type | Location | Used For | Status |
-| ---------- | ---- | -------- | -------- | ------ |
-| none | n/a | n/a | no phase dependencies recorded yet | active |
-
-<!-- TODO: list the tools, docs, design refs, APIs, libraries, datasets, assets, and other inputs used during this phase; keep exact URLs or file/node refs in Location -->
+References are tracked in front matter.
 
 ## QUESTIONS
 
@@ -113,13 +109,13 @@ func BuildBrainstormArtifact(userThesis string) string {
 
 // BuildBrainstormArtifactForFeature seeds a new brainstorm document with typed
 // front matter for the feature-specific metadata Kit can know at creation time.
-func BuildBrainstormArtifactForFeature(userThesis string, feature document.FeatureMetadata, dependencies []document.MetadataDependency) string {
+func BuildBrainstormArtifactForFeature(userThesis string, feature document.FeatureMetadata, references []document.MetadataReference) string {
 	content := BuildBrainstormArtifact(userThesis)
 	content = replaceTemplateSection(content, "RELATIONSHIPS", "Relationships are tracked in front matter.")
-	content = replaceTemplateSection(content, "DEPENDENCIES", "Dependencies are tracked in front matter.")
+	content = replaceTemplateSection(content, "DEPENDENCIES", "References are tracked in front matter.")
 	updated, _, err := document.UpsertMetadata(content, document.TypeBrainstorm, document.MetadataUpsert{
-		Feature:      feature,
-		Dependencies: dependencies,
+		Feature:    feature,
+		References: references,
 	})
 	if err != nil {
 		return content
@@ -130,7 +126,7 @@ func BuildBrainstormArtifactForFeature(userThesis string, feature document.Featu
 func BuildSpecArtifactForFeature(feature document.FeatureMetadata) string {
 	content := replaceTemplateSection(Spec, "SKILLS", "Skills are tracked in front matter.")
 	content = replaceTemplateSection(content, "RELATIONSHIPS", "Relationships are tracked in front matter.")
-	content = replaceTemplateSection(content, "DEPENDENCIES", "Dependencies are tracked in front matter.")
+	content = replaceTemplateSection(content, "DEPENDENCIES", "References are tracked in front matter.")
 	updated, _, err := document.UpsertMetadata(content, document.TypeSpec, document.MetadataUpsert{
 		Feature: feature,
 	})
@@ -141,7 +137,7 @@ func BuildSpecArtifactForFeature(feature document.FeatureMetadata) string {
 }
 
 func BuildPlanArtifactForFeature(feature document.FeatureMetadata) string {
-	content := replaceTemplateSection(Plan, "DEPENDENCIES", "Dependencies are tracked in front matter.")
+	content := replaceTemplateSection(Plan, "DEPENDENCIES", "References are tracked in front matter.")
 	updated, _, err := document.UpsertMetadata(content, document.TypePlan, document.MetadataUpsert{
 		Feature: feature,
 	})
@@ -226,11 +222,7 @@ none
 
 ## DEPENDENCIES
 
-| Dependency | Type | Location | Used For | Status |
-| ---------- | ---- | -------- | -------- | ------ |
-| none | n/a | n/a | no supporting dependencies recorded yet | active |
-
-<!-- TODO: list the supporting docs, MCP tools, design refs, APIs, libraries, datasets, assets, and other inputs that shaped this spec -->
+References are tracked in front matter.
 
 ## REQUIREMENTS
 
@@ -274,11 +266,7 @@ const Plan = `# PLAN
 
 ## DEPENDENCIES
 
-| Dependency | Type | Location | Used For | Status |
-| ---------- | ---- | -------- | -------- | ------ |
-| none | n/a | n/a | no planning dependencies recorded yet | active |
-
-<!-- TODO: list the dependencies that shape the implementation strategy, including exact design URLs or file/node refs when applicable -->
+References are tracked in front matter.
 
 ## RISKS
 

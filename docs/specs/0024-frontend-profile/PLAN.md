@@ -5,113 +5,153 @@ feature:
   id: "0024"
   slug: "frontend-profile"
   dir: "0024-frontend-profile"
-dependencies:
-  - name: "Constitution"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "artifact pipeline, explicit-state rule, command-surface constraints, and Go quality rules"
-    status: "active"
-  - name: "RLM guide"
-    type: "repo-local agent doc"
-    location: "docs/agents/RLM.md"
-    used_for: "preserve just-in-time context routing inside frontend profile guidance and planning"
-    status: "active"
-  - name: "Agent workflow docs"
-    type: "doc"
-    location: "docs/agents/README.md`, `docs/agents/WORKFLOWS.md`, `docs/agents/TOOLING.md`, `docs/agents/GUARDRAILS.md"
-    used_for: "source-of-truth order, skills/routing context, and completion rules"
-    status: "active"
-  - name: "Frontend profile spec"
-    type: "spec"
-    location: "docs/specs/0024-frontend-profile/SPEC.md"
-    used_for: "binding feature contract for profile behavior, design materials, prompts, and tests"
-    status: "active"
-  - name: "Frontend profile brainstorm"
-    type: "research"
-    location: "docs/specs/0024-frontend-profile/BRAINSTORM.md"
-    used_for: "validated implementation seams and prior design decisions"
-    status: "active"
-  - name: "OpenAI prompt guidance"
-    type: "external doc"
-    location: "https://developers.openai.com/api/docs/guides/prompt-guidance"
-    used_for: "source inspiration for agent prompt structure and validation expectations"
-    status: "active"
-  - name: "OpenAI frontend prompt instructions"
-    type: "external doc"
-    location: "https://developers.openai.com/api/docs/guides/frontend-prompt"
-    used_for: "source inspiration for frontend-specific coding-agent guidance"
-    status: "active"
-  - name: "OpenAI prompt guidance frontend section"
-    type: "external doc"
-    location: "https://developers.openai.com/api/docs/guides/prompt-guidance#frontend-engineering-and-visual-taste"
-    used_for: "source inspiration for visual-taste and frontend verification guidance"
-    status: "active"
-  - name: "Command-surface simplification"
-    type: "prior feature"
-    location: "docs/specs/0019-command-surface-simplification/SPEC.md"
-    used_for: "avoid new commands and keep deprecated surfaces callable"
-    status: "active"
-  - name: "Spec skills discovery"
-    type: "prior feature"
-    location: "docs/specs/0009-spec-skills-discovery/SPEC.md"
-    used_for: "keep profile/dependency tracking separate from execution-time skills"
-    status: "active"
-  - name: "Typed prompt IR"
-    type: "prior feature"
-    location: "docs/specs/0022-typed-prompt-ir/SPEC.md"
-    used_for: "keep shared decorators after prompt rendering rather than duplicating prompt bodies"
-    status: "active"
-  - name: "Project validation and instruction registry"
-    type: "prior feature"
-    location: "docs/specs/0021-project-validation-and-instruction-registry/SPEC.md"
-    used_for: "preserve thin root instruction files and avoid instruction drift"
-    status: "active"
-  - name: "Prompt output wrapper"
-    type: "code"
-    location: "pkg/cli/prompt_output.go"
-    used_for: "shared prompt output and profile insertion boundary"
-    status: "active"
-  - name: "Shared prompt suffixes"
-    type: "code"
-    location: "pkg/cli/subagents.go`, `pkg/cli/skills_prompt.go"
-    used_for: "suffix ordering and composition with skills/subagent guidance"
-    status: "active"
-  - name: "Brainstorm notes helpers"
-    type: "code"
-    location: "pkg/cli/brainstorm_notes.go`, `pkg/cli/brainstorm.go`, `pkg/cli/brainstorm_prompt.go"
-    used_for: "feature notes and frontend design-material scaffolding"
-    status: "active"
-  - name: "Spec context helpers"
-    type: "code"
-    location: "pkg/cli/spec_context.go`, `pkg/cli/plan.go"
-    used_for: "dependency inventory prompt semantics and related-feature RLM text"
-    status: "active"
-  - name: "Dependency map parser"
-    type: "code"
-    location: "internal/feature/map.go"
-    used_for: "reference behavior for dependency table parsing and map output expectations"
-    status: "active"
-  - name: "Feature notes"
-    type: "notes"
-    location: "docs/notes/0024-frontend-profile"
-    used_for: "optional pre-brainstorm input; placeholder-only for this feature"
-    status: "optional"
-  - name: "Frontend profile"
-    type: "profile"
-    location: "--profile=frontend"
-    used_for: "apply frontend-specific coding-agent instruction set"
-    status: "active"
-  - name: "Design materials"
-    type: "design"
-    location: "docs/notes/0024-frontend-profile/design"
-    used_for: "optional frontend design input path; no assets currently present"
-    status: "optional"
+references:
+  - name: Constitution
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: implements
+    read_policy: conditional
+    used_for: artifact pipeline, explicit-state rule, command-surface constraints, and Go quality rules
+    status: active
+  - name: RLM guide
+    type: repo-local agent doc
+    target: docs/agents/RLM.md
+    relation: guides
+    read_policy: conditional
+    used_for: preserve just-in-time context routing inside frontend profile guidance and planning
+    status: active
+  - name: Agent workflow docs
+    type: doc
+    target: docs/agents/README.md`, `docs/agents/WORKFLOWS.md`, `docs/agents/TOOLING.md`, `docs/agents/GUARDRAILS.md
+    relation: uses
+    read_policy: conditional
+    used_for: source-of-truth order, skills/routing context, and completion rules
+    status: active
+  - name: Frontend profile spec
+    type: spec
+    target: docs/specs/0024-frontend-profile/SPEC.md
+    relation: verifies
+    read_policy: evidence
+    used_for: binding feature contract for profile behavior, design materials, prompts, and tests
+    status: active
+  - name: Frontend profile brainstorm
+    type: research
+    target: docs/specs/0024-frontend-profile/BRAINSTORM.md
+    relation: guides
+    read_policy: conditional
+    used_for: validated implementation seams and prior design decisions
+    status: active
+  - name: OpenAI prompt guidance
+    type: external doc
+    target: https://developers.openai.com/api/docs/guides/prompt-guidance
+    relation: guides
+    read_policy: conditional
+    used_for: source inspiration for agent prompt structure and validation expectations
+    status: active
+  - name: OpenAI frontend prompt instructions
+    type: external doc
+    target: https://developers.openai.com/api/docs/guides/frontend-prompt
+    relation: guides
+    read_policy: conditional
+    used_for: source inspiration for frontend-specific coding-agent guidance
+    status: active
+  - name: OpenAI prompt guidance frontend section
+    type: external doc
+    target: https://developers.openai.com/api/docs/guides/prompt-guidance#frontend-engineering-and-visual-taste
+    relation: verifies
+    read_policy: evidence
+    used_for: source inspiration for visual-taste and frontend verification guidance
+    status: active
+  - name: Command-surface simplification
+    type: prior feature
+    target: docs/specs/0019-command-surface-simplification/SPEC.md
+    relation: implements
+    read_policy: conditional
+    used_for: avoid new commands and keep deprecated surfaces callable
+    status: active
+  - name: Spec skills discovery
+    type: prior feature
+    target: docs/specs/0009-spec-skills-discovery/SPEC.md
+    relation: guides
+    read_policy: conditional
+    used_for: keep profile/dependency tracking separate from execution-time skills
+    status: active
+  - name: Typed prompt IR
+    type: prior feature
+    target: docs/specs/0022-typed-prompt-ir/SPEC.md
+    relation: informs
+    read_policy: conditional
+    used_for: keep shared decorators after prompt rendering rather than duplicating prompt bodies
+    status: active
+  - name: Project validation and instruction registry
+    type: prior feature
+    target: docs/specs/0021-project-validation-and-instruction-registry/SPEC.md
+    relation: informs
+    read_policy: conditional
+    used_for: preserve thin root instruction files and avoid instruction drift
+    status: active
+  - name: Prompt output wrapper
+    type: code
+    target: pkg/cli/prompt_output.go
+    relation: guides
+    read_policy: conditional
+    used_for: shared prompt output and profile insertion boundary
+    status: active
+  - name: Shared prompt suffixes
+    type: code
+    target: pkg/cli/subagents.go`, `pkg/cli/skills_prompt.go
+    relation: guides
+    read_policy: conditional
+    used_for: suffix ordering and composition with skills/subagent guidance
+    status: active
+  - name: Brainstorm notes helpers
+    type: code
+    target: pkg/cli/brainstorm_notes.go`, `pkg/cli/brainstorm.go`, `pkg/cli/brainstorm_prompt.go
+    relation: guides
+    read_policy: conditional
+    used_for: feature notes and frontend design-material scaffolding
+    status: active
+  - name: Spec context helpers
+    type: code
+    target: pkg/cli/spec_context.go`, `pkg/cli/plan.go
+    relation: implements
+    read_policy: conditional
+    used_for: reference inventory prompt semantics and related-feature RLM text
+    status: active
+  - name: Dependency map parser
+    type: code
+    target: internal/feature/map.go
+    relation: implements
+    read_policy: conditional
+    used_for: reference behavior for front matter references parsing and map output expectations
+    status: active
+  - name: Feature notes
+    type: notes
+    target: docs/notes/0024-frontend-profile
+    relation: guides
+    read_policy: conditional
+    used_for: optional pre-brainstorm input; placeholder-only for this feature
+    status: optional
+  - name: Frontend profile
+    type: profile
+    target: --profile=frontend
+    relation: guides
+    read_policy: conditional
+    used_for: apply frontend-specific coding-agent instruction set
+    status: active
+  - name: Design materials
+    type: design
+    target: docs/notes/0024-frontend-profile/design
+    relation: guides
+    read_policy: conditional
+    used_for: optional frontend design input path; no assets currently present
+    status: optional
 ---
 # PLAN
 
 ## SUMMARY
 
-Implement `--profile=frontend` as a small prompt-profile layer in the existing prompt preparation pipeline, with explicit enum validation, feature-artifact dependency detection, and frontend-specific notes/design scaffolding for brainstorms. Keep profile text in Go constants for v1, append it between the existing skills and subagent suffixes, and mutate only standardized feature dependency tables outside prompt-only paths.
+Implement `--profile=frontend` as a small prompt-profile layer in the existing prompt preparation pipeline, with explicit enum validation, feature-artifact dependency detection, and frontend-specific notes/design scaffolding for brainstorms. Keep profile text in Go constants for v1, append it between the existing skills and subagent suffixes, and mutate only standardized feature front matter references outside prompt-only paths.
 
 ## APPROACH
 
@@ -128,7 +168,7 @@ Tradeoff decisions:
 
 - Keep profile guidance in Go constants for v1 rather than `docs/agents/` because the profile is conditional prompt behavior, not repo-local always-loaded routing guidance.
 - Use explicit feature path context for dependency inference rather than parsing generated prompt text or relying on global active-feature state.
-- Persist profile dependencies only in docs with standardized dependency tables: `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`. `TASKS.md` keeps its existing task-dependency section shape and receives frontend guidance through prompts only.
+- Persist profile dependencies only in docs with standardized front matter references: `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`. `TASKS.md` keeps its existing task-dependency section shape and receives frontend guidance through prompts only.
 - Let `dispatch` keep suppressing subagent guidance while still allowing the frontend profile suffix, because profile quality guidance and subagent orchestration are independent decorators.
 - Do not create design-material directories from `spec`, `plan`, `tasks`, `implement`, or prompt-only flows; only frontend brainstorm creation owns that filesystem scaffold.
 
@@ -267,8 +307,8 @@ docs/notes/<feature-dir>/
 | Prompt output wrapper | code | `pkg/cli/prompt_output.go` | shared prompt output and profile insertion boundary | active |
 | Shared prompt suffixes | code | `pkg/cli/subagents.go`, `pkg/cli/skills_prompt.go` | suffix ordering and composition with skills/subagent guidance | active |
 | Brainstorm notes helpers | code | `pkg/cli/brainstorm_notes.go`, `pkg/cli/brainstorm.go`, `pkg/cli/brainstorm_prompt.go` | feature notes and frontend design-material scaffolding | active |
-| Spec context helpers | code | `pkg/cli/spec_context.go`, `pkg/cli/plan.go` | dependency inventory prompt semantics and related-feature RLM text | active |
-| Dependency map parser | code | `internal/feature/map.go` | reference behavior for dependency table parsing and map output expectations | active |
+| Spec context helpers | code | `pkg/cli/spec_context.go`, `pkg/cli/plan.go` | reference inventory prompt semantics and related-feature RLM text | active |
+| Dependency map parser | code | `internal/feature/map.go` | reference behavior for front matter references parsing and map output expectations | active |
 | Feature notes | notes | `docs/notes/0024-frontend-profile` | optional pre-brainstorm input; placeholder-only for this feature | optional |
 | Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |
 | Design materials | design | `docs/notes/0024-frontend-profile/design` | optional frontend design input path; no assets currently present | optional |
@@ -282,7 +322,7 @@ docs/notes/<feature-dir>/
   - Mitigation: validate through the flag value or Cobra flag parsing layer before command `RunE`; add a command-level mutation-boundary test.
 
 - Dependency inference could accidentally activate from stale or optional rows.
-  - Mitigation: parse only standardized dependency tables and require an active canonical frontend profile row.
+  - Mitigation: parse only standardized front matter references and require an active canonical frontend profile row.
 
 - Dependency row mutation could erase user content or duplicate rows.
   - Mitigation: use section-level replacement only for `## DEPENDENCIES`, preserve all non-target rows, remove only the placeholder `none` row, and test idempotency.

@@ -5,37 +5,49 @@ feature:
   id: "0011"
   slug: "handoff-document-sync"
   dir: "0011-handoff-document-sync"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "canonical workflow and document rules"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "shipped handoff behavior summary"
-    status: "active"
-  - name: "project progress summary"
-    type: "doc"
-    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
-    used_for: "project-wide reconciliation context"
-    status: "active"
-  - name: "handoff command"
-    type: "code"
-    location: "pkg/cli/handoff.go"
-    used_for: "selector and prompt wiring"
-    status: "active"
-  - name: "handoff prompt builder"
-    type: "code"
-    location: "pkg/cli/handoff_prompt.go"
-    used_for: "document inventory and summary generation"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "user-facing command description"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical workflow and document rules
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: shipped handoff behavior summary
+    status: active
+  - name: project progress summary
+    type: doc
+    target: docs/PROJECT_PROGRESS_SUMMARY.md
+    relation: informs
+    read_policy: conditional
+    used_for: project-wide reconciliation context
+    status: active
+  - name: handoff command
+    type: code
+    target: pkg/cli/handoff.go
+    relation: implements
+    read_policy: conditional
+    used_for: selector and prompt wiring
+    status: active
+  - name: handoff prompt builder
+    type: code
+    target: pkg/cli/handoff_prompt.go
+    relation: implements
+    read_policy: conditional
+    used_for: document inventory and summary generation
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: implements
+    read_policy: conditional
+    used_for: user-facing command description
+    status: active
 ---
 # PLAN
 
@@ -49,7 +61,7 @@ dependencies:
 - [PLAN-02] Add prompt-building helpers that generate document inventory tables with absolute paths and concise usage guidance.
 - [PLAN-03] Rewrite feature-scoped handoff prompts to require documentation reconciliation before handoff.
 - [PLAN-04] Rewrite project-wide handoff prompts to reconcile rollup and active feature docs before handoff.
-- [PLAN-05] Define a final response contract that requires documentation-sync confirmation, dependency-inventory verification, a document table, and a recent-context summary.
+- [PLAN-05] Define a final response contract that requires documentation-sync confirmation, reference-inventory verification, a document table, and a recent-context summary.
 - [PLAN-06] Add tests for feature and project-wide handoff prompt content, then rerun full verification.
 - [PLAN-07] Register the shared `--prompt-only` flag on `handoff` so the command surface matches the rest of Kit's feature-scoped prompt commands.
 
@@ -62,7 +74,7 @@ dependencies:
   - project-wide prompt generation
   - feature-scoped prompt generation
   - document inventory table helpers
-  - dependency-inventory verification guidance
+  - reference-inventory verification guidance
 - `pkg/cli/handoff_test.go`
   - feature prompt assertions
   - project-wide prompt assertions
@@ -115,7 +127,7 @@ dependencies:
 - Add unit tests for project-wide handoff prompts.
 - Assert prompt includes:
   - document reconciliation instructions
-  - dependency-inventory verification instructions
+  - reference-inventory verification instructions
   - documentation inventory table with absolute paths
   - final response contract
   - recent conversation-context summary instructions

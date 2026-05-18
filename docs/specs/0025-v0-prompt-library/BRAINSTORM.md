@@ -16,97 +16,133 @@ relationships:
     target: "0008-dispatch-command"
   - type: "related_to"
     target: "0019-command-surface-simplification"
-dependencies:
-  - name: "Feature notes"
-    type: "notes"
-    location: "docs/notes/0025-v0-prompt-library"
-    used_for: "optional pre-brainstorm research input"
-    status: "optional"
-  - name: "Constitution"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "project invariants, config/state constraints, required brainstorm sections"
-    status: "active"
-  - name: "Repo agent routing docs"
-    type: "doc"
-    location: "AGENTS.md, CLAUDE.md, .github/copilot-instructions.md, docs/agents/README.md"
-    used_for: "scoped loading and repo-local source-of-truth routing"
-    status: "active"
-  - name: "Workflow, RLM, guardrails, tooling docs"
-    type: "doc"
-    location: "docs/agents/WORKFLOWS.md, docs/agents/RLM.md, docs/agents/GUARDRAILS.md, docs/agents/TOOLING.md"
-    used_for: "spec-driven classification, just-in-time prior-work pass, completion bar"
-    status: "active"
-  - name: "kit map output"
-    type: "command output"
-    location: "kit map 0025-v0-prompt-library"
-    used_for: "current feature state, relationship/dependency baseline"
-    status: "active"
-  - name: "Project progress summary"
-    type: "doc"
-    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
-    used_for: "prior-feature index and candidate shortlist"
-    status: "active"
-  - name: "Brainstorm-first workflow spec"
-    type: "prior feature doc"
-    location: "docs/specs/0004-brainstorm-first-workflow/SPEC.md"
-    used_for: "editor-default brainstorm flow and clipboard-first prompt contract"
-    status: "active"
-  - name: "Dispatch command spec"
-    type: "prior feature doc"
-    location: "docs/specs/0008-dispatch-command/SPEC.md"
-    used_for: "editor-backed default capture and prompt-only utility precedent"
-    status: "active"
-  - name: "Support command clipboard defaults spec"
-    type: "prior feature doc"
-    location: "docs/specs/0010-support-command-clipboard-defaults/SPEC.md"
-    used_for: "shared clipboard-first output contract"
-    status: "active"
-  - name: "Command surface simplification spec"
-    type: "prior feature doc"
-    location: "docs/specs/0019-command-surface-simplification/SPEC.md"
-    used_for: "root help grouping and visible command-surface constraints"
-    status: "active"
-  - name: "Typed prompt IR spec"
-    type: "prior feature doc"
-    location: "docs/specs/0022-typed-prompt-ir/SPEC.md"
-    used_for: "structured prompt-building boundary and prompt-producing command inventory"
-    status: "active"
-  - name: "Karabiner prompt script"
-    type: "external script"
-    location: "/Users/jamesonstone/.config/karabiner/scripts/insert_prompt.sh"
-    used_for: "source content and behavior for existing one-off prompts"
-    status: "active"
-  - name: "Project config"
-    type: "config"
-    location: ".kit.yaml"
-    used_for: "local config schema and project prompt storage target"
-    status: "active"
-  - name: "Global Kit config"
-    type: "config"
-    location: "/Users/jamesonstone/.config/kit/.kit.yaml"
-    used_for: "intended global prompt storage target; currently absent"
-    status: "optional"
-  - name: "Clipboard helper"
-    type: "code"
-    location: "pkg/cli/prompt_output.go, pkg/cli/clipboard.go, pkg/cli/output_test.go"
-    used_for: "copy/default-output behavior for prompt retrieval"
-    status: "active"
-  - name: "Editor helper"
-    type: "code"
-    location: "pkg/cli/editor_input.go, pkg/cli/editor_input_test.go"
-    used_for: "editor-backed `kit set prompt` capture"
-    status: "active"
-  - name: "Prompt IR and prompt-producing commands"
-    type: "code"
-    location: "internal/promptdoc/doc.go, pkg/cli/prompt_ir_helpers.go, pkg/cli/*_prompt.go, pkg/cli/prompt_golden_test.go"
-    used_for: "prompt registry scope and built-in prompt handling"
-    status: "active"
-  - name: "Root help and human output helpers"
-    type: "code"
-    location: "pkg/cli/root_help.go, pkg/cli/human_output.go"
-    used_for: "command placement and readable terminal feedback"
-    status: "active"
+references:
+  - name: Feature notes
+    type: notes
+    target: docs/notes/0025-v0-prompt-library
+    relation: uses
+    read_policy: conditional
+    used_for: optional pre-brainstorm research input
+    status: optional
+  - name: Constitution
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: project invariants, config/state constraints, required brainstorm sections
+    status: active
+  - name: Repo agent routing docs
+    type: doc
+    target: AGENTS.md, CLAUDE.md, .github/copilot-instructions.md, docs/agents/README.md
+    relation: informs
+    read_policy: conditional
+    used_for: scoped loading and repo-local source-of-truth routing
+    status: active
+  - name: Workflow, RLM, guardrails, tooling docs
+    type: doc
+    target: docs/agents/WORKFLOWS.md, docs/agents/RLM.md, docs/agents/GUARDRAILS.md, docs/agents/TOOLING.md
+    relation: uses
+    read_policy: conditional
+    used_for: spec-driven classification, just-in-time prior-work pass, completion bar
+    status: active
+  - name: kit map output
+    type: command output
+    target: kit map 0025-v0-prompt-library
+    relation: implements
+    read_policy: conditional
+    used_for: current feature state, relationship/dependency baseline
+    status: active
+  - name: Project progress summary
+    type: doc
+    target: docs/PROJECT_PROGRESS_SUMMARY.md
+    relation: informs
+    read_policy: conditional
+    used_for: prior-feature index and candidate shortlist
+    status: active
+  - name: Brainstorm-first workflow spec
+    type: prior feature doc
+    target: docs/specs/0004-brainstorm-first-workflow/SPEC.md
+    relation: informs
+    read_policy: conditional
+    used_for: editor-default brainstorm flow and clipboard-first prompt contract
+    status: active
+  - name: Dispatch command spec
+    type: prior feature doc
+    target: docs/specs/0008-dispatch-command/SPEC.md
+    relation: implements
+    read_policy: conditional
+    used_for: editor-backed default capture and prompt-only utility precedent
+    status: active
+  - name: Support command clipboard defaults spec
+    type: prior feature doc
+    target: docs/specs/0010-support-command-clipboard-defaults/SPEC.md
+    relation: implements
+    read_policy: conditional
+    used_for: shared clipboard-first output contract
+    status: active
+  - name: Command surface simplification spec
+    type: prior feature doc
+    target: docs/specs/0019-command-surface-simplification/SPEC.md
+    relation: implements
+    read_policy: conditional
+    used_for: root help grouping and visible command-surface constraints
+    status: active
+  - name: Typed prompt IR spec
+    type: prior feature doc
+    target: docs/specs/0022-typed-prompt-ir/SPEC.md
+    relation: implements
+    read_policy: conditional
+    used_for: structured prompt-building boundary and prompt-producing command inventory
+    status: active
+  - name: Karabiner prompt script
+    type: external script
+    target: /Users/jamesonstone/.config/karabiner/scripts/insert_prompt.sh
+    relation: informs
+    read_policy: conditional
+    used_for: source content and behavior for existing one-off prompts
+    status: active
+  - name: Project config
+    type: config
+    target: .kit.yaml
+    relation: informs
+    read_policy: conditional
+    used_for: local config schema and project prompt storage target
+    status: active
+  - name: Global Kit config
+    type: config
+    target: /Users/jamesonstone/.config/kit/.kit.yaml
+    relation: informs
+    read_policy: conditional
+    used_for: intended global prompt storage target; currently absent
+    status: optional
+  - name: Clipboard helper
+    type: code
+    target: pkg/cli/prompt_output.go, pkg/cli/clipboard.go, pkg/cli/output_test.go
+    relation: verifies
+    read_policy: evidence
+    used_for: copy/default-output behavior for prompt retrieval
+    status: active
+  - name: Editor helper
+    type: code
+    target: pkg/cli/editor_input.go, pkg/cli/editor_input_test.go
+    relation: verifies
+    read_policy: evidence
+    used_for: editor-backed `kit set prompt` capture
+    status: active
+  - name: Prompt IR and prompt-producing commands
+    type: code
+    target: internal/promptdoc/doc.go, pkg/cli/prompt_ir_helpers.go, pkg/cli/*_prompt.go, pkg/cli/prompt_golden_test.go
+    relation: verifies
+    read_policy: evidence
+    used_for: prompt registry scope and built-in prompt handling
+    status: active
+  - name: Root help and human output helpers
+    type: code
+    target: pkg/cli/root_help.go, pkg/cli/human_output.go
+    relation: implements
+    read_policy: conditional
+    used_for: command placement and readable terminal feedback
+    status: active
 ---
 # BRAINSTORM
 

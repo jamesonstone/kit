@@ -5,37 +5,49 @@ feature:
   id: "0020"
   slug: "versioned-instruction-model"
   dir: "0020-versioned-instruction-model"
-dependencies:
-  - name: "scaffold-agents command"
-    type: "code"
-    location: "pkg/cli/scaffold_agents.go"
-    used_for: "version flag, confirmation flow, and user-facing messaging"
-    status: "active"
-  - name: "instruction write planning"
-    type: "code"
-    location: "pkg/cli/instruction_files.go"
-    used_for: "version-aware create, merge, and downgrade behavior"
-    status: "active"
-  - name: "instruction template registry"
-    type: "code"
-    location: "internal/templates/instruction_templates.go"
-    used_for: "legacy verbose templates and new thin templates"
-    status: "active"
-  - name: "config persistence"
-    type: "code"
-    location: "internal/config/config.go"
-    used_for: "remembering the active instruction version"
-    status: "active"
-  - name: "spec prompt builders"
-    type: "code"
-    location: "pkg/cli/spec_context.go`, `pkg/cli/spec_template.go`, `pkg/cli/spec_output.go"
-    used_for: "docs-first routing and RLM guidance"
-    status: "active"
-  - name: "reconcile audits"
-    type: "code"
-    location: "pkg/cli/reconcile_audit.go"
-    used_for: "version-aware drift detection"
-    status: "active"
+references:
+  - name: scaffold-agents command
+    type: code
+    target: pkg/cli/scaffold_agents.go
+    relation: implements
+    read_policy: conditional
+    used_for: version flag, confirmation flow, and user-facing messaging
+    status: active
+  - name: instruction write planning
+    type: code
+    target: pkg/cli/instruction_files.go
+    relation: implements
+    read_policy: conditional
+    used_for: version-aware create, merge, and downgrade behavior
+    status: active
+  - name: instruction template registry
+    type: code
+    target: internal/templates/instruction_templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: legacy verbose templates and new thin templates
+    status: active
+  - name: config persistence
+    type: code
+    target: internal/config/config.go
+    relation: implements
+    read_policy: conditional
+    used_for: remembering the active instruction version
+    status: active
+  - name: spec prompt builders
+    type: code
+    target: pkg/cli/spec_context.go`, `pkg/cli/spec_template.go`, `pkg/cli/spec_output.go
+    relation: guides
+    read_policy: conditional
+    used_for: docs-first routing and RLM guidance
+    status: active
+  - name: reconcile audits
+    type: code
+    target: pkg/cli/reconcile_audit.go
+    relation: implements
+    read_policy: conditional
+    used_for: version-aware drift detection
+    status: active
 ---
 # PLAN
 

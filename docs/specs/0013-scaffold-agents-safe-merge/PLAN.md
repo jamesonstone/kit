@@ -5,32 +5,42 @@ feature:
   id: "0013"
   slug: "scaffold-agents-safe-merge"
   dir: "0013-scaffold-agents-safe-merge"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "canonical scaffold behavior and write-mode rules"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "shipped scaffold-agents behavior summary"
-    status: "active"
-  - name: "scaffold agents command"
-    type: "code"
-    location: "pkg/cli/scaffold_agents.go"
-    used_for: "overwrite confirmation and append-only flow"
-    status: "active"
-  - name: "instruction-file merge helpers"
-    type: "code"
-    location: "pkg/cli/instruction_files.go`, `pkg/cli/instruction_file_merge.go"
-    used_for: "deterministic append-only behavior"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "user-facing command and flag docs"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical scaffold behavior and write-mode rules
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: shipped scaffold-agents behavior summary
+    status: active
+  - name: scaffold agents command
+    type: code
+    target: pkg/cli/scaffold_agents.go
+    relation: implements
+    read_policy: conditional
+    used_for: overwrite confirmation and append-only flow
+    status: active
+  - name: instruction-file merge helpers
+    type: code
+    target: pkg/cli/instruction_files.go`, `pkg/cli/instruction_file_merge.go
+    relation: implements
+    read_policy: conditional
+    used_for: deterministic append-only behavior
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: implements
+    read_policy: conditional
+    used_for: user-facing command and flag docs
+    status: active
 ---
 # PLAN
 

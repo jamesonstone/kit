@@ -206,9 +206,9 @@ Rules:
 - `## RELATIONSHIPS` must be either `none` or one bullet per explicit cross-feature relationship using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
 - inline-code-wrapped targets after `builds on:`, `depends on:`, or `related to:` are valid, but Kit must normalize them back to the canonical feature ID
 - relationship targets must use canonical feature directory identifiers such as `0007-catchup-command`
-- keep supporting inputs in a dependency table with columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`
-- `Status` should distinguish `active`, `optional`, and `stale` inputs
-- when a dependency is a Figma or MCP-driven design source, record the exact URL or file/node reference in `Location`
+- keep supporting inputs in front matter `references` with `name`, `type`, `target`, `relation`, `read_policy`, `used_for`, and `status`
+- `status` should distinguish `active`, `optional`, and `stale` inputs
+- when a reference is a Figma or MCP-driven design source, record the exact URL or file/node reference in `target` and use stable selectors when needed
 
 ---
 
@@ -260,7 +260,7 @@ Rules:
 - explain strategy, not code
 - name decisions explicitly
 - defer code unless essential
-- keep implementation-strategy dependencies in a dependency table with columns `Dependency`, `Type`, `Location`, `Used For`, and `Status`
+- keep implementation-strategy inputs in front matter `references` with exact targets, stable selectors, relations, read policies, and status values
 
 ---
 
@@ -450,9 +450,11 @@ CLI flags always override `.kit.yaml`.
 
 - create `.kit.yaml` if missing
 - create or populate `~/.config/kit/.kit.yaml` with missing default fields
+- create `.coderabbit.yaml` if missing
+- create `.github/pull_request_template.md` if missing
 - create `docs/CONSTITUTION.md` if missing
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
-- if files exist, attempt to merge (preserve existing content, add missing sections)
+- if files exist, preserve them; Kit-managed markdown documents may merge missing required sections
 - output a prepared prompt for drafting `docs/CONSTITUTION.md`
 - by default, copy that prompt to the clipboard instead of printing the prompt body
 - make the first visible next step: paste the copied prompt into the agent to draft `docs/CONSTITUTION.md`
@@ -482,7 +484,7 @@ CLI flags always override `.kit.yaml`.
 - require prior feature docs to be conditional reads gated by explicit
   relevance: shared interfaces or contracts, overlapping files or modules,
   migrations or data shape, acceptance criteria, or explicit relationship or
-  dependency links
+  reference links
 - require the agent to inspect at most 5 prior feature directories before
   narrowing further or asking a clarifying question
 - require the agent to extract only concrete decision-shaping facts from prior
@@ -944,18 +946,18 @@ Behavior:
 - selecting `0`: outputs project-level context including:
   - documentation inventory and current development status across active non-paused features
   - instructions to reconcile stale docs before handoff
-  - dependency-inventory verification for touched feature docs
+  - reference-inventory verification for touched feature docs
 - with feature argument: outputs feature-specific context including:
   - feature location and phase
   - required reading (`BRAINSTORM.md` when present, then `SPEC.md`, `PLAN.md`, `TASKS.md`)
-  - instructions to refresh dependency tables in `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` when those docs exist
+  - instructions to refresh front matter references in `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` when those docs exist
   - a final response contract for concise documentation sync and recent-context summary
 
 Flags:
 
 - `--copy` / `-c` — copy output to clipboard (pbcopy)
 
-Use case: when you run out of tokens or hit rate limits, run `kit handoff`, let the current agent reconcile docs and dependency inventories, then transfer the final handoff summary.
+Use case: when you run out of tokens or hit rate limits, run `kit handoff`, let the current agent reconcile docs and reference inventories, then transfer the final handoff summary.
 
 ---
 

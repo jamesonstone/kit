@@ -122,7 +122,7 @@ func scaffoldBrainstormWorkflow(featureRef string) (scaffoldResult, error) {
 		content := templates.BuildBrainstormArtifactForFeature(
 			"",
 			document.FeatureMetadataFromDir(feat.DirName),
-			[]document.MetadataDependency{featureNotesDependency(notesRelPath)},
+			[]document.MetadataReference{featureNotesReference(notesRelPath)},
 		)
 		if frontendProfileActive {
 			content = seedFrontendProfileDependencyRows(content, document.TypeBrainstorm, feat.DirName)

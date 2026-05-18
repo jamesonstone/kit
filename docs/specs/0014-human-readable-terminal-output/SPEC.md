@@ -5,22 +5,28 @@ feature:
   id: "0014"
   slug: "human-readable-terminal-output"
   dir: "0014-human-readable-terminal-output"
-dependencies:
-  - name: "Cobra help templates"
-    type: "library"
-    location: "github.com/spf13/cobra"
-    used_for: "help and usage presentation updates"
-    status: "active"
-  - name: "terminal detection"
-    type: "library"
-    location: "golang.org/x/term"
-    used_for: "TTY-only human formatting decisions"
-    status: "active"
-  - name: "existing CLI output helpers"
-    type: "code"
-    location: "pkg/cli/root.go`, `pkg/cli/status_output.go`, `pkg/cli/editor_input.go"
-    used_for: "shared formatting integration points"
-    status: "active"
+references:
+  - name: Cobra help templates
+    type: library
+    target: github.com/spf13/cobra
+    relation: uses
+    read_policy: conditional
+    used_for: help and usage presentation updates
+    status: active
+  - name: terminal detection
+    type: library
+    target: golang.org/x/term
+    relation: uses
+    read_policy: conditional
+    used_for: TTY-only human formatting decisions
+    status: active
+  - name: existing CLI output helpers
+    type: code
+    target: pkg/cli/root.go`, `pkg/cli/status_render.go`, `pkg/cli/editor_input.go
+    relation: implements
+    read_policy: conditional
+    used_for: shared formatting integration points
+    status: active
 ---
 # SPEC
 
@@ -75,7 +81,7 @@ none
 | ---------- | ---- | -------- | -------- | ------ |
 | Cobra help templates | library | `github.com/spf13/cobra` | help and usage presentation updates | active |
 | terminal detection | library | `golang.org/x/term` | TTY-only human formatting decisions | active |
-| existing CLI output helpers | code | `pkg/cli/root.go`, `pkg/cli/status_output.go`, `pkg/cli/editor_input.go` | shared formatting integration points | active |
+| existing CLI output helpers | code | `pkg/cli/root.go`, `pkg/cli/status_render.go`, `pkg/cli/editor_input.go` | shared formatting integration points | active |
 
 ## REQUIREMENTS
 

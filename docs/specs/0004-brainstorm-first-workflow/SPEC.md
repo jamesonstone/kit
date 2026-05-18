@@ -5,27 +5,35 @@ feature:
   id: "0004"
   slug: "brainstorm-first-workflow"
   dir: "0004-brainstorm-first-workflow"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "workflow constraints and prompt contract updates"
-    status: "active"
-  - name: "core artifact templates"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "brainstorm and downstream prompt scaffolding"
-    status: "active"
-  - name: "project progress summary"
-    type: "doc"
-    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
-    used_for: "brainstorm-aware phase and summary reporting"
-    status: "active"
-  - name: "repository instruction files"
-    type: "doc"
-    location: "AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md"
-    used_for: "alignment of the repo's workflow contract"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: workflow constraints and prompt contract updates
+    status: active
+  - name: core artifact templates
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: brainstorm and downstream prompt scaffolding
+    status: active
+  - name: project progress summary
+    type: doc
+    target: docs/PROJECT_PROGRESS_SUMMARY.md
+    relation: informs
+    read_policy: conditional
+    used_for: brainstorm-aware phase and summary reporting
+    status: active
+  - name: repository instruction files
+    type: doc
+    target: AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md
+    relation: informs
+    read_policy: conditional
+    used_for: alignment of the repo's workflow contract
+    status: active
 ---
 # SPEC
 
@@ -47,7 +55,7 @@ Kit currently treats brainstorming as an external or standalone activity, while 
 - emit a planning-only prompt that begins with `/plan`
 - require the coding agent to use numbered lists, ask clarifying questions in batches of up to 10, include a recommended default/proposed solution/assumption for every question, accept `yes` / `y` as full-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` as numbered approval, support `no` / `n` overrides, show percentage-understanding progress after each batch, and continue until the specification is precise enough for a production-quality solution
 - require the coding agent to persist findings to `BRAINSTORM.md`
-- require newly generated or touched `BRAINSTORM.md` and `PLAN.md` docs to keep a phase dependency inventory
+- require newly generated or touched `BRAINSTORM.md` and `PLAN.md` docs to keep a phase reference inventory
 - reference `BRAINSTORM.md` from `spec`, `plan`, `tasks`, `implement`, and `reflect` when present
 - require downstream prompts that use the `>=95%` clarification loop to preserve the same approval semantics across `spec`, `plan`, and `tasks`
 - default `brainstorm`, `spec`, `plan`, `tasks`, `implement`, and `reflect` to copying generated prompts to the clipboard instead of printing the prompt body to stdout

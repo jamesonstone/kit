@@ -65,11 +65,23 @@ func buildReconcilePrompt(report *reconcileReport) string {
 			)...,
 		)
 	}
+	if report.ReferenceMigration {
+		rules = append(rules,
+			"migrate deprecated front matter `dependencies` to canonical `references`; do not preserve the old front matter field",
+			"for each migrated entry, map `location` to `target`, add a stable `id` when the reference may be updated later, add a graph `relation`, add `read_policy`, and keep `used_for` plus `status`",
+			"use stable selectors such as headings, symbols, artifact IDs, command flags, URLs, or node IDs; set `selector_type` to `artifact`, `heading`, `symbol`, `command`, `url`, or `node_id`; replace unpinned line ranges when practical",
+			"treat `relation` as the referenced target's role relative to the source artifact",
+			"prefer `read_policy: must` for constraints, `conditional` for supporting inputs, `evidence` for verification material, and `skip` for stale references",
+		)
+	}
 
 	snapshot := []string{
 		fmt.Sprintf("findings: %d (%d errors, %d warnings)", len(report.Findings), errorCount, warningCount),
 		fmt.Sprintf("files to touch: %d", len(fileSummaries)),
 		fmt.Sprintf("verify after edits: %s", verifyCmd),
+	}
+	if report.ReferenceMigration {
+		snapshot = append(snapshot, "reference migration: enabled")
 	}
 	if report.NeedsRollup {
 		snapshot = append(snapshot, "also run: `kit rollup`")
@@ -103,6 +115,9 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Raw("/plan")
 		doc.Paragraph(fmt.Sprintf("Reconcile Kit-managed docs for the %s.", scope))
+		if report.ReferenceMigration {
+			doc.Paragraph("Migration target: replace deprecated front matter `dependencies` with canonical graph-like `references` and keep the prompt/context surface pointer-only.")
+		}
 		doc.Paragraph("Rules:")
 		doc.BulletList(rules...)
 		doc.Paragraph("Audit snapshot:")
@@ -194,6 +209,8 @@ func reconcileFindingCategory(finding reconcileFinding) string {
 	base := filepath.Base(finding.FilePath)
 
 	switch {
+	case strings.Contains(lowerIssue, "reference") || strings.Contains(lowerIssue, "dependencies are deprecated"):
+		return "references"
 	case strings.Contains(lowerIssue, "relationship"):
 		return "relationships"
 	case strings.Contains(lowerIssue, "task `") || strings.Contains(lowerIssue, "task details") || base == "TASKS.md":
@@ -238,6 +255,8 @@ func reconcileSeverityCounts(findings []reconcileFinding) (int, int) {
 func shortActionForFinding(finding reconcileFinding) string {
 	issue := strings.ToLower(finding.Issue)
 	switch {
+	case strings.Contains(issue, "reference") || strings.Contains(issue, "dependencies are deprecated"):
+		return "migrate references"
 	case strings.Contains(issue, "task `") || strings.Contains(issue, "task details"):
 		return "align task IDs"
 	case strings.Contains(issue, "relationship"):

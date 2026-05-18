@@ -33,6 +33,7 @@ all decisions.
 - No vendor lock-in to any coding agent (Claude, Copilot, Codex, etc.).
 - Documents use only markdown and YAML — universally readable.
 - Repository instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) stay aligned with canonical docs and summarize the active workflow contract for supported tools.
+- `kit init` also creates shared review support files, including `.coderabbit.yaml` and `.github/pull_request_template.md`, without overwriting existing local versions.
 - Agents can be swapped with zero document changes.
 
 ### 4. Minimal Magic, Explicit State

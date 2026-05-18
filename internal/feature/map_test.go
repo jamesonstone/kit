@@ -264,7 +264,7 @@ func TestBuildProjectMap_UsesDependencyOrderForProjectGraph(t *testing.T) {
 	}
 }
 
-func TestBuildProjectMap_ReadsFrontMatterRelationshipsAndDependencies(t *testing.T) {
+func TestBuildProjectMap_ReadsFrontMatterRelationshipsAndReferences(t *testing.T) {
 	projectRoot := t.TempDir()
 	specsDir := filepath.Join(projectRoot, "docs", "specs")
 	for _, dirName := range []string{"0001-ui", "0002-api"} {
@@ -289,10 +289,14 @@ feature:
 relationships:
   - type: depends_on
     target: 0002-api
-dependencies:
+references:
   - name: Design brief
     type: doc
-    location: docs/notes/0001-ui/design/brief.md
+    target: docs/notes/0001-ui/design/brief.md
+    selector_type: heading
+    selector: Constraints
+    relation: constrains
+    read_policy: must
     used_for: UI constraints
     status: active
 ---
@@ -306,6 +310,7 @@ Relationships are tracked in front matter.
 
 Dependencies are tracked in front matter.
 `)
+	writeMapFile(t, filepath.Join(projectRoot, "docs", "notes", "0001-ui", "design", "brief.md"), "# Brief\n\n## Constraints\n\nUse the existing design system.\n")
 	writeMapFile(t, filepath.Join(specsDir, "0002-api", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\nnone\n")
 
 	projectMap, err := BuildProjectMap(projectRoot, cfg)
@@ -316,8 +321,11 @@ Dependencies are tracked in front matter.
 	if len(ui.Outgoing) != 1 || ui.Outgoing[0].Type != "depends on" || ui.Outgoing[0].TargetFeatureID != "0002-api" {
 		t.Fatalf("unexpected outgoing relationships: %#v", ui.Outgoing)
 	}
-	if len(ui.Dependencies) != 1 || ui.Dependencies[0].Dependency != "Design brief" || ui.Dependencies[0].Location != "docs/notes/0001-ui/design/brief.md" {
-		t.Fatalf("unexpected dependencies: %#v", ui.Dependencies)
+	if len(ui.References) != 1 || ui.References[0].Reference != "Design brief" || ui.References[0].Target != "docs/notes/0001-ui/design/brief.md" {
+		t.Fatalf("unexpected references: %#v", ui.References)
+	}
+	if !ui.References[0].Resolved || ui.References[0].Resolution != "heading" {
+		t.Fatalf("reference resolution = resolved:%v kind:%q error:%q, want resolved heading", ui.References[0].Resolved, ui.References[0].Resolution, ui.References[0].ResolutionError)
 	}
 }
 

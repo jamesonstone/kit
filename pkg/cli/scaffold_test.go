@@ -48,7 +48,7 @@ func TestRunBrainstormPrepareCreatesScaffoldWithoutPrompt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("os.ReadFile() error = %v", err)
 	}
-	if !strings.Contains(string(content), "location: docs/notes/0001-sample-feature") {
+	if !strings.Contains(string(content), "target: docs/notes/0001-sample-feature") {
 		t.Fatalf("expected brainstorm metadata to reference notes directory, got %q", string(content))
 	}
 }

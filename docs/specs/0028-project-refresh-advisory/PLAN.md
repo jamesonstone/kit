@@ -12,37 +12,49 @@ relationships:
     target: "0025-v0-prompt-library"
   - type: "related_to"
     target: "0027-implement-readiness-gate"
-dependencies:
-  - name: "prompt library"
-    type: "code"
-    location: "pkg/cli/prompt_builtin_kit.go, pkg/cli/prompt_builtin_render.go"
-    used_for: "built-in prompt registration and runtime rendering"
-    status: "active"
-  - name: "project refresh prompt"
-    type: "code"
-    location: "pkg/cli/project_refresh_prompt.go"
-    used_for: "new prompt body and advisory text"
-    status: "active"
-  - name: "reflect command"
-    type: "code"
-    location: "pkg/cli/reflect.go"
-    used_for: "late workflow advisory gate"
-    status: "active"
-  - name: "complete command"
-    type: "code"
-    location: "pkg/cli/complete.go"
-    used_for: "post-completion advisory output"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "user-facing command guidance"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "canonical product behavior summary"
-    status: "active"
+references:
+  - name: prompt library
+    type: code
+    target: pkg/cli/prompt_builtin_kit.go, pkg/cli/prompt_builtin_render.go
+    relation: implements
+    read_policy: conditional
+    used_for: built-in prompt registration and runtime rendering
+    status: active
+  - name: project refresh prompt
+    type: code
+    target: pkg/cli/project_refresh_prompt.go
+    relation: implements
+    read_policy: conditional
+    used_for: new prompt body and advisory text
+    status: active
+  - name: reflect command
+    type: code
+    target: pkg/cli/reflect.go
+    relation: implements
+    read_policy: conditional
+    used_for: late workflow advisory gate
+    status: active
+  - name: complete command
+    type: code
+    target: pkg/cli/complete.go
+    relation: implements
+    read_policy: conditional
+    used_for: post-completion advisory output
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: guides
+    read_policy: conditional
+    used_for: user-facing command guidance
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical product behavior summary
+    status: active
 ---
 # PLAN
 

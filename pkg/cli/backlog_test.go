@@ -55,9 +55,9 @@ func TestRunBrainstormBacklog_CreatesPausedBacklogItem(t *testing.T) {
 	if len(warnings) > 0 || len(relationships) != 1 || relationships[0].Type != "related to" || relationships[0].Target != "0001-current-endpoint" {
 		t.Fatalf("expected front matter relationship to active feature, got relationships=%#v warnings=%#v content=%q", relationships, warnings, string(content))
 	}
-	dependencies := doc.Dependencies()
-	if len(dependencies) == 0 || dependencies[0].Name != featureNotesDependencyName || dependencies[0].Location != "docs/notes/0002-legacy-endpoint-refactor" {
-		t.Fatalf("expected feature notes dependency, got %#v content=%q", dependencies, string(content))
+	references := doc.References()
+	if len(references) == 0 || references[0].Name != featureNotesReferenceName || references[0].Target != "docs/notes/0002-legacy-endpoint-refactor" {
+		t.Fatalf("expected feature notes reference, got %#v content=%q", references, string(content))
 	}
 	if _, err := os.Stat(filepath.Join(projectRoot, "docs", "notes", "0002-legacy-endpoint-refactor", ".gitkeep")); err != nil {
 		t.Fatalf("expected backlog notes .gitkeep, got %v", err)

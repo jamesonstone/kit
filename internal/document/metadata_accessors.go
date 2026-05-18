@@ -15,11 +15,11 @@ func (d *Document) Relationships() ([]Relationship, []RelationshipParseWarning) 
 	return ParseRelationshipsSectionRelaxed(d.GetSection("RELATIONSHIPS"))
 }
 
-func (d *Document) Dependencies() []MetadataDependency {
-	if d.Metadata != nil && len(d.Metadata.Dependencies) > 0 {
-		return append([]MetadataDependency{}, d.Metadata.Dependencies...)
+func (d *Document) References() []MetadataReference {
+	if d.Metadata != nil && len(d.Metadata.References) > 0 {
+		return append([]MetadataReference{}, d.Metadata.References...)
 	}
-	return DependenciesFromSection(d.GetSection("DEPENDENCIES"))
+	return nil
 }
 
 func (d *Document) Skills() []MetadataSkill {
@@ -47,41 +47,6 @@ func (d *Document) IntentText(sectionName string) string {
 		return ExtractFirstParagraph(section)
 	}
 	return ""
-}
-
-func DependenciesFromSection(section *Section) []MetadataDependency {
-	if section == nil {
-		return nil
-	}
-
-	rows := metadataTableRows(section.Content)
-	if len(rows) < 3 {
-		return nil
-	}
-
-	header := metadataHeaderIndex(rows[0])
-	required := []string{"dependency", "type", "location", "used for", "status"}
-	for _, key := range required {
-		if _, ok := header[key]; !ok {
-			return nil
-		}
-	}
-
-	var dependencies []MetadataDependency
-	for _, row := range rows[2:] {
-		name := metadataCell(row, header["dependency"])
-		if name == "" || strings.EqualFold(normalizeMetadataCell(name), "none") {
-			continue
-		}
-		dependencies = append(dependencies, MetadataDependency{
-			Name:     name,
-			Type:     metadataCell(row, header["type"]),
-			Location: metadataCell(row, header["location"]),
-			UsedFor:  metadataCell(row, header["used for"]),
-			Status:   metadataCell(row, header["status"]),
-		})
-	}
-	return dependencies
 }
 
 func SkillsFromSection(section *Section) []MetadataSkill {
@@ -175,25 +140,6 @@ func (d *Document) relationshipConflicts() []MetadataConflict {
 	}}
 }
 
-func (d *Document) dependencyConflicts() []MetadataConflict {
-	if d.Metadata == nil || len(d.Metadata.Dependencies) == 0 {
-		return nil
-	}
-	bodyDependencies := DependenciesFromSection(d.GetSection("DEPENDENCIES"))
-	if len(bodyDependencies) == 0 {
-		return nil
-	}
-	if dependencySetKey(d.Metadata.Dependencies) == dependencySetKey(bodyDependencies) {
-		return nil
-	}
-	return []MetadataConflict{{
-		Field:      "dependencies",
-		FrontValue: dependencySetKey(d.Metadata.Dependencies),
-		BodyValue:  dependencySetKey(bodyDependencies),
-		Message:    "front matter dependencies differ from legacy body dependencies",
-	}}
-}
-
 func (d *Document) skillConflicts() []MetadataConflict {
 	if d.Metadata == nil || len(d.Metadata.Skills) == 0 {
 		return nil
@@ -264,16 +210,21 @@ func relationshipSetKey(relationships []Relationship) string {
 	return sortedKey(parts)
 }
 
-func dependencySetKey(dependencies []MetadataDependency) string {
-	parts := make([]string, 0, len(dependencies))
-	for _, dependency := range dependencies {
+func referenceSetKey(references []MetadataReference) string {
+	parts := make([]string, 0, len(references))
+	for _, reference := range references {
 		parts = append(parts, fmt.Sprintf(
-			"%s:%s:%s:%s:%s",
-			normalizeMetadataCell(dependency.Name),
-			normalizeMetadataCell(dependency.Type),
-			normalizeMetadataCell(dependency.Location),
-			normalizeMetadataCell(dependency.UsedFor),
-			normalizeMetadataCell(dependency.Status),
+			"%s:%s:%s:%s:%s:%s:%s:%s:%s:%s",
+			normalizeMetadataCell(reference.ID),
+			normalizeMetadataCell(reference.Name),
+			normalizeMetadataCell(reference.Type),
+			normalizeMetadataCell(reference.Target),
+			normalizeMetadataCell(reference.SelectorType),
+			normalizeMetadataCell(reference.Selector),
+			normalizeMetadataCell(reference.Relation),
+			normalizeMetadataCell(reference.ReadPolicy),
+			normalizeMetadataCell(reference.UsedFor),
+			normalizeMetadataCell(reference.Status),
 		))
 	}
 	return sortedKey(parts)

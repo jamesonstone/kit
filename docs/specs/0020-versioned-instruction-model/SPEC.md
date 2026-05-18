@@ -14,47 +14,63 @@ relationships:
     target: "0014-human-readable-terminal-output"
   - type: "builds_on"
     target: "0017-reconcile-command"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "canonical workflow, change classification, and repo-instruction invariants"
-    status: "active"
-  - name: "scaffold agents command"
-    type: "code"
-    location: "pkg/cli/scaffold_agents.go"
-    used_for: "versioned instruction scaffolding behavior"
-    status: "active"
-  - name: "instruction templates"
-    type: "code"
-    location: "internal/templates/instruction_templates.go"
-    used_for: "current verbose instruction model and scaffold template wiring"
-    status: "active"
-  - name: "instruction merge helpers"
-    type: "code"
-    location: "pkg/cli/instruction_files.go`, `pkg/cli/instruction_file_merge.go"
-    used_for: "safe append-only and overwrite behavior"
-    status: "active"
-  - name: "spec prompt flow"
-    type: "code"
-    location: "pkg/cli/spec_context.go`, `pkg/cli/spec_template.go`, `pkg/cli/spec_output.go`, `pkg/cli/spec_rlm.go"
-    used_for: "routing prompts through repo-local docs and RLM guidance"
-    status: "active"
-  - name: "skill prompt suffix"
-    type: "code"
-    location: "pkg/cli/skills_prompt.go"
-    used_for: "runtime skill and instruction discovery wording"
-    status: "active"
-  - name: "reconcile audits"
-    type: "code"
-    location: "pkg/cli/reconcile_audit.go"
-    used_for: "version-aware instruction drift detection"
-    status: "active"
-  - name: "OpenAI harness engineering article"
-    type: "doc"
-    location: "https://openai.com/index/harness-engineering/"
-    used_for: "thin ToC, progressive disclosure, and repo-local system-of-record model"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical workflow, change classification, and repo-instruction invariants
+    status: active
+  - name: scaffold agents command
+    type: code
+    target: pkg/cli/scaffold_agents.go
+    relation: implements
+    read_policy: conditional
+    used_for: versioned instruction scaffolding behavior
+    status: active
+  - name: instruction templates
+    type: code
+    target: internal/templates/instruction_templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: current verbose instruction model and scaffold template wiring
+    status: active
+  - name: instruction merge helpers
+    type: code
+    target: pkg/cli/instruction_files.go`, `pkg/cli/instruction_file_merge.go
+    relation: implements
+    read_policy: conditional
+    used_for: safe append-only and overwrite behavior
+    status: active
+  - name: spec prompt flow
+    type: code
+    target: pkg/cli/spec_context.go`, `pkg/cli/spec_template.go`, `pkg/cli/spec_output.go`, `pkg/cli/spec_rlm.go
+    relation: guides
+    read_policy: conditional
+    used_for: routing prompts through repo-local docs and RLM guidance
+    status: active
+  - name: skill prompt suffix
+    type: code
+    target: pkg/cli/skills_prompt.go
+    relation: implements
+    read_policy: conditional
+    used_for: runtime skill and instruction discovery wording
+    status: active
+  - name: reconcile audits
+    type: code
+    target: pkg/cli/reconcile_audit.go
+    relation: implements
+    read_policy: conditional
+    used_for: version-aware instruction drift detection
+    status: active
+  - name: OpenAI harness engineering article
+    type: doc
+    target: https://openai.com/index/harness-engineering/
+    relation: informs
+    read_policy: conditional
+    used_for: thin ToC, progressive disclosure, and repo-local system-of-record model
+    status: active
 ---
 # SPEC
 
@@ -149,7 +165,7 @@ dependencies:
   - filter to the minimal relevant subset
   - map bounded reads or file-scoped workers
   - reduce into a synthesized result with source attribution
-- [SPEC-21] Version `2` prompts must require the selected docs, skills, and references to be recorded in feature dependency tables when they materially shape the feature.
+- [SPEC-21] Version `2` prompts must require the selected docs, skills, and references to be recorded in feature front matter references when they materially shape the feature.
 - [SPEC-22] Version-aware validation or reconciliation must enforce the thin-ToC contract only for `v2` repos and preserve the legacy contract for `v1` repos.
 - [SPEC-23] Reconciliation guidance for `v2` repos must point users toward restoring the docs tree and thin entrypoints rather than the verbose model.
 - [SPEC-24] Existing overwrite confirmation and append-only safety behavior must remain intact across both versions.

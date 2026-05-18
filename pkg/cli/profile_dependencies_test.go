@@ -11,33 +11,38 @@ import (
 
 func TestFeatureHasActiveFrontendProfileDependency(t *testing.T) {
 	tests := []struct {
-		name string
-		row  string
-		want bool
+		name   string
+		target string
+		status string
+		want   bool
 	}{
 		{
-			name: "active canonical row",
-			row:  "| `Frontend profile` | `profile` | `--profile=frontend` | apply frontend-specific coding-agent instruction set | Active |",
-			want: true,
+			name:   "active canonical reference",
+			target: frontendProfileReferenceTarget,
+			status: document.ReferenceStatusActive,
+			want:   true,
 		},
 		{
-			name: "optional row does not activate",
-			row:  "| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | optional |",
+			name:   "optional reference does not activate",
+			target: frontendProfileReferenceTarget,
+			status: document.ReferenceStatusOptional,
 		},
 		{
-			name: "stale row does not activate",
-			row:  "| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | stale |",
+			name:   "stale reference does not activate",
+			target: frontendProfileReferenceTarget,
+			status: document.ReferenceStatusStale,
 		},
 		{
-			name: "wrong location does not activate",
-			row:  "| Frontend profile | profile | docs/agents/frontend.md | apply frontend-specific coding-agent instruction set | active |",
+			name:   "wrong target does not activate",
+			target: "docs/agents/frontend.md",
+			status: document.ReferenceStatusActive,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			featurePath := filepath.Join(t.TempDir(), "docs", "specs", "0001-ui")
-			writeFile(t, filepath.Join(featurePath, "SPEC.md"), dependencyDoc(tt.row))
+			writeFile(t, filepath.Join(featurePath, "SPEC.md"), frontendProfileReferenceDoc(tt.target, tt.status))
 
 			got := featureHasActiveFrontendProfileDependency(featurePath)
 			if got != tt.want {
@@ -65,7 +70,7 @@ func TestFeatureHasActiveFrontendProfileDependencyIgnoresMalformedTables(t *test
 
 func TestEffectivePromptProfileResolution(t *testing.T) {
 	featurePath := filepath.Join(t.TempDir(), "docs", "specs", "0001-ui")
-	writeFile(t, filepath.Join(featurePath, "SPEC.md"), dependencyDoc("| Frontend profile | profile | --profile=frontend | apply frontend-specific coding-agent instruction set | active |"))
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), frontendProfileReferenceDoc(frontendProfileReferenceTarget, document.ReferenceStatusActive))
 
 	restorePromptProfileState(t, promptProfileNone, false)
 	if got := effectivePromptProfile(featurePath); got != promptProfileFrontend {
@@ -126,7 +131,7 @@ func TestEnsureFrontendProfileDependencyRowsAppendsIdempotently(t *testing.T) {
 		"name: Frontend profile",
 		"used_for: apply frontend-specific coding-agent instruction set",
 		"name: Design materials",
-		"location: docs/notes/0001-ui/design",
+		"target: docs/notes/0001-ui/design",
 		"<!-- keep this comment -->",
 	}
 	for _, check := range checks {
@@ -135,11 +140,11 @@ func TestEnsureFrontendProfileDependencyRowsAppendsIdempotently(t *testing.T) {
 		}
 	}
 	doc := document.Parse(text, specPath, document.TypeSpec)
-	if !hasDependency(doc.Dependencies(), frontendProfileDependencyName, frontendProfileDependencyLocation, document.DependencyStatusActive) {
-		t.Fatalf("expected one active frontend profile dependency in front matter, got %#v", doc.Dependencies())
+	if !hasReference(doc.References(), frontendProfileDependencyName, frontendProfileReferenceTarget, document.ReferenceStatusActive) {
+		t.Fatalf("expected one active frontend profile reference in front matter, got %#v", doc.References())
 	}
-	if !hasDependency(doc.Dependencies(), "Existing API", "https://example.test", document.DependencyStatusActive) {
-		t.Fatalf("expected existing legacy dependency to be carried into front matter, got %#v", doc.Dependencies())
+	if hasReference(doc.References(), "Existing API", "https://example.test", document.ReferenceStatusActive) {
+		t.Fatalf("expected legacy body dependency not to be carried into front matter, got %#v", doc.References())
 	}
 }
 
@@ -170,11 +175,11 @@ func TestEnsureFrontendProfileDependencyRowsRefreshesCanonicalRows(t *testing.T)
 	}
 	text := string(content)
 	doc := document.Parse(text, specPath, document.TypeSpec)
-	if !hasDependencyWithUsedFor(doc.Dependencies(), frontendProfileDependencyName, frontendProfileDependencyLocation, "apply frontend-specific coding-agent instruction set") {
-		t.Fatalf("expected frontend profile dependency wording to be refreshed in front matter, got %#v", doc.Dependencies())
+	if !hasReferenceWithUsedFor(doc.References(), frontendProfileDependencyName, frontendProfileReferenceTarget, "apply frontend-specific coding-agent instruction set") {
+		t.Fatalf("expected frontend profile reference wording to be refreshed in front matter, got %#v", doc.References())
 	}
-	if !hasDependencyWithUsedFor(doc.Dependencies(), designMaterialsDependencyName, "docs/notes/0001-ui/design", "optional frontend design input") {
-		t.Fatalf("expected design dependency wording to be refreshed in front matter, got %#v", doc.Dependencies())
+	if !hasReferenceWithUsedFor(doc.References(), designMaterialsDependencyName, "docs/notes/0001-ui/design", "optional frontend design input") {
+		t.Fatalf("expected design reference wording to be refreshed in front matter, got %#v", doc.References())
 	}
 }
 
@@ -200,18 +205,18 @@ feature:
 	}
 }
 
-func hasDependency(dependencies []document.MetadataDependency, name, location, status string) bool {
-	for _, dependency := range dependencies {
-		if dependency.Name == name && dependency.Location == location && dependency.Status == status {
+func hasReference(references []document.MetadataReference, name, target, status string) bool {
+	for _, reference := range references {
+		if reference.Name == name && reference.Target == target && reference.Status == status {
 			return true
 		}
 	}
 	return false
 }
 
-func hasDependencyWithUsedFor(dependencies []document.MetadataDependency, name, location, usedFor string) bool {
-	for _, dependency := range dependencies {
-		if dependency.Name == name && dependency.Location == location && dependency.UsedFor == usedFor {
+func hasReferenceWithUsedFor(references []document.MetadataReference, name, target, usedFor string) bool {
+	for _, reference := range references {
+		if reference.Name == name && reference.Target == target && reference.UsedFor == usedFor {
 			return true
 		}
 	}
@@ -226,6 +231,31 @@ func dependencyDoc(row string) string {
 | Dependency | Type | Location | Used For | Status |
 | ---------- | ---- | -------- | -------- | ------ |
 ` + row + "\n"
+}
+
+func frontendProfileReferenceDoc(target, status string) string {
+	return `---
+kit_metadata_version: 1
+artifact: spec
+feature:
+  id: "0001"
+  slug: ui
+  dir: 0001-ui
+references:
+  - name: Frontend profile
+    type: profile
+    target: ` + target + `
+    relation: guides
+    read_policy: conditional
+    used_for: apply frontend-specific coding-agent instruction set
+    status: ` + status + `
+---
+# SPEC
+
+## DEPENDENCIES
+
+References are tracked in front matter.
+`
 }
 
 func restorePromptProfileState(t *testing.T, profile promptProfile, explicit bool) {

@@ -5,37 +5,49 @@ feature:
   id: "0015"
   slug: "pause-remove-commands"
   dir: "0015-pause-remove-commands"
-dependencies:
-  - name: "feature lifecycle model"
-    type: "code"
-    location: "internal/feature/feature.go"
-    used_for: "phase derivation and feature resolution"
-    status: "active"
-  - name: "feature status model"
-    type: "code"
-    location: "internal/feature/status.go"
-    used_for: "active-feature selection and status payloads"
-    status: "active"
-  - name: "project rollup generator"
-    type: "code"
-    location: "internal/rollup/rollup.go"
-    used_for: "`PROJECT_PROGRESS_SUMMARY.md` regeneration"
-    status: "active"
-  - name: "status output"
-    type: "code"
-    location: "pkg/cli/status.go`, `pkg/cli/status_output.go"
-    used_for: "user-facing lifecycle views"
-    status: "active"
-  - name: "complete command"
-    type: "code"
-    location: "pkg/cli/complete.go"
-    used_for: "active-only lifecycle flow behavior"
-    status: "active"
-  - name: "project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "canonical progress-summary contract"
-    status: "active"
+references:
+  - name: feature lifecycle model
+    type: code
+    target: internal/feature/feature.go
+    relation: implements
+    read_policy: conditional
+    used_for: phase derivation and feature resolution
+    status: active
+  - name: feature status model
+    type: code
+    target: internal/feature/status.go
+    relation: implements
+    read_policy: conditional
+    used_for: active-feature selection and status payloads
+    status: active
+  - name: project rollup generator
+    type: code
+    target: internal/rollup/rollup.go
+    relation: implements
+    read_policy: conditional
+    used_for: '`PROJECT_PROGRESS_SUMMARY.md` regeneration'
+    status: active
+  - name: status output
+    type: code
+    target: pkg/cli/status.go`, `pkg/cli/status_render.go
+    relation: implements
+    read_policy: conditional
+    used_for: user-facing lifecycle views
+    status: active
+  - name: complete command
+    type: code
+    target: pkg/cli/complete.go
+    relation: implements
+    read_policy: conditional
+    used_for: active-only lifecycle flow behavior
+    status: active
+  - name: project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: canonical progress-summary contract
+    status: active
 ---
 # SPEC
 
@@ -105,7 +117,7 @@ none
 | feature lifecycle model | code | `internal/feature/feature.go` | phase derivation and feature resolution | active |
 | feature status model | code | `internal/feature/status.go` | active-feature selection and status payloads | active |
 | project rollup generator | code | `internal/rollup/rollup.go` | `PROJECT_PROGRESS_SUMMARY.md` regeneration | active |
-| status output | code | `pkg/cli/status.go`, `pkg/cli/status_output.go` | user-facing lifecycle views | active |
+| status output | code | `pkg/cli/status.go`, `pkg/cli/status_render.go` | user-facing lifecycle views | active |
 | complete command | code | `pkg/cli/complete.go` | active-only lifecycle flow behavior | active |
 | project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | canonical progress-summary contract | active |
 

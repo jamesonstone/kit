@@ -118,7 +118,7 @@ const agentsWorkflows = `# Workflows
 - Recurse into the relevant ` + "`PLAN.md`" + ` section for approach
 - Recurse into the relevant ` + "`SPEC.md`" + ` requirement for scope and acceptance
 - Use ` + "`BRAINSTORM.md`" + ` only for unresolved rationale
-- Use prior feature docs only through explicit dependency or relationship links
+- Use prior feature docs only through explicit reference or relationship links
 - Ask clarification questions until confidence is high and unresolved assumptions are zero
 - Run the implementation readiness gate before writing code
 - Update docs first when the implementation changes behavior, requirements, or approach
@@ -166,7 +166,7 @@ Execution order for feature work:
 ## Feature Docs
 
 - ` + "`docs/specs/<feature>/`" + ` remains the source of truth for feature-scoped work
-- Keep dependencies, relationships, and skills tables current when those docs are touched
+- Keep references, relationships, and skills metadata current when those docs are touched
 `
 
 const agentsRLM = `# RLM
@@ -200,7 +200,7 @@ const agentsRLM = `# RLM
 
 - specific section over full file
 - current feature over all features
-- explicit dependency link over broad search
+- explicit reference link over broad search
 - repo-local docs before global model/vendor instructions
 
 ## Rules
@@ -210,12 +210,12 @@ const agentsRLM = `# RLM
 - For feature-scoped work, keep must-read inputs small: the current ` + "`TASKS.md`" + ` entry plus the linked ` + "`PLAN.md`" + ` and ` + "`SPEC.md`" + ` sections
 - Use indices first: start with ` + "`kit map <feature>`" + ` and ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` to shortlist candidate prior features under ` + "`docs/specs/`" + `
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
-- Open a prior feature doc only when it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or dependency link
+- Open a prior feature doc only when it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or reference link
 - Inspect at most 5 prior feature directories before narrowing further or asking a clarifying question
 - Extract only the concrete facts that change the current feature; do not paraphrase entire prior docs into chat or copy irrelevant history into the active artifact
 - Treat RLM as discovery and context selection first; do not jump straight into parallel execution while the candidate set is still broad
 - Always update affected documentation and ensure touched documents stay current and properly formatted before finishing the work
-- Record the docs, skills, and references that materially shaped the feature in canonical front matter dependencies, falling back to legacy dependency tables only when front matter is absent
+- Record the docs, skills, and references that materially shaped the feature in canonical front matter references
 - Use ` + "`kit dispatch`" + ` only when the work moves from broad discovery into multi-lane execution planning
 `
 
@@ -270,7 +270,7 @@ const agentsGuardrails = `# Guardrails
 - Never guess file contents, APIs, or behavior
 - If validation cannot run, state why
 - Fix relevant lint and test failures before calling work complete
-- Keep canonical front matter dependencies and relationships current when those docs are touched, falling back to legacy body sections only when front matter is absent
+- Keep canonical front matter references and relationships current when those docs are touched
 
 ## Code Hygiene
 
@@ -291,7 +291,7 @@ const referencesREADME = `# References
 
 - This directory holds durable repo-local references that are broader than one feature
 - Keep long-lived background context here instead of in injected top-level instruction files
-- Link these files from feature front matter dependencies when they materially shape work, falling back to legacy dependency tables only when front matter is absent
+- Link these files from feature front matter references when they materially shape work
 
 ## Starter Files
 
@@ -329,7 +329,7 @@ const referencesExternalSystems = `# External Systems Reference
 ## Purpose
 
 - Record durable notes about external systems, APIs, providers, or design sources that recur across features
-- Keep feature-specific dependency details in feature docs as canonical front matter dependencies, falling back to legacy dependency tables only when front matter is absent
+- Keep feature-specific reference details in feature docs as canonical front matter references
 
 ## Current State
 

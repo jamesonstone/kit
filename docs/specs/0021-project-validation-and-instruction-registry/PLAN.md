@@ -5,22 +5,28 @@ feature:
   id: "0021"
   slug: "project-validation-and-instruction-registry"
   dir: "0021-project-validation-and-instruction-registry"
-dependencies:
-  - name: "reconcile audit engine"
-    type: "code"
-    location: "pkg/cli/reconcile_audit.go"
-    used_for: "repo-level validation findings"
-    status: "active"
-  - name: "versioned scaffold templates"
-    type: "code"
-    location: "internal/templates/instruction_templates*.go"
-    used_for: "source content for scaffolded instruction artifacts"
-    status: "active"
-  - name: "current prompt helpers"
-    type: "code"
-    location: "pkg/cli/repo_docs.go`, `pkg/cli/spec_context.go"
-    used_for: "current metadata consumers to migrate"
-    status: "active"
+references:
+  - name: reconcile audit engine
+    type: code
+    target: pkg/cli/reconcile_audit.go
+    relation: implements
+    read_policy: conditional
+    used_for: repo-level validation findings
+    status: active
+  - name: versioned scaffold templates
+    type: code
+    target: internal/templates/instruction_templates*.go
+    relation: implements
+    read_policy: conditional
+    used_for: source content for scaffolded instruction artifacts
+    status: active
+  - name: current prompt helpers
+    type: code
+    target: pkg/cli/repo_docs.go`, `pkg/cli/spec_context.go
+    relation: implements
+    read_policy: conditional
+    used_for: current metadata consumers to migrate
+    status: active
 ---
 # PLAN
 

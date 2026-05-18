@@ -14,32 +14,42 @@ relationships:
     target: "0020-versioned-instruction-model"
   - type: "related_to"
     target: "0006-skill-mine-command"
-dependencies:
-  - name: "versioned instruction model"
-    type: "doc"
-    location: "docs/specs/0020-versioned-instruction-model/SPEC.md"
-    used_for: "current `v1` and `v2` contract that must move into a shared registry"
-    status: "active"
-  - name: "subagent orchestration contract"
-    type: "doc"
-    location: "docs/specs/0012-default-subagent-orchestration/SPEC.md"
-    used_for: "preserve subagent-first defaults while clarifying RLM versus dispatch responsibilities"
-    status: "active"
-  - name: "reconcile audits"
-    type: "code"
-    location: "pkg/cli/reconcile_audit.go"
-    used_for: "existing repo-level drift detection that project validation can reuse"
-    status: "active"
-  - name: "check command"
-    type: "code"
-    location: "pkg/cli/check.go"
-    used_for: "existing validation surface to extend with project-scoped validation"
-    status: "active"
-  - name: "instruction templates"
-    type: "code"
-    location: "internal/templates/instruction_templates.go`, `internal/templates/instruction_templates_v2.go"
-    used_for: "current instruction artifact content and support-file wiring"
-    status: "active"
+references:
+  - name: versioned instruction model
+    type: doc
+    target: docs/specs/0020-versioned-instruction-model/SPEC.md
+    relation: informs
+    read_policy: conditional
+    used_for: current `v1` and `v2` contract that must move into a shared registry
+    status: active
+  - name: subagent orchestration contract
+    type: doc
+    target: docs/specs/0012-default-subagent-orchestration/SPEC.md
+    relation: informs
+    read_policy: conditional
+    used_for: preserve subagent-first defaults while clarifying RLM versus dispatch responsibilities
+    status: active
+  - name: reconcile audits
+    type: code
+    target: pkg/cli/reconcile_audit.go
+    relation: implements
+    read_policy: conditional
+    used_for: existing repo-level drift detection that project validation can reuse
+    status: active
+  - name: check command
+    type: code
+    target: pkg/cli/check.go
+    relation: implements
+    read_policy: conditional
+    used_for: existing validation surface to extend with project-scoped validation
+    status: active
+  - name: instruction templates
+    type: code
+    target: internal/templates/instruction_templates.go`, `internal/templates/instruction_templates_v2.go
+    relation: implements
+    read_policy: conditional
+    used_for: current instruction artifact content and support-file wiring
+    status: active
 ---
 # SPEC
 

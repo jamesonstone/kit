@@ -72,7 +72,7 @@ refactor the kit project to migrate all relational metadata and file-linking log
 15. `pkg/cli/spec.go`, `pkg/cli/spec_output.go`, `pkg/cli/spec_context.go`, and `pkg/cli/spec_template.go` — create/spec prompts and instruct relationship/dependency/skills maintenance.
 16. `pkg/cli/plan.go` and `pkg/cli/tasks.go` — create downstream artifacts and prompt agents to maintain dependency/task metadata.
 17. `pkg/cli/implement.go`, `pkg/cli/reflect.go`, `pkg/cli/handoff_prompt.go`, `pkg/cli/summarize.go`, `pkg/cli/resume.go`, and `pkg/cli/skill_prompt.go` — prompt builders that should reference canonical front-matter metadata just in time instead of body metadata tables when available.
-18. `pkg/cli/map.go` — terminal renderer for relationships/dependencies; output should remain read-only while its data source changes.
+18. `pkg/cli/map.go` — terminal renderer for relationships/references; output should remain read-only while its data source changes.
 19. `internal/config/prompt_files.go` — local YAML-node update pattern that can inform front-matter writer design.
 20. `docs/CONSTITUTION.md`, `README.md`, `docs/agents/*`, and `docs/references/*` — docs that may need concise updates if the canonical metadata contract changes.
 21. Existing feature docs under `docs/specs/*/{BRAINSTORM.md,SPEC.md,PLAN.md,TASKS.md}` — migration/backcompat surface for legacy section/table metadata.
@@ -87,7 +87,7 @@ refactor the kit project to migrate all relational metadata and file-linking log
 | References index | doc | docs/references/README.md | confirmed durable references are conditional inputs only | active |
 | kit map output | command output | `go run ./cmd/kit map 0026-front-matter-integration` | current phase, dependency baseline, relationship state | active |
 | Project progress summary | doc | docs/PROJECT_PROGRESS_SUMMARY.md | prior-feature shortlist and current feature row | active |
-| Brainstorm-first workflow | prior feature doc | docs/specs/0004-brainstorm-first-workflow/SPEC.md, docs/specs/0004-brainstorm-first-workflow/PLAN.md | brainstorm artifact, dependency table, prompt-only, rollup/phase precedents | active |
+| Brainstorm-first workflow | prior feature doc | docs/specs/0004-brainstorm-first-workflow/SPEC.md, docs/specs/0004-brainstorm-first-workflow/PLAN.md | brainstorm artifact, front matter references, prompt-only, rollup/phase precedents | active |
 | Document map relationships | prior feature doc | docs/specs/0016-document-map-relationships/SPEC.md, docs/specs/0016-document-map-relationships/PLAN.md | current relationship body contract and map graph behavior | active |
 | Reconcile command | prior feature doc | docs/specs/0017-reconcile-command/SPEC.md, docs/specs/0017-reconcile-command/PLAN.md | current drift audit and table/relationship validation expectations | active |
 | Project validation and instruction registry | prior feature doc | docs/specs/0021-project-validation-and-instruction-registry/SPEC.md, docs/specs/0021-project-validation-and-instruction-registry/PLAN.md | `kit check --project` and shared registry precedent | active |
@@ -130,13 +130,15 @@ Resolved batch 2 decisions:
        target: 0016-document-map-relationships
    ```
 
-5. Dependencies should use typed list entries:
+5. References should use typed list entries:
 
    ```yaml
-   dependencies:
+   references:
      - name: Feature notes
        type: notes
-       location: docs/notes/0026-front-matter-integration
+       target: docs/notes/0026-front-matter-integration
+       relation: informs
+       read_policy: conditional
        used_for: optional pre-brainstorm research input
        status: optional
    ```
@@ -179,7 +181,7 @@ no unresolved questions after user approval of batches 1-3.
    - Cons: requires explicit precedence rules and tests for front-matter-vs-body conflicts during transition.
 3. Front matter for relationships only.
    - Pros: small first step focused on the graph surface that motivated `kit map`.
-   - Cons: leaves dependency tables, skills tables, notes/design links, and prompt-routing inputs in body markdown, so most file-linking duplication remains.
+   - Cons: leaves front matter references, skills tables, notes/design links, and prompt-routing inputs in body markdown, so most file-linking duplication remains.
 4. Centralize metadata in `.kit.yaml` instead of artifact front matter.
    - Pros: easy YAML parsing with existing config patterns.
    - Cons: contradicts the user thesis and weakens feature-doc portability by separating metadata from the documents it describes.
@@ -189,7 +191,7 @@ no unresolved questions after user approval of batches 1-3.
 
 ## RECOMMENDED STRATEGY
 
-Use a dual-read, front-matter-canonical migration. Add a shared `internal/document` metadata layer that parses an optional YAML front-matter block, strips it from markdown body parsing, validates typed metadata, and exposes relationships/dependencies/skills/file links through one API. New and touched feature artifacts should write canonical metadata to front matter; `kit map`, `kit check`, `kit reconcile`, prompt builders, rollup/status, and metadata mutation helpers should read front matter first and legacy body sections second until migration is complete.
+Use a dual-read, front-matter-canonical migration. Add a shared `internal/document` metadata layer that parses an optional YAML front-matter block, strips it from markdown body parsing, validates typed metadata, and exposes relationships/references/skills/file links through one API. New and touched feature artifacts should write canonical metadata to front matter; `kit map`, `kit check`, `kit reconcile`, prompt builders, rollup/status, and metadata mutation helpers should read front matter first and legacy body sections second until migration is complete.
 
 Initial canonical front-matter scope should include relationships, dependencies, skills, feature/artifact identity, notes/design-material references, and optional summary/intent fields. Task checkboxes and artifact phase should remain body/filesystem-derived unless a later spec proves that storing them in front matter will not create drift.
 

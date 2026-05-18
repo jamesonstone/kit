@@ -5,42 +5,56 @@ feature:
   id: "0014"
   slug: "human-readable-terminal-output"
   dir: "0014-human-readable-terminal-output"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "canonical command and output rules"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "shipped terminal-output behavior summary"
-    status: "active"
-  - name: "root command wiring"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "help and usage template updates"
-    status: "active"
-  - name: "human output helpers"
-    type: "code"
-    location: "pkg/cli/human_output.go"
-    used_for: "shared formatting and TTY detection"
-    status: "active"
-  - name: "status output"
-    type: "code"
-    location: "pkg/cli/status_output.go"
-    used_for: "human-readable status rendering"
-    status: "active"
-  - name: "editor input"
-    type: "code"
-    location: "pkg/cli/editor_input.go"
-    used_for: "editor-launch guidance formatting"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "user-facing output behavior notes"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: implements
+    read_policy: conditional
+    used_for: canonical command and output rules
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: informs
+    read_policy: conditional
+    used_for: shipped terminal-output behavior summary
+    status: active
+  - name: root command wiring
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: help and usage template updates
+    status: active
+  - name: human output helpers
+    type: code
+    target: pkg/cli/human_output.go
+    relation: implements
+    read_policy: conditional
+    used_for: shared formatting and TTY detection
+    status: active
+  - name: status output
+    type: code
+    target: pkg/cli/status_render.go
+    relation: implements
+    read_policy: conditional
+    used_for: human-readable status rendering
+    status: active
+  - name: editor input
+    type: code
+    target: pkg/cli/editor_input.go
+    relation: guides
+    read_policy: conditional
+    used_for: editor-launch guidance formatting
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: informs
+    read_policy: conditional
+    used_for: user-facing output behavior notes
+    status: active
 ---
 # PLAN
 
@@ -69,7 +83,7 @@ dependencies:
 - `pkg/cli/human_output.go`
   - TTY detection
   - shared human-readable formatting helpers
-- `pkg/cli/status_output.go`
+- `pkg/cli/status_render.go`
   - status section spacing and shared heading usage
 - `pkg/cli/editor_input.go`
   - editor-launch guidance formatting
@@ -117,7 +131,7 @@ dependencies:
 | init project spec | doc | `docs/specs/0000_INIT_PROJECT.md` | shipped terminal-output behavior summary | active |
 | root command wiring | code | `pkg/cli/root.go` | help and usage template updates | active |
 | human output helpers | code | `pkg/cli/human_output.go` | shared formatting and TTY detection | active |
-| status output | code | `pkg/cli/status_output.go` | human-readable status rendering | active |
+| status output | code | `pkg/cli/status_render.go` | human-readable status rendering | active |
 | editor input | code | `pkg/cli/editor_input.go` | editor-launch guidance formatting | active |
 | README | doc | `README.md` | user-facing output behavior notes | active |
 

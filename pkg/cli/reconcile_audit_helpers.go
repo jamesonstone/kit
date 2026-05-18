@@ -168,7 +168,7 @@ func auditMetadataMigrationState(path string, doc *document.Document, projectRoo
 		path,
 		"feature artifact is missing canonical YAML front matter and is using legacy markdown metadata fallback",
 		contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
-		"add typed front matter for artifact identity, feature identity, relationships, dependencies, and skills as applicable",
+		"add typed front matter for artifact identity, feature identity, relationships, references, and skills as applicable",
 		[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
 	)}
 }

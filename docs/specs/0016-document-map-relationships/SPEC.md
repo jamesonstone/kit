@@ -5,37 +5,49 @@ feature:
   id: "0016"
   slug: "document-map-relationships"
   dir: "0016-document-map-relationships"
-dependencies:
-  - name: "core project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "canonical document model and command contract"
-    status: "active"
-  - name: "constitution"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "invariant rules for explicit state and source-of-truth docs"
-    status: "active"
-  - name: "document validator"
-    type: "code"
-    location: "internal/document/document.go"
-    used_for: "required section validation and section parsing"
-    status: "active"
-  - name: "document templates"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "scaffolded `BRAINSTORM.md` and `SPEC.md` content"
-    status: "active"
-  - name: "feature model"
-    type: "code"
-    location: "internal/feature/feature.go`, `internal/feature/status.go"
-    used_for: "current feature state, phase, and file existence"
-    status: "active"
-  - name: "root CLI help"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "command registration and static hierarchy surface"
-    status: "active"
+references:
+  - name: core project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: implements
+    read_policy: conditional
+    used_for: canonical document model and command contract
+    status: active
+  - name: constitution
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: invariant rules for explicit state and source-of-truth docs
+    status: active
+  - name: document validator
+    type: code
+    target: internal/document/document.go
+    relation: implements
+    read_policy: conditional
+    used_for: required section validation and section parsing
+    status: active
+  - name: document templates
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: scaffolded `BRAINSTORM.md` and `SPEC.md` content
+    status: active
+  - name: feature model
+    type: code
+    target: internal/feature/feature.go`, `internal/feature/status.go
+    relation: implements
+    read_policy: conditional
+    used_for: current feature state, phase, and file existence
+    status: active
+  - name: root CLI help
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: command registration and static hierarchy surface
+    status: active
 ---
 # SPEC
 

@@ -173,7 +173,7 @@ func buildSpecTemplatePrompt(
 			"Avoid implementation details (focus on WHAT, not HOW)",
 			"canonical front matter `skills` is mandatory when front matter exists; use the legacy ## SKILLS table only when front matter is absent",
 			"canonical front matter `relationships` must be set to explicit entries or omitted when none apply; use the legacy ## RELATIONSHIPS section only when front matter is absent",
-			"canonical front matter `dependencies` must be current and keep exact locations for external design inputs; use the legacy ## DEPENDENCIES table only when front matter is absent",
+			"canonical front matter `references` must be current and keep exact targets, stable ids when needed, selector types, stable selectors, relations, and read policies for external design inputs",
 			"use repo-local docs and canonical skills first during the skills discovery phase",
 			"treat documented global inputs as secondary context after repo-local docs are exhausted",
 			"keep the selected skill set minimal and actionable",

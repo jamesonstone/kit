@@ -30,10 +30,11 @@ type reconcileFinding struct {
 }
 
 type reconcileReport struct {
-	ProjectRoot string
-	Feature     *feature.Feature
-	Findings    []reconcileFinding
-	NeedsRollup bool
+	ProjectRoot        string
+	Feature            *feature.Feature
+	Findings           []reconcileFinding
+	NeedsRollup        bool
+	ReferenceMigration bool
 }
 
 func (r *reconcileReport) cleanResult() string {

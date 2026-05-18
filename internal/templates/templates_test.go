@@ -18,12 +18,14 @@ func TestFeatureArtifactBuildersIncludeCanonicalFrontMatter(t *testing.T) {
 		{
 			name:    "brainstorm",
 			docType: document.TypeBrainstorm,
-			content: BuildBrainstormArtifactForFeature("user thesis", featureMeta, []document.MetadataDependency{{
-				Name:     "Feature notes",
-				Type:     "notes",
-				Location: "docs/notes/0001-sample-feature",
-				UsedFor:  "optional pre-brainstorm research input",
-				Status:   document.DependencyStatusOptional,
+			content: BuildBrainstormArtifactForFeature("user thesis", featureMeta, []document.MetadataReference{{
+				Name:       "Feature notes",
+				Type:       "notes",
+				Target:     "docs/notes/0001-sample-feature",
+				Relation:   document.ReferenceRelationInforms,
+				ReadPolicy: document.ReferenceReadPolicyConditional,
+				UsedFor:    "optional pre-brainstorm research input",
+				Status:     document.ReferenceStatusOptional,
 			}}),
 		},
 		{name: "spec", docType: document.TypeSpec, content: BuildSpecArtifactForFeature(featureMeta)},
@@ -67,11 +69,10 @@ func TestFeatureArtifactBuildersDoNotDuplicateCanonicalBodyTables(t *testing.T) 
 	}
 }
 
-func TestBrainstormTemplateIncludesDependenciesTable(t *testing.T) {
+func TestBrainstormTemplateUsesReferenceProseSection(t *testing.T) {
 	checks := []string{
 		"## DEPENDENCIES",
-		"| Dependency | Type | Location | Used For | Status |",
-		"| none | n/a | n/a | no phase dependencies recorded yet | active |",
+		"References are tracked in front matter.",
 	}
 
 	for _, check := range checks {
@@ -228,14 +229,13 @@ func TestDefaultInstructionTemplatesUseTOCModel(t *testing.T) {
 	}
 }
 
-func TestSpecTemplateIncludesSkillsAndDependencies(t *testing.T) {
+func TestSpecTemplateIncludesSkillsAndReferenceProse(t *testing.T) {
 	checks := []string{
 		"## SKILLS",
 		"| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |",
 		"| none | n/a | n/a | no additional skills required | no |",
 		"## DEPENDENCIES",
-		"| Dependency | Type | Location | Used For | Status |",
-		"| none | n/a | n/a | no supporting dependencies recorded yet | active |",
+		"References are tracked in front matter.",
 	}
 
 	for _, check := range checks {
@@ -245,11 +245,10 @@ func TestSpecTemplateIncludesSkillsAndDependencies(t *testing.T) {
 	}
 }
 
-func TestPlanTemplateIncludesDependenciesTable(t *testing.T) {
+func TestPlanTemplateUsesReferenceProseSection(t *testing.T) {
 	checks := []string{
 		"## DEPENDENCIES",
-		"| Dependency | Type | Location | Used For | Status |",
-		"| none | n/a | n/a | no planning dependencies recorded yet | active |",
+		"References are tracked in front matter.",
 	}
 
 	for _, check := range checks {

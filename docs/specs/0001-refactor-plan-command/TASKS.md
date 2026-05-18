@@ -90,5 +90,5 @@ Use markdown checkboxes to track completion:
 ## NOTES
 
 - This feature records the base `kit plan` refactor.
-- Later feature specs may extend prompt behavior, dependency inventories, or
+- Later feature specs may extend prompt behavior, reference inventories, or
   lifecycle rules without changing this feature's core intent.

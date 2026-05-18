@@ -12,42 +12,56 @@ relationships:
     target: "0025-v0-prompt-library"
   - type: "related_to"
     target: "0027-implement-readiness-gate"
-dependencies:
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "project-level source-of-truth semantics and advisory-gate constraints"
-    status: "active"
-  - name: "init project spec"
-    type: "doc"
-    location: "docs/specs/0000_INIT_PROJECT.md"
-    used_for: "shipped project-initialization and prompt-library behavior"
-    status: "active"
-  - name: "reconcile command"
-    type: "code"
-    location: "pkg/cli/reconcile.go, pkg/cli/reconcile_prompt.go"
-    used_for: "structural drift audit precedent and project-wide documentation prompt behavior"
-    status: "active"
-  - name: "prompt library"
-    type: "code"
-    location: "pkg/cli/prompt_builtin_kit.go, pkg/cli/prompt_builtin_render.go"
-    used_for: "built-in prompt registration and runtime rendering"
-    status: "active"
-  - name: "reflect command"
-    type: "code"
-    location: "pkg/cli/reflect.go"
-    used_for: "late workflow advisory gate"
-    status: "active"
-  - name: "complete command"
-    type: "code"
-    location: "pkg/cli/complete.go"
-    used_for: "post-completion advisory output"
-    status: "active"
-  - name: "README"
-    type: "doc"
-    location: "README.md"
-    used_for: "user-facing command guidance"
-    status: "active"
+references:
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: project-level source-of-truth semantics and advisory-gate constraints
+    status: active
+  - name: init project spec
+    type: doc
+    target: docs/specs/0000_INIT_PROJECT.md
+    relation: uses
+    read_policy: conditional
+    used_for: shipped project-initialization and prompt-library behavior
+    status: active
+  - name: reconcile command
+    type: code
+    target: pkg/cli/reconcile.go, pkg/cli/reconcile_prompt.go
+    relation: implements
+    read_policy: conditional
+    used_for: structural drift audit precedent and project-wide documentation prompt behavior
+    status: active
+  - name: prompt library
+    type: code
+    target: pkg/cli/prompt_builtin_kit.go, pkg/cli/prompt_builtin_render.go
+    relation: implements
+    read_policy: conditional
+    used_for: built-in prompt registration and runtime rendering
+    status: active
+  - name: reflect command
+    type: code
+    target: pkg/cli/reflect.go
+    relation: implements
+    read_policy: conditional
+    used_for: late workflow advisory gate
+    status: active
+  - name: complete command
+    type: code
+    target: pkg/cli/complete.go
+    relation: implements
+    read_policy: conditional
+    used_for: post-completion advisory output
+    status: active
+  - name: README
+    type: doc
+    target: README.md
+    relation: guides
+    read_policy: conditional
+    used_for: user-facing command guidance
+    status: active
 ---
 # SPEC
 

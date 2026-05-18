@@ -21,9 +21,31 @@ const (
 	RelationshipDependsOn = "depends_on"
 	RelationshipRelatedTo = "related_to"
 
-	DependencyStatusActive   = "active"
-	DependencyStatusOptional = "optional"
-	DependencyStatusStale    = "stale"
+	ReferenceRelationConstrains    = "constrains"
+	ReferenceRelationSupports      = "supports"
+	ReferenceRelationImplements    = "implements"
+	ReferenceRelationVerifies      = "verifies"
+	ReferenceRelationGuides        = "guides"
+	ReferenceRelationInforms       = "informs"
+	ReferenceRelationSupersedes    = "supersedes"
+	ReferenceRelationConflictsWith = "conflicts_with"
+	ReferenceRelationUses          = "uses"
+
+	ReferenceReadPolicyMust        = "must"
+	ReferenceReadPolicyConditional = "conditional"
+	ReferenceReadPolicyEvidence    = "evidence"
+	ReferenceReadPolicySkip        = "skip"
+
+	ReferenceStatusActive   = "active"
+	ReferenceStatusOptional = "optional"
+	ReferenceStatusStale    = "stale"
+
+	ReferenceSelectorTypeArtifact = "artifact"
+	ReferenceSelectorTypeHeading  = "heading"
+	ReferenceSelectorTypeSymbol   = "symbol"
+	ReferenceSelectorTypeCommand  = "command"
+	ReferenceSelectorTypeURL      = "url"
+	ReferenceSelectorTypeNodeID   = "node_id"
 )
 
 type MetadataDiagnosticSeverity string
@@ -44,12 +66,25 @@ type MetadataRelationship struct {
 	Target string `yaml:"target"`
 }
 
-type MetadataDependency struct {
+type deprecatedMetadataDependency struct {
 	Name     string `yaml:"name"`
 	Type     string `yaml:"type"`
 	Location string `yaml:"location"`
 	UsedFor  string `yaml:"used_for"`
 	Status   string `yaml:"status"`
+}
+
+type MetadataReference struct {
+	ID           string `yaml:"id,omitempty"`
+	Name         string `yaml:"name"`
+	Type         string `yaml:"type"`
+	Target       string `yaml:"target"`
+	SelectorType string `yaml:"selector_type,omitempty"`
+	Selector     string `yaml:"selector,omitempty"`
+	Relation     string `yaml:"relation"`
+	ReadPolicy   string `yaml:"read_policy"`
+	UsedFor      string `yaml:"used_for"`
+	Status       string `yaml:"status"`
 }
 
 type MetadataSkill struct {
@@ -61,14 +96,15 @@ type MetadataSkill struct {
 }
 
 type Metadata struct {
-	KitMetadataVersion int                    `yaml:"kit_metadata_version"`
-	Artifact           string                 `yaml:"artifact"`
-	Feature            FeatureMetadata        `yaml:"feature"`
-	Summary            string                 `yaml:"summary,omitempty"`
-	Intent             string                 `yaml:"intent,omitempty"`
-	Relationships      []MetadataRelationship `yaml:"relationships,omitempty"`
-	Dependencies       []MetadataDependency   `yaml:"dependencies,omitempty"`
-	Skills             []MetadataSkill        `yaml:"skills,omitempty"`
+	KitMetadataVersion int                            `yaml:"kit_metadata_version"`
+	Artifact           string                         `yaml:"artifact"`
+	Feature            FeatureMetadata                `yaml:"feature"`
+	Summary            string                         `yaml:"summary,omitempty"`
+	Intent             string                         `yaml:"intent,omitempty"`
+	Relationships      []MetadataRelationship         `yaml:"relationships,omitempty"`
+	References         []MetadataReference            `yaml:"references,omitempty"`
+	Dependencies       []deprecatedMetadataDependency `yaml:"dependencies,omitempty"`
+	Skills             []MetadataSkill                `yaml:"skills,omitempty"`
 }
 
 type MetadataDiagnostic struct {
@@ -99,7 +135,7 @@ type MetadataUpsert struct {
 	Summary       string
 	Intent        string
 	Relationships []MetadataRelationship
-	Dependencies  []MetadataDependency
+	References    []MetadataReference
 	Skills        []MetadataSkill
 }
 
@@ -250,16 +286,73 @@ func validateMetadata(metadata Metadata, docType DocumentType) []MetadataDiagnos
 		}
 	}
 
-	for i, dependency := range metadata.Dependencies {
-		field := fmt.Sprintf("dependencies[%d]", i)
-		if strings.TrimSpace(dependency.Name) == "" {
-			diagnostics = append(diagnostics, metadataError(field+".name", "dependency name cannot be empty", "set dependency name"))
+	if len(metadata.Dependencies) > 0 {
+		diagnostics = append(diagnostics, metadataError(
+			"dependencies",
+			"front matter dependencies are deprecated",
+			"migrate `dependencies` entries to canonical `references` entries with `target`, `relation`, and `read_policy`",
+		))
+	}
+
+	for i, reference := range metadata.References {
+		field := fmt.Sprintf("references[%d]", i)
+		if strings.TrimSpace(reference.Name) == "" {
+			diagnostics = append(diagnostics, metadataError(field+".name", "reference name cannot be empty", "set reference name"))
 		}
-		if strings.TrimSpace(dependency.Status) == "" || !isValidDependencyStatus(dependency.Status) {
+		if strings.TrimSpace(reference.Type) == "" {
+			diagnostics = append(diagnostics, metadataError(field+".type", "reference type cannot be empty", "set reference type"))
+		}
+		if strings.TrimSpace(reference.Target) == "" {
+			diagnostics = append(diagnostics, metadataError(field+".target", "reference target cannot be empty", "set reference target"))
+		}
+		if strings.TrimSpace(reference.Relation) == "" || !isValidReferenceRelation(reference.Relation) {
+			diagnostics = append(diagnostics, metadataError(
+				field+".relation",
+				fmt.Sprintf("invalid reference relation %q", reference.Relation),
+				"set reference relation to one of: constrains, supports, implements, verifies, guides, informs, supersedes, conflicts_with, uses",
+			))
+		}
+		if strings.TrimSpace(reference.ReadPolicy) == "" || !isValidReferenceReadPolicy(reference.ReadPolicy) {
+			diagnostics = append(diagnostics, metadataError(
+				field+".read_policy",
+				fmt.Sprintf("invalid reference read_policy %q", reference.ReadPolicy),
+				"set reference read_policy to one of: must, conditional, evidence, skip",
+			))
+		}
+		if strings.TrimSpace(reference.Status) == "" || !isValidReferenceStatus(reference.Status) {
 			diagnostics = append(diagnostics, metadataError(
 				field+".status",
-				fmt.Sprintf("invalid dependency status %q", dependency.Status),
-				"set dependency status to one of: active, optional, stale",
+				fmt.Sprintf("invalid reference status %q", reference.Status),
+				"set reference status to one of: active, optional, stale",
+			))
+		}
+		if strings.TrimSpace(reference.SelectorType) != "" && !isValidReferenceSelectorType(reference.SelectorType) {
+			diagnostics = append(diagnostics, metadataError(
+				field+".selector_type",
+				fmt.Sprintf("invalid reference selector_type %q", reference.SelectorType),
+				"set reference selector_type to one of: artifact, heading, symbol, command, url, node_id",
+			))
+		}
+		if strings.TrimSpace(reference.SelectorType) != "" && strings.TrimSpace(reference.Selector) == "" {
+			diagnostics = append(diagnostics, metadataWarning(
+				field+".selector",
+				"reference selector_type is set without selector",
+				"set selector or remove selector_type",
+			))
+		}
+		if strings.TrimSpace(reference.Selector) != "" && strings.TrimSpace(reference.SelectorType) == "" {
+			diagnostics = append(diagnostics, metadataWarning(
+				field+".selector_type",
+				"reference selector is set without selector_type",
+				"set selector_type so tooling can resolve the selector deterministically",
+			))
+		}
+		diagnostics = append(diagnostics, referencePolicyDiagnostics(field, reference)...)
+		if hasUnpinnedLineReference(reference.Target) || hasUnpinnedLineReference(reference.Selector) {
+			diagnostics = append(diagnostics, metadataWarning(
+				field+".target",
+				"reference appears to use an unpinned line number",
+				"prefer a stable selector such as artifact id, heading, symbol, URL/node id, or a commit-pinned permalink",
 			))
 		}
 	}
@@ -270,6 +363,15 @@ func validateMetadata(metadata Metadata, docType DocumentType) []MetadataDiagnos
 func metadataError(field, message, fix string) MetadataDiagnostic {
 	return MetadataDiagnostic{
 		Severity: MetadataDiagnosticError,
+		Field:    field,
+		Message:  message,
+		Fix:      fix,
+	}
+}
+
+func metadataWarning(field, message, fix string) MetadataDiagnostic {
+	return MetadataDiagnostic{
+		Severity: MetadataDiagnosticWarning,
 		Field:    field,
 		Message:  message,
 		Fix:      fix,
@@ -294,13 +396,105 @@ func isValidArtifact(value string) bool {
 	}
 }
 
-func isValidDependencyStatus(value string) bool {
+func isValidReferenceStatus(value string) bool {
 	switch value {
-	case DependencyStatusActive, DependencyStatusOptional, DependencyStatusStale:
+	case ReferenceStatusActive, ReferenceStatusOptional, ReferenceStatusStale:
 		return true
 	default:
 		return false
 	}
+}
+
+func isValidReferenceRelation(value string) bool {
+	switch value {
+	case ReferenceRelationConstrains,
+		ReferenceRelationSupports,
+		ReferenceRelationImplements,
+		ReferenceRelationVerifies,
+		ReferenceRelationGuides,
+		ReferenceRelationInforms,
+		ReferenceRelationSupersedes,
+		ReferenceRelationConflictsWith,
+		ReferenceRelationUses:
+		return true
+	default:
+		return false
+	}
+}
+
+func isValidReferenceReadPolicy(value string) bool {
+	switch value {
+	case ReferenceReadPolicyMust,
+		ReferenceReadPolicyConditional,
+		ReferenceReadPolicyEvidence,
+		ReferenceReadPolicySkip:
+		return true
+	default:
+		return false
+	}
+}
+
+func isValidReferenceSelectorType(value string) bool {
+	switch value {
+	case ReferenceSelectorTypeArtifact,
+		ReferenceSelectorTypeHeading,
+		ReferenceSelectorTypeSymbol,
+		ReferenceSelectorTypeCommand,
+		ReferenceSelectorTypeURL,
+		ReferenceSelectorTypeNodeID:
+		return true
+	default:
+		return false
+	}
+}
+
+func referencePolicyDiagnostics(field string, reference MetadataReference) []MetadataDiagnostic {
+	var diagnostics []MetadataDiagnostic
+	relation := strings.TrimSpace(reference.Relation)
+	readPolicy := strings.TrimSpace(reference.ReadPolicy)
+	status := strings.TrimSpace(reference.Status)
+
+	if status == ReferenceStatusStale && readPolicy != ReferenceReadPolicySkip {
+		diagnostics = append(diagnostics, metadataWarning(
+			field+".read_policy",
+			"stale reference should normally be skipped",
+			"set read_policy: skip or change status if the reference is still active",
+		))
+	}
+	if status == ReferenceStatusActive && readPolicy == ReferenceReadPolicySkip {
+		diagnostics = append(diagnostics, metadataWarning(
+			field+".status",
+			"active reference is marked skip",
+			"set status: stale or optional unless the active reference should be excluded from context plans",
+		))
+	}
+	if relation == ReferenceRelationConstrains && readPolicy != ReferenceReadPolicyMust {
+		diagnostics = append(diagnostics, metadataWarning(
+			field+".read_policy",
+			"constraining reference should normally be must-read",
+			"set read_policy: must unless the constraint is only conditionally relevant",
+		))
+	}
+	if relation == ReferenceRelationVerifies && readPolicy != ReferenceReadPolicyEvidence {
+		diagnostics = append(diagnostics, metadataWarning(
+			field+".read_policy",
+			"verification reference should normally be evidence-read",
+			"set read_policy: evidence unless the reference is needed before implementation",
+		))
+	}
+
+	return diagnostics
+}
+
+func hasUnpinnedLineReference(value string) bool {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return false
+	}
+	if strings.Contains(value, "/blob/") && regexp.MustCompile(`/blob/[0-9a-f]{7,40}/`).MatchString(value) {
+		return false
+	}
+	return regexp.MustCompile(`(^|[./_-])[A-Za-z0-9_./-]+\.[A-Za-z0-9]+:(L)?[0-9]+(-L?[0-9]+)?$`).MatchString(value)
 }
 
 func RelationshipHumanToMachine(value string) (string, bool) {
@@ -345,7 +539,6 @@ func (d *Document) metadataConflicts() []MetadataConflict {
 
 	var conflicts []MetadataConflict
 	conflicts = append(conflicts, d.relationshipConflicts()...)
-	conflicts = append(conflicts, d.dependencyConflicts()...)
 	conflicts = append(conflicts, d.skillConflicts()...)
 	return conflicts
 }
@@ -380,8 +573,8 @@ func UpsertMetadata(content string, docType DocumentType, update MetadataUpsert)
 	if len(update.Relationships) > 0 {
 		upsertRelationships(metadataNode, update.Relationships)
 	}
-	if len(update.Dependencies) > 0 {
-		upsertDependencies(metadataNode, update.Dependencies)
+	if len(update.References) > 0 {
+		upsertReferences(metadataNode, update.References)
 	}
 	if len(update.Skills) > 0 {
 		upsertSkills(metadataNode, update.Skills)
@@ -473,30 +666,41 @@ func findRelationshipNode(seq *yaml.Node, relationship MetadataRelationship) *ya
 	return nil
 }
 
-func upsertDependencies(parent *yaml.Node, dependencies []MetadataDependency) {
-	seq := findOrCreateSequence(parent, "dependencies")
-	for _, dependency := range dependencies {
-		existing := findDependencyNode(seq, dependency)
+func upsertReferences(parent *yaml.Node, references []MetadataReference) {
+	seq := findOrCreateSequence(parent, "references")
+	for _, reference := range references {
+		existing := findReferenceNode(seq, reference)
 		if existing == nil {
 			existing = &yaml.Node{Kind: yaml.MappingNode}
 			seq.Content = append(seq.Content, existing)
 		}
-		setNodeString(existing, "name", dependency.Name)
-		setNodeString(existing, "type", dependency.Type)
-		setNodeString(existing, "location", dependency.Location)
-		setNodeString(existing, "used_for", dependency.UsedFor)
-		setNodeString(existing, "status", dependency.Status)
+		setOptionalNodeString(existing, "id", reference.ID)
+		setNodeString(existing, "name", reference.Name)
+		setNodeString(existing, "type", reference.Type)
+		setNodeString(existing, "target", reference.Target)
+		setOptionalNodeString(existing, "selector_type", reference.SelectorType)
+		setOptionalNodeString(existing, "selector", reference.Selector)
+		setNodeString(existing, "relation", reference.Relation)
+		setNodeString(existing, "read_policy", reference.ReadPolicy)
+		setNodeString(existing, "used_for", reference.UsedFor)
+		setNodeString(existing, "status", reference.Status)
 	}
 }
 
-func findDependencyNode(seq *yaml.Node, dependency MetadataDependency) *yaml.Node {
+func findReferenceNode(seq *yaml.Node, reference MetadataReference) *yaml.Node {
 	for _, item := range seq.Content {
 		if item.Kind != yaml.MappingNode {
 			continue
 		}
-		if strings.EqualFold(getNodeString(item, "name"), dependency.Name) &&
-			strings.EqualFold(getNodeString(item, "type"), dependency.Type) &&
-			getNodeString(item, "location") == dependency.Location {
+		if strings.TrimSpace(reference.ID) != "" &&
+			strings.EqualFold(getNodeString(item, "id"), reference.ID) {
+			return item
+		}
+		if strings.EqualFold(getNodeString(item, "name"), reference.Name) &&
+			strings.EqualFold(getNodeString(item, "type"), reference.Type) &&
+			getNodeString(item, "target") == reference.Target &&
+			getNodeString(item, "selector_type") == reference.SelectorType &&
+			getNodeString(item, "selector") == reference.Selector {
 			return item
 		}
 	}
@@ -569,6 +773,14 @@ func setNodeString(parent *yaml.Node, key, value string) {
 	setNode(parent, key, &yaml.Node{Kind: yaml.ScalarNode, Value: value})
 }
 
+func setOptionalNodeString(parent *yaml.Node, key, value string) {
+	if strings.TrimSpace(value) == "" {
+		removeNode(parent, key)
+		return
+	}
+	setNodeString(parent, key, value)
+}
+
 func setNodeInt(parent *yaml.Node, key string, value int) {
 	setNode(parent, key, &yaml.Node{Kind: yaml.ScalarNode, Value: fmt.Sprintf("%d", value)})
 }
@@ -589,6 +801,16 @@ func setNode(parent *yaml.Node, key string, value *yaml.Node) {
 		}
 	}
 	parent.Content = append(parent.Content, &yaml.Node{Kind: yaml.ScalarNode, Value: key}, value)
+}
+
+func removeNode(parent *yaml.Node, key string) {
+	for i := 0; i+1 < len(parent.Content); i += 2 {
+		if parent.Content[i].Value != key {
+			continue
+		}
+		parent.Content = append(parent.Content[:i], parent.Content[i+2:]...)
+		return
+	}
 }
 
 func getNodeString(parent *yaml.Node, key string) string {

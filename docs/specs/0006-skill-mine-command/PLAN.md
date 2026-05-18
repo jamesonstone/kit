@@ -5,27 +5,35 @@ feature:
   id: "0006"
   slug: "skill-mine-command"
   dir: "0006-skill-mine-command"
-dependencies:
-  - name: "configuration model"
-    type: "code"
-    location: "internal/config/config.go"
-    used_for: "skills directory resolution"
-    status: "active"
-  - name: "existing prompt commands"
-    type: "code"
-    location: "pkg/cli/implement.go`, `pkg/cli/reflect.go"
-    used_for: "shared prompt-output behavior"
-    status: "active"
-  - name: "project progress summary"
-    type: "doc"
-    location: "docs/PROJECT_PROGRESS_SUMMARY.md"
-    used_for: "insight and theme synthesis input"
-    status: "active"
-  - name: "root CLI help"
-    type: "code"
-    location: "pkg/cli/root.go"
-    used_for: "alias visibility and command ordering"
-    status: "active"
+references:
+  - name: configuration model
+    type: code
+    target: internal/config/config.go
+    relation: implements
+    read_policy: conditional
+    used_for: skills directory resolution
+    status: active
+  - name: existing prompt commands
+    type: code
+    target: pkg/cli/implement.go`, `pkg/cli/reflect.go
+    relation: implements
+    read_policy: conditional
+    used_for: shared prompt-output behavior
+    status: active
+  - name: project progress summary
+    type: doc
+    target: docs/PROJECT_PROGRESS_SUMMARY.md
+    relation: informs
+    read_policy: conditional
+    used_for: insight and theme synthesis input
+    status: active
+  - name: root CLI help
+    type: code
+    target: pkg/cli/root.go
+    relation: implements
+    read_policy: conditional
+    used_for: alias visibility and command ordering
+    status: active
 ---
 # PLAN
 

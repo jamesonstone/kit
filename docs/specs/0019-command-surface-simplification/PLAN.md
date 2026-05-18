@@ -5,32 +5,42 @@ feature:
   id: "0019"
   slug: "command-surface-simplification"
   dir: "0019-command-surface-simplification"
-dependencies:
-  - name: "backlog resume helper"
-    type: "code"
-    location: "pkg/cli/backlog_shared.go"
-    used_for: "canonical backlog resume path"
-    status: "active"
-  - name: "catchup prompt behavior"
-    type: "code"
-    location: "pkg/cli/catchup.go`, `pkg/cli/catchup_prompt.go"
-    used_for: "non-backlog resume path"
-    status: "active"
-  - name: "backlog classification"
-    type: "code"
-    location: "internal/feature/backlog.go"
-    used_for: "selector routing and status labeling"
-    status: "active"
-  - name: "status model"
-    type: "code"
-    location: "internal/feature/status.go"
-    used_for: "per-feature overview data"
-    status: "active"
-  - name: "Cobra hidden/deprecated support"
-    type: "library"
-    location: "github.com/spf13/cobra"
-    used_for: "compatibility command and flag migration"
-    status: "active"
+references:
+  - name: backlog resume helper
+    type: code
+    target: pkg/cli/backlog_shared.go
+    relation: implements
+    read_policy: conditional
+    used_for: canonical backlog resume path
+    status: active
+  - name: catchup prompt behavior
+    type: code
+    target: pkg/cli/catchup.go`, `pkg/cli/catchup_prompt.go
+    relation: implements
+    read_policy: conditional
+    used_for: non-backlog resume path
+    status: active
+  - name: backlog classification
+    type: code
+    target: internal/feature/backlog.go
+    relation: implements
+    read_policy: conditional
+    used_for: selector routing and status labeling
+    status: active
+  - name: status model
+    type: code
+    target: internal/feature/status.go
+    relation: implements
+    read_policy: conditional
+    used_for: per-feature overview data
+    status: active
+  - name: Cobra hidden/deprecated support
+    type: library
+    target: github.com/spf13/cobra
+    relation: implements
+    read_policy: conditional
+    used_for: compatibility command and flag migration
+    status: active
 ---
 # PLAN
 
@@ -75,7 +85,7 @@ grouped help plus hidden deprecated compatibility wrappers.
 - `pkg/cli/catchup.go`
   - shared prompt path for non-backlog resume
   - deprecated hidden compatibility registration
-- `pkg/cli/status.go` and `pkg/cli/status_output.go`
+- `pkg/cli/status.go` and `pkg/cli/status_render.go`
   - `--all` handling
   - dedicated all-features text and JSON rendering
   - fixed-width lifecycle matrix for terminal text output

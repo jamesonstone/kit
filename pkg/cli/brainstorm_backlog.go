@@ -59,7 +59,7 @@ func runBrainstormBacklog(
 		content := templates.BuildBrainstormArtifactForFeature(
 			thesis,
 			document.FeatureMetadataFromDir(feat.DirName),
-			[]document.MetadataDependency{featureNotesDependency(notesRelPath)},
+			[]document.MetadataReference{featureNotesReference(notesRelPath)},
 		)
 		if err := document.Write(brainstormPath, content); err != nil {
 			return fmt.Errorf("failed to create BRAINSTORM.md: %w", err)

@@ -9,7 +9,7 @@ import (
 	"github.com/jamesonstone/kit/internal/document"
 )
 
-const featureNotesDependencyName = "Feature notes"
+const featureNotesReferenceName = "Feature notes"
 
 func featureNotesRelPath(featureDirName string) string {
 	return filepath.ToSlash(filepath.Join("docs", "notes", featureDirName))
@@ -108,14 +108,14 @@ func ensureBrainstormNotesDependency(brainstormPath, notesRelPath string) (bool,
 
 	updated, changed, err := appendBrainstormNotesDependency(string(content), notesRelPath)
 	if err != nil {
-		return false, fmt.Errorf("failed to update notes dependency in %s: %w", brainstormPath, err)
+		return false, fmt.Errorf("failed to update notes reference in %s: %w", brainstormPath, err)
 	}
 	if !changed {
 		return false, nil
 	}
 
 	if err := document.Write(brainstormPath, updated); err != nil {
-		return false, fmt.Errorf("failed to update notes dependency in %s: %w", brainstormPath, err)
+		return false, fmt.Errorf("failed to update notes reference in %s: %w", brainstormPath, err)
 	}
 
 	return true, nil
@@ -128,8 +128,8 @@ func appendBrainstormNotesDependency(content, notesRelPath string) (string, bool
 
 	featureMeta := document.FeatureMetadataFromDir(featureDirNameFromNotesRelPath(notesRelPath))
 	updated, changed, err := document.UpsertMetadata(content, document.TypeBrainstorm, document.MetadataUpsert{
-		Feature:      featureMeta,
-		Dependencies: dependenciesForMetadataUpsert(content, document.TypeBrainstorm, []document.MetadataDependency{featureNotesDependency(notesRelPath)}),
+		Feature:    featureMeta,
+		References: referencesForMetadataUpsert(content, document.TypeBrainstorm, []document.MetadataReference{featureNotesReference(notesRelPath)}),
 	})
 	if err != nil {
 		return content, false, err
@@ -137,13 +137,16 @@ func appendBrainstormNotesDependency(content, notesRelPath string) (string, bool
 	return updated, changed, nil
 }
 
-func featureNotesDependency(notesRelPath string) document.MetadataDependency {
-	return document.MetadataDependency{
-		Name:     featureNotesDependencyName,
-		Type:     "notes",
-		Location: notesRelPath,
-		UsedFor:  "optional pre-brainstorm research input",
-		Status:   document.DependencyStatusOptional,
+func featureNotesReference(notesRelPath string) document.MetadataReference {
+	return document.MetadataReference{
+		ID:         "feature-notes",
+		Name:       featureNotesReferenceName,
+		Type:       "notes",
+		Target:     notesRelPath,
+		Relation:   document.ReferenceRelationInforms,
+		ReadPolicy: document.ReferenceReadPolicyConditional,
+		UsedFor:    "optional pre-brainstorm research input",
+		Status:     document.ReferenceStatusOptional,
 	}
 }
 
@@ -162,8 +165,8 @@ func brainstormNotesDependencyExists(content, notesRelPath string) bool {
 	if !doc.FrontMatterPresent || doc.Metadata == nil {
 		return false
 	}
-	for _, dependency := range doc.Metadata.Dependencies {
-		if dependency.Name == featureNotesDependencyName && dependency.Location == notesRelPath {
+	for _, reference := range doc.Metadata.References {
+		if reference.Name == featureNotesReferenceName && reference.Target == notesRelPath {
 			return true
 		}
 	}

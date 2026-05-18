@@ -69,7 +69,7 @@ func rlmSpecGuidanceStepText(specPath string) string {
 		"- use the trigger phrases `analyze codebase`, `scan all files`, `large repository analysis`, `scan repository`, and `recursive language model`",
 		"- structure discovery as immediate decision → smallest artifact → required facts → act or recurse",
 		"- keep map workers file-scoped so the synthesis step stays deterministic and source-attributed",
-		"- record the docs, skills, and references that materially shaped the work in canonical front matter dependencies, falling back to legacy dependency tables only when front matter is absent",
+		"- record the docs, skills, and references that materially shaped the work in canonical front matter references",
 	}, "\n")
 }
 

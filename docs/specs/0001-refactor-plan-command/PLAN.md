@@ -5,32 +5,42 @@ feature:
   id: "0001"
   slug: "refactor-plan-command"
   dir: "0001-refactor-plan-command"
-dependencies:
-  - name: "plan command"
-    type: "code"
-    location: "pkg/cli/plan.go"
-    used_for: "command flow, prompts, and prerequisite handling"
-    status: "active"
-  - name: "feature resolution helpers"
-    type: "code"
-    location: "internal/feature/feature.go"
-    used_for: "feature lookup and selection"
-    status: "active"
-  - name: "plan template"
-    type: "code"
-    location: "internal/templates/templates.go"
-    used_for: "canonical plan structure"
-    status: "active"
-  - name: "rollup generator"
-    type: "code"
-    location: "internal/rollup/rollup.go"
-    used_for: "lifecycle summary refresh"
-    status: "active"
-  - name: "constitution contract"
-    type: "doc"
-    location: "docs/CONSTITUTION.md"
-    used_for: "workflow constraints and traceability rules"
-    status: "active"
+references:
+  - name: plan command
+    type: code
+    target: pkg/cli/plan.go
+    relation: implements
+    read_policy: conditional
+    used_for: command flow, prompts, and prerequisite handling
+    status: active
+  - name: feature resolution helpers
+    type: code
+    target: internal/feature/feature.go
+    relation: implements
+    read_policy: conditional
+    used_for: feature lookup and selection
+    status: active
+  - name: plan template
+    type: code
+    target: internal/templates/templates.go
+    relation: implements
+    read_policy: conditional
+    used_for: canonical plan structure
+    status: active
+  - name: rollup generator
+    type: code
+    target: internal/rollup/rollup.go
+    relation: implements
+    read_policy: conditional
+    used_for: lifecycle summary refresh
+    status: active
+  - name: constitution contract
+    type: doc
+    target: docs/CONSTITUTION.md
+    relation: informs
+    read_policy: conditional
+    used_for: workflow constraints and traceability rules
+    status: active
 ---
 # PLAN
 
@@ -48,7 +58,7 @@ dependencies:
 - [PLAN-02][SPEC-04] Reuse feature discovery and selection helpers to target
   features that are ready for planning.
 - [PLAN-03][SPEC-05][SPEC-06] Use the embedded plan template to enforce the
-  required plan sections and dependency inventory.
+  required plan sections and reference inventory.
 - [PLAN-04][SPEC-07] Regenerate `PROJECT_PROGRESS_SUMMARY.md` after plan
   creation so project state reflects the highest completed artifact.
 - [PLAN-05][SPEC-08] Emit a planning prompt that reads the constitution and
