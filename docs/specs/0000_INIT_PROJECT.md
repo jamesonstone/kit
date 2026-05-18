@@ -646,7 +646,8 @@ Flags:
 #### `kit map [feature]`
 
 - render a read-only terminal graph of the canonical document hierarchy and current project state
-- without a feature argument, show global docs plus every feature directory, current phase, paused state, canonical docs, and explicit relationship edges
+- without a feature argument, open the interactive feature selector and show the selected feature map
+- with `--all`, show global docs plus every feature directory, current phase, paused state, canonical docs, and explicit relationship edges
 - order project-wide feature rendering by `builds on` and `depends on` relationships when those edges provide a usable dependency order
 - with a feature argument, show a feature-scoped view plus incoming or outgoing relationships that touch that feature
 - derive relationship edges from explicit `## RELATIONSHIPS` sections in `BRAINSTORM.md` and `SPEC.md`

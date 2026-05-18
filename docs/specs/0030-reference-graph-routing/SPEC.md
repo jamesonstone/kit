@@ -129,7 +129,7 @@ References are tracked in front matter.
 - [SPEC-15] Existing repo docs touched by this work must be migrated to the new front matter format.
 - [SPEC-16] `kit map` must resolve local file, feature artifact, heading, symbol, command, URL, and node-id references where possible.
 - [SPEC-17] Context plans must merge duplicate target selectors and keep the strongest read policy.
-- [SPEC-18] `kit map --json` must emit deterministic machine-readable map or context-plan data.
+- [SPEC-18] `kit map <feature> --json`, `kit map <feature> --context --json`, and `kit map --all --json` must emit deterministic machine-readable map or context-plan data.
 - [SPEC-19] Reference relation wording must define the relation as the referenced target's role relative to the source artifact.
 
 ## ACCEPTANCE
@@ -151,7 +151,7 @@ References are tracked in front matter.
 - A stale reference should remain visible in metadata but default to `read_policy: skip`.
 - A line-number location can only be made stable by adding a descriptive selector.
 - A feature has no references.
-- `kit map --context` is run without a feature argument.
+- `kit map --context` is run non-interactively without a feature argument.
 
 ## OPEN-QUESTIONS
 

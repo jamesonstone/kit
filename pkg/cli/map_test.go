@@ -14,7 +14,28 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 )
 
+func resetMapCommandState(t *testing.T) {
+	t.Helper()
+
+	oldContext := mapContext
+	oldJSON := mapJSON
+	oldAll := mapAll
+
+	mapContext = false
+	mapJSON = false
+	mapAll = false
+
+	t.Cleanup(func() {
+		mapContext = oldContext
+		mapJSON = oldJSON
+		mapAll = oldAll
+	})
+}
+
 func TestRunMap_ProjectWideOutput(t *testing.T) {
+	resetMapCommandState(t)
+	mapAll = true
+
 	projectRoot := setupMapProject(t)
 	oldWD, err := os.Getwd()
 	if err != nil {
@@ -61,7 +82,129 @@ func TestRunMap_ProjectWideOutput(t *testing.T) {
 	}
 }
 
+func TestRunMap_DefaultInteractiveSelector(t *testing.T) {
+	resetMapCommandState(t)
+
+	projectRoot := setupMapProject(t)
+	oldWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd() error = %v", err)
+	}
+	defer func() {
+		_ = os.Chdir(oldWD)
+	}()
+	if err := os.Chdir(projectRoot); err != nil {
+		t.Fatalf("Chdir() error = %v", err)
+	}
+
+	readPipe, writePipe, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("os.Pipe() error = %v", err)
+	}
+	if _, err := writePipe.WriteString("1\n"); err != nil {
+		t.Fatalf("WriteString() error = %v", err)
+	}
+	if err := writePipe.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+	oldStdin := os.Stdin
+	os.Stdin = readPipe
+	defer func() {
+		os.Stdin = oldStdin
+		_ = readPipe.Close()
+	}()
+
+	out := &bytes.Buffer{}
+	cmd := &cobra.Command{}
+	cmd.SetOut(out)
+
+	if err := runMap(cmd, nil); err != nil {
+		t.Fatalf("runMap() error = %v", err)
+	}
+
+	got := out.String()
+	if !strings.Contains(got, "Select a feature to map:") {
+		t.Fatalf("expected interactive selector prompt, got %q", got)
+	}
+	if !strings.Contains(got, "🗺️ Kit Map: 0001-alpha") {
+		t.Fatalf("expected selected feature map output, got %q", got)
+	}
+}
+
+func TestRunMap_DefaultInteractiveSelectorRejectsEmptySelection(t *testing.T) {
+	resetMapCommandState(t)
+
+	projectRoot := setupMapProject(t)
+	oldWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd() error = %v", err)
+	}
+	defer func() {
+		_ = os.Chdir(oldWD)
+	}()
+	if err := os.Chdir(projectRoot); err != nil {
+		t.Fatalf("Chdir() error = %v", err)
+	}
+
+	readPipe, writePipe, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("os.Pipe() error = %v", err)
+	}
+	if err := writePipe.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+	oldStdin := os.Stdin
+	os.Stdin = readPipe
+	defer func() {
+		os.Stdin = oldStdin
+		_ = readPipe.Close()
+	}()
+
+	out := &bytes.Buffer{}
+	cmd := &cobra.Command{}
+	cmd.SetOut(out)
+
+	err = runMap(cmd, nil)
+	if err == nil {
+		t.Fatalf("expected empty selection error")
+	}
+	if !strings.Contains(err.Error(), "no feature selected") || !strings.Contains(err.Error(), "kit map --all") {
+		t.Fatalf("expected actionable error, got %q", err.Error())
+	}
+	if !strings.Contains(out.String(), "Select a feature to map:") {
+		t.Fatalf("expected selector prompt, got %q", out.String())
+	}
+}
+
+func TestRunMap_AllRejectsFeatureArgument(t *testing.T) {
+	resetMapCommandState(t)
+	mapAll = true
+
+	projectRoot := setupMapProject(t)
+	oldWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd() error = %v", err)
+	}
+	defer func() {
+		_ = os.Chdir(oldWD)
+	}()
+	if err := os.Chdir(projectRoot); err != nil {
+		t.Fatalf("Chdir() error = %v", err)
+	}
+
+	cmd := &cobra.Command{}
+	err = runMap(cmd, []string{"alpha"})
+	if err == nil {
+		t.Fatalf("expected --all with feature argument to fail")
+	}
+	if !strings.Contains(err.Error(), "--all cannot be used with a feature argument") {
+		t.Fatalf("unexpected error: %q", err.Error())
+	}
+}
+
 func TestRunMap_FeatureScopedOutput(t *testing.T) {
+	resetMapCommandState(t)
+
 	projectRoot := setupMapProject(t)
 	oldWD, err := os.Getwd()
 	if err != nil {
@@ -101,6 +244,9 @@ func TestRunMap_FeatureScopedOutput(t *testing.T) {
 }
 
 func TestRunMap_FeatureContextOutput(t *testing.T) {
+	resetMapCommandState(t)
+	mapContext = true
+
 	projectRoot := setupMapProject(t)
 	oldWD, err := os.Getwd()
 	if err != nil {
@@ -134,14 +280,6 @@ references:
 	out := &bytes.Buffer{}
 	cmd := &cobra.Command{}
 	cmd.SetOut(out)
-	restoreMapContext := mapContext
-	restoreMapJSON := mapJSON
-	mapContext = true
-	mapJSON = false
-	defer func() {
-		mapContext = restoreMapContext
-		mapJSON = restoreMapJSON
-	}()
 
 	if err := runMap(cmd, []string{"alpha"}); err != nil {
 		t.Fatalf("runMap() error = %v", err)
@@ -163,6 +301,10 @@ references:
 }
 
 func TestRunMap_JSONOutput(t *testing.T) {
+	resetMapCommandState(t)
+	mapContext = true
+	mapJSON = true
+
 	projectRoot := setupMapProject(t)
 	oldWD, err := os.Getwd()
 	if err != nil {
@@ -178,14 +320,6 @@ func TestRunMap_JSONOutput(t *testing.T) {
 	out := &bytes.Buffer{}
 	cmd := &cobra.Command{}
 	cmd.SetOut(out)
-	restoreMapContext := mapContext
-	restoreMapJSON := mapJSON
-	mapContext = true
-	mapJSON = true
-	defer func() {
-		mapContext = restoreMapContext
-		mapJSON = restoreMapJSON
-	}()
 
 	if err := runMap(cmd, []string{"alpha"}); err != nil {
 		t.Fatalf("runMap() error = %v", err)
@@ -213,6 +347,9 @@ func TestRunMap_JSONOutput(t *testing.T) {
 }
 
 func TestRunMap_ProjectWideOutput_UsesANSIColorWhenTerminalEnabled(t *testing.T) {
+	resetMapCommandState(t)
+	mapAll = true
+
 	previousCheck := terminalWriterCheck
 	terminalWriterCheck = func(_ io.Writer) bool { return true }
 	defer func() { terminalWriterCheck = previousCheck }()

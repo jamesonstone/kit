@@ -124,6 +124,8 @@ Implement a destructive migration from front matter `dependencies` to graph-like
   - Shows a de-duplicated read plan grouped by `must`, `conditional`, `evidence`, and `skip`.
 - `kit map <feature> --context --json`
   - Emits the context plan as grouped JSON.
+- `kit map --all --json`
+  - Emits the full project map as deterministic JSON for automation.
 - `kit reconcile --migrate-references`
   - Emits a prompt that converts old front matter `dependencies` to canonical `references`.
 

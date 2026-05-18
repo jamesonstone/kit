@@ -128,8 +128,11 @@ kit status --all
 # reorient before resuming work
 kit resume my-feature
 
-# inspect the current document map and feature lineage
+# inspect a selected feature's document map and feature lineage
 kit map
+
+# inspect the full project document map
+kit map --all
 
 # pause a feature without losing its phase
 kit pause my-feature
@@ -176,7 +179,7 @@ kit rm my-feature --yes --notes
 | ------------------------- | ------------------------------------------------------------------------------------------------ |
 | `kit status`              | Show the active feature status, including paused state; supports `--json`                        |
 | `kit status --all`        | Show the project-wide overview as a lifecycle matrix with state and task progress; supports JSON |
-| `kit map [feature]`       | Show a read-only map of canonical docs, lifecycle state, and explicit feature lineage            |
+| `kit map [feature]`       | Select or show a feature map; supports `--all` for the full project document map                 |
 | `kit check <feature>`     | Validate feature documents and populated required sections                                       |
 | `kit check --project`     | Validate the repo-level document and instruction contract, including versioned instruction docs  |
 | `kit reconcile [feature]` | Audit Kit-managed docs for contract drift and output a documentation-reconciliation prompt       |

@@ -319,6 +319,7 @@ The semantic refresh flow for updating durable project-level truth after a repos
 
 The read-only structural view rendered by `kit map`:
 
+- Opens an interactive feature selector by default and shows the full project view with `kit map --all`
 - Shows global docs, feature docs, lifecycle state, and explicit feature-to-feature relationships
 - Derives its state from canonical markdown docs and the filesystem
 - Normalizes harmless inline-code formatting around relationship targets and warns on malformed lines instead of failing the whole map
