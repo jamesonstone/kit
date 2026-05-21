@@ -13,6 +13,7 @@
 - Replace placeholder-only sections with `not applicable`, `not required`, or `no additional information required`
 - Always update affected documentation and ensure touched docs are current and properly formatted before calling work complete
 - Never claim tests passed unless they ran
+- Prefer citing `kit verify` run IDs or exact command output when declared verification exists
 - Never claim files were inspected unless they were inspected
 - Never guess file contents, APIs, or behavior
 - If validation cannot run, state why

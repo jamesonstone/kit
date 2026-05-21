@@ -92,6 +92,37 @@ func TestBuildReconcilePromptIncludesReferenceMigrationRules(t *testing.T) {
 	}
 }
 
+func TestBuildReconcilePromptIncludesVerificationMigrationRules(t *testing.T) {
+	report := &reconcileReport{
+		ProjectRoot:           t.TempDir(),
+		VerificationMigration: true,
+		Findings: []reconcileFinding{
+			{
+				Severity:          reconcileSeverityWarning,
+				FilePath:          "/tmp/TASKS.md",
+				Issue:             "active feature tasks do not declare executable verification fields: T001 missing VERIFY",
+				UpdateInstruction: "add executable verification fields where commands are known",
+			},
+		},
+	}
+
+	prompt := buildReconcilePrompt(report)
+	checks := []string{
+		"Migration target: add executable verification fields to active task details",
+		"verification migration: enabled",
+		"verification migration is advisory",
+		"do not mark legacy docs invalid",
+		"do not guess verification commands from prose",
+		"leave uncertain commands as `not yet declared`",
+		"run `kit verify <feature> --dry-run`, refresh `.kit/state.json`, then rerun `kit check <feature>` and `kit check --project`",
+	}
+	for _, check := range checks {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected verification migration prompt to contain %q, got %q", check, prompt)
+		}
+	}
+}
+
 func TestBuildReconcilePrompt_OmitsSubagentInstructionForSingleAgent(t *testing.T) {
 	previousSingleAgent := singleAgent
 	singleAgent = true
@@ -205,6 +236,159 @@ func TestBuildReconcileReportFeatureScopeFindsRelationshipAndTaskDrift(t *testin
 		if !strings.Contains(issues, check) {
 			t.Fatalf("expected findings to include %q, got %q", check, issues)
 		}
+	}
+}
+
+func TestBuildReconcileReportWarnsForActiveVerificationFields(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-sample")
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-sample"))
+	writeFile(t, filepath.Join(featurePath, "PLAN.md"), withFeatureFrontMatter(validPlan(), "plan", "0001-sample"))
+	writeFile(t, filepath.Join(featurePath, "TASKS.md"), withFeatureFrontMatter(legacyTasksWithoutExecutableFields(false), "tasks", "0001-sample"))
+	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("0001", "sample"))
+
+	feat := &feature.Feature{
+		Number:  1,
+		Slug:    "sample",
+		DirName: "0001-sample",
+		Path:    featurePath,
+		Phase:   feature.PhaseImplement,
+	}
+
+	report, err := buildReconcileReport(projectRoot, cfg, feat)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+
+	var found bool
+	for _, finding := range report.Findings {
+		if strings.Contains(finding.Issue, "active feature tasks do not declare executable verification fields") {
+			found = true
+			if finding.Severity != reconcileSeverityWarning {
+				t.Fatalf("Severity = %q, want warning", finding.Severity)
+			}
+			if !strings.Contains(finding.UpdateInstruction, "propose runnable checks separately from confirmed checks") {
+				t.Fatalf("expected prose-only acceptance guidance, got %q", finding.UpdateInstruction)
+			}
+		}
+	}
+	if !found {
+		t.Fatalf("expected executable verification advisory, got %q", findingsIssues(report.Findings))
+	}
+}
+
+func TestBuildReconcileReportSkipsCompletedLegacyVerificationFields(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-sample")
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-sample"))
+	writeFile(t, filepath.Join(featurePath, "PLAN.md"), withFeatureFrontMatter(validPlan(), "plan", "0001-sample"))
+	writeFile(t, filepath.Join(featurePath, "TASKS.md"), withFeatureFrontMatter(legacyTasksWithoutExecutableFields(true), "tasks", "0001-sample"))
+	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("0001", "sample"))
+
+	feat := &feature.Feature{
+		Number:  1,
+		Slug:    "sample",
+		DirName: "0001-sample",
+		Path:    featurePath,
+		Phase:   feature.PhaseComplete,
+	}
+
+	report, err := buildReconcileReport(projectRoot, cfg, feat)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+
+	if strings.Contains(findingsIssues(report.Findings), "active feature tasks do not declare executable verification fields") {
+		t.Fatalf("expected completed legacy feature to skip advisory, got %q", findingsIssues(report.Findings))
+	}
+}
+
+func TestBuildReconcileReportSkipsHistoricalFeatureScopedVerificationFields(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	historicalPath := filepath.Join(projectRoot, "docs", "specs", "0001-historical")
+	writeFile(t, filepath.Join(historicalPath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-historical"))
+	writeFile(t, filepath.Join(historicalPath, "PLAN.md"), withFeatureFrontMatter(validPlan(), "plan", "0001-historical"))
+	writeFile(t, filepath.Join(historicalPath, "TASKS.md"), withFeatureFrontMatter(legacyTasksWithoutExecutableFields(false), "tasks", "0001-historical"))
+	activePath := filepath.Join(projectRoot, "docs", "specs", "0002-active")
+	writeFile(t, filepath.Join(activePath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0002-active"))
+	writeFile(t, filepath.Join(activePath, "PLAN.md"), withFeatureFrontMatter(validPlan(), "plan", "0002-active"))
+	writeFile(t, filepath.Join(activePath, "TASKS.md"), withFeatureFrontMatter(legacyTasksWithoutExecutableFields(false), "tasks", "0002-active"))
+	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummaryForFeatures(
+		[]string{"0001-historical", "0002-active"},
+	))
+
+	feat := &feature.Feature{
+		Number:  1,
+		Slug:    "historical",
+		DirName: "0001-historical",
+		Path:    historicalPath,
+		Phase:   feature.PhaseReflect,
+	}
+
+	report, err := buildReconcileReport(projectRoot, cfg, feat)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+
+	if strings.Contains(findingsIssues(report.Findings), "active feature tasks do not declare executable verification fields") {
+		t.Fatalf("expected historical feature-scoped reconcile to skip advisory, got %q", findingsIssues(report.Findings))
+	}
+}
+
+func TestBuildReconcileReportProjectScopeWarnsOnlyActiveFeature(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	writeFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), validConstitution())
+	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummaryForFeatures(
+		[]string{"0001-historical", "0002-active"},
+	))
+	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
+	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
+	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
+	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
+		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
+	}
+
+	historicalPath := filepath.Join(projectRoot, "docs", "specs", "0001-historical")
+	writeFile(t, filepath.Join(historicalPath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-historical"))
+	writeFile(t, filepath.Join(historicalPath, "PLAN.md"), withFeatureFrontMatter(validPlan(), "plan", "0001-historical"))
+	writeFile(t, filepath.Join(historicalPath, "TASKS.md"), withFeatureFrontMatter(legacyTasksWithoutExecutableFields(true), "tasks", "0001-historical"))
+	activePath := filepath.Join(projectRoot, "docs", "specs", "0002-active")
+	writeFile(t, filepath.Join(activePath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0002-active"))
+	writeFile(t, filepath.Join(activePath, "PLAN.md"), withFeatureFrontMatter(validPlan(), "plan", "0002-active"))
+	writeFile(t, filepath.Join(activePath, "TASKS.md"), withFeatureFrontMatter(legacyTasksWithoutExecutableFields(false), "tasks", "0002-active"))
+
+	report, err := buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+
+	issues := findingsIssues(report.Findings)
+	if !strings.Contains(issues, "active feature tasks do not declare executable verification fields") {
+		t.Fatalf("expected active verification advisory, got %q", issues)
+	}
+	if strings.Contains(issues, "0001-historical") {
+		t.Fatalf("expected historical feature to be left alone, got %q", issues)
 	}
 }
 

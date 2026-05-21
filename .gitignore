@@ -16,6 +16,8 @@
 coverage.*
 *.coverprofile
 profile.cov
+*.prof
+*.pprof
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
@@ -33,3 +35,12 @@ go.work.sum
 # .vscode/
 
 bin/kit
+
+# Kit local generated cache and scratch artifacts
+.kit/runs/
+.kit/state.json
+.kit/cache/
+.kit/tmp/
+.kit/temp/
+.kit/*.tmp
+.kit/*.lock

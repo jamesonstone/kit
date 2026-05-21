@@ -30,11 +30,12 @@ type reconcileFinding struct {
 }
 
 type reconcileReport struct {
-	ProjectRoot        string
-	Feature            *feature.Feature
-	Findings           []reconcileFinding
-	NeedsRollup        bool
-	ReferenceMigration bool
+	ProjectRoot           string
+	Feature               *feature.Feature
+	Findings              []reconcileFinding
+	NeedsRollup           bool
+	ReferenceMigration    bool
+	VerificationMigration bool
 }
 
 func (r *reconcileReport) cleanResult() string {
@@ -54,6 +55,7 @@ func buildReconcileReport(projectRoot string, cfg *config.Config, feat *feature.
 	if err != nil {
 		return nil, fmt.Errorf("failed to list features: %w", err)
 	}
+	activeVerificationFeature := activeFeatureForVerificationAdvisory(features)
 
 	targets := make(map[string]bool, len(features))
 	for _, item := range features {
@@ -63,14 +65,21 @@ func buildReconcileReport(projectRoot string, cfg *config.Config, feat *feature.
 	if feat == nil {
 		report.Findings = append(report.Findings, auditDuplicateFeatureNumbers(cfg.SpecsPath(projectRoot), projectRoot, features)...)
 		report.Findings = append(report.Findings, auditConstitution(projectRoot)...)
+		report.Findings = append(report.Findings, auditRulesets(projectRoot)...)
 		report.Findings = append(report.Findings, auditProjectProgressSummary(projectRoot, features)...)
 		for i := range features {
 			report.Findings = append(report.Findings, auditFeatureDocuments(projectRoot, &features[i], targets)...)
+		}
+		if activeVerificationFeature != nil {
+			report.Findings = append(report.Findings, auditExecutableVerificationAdvisory(projectRoot, activeVerificationFeature)...)
 		}
 		report.Findings = append(report.Findings, auditInstructionFiles(projectRoot, cfg)...)
 	} else {
 		report.Findings = append(report.Findings, auditFeatureDocuments(projectRoot, feat, targets)...)
 		report.Findings = append(report.Findings, auditFeatureRollupCoverage(projectRoot, feat)...)
+		if activeVerificationFeature != nil && activeVerificationFeature.DirName == feat.DirName {
+			report.Findings = append(report.Findings, auditExecutableVerificationAdvisory(projectRoot, activeVerificationFeature)...)
+		}
 	}
 
 	for _, finding := range report.Findings {

@@ -38,7 +38,7 @@ Creates:
 
 Interactive flow:
 	1. Ask for a feature/project name (unless provided as an argument)
-	2. Open a vim-compatible editor for the multiline issue/feature thesis by default
+	2. Open $EDITOR for the multiline issue/feature thesis by default, falling back to a vim-compatible editor when $EDITOR is unset
 
 The command never implements code. It outputs a /plan prompt that instructs
 the coding agent to research the codebase, use numbered lists for clarifying

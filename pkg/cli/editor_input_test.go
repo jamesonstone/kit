@@ -71,7 +71,26 @@ func TestResolveEditorCommand_ErrorsWhenNoVimEditorExists(t *testing.T) {
 	}
 }
 
-func TestResolveEditorCommand_UsesDefaultEditorWhenConfigured(t *testing.T) {
+func TestResolveEditorCommand_UsesEditorEnvForDefaultEditor(t *testing.T) {
+	t.Setenv("EDITOR", "code --wait")
+	restore := stubLookPath(map[string]string{
+		"code": "/usr/local/bin/code",
+	})
+	defer restore()
+
+	got, err := newFreeTextInputConfig(false, "", false, true).resolveEditorCommand()
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	want := []string{"/usr/local/bin/code", "--wait"}
+	if !stdreflect.DeepEqual(got, want) {
+		t.Fatalf("expected %v, got %v", want, got)
+	}
+}
+
+func TestResolveEditorCommand_FallsBackToVimWhenEditorEnvUnset(t *testing.T) {
+	t.Setenv("EDITOR", "")
 	restore := stubLookPath(map[string]string{
 		"nvim": "/usr/local/bin/nvim",
 	})
@@ -85,6 +104,16 @@ func TestResolveEditorCommand_UsesDefaultEditorWhenConfigured(t *testing.T) {
 	want := []string{"/usr/local/bin/nvim"}
 	if !stdreflect.DeepEqual(got, want) {
 		t.Fatalf("expected %v, got %v", want, got)
+	}
+}
+
+func TestFreeTextInputConfig_EditorLabelUsesEditorEnvForDefault(t *testing.T) {
+	t.Setenv("EDITOR", "code --wait")
+
+	got := newFreeTextInputConfig(false, "", false, true).editorLabel()
+	want := "$EDITOR (code --wait)"
+	if got != want {
+		t.Fatalf("expected editor label %q, got %q", want, got)
 	}
 }
 

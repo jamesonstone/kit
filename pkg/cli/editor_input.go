@@ -30,13 +30,13 @@ func addFreeTextInputFlags(cmd *cobra.Command, useVim *bool, editor *string) {
 		useVim,
 		"vim",
 		false,
-		"open free-text prompts in a vim-compatible editor (shorthand for --editor=vim)",
+		"open free-text prompts in a vim-compatible editor instead of the default editor",
 	)
 	cmd.Flags().StringVar(
 		editor,
 		"editor",
 		"",
-		"open free-text prompts in an editor; use 'vim' as an alias for --vim",
+		"open free-text prompts in a specific editor command; defaults to $EDITOR when omitted",
 	)
 }
 
@@ -45,7 +45,7 @@ func addInlineTextInputFlag(cmd *cobra.Command, inline *bool) {
 		inline,
 		"inline",
 		false,
-		"use inline multiline prompts instead of opening a vim-compatible editor",
+		"use inline multiline prompts instead of opening the default editor",
 	)
 }
 
@@ -75,7 +75,16 @@ func (c freeTextInputConfig) editorLabel() string {
 	if c.editor != "" && !strings.EqualFold(c.editor, "vim") {
 		return c.editor
 	}
-	return "vim-compatible editor"
+	if strings.EqualFold(c.editor, "vim") || c.useVim {
+		return "vim-compatible editor"
+	}
+	if c.defaultEditor {
+		if editor, ok := defaultEditorEnv(); ok {
+			return "$EDITOR (" + editor + ")"
+		}
+		return "default editor"
+	}
+	return "editor"
 }
 
 func (c freeTextInputConfig) resolveEditorCommand() ([]string, error) {
@@ -84,11 +93,26 @@ func (c freeTextInputConfig) resolveEditorCommand() ([]string, error) {
 		return resolveVimCommand()
 	case c.editor != "":
 		return resolveExactEditorCommand(c.editor)
-	case c.useVim || c.defaultEditor:
+	case c.useVim:
 		return resolveVimCommand()
+	case c.defaultEditor:
+		return resolveDefaultEditorCommand()
 	default:
 		return nil, fmt.Errorf("no editor configured")
 	}
+}
+
+func resolveDefaultEditorCommand() ([]string, error) {
+	if editor, ok := defaultEditorEnv(); ok {
+		return resolveExactEditorCommand(editor)
+	}
+	return resolveVimCommand()
+}
+
+func defaultEditorEnv() (string, bool) {
+	editor, ok := os.LookupEnv("EDITOR")
+	editor = strings.TrimSpace(editor)
+	return editor, ok && editor != ""
 }
 
 func resolveVimCommand() ([]string, error) {

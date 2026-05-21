@@ -154,7 +154,7 @@ kit rm my-feature --yes --notes
 
 | Command        | Description                                                                       |
 | -------------- | --------------------------------------------------------------------------------- |
-| `kit init`     | Initialize project, user config, review config, and GitHub PR template            |
+| `kit init`     | Initialize project, user config, local env files, `.gitignore`, review config, and GitHub PR template |
 | `kit scaffold` | Create empty workflow document structures, support directories, and agent files   |
 
 ### 🔁 Workflow
@@ -182,7 +182,13 @@ kit rm my-feature --yes --notes
 | `kit map [feature]`       | Select or show a feature map; supports `--all` for the full project document map                 |
 | `kit check <feature>`     | Validate feature documents and populated required sections                                       |
 | `kit check --project`     | Validate the repo-level document and instruction contract, including versioned instruction docs  |
-| `kit reconcile [feature]` | Audit Kit-managed docs for contract drift and output a documentation-reconciliation prompt       |
+| `kit verify [feature]`    | Run declared verification checks from `TASKS.md` and write local run evidence                    |
+| `kit trace <target>`      | List feature verification runs or inspect one run ID                                             |
+| `kit replay <run-id>`     | Rerun commands from a prior verification run and compare outcomes                                |
+| `kit state [refresh]`     | Show or refresh generated pointer-only `.kit/state.json` for agents and tools                    |
+| `kit eval`                | Run small local harness regression checks                                                        |
+| `kit rules` / `kit rule`  | Create, list, and link durable repo-local rulesets under `docs/references/rules/`                |
+| `kit reconcile [feature]` | Audit Kit-managed docs for contract drift and output a documentation-reconciliation prompt; supports `--migrate-verification` for advisory executable-check migration |
 
 ### 🧾 Prompt Utilities
 
@@ -399,9 +405,9 @@ Then Kit:
 - creates `BRAINSTORM.md` as the first artifact in that directory
 - requires the coding agent to keep front matter `relationships` current with explicit prior-feature lineage, falling back to `## RELATIONSHIPS` only for legacy docs without front matter
 - requires the coding agent to keep front matter `references` current with the inputs used during the brainstorm phase, including `target`, `relation`, and `read_policy`
-- opens a vim-compatible editor by default for the multiline thesis, with step instructions and a press-any-key launch gate
+- opens `$EDITOR` by default for the multiline thesis, falling back to a vim-compatible editor when `$EDITOR` is unset, with step instructions and a press-any-key launch gate
 - supports `--inline` to use terminal multiline entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
-- keeps `--vim` and `--editor=vim` as explicit editor controls, though vim-mode is already the default for multiline free-text responses
+- keeps `--vim` and `--editor=vim` as explicit controls when a vim-compatible editor is desired
 - outputs a planning-only prompt that starts with `/plan`
 - tells the coding agent to research the codebase, use numbered lists, ask questions in batches of up to 10, and avoid implementation
 - requires the agent to include recommended defaults, accept `yes` / `y` for whole-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` for numbered approval, state uncertainties, output percentage-understanding progress after each batch, and continue until the spec is precise enough for a production-quality solution
@@ -461,7 +467,7 @@ kit brainstorm my-feature --output-only
 # regenerate the brainstorm prompt from an existing BRAINSTORM.md without touching repo docs
 kit brainstorm my-feature --prompt-only
 
-# opt out of default vim-mode and use inline multiline entry
+# opt out of default editor mode and use inline multiline entry
 kit brainstorm my-feature --inline
 
 # write the generated /plan prompt to a file
@@ -477,8 +483,8 @@ kit backlog --pickup shared-refactor
 kit resume shared-refactor
 ```
 
-`kit spec <feature> --interactive` now opens a vim-compatible editor for each
-free-text answer by default. Use `kit spec <feature> --interactive --inline`
+`kit spec <feature> --interactive` now opens `$EDITOR` for each free-text answer
+by default, falling back to a vim-compatible editor when `$EDITOR` is unset. Use `kit spec <feature> --interactive --inline`
 to opt back into terminal multiline entry.
 
 ### 📄 What goes in `BRAINSTORM.md`
@@ -514,6 +520,9 @@ docs/
       PLAN.md
       TASKS.md
       ANALYSIS.md            # optional
+  references/
+    rules/
+      frontend-ui.md          # optional durable pointer-loaded rulesets
 ```
 
 New `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md` files include

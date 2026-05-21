@@ -61,17 +61,17 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	if checkAll {
-		return checkAllFeatures(specsDir)
+		return checkAllFeatures(projectRoot, specsDir)
 	}
 
 	if len(args) == 0 {
 		return fmt.Errorf("feature name required. Use --all to check all features")
 	}
 
-	return checkFeature(specsDir, args[0])
+	return checkFeature(projectRoot, specsDir, args[0])
 }
 
-func checkFeature(specsDir string, featureRef string) error {
+func checkFeature(projectRoot string, specsDir string, featureRef string) error {
 	feat, err := feature.Resolve(specsDir, featureRef)
 	if err != nil {
 		return fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first to create it", featureRef, featureRef)
@@ -93,6 +93,7 @@ func checkFeature(specsDir string, featureRef string) error {
 				errors = append(errors, e.Error())
 			}
 			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			errors = append(errors, featureRulesetReferenceErrors(projectRoot, doc)...)
 			warnings = append(warnings, metadataDiagnosticWarnings(doc)...)
 			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
@@ -114,6 +115,7 @@ func checkFeature(specsDir string, featureRef string) error {
 				errors = append(errors, e.Error())
 			}
 			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			errors = append(errors, featureRulesetReferenceErrors(projectRoot, doc)...)
 			warnings = append(warnings, metadataDiagnosticWarnings(doc)...)
 			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
@@ -135,6 +137,7 @@ func checkFeature(specsDir string, featureRef string) error {
 				errors = append(errors, e.Error())
 			}
 			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			errors = append(errors, featureRulesetReferenceErrors(projectRoot, doc)...)
 			warnings = append(warnings, metadataDiagnosticWarnings(doc)...)
 			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
@@ -156,6 +159,7 @@ func checkFeature(specsDir string, featureRef string) error {
 				errors = append(errors, e.Error())
 			}
 			errors = append(errors, featureMetadataIdentityErrors(doc, feat.DirName)...)
+			errors = append(errors, featureRulesetReferenceErrors(projectRoot, doc)...)
 			warnings = append(warnings, metadataDiagnosticWarnings(doc)...)
 			warnings = append(warnings, metadataConflictWarnings(doc)...)
 			if doc.HasUnresolvedPlaceholders() {
@@ -290,7 +294,7 @@ func relativeCheckPath(projectRoot, path string) string {
 	return rel
 }
 
-func checkAllFeatures(specsDir string) error {
+func checkAllFeatures(projectRoot string, specsDir string) error {
 	features, err := feature.ListFeatures(specsDir)
 	if err != nil {
 		return fmt.Errorf("failed to list features: %w", err)
@@ -305,7 +309,7 @@ func checkAllFeatures(specsDir string) error {
 
 	var totalErrors int
 	for _, feat := range features {
-		err := checkFeature(specsDir, feat.Slug)
+		err := checkFeature(projectRoot, specsDir, feat.Slug)
 		if err != nil {
 			totalErrors++
 		}

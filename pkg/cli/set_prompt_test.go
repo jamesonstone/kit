@@ -245,6 +245,7 @@ func TestRunSetPromptWithOptions_EditorEmptyContentFailsWithoutSaving(t *testing
 
 func TestRunSetPromptWithOptions_MissingEditorFails(t *testing.T) {
 	setupPromptTestEnvironment(t)
+	t.Setenv("EDITOR", "")
 	restoreLookPath := stubLookPath(map[string]string{})
 	defer restoreLookPath()
 

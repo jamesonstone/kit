@@ -33,14 +33,15 @@ all decisions.
 - No vendor lock-in to any coding agent (Claude, Copilot, Codex, etc.).
 - Documents use only markdown and YAML — universally readable.
 - Repository instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) stay aligned with canonical docs and summarize the active workflow contract for supported tools.
-- `kit init` also creates shared review support files, including `.coderabbit.yaml` and `.github/pull_request_template.md`, without overwriting existing local versions.
+- `kit init` also creates shared local support files, including `.env`, `.envrc`, `.coderabbit.yaml`, and `.github/pull_request_template.md`, without overwriting existing local versions.
 - Agents can be swapped with zero document changes.
 
 ### 4. Minimal Magic, Explicit State
 
 - Prefer explicit over implicit behavior.
 - No hidden databases, lock files, or external state.
-- All state lives in the filesystem (markdown files + `.kit.yaml`).
+- All state lives in the filesystem (markdown files + `.kit.yaml` + visible generated `.kit/` artifacts).
+- Markdown remains authoritative; `.kit/runs/` and `.kit/state.json` are local generated evidence/state surfaces that can be regenerated or deleted.
 - Commands fail fast with actionable error messages.
 
 ### 5. Opinionated Defaults, Configurable Escapes
@@ -111,6 +112,8 @@ all decisions.
    - Tasks link to plan items using `[PLAN-XX]` syntax
    - Plan items link to spec items using `[SPEC-XX]` syntax
    - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
+   - Executable verification belongs in task-level `VERIFY` fields where available
+   - Generated JSON state and run artifacts must point back to source documents instead of replacing them
 
 7. **External Review Tools**
    - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
@@ -373,7 +376,7 @@ kit/
     ├── PROJECT_PROGRESS_SUMMARY.md
     ├── agents/              # repo-local agent routing docs
     ├── future/              # non-binding future architecture notes
-    ├── references/          # durable repo references
+    ├── references/          # durable repo references and pointer-loaded rulesets
     └── specs/               # feature directories and core spec
 ```
 

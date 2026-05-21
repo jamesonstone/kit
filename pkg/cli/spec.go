@@ -35,14 +35,14 @@ features with BRAINSTORM.md or SPEC.md.
 
 Modes:
   Default:        Copy the generated prompt to the clipboard and show status (non-interactive)
-  --interactive:  Prompt user for spec details, opening a vim-compatible editor for free-text answers by default
+  --interactive:  Prompt user for spec details, opening $EDITOR for free-text answers by default
   --template:     Output empty template without interactive questions (deprecated, same as default)
 
 Flags:
   --output-only:  Output the raw prompt to stdout instead of copying it to the clipboard
   --copy:         Copy prompt to clipboard (mainly useful with --output-only)
   --interactive:  Force interactive prompts even when stdin is not a terminal
-  --vim:          Open free-text responses in a vim-compatible editor
+  --vim:          Open free-text responses in a vim-compatible editor instead of $EDITOR
   --inline:       Use inline multiline prompts instead of opening the editor`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runSpec,

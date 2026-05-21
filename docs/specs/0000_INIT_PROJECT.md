@@ -208,6 +208,7 @@ Rules:
 - relationship targets must use canonical feature directory identifiers such as `0007-catchup-command`
 - keep supporting inputs in front matter `references` with `name`, `type`, `target`, `relation`, `read_policy`, `used_for`, and `status`
 - `status` should distinguish `active`, `optional`, and `stale` inputs
+- durable rulesets live under `docs/references/rules/<slug>.md` and must be linked through front matter `references` rather than copied into always-loaded instruction files
 - when a reference is a Figma or MCP-driven design source, record the exact URL or file/node reference in `target` and use stable selectors when needed
 
 ---
@@ -261,6 +262,7 @@ Rules:
 - name decisions explicitly
 - defer code unless essential
 - keep implementation-strategy inputs in front matter `references` with exact targets, stable selectors, relations, read policies, and status values
+- link applicable durable rulesets with `type: ruleset` and `target: docs/references/rules/<slug>.md`
 
 ---
 
@@ -450,6 +452,8 @@ CLI flags always override `.kit.yaml`.
 
 - create `.kit.yaml` if missing
 - create or populate `~/.config/kit/.kit.yaml` with missing default fields
+- create blank `.env` and default `.envrc` if missing
+- include `.env` and `.envrc` in `.gitignore`
 - create `.coderabbit.yaml` if missing
 - create `.github/pull_request_template.md` if missing
 - create `docs/CONSTITUTION.md` if missing
@@ -707,7 +711,7 @@ Built-in project prompts:
 
 #### `kit set prompt [noun] [verb]`
 
-- create or update prompt entries through the existing vim-compatible editor flow
+- create or update prompt entries through the existing editor flow, defaulting to `$EDITOR` and falling back to a vim-compatible editor when `$EDITOR` is unset
 - default to project-local `.kit.yaml` when run inside a Kit project
 - ask whether to save globally when run outside a Kit project with no scope flag
 - support `--local`, `--global`, and `--local --global`
@@ -733,6 +737,25 @@ prompts:
 ```
 
 Nouns and verbs normalize to lowercase kebab-case.
+
+#### `kit rules`
+
+- manage durable repo-local rulesets under `docs/references/rules/<slug>.md`
+- `kit rule` is a singular alias for `kit rules`
+- keep Markdown rulesets as human source of truth with front matter:
+  - `kind: ruleset`
+  - `slug`
+  - `status`
+  - `applies_to`
+  - `read_policy_default`
+- `kit rules add` with no slug runs an interactive builder, opens `$EDITOR` for rule context by default, saves the ruleset, and copies an agent optimization prompt for semantic cleanup
+- `kit rules add <slug>` creates a concise ruleset template non-interactively and refuses to overwrite unless `--force` is used
+- `kit rules add` supports `--must`, `--conditional`, `--evidence`, and `--skip` to set `read_policy_default`
+- `kit rules list` renders rulesets in stable slug order with slug, path, status, and `applies_to`
+- `kit rules link <feature> <slug> --read-policy must|conditional` adds or refreshes one canonical feature `references` entry without duplicating existing references
+- feature docs decide when a ruleset is loaded by setting `read_policy: must`, `conditional`, or `skip`
+- agents must load rulesets just in time and only the sections relevant to the current implementation decision
+- do not inline rulesets into `AGENTS.md`, `CLAUDE.md`, copilot instructions, or prompt bodies by default
 
 ---
 
@@ -782,10 +805,12 @@ Validates:
 - required sections present and populated
 - traceability between spec → plan → tasks
 - no unresolved placeholders
+- ruleset references point to existing, valid files under `docs/references/rules/`
 
 Flags:
 
 - `--all` — validate all features in `docs/specs/`
+- `--project` — validate repo-level docs, instruction docs, and ruleset documents
 
 Fails fast with explicit errors. Errors suggest fixes (e.g., "SPEC.md missing. Run `kit spec <feature>` first or use `--force`").
 
@@ -867,6 +892,8 @@ Findings:
 - malformed `SKILLS`, `DEPENDENCIES`, or `PROGRESS TABLE` tables
 - task-ID drift across `PROGRESS TABLE`, `TASK LIST`, and `TASK DETAILS`
 - stale `RELATIONSHIPS` targets
+- invalid or missing ruleset reference targets
+- advisory active-feature warnings when a frontend feature appears to lack a linked frontend ruleset
 - stale `PROJECT_PROGRESS_SUMMARY.md` coverage
 - repository instruction-file drift detectable through append-only planning
 

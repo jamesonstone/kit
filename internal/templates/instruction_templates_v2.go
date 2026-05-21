@@ -92,6 +92,7 @@ const agentsREADME = `# Agents Docs
 - ` + "`RLM.md`" + ` → context routing and progressive disclosure
 - ` + "`TOOLING.md`" + ` → skills, dispatch, worktrees, and secondary inputs
 - ` + "`docs/references/*`" + ` → durable reference material only when relevant
+- ` + "`docs/references/rules/*`" + ` → durable rulesets only when linked from feature references or directly relevant
 - ` + "`docs/specs/<feature>/*`" + ` → active feature artifacts only
 
 ## Loading Rule
@@ -105,6 +106,7 @@ const agentsREADME = `# Agents Docs
 
 - Feature requirements, plans, and tasks live under ` + "`docs/specs/<feature>/`" + `
 - Broader repo references live under ` + "`docs/references/`" + `
+- Durable repo-local rulesets live under ` + "`docs/references/rules/`" + ` and should be pointer-loaded through feature references
 - Keep durable guidance here instead of expanding the injected top-level instruction files
 `
 
@@ -208,8 +210,11 @@ const agentsRLM = `# RLM
 - Keep map work file-scoped or narrowly bounded so synthesis stays deterministic
 - Prefer repo-local docs before secondary global inputs
 - For feature-scoped work, keep must-read inputs small: the current ` + "`TASKS.md`" + ` entry plus the linked ` + "`PLAN.md`" + ` and ` + "`SPEC.md`" + ` sections
+- Treat generated ` + "`.kit/state.json`" + ` and task bundles as pointer/index data; recurse back to canonical Markdown before changing behavior
+- Treat rulesets under ` + "`docs/references/rules/`" + ` as just-in-time context; load only the linked ruleset sections whose ` + "`read_policy`" + ` and ` + "`applies_to`" + ` match the current decision
 - Use indices first: start with ` + "`kit map <feature>`" + ` and ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` to shortlist candidate prior features under ` + "`docs/specs/`" + `
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
+- Do not load every ruleset by default; feature front matter references determine when a ruleset is must-read, conditional, evidence, or skipped
 - Open a prior feature doc only when it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or reference link
 - Inspect at most 5 prior feature directories before narrowing further or asking a clarifying question
 - Extract only the concrete facts that change the current feature; do not paraphrase entire prior docs into chat or copy irrelevant history into the active artifact
@@ -292,12 +297,15 @@ const referencesREADME = `# References
 - This directory holds durable repo-local references that are broader than one feature
 - Keep long-lived background context here instead of in injected top-level instruction files
 - Link these files from feature front matter references when they materially shape work
+- Store durable rulesets under ` + "`rules/<slug>.md`" + ` and link them with ` + "`kit rules link`" + ` instead of copying rules into agent instruction files
+- ` + "`kit rule`" + ` is the singular alias for ` + "`kit rules`" + `
 
 ## Starter Files
 
 - ` + "`testing.md`" + ` — repo-wide testing norms and evidence expectations
 - ` + "`tooling.md`" + ` — local tooling and command references that are broader than one feature
 - ` + "`external-systems.md`" + ` — durable notes about external systems, APIs, or integrations
+- ` + "`rules/`" + ` — pointer-loaded durable rulesets such as frontend UI rules, testing rules, API conventions, security constraints, or domain rules
 `
 
 const referencesTesting = `# Testing Reference

@@ -34,6 +34,7 @@
 | 0028 | project-refresh-advisory | `docs/specs/0028-project-refresh-advisory` | reflect | no | 2026-05-18 | - Add a built-in `kit prompt project refresh` prompt that asks a coding agent to re-analyze a maturing repository and update durable project-level docs. - Add a soft project-refresh advisory gate to late workflow surfaces so users are reminded to refresh project truth without blocking normal feature progress. |
 | 0029 | scaffold-workflows-prepare | `docs/specs/0029-scaffold-workflows-prepare` | reflect | no | 2026-05-18 | - Add `kit brainstorm --prepare` to create the brainstorm-phase directory/file scaffolding before emitting the brainstorm prompt. - Redefine visible `kit scaffold` as a namespace for creating workflow document structures and subdirectories, with `kit scaffold agents` replacing the old visible `kit scaffold-agents` command. |
 | 0030 | reference-graph-routing | `docs/specs/0030-reference-graph-routing` | reflect | no | 2026-05-18 | Replace front matter `dependencies` with canonical graph-like `references` that describe the relevant source, target, relationship, selector, read policy, use case, and status. Extend `kit map` to emit a focused read plan and extend `kit reconcile` with a migration prompt mode for converting old dependency metadata into the new reference graph. |
+| 0031 | executable-verification-harness | `docs/specs/0031-executable-verification-harness` | reflect | no | 2026-05-20 | Add executable verification, local run evidence, generated agent state, trace/replay, and small harness evals while preserving Markdown as Kit's human source of truth. |
 
 ## PROJECT INTENT
 
@@ -315,6 +316,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - none
 - **POINTERS**: `docs/specs/0030-reference-graph-routing/SPEC.md`, `docs/specs/0030-reference-graph-routing/PLAN.md`, `docs/specs/0030-reference-graph-routing/TASKS.md`
 
+### executable-verification-harness
+
+- **STATUS**: reflect
+- **PAUSED**: no
+- **INTENT**: Kit currently enforces strong document structure through `kit check`, readiness gates, and prompt instructions, but most correctness evidence still lives outside the harness in terminal output or agent summaries. That makes reflection weaker than it should be: agents can say tests passed without Kit having a structured record, future sessions cannot reliably inspect what was run, and multi-agent work still depends on humans or agents re-parsing Markdown tables instead of consuming a typed task/evidence surface.
+- **APPROACH**: - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-19][SPEC-20] Define task verification declarations and task bundle data structures without making JSON authoritative. - [PLAN-02][SPEC-05][SPEC-06][SPEC-07][SPEC-10][SPEC-11] Add `kit verify` with dry-run, task scoping, conservative command parsing, execution, and JSON output. - [PLAN-03][SPEC-08][SPEC-09][SPEC-11] Add local run artifact persistence under `.kit/runs/<run-id>/` with redacted bounded output and compact summaries. - [PLAN-04][SPEC-12][SPEC-13] Make `kit reflect` consume latest verification evidence and surface missing or failing evidence. - [PLAN-05][SPEC-14][SPEC-15][SPEC-16] Add `kit trace` and `kit replay` views over stored run artifacts. - [PLAN-06][SPEC-17][SPEC-18][SPEC-20] Add generated `.kit/state.json` and state refresh/show behavior for agents and tools. - [PLAN-07][SPEC-19][SPEC-20] Add machine-readable task bundles to generated state and command output surfaces. - [PLAN-08][SPEC-21] Add `kit eval` fixtures for harness behavior and regression checks. - [PLAN-09][SPEC-22][SPEC-23] Update templates, README, constitution, agent docs, checks, and tests after the command behavior is stable. - [PLAN-10][SPEC-24][SPEC-25] Add advisory reconciliation for executable verification fields and an opt-in verification migration prompt.
+- **OPEN ITEMS**: - Should `kit verify` persist run artifacts by default for all users, or should first-run output clearly advertise `--no-write` for ephemeral checks? - Should strict verification policy be a `.kit.yaml` option in this feature or a follow-up after default behavior settles? - Should `.kit/state.json` be refreshed implicitly by read commands, or should a visible `kit state refresh` command be the primary interface?
+- **POINTERS**: `docs/specs/0031-executable-verification-harness/SPEC.md`, `docs/specs/0031-executable-verification-harness/PLAN.md`, `docs/specs/0031-executable-verification-harness/TASKS.md`
+
 ## LAST UPDATED
 
-2026-05-18 17:10:00 EDT
+2026-05-20 10:00:52 EDT

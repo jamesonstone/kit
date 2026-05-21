@@ -7,6 +7,7 @@
 - Start from `TASKS.md` to identify the next action
 - Recurse into the relevant `PLAN.md` section for approach
 - Recurse into the relevant `SPEC.md` requirement for scope and acceptance
+- Run declared `VERIFY` commands through `kit verify <feature> --task <task-id>` when a task provides them
 - Use `BRAINSTORM.md` only for unresolved rationale
 - Use prior feature docs only through explicit dependency or relationship links
 - Ask clarification questions until confidence is high and unresolved assumptions are zero
@@ -45,6 +46,7 @@ Execution order for feature work:
 - Inspect relevant files before editing
 - Use existing repo patterns
 - Verify directly with the smallest relevant checks
+- Prefer declared `kit verify` checks when they exist; otherwise run the smallest direct command that proves the change
 - Do not create feature docs unless scope requires it
 - Update only the practical docs that changed, unless existing feature docs must also change
 

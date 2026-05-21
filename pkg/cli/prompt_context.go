@@ -29,7 +29,7 @@ type promptFeatureContext struct {
 }
 
 func promptDefaultEditorConfig() freeTextInputConfig {
-	return newFreeTextInputConfig(true, "", false, true)
+	return newFreeTextInputConfig(false, "", false, true)
 }
 
 func promptProjectContext() (string, *config.Config, error) {

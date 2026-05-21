@@ -13,6 +13,7 @@ import (
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
 	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/internal/runstore"
 	"github.com/spf13/cobra"
 )
 
@@ -176,6 +177,7 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPa
 
 	steps := []string{
 		"Snapshot the change set (do not skip)\n- git status\n- git diff\n- git diff --staged\n- git log -n 20 --oneline --decorate",
+		latestVerificationEvidenceStep(projectRoot, tasksPath, featureSlug),
 		"Build a review map\n- list changed files\n- for each file, state the intent in one line\n- identify risk areas (parsing, IO, error handling, concurrency, CLI UX)",
 	}
 	if featureScoped {
@@ -251,4 +253,31 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPa
 			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
 		)
 	})
+}
+
+func latestVerificationEvidenceStep(projectRoot, tasksPath, featureSlug string) string {
+	if featureSlug == "" || tasksPath == "" {
+		return "Verification evidence\n- no feature-scoped verification evidence is required for generic reflection\n- if this reflection covers declared feature checks, run `kit verify <feature>` first"
+	}
+	featureDir := filepath.Base(filepath.Dir(tasksPath))
+	run, ok, err := runstore.LatestForFeature(projectRoot, featureDir)
+	if err != nil {
+		return fmt.Sprintf("Verification evidence\n- unable to inspect latest run evidence: %v\n- run `kit verify %s` before marking reflection complete", err, featureSlug)
+	}
+	if !ok {
+		return fmt.Sprintf("Verification evidence\n- no local verification run found for `%s`\n- run `kit verify %s` and cite the resulting run ID before marking reflection complete", featureDir, featureSlug)
+	}
+	lines := []string{
+		"Verification evidence",
+		fmt.Sprintf("- latest run: `%s`", run.RunID),
+		fmt.Sprintf("- status: `%s`", run.Status),
+		fmt.Sprintf("- artifacts: `%s`", run.ArtifactDir),
+	}
+	if len(run.TaskIDs) > 0 {
+		lines = append(lines, fmt.Sprintf("- tasks covered: `%s`", strings.Join(run.TaskIDs, ", ")))
+	}
+	if run.Status != "pass" {
+		lines = append(lines, "- do not mark reflection complete until verification evidence is passing or the blocker is explicitly documented")
+	}
+	return strings.Join(lines, "\n")
 }

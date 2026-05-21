@@ -74,6 +74,16 @@ func buildReconcilePrompt(report *reconcileReport) string {
 			"prefer `read_policy: must` for constraints, `conditional` for supporting inputs, `evidence` for verification material, and `skip` for stale references",
 		)
 	}
+	if report.VerificationMigration {
+		rules = append(rules,
+			"verification migration is advisory; do not mark legacy docs invalid only because they predate executable task fields",
+			"inspect active `TASKS.md` only; for completed or historical features, leave missing executable fields alone",
+			"add `VERIFY`, `EXPECTED FILES`, `RISK`, and `ROLLBACK` only to tasks currently being implemented, verified, or reflected",
+			"do not guess verification commands from prose; infer commands only when already documented or obvious from repo tooling",
+			"if acceptance criteria are prose-only, propose runnable checks separately from confirmed checks and leave uncertain commands as `not yet declared`",
+			"after migration, run `kit verify <feature> --dry-run`, refresh `.kit/state.json`, then rerun `kit check <feature>` and `kit check --project`",
+		)
+	}
 
 	snapshot := []string{
 		fmt.Sprintf("findings: %d (%d errors, %d warnings)", len(report.Findings), errorCount, warningCount),
@@ -82,6 +92,9 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	}
 	if report.ReferenceMigration {
 		snapshot = append(snapshot, "reference migration: enabled")
+	}
+	if report.VerificationMigration {
+		snapshot = append(snapshot, "verification migration: enabled")
 	}
 	if report.NeedsRollup {
 		snapshot = append(snapshot, "also run: `kit rollup`")
@@ -117,6 +130,9 @@ func buildReconcilePrompt(report *reconcileReport) string {
 		doc.Paragraph(fmt.Sprintf("Reconcile Kit-managed docs for the %s.", scope))
 		if report.ReferenceMigration {
 			doc.Paragraph("Migration target: replace deprecated front matter `dependencies` with canonical graph-like `references` and keep the prompt/context surface pointer-only.")
+		}
+		if report.VerificationMigration {
+			doc.Paragraph("Migration target: add executable verification fields to active task details where checks are known, while keeping legacy feature docs compatible.")
 		}
 		doc.Paragraph("Rules:")
 		doc.BulletList(rules...)
@@ -209,6 +225,8 @@ func reconcileFindingCategory(finding reconcileFinding) string {
 	base := filepath.Base(finding.FilePath)
 
 	switch {
+	case strings.Contains(lowerIssue, "executable verification"):
+		return "verification"
 	case strings.Contains(lowerIssue, "reference") || strings.Contains(lowerIssue, "dependencies are deprecated"):
 		return "references"
 	case strings.Contains(lowerIssue, "relationship"):
@@ -255,6 +273,8 @@ func reconcileSeverityCounts(findings []reconcileFinding) (int, int) {
 func shortActionForFinding(finding reconcileFinding) string {
 	issue := strings.ToLower(finding.Issue)
 	switch {
+	case strings.Contains(issue, "executable verification"):
+		return "add verification fields"
 	case strings.Contains(issue, "reference") || strings.Contains(issue, "dependencies are deprecated"):
 		return "migrate references"
 	case strings.Contains(issue, "task `") || strings.Contains(issue, "task details"):

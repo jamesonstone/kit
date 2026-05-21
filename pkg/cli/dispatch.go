@@ -26,7 +26,7 @@ Input precedence:
   1. --file
   2. piped stdin
   3. interactive editor-backed capture
-Interactive capture opens a vim-compatible editor by default.
+Interactive capture opens $EDITOR by default, falling back to a vim-compatible editor when $EDITOR is unset.
 
 The command never launches subagents itself. It only outputs the prompt.`,
 	Args: cobra.NoArgs,
@@ -61,7 +61,7 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 
 	rawInput, inputSource, err := loadDispatchInput(
 		dispatchFile,
-		newFreeTextInputConfig(true, dispatchEditor, false, true),
+		newFreeTextInputConfig(dispatchUseVim, dispatchEditor, false, true),
 	)
 	if err != nil {
 		return err

@@ -184,6 +184,7 @@ func TestRunSpecTemplate_IncludesRLMGuidanceWhenBrainstormHintsLargeRepo(t *test
 }
 
 func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
+	t.Setenv("EDITOR", "")
 	projectRoot := t.TempDir()
 	writeFile(t, filepath.Join(projectRoot, ".kit.yaml"), defaultKitConfig())
 
@@ -250,7 +251,7 @@ func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
 	}
 
 	checks := []string{
-		"A vim-compatible editor will open for each free-text response.",
+		"A default editor will open for each free-text response.",
 		"**PROBLEM**: problem answer",
 		"**EDGE-CASES**: edge-cases answer",
 	}

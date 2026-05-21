@@ -22,16 +22,19 @@ Steps:
    - git diff
    - git diff --staged
    - git log -n 20 --oneline --decorate
-2. Build a review map
+2. Verification evidence
+   - no local verification run found for `0001-alpha`
+   - run `kit verify alpha` and cite the resulting run ID before marking reflection complete
+3. Build a review map
    - list changed files
    - for each file, state the intent in one line
    - identify risk areas (parsing, IO, error handling, concurrency, CLI UX)
-3. Verify correctness against docs
+4. Verify correctness against docs
    - SPEC: ensure requirements + acceptance are fully satisfied
    - PLAN: ensure decisions were followed
    - TASKS: ensure every task marked done is actually done
    - ensure no scope creep
-4. Quality gates (hard checks)
+5. Quality gates (hard checks)
    - zero-known-defects gate: do not mark reflection complete until all gates pass with evidence
    - required evidence gates: unresolved assumptions = 0; acceptance criteria mapped 1:1 to outputs; build/compile succeeds; lint/typecheck/test failures = 0; unrelated diff scope = 0
    - lint + tests are absolute gates: fix ALL failures before completion, including pre-existing and out-of-scope failures
@@ -45,7 +48,7 @@ Steps:
      - ensure tests fail without the implementation (tests validate the test itself)
    - docs: update only if behavior changed
    - agent-readability: code optimized for agent understanding and future iteration
-5. Correctness checklist
+6. Correctness checklist
    - [ ] Code compiles without errors
    - [ ] Changes implement the intended task(s)
    - [ ] Implementation matches PLAN.md approach
@@ -64,7 +67,7 @@ Steps:
    - [ ] Test names clearly describe what is being tested
    - [ ] All lint and test failures are fixed, including failures outside the feature scope
    - [ ] Code is written for agent readability and future iteration
-6. Agent-optimized code structure
+7. Agent-optimized code structure
    Code should be built for agent readability and understanding, enabling both current and future agents to:
    - understand intent quickly: clear names, single responsibility, minimal nesting
    - modify safely: explicit error handling, testable design, clear contracts
@@ -80,7 +83,7 @@ Steps:
    - [ ] Code avoids clever tricks; readability wins over cleverness
    - [ ] Configuration and magic numbers are named constants
    - [ ] Similar patterns use consistent approaches across codebase
-7. Cleanliness
+8. Cleanliness
    - remove dead code
    - remove unused exports and any public surface that is not strictly necessary
    - if an exported symbol is only used locally, reduce its visibility instead of keeping it exported
@@ -88,23 +91,23 @@ Steps:
    - remove unused flags/options
    - keep public surfaces small
    - ensure code is written for agent and human understanding
-8. Documentation generation
+9. Documentation generation
    - if exists, use the repositories documentation generation tools to update any affected documentation
    - always update affected documentation and ensure all touched documents are current and properly formatted
    - ensure documentation is agent-readable: clear structure, explicit examples, complete contracts
    - document public APIs with examples showing both normal usage and error handling
-9. Project refresh advisory gate
-   - decide whether this work revealed durable project-wide rules, constraints, vocabulary, conventions, or workflow changes
-   - if yes, run `kit prompt project refresh` and refresh project-level docs before final handoff
-   - if no, state `no project refresh needed` in the reflection notes
-10. Final pass
+10. Project refresh advisory gate
+    - decide whether this work revealed durable project-wide rules, constraints, vocabulary, conventions, or workflow changes
+    - if yes, run `kit prompt project refresh` and refresh project-level docs before final handoff
+    - if no, state `no project refresh needed` in the reflection notes
+11. Final pass
     - rerun:
       - git status
       - git diff
       - git diff --staged
     - summarize remaining issues, if any
     - propose next steps
-11. Mark reflection complete
+12. Mark reflection complete
     - once all issues are resolved and confidence is 100%
     - append the following marker to the end of TASKS.md:
       <!-- REFLECTION_COMPLETE -->

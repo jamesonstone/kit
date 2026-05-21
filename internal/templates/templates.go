@@ -7,6 +7,27 @@ import (
 	"github.com/jamesonstone/kit/internal/document"
 )
 
+// Gitignore is the default Kit-local ignore block for repositories initialized
+// with Kit. It intentionally does not ignore all of .kit/ so future tracked
+// schema, README, or fixture files remain possible.
+const Gitignore = `# Kit local generated environment, cache, and scratch artifacts
+.env
+.envrc
+.kit/runs/
+.kit/state.json
+.kit/cache/
+.kit/tmp/
+.kit/temp/
+.kit/*.tmp
+.kit/*.lock
+`
+
+const Envrc = `#!/bin/sh
+set -eu
+
+dotenv_if_exists
+`
+
 // Constitution template per spec section 6.1
 const Constitution = `# CONSTITUTION
 
@@ -303,6 +324,12 @@ For each task, provide:
 - **GOAL**: <!-- one sentence outcome -->
 - **SCOPE**: <!-- tight bullets, no fluff -->
 - **ACCEPTANCE**: <!-- concrete checks -->
+- **VERIFY**:
+  - <!-- runnable command, for example go test ./... -->
+- **EXPECTED FILES**:
+  - <!-- paths expected to change -->
+- **RISK**: <!-- Low/Medium/High plus short reason -->
+- **ROLLBACK**: <!-- how to revert safely, or not required -->
 - **NOTES**: <!-- only if necessary -->
 
 ## DEPENDENCIES

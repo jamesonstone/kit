@@ -158,7 +158,8 @@ func TestBuildReconcileReportReportsLegacyMissingFrontMatter(t *testing.T) {
 }
 
 func TestCheckFeatureFailsOnMalformedPresentFrontMatter(t *testing.T) {
-	specsDir := filepath.Join(t.TempDir(), "docs", "specs")
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
 	featurePath := filepath.Join(specsDir, "0001-alpha")
 	writeFile(t, filepath.Join(featurePath, "SPEC.md"), `---
 kit_metadata_version: 1
@@ -175,24 +176,26 @@ feature:
 summary
 `)
 
-	err := checkFeature(specsDir, "alpha")
+	err := checkFeature(projectRoot, specsDir, "alpha")
 	if err == nil || !strings.Contains(err.Error(), "validation failed") {
 		t.Fatalf("expected malformed front matter validation failure, got %v", err)
 	}
 }
 
 func TestCheckFeatureAllowsLegacyDocsWithoutFrontMatter(t *testing.T) {
-	specsDir := filepath.Join(t.TempDir(), "docs", "specs")
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
 	featurePath := filepath.Join(specsDir, "0001-alpha")
 	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validSpecWithRelationships("none\n"))
 
-	if err := checkFeature(specsDir, "alpha"); err != nil {
+	if err := checkFeature(projectRoot, specsDir, "alpha"); err != nil {
 		t.Fatalf("expected legacy missing front matter to be tolerated, got %v", err)
 	}
 }
 
 func TestCheckFeatureFailsWhenFrontMatterIdentityDriftsFromDirectory(t *testing.T) {
-	specsDir := filepath.Join(t.TempDir(), "docs", "specs")
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
 	featurePath := filepath.Join(specsDir, "0001-alpha")
 	content := strings.Replace(
 		withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-alpha"),
@@ -204,7 +207,7 @@ func TestCheckFeatureFailsWhenFrontMatterIdentityDriftsFromDirectory(t *testing.
 	)
 	writeFile(t, filepath.Join(featurePath, "SPEC.md"), content)
 
-	err := checkFeature(specsDir, "alpha")
+	err := checkFeature(projectRoot, specsDir, "alpha")
 	if err == nil || !strings.Contains(err.Error(), "validation failed") {
 		t.Fatalf("expected feature identity validation failure, got %v", err)
 	}

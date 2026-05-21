@@ -13,6 +13,7 @@
 - `RLM.md` → context routing and progressive disclosure
 - `TOOLING.md` → skills, dispatch, worktrees, and secondary inputs
 - `docs/references/*` → durable reference material only when relevant
+- `docs/references/rules/*` → durable rulesets only when linked from feature references or directly relevant
 - `docs/specs/<feature>/*` → active feature artifacts only
 
 ## Loading Rule
@@ -26,4 +27,5 @@
 
 - Feature requirements, plans, and tasks live under `docs/specs/<feature>/`
 - Broader repo references live under `docs/references/`
+- Durable repo-local rulesets live under `docs/references/rules/` and should be pointer-loaded through feature references
 - Keep durable guidance here instead of expanding the injected top-level instruction files

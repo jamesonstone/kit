@@ -12,6 +12,7 @@ var reconcileCopy bool
 var reconcileOutputOnly bool
 var reconcileAll bool
 var reconcileMigrateReferences bool
+var reconcileMigrateVerification bool
 
 var reconcileCmd = &cobra.Command{
 	Use:   "reconcile [feature]",
@@ -32,6 +33,7 @@ func init() {
 	reconcileCmd.Flags().BoolVar(&reconcileOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	reconcileCmd.Flags().BoolVar(&reconcileAll, "all", false, "audit the whole project explicitly")
 	reconcileCmd.Flags().BoolVar(&reconcileMigrateReferences, "migrate-references", false, "include instructions for migrating deprecated front matter dependencies to references")
+	reconcileCmd.Flags().BoolVar(&reconcileMigrateVerification, "migrate-verification", false, "include advisory instructions for adding executable verification fields to active tasks")
 	addPromptOnlyFlag(reconcileCmd)
 	rootCmd.AddCommand(reconcileCmd)
 }
@@ -64,8 +66,14 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	report.ReferenceMigration = reconcileMigrateReferences
+	report.VerificationMigration = reconcileMigrateVerification
+	if active, err := feature.FindActiveFeatureWithState(cfg.SpecsPath(projectRoot), cfg); err != nil {
+		return fmt.Errorf("failed to resolve active feature: %w", err)
+	} else if feat == nil || (active != nil && active.DirName == feat.DirName) {
+		report.Findings = append(report.Findings, auditActiveFrontendRulesetAdvisory(projectRoot, active)...)
+	}
 
-	if len(report.Findings) == 0 && !report.ReferenceMigration {
+	if len(report.Findings) == 0 && !report.ReferenceMigration && !report.VerificationMigration {
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), report.cleanResult())
 		return err
 	}

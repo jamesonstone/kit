@@ -36,6 +36,7 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"set",
 		"resume",
 		"status",
+		"rules",
 		"\n  rm ",
 		"upgrade",
 		"skill",
