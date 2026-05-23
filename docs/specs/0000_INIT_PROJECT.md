@@ -874,19 +874,23 @@ Completion output:
 
 Purpose:
 
-- audit Kit-managed docs against the current Kit document contract
-- output a prompt for a coding agent to reconcile stale or missing documentation
-- keep v1 scoped to documentation only
+- audit Kit-managed docs and init scaffold artifacts against the current Kit contract
+- output a prompt for a coding agent to reconcile stale or missing documentation and scaffold drift
+- keep v1 scoped to Kit-managed docs and scaffold files, with no product-code edits
 
 Behavior:
 
 - without feature argument: audits the whole project by default
 - with feature argument: audits the selected feature plus related rollup drift
+- whole-project audits include repo-local artifacts created or updated by `kit init`
 - emits a short clean result when no reconciliation is needed
 - emits a clipboard-first prompt when reconciliation findings exist
 
 Findings:
 
+- missing `.gitignore` or missing current Kit-managed `.gitignore` entries
+- missing local init scaffold artifacts such as `.env` or `.envrc`
+- missing tracked init scaffold artifacts such as `.coderabbit.yaml` or `.github/pull_request_template.md`
 - missing required docs or sections
 - placeholder-only required sections
 - malformed `SKILLS`, `DEPENDENCIES`, or `PROGRESS TABLE` tables
@@ -900,6 +904,7 @@ Findings:
 Verification:
 
 - run `kit check --all` for project-wide reconciliation or `kit check <feature>` for feature-scoped reconciliation
+- run `kit init` when reconcile reports init scaffold drift, then review the scaffold-file diff
 - run the maintenance command `kit rollup` when reconciled changes affect
   `PROJECT_PROGRESS_SUMMARY.md`
 

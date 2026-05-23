@@ -47,7 +47,7 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	}
 
 	rules := []string{
-		"docs only; no product code, test, or runtime changes",
+		"Kit-managed docs and scaffold files only; no product code, test, or runtime changes",
 		"preserve project wording when it already satisfies the current contract",
 		fmt.Sprintf(
 			"contract order: %s -> %s -> %s",
@@ -225,6 +225,8 @@ func reconcileFindingCategory(finding reconcileFinding) string {
 	base := filepath.Base(finding.FilePath)
 
 	switch {
+	case strings.Contains(lowerIssue, "init scaffold") || strings.Contains(lowerIssue, ".gitignore"):
+		return "init scaffold"
 	case strings.Contains(lowerIssue, "executable verification"):
 		return "verification"
 	case strings.Contains(lowerIssue, "reference") || strings.Contains(lowerIssue, "dependencies are deprecated"):
@@ -273,6 +275,8 @@ func reconcileSeverityCounts(findings []reconcileFinding) (int, int) {
 func shortActionForFinding(finding reconcileFinding) string {
 	issue := strings.ToLower(finding.Issue)
 	switch {
+	case strings.Contains(issue, "init scaffold") || strings.Contains(issue, ".gitignore"):
+		return "refresh init scaffold"
 	case strings.Contains(issue, "executable verification"):
 		return "add verification fields"
 	case strings.Contains(issue, "reference") || strings.Contains(issue, "dependencies are deprecated"):

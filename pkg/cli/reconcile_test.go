@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -42,7 +43,7 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 	checks := []string{
 		"/plan",
 		"feature sample",
-		"docs only; no product code",
+		"Kit-managed docs and scaffold files only",
 		"use subagents and queue work according to overlapping file changes",
 		"contract order:",
 		"Audit snapshot:",
@@ -365,6 +366,7 @@ func TestBuildReconcileReportProjectScopeWarnsOnlyActiveFeature(t *testing.T) {
 	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
 	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
 	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
+	writeInitScaffoldArtifacts(t, projectRoot)
 	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
 		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
 	}
@@ -454,6 +456,63 @@ func TestBuildReconcileReportProjectScopeFindsInstructionFileDrift(t *testing.T)
 	issues := findingsIssues(report.Findings)
 	if !strings.Contains(issues, "missing Kit-managed repository instruction file") {
 		t.Fatalf("expected instruction-file drift finding, got %q", issues)
+	}
+}
+
+func TestBuildReconcileReportProjectScopeFindsMissingGitignoreEntries(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	writeFile(t, filepath.Join(projectRoot, gitignorePath), "# custom ignores\ncustom.log\n.kit/runs/\n")
+
+	report, err := buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+
+	issues := findingsIssues(report.Findings)
+	checks := []string{
+		"missing Kit-managed `.gitignore` entries",
+		"`.env`",
+		"`.envrc`",
+		"`.kit/cache/`",
+	}
+	for _, check := range checks {
+		if !strings.Contains(issues, check) {
+			t.Fatalf("expected gitignore scaffold finding %q, got %q", check, issues)
+		}
+	}
+}
+
+func TestBuildReconcileReportProjectScopeFindsMissingInitScaffoldArtifacts(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	for _, relativePath := range []string{envPath, envrcPath, codeRabbitConfigPath, pullRequestTemplatePath} {
+		if err := os.Remove(filepath.Join(projectRoot, relativePath)); err != nil {
+			t.Fatalf("os.Remove(%s) error = %v", relativePath, err)
+		}
+	}
+
+	report, err := buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+
+	issues := findingsIssues(report.Findings)
+	for _, check := range []string{
+		"missing Kit init scaffold artifact `.env`",
+		"missing Kit init scaffold artifact `.envrc`",
+		"missing Kit init scaffold artifact `.coderabbit.yaml`",
+		"missing Kit init scaffold artifact `.github/pull_request_template.md`",
+	} {
+		if !strings.Contains(issues, check) {
+			t.Fatalf("expected init scaffold finding %q, got %q", check, issues)
+		}
 	}
 }
 
@@ -549,6 +608,7 @@ func TestReconcileProjectScopeWithCurrentInstructionFilesIsClean(t *testing.T) {
 	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
 	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
 	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
+	writeInitScaffoldArtifacts(t, projectRoot)
 	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
 		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
 	}

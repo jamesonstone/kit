@@ -64,6 +64,7 @@ func TestRunCheckProjectPassesWhenRepoIsCoherent(t *testing.T) {
 	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
 	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
 	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
+	writeInitScaffoldArtifacts(t, projectRoot)
 	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
 		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
 	}
@@ -226,6 +227,7 @@ func TestRunCheckProjectFailsOnDuplicateFeatureNumbers(t *testing.T) {
 	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
 	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
 	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
+	writeInitScaffoldArtifacts(t, projectRoot)
 	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
 		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
 	}
@@ -262,9 +264,20 @@ func setupCoherentProjectForCheck(t *testing.T) string {
 	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
 	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
 	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
+	writeInitScaffoldArtifacts(t, projectRoot)
 	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
 		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
 	}
 
 	return projectRoot
+}
+
+func writeInitScaffoldArtifacts(t *testing.T, projectRoot string) {
+	t.Helper()
+
+	writeFile(t, filepath.Join(projectRoot, gitignorePath), templates.Gitignore)
+	writeFile(t, filepath.Join(projectRoot, envPath), "")
+	writeFile(t, filepath.Join(projectRoot, envrcPath), templates.Envrc)
+	writeFile(t, filepath.Join(projectRoot, codeRabbitConfigPath), templates.CodeRabbitConfig)
+	writeFile(t, filepath.Join(projectRoot, pullRequestTemplatePath), templates.PullRequestTemplate)
 }

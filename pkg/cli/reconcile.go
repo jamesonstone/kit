@@ -17,7 +17,8 @@ var reconcileMigrateVerification bool
 var reconcileCmd = &cobra.Command{
 	Use:   "reconcile [feature]",
 	Short: "Audit Kit-managed docs and output a reconciliation prompt",
-	Long: `Audit Kit-managed project documents against the current Kit contract.
+	Long: `Audit Kit-managed project documents and scaffold artifacts against the
+current Kit contract.
 
 Without a feature argument, reconciles the whole project by default.
 Use --all as an explicit alias for whole-project mode.

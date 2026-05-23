@@ -181,14 +181,14 @@ kit rm my-feature --yes --notes
 | `kit status --all`        | Show the project-wide overview as a lifecycle matrix with state and task progress; supports JSON |
 | `kit map [feature]`       | Select or show a feature map; supports `--all` for the full project document map                 |
 | `kit check <feature>`     | Validate feature documents and populated required sections                                       |
-| `kit check --project`     | Validate the repo-level document and instruction contract, including versioned instruction docs  |
+| `kit check --project`     | Validate the repo-level document, init scaffold, and instruction contract                        |
 | `kit verify [feature]`    | Run declared verification checks from `TASKS.md` and write local run evidence                    |
 | `kit trace <target>`      | List feature verification runs or inspect one run ID                                             |
 | `kit replay <run-id>`     | Rerun commands from a prior verification run and compare outcomes                                |
 | `kit state [refresh]`     | Show or refresh generated pointer-only `.kit/state.json` for agents and tools                    |
 | `kit eval`                | Run small local harness regression checks                                                        |
 | `kit rules` / `kit rule`  | Create, list, and link durable repo-local rulesets under `docs/references/rules/`                |
-| `kit reconcile [feature]` | Audit Kit-managed docs for contract drift and output a documentation-reconciliation prompt; supports `--migrate-verification` for advisory executable-check migration |
+| `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift; supports `--migrate-verification` for advisory executable-check migration |
 
 ### 🧾 Prompt Utilities
 
