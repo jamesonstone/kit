@@ -31,8 +31,8 @@ Provides:
   - Document reference table (SPEC, PLAN, TASKS)
   - Clear instructions for executing tasks
 
-If no feature is specified, shows an interactive selection of features
-that have SPEC.md, PLAN.md, and TASKS.md ready for implementation.`,
+If no feature is specified, shows an interactive selection of implement-phase
+features with incomplete TASKS.md checkboxes.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runImplement,
 }
@@ -112,27 +112,16 @@ func runImplement(cmd *cobra.Command, args []string) error {
 	return outputImplementationPrompt(feat, brainstormPath, specPath, planPath, tasksPath, summary, progress, projectRoot, outputOnly)
 }
 
-// selectFeatureForImplementation shows an interactive numbered list of features
-// that have SPEC.md, PLAN.md, and TASKS.md ready.
+// selectFeatureForImplementation shows an interactive numbered list of
+// implement-phase features.
 func selectFeatureForImplementation(specsDir string) (*feature.Feature, error) {
-	features, err := feature.ListFeatures(specsDir)
+	candidates, err := workflowStageCandidates(specsDir, workflowSelectionStageImplement)
 	if err != nil {
 		return nil, err
 	}
 
-	// filter to features with all three documents
-	var candidates []feature.Feature
-	for _, f := range features {
-		specPath := filepath.Join(f.Path, "SPEC.md")
-		planPath := filepath.Join(f.Path, "PLAN.md")
-		tasksPath := filepath.Join(f.Path, "TASKS.md")
-		if document.Exists(specPath) && document.Exists(planPath) && document.Exists(tasksPath) {
-			candidates = append(candidates, f)
-		}
-	}
-
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no features ready for implementation (need SPEC.md + PLAN.md + TASKS.md)\n\nRun 'kit tasks <feature>' to create tasks first")
+		return nil, fmt.Errorf("no features ready for implementation (need SPEC.md + PLAN.md + TASKS.md with incomplete tasks)\n\nRun 'kit tasks <feature>' to create tasks first")
 	}
 
 	printSelectionHeader("Select a feature to implement:")

@@ -318,20 +318,9 @@ F) PLAN LINKS (OPTIONAL)
 // selectFeatureForTasks shows an interactive numbered list of features
 // that have SPEC.md and PLAN.md but no TASKS.md yet.
 func selectFeatureForTasks(specsDir string) (*feature.Feature, error) {
-	features, err := feature.ListFeatures(specsDir)
+	candidates, err := workflowStageCandidates(specsDir, workflowSelectionStageTasks)
 	if err != nil {
 		return nil, err
-	}
-
-	// filter to features with SPEC + PLAN but no TASKS
-	var candidates []feature.Feature
-	for _, f := range features {
-		specPath := filepath.Join(f.Path, "SPEC.md")
-		planPath := filepath.Join(f.Path, "PLAN.md")
-		tasksPath := filepath.Join(f.Path, "TASKS.md")
-		if document.Exists(specPath) && document.Exists(planPath) && !document.Exists(tasksPath) {
-			candidates = append(candidates, f)
-		}
 	}
 
 	if len(candidates) == 0 {

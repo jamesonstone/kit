@@ -387,6 +387,12 @@ Run once, then refine as the project matures:
 6. 🛠️ **Implementation** — execution after the readiness gate passes
 7. 🔍 **Reflection** — verification and learning after implementation
 
+When a core workflow command runs without a feature argument, its selector only
+shows features that are eligible for that command's next stage. Completed stages
+are omitted from earlier-stage selectors.
+If `kit spec` has no pre-spec features to list, it prompts for a new feature
+name and starts the interactive spec builder.
+
 Spec-driven prompts must populate every section in `BRAINSTORM.md`, `SPEC.md`,
 `PLAN.md`, and `TASKS.md`. If a section has no additional detail, replace the
 placeholder comment with `not applicable`, `not required`, or

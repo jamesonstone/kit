@@ -211,19 +211,9 @@ func runPlanPromptOnly(args []string, projectRoot string, cfg *config.Config, wa
 // selectFeatureForPlan shows an interactive numbered list of features
 // that have SPEC.md but no PLAN.md yet.
 func selectFeatureForPlan(specsDir string) (*feature.Feature, error) {
-	features, err := feature.ListFeatures(specsDir)
+	candidates, err := workflowStageCandidates(specsDir, workflowSelectionStagePlan)
 	if err != nil {
 		return nil, err
-	}
-
-	// filter to features with SPEC but no PLAN
-	var candidates []feature.Feature
-	for _, f := range features {
-		specPath := filepath.Join(f.Path, "SPEC.md")
-		planPath := filepath.Join(f.Path, "PLAN.md")
-		if document.Exists(specPath) && !document.Exists(planPath) {
-			candidates = append(candidates, f)
-		}
 	}
 
 	if len(candidates) == 0 {

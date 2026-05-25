@@ -1,10 +1,12 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
@@ -19,6 +21,8 @@ var specInline bool
 var specOutputOnly bool
 var specUseVim bool
 
+var promptSpecFeatureRef = readSpecFeatureRef
+
 var specCmd = &cobra.Command{
 	Use:   "spec [feature]",
 	Short: "Create or open a feature specification",
@@ -30,8 +34,9 @@ Creates:
 
 Updates PROJECT_PROGRESS_SUMMARY.md after creation.
 
-If no feature is specified, shows an interactive selection of existing
-features with BRAINSTORM.md or SPEC.md.
+If no feature is specified, shows an interactive selection of pre-spec features.
+If there are no pre-spec features to select from, prompts for a new feature name
+and starts the interactive spec builder.
 
 Modes:
   Default:        Copy the generated prompt to the clipboard and show status (non-interactive)
@@ -97,7 +102,18 @@ func runSpec(cmd *cobra.Command, args []string) error {
 
 	if len(args) == 0 {
 		feat, err = selectFeatureForSpec(specsDir)
-		if err != nil {
+		if errors.Is(err, errNoSpecSelectionCandidates) {
+			var featureRef string
+			featureRef, err = promptSpecFeatureRef()
+			if err != nil {
+				return err
+			}
+			feat, created, err = feature.EnsureExists(cfg, projectRoot, specsDir, featureRef)
+			if err != nil {
+				return err
+			}
+			specInteractive = !specTemplateOnly
+		} else if err != nil {
 			return err
 		}
 		feature.ApplyLifecycleState(feat, cfg)
@@ -219,4 +235,30 @@ func runSpecPromptOnly(args []string, projectRoot string, cfg *config.Config, ou
 
 func ensureDir(path string) error {
 	return os.MkdirAll(path, 0755)
+}
+
+func readSpecFeatureRef() (string, error) {
+	rl, err := newMultilineReadline()
+	if err != nil {
+		return "", fmt.Errorf("failed to initialize readline: %w", err)
+	}
+	defer closeMultilineReadline(rl)
+
+	style := styleForStdout()
+	fmt.Println(style.muted("No pre-spec features found. Enter a feature/project name."))
+	fmt.Println(style.muted("It will be normalized to lowercase kebab-case and must be 5 words or fewer."))
+	featureRef := readLineRL(rl)
+	if featureRef == "" {
+		return "", fmt.Errorf("feature name cannot be empty")
+	}
+
+	normalized := feature.NormalizeSlug(featureRef)
+	if err := feature.ValidateSlug(normalized); err != nil {
+		return "", err
+	}
+
+	if normalized != featureRef {
+		fmt.Printf(dim+"Using normalized feature slug: %s"+reset+"\n\n", normalized)
+	}
+	return normalized, nil
 }

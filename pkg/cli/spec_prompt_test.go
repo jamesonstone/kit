@@ -262,6 +262,59 @@ func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
 	}
 }
 
+func TestRunSpecWithoutSelectionCandidatesStartsInteractiveCreation(t *testing.T) {
+	t.Setenv("EDITOR", "")
+	projectRoot, _ := setupLifecycleTestProject(t)
+	restore := chdirForTest(t, projectRoot)
+	defer restore()
+	restoreSpecFlags := restoreSpecFlagState()
+	defer restoreSpecFlags()
+
+	previousPrompt := promptSpecFeatureRef
+	previousWait := awaitEditorLaunchConfirmation
+	previousRunner := editorInputRunner
+	defer func() {
+		promptSpecFeatureRef = previousPrompt
+		awaitEditorLaunchConfirmation = previousWait
+		editorInputRunner = previousRunner
+	}()
+
+	promptSpecFeatureRef = func() (string, error) {
+		return "sample", nil
+	}
+	awaitEditorLaunchConfirmation = func(_ *os.File, _ io.Writer) error {
+		return nil
+	}
+	editorInputRunner = func(_ freeTextInputConfig, fieldName, _ string) (string, bool, error) {
+		return fieldName + " answer", true, nil
+	}
+
+	cmd := newSpecProfileTestCommand()
+	if err := cmd.Flags().Set("output-only", "true"); err != nil {
+		t.Fatalf("Flags().Set(output-only) error = %v", err)
+	}
+
+	output := captureStdout(t, func() {
+		if err := runSpec(cmd, nil); err != nil {
+			t.Fatalf("runSpec() error = %v", err)
+		}
+	})
+
+	specPath := filepath.Join(projectRoot, "docs", "specs", "0001-sample", "SPEC.md")
+	if _, err := os.Stat(specPath); err != nil {
+		t.Fatalf("expected SPEC.md to be created at %s: %v", specPath, err)
+	}
+	for _, check := range []string{
+		"Interactive Spec Builder",
+		"**PROBLEM**: problem answer",
+		"**EDGE-CASES**: edge-cases answer",
+	} {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected output to contain %q, got:\n%s", check, output)
+		}
+	}
+}
+
 func TestOutputCompiledPrompt_IncludesRLMGuidanceWhenContextRequiresIt(t *testing.T) {
 	projectRoot := t.TempDir()
 	homeDir := filepath.Join(projectRoot, "home")

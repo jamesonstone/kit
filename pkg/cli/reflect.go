@@ -26,8 +26,8 @@ var reflectCmd = &cobra.Command{
 	Long: `Output instructions for reflecting on recent changes to ensure
 implementation correctness.
 When a feature is specified, instructions are scoped to that feature's context.
-Without a feature argument, shows an interactive selection of features
-that have SPEC.md, PLAN.md, and TASKS.md.
+Without a feature argument, shows an interactive selection of reflect-phase
+features whose task checkboxes are complete and whose reflection marker is not set.
 The reflection process uses git, lint, and tests to enforce a clean, working state.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runReflect,
@@ -101,26 +101,16 @@ func runReflect(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// selectFeatureForReflect shows an interactive numbered list of features
-// that have SPEC.md, PLAN.md, and TASKS.md.
+// selectFeatureForReflect shows an interactive numbered list of reflect-phase
+// features.
 func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
-	features, err := feature.ListFeatures(specsDir)
+	candidates, err := workflowStageCandidates(specsDir, workflowSelectionStageReflect)
 	if err != nil {
 		return nil, err
 	}
 
-	var candidates []feature.Feature
-	for _, f := range features {
-		specPath := filepath.Join(f.Path, "SPEC.md")
-		planPath := filepath.Join(f.Path, "PLAN.md")
-		tasksPath := filepath.Join(f.Path, "TASKS.md")
-		if document.Exists(specPath) && document.Exists(planPath) && document.Exists(tasksPath) {
-			candidates = append(candidates, f)
-		}
-	}
-
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no features ready for reflection (need SPEC.md + PLAN.md + TASKS.md)\n\nRun 'kit tasks <feature>' to create tasks first")
+		return nil, fmt.Errorf("no features ready for reflection (need all TASKS.md checkboxes complete without reflection marker)\n\nRun 'kit implement <feature>' until implementation tasks are complete")
 	}
 
 	printSelectionHeader("Select a feature to reflect on:")

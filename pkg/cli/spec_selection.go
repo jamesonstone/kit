@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,30 +13,22 @@ import (
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
+var errNoSpecSelectionCandidates = errors.New("no features ready for specification")
+
 func selectFeatureForSpec(specsDir string) (*feature.Feature, error) {
-	features, err := feature.ListFeatures(specsDir)
+	candidates, err := workflowStageCandidates(specsDir, workflowSelectionStageSpec)
 	if err != nil {
 		return nil, err
 	}
 
-	var candidates []feature.Feature
-	for _, f := range features {
-		brainstormPath := filepath.Join(f.Path, "BRAINSTORM.md")
-		specPath := filepath.Join(f.Path, "SPEC.md")
-		if document.Exists(brainstormPath) || document.Exists(specPath) {
-			candidates = append(candidates, f)
-		}
-	}
-
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no brainstorms or specifications found\n\nRun 'kit brainstorm' or 'kit spec <feature>' to start a feature")
+		return nil, fmt.Errorf("%w (need a feature directory without SPEC.md)\n\nRun 'kit spec <feature>' to create a specification directly", errNoSpecSelectionCandidates)
 	}
 
 	printSelectionHeader("Select a feature to continue into spec:")
 	for i, f := range candidates {
 		label := f.DirName
-		if document.Exists(filepath.Join(f.Path, "BRAINSTORM.md")) &&
-			!document.Exists(filepath.Join(f.Path, "SPEC.md")) {
+		if document.Exists(filepath.Join(f.Path, "BRAINSTORM.md")) {
 			label += " (brainstorm)"
 		}
 		fmt.Printf("  [%d] %s\n", i+1, label)

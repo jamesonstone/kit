@@ -544,6 +544,10 @@ CLI flags always override `.kit.yaml`.
 - prompt instructions require every `SPEC.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - create feature directory if missing (uses `0001-feat-name` format)
 - when Git common-dir state is available, reserve the next feature number from the shared clone-local allocator before creating the directory
+- without a feature argument, show only pre-spec features that do not yet have
+  `SPEC.md`; `BRAINSTORM.md` is optional
+- when no pre-spec features are available, prompt for a new feature name and
+  start the interactive spec builder
 - update `docs/PROJECT_PROGRESS_SUMMARY.md`
 
 ---
@@ -560,6 +564,8 @@ CLI flags always override `.kit.yaml`.
   decision-shaping rather than historical replay
 - prompt instructions require every `PLAN.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - plan items link to spec items using `[SPEC-01]` syntax
+- without a feature argument, show only spec-phase features that have `SPEC.md`
+  without `PLAN.md`
 - update `PROJECT_PROGRESS_SUMMARY.md`
 
 Prerequisites:
@@ -577,6 +583,8 @@ Flags:
 - scaffold `TASKS.md` template for manual editing
 - prompt instructions require every `TASKS.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - tasks link to plan items using `[PLAN-01]` syntax
+- without a feature argument, show only plan-phase features that have `SPEC.md`
+  and `PLAN.md` without `TASKS.md`
 - update `PROJECT_PROGRESS_SUMMARY.md`
 
 Prerequisites:
@@ -604,6 +612,8 @@ Flags:
 - require the coding agent to challenge contradictions, ambiguity, hidden assumptions, missing edge cases, missing task coverage, and scope creep before coding
 - if the readiness gate fails, require the agent to update `SPEC.md`, `PLAN.md`, and/or `TASKS.md` first, refresh `PROJECT_PROGRESS_SUMMARY.md` when needed, then rerun the gate
 - only after the readiness gate passes should the agent begin with the first incomplete task in `TASKS.md`
+- without a feature argument, show only implement-phase features with incomplete
+  task checkboxes; omit task-template, reflection-ready, and complete features
 - if the target feature is paused, clear the paused flag before continuing
 
 ---
@@ -944,7 +954,9 @@ Purpose:
 
 Behavior:
 
-- without feature argument: outputs generic verification instructions
+- without feature argument: show only reflect-phase features whose task
+  checkboxes are complete and whose `TASKS.md` does not yet contain the
+  reflection-complete marker
 - with feature argument: outputs instructions scoped to that feature's context
 
 Reflection Process:
