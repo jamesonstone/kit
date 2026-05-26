@@ -35,6 +35,7 @@
 | 0029 | scaffold-workflows-prepare | `docs/specs/0029-scaffold-workflows-prepare` | reflect | no | 2026-05-18 | - Add `kit brainstorm --prepare` to create the brainstorm-phase directory/file scaffolding before emitting the brainstorm prompt. - Redefine visible `kit scaffold` as a namespace for creating workflow document structures and subdirectories, with `kit scaffold agents` replacing the old visible `kit scaffold-agents` command. |
 | 0030 | reference-graph-routing | `docs/specs/0030-reference-graph-routing` | reflect | no | 2026-05-18 | Replace front matter `dependencies` with canonical graph-like `references` that describe the relevant source, target, relationship, selector, read policy, use case, and status. Extend `kit map` to emit a focused read plan and extend `kit reconcile` with a migration prompt mode for converting old dependency metadata into the new reference graph. |
 | 0031 | executable-verification-harness | `docs/specs/0031-executable-verification-harness` | reflect | no | 2026-05-20 | Add executable verification, local run evidence, generated agent state, trace/replay, and small harness evals while preserving Markdown as Kit's human source of truth. |
+| 0032 | v1-skills-layer | `docs/specs/0032-v1-skills-layer` | brainstorm | no | 2026-05-26 | (no description) |
 
 ## PROJECT INTENT
 
@@ -325,6 +326,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: - Should `kit verify` persist run artifacts by default for all users, or should first-run output clearly advertise `--no-write` for ephemeral checks? - Should strict verification policy be a `.kit.yaml` option in this feature or a follow-up after default behavior settles? - Should `.kit/state.json` be refreshed implicitly by read commands, or should a visible `kit state refresh` command be the primary interface?
 - **POINTERS**: `docs/specs/0031-executable-verification-harness/SPEC.md`, `docs/specs/0031-executable-verification-harness/PLAN.md`, `docs/specs/0031-executable-verification-harness/TASKS.md`
 
+### v1-skills-layer
+
+- **STATUS**: brainstorm
+- **PAUSED**: no
+- **INTENT**: (no description)
+- **APPROACH**: (see PLAN.md)
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0032-v1-skills-layer/BRAINSTORM.md`, `docs/specs/0032-v1-skills-layer/SPEC.md`, `docs/specs/0032-v1-skills-layer/PLAN.md`, `docs/specs/0032-v1-skills-layer/TASKS.md`
+
 ## LAST UPDATED
 
-2026-05-20 10:00:52 EDT
+2026-05-26 10:54:04 EDT

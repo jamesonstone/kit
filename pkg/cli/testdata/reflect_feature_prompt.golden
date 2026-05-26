@@ -113,18 +113,33 @@ Steps:
       <!-- REFLECTION_COMPLETE -->
     - this marker signals that the feature has completed the full development cycle
 
-Output format:
+## Final Response Contract
 
-1. CHANGESET
-   - files changed: <list>
-   - key diffs: <tight bullets>
-2. DOC TRACE
-   - SPEC: pass/fail + notes
-   - PLAN: pass/fail + notes
-   - TASKS: pass/fail + notes
-3. REFLECTION NOTES
-   - risks remaining
-   - follow-ups
+End your final response with these exact headings, in this order. Keep it concise and use repo-relative paths for every file or artifact path.
+
+### Changeset
+
+- List repo-relative changed files and tight bullets for the key diffs.
+
+### Verification
+
+- State exactly what ran, including run IDs when available; if not run, write `not run` and the reason.
+
+### Review Findings
+
+- List findings fixed during reflection and any remaining risks; write `none` when clean.
+
+### Doc Trace
+
+- Report pass/fail notes for BRAINSTORM, SPEC, PLAN, and TASKS when feature-scoped; otherwise write `not applicable`.
+
+### Final Status
+
+- State whether reflection is complete, whether TASKS.md was marked with REFLECTION_COMPLETE, and whether project refresh was needed.
+
+### Follow-ups
+
+- List follow-up work, or write `none`.
 
 ## Rules
 

@@ -55,6 +55,13 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 			t.Fatalf("expected output to contain %q", check)
 		}
 	}
+	assertFinalResponseContractHeadings(t, output,
+		"Summary",
+		"Artifacts Updated",
+		"Design Decisions",
+		"Implementation Risks",
+		"Next Step",
+	)
 }
 
 func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
@@ -102,4 +109,11 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 			t.Fatalf("expected output to contain %q", check)
 		}
 	}
+	assertFinalResponseContractHeadings(t, output,
+		"Summary",
+		"Artifacts Updated",
+		"Design Decisions",
+		"Implementation Risks",
+		"Next Step",
+	)
 }

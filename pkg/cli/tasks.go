@@ -312,6 +312,7 @@ F) PLAN LINKS (OPTIONAL)
 		)
 		doc.Paragraph("Output goal:\n- a task list that a coding agent can execute linearly with minimal back-and-forth")
 		doc.Raw(renderNonEmptySectionRules("`TASKS.md`"))
+		addFinalResponseContract(doc, tasksFinalResponseContract(feat.Slug)...)
 	})
 }
 

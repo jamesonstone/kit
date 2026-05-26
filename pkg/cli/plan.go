@@ -432,6 +432,7 @@ func buildStandardPlanPrompt(
 		)
 		doc.Paragraph("The output of PLAN.md must make TASKS.md obvious and deterministic.")
 		doc.Raw(renderNonEmptySectionRules("`PLAN.md`"))
+		addFinalResponseContract(doc, planFinalResponseContract(feat.Slug)...)
 	})
 }
 
@@ -512,6 +513,7 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 		)
 		doc.Paragraph("The output of PLAN.md must make TASKS.md obvious and deterministic.")
 		doc.Raw(renderNonEmptySectionRules("`PLAN.md`"))
+		addFinalResponseContract(doc, planFinalResponseContract(feat.Slug)...)
 	})
 
 	if !outputOnly {

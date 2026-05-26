@@ -45,18 +45,28 @@ func TestFeatureScopedSummarizeInstructions_Golden(t *testing.T) {
 }
 
 func TestBuildReflectPrompt_Golden(t *testing.T) {
+	prompt := buildReflectPrompt(
+		"/repo",
+		"/repo/docs/CONSTITUTION.md",
+		"/repo/docs/PROJECT_PROGRESS_SUMMARY.md",
+		"/repo/docs/specs/0001-alpha/BRAINSTORM.md",
+		"/repo/docs/specs/0001-alpha/SPEC.md",
+		"/repo/docs/specs/0001-alpha/PLAN.md",
+		"/repo/docs/specs/0001-alpha/TASKS.md",
+		"alpha",
+	)
+
 	assertPromptGolden(
 		t,
 		"reflect_feature_prompt.golden",
-		buildReflectPrompt(
-			"/repo",
-			"/repo/docs/CONSTITUTION.md",
-			"/repo/docs/PROJECT_PROGRESS_SUMMARY.md",
-			"/repo/docs/specs/0001-alpha/BRAINSTORM.md",
-			"/repo/docs/specs/0001-alpha/SPEC.md",
-			"/repo/docs/specs/0001-alpha/PLAN.md",
-			"/repo/docs/specs/0001-alpha/TASKS.md",
-			"alpha",
-		),
+		prompt,
+	)
+	assertFinalResponseContractHeadings(t, prompt,
+		"Changeset",
+		"Verification",
+		"Review Findings",
+		"Doc Trace",
+		"Final Status",
+		"Follow-ups",
 	)
 }

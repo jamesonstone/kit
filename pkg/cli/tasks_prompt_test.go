@@ -40,6 +40,13 @@ func TestOutputTasksPrompt_IncludesNonEmptySectionGuidance(t *testing.T) {
 			t.Fatalf("expected output to contain %q", check)
 		}
 	}
+	assertFinalResponseContractHeadings(t, output,
+		"Summary",
+		"Artifacts Updated",
+		"Task Breakdown",
+		"Blocked Items",
+		"Next Step",
+	)
 }
 
 func TestOutputTasksPrompt_IncludesInferredFrontendProfile(t *testing.T) {

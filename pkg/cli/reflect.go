@@ -222,18 +222,7 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPa
 		doc.BulletList(contextDocs...)
 		doc.Paragraph("Steps:")
 		doc.OrderedList(1, steps...)
-		doc.Paragraph("Output format:")
-		outputSections := []string{"CHANGESET\n- files changed: <list>\n- key diffs: <tight bullets>"}
-		if featureScoped {
-			docTrace := "DOC TRACE"
-			if hasBrainstorm {
-				docTrace += "\n- BRAINSTORM: pass/fail + notes"
-			}
-			docTrace += "\n- SPEC: pass/fail + notes\n- PLAN: pass/fail + notes\n- TASKS: pass/fail + notes"
-			outputSections = append(outputSections, docTrace)
-		}
-		outputSections = append(outputSections, "REFLECTION NOTES\n- risks remaining\n- follow-ups")
-		doc.OrderedList(1, outputSections...)
+		addFinalResponseContract(doc, reflectFinalResponseContract()...)
 		doc.Heading(2, "Rules")
 		doc.BulletList(
 			"be strict",

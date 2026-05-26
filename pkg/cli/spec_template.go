@@ -183,5 +183,6 @@ func buildSpecTemplatePrompt(
 			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
 		)
 		doc.Raw(renderNonEmptySectionRules("`SPEC.md`"))
+		addFinalResponseContract(doc, specFinalResponseContract(featureSlug)...)
 	})
 }

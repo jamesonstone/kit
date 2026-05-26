@@ -277,6 +277,7 @@ func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, 
 		doc.Paragraph("Load only the linked PLAN and SPEC sections needed for that task, then run the readiness gate.")
 		doc.Paragraph("Do not write code until the gate passes and the relevant code has been inspected.")
 		doc.Paragraph("After a task is complete, repeat the same loop for the next incomplete unblocked task until every non-blocked task in TASKS.md is complete.")
+		addFinalResponseContract(doc, implementFinalResponseContract()...)
 	})
 }
 

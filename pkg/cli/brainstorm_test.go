@@ -61,6 +61,13 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 			t.Fatalf("expected prompt to contain %q", check)
 		}
 	}
+	assertFinalResponseContractHeadings(t, prompt,
+		"Summary",
+		"Artifacts Updated",
+		"Key Decisions",
+		"Open Questions",
+		"Next Step",
+	)
 
 	if !strings.HasPrefix(prompt, "/plan\n\n") {
 		t.Fatalf("expected prompt to start with /plan, got %q", prompt[:8])

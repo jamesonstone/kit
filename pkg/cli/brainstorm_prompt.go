@@ -269,5 +269,6 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 			"keep canonical front matter relationships aligned with any explicit dependency on previously shipped features; preserve legacy body fallback only for documents without front matter",
 		)
 		doc.Raw(renderNonEmptySectionRules("`BRAINSTORM.md`"))
+		addFinalResponseContract(doc, brainstormFinalResponseContract(featureSlug)...)
 	})
 }

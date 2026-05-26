@@ -88,6 +88,14 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 			t.Fatalf("expected output to contain %q", check)
 		}
 	}
+	assertFinalResponseContractHeadings(t, output,
+		"Summary",
+		"Artifacts Updated",
+		"Requirements Locked",
+		"Acceptance Notes",
+		"Open Questions",
+		"Next Step",
+	)
 }
 
 func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
@@ -138,6 +146,14 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 			t.Fatalf("expected output to contain %q", check)
 		}
 	}
+	assertFinalResponseContractHeadings(t, output,
+		"Summary",
+		"Artifacts Updated",
+		"Requirements Locked",
+		"Acceptance Notes",
+		"Open Questions",
+		"Next Step",
+	)
 }
 
 func TestRunSpecTemplate_IncludesRLMGuidanceWhenBrainstormHintsLargeRepo(t *testing.T) {

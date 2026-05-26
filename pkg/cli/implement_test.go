@@ -60,6 +60,15 @@ func TestBuildImplementationPrompt_IncludesReadinessGate(t *testing.T) {
 			t.Fatalf("expected prompt to contain %q", check)
 		}
 	}
+	assertFinalResponseContractHeadings(t, prompt,
+		"Work Done",
+		"Files Changed",
+		"Validation",
+		"How To Test",
+		"How To View",
+		"Docs/Tasks Updated",
+		"Follow-ups",
+	)
 }
 
 func TestBuildImplementationPrompt_WithoutBrainstormSkipsBrainstormReferences(t *testing.T) {

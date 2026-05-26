@@ -174,6 +174,7 @@ func outputCompiledPrompt(
 		}
 		doc.BulletList(rules...)
 		doc.Raw(renderNonEmptySectionRules("`SPEC.md`"))
+		addFinalResponseContract(doc, specFinalResponseContract(featureSlug)...)
 	})
 
 	if err := outputPromptForFeatureWithClipboardDefault(prompt, filepath.Dir(specPath), outputOnly, specCopy); err != nil {
