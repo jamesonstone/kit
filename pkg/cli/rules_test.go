@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -111,6 +112,7 @@ func TestRunRulesAddInteractiveCreatesRulesetAndCopiesOptimizationPrompt(t *test
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
 	resetRulesFlags(t)
+	rulesAddCustom = true
 
 	previousWait := awaitEditorLaunchConfirmation
 	previousRunner := editorInputRunner
@@ -182,6 +184,7 @@ func TestRunRulesAddInteractiveRejectsDuplicateBeforeEditor(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
 	resetRulesFlags(t)
+	rulesAddCustom = true
 
 	writeFile(t, filepath.Join(projectRoot, "docs", "references", "rules", "frontend-ui.md"), templates.BuildRuleset("frontend-ui", []string{"frontend"}))
 
@@ -228,6 +231,101 @@ func TestRunRulesListStableOrdering(t *testing.T) {
 		if !strings.Contains(rendered, check) {
 			t.Fatalf("expected list output to contain %q, got:\n%s", check, rendered)
 		}
+	}
+}
+
+func TestRunRulesAddRegistrySelectorImportsMissingRuleset(t *testing.T) {
+	projectRoot := setupRulesProject(t)
+	setWorkingDirectory(t, projectRoot)
+	resetRulesFlags(t)
+	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+
+	output := withStdin(t, "1\n", func() string {
+		return captureStdout(t, func() {
+			if err := runRulesAdd(&cobra.Command{}, nil); err != nil {
+				t.Fatalf("runRulesAdd() error = %v", err)
+			}
+		})
+	})
+
+	path := filepath.Join(projectRoot, "docs", "references", "rules", "safety-guardrails.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("expected imported ruleset file: %v", err)
+	}
+	if !strings.Contains(string(content), "slug: safety-guardrails") || !strings.Contains(string(content), "status: active") {
+		t.Fatalf("unexpected imported content:\n%s", content)
+	}
+	if !strings.Contains(output, "Imported: 1") {
+		t.Fatalf("expected import summary, got:\n%s", output)
+	}
+}
+
+func TestRunRulesAddRegistrySelectorDeactivatesExistingRuleset(t *testing.T) {
+	projectRoot := setupRulesProject(t)
+	setWorkingDirectory(t, projectRoot)
+	resetRulesFlags(t)
+	registry := registryRulesetForTest("work-lane-gating", []string{"workflow"})
+	stubRulesetRegistry(t, registry)
+	writeFile(t, filepath.Join(projectRoot, "docs", "references", "rules", "work-lane-gating.md"), registry.Content)
+
+	output := withStdin(t, "1\n", func() string {
+		return captureStdout(t, func() {
+			if err := runRulesAdd(&cobra.Command{}, nil); err != nil {
+				t.Fatalf("runRulesAdd() error = %v", err)
+			}
+		})
+	})
+
+	content, err := os.ReadFile(filepath.Join(projectRoot, "docs", "references", "rules", "work-lane-gating.md"))
+	if err != nil {
+		t.Fatalf("expected local ruleset file: %v", err)
+	}
+	if !strings.Contains(string(content), "status: optional") {
+		t.Fatalf("expected deactivated optional status, got:\n%s", content)
+	}
+	if !strings.Contains(output, "Deactivated: 1") {
+		t.Fatalf("expected deactivate summary, got:\n%s", output)
+	}
+}
+
+func TestRunRulesAddRegistrySelectorReactivatesModifiedRulesetWithoutOverwriting(t *testing.T) {
+	projectRoot := setupRulesProject(t)
+	setWorkingDirectory(t, projectRoot)
+	resetRulesFlags(t)
+	registry := registryRulesetForTest("github-pr-delivery", []string{"github"})
+	stubRulesetRegistry(t, registry)
+
+	local := strings.Replace(registry.Content, "status: active", "status: optional", 1)
+	local = strings.Replace(local, "## Examples", "Custom local guidance.\n\n## Examples", 1)
+	writeFile(t, filepath.Join(projectRoot, "docs", "references", "rules", "github-pr-delivery.md"), local)
+
+	output := withStdin(t, "1\n", func() string {
+		return captureStdout(t, func() {
+			if err := runRulesAdd(&cobra.Command{}, nil); err != nil {
+				t.Fatalf("runRulesAdd() error = %v", err)
+			}
+		})
+	})
+
+	content, err := os.ReadFile(filepath.Join(projectRoot, "docs", "references", "rules", "github-pr-delivery.md"))
+	if err != nil {
+		t.Fatalf("expected local ruleset file: %v", err)
+	}
+	for _, check := range []string{"status: active", "Custom local guidance."} {
+		if !strings.Contains(string(content), check) {
+			t.Fatalf("expected local content to contain %q, got:\n%s", check, content)
+		}
+	}
+	if !strings.Contains(output, "MODIFIED") || !strings.Contains(output, "Activated: 1") {
+		t.Fatalf("expected modified activation output, got:\n%s", output)
+	}
+}
+
+func TestFormatRulesetStateTokenUsesColorWhenEnabled(t *testing.T) {
+	rendered := formatRulesetStateToken(humanOutputStyle{enabled: true}, "ACTIVE", plan)
+	if !strings.Contains(rendered, "\033[") || !strings.Contains(rendered, "ACTIVE") {
+		t.Fatalf("expected colored ACTIVE token, got %q", rendered)
 	}
 }
 
@@ -420,6 +518,7 @@ func resetRulesFlags(t *testing.T) {
 	previousMust := rulesAddMust
 	previousOutputOnly := rulesAddOutputOnly
 	previousSkip := rulesAddSkip
+	previousCustom := rulesAddCustom
 	previousConditional := rulesAddConditional
 	previousUseVim := rulesAddUseVim
 	previousReadPolicy := rulesLinkReadPolicy
@@ -432,6 +531,7 @@ func resetRulesFlags(t *testing.T) {
 		rulesAddMust = previousMust
 		rulesAddOutputOnly = previousOutputOnly
 		rulesAddSkip = previousSkip
+		rulesAddCustom = previousCustom
 		rulesAddConditional = previousConditional
 		rulesAddUseVim = previousUseVim
 		rulesLinkReadPolicy = previousReadPolicy
@@ -444,9 +544,31 @@ func resetRulesFlags(t *testing.T) {
 	rulesAddMust = false
 	rulesAddOutputOnly = false
 	rulesAddSkip = false
+	rulesAddCustom = false
 	rulesAddConditional = false
 	rulesAddUseVim = false
 	rulesLinkReadPolicy = defaultRulesetReadPolicy
+}
+
+func stubRulesetRegistry(t *testing.T, rulesets ...registryRuleset) {
+	t.Helper()
+	previous := rulesetRegistryFetcher
+	t.Cleanup(func() {
+		rulesetRegistryFetcher = previous
+	})
+	rulesetRegistryFetcher = func(_ context.Context) ([]registryRuleset, error) {
+		return rulesets, nil
+	}
+}
+
+func registryRulesetForTest(slug string, appliesTo []string) registryRuleset {
+	content := templates.BuildRuleset(slug, appliesTo)
+	parsed := parseRuleset(content, slug+".md")
+	return registryRuleset{
+		Slug:     slug,
+		Content:  content,
+		Metadata: parsed.Metadata,
+	}
 }
 
 func resetReconcileFlags(t *testing.T) {

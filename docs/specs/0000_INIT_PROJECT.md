@@ -758,9 +758,13 @@ Nouns and verbs normalize to lowercase kebab-case.
   - `status`
   - `applies_to`
   - `read_policy_default`
-- `kit rules add` with no slug runs an interactive builder, opens `$EDITOR` for rule context by default, saves the ruleset, and copies an agent optimization prompt for semantic cleanup
-- `kit rules add <slug>` creates a concise ruleset template non-interactively and refuses to overwrite unless `--force` is used
-- `kit rules add` supports `--must`, `--conditional`, `--evidence`, and `--skip` to set `read_policy_default`
+- `kit rules add` with no slug opens an interactive registry selector backed by the Kit GitHub `main` branch so users can import or activate available rulesets and toggle existing registry rules active or inactive
+- registry selector status/state text is highly visible and colorized when terminal output supports color
+- inactive registry rules are preserved locally with `status: optional` instead of being deleted
+- locally modified rulesets are preserved; activation and deactivation change only ruleset status
+- `kit rules add --custom` runs the interactive builder, opens `$EDITOR` for rule context by default, saves the ruleset, and copies an agent optimization prompt for semantic cleanup
+- `kit rules add <slug>` creates a concise custom ruleset template non-interactively and refuses to overwrite unless `--force` is used
+- `kit rules add --custom` and `kit rules add <slug>` support `--must`, `--conditional`, `--evidence`, and `--skip` to set `read_policy_default`
 - `kit rules list` renders rulesets in stable slug order with slug, path, status, and `applies_to`
 - `kit rules link <feature> <slug> --read-policy must|conditional` adds or refreshes one canonical feature `references` entry without duplicating existing references
 - feature docs decide when a ruleset is loaded by setting `read_policy: must`, `conditional`, or `skip`

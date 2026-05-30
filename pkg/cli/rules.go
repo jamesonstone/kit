@@ -41,6 +41,7 @@ var (
 	rulesAddMust        bool
 	rulesAddOutputOnly  bool
 	rulesAddSkip        bool
+	rulesAddCustom      bool
 	rulesAddConditional bool
 	rulesAddUseVim      bool
 	rulesLinkReadPolicy string
@@ -64,11 +65,16 @@ var rulesAddCmd = &cobra.Command{
 	Short: "Create a durable repo-local ruleset",
 	Long: `Create a durable repo-local ruleset.
 
-With a slug argument, creates the ruleset non-interactively for scripts.
-Without a slug, asks for the ruleset name, loading policy, applicability, and
-rule context, then opens $EDITOR for the context by default, falls back to a
-vim-compatible editor when $EDITOR is unset, and copies an agent optimization
-prompt after the ruleset is saved.`,
+Without a slug, opens the registry selector so users can import available
+rulesets from the Kit GitHub registry or toggle existing registry rules active
+and inactive.
+
+With a slug argument, creates a custom ruleset non-interactively for scripts.
+Use --custom without a slug for the interactive custom ruleset builder; it asks
+for the ruleset name, loading policy, applicability, and rule context, then
+opens $EDITOR for the context by default, falls back to a vim-compatible editor
+when $EDITOR is unset, and copies an agent optimization prompt after the
+ruleset is saved.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runRulesAdd,
 }
@@ -121,6 +127,7 @@ func init() {
 	rulesAddCmd.Flags().BoolVar(&rulesAddMust, "must", false, "set read_policy_default to must")
 	rulesAddCmd.Flags().BoolVar(&rulesAddOutputOnly, "output-only", false, "output optimization prompt text instead of copying it to the clipboard")
 	rulesAddCmd.Flags().BoolVar(&rulesAddSkip, "skip", false, "set read_policy_default to skip")
+	rulesAddCmd.Flags().BoolVar(&rulesAddCustom, "custom", false, "open the interactive custom ruleset builder instead of the registry selector")
 	rulesAddCmd.Flags().BoolVar(&rulesAddConditional, "conditional", false, "set read_policy_default to conditional")
 	rulesLinkCmd.Flags().StringVar(&rulesLinkReadPolicy, "read-policy", defaultRulesetReadPolicy, "ruleset read policy for this feature reference (must or conditional)")
 
@@ -145,9 +152,15 @@ func runRulesAdd(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) == 0 {
+		if !rulesAddCustom && !rulesAddCopy && !rulesAddOutputOnly && !rulesAddUseVim && rulesAddEditor == "" && !rulesAddInline && !policyExplicit {
+			return runRulesAddRegistrySelector(cmd, projectRoot)
+		}
 		return runRulesAddInteractive(cmd, projectRoot, readPolicyDefault, policyExplicit)
 	}
 
+	if rulesAddCustom {
+		return fmt.Errorf("--custom requires interactive `kit rules add` with no slug")
+	}
 	if rulesAddCopy || rulesAddOutputOnly || rulesAddUseVim || rulesAddEditor != "" || rulesAddInline {
 		return fmt.Errorf("--copy, --output-only, --vim, --editor, and --inline require interactive `kit rules add` with no slug")
 	}
