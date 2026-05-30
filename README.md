@@ -94,6 +94,9 @@ kit init
 # later, after the repo has real contents, refresh durable project-level docs
 kit prompt project refresh
 
+# refresh Kit-managed scaffold docs/files to the current Kit defaults
+kit init --refresh
+
 # optionally capture research first
 kit brainstorm my-feature
 
@@ -341,6 +344,16 @@ Instruction scaffold versions:
 - new repos default to `v2`
 - existing repos keep their current model unless `--version` explicitly switches them
 - switching models is a repo-wide change and requires `--force`
+
+`kit init --refresh` is the consolidated refresh command for existing Kit
+projects. It creates missing Kit-managed files, migrates known generated v1
+instruction files to the v2 thin docs model, refreshes generated instruction
+support docs, and imports missing known registry rulesets. Existing local
+scaffold files such as `.envrc`, `.coderabbit.yaml`, and the pull request
+template are skipped by default. Use `kit init --refresh --force` to overwrite
+refreshable generated documentation and known registry rulesets, or
+`kit init --refresh --file=.envrc --force` to overwrite one existing
+Kit-managed file explicitly.
 
 ## 🗂️ Structured Engine: Artifact Pipeline
 

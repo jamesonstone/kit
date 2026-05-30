@@ -88,9 +88,10 @@ A change is done when all applicable conditions are met for its track.
 - Use descriptive names for variables, functions, classes, parameters, methods
 - Keep functions focused on a single responsibility
 - Prefer explicit error handling over silent failures
-- Soft file size limit: 200 lines
-- Hard file size limit: 300 lines (exceptions require justification)
-- Split files that exceed limits
+- Code file size guideline: keep implementation/source files around 300 lines or less when splitting improves clarity
+- Treat 200 lines as a review trigger for code files, not a mandatory split point
+- Do not apply the 300-line guideline to documentation files, any ` + "`docs/**`" + ` files, ` + "`.kit/**`" + `, or ` + "`.kit.yaml`" + `
+- Justify larger code files when the reason is not obvious
 
 ---
 
@@ -108,7 +109,7 @@ A change is done when all applicable conditions are met for its track.
 
 ## Package Structure Guidelines
 
-- Keep files under 300 lines when possible
+- Keep code files under 300 lines when possible; documentation files, ` + "`docs/**`" + `, ` + "`.kit/**`" + `, and ` + "`.kit.yaml`" + ` are out of scope
 - One file per resource type, domain object, or logical grouping
 - Place shared/common types in a dedicated ` + "`types.go`" + `
 - Place service definitions, constructors, and shared options in main package files

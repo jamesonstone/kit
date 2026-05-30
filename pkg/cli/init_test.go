@@ -415,19 +415,208 @@ func TestRunInit_PreservesExistingPullRequestTemplate(t *testing.T) {
 	})
 }
 
+func TestRunInitRefresh_MigratesGeneratedVerboseInstructionsAndCreatesManagedFiles(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+
+	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionVerbose
+	if err := config.Save(tempDir, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+	writeFile(t, filepath.Join(tempDir, agentsMDPath), templates.LegacyAgentsMD)
+	writeFile(t, filepath.Join(tempDir, claudeMDPath), templates.LegacyClaudeMD)
+	writeFile(t, filepath.Join(tempDir, copilotInstructionsPath), templates.LegacyCopilotInstructionsMD)
+	writeFile(t, filepath.Join(tempDir, "docs", "CONSTITUTION.md"), "# CONSTITUTION\n\n## PRINCIPLES\n\ncustom\n\n## CONSTRAINTS\n\ncustom\n\n## NON-GOALS\n\nnone\n\n## DEFINITIONS\n\nnone\n")
+	writeFile(t, filepath.Join(tempDir, envrcPath), "source_env .custom\n")
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	updated, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	if updated.InstructionScaffoldVersion != config.InstructionScaffoldVersionTOC {
+		t.Fatalf("InstructionScaffoldVersion = %d, want %d", updated.InstructionScaffoldVersion, config.InstructionScaffoldVersionTOC)
+	}
+
+	agentsContent, err := os.ReadFile(filepath.Join(tempDir, agentsMDPath))
+	if err != nil {
+		t.Fatalf("failed to read %s: %v", agentsMDPath, err)
+	}
+	if string(agentsContent) != templates.AgentsMD {
+		t.Fatalf("expected generated v1 %s to migrate to v2 template", agentsMDPath)
+	}
+	assertFileExists(t, filepath.Join(tempDir, "docs", "agents", "README.md"))
+	assertFileExists(t, filepath.Join(tempDir, "docs", "references", "README.md"))
+
+	envrcContent, err := os.ReadFile(filepath.Join(tempDir, envrcPath))
+	if err != nil {
+		t.Fatalf("failed to read %s: %v", envrcPath, err)
+	}
+	if string(envrcContent) != "source_env .custom\n" {
+		t.Fatalf("%s was overwritten during default refresh: %q", envrcPath, envrcContent)
+	}
+
+	constitutionContent, err := os.ReadFile(filepath.Join(tempDir, "docs", "CONSTITUTION.md"))
+	if err != nil {
+		t.Fatalf("failed to read CONSTITUTION.md: %v", err)
+	}
+	for _, check := range []string{
+		"custom",
+		"### Kit-Managed Baseline Rules",
+		"Do not apply the code-file size guideline to documentation files",
+	} {
+		if !strings.Contains(string(constitutionContent), check) {
+			t.Fatalf("expected CONSTITUTION.md to contain %q, got:\n%s", check, constitutionContent)
+		}
+	}
+
+	rulesetPath := filepath.Join(tempDir, "docs", "references", "rules", "safety-guardrails.md")
+	rulesetContent, err := os.ReadFile(rulesetPath)
+	if err != nil {
+		t.Fatalf("expected registry ruleset to be imported: %v", err)
+	}
+	if !strings.Contains(string(rulesetContent), "slug: safety-guardrails") {
+		t.Fatalf("unexpected ruleset content:\n%s", rulesetContent)
+	}
+}
+
+func TestRunInitRefresh_FileForceOverwritesOnlySelectedExistingFile(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	writeFile(t, filepath.Join(tempDir, envrcPath), "source_env .custom\n")
+	writeFile(t, filepath.Join(tempDir, codeRabbitConfigPath), "custom coderabbit\n")
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initForce = true
+		initOutputOnly = true
+		initRefreshFiles = []string{envrcPath}
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	envrcContent, err := os.ReadFile(filepath.Join(tempDir, envrcPath))
+	if err != nil {
+		t.Fatalf("failed to read %s: %v", envrcPath, err)
+	}
+	if string(envrcContent) != templates.Envrc {
+		t.Fatalf("%s content = %q, want %q", envrcPath, envrcContent, templates.Envrc)
+	}
+
+	codeRabbitContent, err := os.ReadFile(filepath.Join(tempDir, codeRabbitConfigPath))
+	if err != nil {
+		t.Fatalf("failed to read %s: %v", codeRabbitConfigPath, err)
+	}
+	if string(codeRabbitContent) != "custom coderabbit\n" {
+		t.Fatalf("%s content = %q, want custom content", codeRabbitConfigPath, codeRabbitContent)
+	}
+	assertFileDoesNotExist(t, filepath.Join(tempDir, agentsMDPath))
+}
+
+func TestRunInitRefresh_ForceDoesNotOverwriteExistingScaffoldFilesWithoutFileTarget(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	stubRulesetRegistry(t)
+
+	writeFile(t, filepath.Join(tempDir, envrcPath), "source_env .custom\n")
+	writeFile(t, filepath.Join(tempDir, "docs", "agents", "GUARDRAILS.md"), "# Guardrails\n\nold\n")
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initForce = true
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	envrcContent, err := os.ReadFile(filepath.Join(tempDir, envrcPath))
+	if err != nil {
+		t.Fatalf("failed to read %s: %v", envrcPath, err)
+	}
+	if string(envrcContent) != "source_env .custom\n" {
+		t.Fatalf("%s content = %q, want custom content", envrcPath, envrcContent)
+	}
+
+	guardrailsContent, err := os.ReadFile(filepath.Join(tempDir, "docs", "agents", "GUARDRAILS.md"))
+	if err != nil {
+		t.Fatalf("failed to read GUARDRAILS.md: %v", err)
+	}
+	if string(guardrailsContent) != initTestSupportFileContent("docs/agents/GUARDRAILS.md") {
+		t.Fatalf("expected generated docs support file to be overwritten on force, got:\n%s", guardrailsContent)
+	}
+}
+
+func TestRunInitRefresh_RejectsUnsupportedFileTarget(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initRefreshFiles = []string{"README.md"}
+
+		err := runInit(initCmd, nil)
+		if err == nil || !strings.Contains(err.Error(), "not a Kit-managed refresh target") {
+			t.Fatalf("expected unsupported target error, got %v", err)
+		}
+	})
+}
+
+func initTestSupportFileContent(relativePath string) string {
+	for _, file := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
+		if file.RelativePath == relativePath {
+			return file.Content
+		}
+	}
+	return ""
+}
+
 func withInitFlags(t *testing.T, run func()) {
 	t.Helper()
 
 	originalCopy := initCopy
 	originalOutputOnly := initOutputOnly
+	originalRefresh := initRefresh
+	originalForce := initForce
+	originalRefreshFiles := initRefreshFiles
 
 	t.Cleanup(func() {
 		initCopy = originalCopy
 		initOutputOnly = originalOutputOnly
+		initRefresh = originalRefresh
+		initForce = originalForce
+		initRefreshFiles = originalRefreshFiles
 	})
 
 	initCopy = false
 	initOutputOnly = false
+	initRefresh = false
+	initForce = false
+	initRefreshFiles = nil
 
 	run()
 }

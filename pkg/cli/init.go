@@ -16,6 +16,9 @@ import (
 
 var initCopy bool
 var initOutputOnly bool
+var initRefresh bool
+var initForce bool
+var initRefreshFiles []string
 
 var initCmd = &cobra.Command{
 	Use:   "init",
@@ -37,23 +40,44 @@ be merged by adding missing required sections.
 
 Modes:
   Default:        Copy the prepared CONSTITUTION.md prompt to the clipboard and show next steps
+  --refresh:      Refresh Kit-managed project files for an existing Kit project
 
 Flags:
   --output-only:  Output the raw prompt to stdout instead of copying it to the clipboard
-  --copy:         Copy prompt to clipboard even with --output-only`,
+  --copy:         Copy prompt to clipboard even with --output-only
+  --force:        Overwrite refreshable generated docs during --refresh
+  --file:         Limit --refresh to one Kit-managed file; repeat for multiple files`,
 	RunE: runInit,
 }
 
 func init() {
 	initCmd.Flags().BoolVar(&initCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	initCmd.Flags().BoolVar(&initOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	initCmd.Flags().BoolVar(&initRefresh, "refresh", false, "refresh Kit-managed project files instead of creating a new-project prompt")
+	initCmd.Flags().BoolVarP(&initForce, "force", "f", false, "overwrite refreshable generated docs during --refresh")
+	initCmd.Flags().StringArrayVar(&initRefreshFiles, "file", nil, "limit --refresh to a Kit-managed file; repeat for multiple files")
 	rootCmd.AddCommand(initCmd)
 }
 
 func runInit(cmd *cobra.Command, args []string) error {
+	if initForce && !initRefresh {
+		return fmt.Errorf("--force requires --refresh")
+	}
+	if len(initRefreshFiles) > 0 && !initRefresh {
+		return fmt.Errorf("--file requires --refresh")
+	}
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)
+	}
+
+	if initRefresh {
+		return runInitRefresh(cwd, initRefreshOptions{
+			force:      initForce,
+			files:      initRefreshFiles,
+			outputOnly: initOutputOnly,
+		})
 	}
 
 	if !initOutputOnly {
