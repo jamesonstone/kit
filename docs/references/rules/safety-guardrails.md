@@ -56,9 +56,16 @@ pwd
 git status --short --branch
 git remote -v
 git rev-parse --abbrev-ref HEAD
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 ```
 
 - Identify current branch, default/base branch, and repository owner/name.
+- Identify active pull requests for the current branch before editing, committing, pushing, or mutating any PR.
+- Confirm the active directory, branch, remote, and PR head branch match the intended work lane.
+- Repeat this recon after thread resumes, user redirects, branch changes, or any sign that another thread may have moved the work forward.
+- If the active branch, remote, or PR state does not match the expected issue branch or repository, stop and summarize the mismatch before editing or pushing.
+- If `gh` is unavailable, use an approved GitHub connector for the active PR lookup; if neither is available, report that the active PR check could not run before mutating.
 - Do not overwrite, revert, or mix unrelated user changes.
 - If unrelated dirty files exist, leave them alone.
 - If dirty files overlap the requested work, stop and explain the conflict before editing.
@@ -140,6 +147,8 @@ On any failure, including lint, test, push rejection, template error, auth error
 
 - Confirm `pwd`, `git status --short --branch`, `git remote -v`, and `git rev-parse --abbrev-ref HEAD` were run and shown.
 - Confirm current branch, default/base branch, and repository owner/name were identified.
+- Confirm active PRs for the current branch were checked, or that an unavailable PR lookup was explicitly reported before mutation.
+- Confirm the active directory, branch, remote, and PR state matched the intended work lane before editing, committing, pushing, or mutating a PR.
 - Confirm protected or assumed-protected branches were not written to.
 - Confirm overlapping dirty files caused a stop before editing.
 - Confirm author and committer identity were inspected before any commit.
@@ -155,6 +164,8 @@ pwd
 git status --short --branch
 git remote -v
 git rev-parse --abbrev-ref HEAD
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 ```
 
 Git identity inspection:

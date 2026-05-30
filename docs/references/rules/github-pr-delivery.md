@@ -89,6 +89,7 @@ Include:
 - If branch `GH-123` already exists locally or remotely, inspect it before continuing.
 - Do not reuse an existing branch if it contains unrelated work.
 - If a PR already exists for `GH-123`, update it instead of duplicating.
+- Before updating an existing PR, check active PRs for the current branch and confirm the active directory, branch, remote, PR head, and PR base match the intended issue branch and repository.
 - If issue, branch, and PR state disagree, stop and summarize the mismatch.
 
 ### Branch Workflow
@@ -103,7 +104,11 @@ Include:
 ```bash
 git checkout -b GH-123 origin/$BASE_BRANCH
 test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 ```
+
+- Before editing after any thread resume or user redirect, repeat branch and PR recon for the active directory because another thread may have moved the work forward.
+- If the active branch or PR lookup does not match the intended `GH-123` branch and repository, stop and ask before editing.
 
 ### Implementation Workflow
 
@@ -176,10 +181,16 @@ Commit body must include:
 ### Push And PR Workflow
 
 ```bash
+git status --short --branch
+git remote -v
+test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 git push -u origin GH-123
 git log -1 --format='%an <%ae> | %cn <%ce>'
 ```
 
+- Immediately before pushing, confirm the active directory, current branch, upstream remote, and active PR state still match the intended issue branch and repository.
+- If an existing PR is found for `GH-123`, update that PR; do not create a duplicate.
 - Push only after committing.
 - Verify remote-side author and committer are the human user.
 - On push rejection, such as a stale base, follow `safety-guardrails` failure handling.
@@ -239,12 +250,14 @@ Include:
 - Confirm issue resolution searched existing open issues before creating a new issue.
 - Confirm branch name exactly matches the issue number in `GH-123` form.
 - Confirm checkout is on the issue-number branch before editing.
+- Confirm active PRs for the current branch were checked before editing after any thread resume or user redirect.
 - Confirm each changed file was reviewed before explicit staging.
 - Confirm no secrets or local config were staged.
 - Confirm author and committer identity were inspected before commit and are the human user.
 - Confirm staged diff was reviewed before commit.
 - Confirm commit title and body follow the required format.
 - Confirm branch was pushed only after commit.
+- Confirm active directory, branch, remote, and PR state were rechecked immediately before pushing.
 - Confirm PR was created with the repository template when present.
 - Confirm PR assignee is the human user.
 - Confirm PR is ready for review and not draft unless explicitly requested otherwise.
