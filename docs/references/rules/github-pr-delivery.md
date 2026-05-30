@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: github-pr-delivery
-description: Sequences issue, branch, commit, push, draft PR, and post-PR checks after PR workflow consent.
+description: Sequences issue, branch, commit, push, ready PR, and post-PR checks after PR workflow consent.
 status: active
 applies_to:
   - git
@@ -187,18 +187,21 @@ git log -1 --format='%an <%ae> | %cn <%ce>'
 - Create the PR using `.github/pull_request_template.md` when present.
 - Preserve PR template headings.
 - Author the PR body in the user's name; do not add agent self-attribution.
+- Assign the PR to the human user.
 - Use `Closes #123` when the PR fully resolves the issue.
 - Use `Refs #123` when the PR only partially addresses the issue.
-- Default to a draft PR unless explicitly told otherwise.
+- Create the PR ready for review, not as a draft, unless the user explicitly asks for a draft PR.
 
 ### Post-PR Verification
 
 ```bash
-gh pr view --json number,url,author,state
+gh pr view --json number,url,author,state,isDraft,assignees
 gh pr checks
 ```
 
 - Confirm GitHub shows the human user as commit author and committer.
+- Confirm the PR is assigned to the human user.
+- Confirm the PR is ready for review and not draft, unless the user explicitly asked for a draft PR.
 - Do not claim CI passed unless checks were observed passing.
 - If checks are pending, failing, unavailable, or not run, report that exact state.
 
@@ -243,6 +246,8 @@ Include:
 - Confirm commit title and body follow the required format.
 - Confirm branch was pushed only after commit.
 - Confirm PR was created with the repository template when present.
+- Confirm PR assignee is the human user.
+- Confirm PR is ready for review and not draft unless explicitly requested otherwise.
 - Confirm PR and CI state were observed before final reporting.
 
 ## Examples
@@ -277,6 +282,6 @@ docs(GH-125): :memo: document PR workflow
 Post-PR checks:
 
 ```bash
-gh pr view --json number,url,author,state
+gh pr view --json number,url,author,state,isDraft,assignees
 gh pr checks
 ```
