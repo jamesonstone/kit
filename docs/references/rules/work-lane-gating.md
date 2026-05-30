@@ -66,9 +66,13 @@ Among implementation work, a new lane is any work that is either:
 When implementation work in a new lane is detected, stop before writing code and ask exactly:
 
 > It appears you are doing implementation work. Would you like to create a new issue, branch, and PR for this work, or continue on the existing branch with the existing work?
+>
+> Default: `y` - create a new branch. Reply `n` to continue working with the existing change set on the existing branch.
 
 - Wait for an explicit answer.
-- Do not proceed until the user chooses.
+- Accept `y` as the explicit choice to create or confirm the issue, issue-number branch, commit, push, and PR workflow.
+- Accept `n` as the explicit choice to continue with the existing change set on the existing branch.
+- Do not proceed until the user chooses `y`, `n`, or an equivalent explicit answer.
 
 ### Gate Tripwire
 
@@ -121,6 +125,8 @@ Required gate question for a new implementation lane:
 
 ```text
 It appears you are doing implementation work. Would you like to create a new issue, branch, and PR for this work, or continue on the existing branch with the existing work?
+
+Default: `y` - create a new branch. Reply `n` to continue working with the existing change set on the existing branch.
 ```
 
 Non-implementation work that must not gate:
