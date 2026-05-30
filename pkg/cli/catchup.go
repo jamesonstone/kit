@@ -24,8 +24,8 @@ recover the current stage and state of a feature before implementation
 resumes.
 
 This command is intentionally narrower than handoff, summarize, and implement.
-It keeps the agent in plan mode, asks questions first, and requires explicit
-approval before any implementation begins.`,
+It keeps the agent in catch-up and clarification workflow, asks questions first,
+and requires explicit approval before any implementation begins.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runCatchup,
 }

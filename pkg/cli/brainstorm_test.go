@@ -20,8 +20,7 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 	)
 
 	checks := []string{
-		"/plan",
-		"You are in planning mode for feature: **sample-feature**",
+		"Research and document feature: **sample-feature**",
 		"Do NOT implement code, write production changes, or move into execution",
 		"Ask clarifying questions until you reach ≥95% confidence that you understand the problem and desired solution",
 		"Use numbered lists",
@@ -32,7 +31,8 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"\"yes 3, 4, 5\" or \"y 3, 4, 5\" approves only those numbered defaults in the batch",
 		"If the user approves only specific question numbers, treat all other questions in that batch as unresolved",
 		"After each batch of up to 10 questions, output your current percentage understanding so the user can see progress",
-		"planning only — no implementation",
+		"Only update BRAINSTORM.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
+		"research and documentation only; no implementation",
 		"kit spec sample-feature",
 		"/tmp/docs/specs/0001-sample/BRAINSTORM.md",
 		"/tmp/project/docs/notes/0001-sample",
@@ -69,8 +69,11 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"Next Step",
 	)
 
-	if !strings.HasPrefix(prompt, "/plan\n\n") {
-		t.Fatalf("expected prompt to start with /plan, got %q", prompt[:8])
+	if !strings.HasPrefix(prompt, "Research and document feature: **sample-feature**\n\n") {
+		t.Fatalf("expected prompt to start with research header, got %q", prompt[:64])
+	}
+	if strings.Contains(prompt, "/plan") || strings.Contains(prompt, "planning mode") {
+		t.Fatalf("expected prompt to avoid native plan-mode triggers, got %q", prompt)
 	}
 }
 

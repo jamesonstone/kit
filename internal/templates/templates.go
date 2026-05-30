@@ -14,6 +14,7 @@ const Gitignore = `# Kit local generated environment, cache, and scratch artifac
 .env
 .envrc
 .kit/runs/
+.kit/loops/
 .kit/state.json
 .kit/cache/
 .kit/tmp/

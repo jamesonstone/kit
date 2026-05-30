@@ -41,9 +41,8 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 
 	prompt := buildReconcilePrompt(report)
 	checks := []string{
-		"/plan",
 		"feature sample",
-		"Kit-managed docs and scaffold files only",
+		"Only update Kit-managed docs and scaffold files; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
 		"use subagents and queue work according to overlapping file changes",
 		"contract order:",
 		"Audit snapshot:",
@@ -68,6 +67,9 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 
 	if strings.Contains(prompt, "`Open Questions`") || strings.Contains(prompt, "`Search Plan`") {
 		t.Fatalf("expected compact response contract, got %q", prompt)
+	}
+	if strings.Contains(prompt, "/plan") {
+		t.Fatalf("expected reconcile prompt to avoid native plan-mode triggers, got %q", prompt)
 	}
 }
 

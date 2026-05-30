@@ -47,6 +47,7 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 		"for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target`",
 		"- DEPENDENCIES",
 		"canonical front matter `references` must be current before sign-off",
+		"Only update PLAN.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
 		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
 	}
 
@@ -101,6 +102,7 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 		"do not paraphrase entire prior docs into chat",
 		"for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target`",
 		"canonical front matter `references` must be current before sign-off",
+		"Only update PLAN.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
 		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
 	}
 

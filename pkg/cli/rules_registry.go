@@ -24,6 +24,12 @@ const (
 	rulesetRegistryBranch = "main"
 	rulesetRegistryAPIURL = "https://api.github.com/repos/jamesonstone/kit/contents/docs/references/rules?ref=main"
 	inactiveRulesetStatus = document.ReferenceStatusOptional
+
+	registrySelectorDefaultTableWidth = 118
+	registrySelectorMinimumTableWidth = 88
+	registrySelectorMinimumSlugWidth  = 18
+	registrySelectorMaximumSlugWidth  = 30
+	registrySelectorMinimumDescWidth  = 22
 )
 
 type rulesetRegistryFetchFunc func(context.Context) ([]registryRuleset, error)
@@ -256,10 +262,18 @@ func selectRegistryRulesetsRaw(in *os.File, out io.Writer, entries []registrySel
 	}
 	defer term.Restore(int(in.Fd()), state)
 
+	fd := in.Fd()
+	if fdProvider, ok := out.(interface{ Fd() uintptr }); ok {
+		fd = fdProvider.Fd()
+	}
+	rawOut := &rawTerminalLineWriter{
+		writer: out,
+		fd:     fd,
+	}
 	reader := bufio.NewReader(in)
 	cursor := 0
 	for {
-		renderRegistryRulesetSelector(out, entries, cursor)
+		renderRegistryRulesetSelector(rawOut, entries, cursor)
 		key, err := reader.ReadByte()
 		if err != nil {
 			return fmt.Errorf("failed to read ruleset selector input: %w", err)
@@ -269,24 +283,22 @@ func selectRegistryRulesetsRaw(in *os.File, out io.Writer, entries []registrySel
 			return fmt.Errorf("ruleset selection cancelled")
 		case 'q', 'Q':
 			return fmt.Errorf("ruleset selection cancelled")
+		case '\t':
+			cursor = moveRegistrySelectorCursor(cursor, len(entries), 1, true)
 		case ' ', 'x', 'X':
 			toggleRegistrySelectorEntry(&entries[cursor])
 		case 'v', 'V', '?':
-			renderRegistryRulesetPreview(out, entries[cursor])
+			renderRegistryRulesetPreview(rawOut, entries[cursor])
 			if _, err := reader.ReadByte(); err != nil {
 				return fmt.Errorf("failed to read ruleset preview input: %w", err)
 			}
 		case '\r', '\n':
-			_, _ = fmt.Fprint(out, "\n")
+			_, _ = fmt.Fprint(rawOut, "\n")
 			return nil
 		case 'j', 'J':
-			if cursor < len(entries)-1 {
-				cursor++
-			}
+			cursor = moveRegistrySelectorCursor(cursor, len(entries), 1, false)
 		case 'k', 'K':
-			if cursor > 0 {
-				cursor--
-			}
+			cursor = moveRegistrySelectorCursor(cursor, len(entries), -1, false)
 		case 27:
 			second, err := reader.ReadByte()
 			if err != nil {
@@ -301,16 +313,64 @@ func selectRegistryRulesetsRaw(in *os.File, out io.Writer, entries []registrySel
 			}
 			switch third {
 			case 'A':
-				if cursor > 0 {
-					cursor--
-				}
+				cursor = moveRegistrySelectorCursor(cursor, len(entries), -1, false)
 			case 'B':
-				if cursor < len(entries)-1 {
-					cursor++
-				}
+				cursor = moveRegistrySelectorCursor(cursor, len(entries), 1, false)
+			case 'Z':
+				cursor = moveRegistrySelectorCursor(cursor, len(entries), -1, true)
 			}
 		}
 	}
+}
+
+func moveRegistrySelectorCursor(cursor, count, delta int, wrap bool) int {
+	if count <= 0 {
+		return 0
+	}
+	next := cursor + delta
+	if next < 0 {
+		if wrap {
+			return count - 1
+		}
+		return 0
+	}
+	if next >= count {
+		if wrap {
+			return 0
+		}
+		return count - 1
+	}
+	return next
+}
+
+type rawTerminalLineWriter struct {
+	writer     io.Writer
+	fd         uintptr
+	previousCR bool
+}
+
+func (w *rawTerminalLineWriter) Fd() uintptr {
+	return w.fd
+}
+
+func (w *rawTerminalLineWriter) Write(p []byte) (int, error) {
+	translated := make([]byte, 0, len(p)+8)
+	for _, b := range p {
+		if b == '\n' && !w.previousCR {
+			translated = append(translated, '\r')
+		}
+		translated = append(translated, b)
+		w.previousCR = b == '\r'
+	}
+
+	n, err := w.writer.Write(translated)
+	if err != nil {
+		return 0, err
+	}
+	if n != len(translated) {
+		return 0, io.ErrShortWrite
+	}
+	return len(p), nil
 }
 
 func toggleRegistrySelectorEntry(entry *registrySelectorEntry) {
@@ -323,32 +383,157 @@ func renderRegistryRulesetSelector(out io.Writer, entries []registrySelectorEntr
 	if cursor >= 0 {
 		_, _ = fmt.Fprint(out, "\x1b[H\x1b[2J")
 	}
+	tableWidth := registrySelectorTableWidth(out)
+
 	_, _ = fmt.Fprintln(out, style.selectionTitle("Select registry rulesets"))
 	_, _ = fmt.Fprintln(out)
-	_, _ = fmt.Fprintln(out, style.muted("Registry: "+rulesetRegistrySourceDescription()))
+	_, _ = fmt.Fprintln(out, style.muted(truncateString("Source: "+rulesetRegistrySourceDescription(), tableWidth)))
 	if cursor >= 0 {
-		_, _ = fmt.Fprintln(out, style.muted("Use Up/Down or j/k to move, Space to toggle, v to view, Enter to apply, q to cancel."))
+		_, _ = fmt.Fprintln(out, style.muted(truncateString("Keys: Tab/Down/j move | Shift+Tab/Up/k move | Space toggles | v previews | Enter applies | q cancels", tableWidth)))
 	} else {
-		_, _ = fmt.Fprintln(out, style.muted("Type rule numbers to toggle active/inactive state, then press Enter to apply. Use `kit rules view <slug>` to preview full text."))
+		_, _ = fmt.Fprintln(out, style.muted(truncateString("Input: type rule numbers to toggle, then Enter applies. Preview full text with `kit rules view <slug>`.", tableWidth)))
 	}
 	_, _ = fmt.Fprintln(out)
+
+	widths := registrySelectorColumnWidths(tableWidth, entries)
+	renderRegistrySelectorBorder(out, style, "┌", "┬", "┐", widths)
+	renderRegistrySelectorRow(out, style, []registrySelectorCell{
+		{text: "No", width: widths[0], color: whiteBold},
+		{text: "Use", width: widths[1], color: whiteBold},
+		{text: "Ruleset", width: widths[2], color: whiteBold},
+		{text: "State", width: widths[3], color: whiteBold},
+		{text: "Source", width: widths[4], color: whiteBold},
+		{text: "Description", width: widths[5], color: whiteBold},
+	})
+	renderRegistrySelectorBorder(out, style, "├", "┼", "┤", widths)
 	for i := range entries {
-		prefix := " "
+		number := fmt.Sprintf("%d", i+1)
 		if i == cursor {
-			prefix = ">"
-		}
-		state := formatRegistrySelectorState(style, entries[i])
-		modified := ""
-		if entries[i].Modified {
-			modified = " " + formatRulesetStateToken(style, "MODIFIED", constitution)
+			number = ">" + number
 		}
 		checkbox := "[ ]"
+		checkboxColor := dim
 		if entries[i].DesiredActive {
 			checkbox = "[x]"
+			checkboxColor = plan
 		}
-		description := truncateRulesetDescription(selectorRulesetDescription(entries[i]), 88)
-		_, _ = fmt.Fprintf(out, "%s [%d] %s %-28s %s%s  %s\n", prefix, i+1, checkbox, entries[i].Registry.Slug, state, modified, description)
+		stateLabel, stateColor := registrySelectorState(entries[i])
+		sourceLabel, sourceColor := registrySelectorSource(entries[i])
+		renderRegistrySelectorRow(out, style, []registrySelectorCell{
+			{text: number, width: widths[0], color: registrySelectorCursorColor(i, cursor), alignRight: true},
+			{text: checkbox, width: widths[1], color: checkboxColor},
+			{text: entries[i].Registry.Slug, width: widths[2], color: registrySelectorSlugColor(entries[i], i == cursor)},
+			{text: stateLabel, width: widths[3], color: stateColor},
+			{text: sourceLabel, width: widths[4], color: sourceColor},
+			{text: selectorRulesetDescription(entries[i]), width: widths[5]},
+		})
 	}
+	renderRegistrySelectorBorder(out, style, "└", "┴", "┘", widths)
+}
+
+type registrySelectorCell struct {
+	text       string
+	width      int
+	color      string
+	alignRight bool
+}
+
+func registrySelectorTableWidth(out io.Writer) int {
+	width := terminalWidthOrDefault(out, registrySelectorDefaultTableWidth)
+	if width < registrySelectorMinimumTableWidth {
+		return registrySelectorMinimumTableWidth
+	}
+	return width
+}
+
+func registrySelectorColumnWidths(tableWidth int, entries []registrySelectorEntry) []int {
+	numberWidth := len(fmt.Sprintf("%d", len(entries))) + 1
+	if numberWidth < 2 {
+		numberWidth = 2
+	}
+
+	slugWidth := len("Ruleset")
+	for _, entry := range entries {
+		if width := len([]rune(entry.Registry.Slug)); width > slugWidth {
+			slugWidth = width
+		}
+	}
+	if slugWidth < registrySelectorMinimumSlugWidth {
+		slugWidth = registrySelectorMinimumSlugWidth
+	}
+	if slugWidth > registrySelectorMaximumSlugWidth {
+		slugWidth = registrySelectorMaximumSlugWidth
+	}
+
+	widths := []int{
+		numberWidth,
+		3,
+		slugWidth,
+		9,
+		8,
+		registrySelectorMinimumDescWidth,
+	}
+
+	for {
+		descWidth := tableWidth - registrySelectorTableOverhead(len(widths))
+		for _, width := range widths[:len(widths)-1] {
+			descWidth -= width
+		}
+		if descWidth >= registrySelectorMinimumDescWidth {
+			widths[len(widths)-1] = descWidth
+			return widths
+		}
+		if widths[2] > registrySelectorMinimumSlugWidth {
+			widths[2]--
+			continue
+		}
+		widths[len(widths)-1] = registrySelectorMinimumDescWidth
+		return widths
+	}
+}
+
+func registrySelectorTableOverhead(columnCount int) int {
+	return 3*columnCount + 1
+}
+
+func renderRegistrySelectorBorder(out io.Writer, style humanOutputStyle, left, middle, right string, widths []int) {
+	var builder strings.Builder
+	builder.WriteString(left)
+	for i, width := range widths {
+		if i > 0 {
+			builder.WriteString(middle)
+		}
+		builder.WriteString(strings.Repeat("─", width+2))
+	}
+	builder.WriteString(right)
+	_, _ = fmt.Fprintln(out, style.muted(builder.String()))
+}
+
+func renderRegistrySelectorRow(out io.Writer, style humanOutputStyle, cells []registrySelectorCell) {
+	_, _ = fmt.Fprint(out, style.muted("│"))
+	for _, cell := range cells {
+		text := truncateString(strings.Join(strings.Fields(cell.text), " "), cell.width)
+		rendered := statusMatrixField(style, text, cell.width, cell.color, cell.alignRight)
+		_, _ = fmt.Fprintf(out, " %s %s", rendered, style.muted("│"))
+	}
+	_, _ = fmt.Fprintln(out)
+}
+
+func registrySelectorCursorColor(index, cursor int) string {
+	if index == cursor {
+		return spec
+	}
+	return dim
+}
+
+func registrySelectorSlugColor(entry registrySelectorEntry, selected bool) string {
+	if selected {
+		return whiteBold
+	}
+	if entry.Installed {
+		return brainstorm
+	}
+	return ""
 }
 
 func renderRegistryRulesetPreview(out io.Writer, entry registrySelectorEntry) {
@@ -381,25 +566,25 @@ func selectorRulesetDescription(entry registrySelectorEntry) string {
 	return "No description provided."
 }
 
-func truncateRulesetDescription(description string, maxLength int) string {
-	description = strings.Join(strings.Fields(description), " ")
-	if maxLength <= 0 || len(description) <= maxLength {
-		return description
-	}
-	if maxLength <= 3 {
-		return description[:maxLength]
-	}
-	return strings.TrimSpace(description[:maxLength-3]) + "..."
-}
-
-func formatRegistrySelectorState(style humanOutputStyle, entry registrySelectorEntry) string {
+func registrySelectorState(entry registrySelectorEntry) (string, string) {
 	switch {
 	case entry.DesiredActive:
-		return formatRulesetStateToken(style, "ACTIVE", plan)
+		return "ACTIVE", plan
 	case entry.Installed:
-		return formatRulesetStateToken(style, "INACTIVE", implement)
+		return "INACTIVE", implement
 	default:
-		return formatRulesetStateToken(style, "AVAILABLE", dim)
+		return "AVAILABLE", dim
+	}
+}
+
+func registrySelectorSource(entry registrySelectorEntry) (string, string) {
+	switch {
+	case entry.Modified:
+		return "MODIFIED", constitution
+	case entry.Installed:
+		return "LOCAL", brainstorm
+	default:
+		return "REGISTRY", dim
 	}
 }
 

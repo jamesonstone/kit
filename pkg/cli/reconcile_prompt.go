@@ -47,7 +47,7 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	}
 
 	rules := []string{
-		"Kit-managed docs and scaffold files only; no product code, test, or runtime changes",
+		docsOnlyWorkflowRule("Kit-managed docs and scaffold files"),
 		"preserve project wording when it already satisfies the current contract",
 		fmt.Sprintf(
 			"contract order: %s -> %s -> %s",
@@ -126,7 +126,6 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	}
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Raw("/plan")
 		doc.Paragraph(fmt.Sprintf("Reconcile Kit-managed docs for the %s.", scope))
 		if report.ReferenceMigration {
 			doc.Paragraph("Migration target: replace deprecated front matter `dependencies` with canonical graph-like `references` and keep the prompt/context surface pointer-only.")

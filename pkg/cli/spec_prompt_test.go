@@ -77,6 +77,7 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 		"keep `skills` focused on execution-time agent skills and track broader supporting inputs in `references`",
 		"for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target`",
 		"do not use `.claude/skills` as canonical discovery input",
+		"Only update SPEC.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
 		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
 		"`not applicable`, `not required`, or `no additional information required`",
 		"## Skills",
@@ -138,6 +139,7 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 		"keep `skills` focused on execution-time agent skills and track broader supporting inputs in `references`",
 		"canonical front matter `skills` is mandatory when front matter exists",
 		"canonical front matter `references` must be current",
+		"Only update SPEC.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
 		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
 	}
 

@@ -13,7 +13,6 @@ func TestBuildDispatchPrompt(t *testing.T) {
 
 	prompt := buildDispatchPrompt(tasks, 10, "/tmp/project", dispatchInputSourceEditor)
 	checks := []string{
-		"/plan",
 		"Prepare a subagent dispatch plan",
 		"Working directory: /tmp/project",
 		"Input source: editor",
@@ -39,8 +38,11 @@ func TestBuildDispatchPrompt(t *testing.T) {
 		}
 	}
 
-	if !strings.HasPrefix(prompt, "/plan\n\nPrepare a subagent dispatch plan") {
-		t.Fatalf("expected prompt to start with /plan dispatch header, got %q", prompt[:40])
+	if !strings.HasPrefix(prompt, "Prepare a subagent dispatch plan") {
+		t.Fatalf("expected prompt to start with dispatch header, got %q", prompt[:40])
+	}
+	if strings.Contains(prompt, "/plan") || strings.Contains(prompt, "planning mode") {
+		t.Fatalf("expected prompt to avoid native plan-mode triggers, got %q", prompt)
 	}
 }
 

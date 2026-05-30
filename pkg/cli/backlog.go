@@ -22,7 +22,7 @@ var backlogCmd = &cobra.Command{
 	Long: `List deferred backlog items captured as paused brainstorm-phase features.
 
 Use --pickup to resume one of those items and output the standard brainstorm
-planning prompt. Use ` + "`kit resume`" + ` as the canonical general resume flow.`,
+research prompt. Use ` + "`kit resume`" + ` as the canonical general resume flow.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runBacklog,
 }

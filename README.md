@@ -161,11 +161,12 @@ kit rm my-feature --yes --notes
 
 | Command                    | Description                                                                               |
 | -------------------------- | ----------------------------------------------------------------------------------------- |
-| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and output a planning-only `/plan` prompt            |
+| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and output a research/documentation prompt          |
 | `kit backlog`              | List deferred brainstorm items or use `--pickup` as the backlog-specific resume shortcut  |
 | `kit spec <feature>`       | Create or open a feature specification, perform skills discovery, and track dependencies  |
 | `kit plan <feature>`       | Create or open an implementation plan and track planning dependencies                     |
 | `kit tasks <feature>`      | Create or open a task list                                                                |
+| `kit loop [feature]`       | Run the remaining workflow through a configured confidence-gated local agent loop         |
 | `kit resume [feature]`     | Resume backlog or in-flight work through the canonical prompt flow                        |
 | `kit implement [feature]`  | Run the implementation readiness gate and output implementation context for coding agents |
 | `kit reflect [feature]`    | Output reflection and verification instructions                                           |
@@ -414,10 +415,10 @@ Then Kit:
 - opens `$EDITOR` by default for the multiline thesis, falling back to a vim-compatible editor when `$EDITOR` is unset, with step instructions and a press-any-key launch gate
 - supports `--inline` to use terminal multiline entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
 - keeps `--vim` and `--editor=vim` as explicit controls when a vim-compatible editor is desired
-- outputs a planning-only prompt that starts with `/plan`
+- outputs a research/documentation prompt without native agent mode commands
 - tells the coding agent to research the codebase, use numbered lists, ask questions in batches of up to 10, and avoid implementation
 - requires the agent to include recommended defaults, accept `yes` / `y` for whole-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` for numbered approval, state uncertainties, output percentage-understanding progress after each batch, and continue until the spec is precise enough for a production-quality solution
-- supports `--backlog` to capture a deferred brainstorm item without outputting a planning prompt
+- supports `--backlog` to capture a deferred brainstorm item without outputting a research prompt
 - keeps `--pickup` callable as a hidden compatibility path while teaching `kit resume <feature>` or `kit backlog --pickup <feature>` as the primary resume flows
 
 ### 💡 Why this matters
@@ -431,7 +432,7 @@ You / team idea
   ↓
 kit brainstorm my-feature
   ↓
-BRAINSTORM.md + planning-only /plan prompt
+BRAINSTORM.md + research/documentation prompt
   ↓
 kit spec my-feature
   ↓
@@ -443,6 +444,39 @@ kit implement my-feature
   ↓
 kit reflect my-feature
 ```
+
+### 🔂 Autonomous Loop
+
+`kit loop [feature]` can run the remaining workflow after the user has started
+with either `kit brainstorm <feature>` or `kit spec <feature>`. It resolves the
+current strict stage, wraps that stage prompt with a required
+`KIT_LOOP_RESULT` JSON contract, sends the prompt to the configured local agent
+command over stdin, validates confidence and document state, then repeats until
+the target stage is complete or a blocker appears.
+
+```yaml
+loop:
+  min_confidence: 95
+  max_iterations: 20
+  agent:
+    command: your-agent
+    args: ["run", "--stdin"]
+```
+
+```bash
+# see the next loop action without running an agent
+kit loop my-feature --dry-run
+
+# run until reflection is complete
+kit loop my-feature
+
+# stop after task generation is complete
+kit loop my-feature --until tasks
+```
+
+Loop evidence is written under `.kit/loops/<run-id>/`. Existing workflow
+commands remain manual prompt-producing commands; only `kit loop` invokes the
+configured agent command.
 
 `kit implement` begins with an implementation readiness gate that adversarially
 challenges `CONSTITUTION.md`, optional `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`,
@@ -476,7 +510,7 @@ kit brainstorm my-feature --prompt-only
 # opt out of default editor mode and use inline multiline entry
 kit brainstorm my-feature --inline
 
-# write the generated /plan prompt to a file
+# write the generated brainstorm prompt to a file
 kit brainstorm my-feature --output tmp/brainstorm-prompt.md
 
 # list deferred backlog items

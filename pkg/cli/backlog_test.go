@@ -223,7 +223,7 @@ same
 	if err != nil {
 		t.Fatalf("ReadFile(%q) error = %v", outputPath, err)
 	}
-	if !strings.HasPrefix(string(prompt), "/plan\n\n") {
+	if !strings.HasPrefix(string(prompt), "Research and document feature: **legacy-endpoint-refactor**\n\n") {
 		t.Fatalf("expected brainstorm pickup prompt, got %q", string(prompt))
 	}
 }

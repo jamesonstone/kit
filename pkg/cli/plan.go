@@ -418,13 +418,13 @@ func buildStandardPlanPrompt(
   - test types, not test code`)
 		doc.Heading(2, "Rules")
 		doc.BulletList(
+			docsOnlyWorkflowRule("PLAN.md and supporting documentation"),
 			"focus on HOW, not WHAT",
 			"use BRAINSTORM.md as research context only; SPEC.md remains the binding contract",
 			"do not restate requirements",
 			"do not introduce new scope beyond SPEC.md",
 			"canonical front matter `references` must be current before sign-off and must keep exact targets and stable selectors for external design inputs",
 			"do not write tasks",
-			"avoid code unless strictly necessary",
 			"keep language dense and factual",
 			"Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off",
 			"ensure plan respects constraints defined in CONSTITUTION.md",
@@ -501,6 +501,7 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 		))
 		doc.Heading(2, "Rules")
 		doc.BulletList(
+			docsOnlyWorkflowRule("PLAN.md and supporting documentation"),
 			"focus on HOW, not WHAT (SPEC covers WHAT)",
 			"use BRAINSTORM.md as research context only; SPEC.md remains the binding contract",
 			"do not restate requirements verbatim",

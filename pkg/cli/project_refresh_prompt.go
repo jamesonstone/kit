@@ -32,12 +32,11 @@ func buildProjectRefreshPrompt(projectRoot string, cfg *config.Config) string {
 	}
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Raw("/plan")
 		doc.Heading(2, "Project Refresh")
 		doc.Paragraph(fmt.Sprintf("Refresh durable project-level documentation for the Kit project at %s.", projectRoot))
 		doc.Paragraph("Rules:")
 		doc.BulletList(
-			"docs only; do not change product code, tests, runtime config, or generated artifacts unless the user separately asks",
+			docsOnlyWorkflowRule("project-level documentation"),
 			"this is semantic project refresh, not re-initialization; do not rerun `kit init` as the fix",
 			"use `kit reconcile --all` for structural Kit contract drift instead of duplicating that audit manually",
 			"preserve existing project wording when it remains accurate",

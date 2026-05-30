@@ -51,7 +51,7 @@ func TestRunPromptWithOptions_DirectCodingAgentBuiltIns(t *testing.T) {
 		rejectOne string
 	}{
 		{verb: "short", wantText: "Clarify before implementing.", rejectOne: "pbcopy"},
-		{verb: "long", wantText: "Stay in planning and information-gathering mode.", rejectOne: "osascript"},
+		{verb: "long", wantText: "Stay in clarification and information-gathering workflow.", rejectOne: "osascript"},
 		{verb: "instructions", wantText: "Output a concise, comprehensive set of coding agent instructions.", rejectOne: "old_clipboard"},
 	}
 
@@ -180,7 +180,7 @@ func TestRunPromptWithOptions_SelectsNounAndVerbDeterministically(t *testing.T) 
 		"[1] coding-agent",
 		"Select a prompt verb for coding-agent:",
 		"[3] short",
-		"Short planning-mode clarification prompt.",
+		"Short clarification-before-implementation prompt.",
 		"Command: coding-agent short",
 	}
 	for _, check := range checks {

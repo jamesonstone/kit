@@ -137,7 +137,7 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 	frontendProfileActive := effectivePromptProfile(filepath.Dir(brainstormPath)) == promptProfileFrontend
 
 	taskSteps := []string{
-		"Stay in planning and information-gathering mode only",
+		"Stay in research and information-gathering workflow only",
 		"Do NOT implement code, write production changes, or move into execution",
 		"Read CONSTITUTION.md first to understand project constraints and workflow rules",
 		"Read the current BRAINSTORM.md template and treat it as the source of truth for this research phase",
@@ -201,7 +201,7 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 	taskSteps = append(taskSteps,
 		"Keep every finding filepath-specific whenever possible",
 		fmt.Sprintf(
-			"If you create a tentative plan in chat, fold the durable conclusions back into %s so the file stays current",
+			"If you create a tentative approach in chat, fold the durable conclusions back into %s so the file stays current",
 			brainstormPath,
 		),
 		fmt.Sprintf(
@@ -221,8 +221,7 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 	contextRows = append(contextRows, []string{"Project Root", projectRoot})
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Raw("/plan")
-		doc.Paragraph(fmt.Sprintf("You are in planning mode for feature: **%s**", featureSlug))
+		doc.Paragraph(fmt.Sprintf("Research and document feature: **%s**", featureSlug))
 		doc.Paragraph("You MUST update the brainstorm file at:")
 		doc.BulletList(
 			fmt.Sprintf("**BRAINSTORM**: %s", brainstormPath),
@@ -255,7 +254,8 @@ func buildBrainstormPrompt(brainstormPath, featureSlug, projectRoot, thesis stri
 		)
 		doc.Heading(2, "Rules")
 		doc.BulletList(
-			"planning only — no implementation",
+			docsOnlyWorkflowRule("BRAINSTORM.md and supporting documentation"),
+			"research and documentation only; no implementation",
 			"no build or execution work intended to advance code changes",
 			"the purpose of this phase is understanding, not code output",
 			"use numbered lists for clarifying questions and progress updates",

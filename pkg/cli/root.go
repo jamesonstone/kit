@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -33,7 +34,28 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		var silentErr *silentCLIError
+		if !errors.As(err, &silentErr) {
+			fmt.Fprintln(os.Stderr, err)
+		}
 		os.Exit(1)
 	}
+}
+
+type silentCLIError struct {
+	err error
+}
+
+func (e *silentCLIError) Error() string {
+	if e == nil || e.err == nil {
+		return ""
+	}
+	return e.err.Error()
+}
+
+func (e *silentCLIError) Unwrap() error {
+	if e == nil {
+		return nil
+	}
+	return e.err
 }

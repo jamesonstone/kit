@@ -161,6 +161,7 @@ func TestInstructionTemplatesIncludeDocAndExportHygiene(t *testing.T) {
 			"Always update affected documentation",
 			"unused exports",
 			"reduce its visibility",
+			"attached pasted-text file",
 		},
 	}
 
@@ -182,10 +183,14 @@ func TestDefaultInstructionTemplatesGlossRLMAndCopilotFallback(t *testing.T) {
 		if !strings.Contains(content, "just-in-time context loading") {
 			t.Fatalf("expected %s to route to RLM guidance on first use", name)
 		}
+		if !strings.Contains(content, "attached pasted-text file") {
+			t.Fatalf("expected %s to include pasted-text attachment guidance", name)
+		}
 	}
 
 	copilotChecks := []string{
 		"Use `docs/agents/RLM.md` when full-context loading would be noisy or wasteful",
+		"attached pasted-text file",
 		"## Runtime Routing",
 		"## Non-Negotiable Rules",
 		"Repo-local docs under `docs/` are the source of truth",

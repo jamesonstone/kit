@@ -169,6 +169,7 @@ func buildSpecTemplatePrompt(
 		)
 		doc.Heading(2, "Rules")
 		doc.BulletList(
+			docsOnlyWorkflowRule("SPEC.md and supporting documentation"),
 			"Keep language precise",
 			"Avoid implementation details (focus on WHAT, not HOW)",
 			"canonical front matter `skills` is mandatory when front matter exists; use the legacy ## SKILLS table only when front matter is absent",

@@ -230,6 +230,7 @@ func buildTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Con
 	steps = append(steps,
 		fmt.Sprintf("Read SPEC.md (file: %s) and PLAN.md (file: %s) fully and treat them as fixed inputs", specPath, planPath),
 		fmt.Sprintf("Review the TASKS.md (file: %s) template and required sections", tasksPath),
+		fmt.Sprintf("Update TASKS.md directly at %s; do not leave the task breakdown only in chat", tasksPath),
 		"Derive an atomic, ordered task list that can be executed without ambiguity",
 		"Identify missing decisions that block task generation",
 	)
@@ -299,13 +300,13 @@ F) PLAN LINKS (OPTIONAL)
 - Include in task descriptions to trace back to plan requirements`)
 		doc.Heading(2, "Rules")
 		doc.BulletList(
+			docsOnlyWorkflowRule("TASKS.md and supporting documentation"),
 			"focus on executable steps, not prose",
 			"use BRAINSTORM.md as research context only; SPEC.md and PLAN.md remain the binding inputs",
 			"do not invent new requirements or scope beyond SPEC.md",
 			"tasks must map back to PLAN items via section anchors",
 			"tasks must imply an unambiguous implementation order",
 			"Tasks gate: each task must include an explicit done-condition and required evidence artifact(s) before sign-off",
-			"avoid code unless strictly necessary",
 			"keep language dense and factual",
 			"ensure tasks respect constraints defined in CONSTITUTION.md",
 			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",

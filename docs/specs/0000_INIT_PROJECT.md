@@ -382,6 +382,14 @@ specs_dir: docs/specs
 skills_dir: .agents/skills
 constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false # if true, kit plan/tasks create missing prerequisites
+loop:
+  min_confidence: 95
+  max_iterations: 20
+  agent:
+    command: your-agent
+    args:
+      - run
+      - --stdin
 instruction_scaffold_version: 2
 feature_state:
   0001-feat-name:
@@ -594,6 +602,30 @@ Prerequisites:
 Flags:
 
 - `--force` — create empty `SPEC.md` and `PLAN.md` with headers if missing
+
+---
+
+#### `kit loop [feature]`
+
+- run the remaining spec-driven workflow through a configured local agent
+- keep `kit spec`, `kit plan`, `kit tasks`, `kit implement`, and `kit reflect`
+  as prompt/artifact builders rather than direct agent runners
+- resolve the next strict stage from canonical docs, not file existence alone
+- require each agent turn to end with `KIT_LOOP_RESULT` JSON containing stage,
+  status, confidence, and blockers
+- stop on nonzero agent exit, low confidence, blockers, malformed loop result,
+  failed strict doc validation, failed verification evidence, or max iterations
+- write local loop evidence under `.kit/loops/<run-id>/`
+- without a feature argument, use the active feature; fail if no active feature exists
+
+Flags:
+
+- `--dry-run` — show the next loop action without invoking the configured agent
+- `--until <stage>` — run until `spec`, `plan`, `tasks`, `implement`,
+  `reflect`, or `complete` is complete
+- `--min-confidence <0-100>` — override `loop.min_confidence`
+- `--max-iterations <n>` — override `loop.max_iterations`
+- `--json` — output the loop report as JSON
 
 ---
 

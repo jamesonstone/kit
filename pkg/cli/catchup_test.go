@@ -36,7 +36,6 @@ func TestBuildCatchupPrompt(t *testing.T) {
 	prompt := buildCatchupPrompt(feat, status, projectRoot)
 
 	checks := []string{
-		"/plan",
 		"Catch up on feature: catchup-command",
 		"Active feature: 0007-catchup-command",
 		"Current phase: reflect",
@@ -52,9 +51,9 @@ func TestBuildCatchupPrompt(t *testing.T) {
 		"SPEC.md",
 		"PLAN.md",
 		"TASKS.md",
-		"Stay in plan mode",
+		"Stay in repository catch-up and clarification workflow",
 		"Start by asking clarifying questions",
-		"Do NOT switch from catch-up/planning into implementation until the user explicitly approves that move",
+		"Do NOT switch from catch-up or clarification into implementation until the user explicitly approves that move",
 		"`kit summarize catchup-command`",
 		"do not duplicate the full `kit handoff` workflow",
 		"do not output implementation instructions like `kit implement` unless the user explicitly asks to proceed",
@@ -66,8 +65,11 @@ func TestBuildCatchupPrompt(t *testing.T) {
 		}
 	}
 
-	if !strings.HasPrefix(prompt, "/plan\n\nCatch up on feature: catchup-command\n\n") {
-		t.Fatalf("expected prompt to start with /plan catchup header, got %q", prompt[:48])
+	if !strings.HasPrefix(prompt, "Catch up on feature: catchup-command\n\n") {
+		t.Fatalf("expected prompt to start with catchup header, got %q", prompt[:48])
+	}
+	if strings.Contains(prompt, "/plan") || strings.Contains(prompt, "plan mode") {
+		t.Fatalf("expected prompt to avoid native plan-mode triggers, got %q", prompt)
 	}
 }
 

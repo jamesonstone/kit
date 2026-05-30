@@ -17,6 +17,53 @@ func TestDefaultIncludesAllRepositoryInstructionFiles(t *testing.T) {
 	}
 }
 
+func TestDefaultIncludesLoopPolicy(t *testing.T) {
+	cfg := Default()
+
+	if cfg.Loop.MinConfidence != 95 {
+		t.Fatalf("Loop.MinConfidence = %d, want 95", cfg.Loop.MinConfidence)
+	}
+	if cfg.Loop.MaxIterations != 20 {
+		t.Fatalf("Loop.MaxIterations = %d, want 20", cfg.Loop.MaxIterations)
+	}
+}
+
+func TestLoadParsesLoopConfig(t *testing.T) {
+	projectRoot := t.TempDir()
+	configPath := filepath.Join(projectRoot, ConfigFileName)
+	if err := os.WriteFile(configPath, []byte(`
+loop:
+  min_confidence: 91
+  max_iterations: 7
+  agent:
+    command: codex
+    args:
+      - run
+      - --stdin
+`), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	cfg, err := Load(projectRoot)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.Loop.MinConfidence != 91 {
+		t.Fatalf("Loop.MinConfidence = %d, want 91", cfg.Loop.MinConfidence)
+	}
+	if cfg.Loop.MaxIterations != 7 {
+		t.Fatalf("Loop.MaxIterations = %d, want 7", cfg.Loop.MaxIterations)
+	}
+	if cfg.Loop.Agent.Command != "codex" {
+		t.Fatalf("Loop.Agent.Command = %q, want codex", cfg.Loop.Agent.Command)
+	}
+	wantArgs := []string{"run", "--stdin"}
+	if !reflect.DeepEqual(cfg.Loop.Agent.Args, wantArgs) {
+		t.Fatalf("Loop.Agent.Args = %v, want %v", cfg.Loop.Agent.Args, wantArgs)
+	}
+}
+
 func TestLoadAllowsMissingPrompts(t *testing.T) {
 	projectRoot := t.TempDir()
 	configPath := filepath.Join(projectRoot, ConfigFileName)

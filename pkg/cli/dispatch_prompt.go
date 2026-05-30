@@ -14,7 +14,6 @@ func buildDispatchPrompt(
 	inputSource dispatchInputSource,
 ) string {
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Raw("/plan")
 		doc.Paragraph("Prepare a subagent dispatch plan for the following task set.")
 		doc.Heading(2, "Dispatch Context")
 		doc.BulletList(
@@ -26,7 +25,7 @@ func buildDispatchPrompt(
 		doc.Raw(renderDispatchTasks(tasks))
 		doc.Heading(2, "Your Task")
 		doc.OrderedList(1,
-			"Stay in planning and discovery mode first",
+			"Stay in discovery and assignment-design workflow first",
 			"Do NOT launch any subagents yet",
 			"Inspect the repository and anticipate which files are likely to change for each normalized task before assigning work",
 			"Build a predicted touched-file set for each task",

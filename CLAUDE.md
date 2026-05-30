@@ -6,6 +6,11 @@
 - Start at `docs/agents/README.md`, then load only the docs needed for the current decision
 - Repo-local markdown under `docs/` is the system of record
 
+## Pasted Text Attachments
+
+- If the user message includes an attached pasted-text file and the visible message is empty or minimal, treat the attachment as the active task instructions unless the user says otherwise
+- If the attachment appears Kit-generated, follow it directly without asking what the attachment is for
+
 ## Runtime Routing
 
 - `docs/agents/README.md` — classify the task and choose the next document

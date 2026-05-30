@@ -65,6 +65,7 @@ func subagentPromptSuffix() string {
 	return strings.Join([]string{
 		"## Subagent Orchestration",
 		"- preserve the command-specific rules above; this section adds routing guidance and does not relax phase, scope, or safety constraints",
+		"- when command-specific rules limit the phase to documentation, execution means documentation edits only; do not modify product code, tests, runtime config, generated artifacts, or implementation files",
 		"- drive to understanding first: read the available context, identify uncertainties, and confirm scope before proposing or executing changes",
 		"- when full-context loading would be noisy or wasteful, do RLM-style discovery first: identify the immediate decision, load the smallest relevant artifact, and stop once the decision is supported",
 		"- then drive task orchestration coordination: turn the work into explicit workstreams and manage them centrally",

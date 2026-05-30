@@ -27,9 +27,9 @@ var (
 
 var brainstormCmd = &cobra.Command{
 	Use:   "brainstorm [feature]",
-	Short: "Create or update BRAINSTORM.md and output a planning prompt",
+	Short: "Create or update BRAINSTORM.md and output a research prompt",
 	Long: `Create or update a feature's BRAINSTORM.md document and output a
-planning-only prompt for a coding agent.
+research and documentation prompt for a coding agent.
 
 Creates:
 	- Feature directory (e.g., docs/specs/0001-my-feature/)
@@ -40,8 +40,8 @@ Interactive flow:
 	1. Ask for a feature/project name (unless provided as an argument)
 	2. Open $EDITOR for the multiline issue/feature thesis by default, falling back to a vim-compatible editor when $EDITOR is unset
 
-The command never implements code. It outputs a /plan prompt that instructs
-the coding agent to research the codebase, use numbered lists for clarifying
+The command never implements code. It outputs a prompt that instructs the
+coding agent to research the codebase, use numbered lists for clarifying
 questions, show percentage progress, and persist findings to BRAINSTORM.md.
 
 Examples:

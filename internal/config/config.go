@@ -25,12 +25,24 @@ type Config struct {
 	SkillsDir                  string                           `yaml:"skills_dir"`
 	ConstitutionPath           string                           `yaml:"constitution_path"`
 	AllowOutOfOrder            bool                             `yaml:"allow_out_of_order"`
+	Loop                       LoopConfig                       `yaml:"loop,omitempty"`
 	Agents                     []string                         `yaml:"agents"`
 	InstructionScaffoldVersion int                              `yaml:"instruction_scaffold_version"`
 	FeatureNaming              FeatureNaming                    `yaml:"feature_naming"`
 	FeatureState               map[string]FeatureLifecycleState `yaml:"feature_state,omitempty"`
 	RemovedFeatures            []RemovedFeature                 `yaml:"removed_features,omitempty"`
 	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
+}
+
+type LoopConfig struct {
+	MinConfidence int             `yaml:"min_confidence,omitempty"`
+	MaxIterations int             `yaml:"max_iterations,omitempty"`
+	Agent         LoopAgentConfig `yaml:"agent,omitempty"`
+}
+
+type LoopAgentConfig struct {
+	Command string   `yaml:"command,omitempty"`
+	Args    []string `yaml:"args,omitempty"`
 }
 
 type FeatureLifecycleState struct {
@@ -58,7 +70,11 @@ func Default() *Config {
 		SkillsDir:        ".agents/skills",
 		ConstitutionPath: "docs/CONSTITUTION.md",
 		AllowOutOfOrder:  false,
-		Agents:           []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
+		Loop: LoopConfig{
+			MinConfidence: 95,
+			MaxIterations: 20,
+		},
+		Agents: []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
 		FeatureNaming: FeatureNaming{
 			NumericWidth: 4,
 			Separator:    "-",

@@ -94,9 +94,8 @@ func TestBuildProjectRefreshPrompt(t *testing.T) {
 	prompt := buildProjectRefreshPrompt(projectRoot, defaultInitConfig())
 
 	checks := []string{
-		"/plan",
 		"## Project Refresh",
-		"docs only; do not change product code",
+		"Only update project-level documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
 		"docs/CONSTITUTION.md",
 		"kit reconcile --all",
 		"kit rollup",
@@ -110,5 +109,8 @@ func TestBuildProjectRefreshPrompt(t *testing.T) {
 		if !strings.Contains(prompt, check) {
 			t.Fatalf("expected project refresh prompt to contain %q, got %q", check, prompt)
 		}
+	}
+	if strings.Contains(prompt, "/plan") {
+		t.Fatalf("expected project refresh prompt to avoid native plan-mode triggers, got %q", prompt)
 	}
 }

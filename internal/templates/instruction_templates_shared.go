@@ -11,6 +11,11 @@ const sharedRepositoryInstructionsCore = `## Source of truth
   - ` + "`ANALYSIS.md`" + ` (optional, analysis scratchpad)
 - Keep repository instruction files aligned with the canonical docs: ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, ` + "`.github/copilot-instructions.md`" + `
 
+## Pasted Text Attachments
+
+- If the user message includes an attached pasted-text file and the visible message is empty or minimal, treat the attachment as the active task instructions unless the user says otherwise
+- If the attachment appears Kit-generated, follow it directly without asking what the attachment is for
+
 ---
 
 ## Change Classification (Required First Step)

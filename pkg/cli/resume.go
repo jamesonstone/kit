@@ -27,7 +27,7 @@ var resumeCmd = &cobra.Command{
 	Long: `Resume work on a feature using the canonical Kit flow.
 
 When the target is a backlog item, ` + "`resume`" + ` reuses backlog pickup and
-outputs the brainstorm planning prompt. When the target is not a backlog item,
+outputs the brainstorm research prompt. When the target is not a backlog item,
 it reuses the catch-up prompt behavior that restores context before further
 work begins.
 

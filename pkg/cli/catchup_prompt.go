@@ -63,7 +63,7 @@ func buildCatchupPrompt(
 	}
 
 	steps := []string{
-		"Stay in plan mode for this catch-up step",
+		"Stay in repository catch-up and clarification workflow for this step",
 		"Do NOT implement code, edit files, or begin execution yet",
 	}
 	if repoAgentsPath != "" {
@@ -79,9 +79,9 @@ func buildCatchupPrompt(
 		"Reconstruct the current stage and state of the feature from the repository artifacts before making any recommendations",
 		"Start by asking clarifying questions in a short numbered batch",
 		"For each question, include your current best recommendation, assumption, or default",
-		fmt.Sprintf("Use the standard batch-approval syntax for planning questions: %s", approvalSyntaxSummary),
-		"Ask explicitly whether the user wants to continue planning, validate the current state, or move into implementation",
-		"Do NOT switch from catch-up/planning into implementation until the user explicitly approves that move",
+		fmt.Sprintf("Use the standard batch-approval syntax for clarification questions: %s", approvalSyntaxSummary),
+		"Ask explicitly whether the user wants to continue clarification, validate the current state, or move into implementation",
+		"Do NOT switch from catch-up or clarification into implementation until the user explicitly approves that move",
 		fmt.Sprintf("If conversation context is missing, you may optionally ask the user to provide a prior summary or use `kit summarize %s`, but treat repository documents and current code as the primary source of truth", feat.Slug),
 	)
 
@@ -98,7 +98,6 @@ func buildCatchupPrompt(
 	}
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Raw("/plan")
 		doc.Paragraph(fmt.Sprintf("Catch up on feature: %s", feat.Slug))
 		doc.Heading(2, "Current Stage And State")
 		doc.BulletList(

@@ -18,7 +18,7 @@ var (
 
 var dispatchCmd = &cobra.Command{
 	Use:   "dispatch",
-	Short: "Output a subagent dispatch-planning prompt",
+	Short: "Output a subagent dispatch dry-run prompt",
 	Long: `Output a prompt that tells a coding agent how to discover file overlap
 across a task set, cluster related work, and queue subagents safely.
 

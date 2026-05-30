@@ -64,6 +64,7 @@ func TestPreparePromptWithFrontendProfileOrdersSuffixes(t *testing.T) {
 		"## Skills",
 		"## Frontend Profile",
 		"## Subagent Orchestration",
+		"execution means documentation edits only",
 		"Use RLM-style context loading first",
 		"Inspect existing frontend architecture",
 		"product domain and audience",

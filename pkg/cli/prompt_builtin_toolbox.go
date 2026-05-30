@@ -11,12 +11,12 @@ func builtInToolboxPromptSource() promptlib.Source {
 		Prompts: []promptlib.Prompt{
 			{
 				Identity:    promptlib.Identity{Noun: "coding-agent", Verb: "short"},
-				Description: "Short planning-mode clarification prompt.",
+				Description: "Short clarification-before-implementation prompt.",
 				Content:     codingAgentShortPrompt,
 			},
 			{
 				Identity:    promptlib.Identity{Noun: "coding-agent", Verb: "long"},
-				Description: "Detailed planning-mode clarification prompt.",
+				Description: "Detailed clarification-before-implementation prompt.",
 				Content:     codingAgentLongPrompt,
 			},
 			{
@@ -28,9 +28,9 @@ func builtInToolboxPromptSource() promptlib.Source {
 	}
 }
 
-const codingAgentShortPrompt = "Clarify before implementing. Stay in planning mode. Ask numbered questions with defaults, assumptions, and uncertainty until >=95% confidence and 0 unresolved. Accept y/n shorthand. Report confidence each batch."
+const codingAgentShortPrompt = "Clarify before implementing. Do not edit files or make production changes yet. Ask numbered questions with defaults, assumptions, and uncertainty until >=95% confidence and 0 unresolved. Accept y/n shorthand. Report confidence each batch."
 
-const codingAgentLongPrompt = `Stay in planning and information-gathering mode. Do not implement code or make production changes yet.
+const codingAgentLongPrompt = `Stay in clarification and information-gathering workflow. Do not implement code or make production changes yet.
 
 Ask clarifying questions until you have >=95% confidence in the problem, requirements, constraints, edge cases, and solution approach. Do not assume missing details.
 

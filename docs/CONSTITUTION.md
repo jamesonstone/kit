@@ -41,7 +41,7 @@ all decisions.
 - Prefer explicit over implicit behavior.
 - No hidden databases, lock files, or external state.
 - All state lives in the filesystem (markdown files + `.kit.yaml` + visible generated `.kit/` artifacts).
-- Markdown remains authoritative; `.kit/runs/` and `.kit/state.json` are local generated evidence/state surfaces that can be regenerated or deleted.
+- Markdown remains authoritative; `.kit/runs/`, `.kit/loops/`, and `.kit/state.json` are local generated evidence/state surfaces that can be regenerated or deleted.
 - Commands fail fast with actionable error messages.
 
 ### 5. Opinionated Defaults, Configurable Escapes
@@ -253,6 +253,7 @@ The ordered sequence of documents that drive development:
 
 6. **Implementation** — Code execution. Outside Kit's core scope.
    - `kit implement` begins with an implementation readiness gate before code execution starts.
+   - `kit loop` may invoke a configured local agent command as a supervisor around the existing workflow prompts, but the canonical source of truth remains the Markdown artifact pipeline.
 
 7. **Reflection** — Verify correctness, refine understanding. Loops back to specification if needed.
 
@@ -501,6 +502,15 @@ constitution_path: docs/CONSTITUTION.md
 
 # If true, kit plan/tasks create missing prerequisites
 allow_out_of_order: false
+# Autonomous workflow loop policy and local agent command
+loop:
+  min_confidence: 95
+  max_iterations: 20
+  agent:
+    command: your-agent
+    args:
+      - run
+      - --stdin
 # Repository instruction scaffold model
 instruction_scaffold_version: 2
 
