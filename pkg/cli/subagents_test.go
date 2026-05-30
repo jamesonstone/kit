@@ -53,8 +53,8 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 		"do not turn broad discovery into parallel execution",
 		"predict likely touched files or interfaces",
 		"apply the same discovery-first discipline as kit dispatch",
-		"git worktree add ~/worktrees/<repo>-<branch> <branch>",
-		"keep all worktrees flat under `~/worktrees/`",
+		"keep all subagent work in the existing project directory",
+		"do not create or use git worktrees",
 	}
 
 	for _, check := range checks {

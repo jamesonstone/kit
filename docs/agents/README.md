@@ -11,7 +11,7 @@
 - `WORKFLOWS.md` → classify spec-driven vs ad hoc work and resolve source-of-truth order
 - `GUARDRAILS.md` → completion, safety, validation, and hard rules
 - `RLM.md` → context routing and progressive disclosure
-- `TOOLING.md` → skills, dispatch, worktrees, and secondary inputs
+- `TOOLING.md` → skills, dispatch, project-directory workflow, and secondary inputs
 - `docs/references/*` → durable reference material only when relevant
 - `docs/references/rules/*` → durable rulesets only when linked from feature references or directly relevant
 - `docs/specs/<feature>/*` → active feature artifacts only

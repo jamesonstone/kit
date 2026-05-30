@@ -13,7 +13,7 @@ func tocRepositoryInstructions(title string) string {
 - ` + "`docs/agents/WORKFLOWS.md`" + ` — spec-driven versus ad hoc flow
 - ` + "`docs/agents/GUARDRAILS.md`" + ` — completion, safety, and hard rules
 - ` + "`docs/agents/RLM.md`" + ` — just-in-time context loading when broad context would be noisy
-- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, worktrees, and secondary inputs
+- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary inputs
 
 ## Conditional Context
 
@@ -26,7 +26,7 @@ func tocRepositoryInstructions(title string) string {
 - ` + "`docs/agents/README.md`" + ` — runtime routing index
 - ` + "`docs/agents/WORKFLOWS.md`" + ` — work classification and source-of-truth semantics
 - ` + "`docs/agents/RLM.md`" + ` — progressive disclosure and context budget rules
-- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, worktrees, and secondary global inputs
+- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary global inputs
 - ` + "`docs/agents/GUARDRAILS.md`" + ` — completion bar, safety rules, and validation expectations
 - ` + "`docs/references/README.md`" + ` — durable repo-local references that are broader than one feature
 - ` + "`docs/specs/<feature>/`" + ` — feature-level source of truth for requirements, plans, and tasks
@@ -55,7 +55,7 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - ` + "`docs/agents/WORKFLOWS.md`" + ` — workflow and source-of-truth rules
 - ` + "`docs/agents/GUARDRAILS.md`" + ` — hard completion and safety rules
 - ` + "`docs/agents/RLM.md`" + ` — just-in-time context routing
-- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, worktrees, and secondary inputs
+- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary inputs
 
 ## Non-Negotiable Rules
 
@@ -71,7 +71,7 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - ` + "`docs/agents/README.md`" + ` — repo-local entrypoint
 - ` + "`docs/agents/WORKFLOWS.md`" + ` — work classification and execution flow
 - ` + "`docs/agents/RLM.md`" + ` — progressive-disclosure pattern for broad discovery
-- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, worktrees, and secondary globals
+- ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary globals
 - ` + "`docs/agents/GUARDRAILS.md`" + ` — hard rules and completion bar
 - ` + "`docs/references/README.md`" + ` — durable repo-local references
 - ` + "`docs/specs/<feature>/`" + ` — feature source of truth
@@ -90,7 +90,7 @@ const agentsREADME = `# Agents Docs
 - ` + "`WORKFLOWS.md`" + ` → classify spec-driven vs ad hoc work and resolve source-of-truth order
 - ` + "`GUARDRAILS.md`" + ` → completion, safety, validation, and hard rules
 - ` + "`RLM.md`" + ` → context routing and progressive disclosure
-- ` + "`TOOLING.md`" + ` → skills, dispatch, worktrees, and secondary inputs
+- ` + "`TOOLING.md`" + ` → skills, dispatch, project-directory workflow, and secondary inputs
 - ` + "`docs/references/*`" + ` → durable reference material only when relevant
 - ` + "`docs/references/rules/*`" + ` → durable rulesets only when linked from feature references or directly relevant
 - ` + "`docs/specs/<feature>/*`" + ` → active feature artifacts only
@@ -240,10 +240,11 @@ const agentsTooling = `# Tooling
 - Predict overlap conservatively before parallelizing
 - Keep the main agent responsible for synthesis, integration, validation, and communication
 
-## Worktrees
+## Project Directory
 
-- When isolated checkouts are needed, keep worktrees flat under ` + "`~/worktrees/`" + `
-- Use ` + "`git worktree add ~/worktrees/<repo>-<branch> <branch>`" + ` or ` + "`git worktree add -b <branch> ~/worktrees/<repo>-<branch> <base-ref>`" + `
+- Work in the existing project directory by default
+- Do not create or use git worktrees for agent work
+- If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
 
 ## Secondary Global Inputs
 
@@ -298,6 +299,9 @@ const referencesREADME = `# References
 - Keep long-lived background context here instead of in injected top-level instruction files
 - Link these files from feature front matter references when they materially shape work
 - Store durable rulesets under ` + "`rules/<slug>.md`" + ` and link them with ` + "`kit rules link`" + ` instead of copying rules into agent instruction files
+- Use ` + "`kit rules add`" + ` to import or activate available registry rulesets from the Kit GitHub ` + "`main`" + ` branch
+- Use ` + "`kit rules view <slug>`" + ` to preview a local or registry ruleset before importing it
+- Use ` + "`kit rules add --custom`" + ` for the interactive ` + "`$EDITOR`" + ` ruleset builder
 - ` + "`kit rule`" + ` is the singular alias for ` + "`kit rules`" + `
 
 ## Starter Files

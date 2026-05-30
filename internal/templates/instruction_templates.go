@@ -28,7 +28,7 @@ const copilotQuickRules = `## Fast rules for chat and code review
   - never mix multiple features in one ` + "`docs/specs/<feature>/`" + ` directory
   - keep ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, and ` + "`.github/copilot-instructions.md`" + ` aligned with canonical docs
   - populate every section in ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + `; replace placeholder-only sections with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + ` instead of leaving HTML TODO comments
-  - when creating a ` + "`git worktree`" + `, use the flat ` + "`~/worktrees/`" + ` root with repo-prefixed leaf directories such as ` + "`~/worktrees/<repo>-<branch>`" + `
+  - work in the existing project directory; do not create or use git worktrees for agent work
   - prefer readable, maintainable code with explicit error handling and focused functions
   - fix all lint and test failures before completion and wait for the user's output before triaging findings they report
   - do NOT run ` + "`coderabbit --prompt-only`" + `, ` + "`git add`" + `, or ` + "`git commit`" + ` without explicit approval

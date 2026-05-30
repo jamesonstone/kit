@@ -74,7 +74,8 @@ func subagentPromptSuffix() string {
 		"- when overlap or ambiguity is high, apply the same discovery-first discipline as kit dispatch and keep the queue conservative",
 		"- assign one subagent per distinct, low-overlap area; keep overlapping or ambiguous work with the same subagent",
 		"- parallelize only independent areas and serialize dependent or cross-cutting work",
-		"- when a subagent needs an isolated checkout, use `git worktree add ~/worktrees/<repo>-<branch> <branch>` or `git worktree add -b <branch> ~/worktrees/<repo>-<branch> <base-ref>` and keep all worktrees flat under `~/worktrees/`",
+		"- keep all subagent work in the existing project directory; do not create or use git worktrees",
+		"- if the current branch or dirty state is unsuitable for a subagent, stop and ask the user how to proceed instead of creating an alternate checkout",
 		"- keep the main agent responsible for synthesis, final integration, validation, and communication",
 	}, "\n")
 }

@@ -14,12 +14,12 @@
 - Predict overlap conservatively before parallelizing
 - Keep the main agent responsible for synthesis, integration, validation, and communication
 
-## Worktrees
+## Project Directory
 
-- When isolated checkouts are needed, keep worktrees flat under `~/worktrees/`
-- Use `git worktree add ~/worktrees/<repo>-<branch> <branch>` or `git worktree add -b <branch> ~/worktrees/<repo>-<branch> <base-ref>`
+- Work in the existing project directory by default.
+- Do not create or use git worktrees for agent work.
+- If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout.
 - New feature numbers should stay numeric and human-readable; do not renumber them to match dependency order
-- When Git common dir state is available, Kit reserves the next feature number from shared clone-local allocator state so sibling worktrees do not collide
 - Dependency order should come from `builds on` and `depends on` relationships, not from rewriting directory prefixes
 
 ## Secondary Global Inputs

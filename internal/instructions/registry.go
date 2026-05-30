@@ -107,7 +107,7 @@ func SupportDocs(version int) []Doc {
 		{
 			Label:        "TOOLING",
 			RelativePath: "docs/agents/TOOLING.md",
-			Use:          "skills, dispatch, worktrees, and secondary globals",
+			Use:          "skills, dispatch, project-directory workflow, and secondary globals",
 			Required:     true,
 			ManagedBy:    "kit scaffold agents",
 		},
