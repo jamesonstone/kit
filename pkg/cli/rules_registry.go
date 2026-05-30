@@ -271,6 +271,11 @@ func selectRegistryRulesetsRaw(in *os.File, out io.Writer, entries []registrySel
 			return fmt.Errorf("ruleset selection cancelled")
 		case ' ', 'x', 'X':
 			toggleRegistrySelectorEntry(&entries[cursor])
+		case 'v', 'V', '?':
+			renderRegistryRulesetPreview(out, entries[cursor])
+			if _, err := reader.ReadByte(); err != nil {
+				return fmt.Errorf("failed to read ruleset preview input: %w", err)
+			}
 		case '\r', '\n':
 			_, _ = fmt.Fprint(out, "\n")
 			return nil
@@ -322,9 +327,9 @@ func renderRegistryRulesetSelector(out io.Writer, entries []registrySelectorEntr
 	_, _ = fmt.Fprintln(out)
 	_, _ = fmt.Fprintln(out, style.muted("Registry: "+rulesetRegistrySourceDescription()))
 	if cursor >= 0 {
-		_, _ = fmt.Fprintln(out, style.muted("Use Up/Down or j/k to move, Space to toggle, Enter to apply, q to cancel."))
+		_, _ = fmt.Fprintln(out, style.muted("Use Up/Down or j/k to move, Space to toggle, v to view, Enter to apply, q to cancel."))
 	} else {
-		_, _ = fmt.Fprintln(out, style.muted("Type rule numbers to toggle active/inactive state, then press Enter to apply."))
+		_, _ = fmt.Fprintln(out, style.muted("Type rule numbers to toggle active/inactive state, then press Enter to apply. Use `kit rules view <slug>` to preview full text."))
 	}
 	_, _ = fmt.Fprintln(out)
 	for i := range entries {
@@ -341,8 +346,50 @@ func renderRegistryRulesetSelector(out io.Writer, entries []registrySelectorEntr
 		if entries[i].DesiredActive {
 			checkbox = "[x]"
 		}
-		_, _ = fmt.Fprintf(out, "%s [%d] %s %-28s %s%s\n", prefix, i+1, checkbox, entries[i].Registry.Slug, state, modified)
+		description := truncateRulesetDescription(selectorRulesetDescription(entries[i]), 88)
+		_, _ = fmt.Fprintf(out, "%s [%d] %s %-28s %s%s  %s\n", prefix, i+1, checkbox, entries[i].Registry.Slug, state, modified, description)
 	}
+}
+
+func renderRegistryRulesetPreview(out io.Writer, entry registrySelectorEntry) {
+	style := styleForWriter(out)
+	content := entry.Registry.Content
+	source := rulesetRegistryRulesetURL(entry.Registry.Slug)
+	if entry.Installed {
+		content = entry.LocalContent
+		source = rulesetTarget(entry.Registry.Slug)
+	}
+	_, _ = fmt.Fprint(out, "\x1b[H\x1b[2J")
+	_, _ = fmt.Fprintln(out, style.selectionTitle("Preview: "+entry.Registry.Slug))
+	_, _ = fmt.Fprintln(out)
+	_, _ = fmt.Fprintln(out, style.muted("Source: "+source))
+	_, _ = fmt.Fprintln(out)
+	_, _ = fmt.Fprint(out, ensureTrailingNewline(content))
+	_, _ = fmt.Fprintln(out)
+	_, _ = fmt.Fprintln(out, style.muted("Press any key to return."))
+}
+
+func selectorRulesetDescription(entry registrySelectorEntry) string {
+	if entry.Local != nil {
+		if description := strings.TrimSpace(entry.Local.Metadata.Description); description != "" {
+			return description
+		}
+	}
+	if description := strings.TrimSpace(entry.Registry.Metadata.Description); description != "" {
+		return description
+	}
+	return "No description provided."
+}
+
+func truncateRulesetDescription(description string, maxLength int) string {
+	description = strings.Join(strings.Fields(description), " ")
+	if maxLength <= 0 || len(description) <= maxLength {
+		return description
+	}
+	if maxLength <= 3 {
+		return description[:maxLength]
+	}
+	return strings.TrimSpace(description[:maxLength-3]) + "..."
 }
 
 func formatRegistrySelectorState(style humanOutputStyle, entry registrySelectorEntry) string {
@@ -455,4 +502,53 @@ func rulesetRegistrySourceDescription() string {
 		rulesetRegistryBranch,
 		rulesetDirRelPath,
 	)
+}
+
+func loadRulesetViewContent(ctx context.Context, projectRoot, slug string) (string, string, error) {
+	localPath := rulesetPath(projectRoot, slug)
+	if document.Exists(localPath) {
+		content, err := os.ReadFile(localPath)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to read %s: %w", rulesetTarget(slug), err)
+		}
+		parsed := parseRuleset(string(content), localPath)
+		if issues := validateRulesetDocument(parsed, slug); len(issues) > 0 {
+			return "", "", fmt.Errorf("local ruleset %s is invalid: %s", rulesetTarget(slug), strings.Join(issues, "; "))
+		}
+		return string(content), rulesetTarget(slug), nil
+	}
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	registry, err := rulesetRegistryFetcher(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	for _, item := range registry {
+		if item.Slug == slug {
+			return item.Content, rulesetRegistryRulesetURL(slug), nil
+		}
+	}
+	return "", "", fmt.Errorf("ruleset %q was not found locally or in the Kit registry", slug)
+}
+
+func rulesetRegistryRulesetURL(slug string) string {
+	return fmt.Sprintf(
+		"https://github.com/%s/%s/blob/%s/%s/%s.md",
+		rulesetRegistryOwner,
+		rulesetRegistryRepo,
+		rulesetRegistryBranch,
+		rulesetDirRelPath,
+		slug,
+	)
+}
+
+func ensureTrailingNewline(content string) string {
+	if strings.HasSuffix(content, "\n") {
+		return content
+	}
+	return content + "\n"
 }

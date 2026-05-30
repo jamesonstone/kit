@@ -53,7 +53,7 @@ var rulesCmd = &cobra.Command{
 	Use:     "rules",
 	Aliases: []string{"rule"},
 	Short:   "Manage durable repo-local rulesets",
-	Long: `Create, list, and link durable repo-local rulesets.
+	Long: `Import, preview, create, list, and link durable repo-local rulesets.
 
 Rulesets live under docs/references/rules/ and are loaded through feature
 front matter references. They are not inlined into always-loaded instruction
@@ -62,8 +62,8 @@ files or prompt bodies by default.`,
 
 var rulesAddCmd = &cobra.Command{
 	Use:   "add [slug]",
-	Short: "Create a durable repo-local ruleset",
-	Long: `Create a durable repo-local ruleset.
+	Short: "Import or create a durable repo-local ruleset",
+	Long: `Import or create a durable repo-local ruleset.
 
 Without a slug, opens the registry selector so users can import available
 rulesets from the Kit GitHub registry or toggle existing registry rules active
@@ -86,6 +86,13 @@ var rulesListCmd = &cobra.Command{
 	RunE:  runRulesList,
 }
 
+var rulesViewCmd = &cobra.Command{
+	Use:   "view <slug>",
+	Short: "View a local or registry ruleset before adding it",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runRulesView,
+}
+
 var rulesLinkCmd = &cobra.Command{
 	Use:   "link <feature> <slug>",
 	Short: "Link a ruleset to a feature through canonical references",
@@ -96,6 +103,7 @@ var rulesLinkCmd = &cobra.Command{
 type rulesetMetadata struct {
 	Kind              string   `yaml:"kind"`
 	Slug              string   `yaml:"slug"`
+	Description       string   `yaml:"description"`
 	Status            string   `yaml:"status"`
 	AppliesTo         []string `yaml:"applies_to"`
 	ReadPolicyDefault string   `yaml:"read_policy_default"`
@@ -133,6 +141,7 @@ func init() {
 
 	rulesCmd.AddCommand(rulesAddCmd)
 	rulesCmd.AddCommand(rulesListCmd)
+	rulesCmd.AddCommand(rulesViewCmd)
 	rulesCmd.AddCommand(rulesLinkCmd)
 	rootCmd.AddCommand(rulesCmd)
 }
@@ -251,6 +260,23 @@ func runRulesList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	return printRulesetList(cmd.OutOrStdout(), projectRoot, rulesets)
+}
+
+func runRulesView(cmd *cobra.Command, args []string) error {
+	projectRoot, err := config.FindProjectRoot()
+	if err != nil {
+		return err
+	}
+	slug := strings.TrimSpace(args[0])
+	if err := validateRulesetSlug(slug); err != nil {
+		return err
+	}
+	content, source, err := loadRulesetViewContent(cmd.Context(), projectRoot, slug)
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintf(cmd.OutOrStdout(), "Source: %s\n\n%s", source, ensureTrailingNewline(content))
+	return err
 }
 
 func runRulesLink(cmd *cobra.Command, args []string) error {

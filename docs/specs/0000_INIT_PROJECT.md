@@ -759,9 +759,12 @@ Nouns and verbs normalize to lowercase kebab-case.
   - `applies_to`
   - `read_policy_default`
 - `kit rules add` with no slug opens an interactive registry selector backed by the Kit GitHub `main` branch so users can import or activate available rulesets and toggle existing registry rules active or inactive
-- registry selector status/state text is highly visible and colorized when terminal output supports color
+- registry rulesets may include a front matter `description` field that explains the rule's function
+- registry selector status/state text is highly visible and colorized when terminal output supports color, and selector rows include the ruleset description when present
+- terminal selector mode supports viewing the highlighted rule before applying changes
 - inactive registry rules are preserved locally with `status: optional` instead of being deleted
 - locally modified rulesets are preserved; activation and deactivation change only ruleset status
+- `kit rules view <slug>` previews a local ruleset when installed, or the matching registry ruleset before importing it
 - `kit rules add --custom` runs the interactive builder, opens `$EDITOR` for rule context by default, saves the ruleset, and copies an agent optimization prompt for semantic cleanup
 - `kit rules add <slug>` creates a concise custom ruleset template non-interactively and refuses to overwrite unless `--force` is used
 - `kit rules add --custom` and `kit rules add <slug>` support `--must`, `--conditional`, `--evidence`, and `--skip` to set `read_policy_default`

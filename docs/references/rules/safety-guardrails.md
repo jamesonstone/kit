@@ -1,6 +1,7 @@
 ---
 kind: ruleset
 slug: safety-guardrails
+description: Always-on git and GitHub guardrails for recon, identity, branch protection, secrets, and failure handling.
 status: active
 applies_to:
   - git
@@ -61,6 +62,9 @@ git rev-parse --abbrev-ref HEAD
 - Do not overwrite, revert, or mix unrelated user changes.
 - If unrelated dirty files exist, leave them alone.
 - If dirty files overlap the requested work, stop and explain the conflict before editing.
+- Work in the existing project directory.
+- Do not create or use git worktrees for agent work.
+- If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout.
 
 ### Protected-Branch Detection
 
@@ -127,6 +131,7 @@ On any failure, including lint, test, push rejection, template error, auth error
 - Do not commit directly to a protected or assumed-protected branch.
 - Do not clean up a failure with destructive git commands.
 - Do not hide unrelated dirty work inside the requested change.
+- Do not create or use git worktrees for agent work.
 - Do not stage secrets, `.env` files, tokens, private keys, or machine-local config.
 - Do not proceed to lane gating before branch and repository recon is complete.
 - Do not commit when author or committer identity is missing, ambiguous, or not the human user's.

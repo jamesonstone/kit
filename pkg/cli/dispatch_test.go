@@ -28,9 +28,9 @@ func TestBuildDispatchPrompt(t *testing.T) {
 		"risks and unknowns",
 		"Wait for explicit user approval",
 		"launch at most 10 concurrent subagents",
-		"git worktree add ~/worktrees/<repo>-<branch> <branch>",
-		"keep all worktrees flat under `~/worktrees/`",
-		"do not create worktrees inside the repository tree",
+		"Keep all subagent work in the existing project directory",
+		"do not create or use git worktrees",
+		"stop and ask the user how to proceed instead of creating an alternate checkout",
 	}
 
 	for _, check := range checks {

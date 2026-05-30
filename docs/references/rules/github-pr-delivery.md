@@ -1,6 +1,7 @@
 ---
 kind: ruleset
 slug: github-pr-delivery
+description: Sequences issue, branch, commit, push, draft PR, and post-PR checks after PR workflow consent.
 status: active
 applies_to:
   - git
@@ -95,6 +96,8 @@ Include:
 - Branch name is the GitHub issue number only, exact form: `GH-123`.
 - Do not add a slug, suffix, or description.
 - Create from the correct protected base branch; never commit directly to base.
+- Create or switch branches in the existing project directory.
+- Do not create or use git worktrees for PR delivery.
 - Confirm checkout before editing:
 
 ```bash
@@ -218,6 +221,7 @@ Include:
 - Do not create duplicate issues or PRs.
 - Do not create descriptive branch names when an issue number is available.
 - Do not commit to the protected base branch.
+- Do not create or use git worktrees for PR delivery.
 - Do not reuse a branch that contains unrelated work.
 - Do not stage files in bulk.
 - Do not commit with mixed type and gitmoji values.

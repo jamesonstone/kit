@@ -261,6 +261,75 @@ func TestRunRulesAddRegistrySelectorImportsMissingRuleset(t *testing.T) {
 	}
 }
 
+func TestRunRulesAddRegistrySelectorShowsRulesetDescription(t *testing.T) {
+	projectRoot := setupRulesProject(t)
+	setWorkingDirectory(t, projectRoot)
+	resetRulesFlags(t)
+	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+
+	output := withStdin(t, "\n", func() string {
+		return captureStdout(t, func() {
+			if err := runRulesAdd(&cobra.Command{}, nil); err != nil {
+				t.Fatalf("runRulesAdd() error = %v", err)
+			}
+		})
+	})
+
+	if !strings.Contains(output, "Description for safety-guardrails") {
+		t.Fatalf("expected selector output to include ruleset description, got:\n%s", output)
+	}
+}
+
+func TestRunRulesViewShowsRegistryRulesetBeforeImport(t *testing.T) {
+	projectRoot := setupRulesProject(t)
+	setWorkingDirectory(t, projectRoot)
+	resetRulesFlags(t)
+	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+
+	var out bytes.Buffer
+	cmd := &cobra.Command{}
+	cmd.SetOut(&out)
+	if err := runRulesView(cmd, []string{"safety-guardrails"}); err != nil {
+		t.Fatalf("runRulesView() error = %v", err)
+	}
+
+	for _, check := range []string{
+		"Source: https://github.com/jamesonstone/kit/blob/main/docs/references/rules/safety-guardrails.md",
+		"description: 'Description for safety-guardrails'",
+		"# Ruleset: safety-guardrails",
+	} {
+		if !strings.Contains(out.String(), check) {
+			t.Fatalf("expected view output to contain %q, got:\n%s", check, out.String())
+		}
+	}
+}
+
+func TestRunRulesViewPrefersLocalRuleset(t *testing.T) {
+	projectRoot := setupRulesProject(t)
+	setWorkingDirectory(t, projectRoot)
+	resetRulesFlags(t)
+	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+	local := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
+	local.Content = strings.Replace(local.Content, "Description for safety-guardrails", "Local description", 1)
+	writeFile(t, filepath.Join(projectRoot, "docs", "references", "rules", "safety-guardrails.md"), local.Content)
+
+	var out bytes.Buffer
+	cmd := &cobra.Command{}
+	cmd.SetOut(&out)
+	if err := runRulesView(cmd, []string{"safety-guardrails"}); err != nil {
+		t.Fatalf("runRulesView() error = %v", err)
+	}
+
+	for _, check := range []string{
+		"Source: docs/references/rules/safety-guardrails.md",
+		"Local description",
+	} {
+		if !strings.Contains(out.String(), check) {
+			t.Fatalf("expected local view output to contain %q, got:\n%s", check, out.String())
+		}
+	}
+}
+
 func TestRunRulesAddRegistrySelectorDeactivatesExistingRuleset(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
@@ -562,7 +631,12 @@ func stubRulesetRegistry(t *testing.T, rulesets ...registryRuleset) {
 }
 
 func registryRulesetForTest(slug string, appliesTo []string) registryRuleset {
-	content := templates.BuildRuleset(slug, appliesTo)
+	content := templates.BuildRulesetWithOptions(templates.RulesetOptions{
+		Slug:              slug,
+		Description:       "Description for " + slug,
+		AppliesTo:         appliesTo,
+		ReadPolicyDefault: "conditional",
+	})
 	parsed := parseRuleset(content, slug+".md")
 	return registryRuleset{
 		Slug:     slug,

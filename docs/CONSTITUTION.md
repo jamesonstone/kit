@@ -118,10 +118,10 @@ all decisions.
 7. **External Review Tools**
    - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 
-8. **Git Worktrees**
-   - When isolated checkouts are needed, create worktrees under `~/worktrees/`
-   - Use a flat repo-prefixed leaf path such as `~/worktrees/<repo>-<branch>`
-   - Never create worktrees inside the repository tree or nested per-project directories
+8. **Project Directory Git Workflow**
+   - Work in the existing project directory by default
+   - Do not create or use git worktrees for agent work
+   - If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
 
 ### Code Quality Constraints
 

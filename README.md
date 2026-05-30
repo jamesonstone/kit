@@ -187,7 +187,7 @@ kit rm my-feature --yes --notes
 | `kit replay <run-id>`     | Rerun commands from a prior verification run and compare outcomes                                |
 | `kit state [refresh]`     | Show or refresh generated pointer-only `.kit/state.json` for agents and tools                    |
 | `kit eval`                | Run small local harness regression checks                                                        |
-| `kit rules` / `kit rule`  | Import, create, list, and link durable repo-local rulesets under `docs/references/rules/`        |
+| `kit rules` / `kit rule`  | Import, preview, create, list, and link durable repo-local rulesets under `docs/references/rules/` |
 | `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift; supports `--migrate-verification` for advisory executable-check migration |
 
 ### 🧾 Prompt Utilities

@@ -12,7 +12,7 @@
 - `docs/agents/WORKFLOWS.md` — spec-driven versus ad hoc flow
 - `docs/agents/GUARDRAILS.md` — completion, safety, and hard rules
 - `docs/agents/RLM.md` — just-in-time context loading when broad context would be noisy
-- `docs/agents/TOOLING.md` — skills, dispatch, worktrees, and secondary inputs
+- `docs/agents/TOOLING.md` — skills, dispatch, project-directory workflow, and secondary inputs
 
 ## Conditional Context
 
@@ -25,7 +25,7 @@
 - `docs/agents/README.md` — runtime routing index
 - `docs/agents/WORKFLOWS.md` — work classification and source-of-truth semantics
 - `docs/agents/RLM.md` — progressive disclosure and context budget rules
-- `docs/agents/TOOLING.md` — skills, dispatch, worktrees, and secondary global inputs
+- `docs/agents/TOOLING.md` — skills, dispatch, project-directory workflow, and secondary global inputs
 - `docs/agents/GUARDRAILS.md` — completion bar, safety rules, and validation expectations
 - `docs/references/README.md` — durable repo-local references that are broader than one feature
 - `docs/specs/<feature>/` — feature-level source of truth for requirements, plans, and tasks

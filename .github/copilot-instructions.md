@@ -14,7 +14,7 @@
 - `docs/agents/WORKFLOWS.md` — workflow and source-of-truth rules
 - `docs/agents/GUARDRAILS.md` — hard completion and safety rules
 - `docs/agents/RLM.md` — just-in-time context routing
-- `docs/agents/TOOLING.md` — skills, dispatch, worktrees, and secondary inputs
+- `docs/agents/TOOLING.md` — skills, dispatch, project-directory workflow, and secondary inputs
 
 ## Non-Negotiable Rules
 
@@ -30,7 +30,7 @@
 - `docs/agents/README.md` — repo-local entrypoint
 - `docs/agents/WORKFLOWS.md` — work classification and execution flow
 - `docs/agents/RLM.md` — progressive-disclosure pattern for broad discovery
-- `docs/agents/TOOLING.md` — skills, dispatch, worktrees, and secondary globals
+- `docs/agents/TOOLING.md` — skills, dispatch, project-directory workflow, and secondary globals
 - `docs/agents/GUARDRAILS.md` — hard rules and completion bar
 - `docs/references/README.md` — durable repo-local references
 - `docs/specs/<feature>/` — feature source of truth

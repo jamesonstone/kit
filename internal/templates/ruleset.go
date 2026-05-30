@@ -6,6 +6,7 @@ import (
 
 type RulesetOptions struct {
 	Slug              string
+	Description       string
 	AppliesTo         []string
 	ReadPolicyDefault string
 	Context           string
@@ -31,12 +32,16 @@ func BuildRulesetWithOptions(opts RulesetOptions) string {
 	if readPolicyDefault == "" {
 		readPolicyDefault = "conditional"
 	}
+	description := strings.TrimSpace(opts.Description)
 	context := strings.TrimSpace(opts.Context)
 
 	var builder strings.Builder
 	builder.WriteString("---\n")
 	builder.WriteString("kind: ruleset\n")
 	builder.WriteString("slug: " + slug + "\n")
+	if description != "" {
+		builder.WriteString("description: '" + strings.ReplaceAll(description, "'", "''") + "'\n")
+	}
 	builder.WriteString("status: active\n")
 	builder.WriteString("applies_to:\n")
 	for _, entry := range appliesTo {

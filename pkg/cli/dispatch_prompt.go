@@ -38,7 +38,8 @@ func buildDispatchPrompt(
 			"Output a dry-run discovery report with the exact sections listed below before any subagent execution begins",
 			"Wait for explicit user approval after the dry-run report and proposed queue before launching any subagents",
 			fmt.Sprintf("After approval, launch at most %d concurrent subagents and keep queued clusters serialized behind them", maxSubagents),
-			"When a subagent needs an isolated checkout, use `git worktree add ~/worktrees/<repo>-<branch> <branch>` or `git worktree add -b <branch> ~/worktrees/<repo>-<branch> <base-ref>` and keep all worktrees flat under `~/worktrees/`",
+			"Keep all subagent work in the existing project directory; do not create or use git worktrees",
+			"If the current branch or dirty state is unsuitable for a subagent, stop and ask the user how to proceed instead of creating an alternate checkout",
 		)
 		doc.Heading(2, "Required Dry-Run Report Sections")
 		doc.BulletList(
@@ -55,7 +56,7 @@ func buildDispatchPrompt(
 			"do not invent parallelism where file overlap is unclear",
 			"tasks with overlapping predicted file changes belong to the same subagent queue",
 			"preserve the original task order inside each cluster",
-			"do not create worktrees inside the repository tree; keep them flat under `~/worktrees/`",
+			"do not create or use git worktrees for agent work",
 			"keep the dry-run report reviewable and explicit before asking for approval",
 		)
 	})

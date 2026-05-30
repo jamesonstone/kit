@@ -1,6 +1,7 @@
 ---
 kind: ruleset
 slug: work-lane-gating
+description: Gates new implementation lanes so agents do not mix unrelated work or force docs into PR workflow.
 status: active
 applies_to:
   - git
@@ -103,7 +104,7 @@ Do not gate when:
 - Do not auto-create an issue, branch, commit, push, or PR for non-implementation work.
 - Do not force docs or specs into a `GH-123` branch or PR workflow on agent initiative.
 - Do not hide tangential implementation work in the current branch.
-- Do not proceed after a gate tripwire violation by committing, pushing, resetting, rebasing, or otherwise mutating the worktree.
+- Do not proceed after a gate tripwire violation by committing, pushing, resetting, rebasing, or otherwise mutating the working tree.
 
 ## Verification
 
