@@ -334,6 +334,7 @@ The structural refresh flow for updating Kit-managed project files to the curren
 - Creates missing Kit-managed scaffold files, instruction docs, support docs, and known registry rulesets
 - Merges or appends missing Kit-managed documentation sections by default instead of overwriting project-specific content
 - Migrates old verbose repository instruction files to the v2 thin ToC/RLM model when they still match known generated templates
+- Uses `kit init --refresh --dry-run --diff` to preview managed-file changes without writing them
 - Uses `kit init --refresh --force` for generated documentation/ruleset overwrites and `kit init --refresh --file=<path> --force` for per-file scaffold overwrites such as `.envrc`
 
 ### Map

@@ -3,11 +3,13 @@ package cli
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"gopkg.in/yaml.v3"
 )
 
 const constitutionBaselineHeading = "Kit-Managed Baseline Rules"
@@ -24,6 +26,8 @@ const constitutionBaselineSection = `### ` + constitutionBaselineHeading + `
 
 type initRefreshOptions struct {
 	force      bool
+	dryRun     bool
+	diff       bool
 	files      []string
 	outputOnly bool
 }
@@ -57,7 +61,7 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 		}
 	}
 
-	cfg, err := initRefreshConfig(projectRoot, opts, targets)
+	cfg, configChange, err := initRefreshConfig(projectRoot, opts, targets)
 	if err != nil {
 		return err
 	}
@@ -67,22 +71,52 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 		return err
 	}
 
-	if !opts.outputOnly {
+	if !opts.outputOnly && !opts.dryRun {
 		fmt.Println("🔄 Refreshing Kit-managed project files...")
 	}
 
+	var changes []initRefreshFileChange
+	if configChange != nil {
+		changes = append(changes, *configChange)
+	}
+
 	var stats initRefreshStats
-	if err := refreshInitScaffoldFiles(projectRoot, opts, targets, &stats); err != nil {
+	scaffoldChanges, err := planRefreshInitScaffoldFiles(projectRoot, opts, targets)
+	if err != nil {
 		return err
 	}
-	if err := refreshInitConstitution(projectRoot, cfg, targets, &stats); err != nil {
+	changes = append(changes, scaffoldChanges...)
+	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets)
+	if err != nil {
 		return err
 	}
-	if err := refreshInitInstructionArtifacts(projectRoot, opts, cfg, targets, &stats); err != nil {
+	if constitutionChange != nil {
+		changes = append(changes, *constitutionChange)
+	}
+	instructionChanges, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
+	if err != nil {
 		return err
 	}
-	if err := refreshInitRulesets(projectRoot, opts, targets, registry, &stats); err != nil {
+	changes = append(changes, instructionChanges...)
+	rulesetChanges, err := planRefreshInitRulesets(projectRoot, opts, targets, registry)
+	if err != nil {
 		return err
+	}
+	changes = append(changes, rulesetChanges...)
+
+	if opts.dryRun {
+		for _, change := range changes {
+			stats.recordFileChange(change)
+		}
+		printInitRefreshDryRun(changes, stats, opts)
+		return nil
+	}
+
+	for _, change := range changes {
+		if err := applyInitRefreshFileChange(change); err != nil {
+			return err
+		}
+		stats.recordFileChange(change)
 	}
 
 	if !opts.outputOnly {
@@ -98,15 +132,27 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 	return nil
 }
 
-func initRefreshConfig(projectRoot string, opts initRefreshOptions, targets map[string]bool) (*config.Config, error) {
+func initRefreshConfig(
+	projectRoot string,
+	opts initRefreshOptions,
+	targets map[string]bool,
+) (*config.Config, *initRefreshFileChange, error) {
 	cfg := defaultInitConfig()
 	configSelected := initRefreshTargetMatches(targets, config.ConfigFileName)
 	shouldTouchConfig := len(targets) == 0 || configSelected
+	path := filepath.Join(projectRoot, config.ConfigFileName)
+	exists := config.Exists(projectRoot)
+	var before string
 
-	if config.Exists(projectRoot) {
+	if exists {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to read %s: %w", config.ConfigFileName, err)
+		}
+		before = string(data)
 		existing, err := config.Load(projectRoot)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load %s: %w", config.ConfigFileName, err)
+			return nil, nil, fmt.Errorf("failed to load %s: %w", config.ConfigFileName, err)
 		}
 		cfg = existing
 	}
@@ -114,28 +160,37 @@ func initRefreshConfig(projectRoot string, opts initRefreshOptions, targets map[
 	if configSelected && opts.force {
 		cfg = defaultInitConfig()
 		cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
-		if err := config.Save(projectRoot, cfg); err != nil {
-			return nil, fmt.Errorf("failed to overwrite %s: %w", config.ConfigFileName, err)
+		after, err := marshalInitRefreshConfig(cfg)
+		if err != nil {
+			return nil, nil, err
 		}
-		return cfg, nil
+		result := instructionFileCreated
+		if exists {
+			result = instructionFileUpdated
+		}
+		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, result), nil
 	}
 
 	if cfg.InstructionScaffoldVersion != config.InstructionScaffoldVersionTOC {
 		cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
 		if shouldTouchConfig {
-			if err := config.Save(projectRoot, cfg); err != nil {
-				return nil, fmt.Errorf("failed to update %s: %w", config.ConfigFileName, err)
+			after, err := marshalInitRefreshConfig(cfg)
+			if err != nil {
+				return nil, nil, err
 			}
+			return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, instructionFileUpdated), nil
 		}
 	}
 
-	if !config.Exists(projectRoot) && shouldTouchConfig {
-		if err := config.Save(projectRoot, cfg); err != nil {
-			return nil, fmt.Errorf("failed to create %s: %w", config.ConfigFileName, err)
+	if !exists && shouldTouchConfig {
+		after, err := marshalInitRefreshConfig(cfg)
+		if err != nil {
+			return nil, nil, err
 		}
+		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, instructionFileCreated), nil
 	}
 
-	return cfg, nil
+	return cfg, nil, nil
 }
 
 func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map[string]bool {
@@ -208,7 +263,11 @@ func initRefreshTargetMatches(targets map[string]bool, relativePath string) bool
 	return ok
 }
 
-func (s *initRefreshStats) recordInstructionResult(result instructionFileWriteResult) {
+func (s *initRefreshStats) recordFileChange(change initRefreshFileChange) {
+	s.recordResult(change.result)
+}
+
+func (s *initRefreshStats) recordResult(result instructionFileWriteResult) {
 	switch result {
 	case instructionFileCreated:
 		s.created++
@@ -219,4 +278,12 @@ func (s *initRefreshStats) recordInstructionResult(result instructionFileWriteRe
 	case instructionFileSkipped:
 		s.skipped++
 	}
+}
+
+func marshalInitRefreshConfig(cfg *config.Config) (string, error) {
+	data, err := yaml.Marshal(cfg)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal config: %w", err)
+	}
+	return string(data), nil
 }

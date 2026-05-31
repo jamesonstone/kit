@@ -472,6 +472,10 @@ CLI flags always override `.kit.yaml`.
 - make the first visible next step: paste the copied prompt into the agent to draft `docs/CONSTITUTION.md`
 - support `--output-only` to print the raw prompt to stdout instead of copying it
 - support `--copy` to also copy the prompt when `--output-only` is set
+- support `--refresh` as the existing-project structural refresh mode for Kit-managed files
+- support `--refresh --dry-run --diff` to print planned Kit-managed file changes without writing them
+- support `--refresh --force` for generated documentation and ruleset overwrites
+- support `--refresh --file=<path> --force` for targeted per-file scaffold overwrites
 
 ---
 
@@ -953,7 +957,7 @@ Findings:
 Verification:
 
 - run `kit check --all` for project-wide reconciliation or `kit check <feature>` for feature-scoped reconciliation
-- run `kit init` when reconcile reports init scaffold drift, then review the scaffold-file diff
+- run `kit init --refresh --dry-run --diff` when reconcile reports init scaffold drift, then apply the intended refresh with `kit init --refresh`
 - run the maintenance command `kit rollup` when reconciled changes affect
   `PROJECT_PROGRESS_SUMMARY.md`
 

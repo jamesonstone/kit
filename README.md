@@ -353,7 +353,8 @@ scaffold files such as `.envrc`, `.coderabbit.yaml`, and the pull request
 template are skipped by default. Use `kit init --refresh --force` to overwrite
 refreshable generated documentation and known registry rulesets, or
 `kit init --refresh --file=.envrc --force` to overwrite one existing
-Kit-managed file explicitly.
+Kit-managed file explicitly. Use `kit init --refresh --dry-run --diff` to
+preview the managed-file changes without writing them.
 
 ## 🗂️ Structured Engine: Artifact Pipeline
 

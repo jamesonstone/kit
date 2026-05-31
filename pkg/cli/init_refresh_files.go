@@ -11,7 +11,7 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
-func refreshInitScaffoldFiles(projectRoot string, opts initRefreshOptions, targets map[string]bool, stats *initRefreshStats) error {
+func planRefreshInitScaffoldFiles(projectRoot string, opts initRefreshOptions, targets map[string]bool) ([]initRefreshFileChange, error) {
 	files := []struct {
 		relativePath string
 		content      string
@@ -24,117 +24,126 @@ func refreshInitScaffoldFiles(projectRoot string, opts initRefreshOptions, targe
 		{relativePath: pullRequestTemplatePath, content: templates.PullRequestTemplate},
 	}
 
+	var changes []initRefreshFileChange
 	for _, file := range files {
 		if !initRefreshTargetMatches(targets, file.relativePath) {
 			continue
 		}
-		err := refreshInitScaffoldFile(projectRoot, opts, targets, file.relativePath, file.content, file.merge, stats)
+		change, err := planRefreshInitScaffoldFile(projectRoot, opts, targets, file.relativePath, file.content, file.merge)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		changes = append(changes, change)
 	}
-	return nil
+	return changes, nil
 }
 
-func refreshInitScaffoldFile(
+func planRefreshInitScaffoldFile(
 	projectRoot string,
 	opts initRefreshOptions,
 	targets map[string]bool,
 	relativePath string,
 	content string,
 	merge bool,
-	stats *initRefreshStats,
-) error {
+) (initRefreshFileChange, error) {
 	path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
 	exists := document.Exists(path)
 	explicit := len(targets) > 0
 
-	if exists && opts.force && explicit {
-		if err := document.Write(path, content); err != nil {
-			return fmt.Errorf("failed to overwrite %s: %w", relativePath, err)
-		}
-		stats.updated++
-		return nil
-	}
-	if exists && merge {
+	var before string
+	if exists {
 		data, err := os.ReadFile(path)
 		if err != nil {
-			return fmt.Errorf("failed to read %s: %w", relativePath, err)
+			return initRefreshFileChange{}, fmt.Errorf("failed to read %s: %w", relativePath, err)
 		}
-		missing := missingGitignorePatterns(string(data))
+		before = string(data)
+	}
+
+	if exists && opts.force && explicit {
+		return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileUpdated), nil
+	}
+	if exists && merge {
+		missing := missingGitignorePatterns(before)
 		if len(missing) == 0 {
-			stats.skipped++
-			return nil
+			return *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped), nil
 		}
-		if err := document.Write(path, appendGitignorePatterns(string(data), missing)); err != nil {
-			return fmt.Errorf("failed to update %s: %w", relativePath, err)
-		}
-		stats.merged++
-		return nil
+		return *newInitRefreshFileChange(
+			projectRoot,
+			relativePath,
+			before,
+			appendGitignorePatterns(before, missing),
+			instructionFileMerged,
+		), nil
 	}
 	if exists {
-		stats.skipped++
-		return nil
+		return *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped), nil
 	}
-	if err := document.Write(path, content); err != nil {
-		return fmt.Errorf("failed to create %s: %w", relativePath, err)
-	}
-	stats.created++
-	return nil
+	return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileCreated), nil
 }
 
-func refreshInitConstitution(projectRoot string, cfg *config.Config, targets map[string]bool, stats *initRefreshStats) error {
+func planRefreshInitConstitution(projectRoot string, cfg *config.Config, targets map[string]bool) (*initRefreshFileChange, error) {
 	relativePath := filepath.ToSlash(cfg.ConstitutionPath)
 	if !initRefreshTargetMatches(targets, relativePath) {
-		return nil
+		return nil, nil
 	}
 
 	path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
-	created := false
-	if !document.Exists(path) {
-		if err := document.Write(path, templates.Constitution); err != nil {
-			return fmt.Errorf("failed to create %s: %w", relativePath, err)
+	exists := document.Exists(path)
+	before := ""
+	after := templates.Constitution
+	result := instructionFileCreated
+	if exists {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", relativePath, err)
 		}
-		stats.created++
-		created = true
+		before = string(data)
+		after = before
+		result = instructionFileSkipped
+	}
+	after = mergeDocumentContent(relativePath, after, templates.Constitution, document.TypeConstitution)
+	updated, changed := upsertConstitutionBaseline(after)
+	if changed {
+		after = updated
 	}
 
-	before, err := os.ReadFile(path)
-	if err != nil {
-		return fmt.Errorf("failed to read %s: %w", relativePath, err)
+	if exists && before != after {
+		result = instructionFileMerged
 	}
-	if err := document.MergeDocument(path, templates.Constitution, document.TypeConstitution); err != nil {
-		return fmt.Errorf("failed to merge %s: %w", relativePath, err)
+	if exists && before == after {
+		result = instructionFileSkipped
 	}
-	merged, err := os.ReadFile(path)
-	if err != nil {
-		return fmt.Errorf("failed to read %s: %w", relativePath, err)
-	}
-	updated, changed := upsertConstitutionBaseline(string(merged))
-	if changed {
-		if err := document.Write(path, updated); err != nil {
-			return fmt.Errorf("failed to update %s: %w", relativePath, err)
-		}
-		stats.merged++
-		return nil
-	}
-	if string(before) != string(merged) {
-		stats.merged++
-		return nil
-	}
-	if !created {
-		stats.skipped++
-	}
-	return nil
+	return newInitRefreshFileChange(projectRoot, relativePath, before, after, result), nil
 }
 
-func refreshInitInstructionArtifacts(
+func mergeDocumentContent(path string, content string, templateContent string, docType document.DocumentType) string {
+	existing := document.Parse(content, path, docType)
+	template := document.Parse(templateContent, "", docType)
+
+	var missingSections []document.Section
+	for _, section := range template.Sections {
+		if !existing.HasSection(section.Name) {
+			missingSections = append(missingSections, section)
+		}
+	}
+	if len(missingSections) == 0 {
+		return content
+	}
+
+	merged := content
+	for _, section := range missingSections {
+		merged += fmt.Sprintf("\n\n## %s\n\n%s", section.Name, section.Content)
+	}
+	return merged
+}
+
+func planRefreshInitInstructionArtifacts(
 	projectRoot string,
 	opts initRefreshOptions,
 	cfg *config.Config,
 	targets map[string]bool,
-	stats *initRefreshStats,
-) error {
+) ([]initRefreshFileChange, error) {
+	var changes []initRefreshFileChange
 	for _, relativePath := range instructionArtifactPaths(
 		cfg,
 		instructionFileSelection{},
@@ -151,24 +160,40 @@ func refreshInitInstructionArtifacts(
 		}
 		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, config.InstructionScaffoldVersionTOC)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		result, err := applyInstructionFileWritePlan(plan)
+		change, err := initRefreshChangeFromInstructionPlan(projectRoot, plan)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		stats.recordInstructionResult(result)
+		changes = append(changes, change)
 	}
-	return nil
+	return changes, nil
 }
 
-func refreshInitRulesets(
+func initRefreshChangeFromInstructionPlan(projectRoot string, plan instructionFileWritePlan) (initRefreshFileChange, error) {
+	before := ""
+	after := plan.content
+	if document.Exists(plan.absolutePath) {
+		data, err := os.ReadFile(plan.absolutePath)
+		if err != nil {
+			return initRefreshFileChange{}, fmt.Errorf("failed to read %s: %w", plan.relativePath, err)
+		}
+		before = string(data)
+		if plan.result == instructionFileSkipped {
+			after = before
+		}
+	}
+	return *newInitRefreshFileChange(projectRoot, plan.relativePath, before, after, plan.result), nil
+}
+
+func planRefreshInitRulesets(
 	projectRoot string,
 	opts initRefreshOptions,
 	targets map[string]bool,
 	registry []registryRuleset,
-	stats *initRefreshStats,
-) error {
+) ([]initRefreshFileChange, error) {
+	var changes []initRefreshFileChange
 	for _, item := range registry {
 		relativePath := rulesetTarget(item.Slug)
 		if !initRefreshTargetMatches(targets, relativePath) {
@@ -176,20 +201,31 @@ func refreshInitRulesets(
 		}
 		path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
 		exists := document.Exists(path)
+		before := ""
+		if exists {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read %s: %w", relativePath, err)
+			}
+			before = string(data)
+		}
 		if exists && !opts.force {
-			stats.skipped++
+			changes = append(changes, *newInitRefreshFileChange(
+				projectRoot,
+				relativePath,
+				before,
+				before,
+				instructionFileSkipped,
+			))
 			continue
 		}
-		if err := document.Write(path, item.Content); err != nil {
-			return fmt.Errorf("failed to write %s: %w", relativePath, err)
-		}
+		result := instructionFileCreated
 		if exists {
-			stats.updated++
-		} else {
-			stats.created++
+			result = instructionFileUpdated
 		}
+		changes = append(changes, *newInitRefreshFileChange(projectRoot, relativePath, before, item.Content, result))
 	}
-	return nil
+	return changes, nil
 }
 
 func exactLegacyInstructionArtifact(projectRoot, relativePath string) bool {
