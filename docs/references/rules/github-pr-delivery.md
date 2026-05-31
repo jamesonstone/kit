@@ -207,6 +207,10 @@ git log -1 --format='%an <%ae> | %cn <%ce>'
 - Create the PR using `.github/pull_request_template.md` when present.
 - Preserve PR template headings.
 - Author the PR body in the user's name; do not add agent self-attribution.
+- Prefix the PR title with a descriptive gitmoji code that reflects the primary work.
+- Prefix each concrete bullet in the PR `Description` section with a descriptive gitmoji code that reflects that bullet's work.
+- Use gitmoji codes that are aligned with the work being described, such as `:sparkles:` for feature work, `:bug:` for fixes, `:memo:` for documentation, `:white_check_mark:` for tests, `:recycle:` for refactors, `:green_heart:` for CI, `:wrench:` for tooling, `:dizzy:` for refresh or migration flows, and `:notebook:` for constitution, guide, or reference updates.
+- Keep PR headings from the template unchanged; add gitmoji prefixes to title and description content, not to template headings.
 - Assign the PR to the human user.
 - Use `Closes #123` when the PR fully resolves the issue.
 - Use `Refs #123` when the PR only partially addresses the issue.
@@ -271,6 +275,7 @@ Include:
 - Confirm branch was pushed only after commit.
 - Confirm active directory, branch, remote, and PR state were rechecked immediately before pushing.
 - Confirm PR was created with the repository template when present.
+- Confirm PR title and `Description` bullets use descriptive gitmoji prefixes while preserving template headings.
 - Confirm PR assignee is the human user.
 - Confirm PR is ready for review and not draft unless explicitly requested otherwise.
 - Confirm PR and CI state were observed before final reporting.
@@ -305,6 +310,18 @@ Commit title:
 
 ```text
 docs(GH-125): :memo: document PR workflow
+```
+
+PR title and description formatting:
+
+```text
+PR Title: :sparkles: add invitation workflow
+
+## Description
+
+- :sparkles: Adds the invitation creation workflow.
+- :white_check_mark: Adds focused coverage for invitation validation.
+- :memo: Documents the operator-facing invitation behavior.
 ```
 
 Post-PR checks:
