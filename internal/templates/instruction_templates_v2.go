@@ -294,6 +294,8 @@ const agentsGuardrails = `# Guardrails
 
 - Remove dead code, unused exports, and public surfaces that are not strictly necessary
 - If a symbol is only used locally, reduce its visibility instead of keeping it exported
+- Keep implementation/source code files around 300 lines or less when splitting improves clarity
+- Do not apply the 300-line guideline to documentation files, ` + "`docs/**`" + `, ` + "`.kit/**`" + `, or ` + "`.kit.yaml`" + `
 
 ## Safety
 

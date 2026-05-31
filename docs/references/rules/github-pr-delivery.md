@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: github-pr-delivery
-description: Sequences issue, branch, commit, push, draft PR, and post-PR checks after PR workflow consent.
+description: Sequences issue, branch, commit, push, ready PR, and post-PR checks after PR workflow consent.
 status: active
 applies_to:
   - git
@@ -89,21 +89,35 @@ Include:
 - If branch `GH-123` already exists locally or remotely, inspect it before continuing.
 - Do not reuse an existing branch if it contains unrelated work.
 - If a PR already exists for `GH-123`, update it instead of duplicating.
+- Before updating an existing PR, check active PRs for the current branch and confirm the active directory, branch, remote, PR head, and PR base match the intended issue branch and repository.
 - If issue, branch, and PR state disagree, stop and summarize the mismatch.
 
 ### Branch Workflow
 
 - Branch name is the GitHub issue number only, exact form: `GH-123`.
 - Do not add a slug, suffix, or description.
-- Create from the correct protected base branch; never commit directly to base.
 - Create or switch branches in the existing project directory.
 - Do not create or use git worktrees for PR delivery.
-- Confirm checkout before editing:
+- Before branching, refresh the base from the remote. Fetch only. Never pull, merge, or checkout the base:
+
+```bash
+git fetch origin "$BASE_BRANCH"
+git rev-list --left-right --count "$BASE_BRANCH...origin/$BASE_BRANCH" 2>/dev/null || true
+```
+
+- Create the new branch from the freshly fetched remote base, never from a local copy:
 
 ```bash
 git checkout -b GH-123 origin/$BASE_BRANCH
 test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BASE_BRANCH)" || { echo "ABORT: branch base not at remote head"; exit 1; }
+gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 ```
+
+- Never commit directly to the base branch, which is protected under `safety-guardrails`.
+- If `git fetch` fails due to offline state, auth, remote errors, or any other reason, stop per `safety-guardrails` failure handling. Do not branch off a base that could not be refreshed.
+- Before editing after any thread resume or user redirect, repeat branch and PR recon for the active directory because another thread may have moved the work forward.
+- If the active branch or PR lookup does not match the intended `GH-123` branch and repository, stop and ask before editing.
 
 ### Implementation Workflow
 
@@ -176,10 +190,16 @@ Commit body must include:
 ### Push And PR Workflow
 
 ```bash
+git status --short --branch
+git remote -v
+test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 git push -u origin GH-123
 git log -1 --format='%an <%ae> | %cn <%ce>'
 ```
 
+- Immediately before pushing, confirm the active directory, current branch, upstream remote, and active PR state still match the intended issue branch and repository.
+- If an existing PR is found for `GH-123`, update that PR; do not create a duplicate.
 - Push only after committing.
 - Verify remote-side author and committer are the human user.
 - On push rejection, such as a stale base, follow `safety-guardrails` failure handling.
@@ -187,18 +207,25 @@ git log -1 --format='%an <%ae> | %cn <%ce>'
 - Create the PR using `.github/pull_request_template.md` when present.
 - Preserve PR template headings.
 - Author the PR body in the user's name; do not add agent self-attribution.
+- Prefix the PR title with a descriptive gitmoji code that reflects the primary work.
+- Prefix each concrete bullet in the PR `Description` section with a descriptive gitmoji code that reflects that bullet's work.
+- Use gitmoji codes that are aligned with the work being described, such as `:sparkles:` for feature work, `:bug:` for fixes, `:memo:` for documentation, `:white_check_mark:` for tests, `:recycle:` for refactors, `:green_heart:` for CI, `:wrench:` for tooling, `:dizzy:` for refresh or migration flows, and `:notebook:` for constitution, guide, or reference updates.
+- Keep PR headings from the template unchanged; add gitmoji prefixes to title and description content, not to template headings.
+- Assign the PR to the human user.
 - Use `Closes #123` when the PR fully resolves the issue.
 - Use `Refs #123` when the PR only partially addresses the issue.
-- Default to a draft PR unless explicitly told otherwise.
+- Create the PR ready for review, not as a draft, unless the user explicitly asks for a draft PR.
 
 ### Post-PR Verification
 
 ```bash
-gh pr view --json number,url,author,state
+gh pr view --json number,url,author,state,isDraft,assignees
 gh pr checks
 ```
 
 - Confirm GitHub shows the human user as commit author and committer.
+- Confirm the PR is assigned to the human user.
+- Confirm the PR is ready for review and not draft, unless the user explicitly asked for a draft PR.
 - Do not claim CI passed unless checks were observed passing.
 - If checks are pending, failing, unavailable, or not run, report that exact state.
 
@@ -235,14 +262,22 @@ Include:
 - Confirm base branch was discovered instead of assumed.
 - Confirm issue resolution searched existing open issues before creating a new issue.
 - Confirm branch name exactly matches the issue number in `GH-123` form.
+- Confirm `git fetch origin "$BASE_BRANCH"` refreshed the remote base before branch creation.
+- Confirm the branch was created from `origin/$BASE_BRANCH`, not local `$BASE_BRANCH`.
+- Confirm branch HEAD equals `origin/$BASE_BRANCH` immediately after branch creation.
 - Confirm checkout is on the issue-number branch before editing.
+- Confirm active PRs for the current branch were checked before editing after any thread resume or user redirect.
 - Confirm each changed file was reviewed before explicit staging.
 - Confirm no secrets or local config were staged.
 - Confirm author and committer identity were inspected before commit and are the human user.
 - Confirm staged diff was reviewed before commit.
 - Confirm commit title and body follow the required format.
 - Confirm branch was pushed only after commit.
+- Confirm active directory, branch, remote, and PR state were rechecked immediately before pushing.
 - Confirm PR was created with the repository template when present.
+- Confirm PR title and `Description` bullets use descriptive gitmoji prefixes while preserving template headings.
+- Confirm PR assignee is the human user.
+- Confirm PR is ready for review and not draft unless explicitly requested otherwise.
 - Confirm PR and CI state were observed before final reporting.
 
 ## Examples
@@ -256,8 +291,11 @@ gh issue list --state open --search "invitation workflow in:title" --json number
 Create and confirm the issue-number branch:
 
 ```bash
+git fetch origin "$BASE_BRANCH"
+git rev-list --left-right --count "$BASE_BRANCH...origin/$BASE_BRANCH" 2>/dev/null || true
 git checkout -b GH-123 origin/$BASE_BRANCH
 test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BASE_BRANCH)" || { echo "ABORT: branch base not at remote head"; exit 1; }
 ```
 
 Review, stage, and inspect:
@@ -274,9 +312,21 @@ Commit title:
 docs(GH-125): :memo: document PR workflow
 ```
 
+PR title and description formatting:
+
+```text
+PR Title: :sparkles: add invitation workflow
+
+## Description
+
+- :sparkles: Adds the invitation creation workflow.
+- :white_check_mark: Adds focused coverage for invitation validation.
+- :memo: Documents the operator-facing invitation behavior.
+```
+
 Post-PR checks:
 
 ```bash
-gh pr view --json number,url,author,state
+gh pr view --json number,url,author,state,isDraft,assignees
 gh pr checks
 ```

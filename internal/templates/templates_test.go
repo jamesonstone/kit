@@ -175,6 +175,63 @@ func TestInstructionTemplatesIncludeDocAndExportHygiene(t *testing.T) {
 	}
 }
 
+func TestInstructionTemplatesScopeCodeFileSizeGuidance(t *testing.T) {
+	legacyChecks := []string{
+		"Code file size guideline",
+		"implementation/source files around 300 lines",
+		"documentation files",
+		"`docs/**`",
+		"`.kit/**`",
+		"`.kit.yaml`",
+	}
+
+	for name, content := range map[string]string{
+		"AGENTS.md":                       LegacyAgentsMD,
+		"CLAUDE.md":                       LegacyClaudeMD,
+		".github/copilot-instructions.md": LegacyCopilotInstructionsMD,
+	} {
+		for _, check := range legacyChecks {
+			if !strings.Contains(content, check) {
+				t.Fatalf("expected %s to contain %q", name, check)
+			}
+		}
+		for _, stale := range []string{
+			"Hard file size limit: 300 lines",
+			"Keep files under 300 lines when possible",
+		} {
+			if strings.Contains(content, stale) {
+				t.Fatalf("expected %s not to contain stale unscoped guidance %q", name, stale)
+			}
+		}
+	}
+
+	guardrails := fileContentByPath(
+		InstructionSupportFiles(config.InstructionScaffoldVersionTOC),
+		"docs/agents/GUARDRAILS.md",
+	)
+	for _, check := range []string{
+		"implementation/source code files around 300 lines",
+		"documentation files, `docs/**`, `.kit/**`, or `.kit.yaml`",
+	} {
+		if !strings.Contains(guardrails, check) {
+			t.Fatalf("expected GUARDRAILS.md to contain %q", check)
+		}
+	}
+}
+
+func TestConstitutionTemplateIncludesKitManagedBaselineRules(t *testing.T) {
+	for _, check := range []string{
+		"### Kit-Managed Baseline Rules",
+		"BEGIN KIT-MANAGED BASELINE RULES",
+		"Prefer implementation/source code files around 300 lines",
+		"Do not apply the code-file size guideline to documentation files",
+	} {
+		if !strings.Contains(Constitution, check) {
+			t.Fatalf("expected Constitution template to contain %q", check)
+		}
+	}
+}
+
 func TestDefaultInstructionTemplatesGlossRLMAndCopilotFallback(t *testing.T) {
 	for name, content := range map[string]string{
 		"AGENTS.md": AgentsMD,

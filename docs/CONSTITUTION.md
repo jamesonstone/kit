@@ -142,6 +142,13 @@ all decisions.
    - Include context (file paths, feature names)
    - Fail fast — don't continue with partial state
 
+4. **Code File Size**
+   - Applies only to implementation/source code files
+   - Prefer code files around 300 lines or less when splitting improves clarity and ownership
+   - Treat the limit as guidance, not a mandate to fragment cohesive code; justify larger code files when the reason is not obvious
+   - Excluded: documentation files, all `docs/**`, all `.kit/**`, and `.kit.yaml`
+   - Do not split or rewrite docs, generated state, or Kit config artifacts solely because they exceed 300 lines
+
 ---
 
 ## CHANGE CLASSIFICATION
@@ -318,6 +325,17 @@ The semantic refresh flow for updating durable project-level truth after a repos
 - Updates `docs/CONSTITUTION.md` only when durable project-wide rules, vocabulary, constraints, or conventions changed
 - Uses `kit reconcile --all` for structural contract drift instead of duplicating reconciliation
 - Remains advisory and docs-only; it does not rerun `kit init` or block lifecycle commands
+
+### Init Refresh
+
+The structural refresh flow for updating Kit-managed project files to the current Kit defaults:
+
+- Invoked with `kit init --refresh`
+- Creates missing Kit-managed scaffold files, instruction docs, support docs, and known registry rulesets
+- Merges or appends missing Kit-managed documentation sections by default instead of overwriting project-specific content
+- Migrates old verbose repository instruction files to the v2 thin ToC/RLM model when they still match known generated templates
+- Uses `kit init --refresh --dry-run --diff` to preview managed-file changes without writing them
+- Uses `kit init --refresh --force` for generated documentation/ruleset overwrites and `kit init --refresh --file=<path> --force` for per-file scaffold overwrites such as `.envrc`
 
 ### Map
 
