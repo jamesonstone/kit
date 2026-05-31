@@ -96,17 +96,26 @@ Include:
 
 - Branch name is the GitHub issue number only, exact form: `GH-123`.
 - Do not add a slug, suffix, or description.
-- Create from the correct protected base branch; never commit directly to base.
 - Create or switch branches in the existing project directory.
 - Do not create or use git worktrees for PR delivery.
-- Confirm checkout before editing:
+- Before branching, refresh the base from the remote. Fetch only. Never pull, merge, or checkout the base:
+
+```bash
+git fetch origin "$BASE_BRANCH"
+git rev-list --left-right --count "$BASE_BRANCH...origin/$BASE_BRANCH" 2>/dev/null || true
+```
+
+- Create the new branch from the freshly fetched remote base, never from a local copy:
 
 ```bash
 git checkout -b GH-123 origin/$BASE_BRANCH
 test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BASE_BRANCH)" || { echo "ABORT: branch base not at remote head"; exit 1; }
 gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 ```
 
+- Never commit directly to the base branch, which is protected under `safety-guardrails`.
+- If `git fetch` fails due to offline state, auth, remote errors, or any other reason, stop per `safety-guardrails` failure handling. Do not branch off a base that could not be refreshed.
 - Before editing after any thread resume or user redirect, repeat branch and PR recon for the active directory because another thread may have moved the work forward.
 - If the active branch or PR lookup does not match the intended `GH-123` branch and repository, stop and ask before editing.
 
@@ -249,6 +258,9 @@ Include:
 - Confirm base branch was discovered instead of assumed.
 - Confirm issue resolution searched existing open issues before creating a new issue.
 - Confirm branch name exactly matches the issue number in `GH-123` form.
+- Confirm `git fetch origin "$BASE_BRANCH"` refreshed the remote base before branch creation.
+- Confirm the branch was created from `origin/$BASE_BRANCH`, not local `$BASE_BRANCH`.
+- Confirm branch HEAD equals `origin/$BASE_BRANCH` immediately after branch creation.
 - Confirm checkout is on the issue-number branch before editing.
 - Confirm active PRs for the current branch were checked before editing after any thread resume or user redirect.
 - Confirm each changed file was reviewed before explicit staging.
@@ -274,8 +286,11 @@ gh issue list --state open --search "invitation workflow in:title" --json number
 Create and confirm the issue-number branch:
 
 ```bash
+git fetch origin "$BASE_BRANCH"
+git rev-list --left-right --count "$BASE_BRANCH...origin/$BASE_BRANCH" 2>/dev/null || true
 git checkout -b GH-123 origin/$BASE_BRANCH
 test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BASE_BRANCH)" || { echo "ABORT: branch base not at remote head"; exit 1; }
 ```
 
 Review, stage, and inspect:
