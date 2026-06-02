@@ -142,6 +142,16 @@ func resolveExactEditorCommand(editor string) ([]string, error) {
 }
 
 func readEditorText(inputCfg freeTextInputConfig, fieldName string, emptyAllowed bool) (string, error) {
+	return readEditorTextWithInitialContent(inputCfg, fieldName, "", emptyAllowed, true)
+}
+
+func readEditorTextWithInitialContent(
+	inputCfg freeTextInputConfig,
+	fieldName string,
+	initialContent string,
+	emptyAllowed bool,
+	requireChange bool,
+) (string, error) {
 	cancelAction := "cancel"
 	if emptyAllowed {
 		cancelAction = "skip"
@@ -153,12 +163,12 @@ func readEditorText(inputCfg freeTextInputConfig, fieldName string, emptyAllowed
 		return "", err
 	}
 
-	text, changed, err := editorInputRunner(inputCfg, fieldName, "")
+	text, changed, err := editorInputRunner(inputCfg, fieldName, initialContent)
 	if err != nil {
 		return "", err
 	}
 
-	if !changed {
+	if !changed && requireChange {
 		if emptyAllowed {
 			return "", nil
 		}

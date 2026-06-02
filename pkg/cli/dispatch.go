@@ -3,15 +3,18 @@ package cli
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 var (
 	dispatchCopy         bool
+	dispatchCodeRabbit   bool
 	dispatchEditor       string
 	dispatchFile         string
 	dispatchOutputOnly   bool
+	dispatchPR           string
 	dispatchUseVim       bool
 	dispatchMaxSubagents int
 )
@@ -23,9 +26,10 @@ var dispatchCmd = &cobra.Command{
 across a task set, cluster related work, and queue subagents safely.
 
 Input precedence:
-  1. --file
-  2. piped stdin
-  3. interactive editor-backed capture
+  1. --pr
+  2. --file
+  3. piped stdin
+  4. interactive editor-backed capture
 Interactive capture opens $EDITOR by default, falling back to a vim-compatible editor when $EDITOR is unset.
 
 The command never launches subagents itself. It only outputs the prompt.`,
@@ -36,6 +40,8 @@ The command never launches subagents itself. It only outputs the prompt.`,
 func init() {
 	addFreeTextInputFlags(dispatchCmd, &dispatchUseVim, &dispatchEditor)
 	dispatchCmd.Flags().StringVar(&dispatchFile, "file", "", "read the raw task set from a file")
+	dispatchCmd.Flags().StringVar(&dispatchPR, "pr", "", "fetch unresolved PR review threads from a PR URL, Markdown link, owner/repo#number, or current-repo number")
+	dispatchCmd.Flags().BoolVar(&dispatchCodeRabbit, "coderabbit", false, "with --pr, include only CodeRabbit-authored review comments")
 	dispatchCmd.Flags().BoolVar(&dispatchCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	dispatchCmd.Flags().BoolVar(
 		&dispatchOutputOnly,
@@ -59,12 +65,14 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	rawInput, inputSource, err := loadDispatchInput(
-		dispatchFile,
-		newFreeTextInputConfig(dispatchUseVim, dispatchEditor, false, true),
-	)
+	inputCfg := newFreeTextInputConfig(dispatchUseVim, dispatchEditor, false, true)
+	rawInput, inputSource, promptOptions, foundInput, err := loadDispatchInputForCommand(inputCfg)
 	if err != nil {
 		return err
+	}
+	if !foundInput {
+		fmt.Println("No actionable PR review comments found.")
+		return nil
 	}
 
 	tasks, err := normalizeDispatchTasks(rawInput)
@@ -77,7 +85,7 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
 
-	prompt := buildDispatchPrompt(tasks, dispatchMaxSubagents, workingDirectory, inputSource)
+	prompt := buildDispatchPrompt(tasks, dispatchMaxSubagents, workingDirectory, inputSource, promptOptions)
 	if err := outputPromptWithoutSubagentsWithClipboardDefault(prompt, outputOnly, dispatchCopy); err != nil {
 		return err
 	}
@@ -90,6 +98,22 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func loadDispatchInputForCommand(
+	inputCfg freeTextInputConfig,
+) (string, dispatchInputSource, dispatchPromptOptions, bool, error) {
+	if strings.TrimSpace(dispatchPR) != "" {
+		prInput, found, err := loadDispatchPRInput(dispatchPR, dispatchCodeRabbit, inputCfg)
+		return prInput.RawTasks,
+			dispatchInputSourcePR,
+			dispatchPromptOptions{CommonReviewInstruction: prInput.CommonReviewInstruction},
+			found,
+			err
+	}
+
+	rawInput, inputSource, err := loadDispatchInput(dispatchFile, inputCfg)
+	return rawInput, inputSource, dispatchPromptOptions{}, true, err
 }
 
 func validateDispatchMaxSubagents(maxSubagents int) error {
