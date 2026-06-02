@@ -12,6 +12,7 @@ func buildDispatchPrompt(
 	maxSubagents int,
 	workingDirectory string,
 	inputSource dispatchInputSource,
+	options dispatchPromptOptions,
 ) string {
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Paragraph("Prepare a subagent dispatch plan for the following task set.")
@@ -21,6 +22,10 @@ func buildDispatchPrompt(
 			fmt.Sprintf("Input source: %s", inputSource),
 			fmt.Sprintf("Effective max subagents: %d", maxSubagents),
 		)
+		if strings.TrimSpace(options.CommonReviewInstruction) != "" {
+			doc.Heading(2, "Common Review Instruction")
+			doc.CodeBlock("text", options.CommonReviewInstruction)
+		}
 		doc.Heading(2, "Normalized Tasks")
 		doc.Raw(renderDispatchTasks(tasks))
 		doc.Heading(2, "Your Task")
@@ -59,6 +64,10 @@ func buildDispatchPrompt(
 			"keep the dry-run report reviewable and explicit before asking for approval",
 		)
 	})
+}
+
+type dispatchPromptOptions struct {
+	CommonReviewInstruction string
 }
 
 func renderDispatchTasks(tasks []dispatchTask) string {

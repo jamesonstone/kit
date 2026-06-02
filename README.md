@@ -234,6 +234,11 @@ Use `kit dispatch` when you need the full overlap-clustering and queue-planning
 workflow for a raw task set. Use the default prompt path when the agent should
 use subagents opportunistically, and use `kit dispatch` when you want a formal
 discovery report, overlap clustering, and explicit approval before launch.
+Use `kit dispatch --pr <url|number>` to prefill the dispatch editor from
+unresolved, non-outdated GitHub PR review threads. Add `--coderabbit` to keep
+only CodeRabbit-authored review comments. `--pr` accepts a full GitHub PR URL, a
+Markdown PR link, `owner/repo#123`, or a PR number resolved from the current
+project's `origin` remote.
 
 ### 📋 Output Behavior
 

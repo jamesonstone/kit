@@ -11,6 +11,7 @@ type dispatchInputSource string
 
 const (
 	dispatchInputSourceFile   dispatchInputSource = "file"
+	dispatchInputSourcePR     dispatchInputSource = "pr-review"
 	dispatchInputSourceStdin  dispatchInputSource = "stdin"
 	dispatchInputSourceEditor dispatchInputSource = "editor"
 )

@@ -196,7 +196,7 @@ func renderSupportDispatchPrompt() (string, error) {
 		return "", fmt.Errorf("failed to get working directory: %w", err)
 	}
 
-	prompt := buildDispatchPrompt(tasks, 10, workingDirectory, dispatchInputSourceEditor)
+	prompt := buildDispatchPrompt(tasks, 10, workingDirectory, dispatchInputSourceEditor, dispatchPromptOptions{})
 	return preparePromptWithoutSubagents(prompt), nil
 }
 

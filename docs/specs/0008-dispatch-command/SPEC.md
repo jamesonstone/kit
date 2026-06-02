@@ -133,6 +133,16 @@ none
 - [SPEC-26] The generated prompt must instruct the coding agent to wait for explicit user approval after the dry-run report and before launching any subagents.
 - [SPEC-27] The command must call `printWorkflowInstructions(...)` after prompt output when not in `--output-only` mode.
 - [SPEC-28] Root help and README must document the new command.
+- [SPEC-29] The command must support `--pr <url|number>` for fetching unresolved, non-outdated GitHub PR review threads through `gh`.
+- [SPEC-30] `--pr` must accept a GitHub PR URL, Markdown PR link, `owner/repo#number`, or a PR number resolved from the current project directory's `origin` remote.
+- [SPEC-31] With `--pr`, the command must prefill the existing dispatch editor with actionable review tasks before generating the normal dispatch prompt.
+- [SPEC-32] With `--pr --coderabbit`, the command must include only CodeRabbit-authored review comments.
+- [SPEC-33] With `--pr`, top-level PR comments are excluded; only PR review threads are included.
+- [SPEC-34] With `--pr`, resolved and outdated review threads are excluded.
+- [SPEC-35] With `--pr`, CodeRabbit `Prompt for AI Agents` blocks are extracted when present; otherwise the cleaned review comment body is used.
+- [SPEC-36] With `--pr`, repeated CodeRabbit boilerplate instructions are included once as common review instruction context instead of repeated inside every task.
+- [SPEC-37] With `--pr`, duplicate review tasks are removed by normalized task text plus source path and line.
+- [SPEC-38] With `--pr`, no matching actionable review threads prints a clear message and does not open the editor.
 
 ## ACCEPTANCE
 
@@ -148,6 +158,10 @@ none
 - Default command output copies the generated prompt to the clipboard, prints an acknowledgement, and does not print the prompt body.
 - `--output-only` prints the raw prompt to stdout, and `--output-only --copy` does both.
 - Help and README expose `kit dispatch` as a prompt-only command.
+- Running `kit dispatch --pr=https://github.com/Patient-Driven-Care/cortex/pull/67 --coderabbit` fetches unresolved, non-outdated CodeRabbit review-thread comments and pre-populates the dispatch editor.
+- Running `kit dispatch --pr=67` resolves PR 67 from the current project directory's `origin` GitHub remote.
+- Running `kit dispatch --pr='[Patient-Driven-Care/cortex#67](https://github.com/Patient-Driven-Care/cortex/pull/67)'` parses the PR from the Markdown link URL.
+- Running `kit dispatch --pr=<target>` with no matching unresolved, non-outdated review threads prints a clear no-actionable-comments message and does not open the editor.
 
 ## EDGE-CASES
 
@@ -157,6 +171,10 @@ none
 - The input contains multiple blank lines between task groups.
 - `--file` is passed together with piped stdin.
 - `--vim` or `--editor` is passed together with `--file` or piped stdin.
+- `--pr` is passed as a full GitHub URL, Markdown link, `owner/repo#number`, or current-repo number.
+- `--pr --coderabbit` is used on a PR with mixed CodeRabbit and human review threads.
+- A CodeRabbit review comment omits the `Prompt for AI Agents` block.
+- A PR has only resolved or outdated review threads.
 - `--max-subagents` is `0` or negative.
 - The file passed to `--file` does not exist.
 - `--output-only --copy` is passed and must both print and copy.
