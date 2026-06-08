@@ -17,13 +17,14 @@ var statusCmd = &cobra.Command{
 	Long: `Display the active feature's status, including:
   - Feature name and ID
   - Business summary from SPEC.md
-  - Lifecycle phase and paused state
-  - File existence (SPEC, PLAN, TASKS)
+  - Current lifecycle step and paused state
+  - Remaining workflow steps
+  - File existence (BRAINSTORM, SPEC, PLAN, TASKS)
   - Task completion progress (from markdown checkboxes)
   - Suggested next action
 
 Output is optimized for coding agents to quickly understand
-which files to investigate for the current feature.
+what step is active, what remains, and which files to inspect.
 
 Use --all for a project-wide overview.`,
 	Args: cobra.NoArgs,

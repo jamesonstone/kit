@@ -67,16 +67,53 @@ func outputStatusJSON(w io.Writer, status *feature.FeatureStatus, version string
 
 func outputStatusText(w io.Writer, status *feature.FeatureStatus, version string) error {
 	style := styleForWriter(w)
+	featureName := fmt.Sprintf("%s-%s", status.ID, status.Name)
 
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(w, style.title("📊", fmt.Sprintf("Active Feature: %s-%s", status.ID, status.Name))); err != nil {
+	if _, err := fmt.Fprintln(w, style.title("📊", fmt.Sprintf("Active Feature: %s", featureName))); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
+
+	if _, err := fmt.Fprintln(w, style.title("📍", "At a glance")); err != nil {
+		return err
+	}
+	if err := printStatusField(w, style, "Feature", featureName); err != nil {
+		return err
+	}
+	if err := printStatusField(w, style, "State", formatStateValue(style, status)); err != nil {
+		return err
+	}
+	if err := printStatusField(w, style, "Paused", formatPausedValue(style, status.Paused)); err != nil {
+		return err
+	}
+	if err := printStatusField(w, style, "Current step", formatCurrentStepValue(style, status.Phase)); err != nil {
+		return err
+	}
+	if err := printStatusField(w, style, "Tasks", formatTaskProgressValue(style, status)); err != nil {
+		return err
+	}
+	if err := printStatusField(w, style, "Left", formatRemainingWorkValue(style, status)); err != nil {
+		return err
+	}
+	if status.Paused {
+		if err := printStatusField(w, style, "Next", fmt.Sprintf("Run `kit resume %s` when ready", status.Name)); err != nil {
+			return err
+		}
+		if err := printStatusField(w, style, "After resume", determineUnpausedNextAction(status)); err != nil {
+			return err
+		}
+	} else if err := printStatusField(w, style, "Next", determineNextAction(status)); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintln(w); err != nil {
+		return err
+	}
+
 	if status.Summary != "" {
 		if _, err := fmt.Fprintln(w, style.title("📝", "Summary")); err != nil {
 			return err
@@ -89,13 +126,13 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, version string
 		}
 	}
 
-	if _, err := fmt.Fprintln(w, style.title("⏸️", "Lifecycle")); err != nil {
+	if _, err := fmt.Fprintln(w, style.title("📈", "Artifact progress")); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(w, "Phase: %s\n", formatPhaseValue(style, status.Phase)); err != nil {
+	if err := printProgressLine(w, status); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(w, "Paused: %s\n", formatPausedValue(style, status.Paused)); err != nil {
+	if _, err := fmt.Fprintln(w); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprintln(w); err != nil {
@@ -122,28 +159,6 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, version string
 		return err
 	}
 
-	if _, err := fmt.Fprintln(w, style.title("📈", "Progress")); err != nil {
-		return err
-	}
-	if err := printProgressLine(w, status); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintln(w); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintln(w); err != nil {
-		return err
-	}
-
-	if _, err := fmt.Fprintln(w, style.title("🎯", "Next")); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintln(w, determineNextAction(status)); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintln(w); err != nil {
-		return err
-	}
 	_, err := fmt.Fprintln(w, style.muted(formatKitVersionInfo(version)))
 	return err
 }

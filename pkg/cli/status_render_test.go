@@ -84,8 +84,9 @@ func TestRunStatusAllIncludesRemovedFeatureTombstones(t *testing.T) {
 
 func TestOutputStatusTextIncludesKitVersion(t *testing.T) {
 	status := &feature.FeatureStatus{
-		ID:   "0001",
-		Name: "patient-import",
+		ID:    "0001",
+		Name:  "patient-import",
+		Phase: feature.PhaseSpec,
 		Files: map[string]feature.FileStatus{
 			"brainstorm": {Exists: false, Path: "/tmp/BRAINSTORM.md"},
 			"spec":       {Exists: true, Path: "/tmp/SPEC.md"},
@@ -101,6 +102,109 @@ func TestOutputStatusTextIncludesKitVersion(t *testing.T) {
 
 	if !strings.Contains(out.String(), "Kit version: v1.2.3") {
 		t.Fatalf("expected version line in output, got %q", out.String())
+	}
+}
+
+func TestOutputStatusTextShowsCurrentStepAndRemainingWork(t *testing.T) {
+	status := &feature.FeatureStatus{
+		ID:      "0001",
+		Name:    "patient-import",
+		Phase:   feature.PhaseBrainstorm,
+		Summary: "Import patient records from partner feeds.",
+		Files: map[string]feature.FileStatus{
+			"brainstorm": {Exists: true, Path: "/tmp/BRAINSTORM.md"},
+			"spec":       {Exists: false, Path: "/tmp/SPEC.md"},
+			"plan":       {Exists: false, Path: "/tmp/PLAN.md"},
+			"tasks":      {Exists: false, Path: "/tmp/TASKS.md"},
+		},
+	}
+	out := &bytes.Buffer{}
+
+	if err := outputStatusText(out, status, "v1.2.3"); err != nil {
+		t.Fatalf("outputStatusText() error = %v", err)
+	}
+
+	content := out.String()
+	for _, check := range []string{
+		"At a glance",
+		"State: active (not paused)",
+		"Paused: no",
+		"Current step: brainstorm",
+		"Left: SPEC.md -> PLAN.md -> TASKS.md -> implement tasks -> reflect -> complete",
+		"Next: Create specification from brainstorm: run `kit spec patient-import`",
+		"Artifact progress",
+		"BRAINSTORM",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected output to contain %q, got %q", check, content)
+		}
+	}
+}
+
+func TestOutputStatusTextPausedStartsWithResumeGuidance(t *testing.T) {
+	status := &feature.FeatureStatus{
+		ID:     "0001",
+		Name:   "patient-import",
+		Phase:  feature.PhaseImplement,
+		Paused: true,
+		Files: map[string]feature.FileStatus{
+			"brainstorm": {Exists: true, Path: "/tmp/BRAINSTORM.md"},
+			"spec":       {Exists: true, Path: "/tmp/SPEC.md"},
+			"plan":       {Exists: true, Path: "/tmp/PLAN.md"},
+			"tasks":      {Exists: true, Path: "/tmp/TASKS.md"},
+		},
+		Progress: &feature.TaskProgress{Total: 4, Complete: 1},
+	}
+	out := &bytes.Buffer{}
+
+	if err := outputStatusText(out, status, "v1.2.3"); err != nil {
+		t.Fatalf("outputStatusText() error = %v", err)
+	}
+
+	content := out.String()
+	for _, check := range []string{
+		"State: paused",
+		"Paused: yes",
+		"Current step: implementation",
+		"Tasks: 1/4 complete (3 left)",
+		"Left: complete 3 remaining task(s) -> reflect -> complete",
+		"Next: Run `kit resume patient-import` when ready",
+		"After resume: Complete 3 remaining task(s) in /tmp/TASKS.md",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected output to contain %q, got %q", check, content)
+		}
+	}
+}
+
+func TestOutputStatusTextUsesANSIColorWhenTerminalEnabled(t *testing.T) {
+	previousCheck := terminalWriterCheck
+	terminalWriterCheck = func(_ io.Writer) bool { return true }
+	defer func() { terminalWriterCheck = previousCheck }()
+
+	status := &feature.FeatureStatus{
+		ID:    "0001",
+		Name:  "patient-import",
+		Phase: feature.PhasePlan,
+		Files: map[string]feature.FileStatus{
+			"brainstorm": {Exists: true, Path: "/tmp/BRAINSTORM.md"},
+			"spec":       {Exists: true, Path: "/tmp/SPEC.md"},
+			"plan":       {Exists: true, Path: "/tmp/PLAN.md"},
+			"tasks":      {Exists: false, Path: "/tmp/TASKS.md"},
+		},
+	}
+	out := &bytes.Buffer{}
+
+	if err := outputStatusText(out, status, "v1.2.3"); err != nil {
+		t.Fatalf("outputStatusText() error = %v", err)
+	}
+
+	content := out.String()
+	if !strings.Contains(content, "\033[") {
+		t.Fatalf("expected ANSI color sequences in terminal output, got %q", content)
+	}
+	if !strings.Contains(content, "Current step:") {
+		t.Fatalf("expected current step field in output, got %q", content)
 	}
 }
 
