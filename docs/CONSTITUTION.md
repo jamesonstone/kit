@@ -69,6 +69,17 @@ all decisions.
 
 ## CONSTRAINTS
 
+
+### Kit-Managed Baseline Rules
+
+<!-- BEGIN KIT-MANAGED BASELINE RULES -->
+- Treat `docs/CONSTITUTION.md` as the canonical project contract.
+- Keep `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` aligned with the repo-local docs tree.
+- Prefer implementation/source code files around 300 lines or less when splitting improves clarity and ownership.
+- Do not apply the code-file size guideline to documentation files, all `docs/**`, all `.kit/**`, or `.kit.yaml`.
+- Do not split or rewrite docs, generated state, or Kit config artifacts solely because they exceed 300 lines.
+<!-- END KIT-MANAGED BASELINE RULES -->
+
 ### Non-Negotiable Rules
 
 1. **Artifact Pipeline Order**
