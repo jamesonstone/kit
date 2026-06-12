@@ -32,6 +32,36 @@ type Config struct {
 	FeatureState               map[string]FeatureLifecycleState `yaml:"feature_state,omitempty"`
 	RemovedFeatures            []RemovedFeature                 `yaml:"removed_features,omitempty"`
 	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
+	Registry                   RegistryConfig                   `yaml:"registry,omitempty"`
+}
+
+type RegistryConfig struct {
+	SchemaVersion int                `yaml:"schema_version,omitempty"`
+	Source        RegistrySource     `yaml:"source,omitempty"`
+	Artifacts     []RegistryArtifact `yaml:"artifacts,omitempty"`
+}
+
+type RegistrySource struct {
+	Repo   string `yaml:"repo,omitempty"`
+	Branch string `yaml:"branch,omitempty"`
+}
+
+type RegistryArtifact struct {
+	Kind          string                    `yaml:"kind"`
+	Slug          string                    `yaml:"slug"`
+	Path          string                    `yaml:"path"`
+	SourceRepo    string                    `yaml:"source_repo,omitempty"`
+	SourceBranch  string                    `yaml:"source_branch,omitempty"`
+	SourceCommit  string                    `yaml:"source_commit,omitempty"`
+	SourcePath    string                    `yaml:"source_path,omitempty"`
+	InstalledHash string                    `yaml:"installed_hash,omitempty"`
+	State         string                    `yaml:"state,omitempty"`
+	Sections      []RegistryArtifactSection `yaml:"sections,omitempty"`
+}
+
+type RegistryArtifactSection struct {
+	Key           string `yaml:"key"`
+	InstalledHash string `yaml:"installed_hash"`
 }
 
 type LoopConfig struct {
@@ -43,6 +73,20 @@ type LoopConfig struct {
 type LoopAgentConfig struct {
 	Command string   `yaml:"command,omitempty"`
 	Args    []string `yaml:"args,omitempty"`
+}
+
+func (c LoopConfig) IsZero() bool {
+	if !c.Agent.IsZero() {
+		return false
+	}
+	if c.MinConfidence == 0 && c.MaxIterations == 0 {
+		return true
+	}
+	return c.MinConfidence == 95 && c.MaxIterations == 20
+}
+
+func (c LoopAgentConfig) IsZero() bool {
+	return c.Command == "" && len(c.Args) == 0
 }
 
 type FeatureLifecycleState struct {
@@ -142,6 +186,45 @@ func (c *Config) RecordRemovedFeature(record RemovedFeature) {
 
 	c.RemovedFeatures = append(c.RemovedFeatures, record)
 	c.sortRemovedFeatures()
+}
+
+func (c *Config) RegistryArtifact(kind, slug string) (RegistryArtifact, bool) {
+	if c == nil {
+		return RegistryArtifact{}, false
+	}
+	for _, artifact := range c.Registry.Artifacts {
+		if artifact.Kind == kind && artifact.Slug == slug {
+			return artifact, true
+		}
+	}
+	return RegistryArtifact{}, false
+}
+
+func (c *Config) UpsertRegistryArtifact(artifact RegistryArtifact) {
+	if c == nil || artifact.Kind == "" || artifact.Slug == "" {
+		return
+	}
+	if c.Registry.SchemaVersion == 0 {
+		c.Registry.SchemaVersion = 1
+	}
+	for i := range c.Registry.Artifacts {
+		if c.Registry.Artifacts[i].Kind == artifact.Kind && c.Registry.Artifacts[i].Slug == artifact.Slug {
+			c.Registry.Artifacts[i] = artifact
+			c.sortRegistryArtifacts()
+			return
+		}
+	}
+	c.Registry.Artifacts = append(c.Registry.Artifacts, artifact)
+	c.sortRegistryArtifacts()
+}
+
+func (c *Config) sortRegistryArtifacts() {
+	sort.SliceStable(c.Registry.Artifacts, func(i, j int) bool {
+		if c.Registry.Artifacts[i].Kind != c.Registry.Artifacts[j].Kind {
+			return c.Registry.Artifacts[i].Kind < c.Registry.Artifacts[j].Kind
+		}
+		return c.Registry.Artifacts[i].Slug < c.Registry.Artifacts[j].Slug
+	})
 }
 
 func (c *Config) sortRemovedFeatures() {

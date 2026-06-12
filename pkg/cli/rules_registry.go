@@ -15,15 +15,19 @@ import (
 
 	"golang.org/x/term"
 
+	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 )
 
 const (
-	rulesetRegistryOwner  = "jamesonstone"
-	rulesetRegistryRepo   = "kit"
-	rulesetRegistryBranch = "main"
-	rulesetRegistryAPIURL = "https://api.github.com/repos/jamesonstone/kit/contents/docs/references/rules?ref=main"
-	inactiveRulesetStatus = document.ReferenceStatusOptional
+	rulesetRegistryOwner             = "jamesonstone"
+	rulesetRegistryRepo              = "kit"
+	rulesetRegistryBranch            = "main"
+	rulesetRegistryAPIURL            = "https://api.github.com/repos/jamesonstone/kit/contents/docs/references/rules?ref=main"
+	inactiveRulesetStatus            = document.ReferenceStatusOptional
+	registryArtifactStateManaged     = "managed"
+	registryArtifactStateLocalCustom = "local-custom"
+	registryArtifactStateConflict    = "conflict"
 
 	registrySelectorDefaultTableWidth = 118
 	registrySelectorMinimumTableWidth = 88
@@ -33,13 +37,20 @@ const (
 )
 
 type rulesetRegistryFetchFunc func(context.Context) ([]registryRuleset, error)
+type rulesetRegistryContentFetchFunc func(context.Context, string, string, string) (string, error)
 
 var rulesetRegistryFetcher rulesetRegistryFetchFunc = fetchGitHubRulesetRegistry
+var rulesetRegistryContentFetcher rulesetRegistryContentFetchFunc = fetchGitHubRegistryContent
 
 type registryRuleset struct {
-	Slug     string
-	Content  string
-	Metadata rulesetMetadata
+	Slug           string
+	Content        string
+	Metadata       rulesetMetadata
+	SourceRepo     string
+	SourceBranch   string
+	SourceCommit   string
+	SourcePath     string
+	NormalizedHash string
 }
 
 type registrySelectorEntry struct {
@@ -51,6 +62,7 @@ type registrySelectorEntry struct {
 	CurrentActive bool
 	DesiredActive bool
 	Touched       bool
+	RegistryState string
 }
 
 type registrySelectorSummary struct {
@@ -64,6 +76,11 @@ type githubContentEntry struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
 	DownloadURL string `json:"download_url"`
+	Path        string `json:"path"`
+}
+
+type githubCommitResponse struct {
+	SHA string `json:"sha"`
 }
 
 func runRulesAddRegistrySelector(cmd interface {
@@ -98,6 +115,11 @@ func runRulesAddRegistrySelector(cmd interface {
 }
 
 func fetchGitHubRulesetRegistry(ctx context.Context) ([]registryRuleset, error) {
+	sourceCommit, err := fetchGitHubRegistryCommit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rulesetRegistryAPIURL, nil)
 	if err != nil {
 		return nil, err
@@ -134,7 +156,7 @@ func fetchGitHubRulesetRegistry(ctx context.Context) ([]registryRuleset, error) 
 		if strings.TrimSpace(entry.DownloadURL) == "" {
 			return nil, fmt.Errorf("registry ruleset %s has no download URL", entry.Name)
 		}
-		ruleset, err := fetchGitHubRegistryRuleset(ctx, entry)
+		ruleset, err := fetchGitHubRegistryRuleset(ctx, entry, sourceCommit)
 		if err != nil {
 			return nil, err
 		}
@@ -143,7 +165,41 @@ func fetchGitHubRulesetRegistry(ctx context.Context) ([]registryRuleset, error) 
 	return rulesets, nil
 }
 
-func fetchGitHubRegistryRuleset(ctx context.Context, entry githubContentEntry) (registryRuleset, error) {
+func fetchGitHubRegistryCommit(ctx context.Context) (string, error) {
+	url := fmt.Sprintf(
+		"https://api.github.com/repos/%s/%s/commits/%s",
+		rulesetRegistryOwner,
+		rulesetRegistryRepo,
+		rulesetRegistryBranch,
+	)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	if token := strings.TrimSpace(os.Getenv("GITHUB_TOKEN")); token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch ruleset registry source commit: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch ruleset registry source commit: %s", resp.Status)
+	}
+	var payload githubCommitResponse
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return "", fmt.Errorf("failed to decode ruleset registry source commit: %w", err)
+	}
+	if strings.TrimSpace(payload.SHA) == "" {
+		return "", fmt.Errorf("ruleset registry source commit response had no sha")
+	}
+	return payload.SHA, nil
+}
+
+func fetchGitHubRegistryRuleset(ctx context.Context, entry githubContentEntry, sourceCommit string) (registryRuleset, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, entry.DownloadURL, nil)
 	if err != nil {
 		return registryRuleset{}, err
@@ -169,17 +225,66 @@ func fetchGitHubRegistryRuleset(ctx context.Context, entry githubContentEntry) (
 	if issues := validateRulesetDocument(parsed, slug); len(issues) > 0 {
 		return registryRuleset{}, fmt.Errorf("registry ruleset %s is invalid: %s", entry.Name, strings.Join(issues, "; "))
 	}
+	sourcePath := strings.TrimSpace(entry.Path)
+	if sourcePath == "" {
+		sourcePath = rulesetTarget(parsed.Metadata.Slug)
+	}
+	normalizedHash, err := normalizedRulesetContentHash(string(content), parsed.Metadata.Status)
+	if err != nil {
+		return registryRuleset{}, fmt.Errorf("failed to hash registry ruleset %s: %w", entry.Name, err)
+	}
 	return registryRuleset{
-		Slug:     parsed.Metadata.Slug,
-		Content:  string(content),
-		Metadata: parsed.Metadata,
+		Slug:           parsed.Metadata.Slug,
+		Content:        string(content),
+		Metadata:       parsed.Metadata,
+		SourceRepo:     rulesetRegistryRepoFullName(),
+		SourceBranch:   rulesetRegistryBranch,
+		SourceCommit:   sourceCommit,
+		SourcePath:     sourcePath,
+		NormalizedHash: normalizedHash,
 	}, nil
+}
+
+func fetchGitHubRegistryContent(ctx context.Context, sourceRepo, sourceCommit, sourcePath string) (string, error) {
+	if strings.TrimSpace(sourceRepo) == "" || strings.TrimSpace(sourceCommit) == "" || strings.TrimSpace(sourcePath) == "" {
+		return "", fmt.Errorf("source repo, commit, and path are required")
+	}
+	url := fmt.Sprintf(
+		"https://raw.githubusercontent.com/%s/%s/%s",
+		strings.TrimSpace(sourceRepo),
+		strings.TrimSpace(sourceCommit),
+		strings.TrimLeft(strings.TrimSpace(sourcePath), "/"),
+	)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	if token := strings.TrimSpace(os.Getenv("GITHUB_TOKEN")); token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch registry artifact base content: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch registry artifact base content: %s", resp.Status)
+	}
+	content, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read registry artifact base content: %w", err)
+	}
+	return string(content), nil
 }
 
 func buildRegistrySelectorEntries(projectRoot string, registry []registryRuleset) ([]registrySelectorEntry, error) {
 	sort.SliceStable(registry, func(i, j int) bool {
 		return registry[i].Slug < registry[j].Slug
 	})
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
 
 	entries := make([]registrySelectorEntry, 0, len(registry))
 	seen := map[string]bool{}
@@ -209,10 +314,39 @@ func buildRegistrySelectorEntries(projectRoot string, registry []registryRuleset
 			entry.CurrentActive = local.Metadata.Status == document.ReferenceStatusActive
 			entry.DesiredActive = entry.CurrentActive
 			entry.Modified = localRulesetModified(entry.LocalContent, item.Content, item.Metadata.Status)
+			entry.RegistryState = selectorRegistryState(cfg, item, entry.LocalContent, entry.Modified)
 		}
 		entries = append(entries, entry)
 	}
 	return entries, nil
+}
+
+func selectorRegistryState(cfg *config.Config, item registryRuleset, localContent string, modified bool) string {
+	if strings.TrimSpace(localContent) == "" {
+		return "registry"
+	}
+	artifact, tracked := rulesetRegistryState(cfg, item.Slug)
+	localHash, err := normalizedRulesetContentHash(localContent, item.Metadata.Status)
+	if err == nil && localHash == item.NormalizedHash {
+		return registryArtifactStateManaged
+	}
+	if tracked {
+		switch artifact.State {
+		case registryArtifactStateConflict:
+			return registryArtifactStateConflict
+		case registryArtifactStateLocalCustom:
+			return registryArtifactStateLocalCustom
+		case registryArtifactStateManaged:
+			if artifact.InstalledHash != "" && artifact.InstalledHash != item.NormalizedHash {
+				return "update-available"
+			}
+			return registryArtifactStateManaged
+		}
+	}
+	if modified {
+		return registryArtifactStateLocalCustom
+	}
+	return "local"
 }
 
 func localRulesetModified(localContent, registryContent, registryStatus string) bool {
@@ -470,7 +604,7 @@ func registrySelectorColumnWidths(tableWidth int, entries []registrySelectorEntr
 		3,
 		slugWidth,
 		9,
-		8,
+		16,
 		registrySelectorMinimumDescWidth,
 	}
 
@@ -578,6 +712,16 @@ func registrySelectorState(entry registrySelectorEntry) (string, string) {
 }
 
 func registrySelectorSource(entry registrySelectorEntry) (string, string) {
+	switch entry.RegistryState {
+	case "update-available":
+		return "UPDATE AVAILABLE", spec
+	case registryArtifactStateConflict:
+		return "CONFLICT", constitution
+	case registryArtifactStateLocalCustom:
+		return "LOCAL-CUSTOM", constitution
+	case registryArtifactStateManaged:
+		return "MANAGED", plan
+	}
 	switch {
 	case entry.Modified:
 		return "MODIFIED", constitution
@@ -597,6 +741,11 @@ func formatRulesetStateToken(style humanOutputStyle, label string, color string)
 
 func applyRegistryRulesetSelection(projectRoot string, entries []registrySelectorEntry) (registrySelectorSummary, error) {
 	var summary registrySelectorSummary
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		return summary, fmt.Errorf("failed to load config: %w", err)
+	}
+	configChanged := false
 	for _, entry := range entries {
 		if !entry.Installed && !entry.DesiredActive {
 			summary.Unchanged++
@@ -624,6 +773,18 @@ func applyRegistryRulesetSelection(projectRoot string, entries []registrySelecto
 		if err := document.Write(path, updated); err != nil {
 			return summary, fmt.Errorf("failed to write %s: %w", rulesetTarget(entry.Registry.Slug), err)
 		}
+		normalizedHash, err := normalizedRulesetContentHash(updated, entry.Registry.Metadata.Status)
+		if err != nil {
+			return summary, fmt.Errorf("failed to hash ruleset %s: %w", entry.Registry.Slug, err)
+		}
+		state := registryArtifactStateManaged
+		hash := entry.Registry.NormalizedHash
+		if normalizedHash != entry.Registry.NormalizedHash {
+			state = registryArtifactStateLocalCustom
+			hash = normalizedHash
+		}
+		recordRulesetRegistryState(cfg, entry.Registry, state, hash, updated)
+		configChanged = true
 
 		switch {
 		case !entry.Installed && entry.DesiredActive:
@@ -632,6 +793,11 @@ func applyRegistryRulesetSelection(projectRoot string, entries []registrySelecto
 			summary.Activated++
 		default:
 			summary.Deactivated++
+		}
+	}
+	if configChanged {
+		if err := config.Save(projectRoot, cfg); err != nil {
+			return summary, fmt.Errorf("failed to save registry state: %w", err)
 		}
 	}
 	return summary, nil

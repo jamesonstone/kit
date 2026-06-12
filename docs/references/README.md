@@ -8,6 +8,8 @@
 - Store durable rulesets under `rules/<slug>.md` and link them with `kit rules link` instead of copying rules into agent instruction files
 - Use `kit rules add` to import or activate available registry rulesets from the Kit GitHub `main` branch
 - Use `kit rules view <slug>` to preview a local or registry ruleset before importing it
+- Use `kit init --refresh` to adopt existing registry rules into `.kit.yaml` registry state and pick up safe upstream ruleset updates
+- Use `kit init --refresh --force --file=docs/references/rules/<slug>.md` only when you intentionally want to accept the latest registry content for a customized ruleset
 - Use `kit rules add --custom` for the interactive `$EDITOR` ruleset builder
 - `kit rule` is the singular alias for `kit rules`
 

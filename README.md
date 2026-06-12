@@ -353,11 +353,15 @@ Instruction scaffold versions:
 `kit init --refresh` is the consolidated refresh command for existing Kit
 projects. It creates missing Kit-managed files, migrates known generated v1
 instruction files to the v2 thin docs model, refreshes generated instruction
-support docs, and imports missing known registry rulesets. Existing local
-scaffold files such as `.envrc`, `.coderabbit.yaml`, and the pull request
-template are skipped by default. Use `kit init --refresh --force` to overwrite
-refreshable generated documentation and known registry rulesets, or
-`kit init --refresh --file=.envrc --force` to overwrite one existing
+support docs, imports missing known registry rulesets, and records ruleset
+registry state in `.kit.yaml`. Existing registry rulesets are adopted
+automatically: safe upstream updates from the Kit GitHub `main` branch are
+applied, local activation status is preserved, and customized or conflicted
+rules are skipped with a report. Existing local scaffold files such as `.envrc`,
+`.coderabbit.yaml`, and the pull request template are skipped by default. Use
+`kit init --refresh --force` to overwrite refreshable generated documentation
+and accept latest registry ruleset content while preserving local ruleset
+status, or `kit init --refresh --file=.envrc --force` to overwrite one existing
 Kit-managed file explicitly. Use `kit init --refresh --dry-run --diff` to
 preview the managed-file changes without writing them.
 
