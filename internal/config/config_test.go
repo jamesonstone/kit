@@ -28,6 +28,36 @@ func TestDefaultIncludesLoopPolicy(t *testing.T) {
 	}
 }
 
+func TestSaveOmitsDefaultLoopConfigAndKeepsCustomLoopConfig(t *testing.T) {
+	projectRoot := t.TempDir()
+	defaults := Default()
+	if err := Save(projectRoot, defaults); err != nil {
+		t.Fatalf("Save(defaults) error = %v", err)
+	}
+	data, err := os.ReadFile(filepath.Join(projectRoot, ConfigFileName))
+	if err != nil {
+		t.Fatalf("ReadFile(default config) error = %v", err)
+	}
+	if strings.Contains(string(data), "loop:") {
+		t.Fatalf("default loop config should be omitted, got:\n%s", data)
+	}
+
+	defaults.Loop.MaxIterations = 7
+	defaults.Loop.Agent.Command = "codex"
+	if err := Save(projectRoot, defaults); err != nil {
+		t.Fatalf("Save(custom loop) error = %v", err)
+	}
+	data, err = os.ReadFile(filepath.Join(projectRoot, ConfigFileName))
+	if err != nil {
+		t.Fatalf("ReadFile(custom config) error = %v", err)
+	}
+	for _, check := range []string{"loop:", "max_iterations: 7", "command: codex"} {
+		if !strings.Contains(string(data), check) {
+			t.Fatalf("custom loop config missing %q, got:\n%s", check, data)
+		}
+	}
+}
+
 func TestLoadParsesLoopConfig(t *testing.T) {
 	projectRoot := t.TempDir()
 	configPath := filepath.Join(projectRoot, ConfigFileName)
@@ -61,6 +91,59 @@ loop:
 	wantArgs := []string{"run", "--stdin"}
 	if !reflect.DeepEqual(cfg.Loop.Agent.Args, wantArgs) {
 		t.Fatalf("Loop.Agent.Args = %v, want %v", cfg.Loop.Agent.Args, wantArgs)
+	}
+}
+
+func TestLoadParsesRegistryConfig(t *testing.T) {
+	projectRoot := t.TempDir()
+	configPath := filepath.Join(projectRoot, ConfigFileName)
+	if err := os.WriteFile(configPath, []byte(`
+registry:
+  schema_version: 1
+  source:
+    repo: jamesonstone/kit
+    branch: main
+  artifacts:
+    - kind: ruleset
+      slug: github-pr-delivery
+      path: docs/references/rules/github-pr-delivery.md
+      source_repo: jamesonstone/kit
+      source_branch: main
+      source_commit: abc123
+      source_path: docs/references/rules/github-pr-delivery.md
+      installed_hash: sha256:deadbeef
+      state: managed
+`), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	cfg, err := Load(projectRoot)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.Registry.SchemaVersion != 1 {
+		t.Fatalf("Registry.SchemaVersion = %d, want 1", cfg.Registry.SchemaVersion)
+	}
+	if cfg.Registry.Source.Repo != "jamesonstone/kit" || cfg.Registry.Source.Branch != "main" {
+		t.Fatalf("Registry.Source = %#v", cfg.Registry.Source)
+	}
+	artifact, ok := cfg.RegistryArtifact("ruleset", "github-pr-delivery")
+	if !ok {
+		t.Fatal("expected registry artifact")
+	}
+	if artifact.InstalledHash != "sha256:deadbeef" || artifact.State != "managed" {
+		t.Fatalf("artifact = %#v", artifact)
+	}
+	cfg.UpsertRegistryArtifact(RegistryArtifact{
+		Kind:          "ruleset",
+		Slug:          "github-pr-delivery",
+		Path:          "docs/references/rules/github-pr-delivery.md",
+		InstalledHash: "sha256:feedface",
+		State:         "local-custom",
+	})
+	artifact, ok = cfg.RegistryArtifact("ruleset", "github-pr-delivery")
+	if !ok || artifact.InstalledHash != "sha256:feedface" || artifact.State != "local-custom" {
+		t.Fatalf("updated artifact = %#v", artifact)
 	}
 }
 

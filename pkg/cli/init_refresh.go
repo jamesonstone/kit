@@ -40,6 +40,7 @@ type initRefreshStats struct {
 }
 
 func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
+	ctx := context.Background()
 	targets, err := normalizeInitRefreshTargets(opts.files)
 	if err != nil {
 		return err
@@ -55,7 +56,7 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 
 	var registry []registryRuleset
 	if needsRegistry {
-		registry, err = rulesetRegistryFetcher(context.Background())
+		registry, err = rulesetRegistryFetcher(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to refresh Kit ruleset registry: %w", err)
 		}
@@ -76,9 +77,7 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 	}
 
 	var changes []initRefreshFileChange
-	if configChange != nil {
-		changes = append(changes, *configChange)
-	}
+	var notes []string
 
 	var stats initRefreshStats
 	scaffoldChanges, err := planRefreshInitScaffoldFiles(projectRoot, opts, targets)
@@ -98,17 +97,28 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 		return err
 	}
 	changes = append(changes, instructionChanges...)
-	rulesetChanges, err := planRefreshInitRulesets(projectRoot, opts, targets, registry)
+	rulesetChanges, rulesetNotes, registryChanged, err := planRefreshInitRulesets(ctx, projectRoot, opts, cfg, targets, registry)
 	if err != nil {
 		return err
 	}
+	notes = append(notes, rulesetNotes...)
 	changes = append(changes, rulesetChanges...)
+	if configChange != nil || registryChanged {
+		configChange, err = finalizeInitRefreshConfigChange(projectRoot, cfg, configChange)
+		if err != nil {
+			return err
+		}
+		if configChange != nil {
+			changes = append([]initRefreshFileChange{*configChange}, changes...)
+		}
+	}
 
 	if opts.dryRun {
 		for _, change := range changes {
 			stats.recordFileChange(change)
 		}
 		printInitRefreshDryRun(changes, stats, opts)
+		printInitRefreshNotes(notes, opts)
 		return nil
 	}
 
@@ -128,6 +138,7 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 			stats.merged,
 			stats.skipped,
 		)
+		printInitRefreshNotes(notes, opts)
 	}
 	return nil
 }
@@ -253,6 +264,42 @@ func validateInitRefreshTargets(targets, known map[string]bool) error {
 	}
 	sort.Strings(unknown)
 	return fmt.Errorf("%s is not a Kit-managed refresh target", strings.Join(unknown, ", "))
+}
+
+func finalizeInitRefreshConfigChange(projectRoot string, cfg *config.Config, planned *initRefreshFileChange) (*initRefreshFileChange, error) {
+	before := ""
+	result := instructionFileCreated
+	if planned != nil {
+		before = planned.before
+		result = planned.result
+	} else if config.Exists(projectRoot) {
+		data, err := os.ReadFile(filepath.Join(projectRoot, config.ConfigFileName))
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", config.ConfigFileName, err)
+		}
+		before = string(data)
+		result = instructionFileUpdated
+	}
+
+	after, err := marshalInitRefreshConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	if before == after {
+		return nil, nil
+	}
+	return newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, result), nil
+}
+
+func printInitRefreshNotes(notes []string, opts initRefreshOptions) {
+	if opts.outputOnly || len(notes) == 0 {
+		return
+	}
+	fmt.Println()
+	fmt.Println("Ruleset registry notes:")
+	for _, note := range notes {
+		fmt.Printf("   - %s\n", note)
+	}
 }
 
 func initRefreshTargetMatches(targets map[string]bool, relativePath string) bool {

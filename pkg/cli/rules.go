@@ -259,7 +259,11 @@ func runRulesList(cmd *cobra.Command, args []string) error {
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), "No rulesets found.")
 		return err
 	}
-	return printRulesetList(cmd.OutOrStdout(), projectRoot, rulesets)
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+	return printRulesetList(cmd.OutOrStdout(), projectRoot, cfg, rulesets)
 }
 
 func runRulesView(cmd *cobra.Command, args []string) error {
@@ -646,9 +650,9 @@ func listRulesets(projectRoot string) ([]rulesetDocument, error) {
 	return rulesets, nil
 }
 
-func printRulesetList(w io.Writer, projectRoot string, rulesets []rulesetDocument) error {
+func printRulesetList(w io.Writer, projectRoot string, cfg *config.Config, rulesets []rulesetDocument) error {
 	writer := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	if _, err := fmt.Fprintln(writer, "SLUG\tPATH\tSTATUS\tAPPLIES_TO"); err != nil {
+	if _, err := fmt.Fprintln(writer, "SLUG\tPATH\tSTATUS\tREGISTRY\tAPPLIES_TO"); err != nil {
 		return err
 	}
 	for _, ruleset := range rulesets {
@@ -658,10 +662,11 @@ func printRulesetList(w io.Writer, projectRoot string, rulesets []rulesetDocumen
 		}
 		if _, err := fmt.Fprintf(
 			writer,
-			"%s\t%s\t%s\t%s\n",
+			"%s\t%s\t%s\t%s\t%s\n",
 			ruleset.Metadata.Slug,
 			filepath.ToSlash(relPath),
 			ruleset.Metadata.Status,
+			rulesetListRegistryState(cfg, ruleset.Metadata.Slug),
 			strings.Join(ruleset.Metadata.AppliesTo, ","),
 		); err != nil {
 			return err
@@ -671,6 +676,14 @@ func printRulesetList(w io.Writer, projectRoot string, rulesets []rulesetDocumen
 		return fmt.Errorf("failed to render ruleset list: %w", err)
 	}
 	return nil
+}
+
+func rulesetListRegistryState(cfg *config.Config, slug string) string {
+	artifact, ok := rulesetRegistryState(cfg, slug)
+	if !ok || strings.TrimSpace(artifact.State) == "" {
+		return "untracked"
+	}
+	return artifact.State
 }
 
 func loadRuleset(projectRoot, slug string) (rulesetDocument, error) {

@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -506,8 +507,52 @@ func TestRunRulesAddRegistrySelectorReactivatesModifiedRulesetWithoutOverwriting
 			t.Fatalf("expected local content to contain %q, got:\n%s", check, content)
 		}
 	}
-	if !strings.Contains(output, "MODIFIED") || !strings.Contains(output, "Activated: 1") {
+	if !strings.Contains(output, "LOCAL-CUSTOM") || !strings.Contains(output, "Activated: 1") {
 		t.Fatalf("expected modified activation output, got:\n%s", output)
+	}
+}
+
+func TestNormalizedRulesetHashIgnoresStatusOnlyChanges(t *testing.T) {
+	registry := registryRulesetForTest("status-only", []string{"git"})
+	local := strings.Replace(registry.Content, "status: active", "status: optional", 1)
+
+	registryHash, err := normalizedRulesetContentHash(registry.Content, registry.Metadata.Status)
+	if err != nil {
+		t.Fatalf("registry hash error: %v", err)
+	}
+	localHash, err := normalizedRulesetContentHash(local, registry.Metadata.Status)
+	if err != nil {
+		t.Fatalf("local hash error: %v", err)
+	}
+	if registryHash != localHash {
+		t.Fatalf("status-only hash drift: registry %s local %s", registryHash, localHash)
+	}
+}
+
+func TestRulesetRegistrySectionArtifactsUseHeadingPathsAndSkipFences(t *testing.T) {
+	registry := registryRulesetForTest("section-keys", []string{"git"})
+	content := registry.Content + "\n## Parent One\n\n### Duplicate\n\none\n\n## Parent Two\n\n### Duplicate\n\ntwo\n\n```bash\n# not a heading\n## also not a heading\n```\n"
+
+	sections := rulesetRegistrySectionArtifacts(content, registry.Metadata.Status)
+	var keys []string
+	for _, section := range sections {
+		keys = append(keys, section.Key)
+	}
+	for _, want := range []string{
+		"# ruleset: section-keys",
+		"# ruleset: section-keys > ## purpose",
+		"# ruleset: section-keys > ## rules",
+		"# ruleset: section-keys > ## parent one > ### duplicate",
+		"# ruleset: section-keys > ## parent two > ### duplicate",
+	} {
+		if !slices.Contains(keys, want) {
+			t.Fatalf("expected section key %q in %#v", want, keys)
+		}
+	}
+	for _, unwanted := range []string{"# not a heading", "## also not a heading"} {
+		if slices.Contains(keys, unwanted) {
+			t.Fatalf("unexpected fenced-code section key %q in %#v", unwanted, keys)
+		}
 	}
 }
 
@@ -757,11 +802,39 @@ func registryRulesetForTest(slug string, appliesTo []string) registryRuleset {
 		AppliesTo:         appliesTo,
 		ReadPolicyDefault: "conditional",
 	})
+	return registryRulesetWithContentForTest(slug, content, "test-"+slug+"-commit")
+}
+
+func registryRulesetWithContentForTest(slug, content, commit string) registryRuleset {
 	parsed := parseRuleset(content, slug+".md")
+	hash, err := normalizedRulesetContentHash(content, parsed.Metadata.Status)
+	if err != nil {
+		panic(err)
+	}
 	return registryRuleset{
-		Slug:     slug,
-		Content:  content,
-		Metadata: parsed.Metadata,
+		Slug:           slug,
+		Content:        content,
+		Metadata:       parsed.Metadata,
+		SourceRepo:     rulesetRegistryRepoFullName(),
+		SourceBranch:   rulesetRegistryBranch,
+		SourceCommit:   commit,
+		SourcePath:     rulesetTarget(slug),
+		NormalizedHash: hash,
+	}
+}
+
+func stubRulesetRegistryContent(t *testing.T, contentByCommit map[string]string) {
+	t.Helper()
+	previous := rulesetRegistryContentFetcher
+	t.Cleanup(func() {
+		rulesetRegistryContentFetcher = previous
+	})
+	rulesetRegistryContentFetcher = func(_ context.Context, _ string, commit string, _ string) (string, error) {
+		content, ok := contentByCommit[commit]
+		if !ok {
+			return "", os.ErrNotExist
+		}
+		return content, nil
 	}
 }
 
