@@ -187,6 +187,7 @@ func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, 
 		"**Only after the readiness gate passes, execute tasks from TASKS.md**",
 		"**Continue the task loop until every non-blocked task in TASKS.md is complete:**\n- Select the next incomplete unblocked task in dependency order\n- Read that task's GOAL, SCOPE, ACCEPTANCE, VERIFY, EXPECTED FILES, RISK, ROLLBACK, DEPENDENCIES, and NOTES\n- Load only the linked context needed for that task\n- Run the readiness gate for that task\n- Implement only what's specified (no gold-plating)\n- Run declared VERIFY commands with `kit verify <feature> --task <task-id>` when available\n- Verify acceptance criteria are met before marking complete\n- Update TASKS.md: change '- [ ]' to '- [x]' when done\n- Update PROJECT_PROGRESS_SUMMARY.md if progress changed\n- Repeat with the next incomplete task",
 		"**Do not stop after one task** unless blocked, validation fails, clarification is required, or the user explicitly asks you to stop",
+		githubDeliveryHardGateStep(),
 		"**Run relevant validation before completion**\n- Run the smallest build, lint, or test command that proves the touched behavior\n- Never claim tests passed unless they ran\n- If validation cannot run, state why",
 	)
 
@@ -279,43 +280,4 @@ func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, 
 		doc.Paragraph("After a task is complete, repeat the same loop for the next incomplete unblocked task until every non-blocked task in TASKS.md is complete.")
 		addFinalResponseContract(doc, implementFinalResponseContract()...)
 	})
-}
-
-func printImplementationContext(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary string, progress feature.TaskProgress) {
-	hasBrainstorm := document.Exists(brainstormPath)
-	style := styleForStdout()
-
-	fmt.Println()
-	fmt.Println(style.title("🛠️", fmt.Sprintf("Implementation Context: %s", feat.DirName)))
-	fmt.Println()
-
-	if summary != "" {
-		fmt.Println(style.title("📝", "Feature Summary"))
-		fmt.Println(summary)
-		fmt.Println()
-	} else {
-		fmt.Println(style.title("📝", "Feature Summary"))
-		fmt.Println("(Read SPEC.md for feature description)")
-		fmt.Println()
-	}
-
-	if progress.HasTasks() {
-		fmt.Println(style.title("📈", fmt.Sprintf("Progress: %d/%d tasks complete", progress.Complete, progress.Total)))
-	} else {
-		fmt.Println(style.title("📈", "Progress: Tasks defined, ready to begin"))
-	}
-	fmt.Println()
-
-	fmt.Println(style.title("📚", "Document Reference"))
-	printImplementDocumentReferenceTable()
-	fmt.Println()
-
-	fmt.Println(style.title("📍", "File Locations"))
-	if hasBrainstorm {
-		fmt.Printf("  • BRAINSTORM: %s\n", brainstormPath)
-	}
-	fmt.Printf("  • SPEC:  %s\n", specPath)
-	fmt.Printf("  • PLAN:  %s\n", planPath)
-	fmt.Printf("  • TASKS: %s\n", tasksPath)
-	fmt.Println()
 }
