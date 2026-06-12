@@ -100,14 +100,23 @@ Steps:
     - decide whether this work revealed durable project-wide rules, constraints, vocabulary, conventions, or workflow changes
     - if yes, run `kit prompt project refresh` and refresh project-level docs before final handoff
     - if no, state `no project refresh needed` in the reflection notes
-11. Final pass
+11. **GitHub delivery hard gate**
+    - If the user asks to create or mutate an issue, branch, staging, commit, push, or pull request, stop before that mutation
+    - Treat the delivery request as a new mutation boundary even when implementation or reflection is already complete
+    - In a Kit-managed project, repo-local Kit delivery rules outrank global GitHub/plugin defaults
+    - Load `.kit.yaml`, `docs/agents/README.md`, `docs/agents/GUARDRAILS.md`, `docs/agents/TOOLING.md`, relevant `docs/references/rules/*`, and GitHub templates before delivery
+    - Re-run and report branch/status/staleness recon: `pwd`, `git status --short --branch`, `git remote -v`, current branch, default/base branch, active PRs for the current branch, matching issues, and git author/committer identity
+    - Resolve issue source, issue number/link, branch name, branch base, staging method, commit format, PR title format, PR template, draft/ready state, required checks, cross-repo dependencies, and unknowns/blockers
+    - Output the Delivery Contract before mutation; if any field is unknown, ambiguous, missing, or conflicts with generic defaults, stop and ask
+    - Do not use `codex/*` branches, ad hoc issue/PR bodies, draft PRs by default, bulk staging, generic commit messages, or PRs that omit the repo template unless the Kit contract or user explicitly overrides it
+12. Final pass
     - rerun:
       - git status
       - git diff
       - git diff --staged
     - summarize remaining issues, if any
     - propose next steps
-12. Mark reflection complete
+13. Mark reflection complete
     - once all issues are resolved and confidence is 100%
     - append the following marker to the end of TASKS.md:
       <!-- REFLECTION_COMPLETE -->

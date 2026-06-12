@@ -28,6 +28,63 @@ read_policy_default: conditional
 
 ## Rules
 
+### Kit Delivery Hard Gate
+
+- In a Kit-managed project, repo-local Kit delivery rules outrank every global GitHub/plugin workflow before any issue, branch, staging, commit, push, or PR mutation.
+- A Kit-managed project is any repository containing `.kit.yaml`, `docs/CONSTITUTION.md`, or `docs/agents/README.md`.
+- Treat issue, branch, staging, commit, push, and PR operations as mutation boundaries. Even if implementation is already complete, reload and resolve the delivery rules at that boundary.
+- Before any GitHub delivery mutation, load repo-local workflow entrypoints:
+  - `.kit.yaml`
+  - `docs/agents/README.md`
+  - `docs/agents/GUARDRAILS.md`
+  - `docs/agents/TOOLING.md`
+  - rulesets under `docs/references/rules/*` relevant to git, GitHub, branches, issues, commits, or PRs
+  - `.github/pull_request_template.md` and issue templates when present
+- Run and report delivery recon before any GitHub delivery mutation:
+  - `pwd`
+  - `git status --short --branch`
+  - `git remote -v`
+  - current branch
+  - default/base branch
+  - active PRs for the current branch
+  - existing matching issues
+  - git author and committer identity
+- Resolve the repo-local delivery contract before mutation:
+  - issue system and required ticket format
+  - issue reuse/create rules
+  - branch naming convention
+  - base branch refresh and staleness rules
+  - staging rule
+  - commit message format
+  - PR draft/ready convention
+  - PR template headings
+  - required validation commands
+- Present this preflight before executing GitHub delivery:
+
+```text
+Delivery Contract:
+- Repository:
+- Base branch:
+- Issue source:
+- Issue number/link:
+- Branch name:
+- Branch base:
+- Branch/status/staleness check:
+- Staging method:
+- Commit format:
+- PR title format:
+- PR template:
+- Draft or ready:
+- Required checks:
+- Cross-repo dependencies:
+- Unknowns/blockers:
+```
+
+- If any field is unknown, ambiguous, missing, or conflicts with generic agent defaults, stop and wait for explicit user approval.
+- If repo-local delivery rules cannot be found or are incomplete, stop and ask. Do not invent a substitute workflow.
+- Global agent/plugin GitHub workflows are fallback tools only. They do not define process in Kit-managed projects.
+- Do not create `codex/*` branches, ad hoc issue bodies, ad hoc PR bodies, draft PRs by default, commits using generic messages, or PRs that omit the repo template unless repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
+
 ### Author And Committer Invariant
 
 - The human user is the git author and committer for every commit.
@@ -105,6 +162,7 @@ Include:
 - Do not add a slug, suffix, or description.
 - Create or switch branches in the existing project directory.
 - Do not create or use git worktrees for PR delivery.
+- Before creating or switching to an issue branch, automatically re-run branch/status/staleness recon for the active directory and current branch.
 - Before branching, refresh the base from the remote. Fetch only. Never pull, merge, or checkout the base:
 
 ```bash
@@ -254,7 +312,13 @@ Include:
 ## Anti-Patterns
 
 - Do not run this workflow without consent or an explicit PR request.
+- Do not use a global GitHub/plugin workflow as the delivery process inside a Kit-managed project.
 - Do not create duplicate issues or PRs.
+- Do not create `codex/*` branches unless repo-local Kit rules or the user explicitly override the `GH-123` convention.
+- Do not create ad hoc issue bodies or PR bodies when repo-local templates or issue content rules exist.
+- Do not create draft PRs by default when repo-local Kit rules require ready-for-review PRs.
+- Do not use generic commit messages when repo-local Kit rules define a commit format.
+- Do not omit the repository PR template.
 - Do not create descriptive branch names when an issue number is available.
 - Do not commit to the protected base branch.
 - Do not create or use git worktrees for PR delivery.
@@ -268,6 +332,9 @@ Include:
 
 - Confirm `safety-guardrails` ran first.
 - Confirm PR workflow consent or explicit PR request was recorded.
+- Confirm the Kit Delivery Hard Gate ran before any issue, branch, staging, commit, push, or PR mutation.
+- Confirm the Delivery Contract was resolved and no unknown fields remained before mutation.
+- Confirm branch/status/staleness recon ran at the GitHub delivery boundary.
 - Confirm base branch was discovered instead of assumed.
 - Confirm issue resolution searched existing open issues before creating a new issue.
 - Confirm the GitHub issue is assigned to the human user before branch creation.

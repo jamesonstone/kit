@@ -9,6 +9,82 @@
 - Never mix multiple features in one `docs/specs/<feature>/` directory
 - Update docs first when reality diverges from documented behavior
 
+## GitHub Delivery Hard Gate
+
+When the user asks to create or mutate an issue, branch, commit, push, or pull request in a Kit-managed project, stop before any GitHub or git mutation.
+
+A Kit-managed project is any repository containing `.kit.yaml`, `docs/CONSTITUTION.md`, or `docs/agents/README.md`.
+
+Before creating or mutating issues, branches, staging, commits, pushes, or PRs, agents must:
+
+1. Load repo-local workflow entrypoints:
+   - `.kit.yaml`
+   - `docs/agents/README.md`
+   - `docs/agents/GUARDRAILS.md`
+   - `docs/agents/TOOLING.md`
+   - any referenced `docs/references/rules/*` rulesets relevant to git, GitHub, branches, issues, commits, or PRs
+   - `.github/pull_request_template.md` and issue templates when present
+2. Run delivery recon and report the result:
+   - `pwd`
+   - `git status --short --branch`
+   - `git remote -v`
+   - current branch
+   - default/base branch
+   - active PRs for the current branch
+   - existing matching issues
+   - current git author and committer identity
+3. Resolve the repo-local delivery contract before mutation:
+   - issue system and required ticket format
+   - issue reuse/create rules
+   - branch naming convention
+   - base branch refresh and staleness rules
+   - staging rule
+   - commit message format
+   - PR draft/ready convention
+   - PR template headings
+   - required validation commands
+4. Present a short Delivery Contract and wait for explicit user approval if any field is unknown, ambiguous, missing, or conflicts with generic agent defaults.
+5. Never use global defaults such as `codex/<slug>` branches, ad hoc issue bodies, ad hoc PR bodies, draft PRs, `git add -A`, `git add .`, or generic commit messages when repo-local Kit rules define different behavior.
+6. If repo-local delivery rules cannot be found or are incomplete, stop and ask. Do not invent a substitute workflow.
+
+Before executing GitHub delivery, output:
+
+```text
+Delivery Contract:
+- Repository:
+- Base branch:
+- Issue source:
+- Issue number/link:
+- Branch name:
+- Branch base:
+- Branch/status/staleness check:
+- Staging method:
+- Commit format:
+- PR title format:
+- PR template:
+- Draft or ready:
+- Required checks:
+- Cross-repo dependencies:
+- Unknowns/blockers:
+```
+
+If any field is unknown, stop.
+
+## No Generic GitHub Defaults In Kit Projects
+
+In a Kit-managed project, global agent/plugin GitHub workflows are fallback tools only. They do not define process.
+
+Do not create:
+
+- `codex/*` branches
+- ad hoc issue bodies
+- ad hoc PR bodies
+- draft PRs by default
+- commits using generic messages
+- PRs that omit the repo template
+
+unless the repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
+
 ## Completion Bar
 
 - Populate all required sections in `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md`
