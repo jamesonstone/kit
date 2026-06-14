@@ -735,6 +735,13 @@ Flags:
   records
 - include when-to-use, when-not-to-use, examples, caveats, aliases, and detailed
   flag behavior in detail and full records
+- human detail output must include agent-readable guidance for safe command
+  selection, including when to use the command, when not to use it, examples,
+  caveats when present, important flag safety notes, and related commands
+- every new or changed command, subcommand, flag, alias, prompt surface, or
+  behavior extension must update `kit capabilities` in the same change
+- command-surface work must follow
+  `docs/references/rules/command-capabilities.md`
 
 ---
 

@@ -221,12 +221,37 @@ func renderCapabilityDetail(out io.Writer, record capabilityDetailRecord) error 
 			return err
 		}
 	}
+	if len(record.Aliases) > 0 {
+		if _, err := fmt.Fprintf(out, "  Aliases: %s\n", strings.Join(record.Aliases, ", ")); err != nil {
+			return err
+		}
+	}
+	if err := renderCapabilityStringList(out, "When to use", record.WhenToUse); err != nil {
+		return err
+	}
+	if err := renderCapabilityStringList(out, "When not to use", record.WhenNotToUse); err != nil {
+		return err
+	}
+	if err := renderCapabilityStringList(out, "Examples", record.Examples); err != nil {
+		return err
+	}
+	if err := renderCapabilityStringList(out, "Caveats", record.Caveats); err != nil {
+		return err
+	}
 	if len(record.ImportantFlags) > 0 {
 		if _, err := fmt.Fprintln(out, "  Important flags:"); err != nil {
 			return err
 		}
 		for _, flag := range record.ImportantFlags {
-			if _, err := fmt.Fprintf(out, "    %s: %s\n", flag.Name, flag.Summary); err != nil {
+			if _, err := fmt.Fprintf(out, "    %s: %s", flag.Name, flag.Summary); err != nil {
+				return err
+			}
+			if flag.Safety != "" {
+				if _, err := fmt.Fprintf(out, " [%s]", flag.Safety); err != nil {
+					return err
+				}
+			}
+			if _, err := fmt.Fprintln(out); err != nil {
 				return err
 			}
 		}
@@ -247,6 +272,24 @@ func renderCapabilityDetail(out io.Writer, record capabilityDetailRecord) error 
 			if _, err := fmt.Fprintln(out); err != nil {
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+func renderCapabilityStringList(out io.Writer, title string, values []string) error {
+	if len(values) == 0 {
+		return nil
+	}
+	if _, err := fmt.Fprintf(out, "  %s:\n", title); err != nil {
+		return err
+	}
+	for _, value := range values {
+		if strings.TrimSpace(value) == "" {
+			continue
+		}
+		if _, err := fmt.Fprintf(out, "    - %s\n", value); err != nil {
+			return err
 		}
 	}
 	return nil

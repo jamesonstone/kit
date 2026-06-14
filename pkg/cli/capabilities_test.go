@@ -170,6 +170,27 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 }
 
+func TestCapabilitiesHumanDetailIncludesAgentGuidance(t *testing.T) {
+	output, err := executeCapabilitiesCommand("dispatch")
+	if err != nil {
+		t.Fatalf("kit capabilities dispatch error = %v", err)
+	}
+
+	for _, want := range []string{
+		"When to use:",
+		"When not to use:",
+		"Examples:",
+		"Important flags:",
+		"--resolve: with --pr, resolve matching unresolved review threads",
+		"[GitHub mutation; requires --yes]",
+		"Related commands:",
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("human detail output missing %q:\n%s", want, output)
+		}
+	}
+}
+
 func TestCapabilitiesUnknownCommandIsActionable(t *testing.T) {
 	_, err := executeCapabilitiesCommand("--json", "does-not-exist")
 	if err == nil {
@@ -364,6 +385,39 @@ func TestCapabilityCatalogCoversVisibleRootCommands(t *testing.T) {
 		}
 		if _, ok := capabilityByCommandPath(cmd.Name()); !ok {
 			t.Fatalf("visible root command %q is missing from capability catalog", cmd.Name())
+		}
+	}
+}
+
+func TestCapabilityCatalogRecordsIncludeAgentGuidance(t *testing.T) {
+	for _, record := range capabilityCatalog() {
+		if record.Hidden || record.Deprecated {
+			continue
+		}
+		detail := record.detail()
+		if strings.TrimSpace(detail.Summary) == "" {
+			t.Fatalf("%s missing summary", detail.Command)
+		}
+		if strings.TrimSpace(detail.MutationLevel) == "" {
+			t.Fatalf("%s missing mutation level", detail.Command)
+		}
+		if strings.TrimSpace(detail.NetworkUse.Summary) == "" {
+			t.Fatalf("%s missing network behavior", detail.Command)
+		}
+		if strings.TrimSpace(detail.FileWrites.Summary) == "" {
+			t.Fatalf("%s missing file-write behavior", detail.Command)
+		}
+		if strings.TrimSpace(detail.GitMutation.Summary) == "" {
+			t.Fatalf("%s missing git mutation behavior", detail.Command)
+		}
+		if len(detail.WhenToUse) == 0 {
+			t.Fatalf("%s missing when_to_use guidance", detail.Command)
+		}
+		if len(detail.WhenNotToUse) == 0 {
+			t.Fatalf("%s missing when_not_to_use guidance", detail.Command)
+		}
+		if len(detail.Examples) == 0 {
+			t.Fatalf("%s missing examples", detail.Command)
 		}
 	}
 }

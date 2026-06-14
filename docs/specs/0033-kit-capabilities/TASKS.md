@@ -99,6 +99,7 @@ references:
 | T006 | Add drift and read-only side-effect tests          | done   | agent | T004, T005   |
 | T007 | Update user-facing and agent-facing documentation  | done   | agent | T006         |
 | T008 | Run final verification and reconcile feature state | done   | agent | T007         |
+| T009 | Add command capability maintenance rule            | done   | agent | T008         |
 
 ## TASK LIST
 
@@ -110,6 +111,7 @@ references:
 - [x] T006: Add drift and read-only side-effect tests [PLAN-RISKS] [PLAN-TESTING]
 - [x] T007: Update user-facing and agent-facing documentation [PLAN-APPROACH] [PLAN-COMPONENTS]
 - [x] T008: Run final verification and reconcile feature state [PLAN-TESTING]
+- [x] T009: Add command capability maintenance rule [SPEC-29] [SPEC-30]
 
 ## TASK DETAILS
 
@@ -333,6 +335,34 @@ references:
 - **ROLLBACK**: Revert feature files if verification shows the approach is unsalvageable; otherwise fix the failing task before completion.
 - **NOTES**: The unknown-command CLI path is covered by `TestCapabilitiesUnknownCommandIsActionable` so the verification harness can stay exit-code based.
 
+### T009
+
+- **GOAL**: Make capability metadata maintenance a repo rule and expose richer agent guidance in human output.
+- **SCOPE**:
+  - add `docs/references/rules/command-capabilities.md`
+  - update agent-facing and init docs to require `kit capabilities` updates for command-surface changes
+  - render targeted human detail with when-to-use, when-not-to-use, examples, caveats, flag safety, and related commands
+  - add tests that visible command records include agent guidance fields
+- **ACCEPTANCE**:
+  - repository rules document the capabilities maintenance requirement
+  - human targeted output is usable by coding agents without requiring a separate README scan
+  - tests prevent visible command records from omitting guidance fields
+- **VERIFY**:
+  - `go test ./pkg/cli -run TestCapabilities`
+  - `go run ./cmd/kit capabilities dispatch`
+  - `go run ./cmd/kit capabilities capabilities --json`
+- **EXPECTED FILES**:
+  - `docs/references/rules/command-capabilities.md`
+  - `docs/agents/TOOLING.md`
+  - `docs/references/README.md`
+  - `docs/specs/0000_INIT_PROJECT.md`
+  - `pkg/cli/capabilities.go`
+  - `pkg/cli/capabilities_catalog.go`
+  - `pkg/cli/capabilities_test.go`
+- **RISK**: Low; output rendering changes are localized, but stale capability metadata can mislead future agents.
+- **ROLLBACK**: Revert the new ruleset, docs references, renderer changes, and tests.
+- **NOTES**: Keep the JSON schema at version 1 unless a future incompatible change is intentional and tested.
+
 ## DEPENDENCIES
 
 - T001 must finish before code edits because the constitution requires an implementation readiness gate.
@@ -341,6 +371,7 @@ references:
 - T004 can run after T003 and before final drift tests so root help placement is part of the test surface.
 - T005 and T006 must finish before T007 so documentation reflects tested behavior, not intended behavior.
 - T008 depends on all implementation, tests, and docs tasks.
+- T009 depends on T008 because it hardens the completed capabilities command after reflection.
 
 ## NOTES
 

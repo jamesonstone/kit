@@ -394,6 +394,8 @@ References are tracked in front matter.
 - [SPEC-26] Downstream planning for this feature must preserve RLM routing and record `parallelization_mode: "rlm"` in planning notes or execution metadata.
 - [SPEC-27] The implementation must not add third-party dependencies.
 - [SPEC-28] The implementation must preserve existing command behavior and existing command JSON payloads outside the new `capabilities` surface.
+- [SPEC-29] Every new or changed Kit command, subcommand, flag, alias, prompt surface, or command behavior extension must update `kit capabilities` in the same change.
+- [SPEC-30] Human detail output must include agent-readable guidance for safe command choice, including when to use the command, when not to use it, examples, caveats when present, important flag safety notes, and related commands.
 
 ## ACCEPTANCE
 
@@ -412,6 +414,8 @@ References are tracked in front matter.
 - [ACCEPT-13] README, `docs/specs/0000_INIT_PROJECT.md`, and agent-facing docs describe compact, targeted, full, and search usage without encouraging repeated full-context loading.
 - [ACCEPT-14] `kit map 0033-kit-capabilities` resolves the spec relationships and material references after this spec is complete.
 - [ACCEPT-15] `kit check 0033-kit-capabilities` passes after the spec exists and is populated.
+- [ACCEPT-16] Tests prove visible command records include agent guidance fields and targeted human detail output renders them.
+- [ACCEPT-17] Repository rules document that command-surface changes must update `kit capabilities`.
 
 ## EDGE-CASES
 
