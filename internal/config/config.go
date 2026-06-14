@@ -33,12 +33,18 @@ type Config struct {
 	RemovedFeatures            []RemovedFeature                 `yaml:"removed_features,omitempty"`
 	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
 	Registry                   RegistryConfig                   `yaml:"registry,omitempty"`
+	GitHub                     GitHubConfig                     `yaml:"github,omitempty"`
 }
 
 type RegistryConfig struct {
 	SchemaVersion int                `yaml:"schema_version,omitempty"`
 	Source        RegistrySource     `yaml:"source,omitempty"`
 	Artifacts     []RegistryArtifact `yaml:"artifacts,omitempty"`
+}
+
+type GitHubConfig struct {
+	Repository    string `yaml:"repository,omitempty"`
+	DefaultBranch string `yaml:"default_branch,omitempty"`
 }
 
 type RegistrySource struct {

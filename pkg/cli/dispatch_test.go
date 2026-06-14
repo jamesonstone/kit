@@ -276,6 +276,12 @@ func TestDispatchCommandExposesPRFlags(t *testing.T) {
 	if dispatch.Flags().Lookup("coderabbit") == nil {
 		t.Fatal("expected dispatch to expose --coderabbit")
 	}
+	if dispatch.Flags().Lookup("resolve") == nil {
+		t.Fatal("expected dispatch to expose --resolve")
+	}
+	if dispatch.Flags().Lookup("yes") == nil {
+		t.Fatal("expected dispatch to expose --yes")
+	}
 }
 
 func reviewThreadFixture(

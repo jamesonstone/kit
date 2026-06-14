@@ -34,6 +34,13 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
+		var exitErr *cliExitError
+		if errors.As(err, &exitErr) {
+			if !exitErr.silent {
+				fmt.Fprintln(os.Stderr, exitErr.Error())
+			}
+			os.Exit(exitErr.code)
+		}
 		var silentErr *silentCLIError
 		if !errors.As(err, &silentErr) {
 			fmt.Fprintln(os.Stderr, err)
@@ -54,6 +61,33 @@ func (e *silentCLIError) Error() string {
 }
 
 func (e *silentCLIError) Unwrap() error {
+	if e == nil {
+		return nil
+	}
+	return e.err
+}
+
+type cliExitError struct {
+	err    error
+	code   int
+	silent bool
+}
+
+func newCLIExitError(err error, code int, silent bool) *cliExitError {
+	if code == 0 {
+		code = 1
+	}
+	return &cliExitError{err: err, code: code, silent: silent}
+}
+
+func (e *cliExitError) Error() string {
+	if e == nil || e.err == nil {
+		return ""
+	}
+	return e.err.Error()
+}
+
+func (e *cliExitError) Unwrap() error {
 	if e == nil {
 		return nil
 	}
