@@ -11,14 +11,16 @@ import (
 )
 
 const (
-	rulesetRegistryOwner             = "jamesonstone"
-	rulesetRegistryRepo              = "kit"
-	rulesetRegistryBranch            = "main"
-	rulesetRegistryAPIURL            = "https://api.github.com/repos/jamesonstone/kit/contents/docs/references/rules?ref=main"
-	inactiveRulesetStatus            = document.ReferenceStatusOptional
-	registryArtifactStateManaged     = "managed"
-	registryArtifactStateLocalCustom = "local-custom"
-	registryArtifactStateConflict    = "conflict"
+	rulesetRegistryOwner              = "jamesonstone"
+	rulesetRegistryRepo               = "kit"
+	rulesetRegistryBranch             = "main"
+	rulesetRegistryAPIURL             = "https://api.github.com/repos/jamesonstone/kit/contents/docs/references/rules?ref=main"
+	rulesetRegistryScopeDownstream    = "downstream"
+	rulesetRegistryScopeKitMaintainer = "kit-maintainer"
+	inactiveRulesetStatus             = document.ReferenceStatusOptional
+	registryArtifactStateManaged      = "managed"
+	registryArtifactStateLocalCustom  = "local-custom"
+	registryArtifactStateConflict     = "conflict"
 
 	registrySelectorDefaultTableWidth = 118
 	registrySelectorMinimumTableWidth = 88
@@ -74,6 +76,7 @@ func runRulesAddRegistrySelector(cmd interface {
 	if err != nil {
 		return err
 	}
+	registry = projectRulesetRegistry(registry)
 	if len(registry) == 0 {
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), "No registry rulesets found.")
 		return err
@@ -113,6 +116,28 @@ func rulesetRegistryRulesetURL(slug string) string {
 		rulesetDirRelPath,
 		slug,
 	)
+}
+
+func projectRulesetRegistry(registry []registryRuleset) []registryRuleset {
+	filtered := make([]registryRuleset, 0, len(registry))
+	for _, item := range registry {
+		if !rulesetRegistryVisibleToProjects(item) {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	return filtered
+}
+
+func rulesetRegistryVisibleToProjects(item registryRuleset) bool {
+	switch strings.TrimSpace(item.Metadata.RegistryScope) {
+	case "", rulesetRegistryScopeDownstream:
+		return true
+	case rulesetRegistryScopeKitMaintainer:
+		return false
+	default:
+		return true
+	}
 }
 
 func ensureTrailingNewline(content string) string {

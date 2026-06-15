@@ -137,6 +137,9 @@ kit map
 # inspect the full project document map
 kit map --all
 
+# inspect Kit command behavior before choosing a command
+kit capabilities --search verify
+
 # pause a feature without losing its phase
 kit pause my-feature
 
@@ -184,6 +187,7 @@ kit rm my-feature --yes --notes
 | `kit status`              | Show the active feature status, including paused state; supports `--json`                        |
 | `kit status --all`        | Show the project-wide overview as a lifecycle matrix with state and task progress; supports JSON |
 | `kit map [feature]`       | Select or show a feature map; supports `--all` for the full project document map                 |
+| `kit capabilities`        | List command capabilities, mutation behavior, network use, and important flags; supports `--json`, `--full`, and `--search` |
 | `kit check <feature>`     | Validate feature documents and populated required sections                                       |
 | `kit check --project`     | Validate the repo-level document, init scaffold, and instruction contract                        |
 | `kit verify [feature]`    | Run declared verification checks from `TASKS.md` and write local run evidence                    |
@@ -193,6 +197,11 @@ kit rm my-feature --yes --notes
 | `kit eval`                | Run small local harness regression checks                                                        |
 | `kit rules` / `kit rule`  | Import, preview, create, list, and link durable repo-local rulesets under `docs/references/rules/` |
 | `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift; supports `--migrate-verification` for advisory executable-check migration |
+
+Inside the Kit source repository, every new command, subcommand, flag, alias, or
+command behavior extension must update `kit capabilities` in the same change.
+Downstream Kit-managed projects should use `kit capabilities` for command
+discovery; they should not maintain Kit's internal command catalog.
 
 ### 🧾 Prompt Utilities
 
@@ -204,6 +213,7 @@ kit rm my-feature --yes --notes
 | `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor                                 |
 | `kit handoff [feature]`        | Prompt the current agent session to sync docs, reference inventories, and prepare a handoff |
 | `kit summarize [feature]`      | Output context summarization instructions                                                    |
+| `kit review-loop`              | Prepare a dispatch prompt from current unresolved PR review feedback                         |
 | `kit dispatch`                 | Output a discovery-first prompt for clustering tasks and queueing subagents                  |
 | `kit code-review`              | Output instructions for branch code review                                                   |
 | `kit skill mine [feature]`     | Output skill extraction prompt for the active coding agent                                   |
@@ -217,7 +227,7 @@ kit rm my-feature --yes --notes
 | `kit completion` | Generate shell autocompletion script        |
 
 Hidden compatibility commands remain callable for migration, but they are no longer shown in
-default help or primary docs: `kit update`, `kit skills`, `kit catchup`, `kit scaffold`,
+default help or primary docs: `kit update`, `kit skills`, `kit catchup`, `kit scaffold-agents`,
 `kit rollup`, and `kit brainstorm --pickup`.
 
 Prompt-producing commands default to subagent orchestration guidance. Pass
@@ -239,6 +249,18 @@ unresolved, non-outdated GitHub PR review threads. Add `--coderabbit` to keep
 only CodeRabbit-authored review comments. `--pr` accepts a full GitHub PR URL, a
 Markdown PR link, `owner/repo#123`, or a PR number resolved from the current
 project's `origin` remote.
+After the resulting fixes or no-op decisions are complete, use
+`kit dispatch --pr <target> --resolve --yes` to resolve the currently matching
+unresolved review threads on GitHub. Add `--coderabbit` to resolve only
+CodeRabbit-authored review threads. Resolution is an explicit GitHub mutation
+and is never part of the default prompt-generation path.
+
+Use `kit review-loop --pr <url|number> --coderabbit` when you want Kit to turn
+current unresolved CodeRabbit review feedback into a human-reviewed dispatch
+prompt. Add `--watch` to wait for CodeRabbit completion on the current PR head
+before collecting comments. `kit dispatch --loop --pr <target>` is an alias for
+the same review-loop workflow, while `kit dispatch --pr <target> --coderabbit`
+remains the lower-level untriaged review-thread intake.
 
 ### 📋 Output Behavior
 

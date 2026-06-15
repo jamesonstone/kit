@@ -13,9 +13,13 @@ var (
 	dispatchCodeRabbit   bool
 	dispatchEditor       string
 	dispatchFile         string
+	dispatchLoop         bool
 	dispatchOutputOnly   bool
 	dispatchPR           string
+	dispatchResolve      bool
 	dispatchUseVim       bool
+	dispatchWatch        bool
+	dispatchYes          bool
 	dispatchMaxSubagents int
 )
 
@@ -32,7 +36,9 @@ Input precedence:
   4. interactive editor-backed capture
 Interactive capture opens $EDITOR by default, falling back to a vim-compatible editor when $EDITOR is unset.
 
-The command never launches subagents itself. It only outputs the prompt.`,
+The command never launches subagents itself. It only outputs the prompt unless
+--resolve --yes is explicitly supplied to resolve already-handled PR review
+threads.`,
 	Args: cobra.NoArgs,
 	RunE: runDispatch,
 }
@@ -42,6 +48,10 @@ func init() {
 	dispatchCmd.Flags().StringVar(&dispatchFile, "file", "", "read the raw task set from a file")
 	dispatchCmd.Flags().StringVar(&dispatchPR, "pr", "", "fetch unresolved PR review threads from a PR URL, Markdown link, owner/repo#number, or current-repo number")
 	dispatchCmd.Flags().BoolVar(&dispatchCodeRabbit, "coderabbit", false, "with --pr, include only CodeRabbit-authored review comments")
+	dispatchCmd.Flags().BoolVar(&dispatchLoop, "loop", false, "route PR review feedback through the review-loop workflow")
+	dispatchCmd.Flags().BoolVar(&dispatchResolve, "resolve", false, "with --pr, resolve matching unresolved review threads after fixes or no-op decisions are complete")
+	dispatchCmd.Flags().BoolVar(&dispatchWatch, "watch", false, "with --loop, wait for current-head CodeRabbit review completion before collecting feedback")
+	dispatchCmd.Flags().BoolVar(&dispatchYes, "yes", false, "confirm --resolve without an interactive prompt")
 	dispatchCmd.Flags().BoolVar(&dispatchCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	dispatchCmd.Flags().BoolVar(
 		&dispatchOutputOnly,
@@ -60,6 +70,21 @@ func init() {
 
 func runDispatch(cmd *cobra.Command, args []string) error {
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
+	if dispatchWatch && !dispatchLoop {
+		return fmt.Errorf("--watch requires --loop")
+	}
+	if dispatchYes && !dispatchResolve {
+		return fmt.Errorf("--yes requires --resolve")
+	}
+	if dispatchLoop {
+		if dispatchResolve {
+			return fmt.Errorf("--resolve cannot be used with --loop")
+		}
+		return runDispatchReviewLoopAlias(cmd, outputOnly)
+	}
+	if dispatchResolve {
+		return runDispatchPRResolve(cmd)
+	}
 
 	if err := validateDispatchMaxSubagents(dispatchMaxSubagents); err != nil {
 		return err
@@ -98,6 +123,27 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func runDispatchReviewLoopAlias(cmd *cobra.Command, outputOnly bool) error {
+	if strings.TrimSpace(dispatchFile) != "" {
+		return fmt.Errorf("--file cannot be used with --loop")
+	}
+	if strings.TrimSpace(dispatchPR) == "" {
+		return fmt.Errorf("--loop requires --pr")
+	}
+
+	return reviewLoopExecutor(cmd, reviewLoopOptions{
+		PRRef:          dispatchPR,
+		CodeRabbitOnly: dispatchCodeRabbit,
+		Watch:          dispatchWatch,
+		Copy:           dispatchCopy,
+		OutputOnly:     outputOnly,
+		UseVim:         dispatchUseVim,
+		Editor:         dispatchEditor,
+		MaxSubagents:   dispatchMaxSubagents,
+		InputConfig:    newFreeTextInputConfig(dispatchUseVim, dispatchEditor, false, true),
+	})
 }
 
 func loadDispatchInputForCommand(

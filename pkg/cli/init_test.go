@@ -719,6 +719,103 @@ func TestRunInitRefresh_AdoptsExistingStatusOnlyRulesetAsManaged(t *testing.T) {
 	}
 }
 
+func TestRunInitRefresh_InstallsDownstreamCapabilitiesUsageRuleNotMaintainerRule(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	usage := registryRulesetWithContentForTest("kit-capabilities-usage", downstreamCapabilitiesUsageRulesetForTest(), "test-usage-commit")
+	maintainer := registryRulesetForTest("command-capabilities", []string{"kit", "cli", "capabilities"})
+	maintainer.Metadata.RegistryScope = rulesetRegistryScopeKitMaintainer
+	maintainer.Content = strings.Replace(
+		maintainer.Content,
+		"## Rules",
+		"## Rules\n\n- Update `pkg/cli/capabilities_catalog.go`.",
+		1,
+	)
+	stubRulesetRegistry(t, usage, maintainer)
+
+	if err := config.Save(tempDir, config.Default()); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	usageContent, err := os.ReadFile(filepath.Join(tempDir, rulesetTarget("kit-capabilities-usage")))
+	if err != nil {
+		t.Fatalf("expected downstream usage ruleset to be installed: %v", err)
+	}
+	for _, check := range []string{
+		"slug: kit-capabilities-usage",
+		"kit capabilities <command> --json",
+		"Do not maintain Kit's internal command catalog from a downstream project",
+	} {
+		if !strings.Contains(string(usageContent), check) {
+			t.Fatalf("expected downstream usage ruleset to contain %q, got:\n%s", check, usageContent)
+		}
+	}
+	if document.Exists(filepath.Join(tempDir, rulesetTarget("command-capabilities"))) {
+		t.Fatalf("maintainer-only command-capabilities ruleset should not be installed in downstream refresh")
+	}
+
+	updated, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	if _, ok := updated.RegistryArtifact(rulesetKind, "kit-capabilities-usage"); !ok {
+		t.Fatalf("expected registry state for downstream usage ruleset")
+	}
+	if _, ok := updated.RegistryArtifact(rulesetKind, "command-capabilities"); ok {
+		t.Fatalf("did not expect registry state for maintainer-only ruleset")
+	}
+}
+
+func TestRunInitRefresh_DryRunDiffReportsDownstreamCapabilitiesUsageRuleAdoption(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	usage := registryRulesetWithContentForTest("kit-capabilities-usage", downstreamCapabilitiesUsageRulesetForTest(), "test-usage-commit")
+	stubRulesetRegistry(t, usage)
+
+	if err := config.Save(tempDir, config.Default()); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	var output string
+	withInitFlags(t, func() {
+		initRefresh = true
+		initDryRun = true
+		initDiff = true
+		initRefreshFiles = []string{rulesetTarget("kit-capabilities-usage")}
+
+		output = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	for _, check := range []string{
+		"diff --git a/docs/references/rules/kit-capabilities-usage.md b/docs/references/rules/kit-capabilities-usage.md",
+		"+slug: kit-capabilities-usage",
+		"+- Use `kit capabilities` for command discovery.",
+		"Dry run complete. Planned Created:",
+	} {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected dry-run diff output to contain %q, got:\n%s", check, output)
+		}
+	}
+	assertFileDoesNotExist(t, filepath.Join(tempDir, rulesetTarget("kit-capabilities-usage")))
+}
+
 func TestRunInitRefresh_AdoptsExistingCustomRulesetWithoutOverwriting(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
@@ -1031,4 +1128,50 @@ func setupInitHome(t *testing.T) string {
 	homeDir := t.TempDir()
 	t.Setenv("HOME", homeDir)
 	return homeDir
+}
+
+func downstreamCapabilitiesUsageRulesetForTest() string {
+	return `---
+kind: ruleset
+slug: kit-capabilities-usage
+description: Downstream Kit command discovery guidance.
+status: active
+registry_scope: downstream
+applies_to:
+  - kit
+  - cli
+  - command-discovery
+read_policy_default: conditional
+---
+
+# Ruleset: kit-capabilities-usage
+
+## Purpose
+
+- Use ` + "`kit capabilities`" + ` for downstream command discovery.
+
+## Applies When
+
+- A downstream project needs to choose a Kit command.
+
+## Rules
+
+- Use ` + "`kit capabilities`" + ` for command discovery.
+- Prefer ` + "`kit capabilities <command> --json`" + ` after narrowing the command.
+- Do not maintain Kit's internal command catalog from a downstream project.
+
+## Anti-Patterns
+
+- Do not tell downstream projects to edit ` + "`pkg/cli/capabilities_catalog.go`" + `.
+
+## Verification
+
+- ` + "`kit capabilities <command> --json`" + ` describes the selected command.
+
+## Examples
+
+` + "```bash" + `
+kit capabilities dispatch --json
+` + "```" + `
+`
 }

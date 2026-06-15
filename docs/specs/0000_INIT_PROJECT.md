@@ -372,7 +372,11 @@ Rules:
 
 `.kit.yaml` lives at the project root and defines defaults.
 
-All Kit commands traverse upward to find `.kit.yaml` and use its location as the project root. This allows commands to run from any subdirectory.
+Project-scoped Kit commands traverse upward to find `.kit.yaml` and use its
+location as the project root. This allows commands to run from any
+subdirectory. Read-only command-discovery surfaces such as `kit capabilities`
+are explicit exceptions: they do not require a Kit project root or load project
+configuration.
 
 ### 7.1 Core Fields
 
@@ -708,6 +712,43 @@ Flags:
 
 ---
 
+#### `kit capabilities [command]`
+
+- render a read-only catalog of Kit command behavior for humans and agents
+- require no Kit project root and do not load project configuration
+- perform no file writes, network calls, subprocess execution, delegated Kit
+  command execution, or git mutation
+- default output lists visible canonical commands with compact metadata
+- support `--json` with `schema_version: 1` and `kind: capabilities_index`
+- support targeted command paths such as `kit capabilities verify --json`,
+  `kit capabilities rules add --json`, and `kit capabilities skill mine --json`
+  with `kind: capability_detail`
+- support `--full --json` with detailed records, including hidden and
+  deprecated compatibility commands labeled explicitly
+- support `--search <term> --json` with compact filtered records for visible
+  commands only
+- reject `--search <term>` plus positional command paths and `--full` plus
+  positional command paths with actionable non-zero errors
+- return actionable unknown-command errors with suggestions when possible
+- include mutation level, network use, file-write behavior, git mutation,
+  hidden/deprecated state, important flags, and related commands in compact
+  records
+- include when-to-use, when-not-to-use, examples, caveats, aliases, and detailed
+  flag behavior in detail and full records
+- human detail output must include agent-readable guidance for safe command
+  selection, including when to use the command, when not to use it, examples,
+  caveats when present, important flag safety notes, and related commands
+- in the Kit source repository, every new or changed command, subcommand, flag,
+  alias, prompt surface, or behavior extension must update `kit capabilities`
+  in the same change
+- Kit maintainer command-surface work must follow
+  `docs/references/rules/command-capabilities.md`
+- downstream Kit-managed projects must receive `kit-capabilities-usage` guidance
+  through registry refresh and must not be told to edit Kit's internal
+  `pkg/cli/capabilities_catalog.go`
+
+---
+
 #### `kit status`
 
 - default text output remains focused on the active feature only
@@ -727,6 +768,29 @@ Flags:
 ---
 
 ### 8.3 Prompt Library
+
+#### `kit review-loop --pr <target>`
+
+- prepare a dispatch prompt from current unresolved PR review-thread feedback
+- accept the same PR target forms as dispatch PR intake: full GitHub PR URL,
+  Markdown PR link, `owner/repo#123`, or current-repo PR number
+- support `--coderabbit` to include only CodeRabbit-authored review comments
+  and extract `Prompt for AI Agents` blocks when present
+- support `--watch` to wait for CodeRabbit completion on the current PR head
+  before collecting feedback
+- classify current findings as `FIX`, `VALID_OUT_OF_SCOPE`,
+  `FALSE_POSITIVE`, `STALE`, or `NEEDS_HUMAN`
+- open the editor only when actionable `FIX` findings remain, and include
+  non-fix classifications in the summary output
+- remain read-only by default: no project-file writes, no git mutation, no PR
+  comments, and no review-thread resolution
+- expose `kit dispatch --loop --pr <target>` as an alias to the same workflow
+- leave `kit dispatch --pr <target> --coderabbit` as the lower-level
+  untriaged review-thread intake
+- after fixes or no-op decisions are complete, support
+  `kit dispatch --pr <target> --resolve --yes` to resolve currently matching
+  unresolved review threads on GitHub; this is an explicit mutation and must
+  not be part of default review-loop or dispatch prompt generation
 
 #### `kit prompt [noun] [verb]`
 

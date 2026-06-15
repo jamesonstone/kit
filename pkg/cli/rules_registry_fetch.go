@@ -70,7 +70,7 @@ func fetchGitHubRulesetRegistry(ctx context.Context) ([]registryRuleset, error) 
 		}
 		rulesets = append(rulesets, ruleset)
 	}
-	return rulesets, nil
+	return projectRulesetRegistry(rulesets), nil
 }
 
 func fetchGitHubRegistryCommit(ctx context.Context) (string, error) {

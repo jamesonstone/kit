@@ -107,6 +107,7 @@ type rulesetMetadata struct {
 	Status            string   `yaml:"status"`
 	AppliesTo         []string `yaml:"applies_to"`
 	ReadPolicyDefault string   `yaml:"read_policy_default"`
+	RegistryScope     string   `yaml:"registry_scope"`
 }
 
 type rulesetDocument struct {
@@ -781,6 +782,9 @@ func validateRulesetDocument(ruleset rulesetDocument, expectedSlug string) []str
 	if ruleset.Metadata.ReadPolicyDefault == "" || !validRulesetReadPolicy(ruleset.Metadata.ReadPolicyDefault) {
 		issues = append(issues, "front matter read_policy_default must be must, conditional, evidence, or skip")
 	}
+	if !validRulesetRegistryScope(ruleset.Metadata.RegistryScope) {
+		issues = append(issues, "front matter registry_scope must be downstream or kit-maintainer when set")
+	}
 	for _, section := range requiredRulesetSections() {
 		content, ok := ruleset.Sections[strings.ToUpper(section)]
 		if !ok {
@@ -792,6 +796,15 @@ func validateRulesetDocument(ruleset rulesetDocument, expectedSlug string) []str
 		}
 	}
 	return issues
+}
+
+func validRulesetRegistryScope(scope string) bool {
+	switch strings.TrimSpace(scope) {
+	case "", rulesetRegistryScopeDownstream, rulesetRegistryScopeKitMaintainer:
+		return true
+	default:
+		return false
+	}
 }
 
 func requiredRulesetSections() []string {

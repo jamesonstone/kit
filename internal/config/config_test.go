@@ -41,6 +41,9 @@ func TestSaveOmitsDefaultLoopConfigAndKeepsCustomLoopConfig(t *testing.T) {
 	if strings.Contains(string(data), "loop:") {
 		t.Fatalf("default loop config should be omitted, got:\n%s", data)
 	}
+	if strings.Contains(string(data), "github:") {
+		t.Fatalf("empty github config should be omitted, got:\n%s", data)
+	}
 
 	defaults.Loop.MaxIterations = 7
 	defaults.Loop.Agent.Command = "codex"
@@ -144,6 +147,42 @@ registry:
 	artifact, ok = cfg.RegistryArtifact("ruleset", "github-pr-delivery")
 	if !ok || artifact.InstalledHash != "sha256:feedface" || artifact.State != "local-custom" {
 		t.Fatalf("updated artifact = %#v", artifact)
+	}
+}
+
+func TestLoadParsesGitHubConfig(t *testing.T) {
+	projectRoot := t.TempDir()
+	configPath := filepath.Join(projectRoot, ConfigFileName)
+	if err := os.WriteFile(configPath, []byte(`
+github:
+  repository: jamesonstone/kit
+  default_branch: main
+`), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	cfg, err := Load(projectRoot)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.GitHub.Repository != "jamesonstone/kit" {
+		t.Fatalf("GitHub.Repository = %q, want jamesonstone/kit", cfg.GitHub.Repository)
+	}
+	if cfg.GitHub.DefaultBranch != "main" {
+		t.Fatalf("GitHub.DefaultBranch = %q, want main", cfg.GitHub.DefaultBranch)
+	}
+
+	if err := Save(projectRoot, cfg); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	for _, check := range []string{"github:", "repository: jamesonstone/kit", "default_branch: main"} {
+		if !strings.Contains(string(data), check) {
+			t.Fatalf("saved config missing %q, got:\n%s", check, data)
+		}
 	}
 }
 

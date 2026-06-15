@@ -451,6 +451,17 @@ func TestRunRulesViewPrefersLocalRuleset(t *testing.T) {
 	}
 }
 
+func TestProjectRulesetRegistryFiltersMaintainerOnlyRules(t *testing.T) {
+	usage := registryRulesetForTest("kit-capabilities-usage", []string{"kit", "cli"})
+	maintainer := registryRulesetForTest("command-capabilities", []string{"kit", "cli"})
+	maintainer.Metadata.RegistryScope = rulesetRegistryScopeKitMaintainer
+
+	filtered := projectRulesetRegistry([]registryRuleset{usage, maintainer})
+	if len(filtered) != 1 || filtered[0].Slug != "kit-capabilities-usage" {
+		t.Fatalf("filtered registry = %#v, want only downstream usage rule", filtered)
+	}
+}
+
 func TestRunRulesAddRegistrySelectorDeactivatesExistingRuleset(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
