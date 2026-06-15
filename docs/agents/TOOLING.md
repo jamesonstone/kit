@@ -12,8 +12,9 @@
 - Use `kit capabilities <command> --json` for one command path, including nested paths such as `rules add` or `skill mine`.
 - Use `kit capabilities --search <term> --json` for compact filtered discovery, and `kit capabilities --full --json` only when hidden or deprecated compatibility commands matter.
 - Treat `kit capabilities` itself as read-only: it does not require a Kit project root and does not load project config, write files, call the network, run subprocesses, or mutate git.
-- When adding or extending any Kit command, subcommand, flag, alias, prompt surface, or command behavior, update `kit capabilities` in the same change.
-- Load `docs/references/rules/command-capabilities.md` before command-surface work so command metadata stays complete for future coding agents.
+- In downstream Kit-managed projects, load `docs/references/rules/kit-capabilities-usage.md` when command discovery affects the task.
+- In the Kit source repository, when adding or extending any Kit command, subcommand, flag, alias, prompt surface, or command behavior, update `kit capabilities` in the same change.
+- In the Kit source repository, load `docs/references/rules/command-capabilities.md` before command-surface work so command metadata stays complete for future coding agents.
 
 ## Dispatch
 

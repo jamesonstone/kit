@@ -738,10 +738,14 @@ Flags:
 - human detail output must include agent-readable guidance for safe command
   selection, including when to use the command, when not to use it, examples,
   caveats when present, important flag safety notes, and related commands
-- every new or changed command, subcommand, flag, alias, prompt surface, or
-  behavior extension must update `kit capabilities` in the same change
-- command-surface work must follow
+- in the Kit source repository, every new or changed command, subcommand, flag,
+  alias, prompt surface, or behavior extension must update `kit capabilities`
+  in the same change
+- Kit maintainer command-surface work must follow
   `docs/references/rules/command-capabilities.md`
+- downstream Kit-managed projects must receive `kit-capabilities-usage` guidance
+  through registry refresh and must not be told to edit Kit's internal
+  `pkg/cli/capabilities_catalog.go`
 
 ---
 

@@ -140,6 +140,10 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"Always update affected documentation",
 		},
 		"TOOLING.md": {
+			"## Command Capability Discovery",
+			"Use `kit capabilities` when choosing among Kit commands",
+			"`docs/references/rules/kit-capabilities-usage.md`",
+			"do not maintain Kit's internal command catalog from a downstream project",
 			"Use subagents when the work cleanly separates into low-overlap lanes after discovery",
 			"Keep broad or noisy discovery in RLM first",
 		},

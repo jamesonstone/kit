@@ -254,6 +254,15 @@ const agentsTooling = `# Tooling
 - For feature-scoped work, start with the current feature's canonical front matter ` + "`skills`" + `, falling back to the legacy ` + "`SPEC.md`" + ` ` + "`## SKILLS`" + ` table only when front matter is absent
 - Keep the selected skill set minimal and actionable
 
+## Command Capability Discovery
+
+- Use ` + "`kit capabilities`" + ` when choosing among Kit commands and the mutation, network, write, or git behavior is not already obvious.
+- Use ` + "`kit capabilities <command> --json`" + ` for one command path, including nested paths such as ` + "`rules add`" + ` or ` + "`skill mine`" + `.
+- Use ` + "`kit capabilities --search <term> --json`" + ` for compact filtered discovery, and ` + "`kit capabilities --full --json`" + ` only when hidden or deprecated compatibility commands matter.
+- Treat ` + "`kit capabilities`" + ` itself as read-only: it does not require a Kit project root and does not load project config, write files, call the network, run subprocesses, or mutate git.
+- In downstream Kit-managed projects, load ` + "`docs/references/rules/kit-capabilities-usage.md`" + ` when command discovery affects the task.
+- Downstream projects should use ` + "`kit capabilities`" + ` for command discovery; do not maintain Kit's internal command catalog from a downstream project.
+
 ## Dispatch
 
 - Use ` + "`kit dispatch`" + ` when broad work must be turned into safe multi-lane execution

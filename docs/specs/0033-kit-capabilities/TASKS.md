@@ -100,6 +100,7 @@ references:
 | T007 | Update user-facing and agent-facing documentation  | done   | agent | T006         |
 | T008 | Run final verification and reconcile feature state | done   | agent | T007         |
 | T009 | Add command capability maintenance rule            | done   | agent | T008         |
+| T010 | Split maintainer and downstream capabilities rules | done   | agent | T009         |
 
 ## TASK LIST
 
@@ -112,6 +113,7 @@ references:
 - [x] T007: Update user-facing and agent-facing documentation [PLAN-APPROACH] [PLAN-COMPONENTS]
 - [x] T008: Run final verification and reconcile feature state [PLAN-TESTING]
 - [x] T009: Add command capability maintenance rule [SPEC-29] [SPEC-30]
+- [x] T010: Split maintainer and downstream capabilities rules [SPEC-29] [SPEC-31]
 
 ## TASK DETAILS
 
@@ -363,6 +365,41 @@ references:
 - **ROLLBACK**: Revert the new ruleset, docs references, renderer changes, and tests.
 - **NOTES**: Keep the JSON schema at version 1 unless a future incompatible change is intentional and tested.
 
+### T010
+
+- **GOAL**: Separate Kit maintainer responsibility from downstream command-discovery guidance.
+- **SCOPE**:
+  - mark `command-capabilities` as a Kit-maintainer-only rule
+  - add `kit-capabilities-usage` as the downstream registry rule
+  - filter maintainer-only rules from downstream registry refresh, selector, and preview paths
+  - update embedded support docs so existing projects can adopt usage guidance with `kit init --refresh`
+  - keep `kit capabilities` global and project-independent
+- **ACCEPTANCE**:
+  - downstream refresh installs the usage rule and does not install the maintainer-only rule
+  - Kit repo docs retain the instruction to update `pkg/cli/capabilities_catalog.go` for command-surface changes
+  - targeted capability output describes both audiences without requiring project-specific runtime behavior
+- **VERIFY**:
+  - `go test ./pkg/cli -run 'TestCapabilities|TestRunInitRefresh'`
+  - `go test ./...`
+  - `go run ./cmd/kit capabilities capabilities --json`
+  - `go run ./cmd/kit init --refresh --dry-run --diff --file=docs/references/rules/kit-capabilities-usage.md`
+- **EXPECTED FILES**:
+  - `docs/references/rules/command-capabilities.md`
+  - `docs/references/rules/kit-capabilities-usage.md`
+  - `docs/agents/TOOLING.md`
+  - `docs/references/README.md`
+  - `internal/templates/instruction_templates_v2.go`
+  - `internal/templates/instruction_support_templates.go`
+  - `pkg/cli/rules_registry.go`
+  - `pkg/cli/rules_registry_fetch.go`
+  - `pkg/cli/init_refresh.go`
+  - `pkg/cli/capabilities_catalog.go`
+  - `pkg/cli/init_test.go`
+  - `pkg/cli/capabilities_test.go`
+- **RISK**: Medium; registry filtering must not hide ordinary downstream rules.
+- **ROLLBACK**: Remove the downstream rule, registry scope filtering, template/docs changes, and rule-path tests.
+- **NOTES**: `kit capabilities` must not load project config to decide which guidance to show; repo-local rules own the audience split.
+
 ## DEPENDENCIES
 
 - T001 must finish before code edits because the constitution requires an implementation readiness gate.
@@ -372,6 +409,7 @@ references:
 - T005 and T006 must finish before T007 so documentation reflects tested behavior, not intended behavior.
 - T008 depends on all implementation, tests, and docs tasks.
 - T009 depends on T008 because it hardens the completed capabilities command after reflection.
+- T010 depends on T009 because it splits the command-capabilities guidance into maintainer and downstream responsibilities.
 
 ## NOTES
 

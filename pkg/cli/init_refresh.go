@@ -60,6 +60,7 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 		if err != nil {
 			return fmt.Errorf("failed to refresh Kit ruleset registry: %w", err)
 		}
+		registry = projectRulesetRegistry(registry)
 	}
 
 	cfg, configChange, err := initRefreshConfig(projectRoot, opts, targets)

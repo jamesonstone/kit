@@ -191,6 +191,32 @@ func TestCapabilitiesHumanDetailIncludesAgentGuidance(t *testing.T) {
 	}
 }
 
+func TestCapabilitiesSelfGuidanceDistinguishesMaintainersAndDownstreamProjects(t *testing.T) {
+	output, err := executeCapabilitiesCommand("--json", "capabilities")
+	if err != nil {
+		t.Fatalf("kit capabilities capabilities --json error = %v", err)
+	}
+
+	var payload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(output), &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v\noutput: %s", err, output)
+	}
+	var parts []string
+	parts = append(parts, payload.Command.WhenToUse...)
+	parts = append(parts, payload.Command.WhenNotToUse...)
+	parts = append(parts, payload.Command.Caveats...)
+	combined := strings.Join(parts, "\n")
+	for _, want := range []string{
+		"Inside the Kit source repository",
+		"Do not maintain Kit's internal command catalog from a downstream project",
+		"downstream projects should use it for discovery",
+	} {
+		if !strings.Contains(combined, want) {
+			t.Fatalf("expected capabilities self-guidance to contain %q, got:\n%s", want, combined)
+		}
+	}
+}
+
 func TestCapabilitiesUnknownCommandIsActionable(t *testing.T) {
 	_, err := executeCapabilitiesCommand("--json", "does-not-exist")
 	if err == nil {

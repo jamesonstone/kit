@@ -198,9 +198,10 @@ kit rm my-feature --yes --notes
 | `kit rules` / `kit rule`  | Import, preview, create, list, and link durable repo-local rulesets under `docs/references/rules/` |
 | `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift; supports `--migrate-verification` for advisory executable-check migration |
 
-Every new command, subcommand, flag, alias, or command behavior extension must
-update `kit capabilities` in the same change so coding agents can discover what
-Kit can do and how to use it safely.
+Inside the Kit source repository, every new command, subcommand, flag, alias, or
+command behavior extension must update `kit capabilities` in the same change.
+Downstream Kit-managed projects should use `kit capabilities` for command
+discovery; they should not maintain Kit's internal command catalog.
 
 ### 🧾 Prompt Utilities
 

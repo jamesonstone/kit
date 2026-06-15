@@ -141,7 +141,7 @@ func loadRulesetViewContent(ctx context.Context, projectRoot, slug string) (stri
 	if err != nil {
 		return "", "", err
 	}
-	for _, item := range registry {
+	for _, item := range projectRulesetRegistry(registry) {
 		if item.Slug == slug {
 			return item.Content, rulesetRegistryRulesetURL(slug), nil
 		}

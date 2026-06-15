@@ -394,8 +394,9 @@ References are tracked in front matter.
 - [SPEC-26] Downstream planning for this feature must preserve RLM routing and record `parallelization_mode: "rlm"` in planning notes or execution metadata.
 - [SPEC-27] The implementation must not add third-party dependencies.
 - [SPEC-28] The implementation must preserve existing command behavior and existing command JSON payloads outside the new `capabilities` surface.
-- [SPEC-29] Every new or changed Kit command, subcommand, flag, alias, prompt surface, or command behavior extension must update `kit capabilities` in the same change.
+- [SPEC-29] Inside the Kit source repository, every new or changed Kit command, subcommand, flag, alias, prompt surface, or command behavior extension must update `kit capabilities` in the same change.
 - [SPEC-30] Human detail output must include agent-readable guidance for safe command choice, including when to use the command, when not to use it, examples, caveats when present, important flag safety notes, and related commands.
+- [SPEC-31] Downstream Kit-managed projects must receive `kit-capabilities-usage` guidance through registry refresh and must not receive the maintainer-only obligation to edit `pkg/cli/capabilities_catalog.go`.
 
 ## ACCEPTANCE
 
@@ -416,6 +417,7 @@ References are tracked in front matter.
 - [ACCEPT-15] `kit check 0033-kit-capabilities` passes after the spec exists and is populated.
 - [ACCEPT-16] Tests prove visible command records include agent guidance fields and targeted human detail output renders them.
 - [ACCEPT-17] Repository rules document that command-surface changes must update `kit capabilities`.
+- [ACCEPT-18] Tests prove downstream registry refresh installs `kit-capabilities-usage` without installing the maintainer-only `command-capabilities` rule.
 
 ## EDGE-CASES
 
