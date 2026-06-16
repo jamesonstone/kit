@@ -88,7 +88,7 @@ func (c LoopConfig) IsZero() bool {
 	if c.MinConfidence == 0 && c.MaxIterations == 0 {
 		return true
 	}
-	return c.MinConfidence == 95 && c.MaxIterations == 20
+	return c.MinConfidence == 95 && c.MaxIterations == 10
 }
 
 func (c LoopAgentConfig) IsZero() bool {
@@ -122,7 +122,7 @@ func Default() *Config {
 		AllowOutOfOrder:  false,
 		Loop: LoopConfig{
 			MinConfidence: 95,
-			MaxIterations: 20,
+			MaxIterations: 10,
 		},
 		Agents: []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
 		FeatureNaming: FeatureNaming{

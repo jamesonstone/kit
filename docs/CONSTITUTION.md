@@ -538,7 +538,7 @@ allow_out_of_order: false
 # Autonomous workflow loop policy and local agent command
 loop:
   min_confidence: 95
-  max_iterations: 20
+  max_iterations: 10
   agent:
     command: your-agent
     args:

@@ -172,7 +172,9 @@ kit rm my-feature --yes --notes
 | `kit spec <feature>`       | Create or open a feature specification, perform skills discovery, and track dependencies  |
 | `kit plan <feature>`       | Create or open an implementation plan and track planning dependencies                     |
 | `kit tasks <feature>`      | Create or open a task list                                                                |
-| `kit loop [feature]`       | Run the remaining workflow through a configured confidence-gated local agent loop         |
+| `kit loop [feature]`       | Legacy alias for the feature workflow loop                                               |
+| `kit loop workflow [feature]` | Run the remaining workflow through a configured confidence-gated local agent loop      |
+| `kit loop review [feature]` | Run a coding-agent correctness review loop over changed code                            |
 | `kit resume [feature]`     | Resume backlog or in-flight work through the canonical prompt flow                        |
 | `kit implement [feature]`  | Run the implementation readiness gate and output implementation context for coding agents |
 | `kit reflect [feature]`    | Output reflection and verification instructions                                           |
@@ -213,7 +215,6 @@ discovery; they should not maintain Kit's internal command catalog.
 | `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor                                 |
 | `kit handoff [feature]`        | Prompt the current agent session to sync docs, reference inventories, and prepare a handoff |
 | `kit summarize [feature]`      | Output context summarization instructions                                                    |
-| `kit review-loop`              | Prepare a dispatch prompt from current unresolved PR review feedback                         |
 | `kit dispatch`                 | Output a discovery-first prompt for clustering tasks and queueing subagents                  |
 | `kit code-review`              | Output instructions for branch code review                                                   |
 | `kit skill mine [feature]`     | Output skill extraction prompt for the active coding agent                                   |
@@ -255,12 +256,22 @@ unresolved review threads on GitHub. Add `--coderabbit` to resolve only
 CodeRabbit-authored review threads. Resolution is an explicit GitHub mutation
 and is never part of the default prompt-generation path.
 
-Use `kit review-loop --pr <url|number> --coderabbit` when you want Kit to turn
-current unresolved CodeRabbit review feedback into a human-reviewed dispatch
-prompt. Add `--watch` to wait for CodeRabbit completion on the current PR head
-before collecting comments. `kit dispatch --loop --pr <target>` is an alias for
-the same review-loop workflow, while `kit dispatch --pr <target> --coderabbit`
-remains the lower-level untriaged review-thread intake.
+Use `kit loop review` when you want Kit to run a configured coding agent over
+changes not in the remote mainline until the agent reports at least 95%
+correctness and no high, medium, or correctness-impacting issues remain.
+Without `--pr`, it reviews the current branch relative to `origin/main`
+(falling back to `main`) plus staged and unstaged changes.
+
+Use `kit loop review --pr <target>` to fold current CodeRabbit feedback into
+that repair loop. PR mode starts local review immediately, checks CodeRabbit
+opportunistically during the loop, and does one quick feedback check before
+finalizing. If CodeRabbit is still pending after local review is done, Kit exits
+with a provisional status and a rerun command instead of hanging. Add `--watch`
+or `--wait-for-coderabbit` when you explicitly want to wait up to the timeout.
+
+Use `kit dispatch --loop --pr <target>` or the legacy hidden `kit review-loop`
+compatibility command only when you want a human-reviewed dispatch prompt from
+current unresolved PR review feedback instead of an agent repair loop.
 
 ### 📋 Output Behavior
 
@@ -492,17 +503,18 @@ kit reflect my-feature
 
 ### 🔂 Autonomous Loop
 
-`kit loop [feature]` can run the remaining workflow after the user has started
-with either `kit brainstorm <feature>` or `kit spec <feature>`. It resolves the
-current strict stage, wraps that stage prompt with a required
-`KIT_LOOP_RESULT` JSON contract, sends the prompt to the configured local agent
-command over stdin, validates confidence and document state, then repeats until
-the target stage is complete or a blocker appears.
+`kit loop workflow [feature]` can run the remaining workflow after the user has
+started with either `kit brainstorm <feature>` or `kit spec <feature>`. The
+legacy `kit loop [feature]` path still works. The workflow loop resolves the
+current strict stage, wraps that stage prompt with a required `KIT_LOOP_RESULT`
+JSON contract, sends the prompt to the configured local agent command over
+stdin, validates confidence and document state, then repeats until the target
+stage is complete or a blocker appears.
 
 ```yaml
 loop:
   min_confidence: 95
-  max_iterations: 20
+  max_iterations: 10
   agent:
     command: your-agent
     args: ["run", "--stdin"]
@@ -510,13 +522,19 @@ loop:
 
 ```bash
 # see the next loop action without running an agent
-kit loop my-feature --dry-run
+kit loop workflow my-feature --dry-run
 
 # run until reflection is complete
-kit loop my-feature
+kit loop workflow my-feature
 
 # stop after task generation is complete
-kit loop my-feature --until tasks
+kit loop workflow my-feature --until tasks
+
+# review changed code until local correctness converges
+kit loop review
+
+# review changed code and opportunistically ingest CodeRabbit feedback
+kit loop review --pr 14
 ```
 
 Loop evidence is written under `.kit/loops/<run-id>/`. Existing workflow

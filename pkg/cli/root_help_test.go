@@ -39,7 +39,7 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"capabilities",
 		"ci",
 		"rules",
-		"review-loop",
+		"loop",
 		"\n  rm ",
 		"upgrade",
 		"skill",
@@ -54,6 +54,7 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"\n  update ",
 		"\n  skills ",
 		"\n  catchup ",
+		"\n  review-loop ",
 		"\n  scaffold-agents ",
 		"\n  rollup ",
 	}

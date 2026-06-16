@@ -49,21 +49,21 @@ var (
 
 var loopCmd = &cobra.Command{
 	Use:           "loop [feature]",
-	Short:         "Run the feature workflow through a confidence-gated agent loop",
+	Short:         "Run workflow and review agent loops",
 	SilenceUsage:  true,
 	SilenceErrors: true,
-	Long: `Run the Kit workflow as an autonomous, confidence-gated loop.
+	Long: `Run Kit agent loops.
 
-The loop keeps existing workflow commands as prompt and artifact builders. It
-selects the next strict stage, wraps that stage prompt with a machine-readable
-loop contract, sends the prompt to the configured local agent command over
-stdin, validates the result, and repeats until completion or a blocker.
+With a feature argument, kit loop [feature] keeps the legacy workflow loop
+behavior. New usage should prefer kit loop workflow [feature] for the
+feature workflow loop or kit loop review for the changed-code correctness
+review loop.
 
 Configure the local agent in .kit.yaml:
 
 loop:
   min_confidence: 95
-  max_iterations: 20
+  max_iterations: 10
   agent:
     command: your-agent
     args: ["run", "--stdin"]`,
@@ -72,12 +72,38 @@ loop:
 }
 
 func init() {
-	loopCmd.Flags().BoolVar(&loopDryRun, "dry-run", false, "show the next loop action without running the configured agent")
-	loopCmd.Flags().StringVar(&loopUntil, "until", "complete", "run until this stage is complete: spec, plan, tasks, implement, reflect, complete")
-	loopCmd.Flags().IntVar(&loopMinConfidence, "min-confidence", 0, "minimum agent confidence required to advance (0 uses loop config, goal_percentage, then 95)")
-	loopCmd.Flags().IntVar(&loopMaxIterations, "max-iterations", 0, "maximum loop iterations (0 uses loop config, then 20)")
-	loopCmd.Flags().BoolVar(&loopJSON, "json", false, "output loop report as JSON")
+	addWorkflowLoopFlags(loopCmd)
+	loopCmd.AddCommand(newLoopWorkflowCommand())
+	loopCmd.AddCommand(newLoopReviewCommand())
 	rootCmd.AddCommand(loopCmd)
+}
+
+func newLoopWorkflowCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:           "workflow [feature]",
+		Short:         "Run the feature workflow through a confidence-gated agent loop",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		Long: `Run the Kit feature workflow as an autonomous, confidence-gated loop.
+
+The workflow loop keeps existing workflow commands as prompt and artifact
+builders. It selects the next strict stage, wraps that stage prompt with a
+machine-readable loop contract, sends the prompt to the configured local agent
+command over stdin, validates the result, and repeats until completion or a
+blocker.`,
+		Args: cobra.MaximumNArgs(1),
+		RunE: runLoop,
+	}
+	addWorkflowLoopFlags(cmd)
+	return cmd
+}
+
+func addWorkflowLoopFlags(cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&loopDryRun, "dry-run", false, "show the next loop action without running the configured agent")
+	cmd.Flags().StringVar(&loopUntil, "until", "complete", "run until this stage is complete: spec, plan, tasks, implement, reflect, complete")
+	cmd.Flags().IntVar(&loopMinConfidence, "min-confidence", 0, "minimum agent confidence required to advance (0 uses loop config, goal_percentage, then 95)")
+	cmd.Flags().IntVar(&loopMaxIterations, "max-iterations", 0, "maximum loop iterations (0 uses loop config, then 10)")
+	cmd.Flags().BoolVar(&loopJSON, "json", false, "output loop report as JSON")
 }
 
 type loopOptions struct {
@@ -879,7 +905,7 @@ func effectiveLoopMaxIterations(cfg *config.Config, override int) int {
 	if cfg != nil && cfg.Loop.MaxIterations > 0 {
 		return cfg.Loop.MaxIterations
 	}
-	return 20
+	return 10
 }
 
 func clampPercentage(value int) int {

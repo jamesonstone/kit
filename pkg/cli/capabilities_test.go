@@ -30,12 +30,12 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "ci", "verify", "review-loop", "dispatch", "rules add", "skill mine"} {
+	for _, command := range []string{"capabilities", "ci", "verify", "loop review", "dispatch", "rules add", "skill mine"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
 	}
-	for _, command := range []string{"update", "skills", "catchup", "rollup"} {
+	for _, command := range []string{"update", "skills", "catchup", "rollup", "review-loop"} {
 		if findCompactCapability(payload.Commands, command) != nil {
 			t.Fatalf("expected compact capabilities to omit hidden/deprecated command %q", command)
 		}
@@ -125,8 +125,8 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if dispatchPayload.Command.MutationLevel != mutationNetwork {
 		t.Fatalf("expected dispatch mutation level to reflect optional network mutation, got %q", dispatchPayload.Command.MutationLevel)
 	}
-	if !strings.Contains(dispatchPayload.Command.Summary, "CodeRabbit review-loop intake") {
-		t.Fatalf("expected dispatch summary to describe review-loop intake, got %q", dispatchPayload.Command.Summary)
+	if !strings.Contains(dispatchPayload.Command.Summary, "CodeRabbit prompt-prep intake") {
+		t.Fatalf("expected dispatch summary to describe CodeRabbit prompt-prep intake, got %q", dispatchPayload.Command.Summary)
 	}
 	if !strings.Contains(dispatchPayload.Command.NetworkUse.FlagDependent, "unresolved, non-outdated") {
 		t.Fatalf("expected dispatch network notes to describe review-thread filtering, got %#v", dispatchPayload.Command.NetworkUse)
@@ -148,6 +148,30 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 		t.Fatalf("expected --yes flag to document resolve confirmation, got %#v", yesFlag)
 	}
 
+	loopReviewOutput, err := executeCapabilitiesCommand("--json", "loop", "review")
+	if err != nil {
+		t.Fatalf("kit capabilities loop review --json error = %v", err)
+	}
+	var loopReviewPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(loopReviewOutput), &loopReviewPayload); err != nil {
+		t.Fatalf("json.Unmarshal(loop review) error = %v", err)
+	}
+	if loopReviewPayload.Command.Command != "loop review" {
+		t.Fatalf("command = %q, want loop review", loopReviewPayload.Command.Command)
+	}
+	if loopReviewPayload.Command.MutationLevel != mutationExecutesCommands {
+		t.Fatalf("expected loop review to execute configured agent, got %#v", loopReviewPayload.Command)
+	}
+	if !strings.Contains(loopReviewPayload.Command.NetworkUse.FlagDependent, "--pr") {
+		t.Fatalf("expected loop review network use to document --pr, got %#v", loopReviewPayload.Command.NetworkUse)
+	}
+	if !strings.Contains(loopReviewPayload.Command.GitMutation.Summary, "none") {
+		t.Fatalf("expected loop review to forbid git mutation, got %#v", loopReviewPayload.Command.GitMutation)
+	}
+	if findDetailedFlag(loopReviewPayload.Command.DetailedFlagBehavior, "--wait-for-coderabbit") == nil {
+		t.Fatalf("expected loop review to document --wait-for-coderabbit")
+	}
+
 	reviewLoopOutput, err := executeCapabilitiesCommand("--json", "review-loop")
 	if err != nil {
 		t.Fatalf("kit capabilities review-loop --json error = %v", err)
@@ -158,6 +182,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if reviewLoopPayload.Command.Command != "review-loop" {
 		t.Fatalf("command = %q, want review-loop", reviewLoopPayload.Command.Command)
+	}
+	if !reviewLoopPayload.Command.Hidden || !reviewLoopPayload.Command.Deprecated {
+		t.Fatalf("expected review-loop to be hidden deprecated compatibility metadata, got %#v", reviewLoopPayload.Command)
 	}
 	if reviewLoopPayload.Command.MutationLevel != mutationNone || reviewLoopPayload.Command.GitMutation.Summary != "none" {
 		t.Fatalf("expected review-loop to be read-only, got %#v", reviewLoopPayload.Command)
@@ -325,8 +352,8 @@ func TestCapabilitiesSearchJSON(t *testing.T) {
 	if err := json.Unmarshal([]byte(reviewLoopOutput), &reviewLoopSearch); err != nil {
 		t.Fatalf("json.Unmarshal(review-loop search) error = %v", err)
 	}
-	if findCompactCapability(reviewLoopSearch.Commands, "review-loop") == nil {
-		t.Fatalf("expected review-loop search results to include review-loop")
+	if findCompactCapability(reviewLoopSearch.Commands, "loop review") == nil {
+		t.Fatalf("expected review-loop search results to include loop review")
 	}
 	if findCompactCapability(reviewLoopSearch.Commands, "dispatch") == nil {
 		t.Fatalf("expected review-loop search results to include dispatch alias metadata")
@@ -454,6 +481,8 @@ func TestCapabilityCatalogNestedCommandsAreRegistered(t *testing.T) {
 		{"prompt", "list"},
 		{"set", "prompt"},
 		{"skill", "mine"},
+		{"loop", "workflow"},
+		{"loop", "review"},
 		{"rules", "add"},
 		{"rules", "list"},
 		{"rules", "view"},

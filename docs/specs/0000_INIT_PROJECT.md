@@ -388,7 +388,7 @@ constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false # if true, kit plan/tasks create missing prerequisites
 loop:
   min_confidence: 95
-  max_iterations: 20
+  max_iterations: 10
   agent:
     command: your-agent
     args:
@@ -613,7 +613,7 @@ Flags:
 
 ---
 
-#### `kit loop [feature]`
+#### `kit loop workflow [feature]`
 
 - run the remaining spec-driven workflow through a configured local agent
 - keep `kit spec`, `kit plan`, `kit tasks`, `kit implement`, and `kit reflect`
@@ -625,6 +625,7 @@ Flags:
   failed strict doc validation, failed verification evidence, or max iterations
 - write local loop evidence under `.kit/loops/<run-id>/`
 - without a feature argument, use the active feature; fail if no active feature exists
+- legacy `kit loop [feature]` remains a compatibility alias for this workflow
 
 Flags:
 
@@ -634,6 +635,40 @@ Flags:
 - `--min-confidence <0-100>` — override `loop.min_confidence`
 - `--max-iterations <n>` — override `loop.max_iterations`
 - `--json` — output the loop report as JSON
+
+---
+
+#### `kit loop review [feature]`
+
+- run a configured coding-agent correctness loop over changed code
+- without `--pr`, review current-branch changes relative to `origin/main`,
+  falling back to local `main`, plus staged and unstaged changes
+- with `[feature]`, include the feature docs as review context
+- require final agent output to start with `Correctness: <n>%`, include dense
+  issue/fix bullets, and end with a final line exactly equal to `done`
+- continue looping until correctness is at least the configured threshold and
+  no high, medium, or correctness-impacting issues remain
+- default to `loop.max_iterations`, then 10
+- write local loop evidence under `.kit/loops/<run-id>/`
+- never stage, commit, push, post PR comments, or resolve review threads
+- with `--pr <target>`, start local review immediately and opportunistically
+  ingest current unresolved CodeRabbit feedback during later passes
+- when local review reaches `done`, perform one quick PR feedback check
+- if CodeRabbit is still pending in default PR mode, exit with a clear
+  provisional result and rerun command instead of waiting
+- with `--watch` or `--wait-for-coderabbit`, wait up to the existing timeout
+  before finalizing PR mode
+
+Flags:
+
+- `--base <ref>` — override the comparison base
+- `--pr <target>` — ingest CodeRabbit feedback from a PR
+- `--watch` — wait for CodeRabbit completion before finalizing PR mode
+- `--wait-for-coderabbit` — alias for `--watch`
+- `--dry-run` — show the first review prompt without invoking the agent
+- `--min-confidence <0-100>` — override `loop.min_confidence`
+- `--max-iterations <n>` — override `loop.max_iterations`
+- `--json` — output the loop review report as JSON
 
 ---
 
@@ -769,7 +804,7 @@ Flags:
 
 ### 8.3 Prompt Library
 
-#### `kit review-loop --pr <target>`
+#### `kit dispatch --loop --pr <target>`
 
 - prepare a dispatch prompt from current unresolved PR review-thread feedback
 - accept the same PR target forms as dispatch PR intake: full GitHub PR URL,
@@ -784,7 +819,8 @@ Flags:
   non-fix classifications in the summary output
 - remain read-only by default: no project-file writes, no git mutation, no PR
   comments, and no review-thread resolution
-- expose `kit dispatch --loop --pr <target>` as an alias to the same workflow
+- legacy `kit review-loop --pr <target>` remains available as a hidden
+  compatibility command for the same prompt-prep workflow
 - leave `kit dispatch --pr <target> --coderabbit` as the lower-level
   untriaged review-thread intake
 - after fixes or no-op decisions are complete, support

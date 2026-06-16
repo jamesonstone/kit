@@ -19,8 +19,10 @@ func init() {
 func newReviewLoopCommand() *cobra.Command {
 	opts := reviewLoopOptions{MaxSubagents: 10}
 	cmd := &cobra.Command{
-		Use:   "review-loop --pr <url|markdown-link|owner/repo#number|number>",
-		Short: "Prepare a dispatch prompt from current PR review feedback",
+		Use:        "review-loop --pr <url|markdown-link|owner/repo#number|number>",
+		Short:      "Prepare a dispatch prompt from current PR review feedback",
+		Hidden:     true,
+		Deprecated: "use `kit dispatch --loop --pr <target>` for prompt prep or `kit loop review --pr <target>` for repair",
 		Long: `Prepare a human-reviewed dispatch prompt from current unresolved PR review
 threads, optionally waiting for CodeRabbit to finish reviewing the current PR
 head before collecting feedback.

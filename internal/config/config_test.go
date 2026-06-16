@@ -23,8 +23,8 @@ func TestDefaultIncludesLoopPolicy(t *testing.T) {
 	if cfg.Loop.MinConfidence != 95 {
 		t.Fatalf("Loop.MinConfidence = %d, want 95", cfg.Loop.MinConfidence)
 	}
-	if cfg.Loop.MaxIterations != 20 {
-		t.Fatalf("Loop.MaxIterations = %d, want 20", cfg.Loop.MaxIterations)
+	if cfg.Loop.MaxIterations != 10 {
+		t.Fatalf("Loop.MaxIterations = %d, want 10", cfg.Loop.MaxIterations)
 	}
 }
 

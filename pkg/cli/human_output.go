@@ -130,7 +130,8 @@ func helpTemplate(enabled bool) string {
 	return fmt.Sprintf(`{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}{{end}}
 
 %s
-  {{if .Runnable}}{{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}{{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
+  {{if .Runnable}}{{.UseLine}}{{end}}{{if and .Runnable .HasAvailableSubCommands}}
+  {{end}}{{if .HasAvailableSubCommands}}{{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
 
 %s
   {{.NameAndAliases}}{{end}}{{if .HasExample}}
