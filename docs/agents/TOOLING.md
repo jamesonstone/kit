@@ -30,6 +30,10 @@
 - Without `--pr`, `kit loop review` reviews current-branch changes relative to `origin/main`, falling back to local `main`, plus staged and unstaged changes.
 - Use `kit loop review --pr <target>` when current unresolved CodeRabbit PR feedback should be opportunistically folded into the repair loop while local review starts immediately.
 - Use `kit loop review --pr <target> --watch` or `--wait-for-coderabbit` only when finalization should block for CodeRabbit completion.
+- Review prompts use one agent by default; pass `--subagents` to let the parent review agent pre-analyze the diff and choose subagents only when the lanes are clearly independent.
+- Human-readable `kit loop review` runs stream emoji-marked runner progress and child-agent stdout/stderr to stderr; `--json` suppresses progress output and keeps stdout machine-readable.
+- In an interactive terminal, `kit loop review` asks before rerunning when prior review-loop evidence exists or the current run reaches max iterations.
+- Agent command setup failures stop immediately with stderr context instead of consuming the whole iteration budget.
 - Use `kit dispatch --loop --pr <target>` when current unresolved CodeRabbit PR review feedback should become a human-reviewed dispatch prompt instead of an agent repair loop.
 - Use `kit dispatch --pr <target> --coderabbit` only when you need raw unresolved CodeRabbit review-thread intake without review-loop watch, classification, or summary behavior.
 - Treat loop review as local repair only: it may edit files through the configured agent and write `.kit/loops` evidence, but it must not stage, commit, push, post PR comments, or resolve review threads.

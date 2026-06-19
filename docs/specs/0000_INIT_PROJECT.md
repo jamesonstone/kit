@@ -390,10 +390,19 @@ loop:
   min_confidence: 95
   max_iterations: 10
   agent:
-    command: your-agent
+    command: codex
     args:
-      - run
-      - --stdin
+      - --ask-for-approval
+      - never
+      - exec
+      - --model
+      - gpt-5.5
+      - --sandbox
+      - workspace-write
+      - --ignore-user-config
+      - --color
+      - never
+      - "-"
 instruction_scaffold_version: 2
 feature_state:
   0001-feat-name:
@@ -477,6 +486,7 @@ CLI flags always override `.kit.yaml`.
 - support `--output-only` to print the raw prompt to stdout instead of copying it
 - support `--copy` to also copy the prompt when `--output-only` is set
 - support `--refresh` as the existing-project structural refresh mode for Kit-managed files
+- support `--refresh` backfilling or upgrading known generated default `loop.agent.command` config needed by `kit loop review`
 - support `--refresh --dry-run --diff` to print planned Kit-managed file changes without writing them
 - support `--refresh --force` for generated documentation and ruleset overwrites
 - support `--refresh --file=<path> --force` for targeted per-file scaffold overwrites
@@ -668,6 +678,7 @@ Flags:
 - `--dry-run` — show the first review prompt without invoking the agent
 - `--min-confidence <0-100>` — override `loop.min_confidence`
 - `--max-iterations <n>` — override `loop.max_iterations`
+- `--subagents` — allow parent review pre-analysis to choose subagents when the changed-code lanes are clearly independent
 - `--json` — output the loop review report as JSON
 
 ---

@@ -43,6 +43,7 @@ Kit has a feature workflow loop and a PR review prompt-prep command, but it does
 - In PR mode, start local review immediately and poll CodeRabbit opportunistically.
 - Allow strict PR mode through `--watch` or `--wait-for-coderabbit`.
 - Keep git and GitHub mutations outside the review loop.
+- Ensure `kit init --refresh` can seed the default loop agent config required to run the review loop.
 
 ## NON-GOALS
 
@@ -92,13 +93,19 @@ not required
 - [SPEC-17] `--watch` and `--wait-for-coderabbit` must wait for CodeRabbit completion up to the existing timeout before finalizing.
 - [SPEC-18] Existing `kit review-loop` prompt-prep behavior must remain available as a compatibility surface.
 - [SPEC-19] Command capability metadata and user/agent docs must describe the new command shape and safety boundaries.
+- [SPEC-20] `kit init --refresh` must add default loop agent configuration to `.kit.yaml` when `loop.agent.command` is missing, still set to the generated `your-agent` placeholder, or matches a known older generated default.
+- [SPEC-21] Review prompts must use one agent by default; `--subagents` must allow the parent review agent to pre-analyze the diff and choose subagents only when lanes are clearly independent.
+- [SPEC-22] In an interactive terminal, `kit loop review` must ask before rerunning when prior loop-review evidence exists or the current run reaches max iterations.
+- [SPEC-23] Agent command setup failures must stop immediately with stderr context instead of consuming every iteration.
+- [SPEC-24] Human-readable `kit loop review` runs must stream emoji-marked runner progress and child-agent stdout/stderr to stderr while keeping `--json` stdout machine-readable and free of progress output.
 
 ## ACCEPTANCE
 
-- [ACCEPT-01] Focused tests cover loop command routing, default iteration count, review stop parsing, base fallback, PR opportunistic feedback ingestion, and provisional PR status.
+- [ACCEPT-01] Focused tests cover loop command routing, default iteration count, review stop parsing, base fallback, PR opportunistic feedback ingestion, provisional PR status, rerun confirmation parsing, single-agent default prompts, opt-in subagent prompt inclusion, visible progress output, streamed agent output, and immediate agent-failure stops.
 - [ACCEPT-02] `kit loop --help` shows `workflow` and `review`.
 - [ACCEPT-03] `kit capabilities loop review --json` documents command behavior.
-- [ACCEPT-04] `go test ./...` passes.
+- [ACCEPT-04] `kit init --refresh --file=.kit.yaml` backfills a runnable default loop agent config without overwriting a custom agent command.
+- [ACCEPT-05] `go test ./...` passes.
 
 ## EDGE-CASES
 
@@ -106,6 +113,7 @@ not required
 - CodeRabbit unavailable without feedback should not block default PR mode.
 - Repeated already-ingested PR feedback must not cause an infinite loop after the agent reports local completion.
 - A missing loop agent must fail with setup guidance.
+- An invalid configured agent command must report the first stderr line and stop after the failed iteration.
 
 ## OPEN-QUESTIONS
 

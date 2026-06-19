@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -18,6 +19,9 @@ func TestLoopReviewCommandIsRegisteredUnderLoop(t *testing.T) {
 	}
 	if cmd == nil || cmd.Name() != "review" {
 		t.Fatalf("expected loop review command, got %#v", cmd)
+	}
+	if flag := cmd.Flags().Lookup("subagents"); flag == nil {
+		t.Fatal("expected loop review to expose --subagents")
 	}
 
 	workflow, _, err := rootCmd.Find([]string{"loop", "workflow"})
@@ -137,6 +141,90 @@ fi
 	}
 }
 
+func TestExecuteLoopReviewStopsOnAgentCommandFailure(t *testing.T) {
+	projectRoot := setupLoopReviewProject(t, `#!/bin/sh
+set -eu
+cat >/dev/null
+printf 'OpenAI Codex v0.140.0\n' >&2
+printf 'ERROR: model is not supported\n' >&2
+exit 2
+`)
+	restore := installLoopReviewGitFake(t)
+	defer restore()
+
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	report, err := executeLoopReview(context.Background(), loopReviewOptions{
+		ProjectRoot: projectRoot,
+		Config:      cfg,
+		Agent:       cfg.Loop.Agent,
+	})
+	if err == nil {
+		t.Fatal("executeLoopReview() error = nil, want agent failure")
+	}
+	if len(report.Iterations) != 1 {
+		t.Fatalf("Iterations = %d, want 1", len(report.Iterations))
+	}
+	if !strings.Contains(report.StopReason, "agent command failed at iteration 1") {
+		t.Fatalf("StopReason = %q", report.StopReason)
+	}
+	if !strings.Contains(report.StopReason, "ERROR: model is not supported") {
+		t.Fatalf("StopReason missing stderr context: %q", report.StopReason)
+	}
+	if strings.Contains(report.StopReason, "OpenAI Codex v0.140.0") {
+		t.Fatalf("StopReason used banner instead of actionable error: %q", report.StopReason)
+	}
+	if strings.Contains(report.StopReason, "max iterations reached") {
+		t.Fatalf("StopReason incorrectly reports max iterations: %q", report.StopReason)
+	}
+}
+
+func TestExecuteLoopReviewEmitsProgressAndStreamsAgentOutput(t *testing.T) {
+	projectRoot := setupLoopReviewProject(t, `#!/bin/sh
+set -eu
+printf 'agent-visible-status\n' >&2
+cat >/dev/null
+printf 'Correctness: 96%%\nStatus: done\n\n- Issue: nil path; Fix: added guard.\ndone\n'
+`)
+	restore := installLoopReviewGitFake(t)
+	defer restore()
+
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	var progress bytes.Buffer
+	report, err := executeLoopReview(context.Background(), loopReviewOptions{
+		ProjectRoot: projectRoot,
+		Config:      cfg,
+		Agent:       cfg.Loop.Agent,
+		Progress:    &loopReviewSynchronizedWriter{writer: &progress},
+	})
+	if err != nil {
+		t.Fatalf("executeLoopReview() error = %v", err)
+	}
+	output := progress.String()
+	for _, want := range []string{
+		"run " + report.RunID + " started",
+		"🤖 single-agent mode enabled",
+		"target resolved: base=origin/main changed_files=1",
+		"artifacts: " + report.ArtifactDir,
+		"iteration 1/10: prompt written",
+		"iteration 1/10: running agent:",
+		"agent process started",
+		"agent stderr: agent-visible-status",
+		"agent stdout: Correctness: 96%",
+		"iteration 1/10: parsed result done=true correctness=96%",
+		"run " + report.RunID + " complete: correctness=96%",
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("progress output missing %q:\n%s", want, output)
+		}
+	}
+}
+
 func TestExecuteLoopReviewIngestsPRFeedbackIntoNextPass(t *testing.T) {
 	projectRoot := setupLoopReviewProject(t, `#!/bin/sh
 set -eu
@@ -203,92 +291,5 @@ printf 'Correctness: 96%%\nStatus: done\n\n- No high, medium, or correctness-imp
 	}
 	if !strings.Contains(report.StopReason, "Rerun") && !strings.Contains(report.StopReason, "rerun") {
 		t.Fatalf("expected rerun guidance, got %q", report.StopReason)
-	}
-}
-
-func setupLoopReviewProject(t *testing.T, agentScript string) string {
-	t.Helper()
-	projectRoot := t.TempDir()
-	agentPath := filepath.Join(projectRoot, "agent.sh")
-	if err := os.WriteFile(agentPath, []byte(agentScript), 0o755); err != nil {
-		t.Fatalf("WriteFile(agent) error = %v", err)
-	}
-	cfg := config.Default()
-	cfg.Loop.Agent = config.LoopAgentConfig{Command: agentPath}
-	if err := config.Save(projectRoot, cfg); err != nil {
-		t.Fatalf("config.Save() error = %v", err)
-	}
-	return projectRoot
-}
-
-func installLoopReviewGitFake(t *testing.T) func() {
-	t.Helper()
-	return installReviewLoopFakes(t, nil, fakeReviewLoopRunner{
-		output: func(_ string, name string, args ...string) ([]byte, error) {
-			if name != "git" {
-				return nil, fmt.Errorf("unexpected command: %s %v", name, args)
-			}
-			joined := strings.Join(args, " ")
-			switch joined {
-			case "rev-parse --verify origin/main":
-				return []byte("origin/main\n"), nil
-			case "diff --name-only origin/main...HEAD":
-				return []byte("internal/app.go\n"), nil
-			case "diff --name-only", "diff --cached --name-only":
-				return nil, nil
-			case "diff --stat origin/main...HEAD":
-				return []byte(" internal/app.go | 2 +-\n"), nil
-			case "diff --stat", "diff --cached --stat":
-				return nil, nil
-			default:
-				return nil, fmt.Errorf("unexpected git args: %s", joined)
-			}
-		},
-	})
-}
-
-func installLoopReviewPRFake(t *testing.T, status reviewLoopCheckStatus) func() {
-	t.Helper()
-	return installReviewLoopFakes(t, nil, fakeReviewLoopRunner{
-		output: func(_ string, name string, args ...string) ([]byte, error) {
-			if name == "gh" {
-				return reviewLoopPRPayload("abc123"), nil
-			}
-			if name != "git" {
-				return nil, fmt.Errorf("unexpected command: %s %v", name, args)
-			}
-			return installLoopReviewGitOutput(args...)
-		},
-		outputAllowError: func(_ string, name string, args ...string) ([]byte, error) {
-			if name != "gh" {
-				return nil, fmt.Errorf("unexpected command: %s %v", name, args)
-			}
-			switch status {
-			case reviewLoopCheckPending:
-				return []byte(`[{"name":"CodeRabbit","state":"PENDING","bucket":"pending"}]`), nil
-			case reviewLoopCheckComplete:
-				return []byte(`[{"name":"CodeRabbit","state":"SUCCESS","bucket":"pass"}]`), nil
-			default:
-				return []byte(`[]`), nil
-			}
-		},
-	})
-}
-
-func installLoopReviewGitOutput(args ...string) ([]byte, error) {
-	joined := strings.Join(args, " ")
-	switch joined {
-	case "rev-parse --verify origin/main":
-		return []byte("origin/main\n"), nil
-	case "diff --name-only origin/main...HEAD":
-		return []byte("internal/app.go\n"), nil
-	case "diff --name-only", "diff --cached --name-only":
-		return nil, nil
-	case "diff --stat origin/main...HEAD":
-		return []byte(" internal/app.go | 2 +-\n"), nil
-	case "diff --stat", "diff --cached --stat":
-		return nil, nil
-	default:
-		return nil, fmt.Errorf("unexpected git args: %s", joined)
 	}
 }

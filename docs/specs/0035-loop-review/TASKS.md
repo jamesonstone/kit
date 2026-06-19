@@ -16,6 +16,8 @@ feature:
 | T002 | Implement review runner [PLAN-COMPONENTS-02] | done | agent | T001 |
 | T003 | Update capabilities and docs [PLAN-COMPONENTS-03][PLAN-COMPONENTS-04] | done | agent | T001,T002 |
 | T004 | Add tests and run verification [PLAN-COMPONENTS-05] | done | agent | T001,T002,T003 |
+| T005 | Backfill loop agent config through init refresh [PLAN-COMPONENTS-06] | done | agent | T003 |
+| T006 | Harden rerun and agent setup behavior [PLAN-COMPONENTS-02][PLAN-COMPONENTS-03] | done | agent | T002,T003 |
 
 ## TASK LIST
 
@@ -23,6 +25,8 @@ feature:
 - [x] T002: Implement review runner [PLAN-COMPONENTS-02]
 - [x] T003: Update capabilities and docs [PLAN-COMPONENTS-03][PLAN-COMPONENTS-04]
 - [x] T004: Add tests and run verification [PLAN-COMPONENTS-05]
+- [x] T005: Backfill loop agent config through init refresh [PLAN-COMPONENTS-06]
+- [x] T006: Harden rerun and agent setup behavior [PLAN-COMPONENTS-02][PLAN-COMPONENTS-03]
 
 ## TASK DETAILS
 
@@ -66,11 +70,33 @@ feature:
 - **ROLLBACK**: Fix failing tests before completion.
 - **NOTES**: Use `/opt/homebrew/bin/go` if `go` is not on PATH.
 
+### T005
+- **GOAL**: Make `kit init --refresh` install the config required by `kit loop review`.
+- **SCOPE**: Seed default init config with a Codex stdin loop agent and backfill existing `.kit.yaml` files when `loop.agent.command` is blank, `your-agent`, or a known generated default.
+- **ACCEPTANCE**: Refresh adds the default loop agent config and preserves custom loop agent commands.
+- **VERIFY**: `go test ./pkg/cli -run 'TestRunInit.*Loop|TestCapabilitiesTargetedJSON' -count=1`
+- **EXPECTED FILES**: `pkg/cli/init.go`, `pkg/cli/init_refresh.go`, `pkg/cli/init_test.go`, `pkg/cli/capabilities_catalog.go`
+- **RISK**: Medium; config refresh must avoid overwriting intentionally custom agent commands.
+- **ROLLBACK**: Remove the init refresh loop config backfill.
+- **NOTES**: The default command is `codex exec` reading the loop prompt from stdin.
+
+### T006
+- **GOAL**: Make review-loop reruns and agent setup failures explicit.
+- **SCOPE**: Prompt interactive users before rerunning when prior review-loop evidence exists or max iterations are reached, stop immediately on agent command failures with stderr context, keep review prompts single-agent by default, add opt-in subagent pre-analysis, and stream runner/agent progress to stderr.
+- **ACCEPTANCE**: Invalid agent commands stop after one failed iteration, rerun confirmation accepts `y`/`n` shorthand, review prompts omit subagent guidance by default, `--subagents` adds parent pre-analysis and shared subagent guidance, and human-readable runs expose progress plus child-agent stdout/stderr.
+- **VERIFY**: `go test ./pkg/cli -run 'TestLoopReview|TestReadLoopReviewConfirmation|TestLatestLoopReviewReport' -count=1`
+- **EXPECTED FILES**: `pkg/cli/loop_review.go`, `pkg/cli/loop_review_test.go`, `pkg/cli/capabilities_catalog.go`, `pkg/cli/capabilities_test.go`
+- **RISK**: Medium; interactive prompts must not affect JSON, dry-run, or non-terminal automation.
+- **ROLLBACK**: Remove rerun prompting and immediate command-failure stop behavior.
+- **NOTES**: Keep the required final output contract as the final review prompt section.
+
 ## DEPENDENCIES
 
 - T002 depends on T001.
 - T003 depends on T001 and T002.
 - T004 depends on T001 through T003.
+- T005 depends on T003.
+- T006 depends on T002 and T003.
 
 ## NOTES
 

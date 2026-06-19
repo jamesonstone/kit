@@ -107,6 +107,7 @@ Steps:
     - Load `.kit.yaml`, `docs/agents/README.md`, `docs/agents/GUARDRAILS.md`, `docs/agents/TOOLING.md`, relevant `docs/references/rules/*`, and GitHub templates before delivery
     - Re-run and report branch/status/staleness recon: `pwd`, `git status --short --branch`, `git remote -v`, current branch, default/base branch, active PRs for the current branch, matching issues, and git author/committer identity
     - Resolve issue source, issue number/link, branch name, branch base, staging method, commit format, PR title format, PR template, draft/ready state, required checks, cross-repo dependencies, and unknowns/blockers
+    - Resolve PR title format as Conventional Commits title format with the GitHub issue as scope: `<type>(<issue_number>): <gitmoji> <short title message>`
     - Output the Delivery Contract before mutation; if any field is unknown, ambiguous, missing, or conflicts with generic defaults, stop and ask
     - Do not use `codex/*` branches, ad hoc issue/PR bodies, draft PRs by default, bulk staging, generic commit messages, or PRs that omit the repo template unless the Kit contract or user explicitly overrides it
 12. Final pass

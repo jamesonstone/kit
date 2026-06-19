@@ -268,6 +268,14 @@ opportunistically during the loop, and does one quick feedback check before
 finalizing. If CodeRabbit is still pending after local review is done, Kit exits
 with a provisional status and a rerun command instead of hanging. Add `--watch`
 or `--wait-for-coderabbit` when you explicitly want to wait up to the timeout.
+Review prompts use one agent by default. Pass `--subagents` to let the parent
+agent pre-analyze the diff, choose useful review lanes, and use subagents only
+when the split is clear. In an interactive terminal, Kit asks before rerunning
+when prior loop-review evidence exists or the current run reaches max
+iterations. Human-readable runs stream emoji-marked runner progress and
+child-agent stdout/stderr to stderr; `--json` keeps stdout machine-readable and
+suppresses progress output. Agent command setup failures stop immediately with
+stderr context.
 
 Use `kit dispatch --loop --pr <target>` or the legacy hidden `kit review-loop`
 compatibility command only when you want a human-reviewed dispatch prompt from
@@ -386,8 +394,11 @@ Instruction scaffold versions:
 `kit init --refresh` is the consolidated refresh command for existing Kit
 projects. It creates missing Kit-managed files, migrates known generated v1
 instruction files to the v2 thin docs model, refreshes generated instruction
-support docs, imports missing known registry rulesets, and records ruleset
-registry state in `.kit.yaml`. Existing registry rulesets are adopted
+support docs, installs or upgrades known generated default `codex exec` loop
+agent config when `.kit.yaml` is missing or still has the generated
+`loop.agent` value, imports missing known registry rulesets, and records
+ruleset registry state in `.kit.yaml`. Existing registry
+rulesets are adopted
 automatically: safe upstream updates from the Kit GitHub `main` branch are
 applied, local activation status is preserved, and customized or conflicted
 rules are skipped with a report. Existing local scaffold files such as `.envrc`,
@@ -516,8 +527,8 @@ loop:
   min_confidence: 95
   max_iterations: 10
   agent:
-    command: your-agent
-    args: ["run", "--stdin"]
+    command: codex
+    args: ["--ask-for-approval", "never", "exec", "--model", "gpt-5.5", "--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-"]
 ```
 
 ```bash

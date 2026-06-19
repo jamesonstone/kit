@@ -11,3 +11,62 @@ instruction_scaffold_version: 2
 feature_naming:
     numeric_width: 4
     separator: '-'
+loop:
+    min_confidence: 95
+    max_iterations: 10
+    agent:
+        command: codex
+        args:
+            - --ask-for-approval
+            - never
+            - exec
+            - --model
+            - gpt-5.5
+            - --sandbox
+            - workspace-write
+            - --ignore-user-config
+            - --color
+            - never
+            - '-'
+registry:
+    schema_version: 1
+    source:
+        repo: jamesonstone/kit
+        branch: main
+    artifacts:
+        - kind: ruleset
+          slug: github-pr-delivery
+          path: docs/references/rules/github-pr-delivery.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 2f95cccfd6c019b194a37fb7af61220be22a53a6
+          source_path: docs/references/rules/github-pr-delivery.md
+          installed_hash: sha256:94661db6516b4452f4962649f4dc9049f26197da0282084376f43be66a2457fb
+          state: managed
+        - kind: ruleset
+          slug: kit-capabilities-usage
+          path: docs/references/rules/kit-capabilities-usage.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 2f95cccfd6c019b194a37fb7af61220be22a53a6
+          source_path: docs/references/rules/kit-capabilities-usage.md
+          installed_hash: sha256:b473e72685b10a4a2c79365921a232c12a218efc815e2a7046c10cc40b0c0807
+          state: managed
+        - kind: ruleset
+          slug: safety-guardrails
+          path: docs/references/rules/safety-guardrails.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 2f95cccfd6c019b194a37fb7af61220be22a53a6
+          source_path: docs/references/rules/safety-guardrails.md
+          installed_hash: sha256:224ac020a7312dc1a862d8ee285f820b1ae66d1381dc8f870b709fd8832ebc42
+          state: managed
+        - kind: ruleset
+          slug: work-lane-gating
+          path: docs/references/rules/work-lane-gating.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 2f95cccfd6c019b194a37fb7af61220be22a53a6
+          source_path: docs/references/rules/work-lane-gating.md
+          installed_hash: sha256:7bd18273b06425a7809a315378acc147c745d6966e9f92399c0143d92539ae76
+          state: managed

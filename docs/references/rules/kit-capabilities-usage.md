@@ -63,7 +63,7 @@ Choosing a command:
 
 ```bash
 kit capabilities --search review-loop --json
-kit capabilities review-loop --json
+kit capabilities loop review --json
 ```
 
 Checking command safety before use:

@@ -27,6 +27,7 @@ When the user asks to create or mutate an issue, branch, staging, commit, push, 
 - Load ` + "`.kit.yaml`" + `, ` + "`docs/agents/README.md`" + `, ` + "`docs/agents/GUARDRAILS.md`" + `, ` + "`docs/agents/TOOLING.md`" + `, relevant ` + "`docs/references/rules/*`" + ` rulesets, and GitHub templates before delivery mutation
 - Run and report delivery recon: ` + "`pwd`" + `, ` + "`git status --short --branch`" + `, ` + "`git remote -v`" + `, current branch, default/base branch, active PRs for the current branch, matching issues, and git author/committer identity
 - Resolve and output a Delivery Contract covering repository, base branch, issue source, issue number/link, branch name/base, branch-status-staleness check, staging method, commit format, PR title format, PR template, draft/ready state, required checks, cross-repo dependencies, and unknowns/blockers
+- Resolve PR title format as Conventional Commits title format with the GitHub issue as scope: ` + "`<type>(<issue_number>): <gitmoji> <short title message>`" + `
 - If any Delivery Contract field is unknown, ambiguous, missing, or conflicts with generic defaults, stop and ask before mutating
 - Do not use ` + "`codex/*`" + ` branches, ad hoc issue/PR bodies, draft PRs by default, bulk staging, generic commit messages, or PRs that omit the repo template unless the Kit contract or user explicitly overrides it
 

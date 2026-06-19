@@ -79,7 +79,6 @@ all decisions.
 - Do not apply the code-file size guideline to documentation files, all `docs/**`, all `.kit/**`, or `.kit.yaml`.
 - Do not split or rewrite docs, generated state, or Kit config artifacts solely because they exceed 300 lines.
 <!-- END KIT-MANAGED BASELINE RULES -->
-
 ### Non-Negotiable Rules
 
 1. **Artifact Pipeline Order**
@@ -540,10 +539,19 @@ loop:
   min_confidence: 95
   max_iterations: 10
   agent:
-    command: your-agent
+    command: codex
     args:
-      - run
-      - --stdin
+      - --ask-for-approval
+      - never
+      - exec
+      - --model
+      - gpt-5.5
+      - --sandbox
+      - workspace-write
+      - --ignore-user-config
+      - --color
+      - never
+      - "-"
 # Repository instruction scaffold model
 instruction_scaffold_version: 2
 
