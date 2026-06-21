@@ -52,9 +52,9 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 	}
 	if len(activeFeatures) > 0 {
 		workSteps = append(workSteps,
-			"For each active feature, compare current implementation reality, task state, repository findings, and phase reference inventories against the listed feature docs.",
+			"For each active feature, compare current implementation reality, SPEC.md phase/task/evidence state, repository findings, and reference inventories against the listed feature docs.",
 			"Update any stale feature docs first. If implementation reality diverges from the docs, fix the docs before handoff.",
-			"For every touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md`, make sure canonical front matter references list current `active`, `optional`, and `stale` references with exact targets, stable ids when needed, selector types, stable selectors, relations, and read policies.",
+			"For every touched `SPEC.md`, make sure canonical front matter phase, references, relationships, skills, and evidence remain current. If you touch legacy `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md`, keep their front matter references current too.",
 			"Update `PROJECT_PROGRESS_SUMMARY.md` so it reflects the reconciled state of every active feature.",
 			"Keep changes limited to documentation and handoff accuracy. Do not begin unrelated implementation work.",
 			"If a listed doc is stale, update it before producing your final handoff response.",
@@ -63,7 +63,7 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 	} else {
 		workSteps = append(workSteps,
 			"Compare the project summary and repository findings to confirm there is no undocumented active work.",
-			"If you touch any feature docs during reconciliation, make sure each touched `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keeps canonical front matter references current with exact targets, stable ids when needed, selector types, stable selectors, relations, and read policies.",
+			"If you touch any feature docs during reconciliation, make sure each touched `SPEC.md` keeps canonical front matter phase, references, relationships, skills, and evidence current; legacy staged docs only need reference updates when they are touched.",
 			"Update any stale project docs first so the handoff is accurate.",
 			"Keep changes limited to documentation and handoff accuracy. Do not begin unrelated implementation work.",
 			"If a listed doc is stale, update it before producing your final handoff response.",
@@ -134,16 +134,16 @@ func featureHandoffWithPath(featureRef string) (string, string, error) {
 		workSteps = append(workSteps, "Read the listed docs in order, starting with `CONSTITUTION.md`, then the feature docs, then `PROJECT_PROGRESS_SUMMARY.md`.")
 	}
 	workSteps = append(workSteps,
-		"Compare current implementation reality, task status, repository findings, and phase reference inventories against each feature document.",
+		"Compare current implementation reality, SPEC.md phase/task/evidence state, repository findings, and reference inventories against each feature document.",
 		"If any feature specification document is stale, update it first so it matches reality. Do this before preparing the handoff summary.",
-		"Verify that `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` keep canonical front matter references current with exact targets, stable ids when needed, selector types, stable selectors, relations, read policies, and `active`, `optional`, or `stale` status values when those docs exist.",
+		"Verify that `SPEC.md` keeps canonical front matter phase, references, relationships, skills, validation evidence, and delivery state current. If legacy `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` exist and are touched, keep their front matter references current too.",
 		"Keep `PROJECT_PROGRESS_SUMMARY.md` aligned with the reconciled feature state.",
 		"Limit your work to documentation reconciliation and handoff preparation. Do not start unrelated implementation work.",
 	)
-	if feat.Phase == feature.PhaseSpec || feat.Phase == feature.PhasePlan {
-		workSteps = append(workSteps, "Preserve the planning approval semantics when they still apply: "+approvalSyntaxSummary+".")
+	if feat.Phase == feature.PhaseClarify || feat.Phase == feature.PhaseReady || feat.Phase == feature.PhaseSpec || feat.Phase == feature.PhasePlan {
+		workSteps = append(workSteps, "Preserve clarification/readiness approval semantics when they still apply: "+approvalSyntaxSummary+".")
 	} else {
-		workSteps = append(workSteps, "Be explicit about the actual implementation and task state, especially when code has outpaced `PLAN.md` or `TASKS.md`.")
+		workSteps = append(workSteps, "Be explicit about the actual implementation, validation, reflection, and delivery state, especially when code has outpaced `SPEC.md`.")
 	}
 	workSteps = append(workSteps, "Prefer repository files and current code over memory when they disagree.")
 
@@ -286,10 +286,10 @@ func featureScopedDocuments(feat *feature.Feature) []handoffDocument {
 		name string
 		use  string
 	}{
-		{"BRAINSTORM.md", fmt.Sprintf("Upstream research for %s; preserve validated findings, affected-file context, and the phase reference inventory", feat.Slug)},
-		{"SPEC.md", fmt.Sprintf("Feature requirements for %s; keep scope, acceptance, edge cases, and the reference inventory aligned with reality", feat.Slug)},
-		{"PLAN.md", fmt.Sprintf("Implementation approach for %s; update the written design and planning reference inventory when execution diverges", feat.Slug)},
-		{"TASKS.md", fmt.Sprintf("Execution state for %s; keep task status and evidence aligned with actual progress", feat.Slug)},
+		{"SPEC.md", fmt.Sprintf("V2 durable workflow artifact for %s; keep phase, requirements, plan, task checklist, validation, reflection, delivery, evidence, and references aligned with reality", feat.Slug)},
+		{"BRAINSTORM.md", fmt.Sprintf("Optional legacy research for %s; historical context unless a legacy staged command is in use", feat.Slug)},
+		{"PLAN.md", fmt.Sprintf("Optional legacy implementation approach for %s; historical context unless a legacy staged command is in use", feat.Slug)},
+		{"TASKS.md", fmt.Sprintf("Optional legacy execution state for %s; historical context unless a legacy staged command is in use", feat.Slug)},
 		{"ANALYSIS.md", fmt.Sprintf("Optional scratchpad for %s; keep open questions and assumptions current if present", feat.Slug)},
 	}
 

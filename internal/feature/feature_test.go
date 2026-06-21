@@ -32,6 +32,29 @@ func TestDeterminePhase(t *testing.T) {
 			wantPhase: PhaseSpec,
 		},
 		{
+			name: "v2 spec phase clarify",
+			files: map[string]string{
+				"SPEC.md": validV2FeatureSpec("0001-alpha", "clarify"),
+			},
+			wantPhase: PhaseClarify,
+		},
+		{
+			name: "v2 spec phase deliver overrides legacy tasks",
+			files: map[string]string{
+				"SPEC.md":  validV2FeatureSpec("0001-alpha", "deliver"),
+				"PLAN.md":  "# PLAN\n",
+				"TASKS.md": "# TASKS\n\n- [x] T001: done\n" + ReflectionCompleteMarker + "\n",
+			},
+			wantPhase: PhaseDeliver,
+		},
+		{
+			name: "v2 spec without phase defaults to clarify",
+			files: map[string]string{
+				"SPEC.md": validV2FeatureSpec("0001-alpha", ""),
+			},
+			wantPhase: PhaseClarify,
+		},
+		{
 			name: "plan present",
 			files: map[string]string{
 				"SPEC.md": "# SPEC\n",
@@ -93,4 +116,33 @@ func TestDeterminePhase(t *testing.T) {
 			}
 		})
 	}
+}
+
+func validV2FeatureSpec(dirName string, phase string) string {
+	phaseLine := ""
+	if phase != "" {
+		phaseLine = "phase: " + phase + "\n"
+	}
+	return "---\n" +
+		"kit_metadata_version: 1\n" +
+		"artifact: spec\n" +
+		"workflow_version: 2\n" +
+		phaseLine +
+		"feature:\n" +
+		"  dir: " + dirName + "\n" +
+		"---\n" +
+		"# SPEC\n\n" +
+		"## THESIS\n\nthesis\n\n" +
+		"## CONTEXT\n\ncontext\n\n" +
+		"## CLARIFICATIONS\n\nnone\n\n" +
+		"## REQUIREMENTS\n\nrequirements\n\n" +
+		"## ASSUMPTIONS\n\nnone\n\n" +
+		"## ACCEPTANCE CRITERIA\n\ncriteria\n\n" +
+		"## IMPLEMENTATION PLAN\n\nplan\n\n" +
+		"## TASK CHECKLIST\n\n- [ ] task\n\n" +
+		"## VALIDATION MAP\n\nmap\n\n" +
+		"## REFLECTION NOTES\n\nnotes\n\n" +
+		"## DOCUMENTATION UPDATES\n\nupdates\n\n" +
+		"## DELIVERY DECISION\n\ndecision\n\n" +
+		"## EVIDENCE\n\nevidence\n"
 }

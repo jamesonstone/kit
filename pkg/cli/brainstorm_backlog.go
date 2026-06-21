@@ -36,7 +36,7 @@ func runBrainstormBacklog(
 
 	if !created && feat.Phase != feature.PhaseBrainstorm {
 		return fmt.Errorf(
-			"feature '%s' is in %s phase. Backlog capture only supports brainstorm-phase features",
+			"feature '%s' is in %s phase. Backlog capture only supports legacy brainstorm-phase features",
 			feat.Slug,
 			feat.Phase,
 		)
@@ -117,41 +117,6 @@ func runBrainstormBacklog(
 	})
 
 	return nil
-}
-
-func runBrainstormPickup(
-	projectRoot string,
-	cfg *config.Config,
-	specsDir string,
-	args []string,
-	outputOnly bool,
-) error {
-	var (
-		feat *feature.Feature
-		err  error
-	)
-
-	if len(args) == 1 {
-		feat, err = resolveBacklogFeature(specsDir, cfg, args[0])
-		if err != nil {
-			return err
-		}
-	} else {
-		feat, err = selectBacklogFeature(specsDir, cfg, "Select a backlog item to pick up:")
-		if err != nil {
-			return err
-		}
-	}
-
-	return resumeBacklogFeature(
-		projectRoot,
-		cfg,
-		feat,
-		outputOnly,
-		brainstormCopy,
-		brainstormOutput,
-		"brainstorm pickup",
-	)
 }
 
 func addBacklogRelationship(

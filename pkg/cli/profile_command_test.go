@@ -109,7 +109,7 @@ func TestRootInvalidProfileFailsBeforeBrainstormFileCreation(t *testing.T) {
 	previousErr := rootCmd.ErrOrStderr()
 	rootCmd.SetOut(&bytes.Buffer{})
 	rootCmd.SetErr(&bytes.Buffer{})
-	rootCmd.SetArgs([]string{"--profile=backend", "brainstorm", "profile-failure", "--output-only"})
+	rootCmd.SetArgs([]string{"--profile=backend", "legacy", "brainstorm", "profile-failure", "--output-only"})
 	defer func() {
 		rootCmd.SetOut(previousOut)
 		rootCmd.SetErr(previousErr)

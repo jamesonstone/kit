@@ -18,12 +18,14 @@ import (
 type loopStage string
 
 const (
-	loopStageSpec      loopStage = "spec"
-	loopStagePlan      loopStage = "plan"
-	loopStageTasks     loopStage = "tasks"
+	loopStageClarify   loopStage = "clarify"
+	loopStageReady     loopStage = "ready"
 	loopStageImplement loopStage = "implement"
+	loopStageValidate  loopStage = "validate"
 	loopStageReflect   loopStage = "reflect"
+	loopStageDeliver   loopStage = "deliver"
 	loopStageComplete  loopStage = "complete"
+	loopStageBlocked   loopStage = "blocked"
 )
 
 const loopSchemaVersion = 1
@@ -43,10 +45,8 @@ var loopCmd = &cobra.Command{
 	SilenceErrors: true,
 	Long: `Run Kit agent loops.
 
-With a feature argument, kit loop [feature] keeps the legacy workflow loop
-behavior. New usage should prefer kit loop workflow [feature] for the
-feature workflow loop or kit loop review for the changed-code correctness
-review loop.
+Use kit loop workflow [feature] to run the v2 single-SPEC workflow through a
+configured local agent. Use kit loop review for changed-code correctness review.
 
 Configure the local agent in .kit.yaml:
 
@@ -75,11 +75,10 @@ func newLoopWorkflowCommand() *cobra.Command {
 		SilenceErrors: true,
 		Long: `Run the Kit feature workflow as an autonomous, confidence-gated loop.
 
-The workflow loop keeps existing workflow commands as prompt and artifact
-builders. It selects the next strict stage, wraps that stage prompt with a
-machine-readable loop contract, sends the prompt to the configured local agent
-command over stdin, validates the result, and repeats until completion or a
-blocker.`,
+The workflow loop uses the v2 kit spec supervisor prompt and SPEC.md front
+matter phases as durable state. It wraps the prompt with a machine-readable
+loop contract, sends the prompt to the configured local agent command over
+stdin, validates the result, and repeats until completion or a blocker.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: runLoop,
 	}
@@ -89,7 +88,7 @@ blocker.`,
 
 func addWorkflowLoopFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&loopDryRun, "dry-run", false, "show the next loop action without running the configured agent")
-	cmd.Flags().StringVar(&loopUntil, "until", "complete", "run until this stage is complete: spec, plan, tasks, implement, reflect, complete")
+	cmd.Flags().StringVar(&loopUntil, "until", "complete", "run until this v2 phase is complete: clarify, ready, implement, validate, reflect, deliver, complete")
 	cmd.Flags().IntVar(&loopMinConfidence, "min-confidence", 0, "minimum agent confidence required to advance (0 uses loop config, goal_percentage, then 95)")
 	cmd.Flags().IntVar(&loopMaxIterations, "max-iterations", 0, "maximum loop iterations (0 uses loop config, then 10)")
 	cmd.Flags().BoolVar(&loopJSON, "json", false, "output loop report as JSON")
@@ -205,7 +204,7 @@ func resolveLoopFeature(specsDir string, cfg *config.Config, args []string) (*fe
 	if len(args) == 1 {
 		feat, err := loadFeatureWithState(specsDir, cfg, args[0])
 		if err != nil {
-			return nil, fmt.Errorf("feature '%s' not found. Run 'kit brainstorm %s' or 'kit spec %s' first", args[0], args[0], args[0])
+			return nil, fmt.Errorf("feature '%s' not found. Run 'kit spec %s' first for v2 work, or 'kit legacy brainstorm %s' for staged migration work", args[0], args[0], args[0])
 		}
 		return feat, nil
 	}

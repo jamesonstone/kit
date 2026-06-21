@@ -2,9 +2,12 @@ package cli
 
 import (
 	"bytes"
+	"regexp"
 	"strings"
 	"testing"
 )
+
+var ansiEscapeRE = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 	previousOut := rootCmd.OutOrStdout()
@@ -24,13 +27,21 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		t.Fatalf("rootCmd.Execute() error = %v", err)
 	}
 
-	content := out.String()
+	content := stripANSI(out.String())
 	checks := []string{
 		"Setup",
 		"Workflow",
 		"Inspect & Repair",
 		"Prompt Utilities",
 		"Utilities",
+		"V2 Feature Workflow",
+		"kit spec <feature>",
+		"SPEC.md: clarify",
+		"Durable Artifacts",
+		"v2 feature artifact",
+		"legacy v1 staged artifacts",
+		"legacy",
+		"List deprecated v1 staged workflow commands",
 		"scaffold",
 		"prompt",
 		"set",
@@ -57,35 +68,71 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"\n  review-loop ",
 		"\n  scaffold-agents ",
 		"\n  rollup ",
+		"\n  brainstorm ",
+		"\n  plan ",
+		"\n  tasks ",
+		"\n  implement ",
+		"\n  reflect ",
+		"\n  verify ",
 	}
 	for _, check := range hiddenChecks {
 		if strings.Contains(content, check) {
 			t.Fatalf("expected root help to omit hidden command %q, got %q", check, content)
 		}
 	}
+
+	staleWorkflowChecks := []string{
+		"Optional Research Step",
+		"Artifact Pipeline",
+		"Specification │ ─▶ │ Plan",
+		"Tasks │ ─▶ │ Implementation",
+		"Reflection     — verify correctness",
+	}
+	for _, check := range staleWorkflowChecks {
+		if strings.Contains(content, check) {
+			t.Fatalf("expected root help to omit stale v1 workflow text %q, got %q", check, content)
+		}
+	}
 }
 
-func TestDeprecatedCommandsRemainRegisteredAndHidden(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{name: "update", want: "kit upgrade"},
-		{name: "skills", want: "kit skill mine"},
-		{name: "catchup", want: "kit resume"},
-		{name: "rollup", want: "maintenance command"},
+func TestRemovedCompatibilityCommandsAreNotRegistered(t *testing.T) {
+	removed := [][]string{
+		{"update"},
+		{"skills"},
+		{"skills", "mine"},
+		{"catchup"},
+		{"rollup"},
+		{"review-loop"},
+		{"brainstorm"},
+		{"plan"},
+		{"tasks"},
+		{"implement"},
+		{"reflect"},
+		{"verify"},
 	}
 
-	for _, tt := range tests {
-		cmd, _, err := rootCmd.Find([]string{tt.name})
+	for _, args := range removed {
+		if cmd, _, err := rootCmd.Find(args); err == nil && cmd != nil && cmd.CommandPath() == "kit "+strings.Join(args, " ") {
+			t.Fatalf("expected %q to be removed", strings.Join(args, " "))
+		}
+	}
+}
+
+func TestLegacyNamespaceCommandsAreRegistered(t *testing.T) {
+	for _, args := range [][]string{
+		{"legacy", "brainstorm"},
+		{"legacy", "plan"},
+		{"legacy", "tasks"},
+		{"legacy", "implement"},
+		{"legacy", "reflect"},
+		{"legacy", "verify"},
+	} {
+		cmd, _, err := rootCmd.Find(args)
 		if err != nil {
-			t.Fatalf("rootCmd.Find(%q) error = %v", tt.name, err)
+			t.Fatalf("rootCmd.Find(%v) error = %v", args, err)
 		}
-		if !cmd.Hidden {
-			t.Fatalf("expected %q to be hidden", tt.name)
-		}
-		if !strings.Contains(cmd.Deprecated, tt.want) {
-			t.Fatalf("expected %q deprecation to contain %q, got %q", tt.name, tt.want, cmd.Deprecated)
+		if cmd == nil || cmd.CommandPath() != "kit "+strings.Join(args, " ") {
+			t.Fatalf("expected %q to be registered, got %#v", strings.Join(args, " "), cmd)
 		}
 	}
 }
@@ -203,28 +250,12 @@ func executeHelp(t *testing.T, args []string) string {
 	return out.String()
 }
 
-func TestSkillsMineAliasCarriesDeprecationGuidance(t *testing.T) {
-	cmd, _, err := rootCmd.Find([]string{"skills", "mine"})
-	if err != nil {
-		t.Fatalf("rootCmd.Find(skills mine) error = %v", err)
-	}
-	if cmd.Name() != "mine" {
-		t.Fatalf("expected mine subcommand, got %q", cmd.Name())
-	}
-	if !strings.Contains(cmd.Deprecated, "kit skill mine") {
-		t.Fatalf("expected skills mine deprecation guidance, got %q", cmd.Deprecated)
+func TestBrainstormPickupFlagIsRemoved(t *testing.T) {
+	if flag := brainstormCmd.Flags().Lookup("pickup"); flag != nil {
+		t.Fatalf("expected brainstorm pickup flag to be removed, got %#v", flag)
 	}
 }
 
-func TestBrainstormPickupFlagIsHiddenAndDeprecated(t *testing.T) {
-	flag := brainstormCmd.Flags().Lookup("pickup")
-	if flag == nil {
-		t.Fatal("expected brainstorm pickup flag to exist")
-	}
-	if !flag.Hidden {
-		t.Fatal("expected brainstorm pickup flag to be hidden")
-	}
-	if !strings.Contains(flag.Deprecated, "kit resume <feature>") {
-		t.Fatalf("expected pickup deprecation guidance, got %q", flag.Deprecated)
-	}
+func stripANSI(input string) string {
+	return ansiEscapeRE.ReplaceAllString(input, "")
 }

@@ -65,23 +65,16 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 		filepath.Join(codexDir, "AGENTS.md"),
 		filepath.Join(codexDir, "instructions.md"),
 		filepath.Join(codexDir, "skills", "*", "SKILL.md"),
-		"Perform a skills discovery phase before treating SPEC.md as complete",
-		"write the selected skills into canonical front matter `skills`",
-		"Populate or refresh canonical front matter `references`",
+		"`SPEC.md` is the single durable feature artifact",
+		"Keep front matter `references`",
+		"Keep front matter `skills` focused on execution-time skills",
 		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"keep `skills` focused on execution-time agent skills and track broader supporting inputs in `references`",
-		"for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target`",
-		"do not use `.claude/skills` as canonical discovery input",
-		"Only update SPEC.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
-		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
-		"`not applicable`, `not required`, or `no additional information required`",
-		"## Skills",
-		"read that feature's canonical front matter `skills` first",
+		"Do not use `.claude/skills` as canonical discovery input",
 	}
 
 	for _, check := range checks {
@@ -89,14 +82,8 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 			t.Fatalf("expected output to contain %q", check)
 		}
 	}
-	assertFinalResponseContractHeadings(t, output,
-		"Summary",
-		"Artifacts Updated",
-		"Requirements Locked",
-		"Acceptance Notes",
-		"Open Questions",
-		"Next Step",
-	)
+	assertV2SpecPromptContract(t, output)
+	assertV2SpecPromptExcludesV1StageAssumptions(t, output)
 }
 
 func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
@@ -119,28 +106,22 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 	specPath := filepath.Join(projectRoot, "docs", "specs", "0010-sample", "SPEC.md")
 
 	output := captureStdout(t, func() {
-		err := runSpecTemplate(specPath, "", "sample", projectRoot, cfg, true)
+		err := runSpecTemplate(specPath, "", "sample", projectRoot, cfg, true, false)
 		if err != nil {
 			t.Fatalf("runSpecTemplate() error = %v", err)
 		}
 	})
 
 	checks := []string{
-		"Perform a skills discovery phase before treating SPEC.md as complete",
-		"write the selected skills into canonical front matter `skills`",
-		"Populate or refresh canonical front matter `references`",
+		"`SPEC.md` is the single durable feature artifact",
+		"Keep front matter `references`",
+		"Keep front matter `skills` focused on execution-time skills",
 		"Use an RLM-style just-in-time prior-work pass over",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 		"conditional reads only",
 		"shared interface or contract",
 		"inspect at most 5 prior feature directories",
 		"do not paraphrase entire prior docs into chat",
-		"leave front matter skills empty or keep the legacy `none | n/a | n/a | no additional skills required | no` row",
-		"keep `skills` focused on execution-time agent skills and track broader supporting inputs in `references`",
-		"canonical front matter `skills` is mandatory when front matter exists",
-		"canonical front matter `references` must be current",
-		"Only update SPEC.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
-		"no section in `SPEC.md` may remain empty or contain only an HTML TODO comment",
 	}
 
 	for _, check := range checks {
@@ -148,14 +129,8 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 			t.Fatalf("expected output to contain %q", check)
 		}
 	}
-	assertFinalResponseContractHeadings(t, output,
-		"Summary",
-		"Artifacts Updated",
-		"Requirements Locked",
-		"Acceptance Notes",
-		"Open Questions",
-		"Next Step",
-	)
+	assertV2SpecPromptContract(t, output)
+	assertV2SpecPromptExcludesV1StageAssumptions(t, output)
 }
 
 func TestRunSpecTemplate_IncludesRLMGuidanceWhenBrainstormHintsLargeRepo(t *testing.T) {
@@ -181,7 +156,7 @@ func TestRunSpecTemplate_IncludesRLMGuidanceWhenBrainstormHintsLargeRepo(t *test
 
 	cfg := config.Default()
 	output := captureStdout(t, func() {
-		err := runSpecTemplate(specPath, brainstormPath, "repository-audit", projectRoot, cfg, true)
+		err := runSpecTemplate(specPath, brainstormPath, "repository-audit", projectRoot, cfg, true, false)
 		if err != nil {
 			t.Fatalf("runSpecTemplate() error = %v", err)
 		}
@@ -263,6 +238,8 @@ func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
 		"acceptance",
 		"wait",
 		"edge-cases",
+		"wait",
+		"delivery-intent",
 	}
 	if !stdreflect.DeepEqual(sequence, wantSequence) {
 		t.Fatalf("unexpected editor prompt sequence: got %v want %v", sequence, wantSequence)
@@ -270,8 +247,9 @@ func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
 
 	checks := []string{
 		"A default editor will open for each free-text response.",
-		"**PROBLEM**: problem answer",
-		"**EDGE-CASES**: edge-cases answer",
+		"**THESIS / PROBLEM**: problem answer",
+		"**EDGE CASES**: edge-cases answer",
+		"**DELIVERY INTENT**: delivery-intent answer",
 	}
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
@@ -324,8 +302,9 @@ func TestRunSpecWithoutSelectionCandidatesStartsInteractiveCreation(t *testing.T
 	}
 	for _, check := range []string{
 		"Interactive Spec Builder",
-		"**PROBLEM**: problem answer",
-		"**EDGE-CASES**: edge-cases answer",
+		"**THESIS / PROBLEM**: problem answer",
+		"**EDGE CASES**: edge-cases answer",
+		"**DELIVERY INTENT**: delivery-intent answer",
 	} {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q, got:\n%s", check, output)
@@ -375,6 +354,114 @@ func TestOutputCompiledPrompt_IncludesRLMGuidanceWhenContextRequiresIt(t *testin
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)
+		}
+	}
+}
+
+func assertV2SpecPromptContract(t *testing.T, output string) {
+	t.Helper()
+
+	checks := []string{
+		"## Durable Repository Facts",
+		"## Instruction Entrypoints",
+		"## Supporting Inputs",
+		"## Source Of Truth Precedence",
+		"Safety, permission, and system constraints",
+		"## SPEC.md Contract",
+		"`SPEC.md` is the single durable feature artifact",
+		"CONSTITUTION",
+		"PROJECT PROGRESS",
+		"durable repository facts",
+		"RLM",
+		"Kit's just-in-time context-routing pattern",
+		"KIT MANAGED RULESETS",
+		"pointer-loaded durable repo-local rulesets managed by Kit",
+		"Use this fixed section order: Thesis, Context, Clarifications, Requirements, Assumptions, Acceptance Criteria, Implementation Plan, Task Checklist, Validation Map, Reflection Notes, Documentation Updates, Delivery Decision, Evidence.",
+		"Valid phases are `clarify`, `ready`, `implement`, `validate`, `reflect`, `deliver`, `complete`, and `blocked`.",
+		"## Supervisor Responsibilities",
+		"## Prompt-Only And V1 Compatibility",
+		"## First-Action Checklist",
+		"git status --short",
+		"## Dirty Worktree And Ownership Gate",
+		"Classify existing changes as user-owned, in-scope, unrelated, or unknown",
+		"## Pre-Instruction Report",
+		"confidence percentage, unresolved question count, and whether any readiness gate blocks implementation",
+		"## Clarification Loop",
+		"repo evidence before implementation begins",
+		"record the exact accepted defaults in `SPEC.md`",
+		"## Source Map Mechanics",
+		"Required columns: ID, Source, Selector, Claim / Fact, Used For, Maps To, Status.",
+		"Source Map gate",
+		"## Objective Readiness Gates",
+		"every acceptance criterion has a stable `AC-###` ID",
+		"## Acceptance Criteria Discipline",
+		"stable acceptance criterion IDs such as `AC-001`",
+		"## Phase Transition Rules",
+		"Do not skip phases.",
+		"## Agent Team Model",
+		"The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.",
+		"Default max concurrent lanes: 3.",
+		"Hard ceiling: 4, only when predicted file overlap is clearly low.",
+		"Do not use \"as many agents as possible.\"",
+		"Verification lanes are read-only by default.",
+		"## Agent Team Plan",
+		"predicted touched files per lane",
+		"## Implementation Rules",
+		"## Acceptance Coverage Audit",
+		"Each acceptance criterion row must include criterion id, implementation evidence, validation command or review evidence, documentation impact, verifier result, and gap status.",
+		"## Validation And Verification Phase",
+		"Map validation 1:1 to Acceptance Criteria in `SPEC.md`",
+		"Read-only verification lanes must not edit files",
+		"For each verifier gap, record `gap id -> acceptance criterion id -> Source Map id -> fix diff area -> rerun evidence -> verifier closure`",
+		"If validation is impossible, record reason, risk, substitute evidence, user-visible impact, owner or next action, and whether delivery is blocked.",
+		"## Reflection Phase",
+		"## Zero-Error Completion Gate",
+		"No known errors remain",
+		"## Documentation Update Rules",
+		"## Delivery Intent And Hard Gate",
+		"## SPEC.md Update Requirements",
+		"Update Context `### Source Map` whenever a material claim is added",
+		"## Response Scope",
+		"Clarification-loop replies should use numbered questions",
+		"## Final Response Contract",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected v2 spec prompt to contain %q", check)
+		}
+	}
+	assertFinalResponseContractHeadings(t, output,
+		"Summary",
+		"SPEC.md State",
+		"Acceptance Coverage",
+		"Validation Evidence",
+		"Zero-Error Gate",
+		"Agent Team",
+		"Delivery",
+		"Open Items",
+	)
+}
+
+func assertV2SpecPromptExcludesV1StageAssumptions(t *testing.T, output string) {
+	t.Helper()
+
+	unwanted := []string{
+		"Only update SPEC.md and supporting documentation",
+		"Run 'kit plan",
+		"Run `kit plan",
+		"usually `kit plan",
+		"Run 'kit legacy plan",
+		"Run `kit legacy plan",
+		"usually `kit legacy plan",
+		"Avoid implementation details (focus on WHAT, not HOW)",
+		"write the selected skills into canonical front matter `skills`; use the legacy `## SKILLS` table",
+		"keep the legacy `none | n/a | n/a | no additional skills required | no` row",
+	}
+
+	for _, check := range unwanted {
+		if strings.Contains(output, check) {
+			t.Fatalf("v2 spec prompt reintroduced v1 stage assumption %q", check)
 		}
 	}
 }

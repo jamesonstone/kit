@@ -26,7 +26,7 @@ func TestRunBrainstormBacklog_CreatesPausedBacklogItem(t *testing.T) {
 
 	restoreEditor := stubBrainstormEditor(t, "Need to refactor the legacy endpoint to share normalization.")
 	defer restoreEditor()
-	restoreFlags := setBrainstormFlagState(true, false, "", false, false, false, false)
+	restoreFlags := setBrainstormFlagState(true, "", false, false, false, false)
 	defer restoreFlags()
 
 	cmd := newBrainstormTestCommand()
@@ -169,62 +169,6 @@ same
 	}
 	if updated.IsFeaturePaused("0001-legacy-endpoint-refactor") {
 		t.Fatal("expected backlog pickup to clear paused state")
-	}
-}
-
-func TestRunBrainstormPickup_WritesPromptAndClearsPausedState(t *testing.T) {
-	projectRoot, cfg := setupLifecycleTestProject(t)
-	specsDir := filepath.Join(projectRoot, "docs", "specs")
-	createFeatureFile(t, specsDir, "0001-legacy-endpoint-refactor", "BRAINSTORM.md", `# BRAINSTORM
-
-## SUMMARY
-
-Need to refactor the legacy endpoint to share normalization.
-
-## USER THESIS
-
-same
-`)
-	cfg.SetFeaturePaused("0001-legacy-endpoint-refactor", true)
-	if err := config.Save(projectRoot, cfg); err != nil {
-		t.Fatalf("config.Save() error = %v", err)
-	}
-
-	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
-	if err != nil {
-		t.Fatalf("ensureHandoffTestWorkingDirectory() error = %v", err)
-	}
-	defer restoreWD()
-
-	outputPath := filepath.Join(projectRoot, "tmp", "brainstorm-prompt.md")
-	restoreFlags := setBrainstormFlagState(false, true, outputPath, false, false, false, false)
-	defer restoreFlags()
-	restoreStdout := silenceStdout(t)
-	defer restoreStdout()
-
-	cmd := newBrainstormTestCommand()
-	if err := cmd.Flags().Set("output-only", "true"); err != nil {
-		t.Fatalf("Flags().Set() error = %v", err)
-	}
-
-	if err := runBrainstorm(cmd, []string{"legacy-endpoint-refactor"}); err != nil {
-		t.Fatalf("runBrainstorm() error = %v", err)
-	}
-
-	updated, err := config.Load(projectRoot)
-	if err != nil {
-		t.Fatalf("config.Load() error = %v", err)
-	}
-	if updated.IsFeaturePaused("0001-legacy-endpoint-refactor") {
-		t.Fatal("expected brainstorm pickup to clear paused state")
-	}
-
-	prompt, err := os.ReadFile(outputPath)
-	if err != nil {
-		t.Fatalf("ReadFile(%q) error = %v", outputPath, err)
-	}
-	if !strings.HasPrefix(string(prompt), "Research and document feature: **legacy-endpoint-refactor**\n\n") {
-		t.Fatalf("expected brainstorm pickup prompt, got %q", string(prompt))
 	}
 }
 

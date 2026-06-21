@@ -12,22 +12,24 @@ const sharedRepositoryInstructions = sharedRepositoryInstructionsCore + sharedRe
 const copilotQuickRules = `## Fast rules for chat and code review
 
 - classify every request first
-  - **spec-driven**: ` + "`kit brainstorm`" + ` / ` + "`kit spec`" + ` work, new capability, substantial behavioral or architectural change, existing spec-covered feature work, or cross-component/public-interface changes
+  - **spec-driven**: ` + "`kit spec`" + ` work, explicit legacy staged ` + "`kit legacy`" + ` work, new capability, substantial behavioral or architectural change, existing spec-covered feature work, or cross-component/public-interface changes
   - **ad hoc**: contained bug fix, review, refactor, dependency update, config change, or small refinement
 - for spec-driven work:
-  - read ` + "`BRAINSTORM.md`" + ` when present, then ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + `
+  - read ` + "`SPEC.md`" + ` first for v2 feature work; it carries requirements, plan, task checklist, validation, reflection, delivery, and evidence
+  - treat ` + "`BRAINSTORM.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` as legacy staged context unless the user explicitly chooses a legacy staged command
   - ask numbered clarification questions until you reach ≥95% confidence
   - include a recommended default, proposed solution, or assumption for every question
   - accept approvals via ` + "`yes`" + ` / ` + "`y`" + `, partial approvals via ` + "`yes 3, 4`" + `, and overrides via ` + "`no 2: <answer>`" + `
-  - run the implementation readiness gate before writing code; if it fails, update docs first
-  - implement tasks in order and update docs first if implementation changes behavior, requirements, or approach
+  - run the v2 readiness gates before writing code; if any gate fails, update ` + "`SPEC.md`" + ` first
+  - implement from the ` + "`SPEC.md`" + ` task checklist and update ` + "`SPEC.md`" + ` first if implementation changes behavior, requirements, approach, validation, reflection, documentation, or delivery state
 - for ad hoc work:
   - follow understand → implement → verify
   - update existing spec docs when the change alters behavior, requirements, or approach
 - always:
   - never mix multiple features in one ` + "`docs/specs/<feature>/`" + ` directory
   - keep ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, and ` + "`.github/copilot-instructions.md`" + ` aligned with canonical docs
-  - populate every section in ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + `; replace placeholder-only sections with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + ` instead of leaving HTML TODO comments
+  - populate every required section in v2 ` + "`SPEC.md`" + `; for legacy staged workflows, populate every required section in the active staged artifact
+  - replace placeholder-only sections with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + ` instead of leaving HTML TODO comments
   - work in the existing project directory; do not create or use git worktrees for agent work
   - prefer readable, maintainable code with explicit error handling and focused functions
   - fix all lint and test failures before completion and wait for the user's output before triaging findings they report

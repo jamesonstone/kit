@@ -42,7 +42,7 @@ func TestFeatureArtifactBuildersIncludeCanonicalFrontMatter(t *testing.T) {
 			if doc.Metadata == nil || doc.Metadata.Feature.Dir != "0001-sample-feature" || doc.Metadata.Artifact != document.ArtifactForDocumentType(tc.docType) {
 				t.Fatalf("unexpected metadata: %#v", doc.Metadata)
 			}
-			for _, section := range document.RequiredSections[tc.docType] {
+			for _, section := range doc.RequiredSections() {
 				if !doc.HasSection(section) {
 					t.Fatalf("expected generated artifact to keep required section %q", section)
 				}
@@ -85,7 +85,7 @@ func TestBrainstormTemplateUsesReferenceProseSection(t *testing.T) {
 func TestInstructionTemplatesRequirePopulatedSections(t *testing.T) {
 	checks := []string{
 		"## Document Completeness",
-		"every required section must be populated",
+		"every required `SPEC.md` section must be populated",
 		"`not applicable`, `not required`, or `no additional information required`",
 	}
 
@@ -106,7 +106,7 @@ func TestInstructionTemplatesRequirePopulatedSections(t *testing.T) {
 
 func TestInstructionTemplatesIncludeReadinessGate(t *testing.T) {
 	checks := []string{
-		"implementation readiness gate",
+		"v2 readiness gates",
 		"update the canonical docs first",
 	}
 
@@ -295,19 +295,32 @@ func TestDefaultInstructionTemplatesUseTOCModel(t *testing.T) {
 	}
 }
 
-func TestSpecTemplateIncludesSkillsAndReferenceProse(t *testing.T) {
+func TestSpecTemplateUsesV2SingleArtifactSections(t *testing.T) {
 	checks := []string{
-		"## SKILLS",
-		"| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |",
-		"| none | n/a | n/a | no additional skills required | no |",
-		"## DEPENDENCIES",
-		"References are tracked in front matter.",
+		"## THESIS",
+		"## CONTEXT",
+		"## CLARIFICATIONS",
+		"## REQUIREMENTS",
+		"## ASSUMPTIONS",
+		"## ACCEPTANCE CRITERIA",
+		"## IMPLEMENTATION PLAN",
+		"## TASK CHECKLIST",
+		"## VALIDATION MAP",
+		"## REFLECTION NOTES",
+		"## DOCUMENTATION UPDATES",
+		"## DELIVERY DECISION",
+		"## EVIDENCE",
 	}
 
 	for _, check := range checks {
 		if !strings.Contains(Spec, check) {
 			t.Fatalf("expected Spec to contain %q", check)
 		}
+	}
+
+	doc := document.Parse(BuildSpecArtifactForFeature(document.FeatureMetadataFromDir("0001-sample")), "SPEC.md", document.TypeSpec)
+	if doc.Metadata == nil || doc.Metadata.WorkflowVersion != 2 || doc.Metadata.Phase != "clarify" {
+		t.Fatalf("expected generated spec metadata to mark v2 clarify workflow, got %#v", doc.Metadata)
 	}
 }
 

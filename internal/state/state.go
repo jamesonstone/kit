@@ -135,15 +135,15 @@ func nextCommand(status *feature.FeatureStatus) string {
 	}
 	switch status.Phase {
 	case feature.PhaseSpec:
-		return fmt.Sprintf("kit plan %s", status.Name)
+		return fmt.Sprintf("kit legacy plan %s", status.Name)
 	case feature.PhasePlan:
-		return fmt.Sprintf("kit tasks %s", status.Name)
+		return fmt.Sprintf("kit legacy tasks %s", status.Name)
 	case feature.PhaseTasks:
-		return fmt.Sprintf("kit implement %s", status.Name)
+		return fmt.Sprintf("kit legacy implement %s", status.Name)
 	case feature.PhaseImplement:
-		return fmt.Sprintf("kit implement %s", status.Name)
+		return fmt.Sprintf("kit legacy implement %s", status.Name)
 	case feature.PhaseReflect:
-		return fmt.Sprintf("kit reflect %s", status.Name)
+		return fmt.Sprintf("kit legacy reflect %s", status.Name)
 	case feature.PhaseComplete:
 		return ""
 	default:

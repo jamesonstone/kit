@@ -39,7 +39,7 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 	findings = append(findings, auditMetadataMigrationState(path, doc, projectRoot)...)
 	findings = append(findings, auditRulesetReferences(projectRoot, path, doc)...)
 
-	for _, section := range expectedSectionsFor(docType) {
+	for _, section := range doc.RequiredSections() {
 		entry := doc.GetSection(section)
 		if entry == nil {
 			findings = append(findings, newFinding(
@@ -347,7 +347,7 @@ func auditExecutableVerificationAdvisory(projectRoot string, feat *feature.Featu
 		"add `VERIFY`, `EXPECTED FILES`, `RISK`, and `ROLLBACK` to active task details where commands are known; if acceptance criteria are prose-only, propose runnable checks separately from confirmed checks and leave uncertain commands as `not yet declared`",
 		[]string{
 			fmt.Sprintf("sed -n '1,260p' %s", tasksPath),
-			fmt.Sprintf("kit verify %s --dry-run", feat.Slug),
+			fmt.Sprintf("kit legacy verify %s --dry-run", feat.Slug),
 			fmt.Sprintf("kit check %s", feat.Slug),
 		},
 	)}

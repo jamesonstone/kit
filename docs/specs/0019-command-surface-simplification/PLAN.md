@@ -117,11 +117,10 @@ grouped help plus hidden deprecated compatibility wrappers.
   - `kit resume [feature]`
 - new status mode:
   - `kit status --all`
-- deprecated hidden compatibility surfaces:
+- removed compatibility surfaces:
   - `kit update`
   - `kit skills`
   - `kit catchup`
-  - `kit scaffold`
   - `kit rollup`
   - `kit brainstorm --pickup`
 
@@ -130,10 +129,9 @@ grouped help plus hidden deprecated compatibility wrappers.
 | Dependency | Type | Location | Used For | Status |
 | ---------- | ---- | -------- | -------- | ------ |
 | backlog resume helper | code | `pkg/cli/backlog_shared.go` | canonical backlog resume path | active |
-| catchup prompt behavior | code | `pkg/cli/catchup.go`, `pkg/cli/catchup_prompt.go` | non-backlog resume path | active |
+| catchup prompt behavior | code | `pkg/cli/catchup_prompt.go` | non-backlog resume path through `kit resume` | active |
 | backlog classification | code | `internal/feature/backlog.go` | selector routing and status labeling | active |
 | status model | code | `internal/feature/status.go` | per-feature overview data | active |
-| Cobra hidden/deprecated support | library | `github.com/spf13/cobra` | compatibility command and flag migration | active |
 
 ## RISKS
 
@@ -143,8 +141,8 @@ grouped help plus hidden deprecated compatibility wrappers.
   logic is not isolated to the root command
 - changing `status` output can break expectations if the default JSON shape is
   modified instead of leaving it untouched
-- hiding deprecated compatibility commands can confuse tests or docs if help
-  assertions still expect the old visible surface
+- removing compatibility commands can confuse tests or docs if assertions still
+  expect the old hidden surface
 - the dirty worktree increases merge risk on CLI and doc files, so changes must
   stay tightly scoped and avoid overwriting unrelated edits
 
@@ -157,8 +155,8 @@ grouped help plus hidden deprecated compatibility wrappers.
   - `status --all` text output
   - `status --all --json` payload shape
   - root help grouping
-  - hidden deprecated command visibility
-  - deprecated `brainstorm --pickup`
+  - removed compatibility commands
+  - removed `brainstorm --pickup`
 - run:
   - `go test ./...`
   - `make build`

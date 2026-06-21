@@ -31,9 +31,9 @@ outputs the brainstorm research prompt. When the target is not a backlog item,
 it reuses the catch-up prompt behavior that restores context before further
 work begins.
 
-The resume prompt identifies the active feature, current phase, next canonical
-artifact, recommended command, known blockers, and validation state when that
-state is known from repository artifacts.`,
+The resume prompt identifies the active feature, current v2 SPEC.md phase,
+next workflow gate, recommended command, known blockers, and validation state
+when that state is known from repository artifacts.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runResume,
 }

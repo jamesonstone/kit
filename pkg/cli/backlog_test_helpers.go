@@ -49,7 +49,6 @@ func setBacklogFlagState(pickup, copy, outputOnly bool) func() {
 
 func setBrainstormFlagState(
 	backlog bool,
-	pickup bool,
 	output string,
 	copy bool,
 	outputOnly bool,
@@ -57,7 +56,6 @@ func setBrainstormFlagState(
 	useVim bool,
 ) func() {
 	previousBacklog := brainstormBacklog
-	previousPickup := brainstormPickup
 	previousOutput := brainstormOutput
 	previousCopy := brainstormCopy
 	previousOutputOnly := brainstormOutputOnly
@@ -67,7 +65,6 @@ func setBrainstormFlagState(
 	previousPrepare := brainstormPrepare
 
 	brainstormBacklog = backlog
-	brainstormPickup = pickup
 	brainstormOutput = output
 	brainstormCopy = copy
 	brainstormOutputOnly = outputOnly
@@ -78,7 +75,6 @@ func setBrainstormFlagState(
 
 	return func() {
 		brainstormBacklog = previousBacklog
-		brainstormPickup = previousPickup
 		brainstormOutput = previousOutput
 		brainstormCopy = previousCopy
 		brainstormOutputOnly = previousOutputOnly

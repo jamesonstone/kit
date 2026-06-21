@@ -64,7 +64,7 @@ func runSummarize(cmd *cobra.Command, args []string) error {
 
 	if !outputOnly {
 		printWorkflowInstructions("summarize context (supporting step)", []string{
-			"resume your active phase: brainstorm -> spec -> plan -> tasks -> implement -> reflect",
+			"resume your active phase: clarify -> ready -> implement -> validate -> reflect -> deliver",
 		})
 	}
 
@@ -146,10 +146,10 @@ func featureScopedSummarizeInstructions(projectRoot, featureSlug, featurePath st
 			items = append(items, fmt.Sprintf("%s — durable repo-wide references when they materially shape the feature", repoReferencesPath))
 		}
 		items = append(items,
-			fmt.Sprintf("%s/BRAINSTORM.md — optional research findings, affected files, and strategy", featurePath),
-			fmt.Sprintf("%s/SPEC.md — requirements and acceptance criteria", featurePath),
-			fmt.Sprintf("%s/PLAN.md — implementation approach and components", featurePath),
-			fmt.Sprintf("%s/TASKS.md — work units and their status", featurePath),
+			fmt.Sprintf("%s/SPEC.md — v2 durable workflow state, requirements, plan, tasks, validation, reflection, delivery, and evidence", featurePath),
+			fmt.Sprintf("%s/BRAINSTORM.md — optional legacy research findings, affected files, and strategy when present", featurePath),
+			fmt.Sprintf("%s/PLAN.md — optional legacy implementation approach when present", featurePath),
+			fmt.Sprintf("%s/TASKS.md — optional legacy work units and status when present", featurePath),
 			fmt.Sprintf("%s/ANALYSIS.md — understanding state and open questions", featurePath),
 		)
 		doc.BulletList(items...)
@@ -164,10 +164,10 @@ func featureScopedSummarizeInstructions(projectRoot, featureSlug, featurePath st
 			"Error states and their resolutions",
 			"Dependencies and version constraints",
 			"Test requirements and acceptance criteria",
-			"Research findings and recommended strategy from BRAINSTORM.md when present",
-			"Feature-specific constraints from SPEC.md",
-			"Implementation choices from PLAN.md",
-			"Task status and dependencies from TASKS.md",
+			"Feature-specific constraints, implementation plan, task checklist, validation map, reflection notes, delivery state, and evidence from SPEC.md",
+			"Research findings and recommended strategy from BRAINSTORM.md when present as legacy context",
+			"Implementation choices from PLAN.md when present as legacy context",
+			"Task status and dependencies from TASKS.md when present as legacy context",
 		)
 		doc.Heading(3, "What to DISCARD")
 		doc.BulletList(

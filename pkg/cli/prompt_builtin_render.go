@@ -24,23 +24,6 @@ func renderSupportCodeReviewPrompt() (string, error) {
 	return prepareAgentPrompt(codeReviewInstructions()), nil
 }
 
-func renderWorkflowBrainstormPrompt() (string, error) {
-	ctx, err := activePromptFeatureContext("workflow brainstorm", "BRAINSTORM.md")
-	if err != nil {
-		return "", err
-	}
-
-	brainstormPath := filepath.Join(ctx.Feature.Path, "BRAINSTORM.md")
-	prompt := buildBrainstormPrompt(
-		brainstormPath,
-		ctx.Feature.Slug,
-		ctx.ProjectRoot,
-		existingBrainstormThesis(brainstormPath),
-		ctx.Config.GoalPercentage,
-	)
-	return prepareAgentPromptForFeature(prompt, ctx.Feature.Path), nil
-}
-
 func renderWorkflowSpecPrompt() (string, error) {
 	ctx, err := activePromptFeatureContext("workflow spec", "SPEC.md")
 	if err != nil {
@@ -49,84 +32,8 @@ func renderWorkflowSpecPrompt() (string, error) {
 
 	specPath := filepath.Join(ctx.Feature.Path, "SPEC.md")
 	brainstormPath := filepath.Join(ctx.Feature.Path, "BRAINSTORM.md")
-	prompt := buildSpecTemplatePrompt(specPath, brainstormPath, ctx.Feature.Slug, ctx.ProjectRoot, ctx.Config)
-	return prepareAgentPromptForFeature(prompt, ctx.Feature.Path), nil
-}
-
-func renderWorkflowPlanPrompt() (string, error) {
-	ctx, err := activePromptFeatureContext("workflow plan", "SPEC.md", "PLAN.md")
-	if err != nil {
-		return "", err
-	}
-
-	specPath := filepath.Join(ctx.Feature.Path, "SPEC.md")
-	planPath := filepath.Join(ctx.Feature.Path, "PLAN.md")
-	brainstormPath := filepath.Join(ctx.Feature.Path, "BRAINSTORM.md")
-	prompt := buildStandardPlanPrompt(planPath, specPath, brainstormPath, ctx.Feature, ctx.Config, ctx.ProjectRoot)
-	return prepareAgentPromptForFeature(prompt, ctx.Feature.Path), nil
-}
-
-func renderWorkflowTasksPrompt() (string, error) {
-	ctx, err := activePromptFeatureContext("workflow tasks", "SPEC.md", "PLAN.md", "TASKS.md")
-	if err != nil {
-		return "", err
-	}
-
-	prompt := buildTasksPrompt(ctx.Feature, ctx.ProjectRoot, ctx.Config)
-	return prepareAgentPromptForFeature(prompt, ctx.Feature.Path), nil
-}
-
-func renderWorkflowImplementPrompt() (string, error) {
-	ctx, err := activePromptFeatureContext("workflow implement", "SPEC.md", "PLAN.md", "TASKS.md")
-	if err != nil {
-		return "", err
-	}
-
-	specPath := filepath.Join(ctx.Feature.Path, "SPEC.md")
-	planPath := filepath.Join(ctx.Feature.Path, "PLAN.md")
-	tasksPath := filepath.Join(ctx.Feature.Path, "TASKS.md")
-	brainstormPath := filepath.Join(ctx.Feature.Path, "BRAINSTORM.md")
-	summary, _ := feature.ExtractSpecSummary(specPath)
-
-	prompt := buildImplementationPrompt(
-		ctx.Feature,
-		brainstormPath,
-		specPath,
-		planPath,
-		tasksPath,
-		summary,
-		ctx.ProjectRoot,
-	)
-	return prepareAgentPromptForFeature(prompt, ctx.Feature.Path), nil
-}
-
-func renderWorkflowReflectPrompt() (string, error) {
-	ctx, err := optionalPromptFeatureContext()
-	if err != nil {
-		return "", err
-	}
-
-	constitutionPath := filepath.Join(ctx.ProjectRoot, "docs", "CONSTITUTION.md")
-	summaryPath := ctx.Config.ProgressSummaryPath(ctx.ProjectRoot)
-	if ctx.Feature == nil {
-		return prepareAgentPrompt(buildReflectPrompt(ctx.ProjectRoot, constitutionPath, summaryPath, "", "", "", "", "")), nil
-	}
-
-	brainstormPath := filepath.Join(ctx.Feature.Path, "BRAINSTORM.md")
-	specPath := filepath.Join(ctx.Feature.Path, "SPEC.md")
-	planPath := filepath.Join(ctx.Feature.Path, "PLAN.md")
-	tasksPath := filepath.Join(ctx.Feature.Path, "TASKS.md")
-	prompt := buildReflectPrompt(
-		ctx.ProjectRoot,
-		constitutionPath,
-		summaryPath,
-		brainstormPath,
-		specPath,
-		planPath,
-		tasksPath,
-		ctx.Feature.Slug,
-	)
-	return prepareAgentPromptForFeature(prompt, ctx.Feature.Path), nil
+	prompt := buildSpecTemplatePrompt(specPath, brainstormPath, ctx.Feature.Slug, ctx.ProjectRoot, ctx.Config, false)
+	return preparePromptForFeature(prompt, false, ctx.Feature.Path), nil
 }
 
 func renderSupportResumePrompt() (string, error) {
@@ -201,7 +108,7 @@ func renderSupportDispatchPrompt() (string, error) {
 }
 
 func renderSkillMinePrompt() (string, error) {
-	ctx, err := activePromptFeatureContext("skill mine", "SPEC.md", "PLAN.md", "TASKS.md")
+	ctx, err := activePromptFeatureContext("skill mine", "SPEC.md")
 	if err != nil {
 		return "", err
 	}

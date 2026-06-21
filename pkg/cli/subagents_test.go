@@ -74,12 +74,8 @@ func TestSingleAgentFlagRegisteredOnRootCommand(t *testing.T) {
 	}
 }
 
-func TestLegacySubagentsFlagRemainsAvailable(t *testing.T) {
-	flag := rootCmd.PersistentFlags().Lookup("subagents")
-	if flag == nil {
-		t.Fatal("expected root command to retain hidden --subagents compatibility flag")
-	}
-	if !flag.Hidden {
-		t.Fatal("expected legacy --subagents flag to be hidden")
+func TestLegacySubagentsFlagIsRemoved(t *testing.T) {
+	if flag := rootCmd.PersistentFlags().Lookup("subagents"); flag != nil {
+		t.Fatalf("expected legacy --subagents flag to be removed, got %#v", flag)
 	}
 }

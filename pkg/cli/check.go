@@ -20,10 +20,10 @@ var checkCmd = &cobra.Command{
 	Long: `Validate Kit-managed documents for completeness and correctness.
 
 Validates:
-  - Optional BRAINSTORM.md when present
-  - Required documents exist (SPEC.md, PLAN.md, TASKS.md)
-  - Required sections are present and populated in each document
-  - Traceability between spec → plan → tasks
+  - Required v2 SPEC.md exists and is valid
+  - Optional legacy BRAINSTORM.md, PLAN.md, and TASKS.md when present
+  - Required sections are present and populated in each parsed document
+  - Legacy traceability when staged artifacts exist
   - No unresolved placeholders
 
 Use --all to validate all features in the project.
@@ -81,6 +81,7 @@ func checkFeature(projectRoot string, specsDir string, featureRef string) error 
 
 	var errors []string
 	var warnings []string
+	v2Feature := isV2Feature(feat)
 
 	// check BRAINSTORM.md when present
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
@@ -127,7 +128,9 @@ func checkFeature(projectRoot string, specsDir string, featureRef string) error 
 	// check PLAN.md
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	if !document.Exists(planPath) {
-		warnings = append(warnings, fmt.Sprintf("PLAN.md not found. Run 'kit plan %s' to create it", feat.Slug))
+		if !v2Feature {
+			warnings = append(warnings, fmt.Sprintf("legacy PLAN.md not found. Run 'kit legacy plan %s' only when continuing staged v1 work", feat.Slug))
+		}
 	} else {
 		doc, err := document.ParseFile(planPath, document.TypePlan)
 		if err != nil {
@@ -149,7 +152,9 @@ func checkFeature(projectRoot string, specsDir string, featureRef string) error 
 	// check TASKS.md
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 	if !document.Exists(tasksPath) {
-		warnings = append(warnings, fmt.Sprintf("TASKS.md not found. Run 'kit tasks %s' to create it", feat.Slug))
+		if !v2Feature {
+			warnings = append(warnings, fmt.Sprintf("legacy TASKS.md not found. Run 'kit legacy tasks %s' only when continuing staged v1 work", feat.Slug))
+		}
 	} else {
 		doc, err := document.ParseFile(tasksPath, document.TypeTasks)
 		if err != nil {

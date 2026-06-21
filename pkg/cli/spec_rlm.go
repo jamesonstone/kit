@@ -64,8 +64,8 @@ func rlmSpecGuidanceStepText(specPath string) string {
 	return strings.Join([]string{
 		"Treat this feature as broad or noisy-context work and route discovery through the `rlm` skill:",
 		"- start from `docs/agents/RLM.md` when that repo-local guide exists and preserve its progressive-disclosure model",
-		fmt.Sprintf("- add `rlm` to canonical front matter `skills` in `%s` when full-context loading would be noisy or wasteful; use the legacy `## SKILLS` table only when front matter is absent", specPath),
-		"- record `parallelization_mode: \"rlm\"` in downstream planning notes or execution metadata so later stages preserve the dispatch strategy",
+		fmt.Sprintf("- add `rlm` to canonical front matter `skills` in `%s` when full-context loading would be noisy or wasteful", specPath),
+		"- record `parallelization_mode: \"rlm\"` in the SPEC.md Implementation Plan or execution notes so later phases preserve the dispatch strategy",
 		"- use the trigger phrases `analyze codebase`, `scan all files`, `large repository analysis`, `scan repository`, and `recursive language model`",
 		"- structure discovery as immediate decision → smallest artifact → required facts → act or recurse",
 		"- keep map workers file-scoped so the synthesis step stays deterministic and source-attributed",

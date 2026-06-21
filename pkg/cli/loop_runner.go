@@ -75,6 +75,13 @@ func executeLoop(ctx context.Context, opts loopOptions) (loopReport, error) {
 			_ = writeLoopRunArtifact(opts.ProjectRoot, report)
 			return report, nil
 		}
+		if before.Stage == loopStageBlocked {
+			report.Status = "blocked"
+			report.StopReason = "SPEC.md phase is blocked"
+			report.EndedAt = time.Now().UTC()
+			_ = writeLoopRunArtifact(opts.ProjectRoot, report)
+			return report, errors.New(report.StopReason)
+		}
 		if before.Stage == loopStageComplete {
 			report.Status = "complete"
 			report.StopReason = "feature complete"

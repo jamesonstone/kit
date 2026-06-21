@@ -35,32 +35,31 @@ All canonical markdown files use **FULL CAPITALIZATION** (e.g., `CONSTITUTION.md
 
 ---
 
-## 3. Artifact Model (Non-Negotiable)
+## 3. V2 Artifact Model (Non-Negotiable)
 
-Kit exposes the following structured artifact pipeline as one of its core
-engines. The names are software-friendly, but the pattern is general across
-domains:
+Kit exposes the v2 single-`SPEC.md` workflow as its primary structured engine.
+The names are software-friendly, but the pattern is general across domains:
 
 **Project Initialization** (run once, update as needed):
 
 1. **Constitution** — strategy, patterns, long-term vision (kept updated with priors)
 2. **Project refresh prompt** — `kit prompt project refresh` asks an agent to re-analyze the maturing repository and update durable project-level docs without rerunning init
 
-**Optional Research Step**:
+**Optional Research Material**:
 
-1. **Brainstorm** — codebase-aware research, affected files, options, and recommended strategy
+1. **Feature notes/reference material** — supporting artifacts, screenshots, research, constraints, and prior context
 
-**Core Development Loop**:
+**V2 Feature Workflow**:
 
-1. **Specification** — what is being built and why
-2. **Plan** — how it will be built
-3. **Tasks** — executable work units
-4. **Implementation** — execution begins only after the implementation readiness gate passes
-5. **Reflection** — verify correctness, refine understanding (loops back to Specification)
+1. **`kit spec <feature>`** — emits the v2 supervisor prompt
+2. **`SPEC.md`** — single durable feature artifact carrying thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence
+3. **Implementation** — begins only after objective readiness gates pass
+4. **Validation and reflection** — prove every acceptance criterion, update docs, record evidence, and route gaps back to implementation before delivery
 
 Kit's responsibility is to provide disciplined harnessing around planning,
-state, verification, and transfer. In the structured path, its responsibility
-ends once tasks are clear and validated.
+state, verification, and transfer. In the structured path, v2 keeps durable
+workflow state in `SPEC.md`; legacy staged artifacts remain readable historical
+context when present.
 
 ---
 
@@ -84,10 +83,10 @@ Each feature lives in its own directory:
 
 ```bash
 docs/specs/<feature>/
-  BRAINSTORM.md (optional)
-  SPEC.md
-  PLAN.md
-  TASKS.md
+  SPEC.md                 # v2 durable feature workflow artifact
+  BRAINSTORM.md (optional legacy staged research)
+  PLAN.md       (optional legacy staged plan)
+  TASKS.md      (optional legacy staged task list)
   ANALYSIS.md (optional)
 ```
 
@@ -121,7 +120,7 @@ These files:
 - contain links/paths to canonical documents
 - summarize the active workflow contract and repository standards
 - stay aligned with the canonical docs
-- support multiple tools without changing the artifact pipeline
+- support multiple tools without changing the v2 `SPEC.md` workflow contract
 
 If canonical paths change, Kit can refresh these files.
 
@@ -134,22 +133,24 @@ If canonical paths change, Kit can refresh these files.
 
 - Constitution: `docs/CONSTITUTION.md`
 - Feature specs live under: `docs/specs/<feature>/`
-  - `SPEC.md` (requirements)
-  - `PLAN.md` (implementation plan)
-  - `TASKS.md` (executable task list)
+  - `SPEC.md` (v2 workflow artifact)
+  - `BRAINSTORM.md`, `PLAN.md`, `TASKS.md` (optional legacy staged artifacts)
   - `ANALYSIS.md` (optional, analysis scratchpad)
 
 ## Workflow contract
 
 - Specs drive code. Code serves specs.
-- Optional research starts with `BRAINSTORM.md` when present.
+- V2 feature work starts with `kit spec <feature>`.
+- `SPEC.md` carries requirements, plan, tasks, validation, reflection, delivery, and evidence.
+- Legacy staged artifacts are historical context unless the user explicitly uses a legacy staged command.
 - For any change:
   1. classify the work as spec-driven or ad hoc
   2. locate the relevant feature directory in `docs/specs/<feature>/`
-  3. read `BRAINSTORM.md` when present, then `SPEC.md` → `PLAN.md` → `TASKS.md`
-  4. implement tasks in order
-  5. verify (tests / validation steps from plan)
-  6. if reality diverges, update `SPEC.md` / `PLAN.md` / `TASKS.md` first, then code
+  3. read `SPEC.md` first for v2 feature work
+  4. use legacy staged docs only when they materially affect the current decision
+  5. implement from the `SPEC.md` task checklist after readiness gates pass
+  6. verify against the `SPEC.md` validation map and record evidence there
+  7. if reality diverges, update `SPEC.md` first, then continue
 
 ## Multi-feature rule
 
@@ -185,9 +186,10 @@ Purpose:
 
 ---
 
-### 6.2 `BRAINSTORM.md` (Optional)
+### 6.2 `BRAINSTORM.md` (Legacy Staged Optional)
 
-Required sections for newly generated brainstorm docs and brainstorm docs touched by current workflow commands:
+Required sections for legacy staged brainstorm docs and brainstorm docs touched
+by legacy staged workflow commands:
 
 - SUMMARY
 - USER THESIS
@@ -215,37 +217,48 @@ Rules:
 
 ### 6.3 `SPEC.md`
 
-Required sections for newly generated specs and specs touched by current workflow commands:
+Required fixed v2 section order for newly generated specs and specs touched by
+the v2 workflow:
 
-- SUMMARY
-- PROBLEM
-- GOALS
-- NON-GOALS
-- USERS
-- SKILLS
-- RELATIONSHIPS
-- DEPENDENCIES
+- THESIS
+- CONTEXT
+- CLARIFICATIONS
 - REQUIREMENTS
-- ACCEPTANCE
-- EDGE-CASES
-- OPEN-QUESTIONS
+- ASSUMPTIONS
+- ACCEPTANCE CRITERIA
+- IMPLEMENTATION PLAN
+- TASK CHECKLIST
+- VALIDATION MAP
+- REFLECTION NOTES
+- DOCUMENTATION UPDATES
+- DELIVERY DECISION
+- EVIDENCE
+
+Required front matter:
+
+- `workflow_version: 2`
+- `phase: clarify | ready | implement | validate | reflect | deliver | complete | blocked`
 
 Rules:
 
-- one sentence where possible
-- no implementation detail
-- no speculative language
-- keep `## SKILLS` focused on execution-time agent skills
+- `SPEC.md` is the single durable v2 feature artifact
+- keep thesis, context, requirements, plan, tasks, validation, reflection, documentation updates, delivery decision, and evidence in this file
+- acceptance criteria must be binary-verifiable and mapped 1:1 to validation
+- the task checklist must be concise, durable, and mapped to lanes, acceptance criteria, status, and evidence
+- implementation must not begin until clarification is complete, unresolved questions are zero, assumptions are accepted or removed, validation is mapped, touched files are predicted, delivery lane is resolved, and rollback is known
+- validation evidence should be summarized inline and may reference detailed logs under `.kit/runs/...`
+- legacy staged `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files remain readable historical context but are not the default v2 workflow contract
 - `## RELATIONSHIPS` must be either `none` or one bullet per explicit cross-feature relationship using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
 - inline-code-wrapped targets after `builds on:`, `depends on:`, or `related to:` are valid, but Kit must normalize them back to the canonical feature ID
 - relationship targets must use canonical feature directory identifiers such as `0007-catchup-command`
-- keep broader supporting inputs in `## DEPENDENCIES`
+- keep broader supporting inputs in front matter `references` when available
 
 ---
 
-### 6.4 `PLAN.md`
+### 6.4 `PLAN.md` (Legacy Staged Optional)
 
-Required sections for newly generated plans and plans touched by current workflow commands:
+Required sections for legacy staged plans and plans touched by legacy staged
+workflow commands:
 
 - SUMMARY
 - APPROACH
@@ -266,7 +279,7 @@ Rules:
 
 ---
 
-### 6.5 `TASKS.md`
+### 6.5 `TASKS.md` (Legacy Staged Optional)
 
 Top-level table (required):
 
@@ -282,7 +295,7 @@ Required sections:
 Rules:
 
 - tasks are atomic
-- tasks map to plan items
+- tasks map to legacy plan items
 - status reflects real progress
 
 ---
@@ -306,7 +319,7 @@ Rules:
 
 - one row per live feature plus one row per removed feature tombstone
 - sorted by ID ascending
-- `PHASE` ∈ `brainstorm | spec | plan | tasks | implement | reflect | complete | removed`
+- `PHASE` ∈ `clarify | ready | implement | validate | reflect | deliver | complete | blocked | removed`, with legacy staged states (`brainstorm | spec | plan | tasks`) allowed for historical projects
 - `PAUSED` ∈ `yes | no`
 - `SUMMARY` should prefer the concise `SPEC.md` `SUMMARY` section and only fall back to `PROBLEM` or brainstorm summary when needed
 - removed feature rows use the retained tombstone metadata because their
@@ -385,7 +398,7 @@ goal_percentage: 95
 specs_dir: docs/specs
 skills_dir: .agents/skills
 constitution_path: docs/CONSTITUTION.md
-allow_out_of_order: false # if true, kit plan/tasks create missing prerequisites
+allow_out_of_order: false # if true, kit legacy plan/tasks create missing prerequisites
 loop:
   min_confidence: 95
   max_iterations: 10
@@ -495,7 +508,7 @@ CLI flags always override `.kit.yaml`.
 
 ### 8.2 Feature Lifecycle
 
-#### `kit brainstorm [feature]`
+#### `kit legacy brainstorm [feature]`
 
 - prompt interactively for a feature name and short issue or feature thesis
 - create or reuse the feature directory (uses `0001-feat-name` format)
@@ -528,7 +541,7 @@ CLI flags always override `.kit.yaml`.
 
 #### `kit backlog [feature]`
 
-- list deferred backlog items captured as paused brainstorm-phase features
+- list deferred backlog items captured as paused legacy brainstorm-phase features
 - render a concise markdown table with `feature` and `description`
 - use `BRAINSTORM.md` `SUMMARY` for the description when available and fall
   back to `USER THESIS`
@@ -539,6 +552,16 @@ CLI flags always override `.kit.yaml`.
 - without a feature argument under `--pickup`, show an interactive selector of
   backlog items
 - do not create a new backlog-specific markdown artifact
+
+---
+
+#### `kit legacy`
+
+- list the legacy staged workflow commands retained for migration
+- keep `kit spec <feature>` documented as the default v2 workflow entry point
+- do not mutate repository files
+- list `brainstorm`, `plan`, `tasks`, `implement`, and `reflect` with wording that marks them as legacy staged commands
+- direct users to `kit <command> --help` for command-specific migration flags
 
 ---
 
@@ -558,9 +581,11 @@ CLI flags always override `.kit.yaml`.
 
 #### `kit spec <feature>`
 
-- scaffold `SPEC.md` template for manual editing
-- template includes section headers with placeholder comments (e.g., `<!-- TODO: describe the problem -->`)
-- template includes `## SKILLS` and `## DEPENDENCIES` tables for newly generated specs
+- create or adopt `docs/specs/<feature>/SPEC.md` as the v2 durable feature artifact
+- keep `kit spec` prompt-producing by default; direct execution remains behind explicit future `--run` / `--loop` behavior
+- add compact v2 front matter and missing v2 sections during normal execution, but avoid migration writes under `--prompt-only`
+- template uses the fixed v2 section order: Thesis, Context, Clarifications, Requirements, Assumptions, Acceptance Criteria, Implementation Plan, Task Checklist, Validation Map, Reflection Notes, Documentation Updates, Delivery Decision, Evidence
+- prompt instructions define the supervisor contract, repo-grounded clarification loop, readiness gates, dynamic agent team model, implementation rules, validation/verification phase, reflection phase, documentation sync, delivery gate, `SPEC.md` update requirements, and final response contract
 - prompt instructions require indices-first prior work discovery through
   `kit map <feature>` and `docs/PROJECT_PROGRESS_SUMMARY.md`
 - prompt instructions require prior feature docs to stay conditional and
@@ -568,17 +593,17 @@ CLI flags always override `.kit.yaml`.
 - prompt instructions require extracted prior-work facts to stay concise and
   decision-shaping rather than historical replay
 - prompt instructions require every `SPEC.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
+- prompt instructions require binary-verifiable acceptance criteria mapped 1:1 to validation evidence
 - create feature directory if missing (uses `0001-feat-name` format)
 - when Git common-dir state is available, reserve the next feature number from the shared clone-local allocator before creating the directory
-- without a feature argument, show only pre-spec features that do not yet have
-  `SPEC.md`; `BRAINSTORM.md` is optional
-- when no pre-spec features are available, prompt for a new feature name and
+- without a feature argument, show eligible v2 features or prompt for a new feature name according to the interactive selector flow
+- when no eligible existing feature candidates are available, prompt for a new feature name and
   start the interactive spec builder
 - update `docs/PROJECT_PROGRESS_SUMMARY.md`
 
 ---
 
-#### `kit plan <feature>`
+#### `kit legacy plan <feature>` (Legacy Staged)
 
 - scaffold `PLAN.md` template for manual editing
 - scaffold includes a `## DEPENDENCIES` table for implementation-strategy inputs
@@ -590,7 +615,7 @@ CLI flags always override `.kit.yaml`.
   decision-shaping rather than historical replay
 - prompt instructions require every `PLAN.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - plan items link to spec items using `[SPEC-01]` syntax
-- without a feature argument, show only spec-phase features that have `SPEC.md`
+- without a feature argument, show only legacy spec-phase features that have `SPEC.md`
   without `PLAN.md`
 - update `PROJECT_PROGRESS_SUMMARY.md`
 
@@ -604,12 +629,12 @@ Flags:
 
 ---
 
-#### `kit tasks <feature>`
+#### `kit legacy tasks <feature>` (Legacy Staged)
 
 - scaffold `TASKS.md` template for manual editing
 - prompt instructions require every `TASKS.md` section to be populated; if a section has no additional detail, replace placeholder-only content with `not applicable`, `not required`, or `no additional information required`
 - tasks link to plan items using `[PLAN-01]` syntax
-- without a feature argument, show only plan-phase features that have `SPEC.md`
+- without a feature argument, show only legacy plan-phase features that have `SPEC.md`
   and `PLAN.md` without `TASKS.md`
 - update `PROJECT_PROGRESS_SUMMARY.md`
 
@@ -623,11 +648,12 @@ Flags:
 
 ---
 
-#### `kit loop workflow [feature]`
+#### `kit loop workflow [feature]` (Legacy Staged Execution Wrapper)
 
-- run the remaining spec-driven workflow through a configured local agent
-- keep `kit spec`, `kit plan`, `kit tasks`, `kit implement`, and `kit reflect`
-  as prompt/artifact builders rather than direct agent runners
+- run the remaining legacy staged workflow through a configured local agent
+- keep `kit spec` as the v2 prompt-producing entry point; v2 direct execution is a later `--run` / `--loop` extension
+- keep legacy staged commands under `kit legacy`, such as `kit legacy plan`, `kit legacy tasks`, `kit legacy implement`, and `kit legacy reflect`
+  as compatibility prompt/artifact builders rather than primary v2 workflow commands
 - resolve the next strict stage from canonical docs, not file existence alone
 - require each agent turn to end with `KIT_LOOP_RESULT` JSON containing stage,
   status, confidence, and blockers
@@ -683,9 +709,9 @@ Flags:
 
 ---
 
-#### `kit implement [feature]`
+#### `kit legacy implement [feature]` (Legacy Staged)
 
-- output implementation context for a coding agent
+- output implementation context for a coding agent in the legacy staged workflow
 - begin with an implementation readiness gate before any code execution instructions
 - require an adversarial preflight across `CONSTITUTION.md`, optional `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md`
 - require the coding agent to use indices-first prior work discovery through
@@ -698,7 +724,7 @@ Flags:
 - require the coding agent to challenge contradictions, ambiguity, hidden assumptions, missing edge cases, missing task coverage, and scope creep before coding
 - if the readiness gate fails, require the agent to update `SPEC.md`, `PLAN.md`, and/or `TASKS.md` first, refresh `PROJECT_PROGRESS_SUMMARY.md` when needed, then rerun the gate
 - only after the readiness gate passes should the agent begin with the first incomplete task in `TASKS.md`
-- without a feature argument, show only implement-phase features with incomplete
+- without a feature argument, show only legacy implement-phase features with incomplete
   task checkboxes; omit task-template, reflection-ready, and complete features
 - if the target feature is paused, clear the paused flag before continuing
 
@@ -766,7 +792,7 @@ Flags:
   command execution, or git mutation
 - default output lists visible canonical commands with compact metadata
 - support `--json` with `schema_version: 1` and `kind: capabilities_index`
-- support targeted command paths such as `kit capabilities verify --json`,
+- support targeted command paths such as `kit capabilities legacy verify --json`,
   `kit capabilities rules add --json`, and `kit capabilities skill mine --json`
   with `kind: capability_detail`
 - support `--full --json` with detailed records, including hidden and
@@ -830,8 +856,8 @@ Flags:
   non-fix classifications in the summary output
 - remain read-only by default: no project-file writes, no git mutation, no PR
   comments, and no review-thread resolution
-- legacy `kit review-loop --pr <target>` remains available as a hidden
-  compatibility command for the same prompt-prep workflow
+- `kit dispatch --loop --pr <target>` is the prompt-prep workflow for current
+  unresolved PR review feedback
 - leave `kit dispatch --pr <target> --coderabbit` as the lower-level
   untriaged review-thread intake
 - after fixes or no-op decisions are complete, support
@@ -925,7 +951,7 @@ Nouns and verbs normalize to lowercase kebab-case.
 
 ### 8.4 Roll-Up
 
-#### `kit rollup`
+#### Project Progress Summary
 
 Purpose:
 
@@ -939,15 +965,14 @@ Behavior:
   - feature name
   - directory path
   - short summary
-  - current artifact phase (`brainstorm | spec | plan | tasks | implement | reflect | complete | removed`)
+  - current workflow phase (`clarify | ready | implement | validate | reflect | deliver | complete | blocked | removed`, with legacy staged states allowed for historical projects)
   - paused state
   - spec creation date
 - include removed feature tombstones from `.kit.yaml` even after the feature
   docs are deleted
 - include retained notes pointers for removed features when
   `docs/notes/<feature>` still exists
-- remain callable as a maintenance command, not a primary workflow step taught
-  to new users
+- refresh automatically from normal feature lifecycle commands
 
 `PROJECT_PROGRESS_SUMMARY.md` is intended to be:
 
@@ -955,11 +980,22 @@ Behavior:
 - sufficient to onboard or fork the project
 - safe to hand to any coding agent as primary context
 
-This command is also executed automatically as the final stage of feature creation and refinement.
+Project summary refresh is executed automatically as the final stage of feature
+creation and refinement.
 
 ---
 
 ### 8.5 Verification
+
+#### `kit legacy verify [feature]`
+
+- run verification commands declared in legacy staged `TASKS.md`
+- write evidence under `.kit/runs/...` unless `--dry-run` or `--no-write` is used
+- remain available for migration and reusable local evidence
+- do not serve as the normal standalone verification step in the v2 happy path
+- let the v2 `kit spec` supervisor prompt reference useful run evidence from `SPEC.md`
+
+---
 
 #### `kit check <feature>`
 
@@ -1002,7 +1038,7 @@ Completion output:
 
 - `♻️ <doc_type/workflow> directory and files empty scaffolding created. Please prepare your notes, documents, images, and examples for the <doc_type/workflow> phase`
 
-#### `kit brainstorm <feature> --prepare`
+#### `kit legacy brainstorm <feature> --prepare`
 
 - aliases the brainstorm workflow scaffold behavior
 - creates `BRAINSTORM.md` and `docs/notes/<feature>/.gitkeep`
@@ -1069,8 +1105,8 @@ Verification:
 
 - run `kit check --all` for project-wide reconciliation or `kit check <feature>` for feature-scoped reconciliation
 - run `kit init --refresh --dry-run --diff` when reconcile reports init scaffold drift, then apply the intended refresh with `kit init --refresh`
-- run the maintenance command `kit rollup` when reconciled changes affect
-  `PROJECT_PROGRESS_SUMMARY.md`
+- refresh `PROJECT_PROGRESS_SUMMARY.md` when reconciled changes affect the
+  project summary
 
 ---
 
@@ -1098,17 +1134,17 @@ Fact Retention Principles:
 
 ### 8.10 Reflection
 
-#### `kit reflect [feature]`
+#### `kit legacy reflect [feature]` (Legacy Staged)
 
 Purpose:
 
-- output instructions for reflecting on recent changes
+- output instructions for reflecting on recent changes in the legacy staged workflow
 - ensure 100% implementation correctness
 - verify changes using git, lint, and tests
 
 Behavior:
 
-- without feature argument: show only reflect-phase features whose task
+- without feature argument: show only legacy reflect-phase features whose task
   checkboxes are complete and whose `TASKS.md` does not yet contain the
   reflection-complete marker
 - with feature argument: outputs instructions scoped to that feature's context
@@ -1148,8 +1184,8 @@ Behavior:
   - reference-inventory verification for touched feature docs
 - with feature argument: outputs feature-specific context including:
   - feature location and phase
-  - required reading (`BRAINSTORM.md` when present, then `SPEC.md`, `PLAN.md`, `TASKS.md`)
-  - instructions to refresh front matter references in `BRAINSTORM.md`, `SPEC.md`, and `PLAN.md` when those docs exist
+  - required reading (`SPEC.md` first for v2 work; legacy staged artifacts only when present and materially relevant)
+  - instructions to refresh front matter references in touched `SPEC.md` files and in legacy staged docs when those docs are active
   - a final response contract for concise documentation sync and recent-context summary
 
 Flags:
@@ -1183,8 +1219,8 @@ Defaults:
 
 - feature directories use the format `0001-feat-name`
 - multiple features can be in progress simultaneously
-- `BRAINSTORM.md` is optional but first-class when present
-- `SPEC.md`, `PLAN.md`, and `TASKS.md` remain the binding execution artifacts
+- `SPEC.md` is the binding v2 execution artifact
+- legacy staged artifacts remain readable historical context and are binding only when a legacy staged command is explicitly used
 
 Kit does not:
 

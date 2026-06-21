@@ -52,8 +52,8 @@ resumed.
 - add shared backlog helpers for filtering, description extraction, selection,
   and pickup validation
 - make `kit brainstorm --backlog` a capture-only flow
-- make `kit backlog --pickup`, `kit resume`, and the deprecated
-  `kit brainstorm --pickup` path share the same resume helper and prompt output
+- make `kit backlog --pickup` and `kit resume` share the same resume helper and
+  prompt output
 - update active-feature selection logic so deferred items do not become active
 
 ## COMPONENTS
@@ -95,9 +95,6 @@ resumed.
   - route backlog targets through the same pickup behavior
 - `kit brainstorm --backlog [feature]`
   - capture and defer a brainstorm item without outputting a prompt
-- `kit brainstorm --pickup [feature]`
-  - deprecated compatibility path for the same pickup behavior
-
 ## DEPENDENCIES
 
 | Dependency | Type | Location | Used For | Status |
@@ -123,6 +120,6 @@ resumed.
   - `kit backlog` list output
   - `kit backlog --pickup`
   - `kit brainstorm --backlog`
-  - `kit brainstorm --pickup`
+- removed `kit brainstorm --pickup`
 - status tests for active-feature selection when backlog items exist
 - targeted rollup assertions for backlog capture and pickup state changes

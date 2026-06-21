@@ -110,6 +110,11 @@ func runSpecInteractiveWithReadline(
 	answers.EdgeCases = readLineRL(rl)
 
 	fmt.Println()
+	fmt.Println(spec + "8. DELIVERY INTENT" + reset + " - Use existing in-flight changes, or create issue/branch/PR later after validation?")
+	fmt.Println(dim + "   Example: Use existing branch; defer issue/PR until acceptance criteria pass" + reset)
+	answers.DeliveryIntent = readLineRL(rl)
+
+	fmt.Println()
 
 	return outputCompiledPrompt(specPath, brainstormPath, feat.Slug, projectRoot, cfg, &answers, outputOnly)
 }
@@ -187,6 +192,14 @@ func runSpecInteractiveWithEditor(
 	fmt.Println(spec + "7. EDGE-CASES" + reset + " - What unusual scenarios must be handled?")
 	fmt.Println(dim + "   Example: Empty dataset, special characters in data, network timeout during export" + reset)
 	answers.EdgeCases, err = readEditorText(inputCfg, "edge-cases", true)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println()
+	fmt.Println(spec + "8. DELIVERY INTENT" + reset + " - Use existing in-flight changes, or create issue/branch/PR later after validation?")
+	fmt.Println(dim + "   Example: Use existing branch; defer issue/PR until acceptance criteria pass" + reset)
+	answers.DeliveryIntent, err = readEditorText(inputCfg, "delivery-intent", true)
 	if err != nil {
 		return err
 	}

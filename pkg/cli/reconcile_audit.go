@@ -84,7 +84,7 @@ func buildReconcileReport(projectRoot string, cfg *config.Config, feat *feature.
 	}
 
 	for _, finding := range report.Findings {
-		if strings.Contains(finding.UpdateInstruction, "`kit rollup`") {
+		if filepath.Base(finding.FilePath) == "PROJECT_PROGRESS_SUMMARY.md" {
 			report.NeedsRollup = true
 			break
 		}
@@ -222,10 +222,10 @@ func auditProjectProgressSummary(projectRoot string, features []feature.Feature)
 			path,
 			"missing `PROJECT_PROGRESS_SUMMARY.md`",
 			templateSource(projectRoot),
-			"create the progress summary, then run `kit rollup` to bring the project summary up to date",
+			"create the progress summary from the template and current feature docs",
 			[]string{
 				fmt.Sprintf("sed -n '1,220p' %s", templateSource(projectRoot)),
-				"kit rollup",
+				fmt.Sprintf("ls %s", filepath.Join(projectRoot, "docs", "specs")),
 			},
 		)}
 	}
@@ -299,7 +299,7 @@ func auditFeatureRollupCoverageFromContent(projectRoot, content string, feat *fe
 			summaryPath,
 			fmt.Sprintf("progress summary is missing the feature-table row for `%s`", feat.DirName),
 			templateSource(projectRoot),
-			"refresh `PROJECT_PROGRESS_SUMMARY.md` after reconciling feature docs, typically with `kit rollup`",
+			"refresh `PROJECT_PROGRESS_SUMMARY.md` after reconciling feature docs",
 			[]string{
 				fmt.Sprintf("rg -n \"^\\| %04d \\| %s \\|\" %s", feat.Number, feat.Slug, summaryPath),
 				fmt.Sprintf("ls %s", filepath.Join(projectRoot, "docs", "specs")),
@@ -316,7 +316,7 @@ func auditFeatureRollupCoverageFromContent(projectRoot, content string, feat *fe
 			"refresh `PROJECT_PROGRESS_SUMMARY.md` after reconciliation so every current feature has a summary section",
 			[]string{
 				fmt.Sprintf("rg -n \"^### %s$\" %s", feat.Slug, summaryPath),
-				"kit rollup",
+				fmt.Sprintf("ls %s", filepath.Join(projectRoot, "docs", "specs")),
 			},
 		))
 	}
@@ -618,8 +618,8 @@ func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
 		"docs/agents/WORKFLOWS.md": {
 			"Authority order:",
 			"Execution order for feature work:",
-			"`TASKS.md` controls next action",
-			"`BRAINSTORM.md` is non-binding research context",
+			"`SPEC.md` controls requirements, plan, tasks, validation, reflection, delivery, and evidence",
+			"`BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` are non-binding historical context in v2",
 		},
 		"docs/agents/GUARDRAILS.md": {
 			"Never claim tests passed unless they ran",

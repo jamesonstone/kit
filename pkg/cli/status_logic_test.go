@@ -44,7 +44,7 @@ func TestDetermineNextAction_RemovedFeatureMentionsRetainedNotes(t *testing.T) {
 	}
 }
 
-func TestDetermineNextAction_NoSpecSuggestsBrainstormOrSpec(t *testing.T) {
+func TestDetermineNextAction_NoSpecSuggestsV2SpecAndLegacyBrainstorm(t *testing.T) {
 	status := &feature.FeatureStatus{
 		Name: "patient-import",
 		Files: map[string]feature.FileStatus{
@@ -56,11 +56,11 @@ func TestDetermineNextAction_NoSpecSuggestsBrainstormOrSpec(t *testing.T) {
 	}
 
 	got := determineNextAction(status)
-	if !strings.Contains(got, "kit brainstorm patient-import") {
-		t.Fatalf("expected brainstorm guidance, got %q", got)
-	}
 	if !strings.Contains(got, "kit spec patient-import") {
 		t.Fatalf("expected spec guidance, got %q", got)
+	}
+	if !strings.Contains(got, "kit legacy brainstorm patient-import") {
+		t.Fatalf("expected legacy brainstorm guidance, got %q", got)
 	}
 }
 
@@ -102,13 +102,10 @@ func TestDetermineNextAction_AllTasksCompleteMentionsReadinessGate(t *testing.T)
 	}
 
 	got := determineNextAction(status)
-	if !strings.Contains(got, "kit implement patient-import") {
+	if !strings.Contains(got, "kit legacy implement patient-import") {
 		t.Fatalf("expected implement guidance, got %q", got)
 	}
-	if !strings.Contains(got, "implementation readiness gate") {
-		t.Fatalf("expected readiness gate guidance, got %q", got)
-	}
-	if !strings.Contains(got, "review and verify implementation") {
-		t.Fatalf("expected reflection guidance, got %q", got)
+	if !strings.Contains(got, "review and validate implementation") {
+		t.Fatalf("expected validation guidance, got %q", got)
 	}
 }

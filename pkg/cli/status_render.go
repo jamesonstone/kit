@@ -44,7 +44,7 @@ func outputNoActiveFeature(w io.Writer, asJSON bool, version string, backlogCoun
 	} else {
 		if _, err := fmt.Fprintln(
 			w,
-			style.muted("Run `kit brainstorm` or `kit spec <feature-name>` to start a new feature."),
+			style.muted("Run `kit spec <feature-name>` to start a Kit v2 feature."),
 		); err != nil {
 			return err
 		}
@@ -126,7 +126,11 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, version string
 		}
 	}
 
-	if _, err := fmt.Fprintln(w, style.title("📈", "Artifact progress")); err != nil {
+	progressTitle := "Artifact progress"
+	if statusUsesV2Workflow(status) {
+		progressTitle = "V2 phase progress"
+	}
+	if _, err := fmt.Fprintln(w, style.title("📈", progressTitle)); err != nil {
 		return err
 	}
 	if err := printProgressLine(w, status); err != nil {
@@ -146,8 +150,8 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, version string
 		label string
 		key   string
 	}{
-		{label: "BRAINSTORM.md", key: "brainstorm"},
 		{label: "SPEC.md", key: "spec"},
+		{label: "BRAINSTORM.md", key: "brainstorm"},
 		{label: "PLAN.md", key: "plan"},
 		{label: "TASKS.md", key: "tasks"},
 	} {
@@ -225,7 +229,7 @@ func outputAllFeaturesStatusText(
 		if _, err := fmt.Fprintln(w); err != nil {
 			return err
 		}
-		if _, err := fmt.Fprintln(w, style.muted("No features found. Run `kit brainstorm` or `kit spec <feature-name>` to start one.")); err != nil {
+		if _, err := fmt.Fprintln(w, style.muted("No features found. Run `kit spec <feature-name>` to start a Kit v2 feature.")); err != nil {
 			return err
 		}
 		if _, err := fmt.Fprintln(w); err != nil {

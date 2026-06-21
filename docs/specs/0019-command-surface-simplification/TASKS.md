@@ -90,7 +90,7 @@ feature:
 - **ACCEPTANCE**:
   - README and canonical workflow docs teach `resume`, `status --all`,
     `upgrade`, and `skill` as canonical commands
-  - deprecated commands appear only as migration guidance
+  - removed compatibility commands no longer appear as migration guidance
 - **NOTES**: keep `kit backlog` visible
 
 ### T006
@@ -101,9 +101,9 @@ feature:
   - run the normal verification suite
 - **ACCEPTANCE**:
   - tests cover resume routing, status all-features output, root help grouping,
-    and deprecated visibility
+    and removed compatibility visibility
   - verification commands pass
-- **NOTES**: include deprecated `brainstorm --pickup`
+- **NOTES**: include removed `brainstorm --pickup`
 
 ## DEPENDENCIES
 

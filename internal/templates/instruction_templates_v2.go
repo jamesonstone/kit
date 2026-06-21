@@ -40,7 +40,7 @@ func tocRepositoryInstructions(title string) string {
 - ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary global inputs
 - ` + "`docs/agents/GUARDRAILS.md`" + ` — completion bar, safety rules, and validation expectations
 - ` + "`docs/references/README.md`" + ` — durable repo-local references that are broader than one feature
-- ` + "`docs/specs/<feature>/`" + ` — feature-level source of truth for requirements, plans, and tasks
+- ` + "`docs/specs/<feature>/SPEC.md`" + ` — v2 feature source of truth for requirements, plan, tasks, validation, reflection, delivery, and evidence
 
 ## Constraints
 
@@ -96,7 +96,7 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary globals
 - ` + "`docs/agents/GUARDRAILS.md`" + ` — hard rules and completion bar
 - ` + "`docs/references/README.md`" + ` — durable repo-local references
-- ` + "`docs/specs/<feature>/`" + ` — feature source of truth
+- ` + "`docs/specs/<feature>/SPEC.md`" + ` — v2 feature source of truth
 `
 
 const agentsREADME = `# Agents Docs
@@ -126,7 +126,8 @@ const agentsREADME = `# Agents Docs
 
 ## System Of Record
 
-- Feature requirements, plans, and tasks live under ` + "`docs/specs/<feature>/`" + `
+- V2 feature requirements, implementation plan, task checklist, validation map, reflection notes, delivery decision, and evidence live in ` + "`docs/specs/<feature>/SPEC.md`" + `
+- Legacy staged ` + "`BRAINSTORM.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` files may exist as historical context or when a legacy staged command is explicitly used
 - Broader repo references live under ` + "`docs/references/`" + `
 - Durable repo-local rulesets live under ` + "`docs/references/rules/`" + ` and should be pointer-loaded through feature references
 - Keep durable guidance here instead of expanding the injected top-level instruction files
@@ -138,13 +139,14 @@ const agentsWorkflows = `# Workflows
 
 - Use this path for new features, substantial behavioral changes, cross-component changes, or work that already has feature docs
 - Do not load every artifact up front
-- Start from ` + "`TASKS.md`" + ` to identify the next action
-- Recurse into the relevant ` + "`PLAN.md`" + ` section for approach
-- Recurse into the relevant ` + "`SPEC.md`" + ` requirement for scope and acceptance
-- Use ` + "`BRAINSTORM.md`" + ` only for unresolved rationale
+- In v2 feature work, start from ` + "`SPEC.md`" + `; it is the single durable feature artifact
+- Use ` + "`SPEC.md`" + ` sections for thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence
+- Treat legacy ` + "`BRAINSTORM.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` as historical context unless the user explicitly chooses a legacy staged command
+- Use ` + "`BRAINSTORM.md`" + ` only for unresolved historical rationale
+- Use ` + "`PLAN.md`" + ` and ` + "`TASKS.md`" + ` only for legacy staged flows or historical comparison
 - Use prior feature docs only through explicit reference or relationship links
 - Ask clarification questions until confidence is high and unresolved assumptions are zero
-- Run the implementation readiness gate before writing code
+- Run the v2 readiness gates before writing code: clarification complete, acceptance criteria binary-verifiable, task checklist mapped to criteria, validation mapped 1:1, delivery intent known
 - Update docs first when the implementation changes behavior, requirements, or approach
 
 ## Source Of Truth
@@ -155,23 +157,20 @@ Authority order:
 2. current user request
 3. ` + "`docs/CONSTITUTION.md`" + `
 4. ` + "`SPEC.md`" + `
-5. ` + "`PLAN.md`" + `
-6. ` + "`TASKS.md`" + `
-7. ` + "`BRAINSTORM.md`" + `
-8. repo conventions
+5. legacy ` + "`PLAN.md`" + ` / ` + "`TASKS.md`" + ` when the user explicitly chooses a staged flow
+6. legacy ` + "`BRAINSTORM.md`" + `
+7. repo conventions
 
 Execution order for feature work:
 
-1. ` + "`TASKS.md`" + `
-2. relevant ` + "`PLAN.md`" + ` section
-3. relevant ` + "`SPEC.md`" + ` requirement
+1. ` + "`SPEC.md`" + `
+2. relevant ` + "`SPEC.md`" + ` task checklist item, acceptance criterion, and validation map entry
+3. legacy staged artifacts only when explicitly operating in a legacy staged flow
 4. ` + "`docs/CONSTITUTION.md`" + ` only when needed
 
-- ` + "`TASKS.md`" + ` controls next action
-- ` + "`PLAN.md`" + ` controls approach
-- ` + "`SPEC.md`" + ` controls requirements
+- ` + "`SPEC.md`" + ` controls requirements, plan, tasks, validation, reflection, delivery, and evidence
 - ` + "`CONSTITUTION.md`" + ` controls project invariants
-- ` + "`BRAINSTORM.md`" + ` is non-binding research context
+- ` + "`BRAINSTORM.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` are non-binding historical context in v2 unless the user chooses a legacy staged flow
 
 ## Ad Hoc Work
 
@@ -184,12 +183,14 @@ Execution order for feature work:
 
 ## Readiness Gate
 
-- Challenge the active docs for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, and scope creep
+- Challenge ` + "`SPEC.md`" + ` for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, validation gaps, delivery ambiguity, and scope creep
 - If the gate fails, update the canonical docs first, then continue
 
 ## Feature Docs
 
 - ` + "`docs/specs/<feature>/`" + ` remains the source of truth for feature-scoped work
+- v2 feature work keeps durable workflow state in ` + "`SPEC.md`" + `
+- ` + "`SPEC.md`" + ` front matter should include ` + "`workflow_version: 2`" + ` and a current ` + "`phase`" + `
 - Keep references, relationships, and skills metadata current when those docs are touched
 `
 
@@ -231,7 +232,7 @@ const agentsRLM = `# RLM
 
 - Keep map work file-scoped or narrowly bounded so synthesis stays deterministic
 - Prefer repo-local docs before secondary global inputs
-- For feature-scoped work, keep must-read inputs small: the current ` + "`TASKS.md`" + ` entry plus the linked ` + "`PLAN.md`" + ` and ` + "`SPEC.md`" + ` sections
+- For v2 feature-scoped work, keep must-read inputs small: the current ` + "`SPEC.md`" + ` section or decision, plus directly linked references, relationships, rules, evidence, or historical staged artifacts only when they affect that decision
 - Treat generated ` + "`.kit/state.json`" + ` and task bundles as pointer/index data; recurse back to canonical Markdown before changing behavior
 - Treat rulesets under ` + "`docs/references/rules/`" + ` as just-in-time context; load only the linked ruleset sections whose ` + "`read_policy`" + ` and ` + "`applies_to`" + ` match the current decision
 - Use indices first: start with ` + "`kit map <feature>`" + ` and ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` to shortlist candidate prior features under ` + "`docs/specs/`" + `

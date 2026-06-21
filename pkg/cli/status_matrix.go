@@ -22,12 +22,12 @@ func printAllFeaturesProgressMatrix(
 	)
 
 	header := statusMatrixField(style, "Feature", featureWidth, whiteBold, false) + "  " +
-		statusMatrixField(style, "BRN", 3, brainstorm, false) + "  " +
-		statusMatrixField(style, "SPEC", 4, spec, false) + " " +
-		statusMatrixField(style, "PLAN", 4, plan, false) + " " +
-		statusMatrixField(style, "TASK", 4, tasks, false) + " " +
+		statusMatrixField(style, "CLRFY", 5, brainstorm, false) + " " +
+		statusMatrixField(style, "READY", 5, spec, false) + " " +
 		statusMatrixField(style, "IMPL", 4, implement, false) + " " +
+		statusMatrixField(style, "VALD", 4, tasks, false) + " " +
 		statusMatrixField(style, "REFL", 4, reflect, false) + " " +
+		statusMatrixField(style, "DLVR", 4, spec, false) + " " +
 		statusMatrixField(style, "DONE", 4, plan, false) + "  " +
 		statusMatrixField(style, "State", stateWidth, whiteBold, false) + "  " +
 		statusMatrixField(style, "Prog", progressWidth, whiteBold, true) + "  " +
@@ -37,9 +37,8 @@ func printAllFeaturesProgressMatrix(
 	}
 
 	separator := strings.Repeat("-", featureWidth) + "  " +
-		strings.Repeat("-", 3) + "  " +
-		strings.Repeat("-", 4) + " " +
-		strings.Repeat("-", 4) + " " +
+		strings.Repeat("-", 5) + " " +
+		strings.Repeat("-", 5) + " " +
 		strings.Repeat("-", 4) + " " +
 		strings.Repeat("-", 4) + " " +
 		strings.Repeat("-", 4) + " " +
@@ -59,12 +58,12 @@ func printAllFeaturesProgressMatrix(
 			statusMatrixFeatureColor(entry, activeStatus),
 			false,
 		) + "  " +
-			phaseProgressField(style, entry.Status.Phase, feature.PhaseBrainstorm, 3) + "  " +
-			phaseProgressField(style, entry.Status.Phase, feature.PhaseSpec, 4) + " " +
-			phaseProgressField(style, entry.Status.Phase, feature.PhasePlan, 4) + " " +
-			phaseProgressField(style, entry.Status.Phase, feature.PhaseTasks, 4) + " " +
+			phaseProgressField(style, entry.Status.Phase, feature.PhaseClarify, 5) + " " +
+			phaseProgressField(style, entry.Status.Phase, feature.PhaseReady, 5) + " " +
 			phaseProgressField(style, entry.Status.Phase, feature.PhaseImplement, 4) + " " +
+			phaseProgressField(style, entry.Status.Phase, feature.PhaseValidate, 4) + " " +
 			phaseProgressField(style, entry.Status.Phase, feature.PhaseReflect, 4) + " " +
+			phaseProgressField(style, entry.Status.Phase, feature.PhaseDeliver, 4) + " " +
 			phaseProgressField(style, entry.Status.Phase, feature.PhaseComplete, 4) + "  " +
 			statusMatrixField(style, allFeaturesStateLabel(entry, activeStatus), stateWidth, statusMatrixStateColor(entry, activeStatus), false) + "  " +
 			statusMatrixField(style, allFeaturesProgressLabel(entry.Status), progressWidth, statusMatrixProgressColor(entry.Status), true) + "  " +
@@ -139,13 +138,13 @@ func phaseProgressField(
 
 func phaseProgressMarker(current feature.Phase, target feature.Phase) string {
 	order := map[feature.Phase]int{
-		feature.PhaseBrainstorm: 1,
-		feature.PhaseSpec:       2,
-		feature.PhasePlan:       3,
-		feature.PhaseTasks:      4,
-		feature.PhaseImplement:  5,
-		feature.PhaseReflect:    6,
-		feature.PhaseComplete:   7,
+		feature.PhaseClarify:   1,
+		feature.PhaseReady:     2,
+		feature.PhaseImplement: 3,
+		feature.PhaseValidate:  4,
+		feature.PhaseReflect:   5,
+		feature.PhaseDeliver:   6,
+		feature.PhaseComplete:  7,
 	}
 
 	currentIndex, ok := order[current]
@@ -168,9 +167,9 @@ func phaseProgressMarker(current feature.Phase, target feature.Phase) string {
 
 func phaseColumnColor(phase feature.Phase) string {
 	switch phase {
-	case feature.PhaseBrainstorm:
+	case feature.PhaseClarify, feature.PhaseBrainstorm:
 		return brainstorm
-	case feature.PhaseSpec:
+	case feature.PhaseReady, feature.PhaseSpec:
 		return spec
 	case feature.PhasePlan:
 		return plan
@@ -178,8 +177,12 @@ func phaseColumnColor(phase feature.Phase) string {
 		return tasks
 	case feature.PhaseImplement:
 		return implement
+	case feature.PhaseValidate:
+		return tasks
 	case feature.PhaseReflect:
 		return reflect
+	case feature.PhaseDeliver:
+		return spec
 	case feature.PhaseComplete:
 		return plan
 	default:

@@ -24,7 +24,7 @@ Steps:
    - git log -n 20 --oneline --decorate
 2. Verification evidence
    - no local verification run found for `0001-alpha`
-   - run `kit verify alpha` and cite the resulting run ID before marking reflection complete
+   - run `kit legacy verify alpha` and cite the resulting run ID before marking reflection complete
 3. Build a review map
    - list changed files
    - for each file, state the intent in one line

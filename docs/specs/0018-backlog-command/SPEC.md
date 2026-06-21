@@ -82,8 +82,7 @@ items later, or resuming one without it taking over the active feature lane.
 - keep backlog items in the existing feature directory model instead of adding
   a new markdown artifact type
 - let users create deferred backlog items from `kit brainstorm`
-- let users pick up a backlog item from `kit backlog`, `kit resume`, or the
-  deprecated compatibility path `kit brainstorm --pickup`
+- let users pick up a backlog item from `kit backlog` or `kit resume`
 - make backlog list output concise and human-readable
 - keep backlog items out of active-feature status selection until picked up
 
@@ -159,8 +158,7 @@ items later, or resuming one without it taking over the active feature lane.
   active feature in progress rather than treating a deferred item as active
 - `kit backlog` must reject pickup attempts for features that are not backlog
   items with an actionable error
-- `kit brainstorm --pickup` must remain callable for compatibility but must be
-  hidden from default help and documented as deprecated in favor of
+- `kit brainstorm --pickup` must be removed in favor of
   `kit resume <feature>` or `kit backlog --pickup <feature>`
 - `kit backlog --pickup` and `kit resume` must support existing feature
   reference rules and interactive selection when no feature argument is
@@ -179,8 +177,8 @@ items later, or resuming one without it taking over the active feature lane.
   brainstorm planning prompt for that feature
 - running `kit resume <feature>` performs the same pickup flow for backlog
   targets
-- running `kit brainstorm --pickup <feature>` still performs the same pickup
-  flow while emitting deprecation guidance
+- running `kit brainstorm --pickup <feature>` fails because the compatibility
+  pickup path has been removed
 - after capturing a backlog item, `kit status` still focuses on the active
   non-backlog feature when one exists
 - when all features are backlog items, `kit status` reports that there is no

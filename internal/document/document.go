@@ -33,6 +33,22 @@ var RequiredSections = map[DocumentType][]string{
 	TypeProgressSummary: {"FEATURE PROGRESS TABLE", "PROJECT INTENT", "GLOBAL CONSTRAINTS", "FEATURE SUMMARIES", "LAST UPDATED"},
 }
 
+var SpecV2RequiredSections = []string{
+	"THESIS",
+	"CONTEXT",
+	"CLARIFICATIONS",
+	"REQUIREMENTS",
+	"ASSUMPTIONS",
+	"ACCEPTANCE CRITERIA",
+	"IMPLEMENTATION PLAN",
+	"TASK CHECKLIST",
+	"VALIDATION MAP",
+	"REFLECTION NOTES",
+	"DOCUMENTATION UPDATES",
+	"DELIVERY DECISION",
+	"EVIDENCE",
+}
+
 var (
 	// sectionPattern matches markdown headers like "## SECTION NAME"
 	sectionPattern = regexp.MustCompile(`(?m)^##\s+(.+)$`)
@@ -163,7 +179,7 @@ func (d *Document) Validate() []ValidationError {
 	}
 
 	// check required sections
-	required := RequiredSections[d.Type]
+	required := d.RequiredSections()
 	found := make(map[string]bool)
 	sections := make(map[string]Section)
 	for _, s := range d.Sections {
@@ -210,6 +226,13 @@ func (d *Document) Validate() []ValidationError {
 	}
 
 	return errors
+}
+
+func (d *Document) RequiredSections() []string {
+	if d.Type == TypeSpec && d.Metadata != nil && d.Metadata.WorkflowVersion == 2 {
+		return SpecV2RequiredSections
+	}
+	return RequiredSections[d.Type]
 }
 
 // HasUnresolvedPlaceholders checks if the document has TODO placeholders.

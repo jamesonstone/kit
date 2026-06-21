@@ -70,6 +70,12 @@ func TestCapabilitiesUnknownCommandIsActionable(t *testing.T) {
 
 func TestCapabilitiesNestedCommandPaths(t *testing.T) {
 	for _, commandPath := range [][]string{
+		{"legacy", "brainstorm"},
+		{"legacy", "plan"},
+		{"legacy", "tasks"},
+		{"legacy", "implement"},
+		{"legacy", "reflect"},
+		{"legacy", "verify"},
 		{"scaffold", "agents"},
 		{"prompt", "list"},
 		{"set", "prompt"},
@@ -103,24 +109,14 @@ func TestCapabilitiesFullAndHiddenPolicy(t *testing.T) {
 	if err := json.Unmarshal([]byte(fullOutput), &fullPayload); err != nil {
 		t.Fatalf("json.Unmarshal(full) error = %v", err)
 	}
-	update := findDetailCapability(fullPayload.Commands, "update")
-	if update == nil {
-		t.Fatal("expected full capabilities to include hidden update")
-	}
-	if !update.Hidden || !update.Deprecated {
-		t.Fatalf("expected update to be hidden and deprecated, got hidden=%v deprecated=%v", update.Hidden, update.Deprecated)
+	for _, command := range []string{"update", "skills", "skills mine", "catchup", "rollup", "review-loop", "brainstorm", "plan", "tasks", "implement", "reflect", "verify"} {
+		if found := findDetailCapability(fullPayload.Commands, command); found != nil {
+			t.Fatalf("expected full capabilities to omit removed command %q, got %#v", command, found)
+		}
 	}
 
-	targetedOutput, err := executeCapabilitiesCommand("--json", "update")
-	if err != nil {
-		t.Fatalf("kit capabilities update --json error = %v", err)
-	}
-	var targeted capabilityDetailPayload
-	if err := json.Unmarshal([]byte(targetedOutput), &targeted); err != nil {
-		t.Fatalf("json.Unmarshal(targeted hidden) error = %v", err)
-	}
-	if targeted.Command.Command != "update" || !targeted.Command.Hidden || !targeted.Command.Deprecated {
-		t.Fatalf("expected targeted hidden lookup to return labeled update, got %#v", targeted.Command)
+	if _, err := executeCapabilitiesCommand("--json", "update"); err == nil || !strings.Contains(err.Error(), "unknown Kit command path") {
+		t.Fatalf("expected targeted update lookup to fail as removed, got %v", err)
 	}
 
 	searchOutput, err := executeCapabilitiesCommand("--search", "update", "--json")
@@ -170,6 +166,18 @@ func TestCapabilitiesSearchJSON(t *testing.T) {
 		t.Fatalf("expected review-loop search results to include dispatch alias metadata")
 	}
 
+	kitSpecPromptOutput, err := executeCapabilitiesCommand("--search", "kit spec prompt", "--json")
+	if err != nil {
+		t.Fatalf("kit capabilities --search kit spec prompt --json error = %v", err)
+	}
+	var kitSpecPromptSearch capabilitiesSearchPayload
+	if err := json.Unmarshal([]byte(kitSpecPromptOutput), &kitSpecPromptSearch); err != nil {
+		t.Fatalf("json.Unmarshal(kit spec prompt search) error = %v", err)
+	}
+	if findCompactCapability(kitSpecPromptSearch.Commands, "prompt") == nil {
+		t.Fatalf("expected kit spec prompt search results to include prompt")
+	}
+
 	emptyOutput, err := executeCapabilitiesCommand("--search", "no-such-capability-token", "--json")
 	if err != nil {
 		t.Fatalf("kit capabilities --search no-such-capability-token --json error = %v", err)
@@ -184,10 +192,10 @@ func TestCapabilitiesSearchJSON(t *testing.T) {
 }
 
 func TestCapabilitiesRejectsInvalidCombinationsAndSuggests(t *testing.T) {
-	if _, err := executeCapabilitiesCommand("--search", "verify", "verify"); err == nil || !strings.Contains(err.Error(), "--search cannot be combined") {
+	if _, err := executeCapabilitiesCommand("--search", "verify", "legacy", "verify"); err == nil || !strings.Contains(err.Error(), "--search cannot be combined") {
 		t.Fatalf("expected --search plus command path to fail actionably, got %v", err)
 	}
-	if _, err := executeCapabilitiesCommand("--full", "verify"); err == nil || !strings.Contains(err.Error(), "--full cannot be combined") {
+	if _, err := executeCapabilitiesCommand("--full", "legacy", "verify"); err == nil || !strings.Contains(err.Error(), "--full cannot be combined") {
 		t.Fatalf("expected --full plus command path to fail actionably, got %v", err)
 	}
 	if _, err := executeCapabilitiesCommand("verif"); err == nil || !strings.Contains(err.Error(), "verify") {
@@ -222,6 +230,7 @@ func TestCapabilitiesDoesNotRequireProjectRootOrWriteFiles(t *testing.T) {
 		{"--full", "--json"},
 		{"--search", "verify", "--json"},
 		{"--json", "ci"},
+		{"--json", "legacy", "verify"},
 	} {
 		if _, err := executeCapabilitiesCommand(args...); err != nil {
 			t.Fatalf("kit capabilities %v error = %v", args, err)

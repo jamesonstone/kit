@@ -40,7 +40,7 @@ func banner() string {
 		result += "                                        " + colors[i] + line + reset + "\n"
 	}
 	result += "\n"
-	result += "                                   " + dim + "General-Purpose Thought-Work Harness" + reset + "\n"
+	result += "                                      " + dim + "Kit v2 Thought-Work Harness" + reset + "\n"
 	return result
 }
 
@@ -51,28 +51,17 @@ func flowDiagram() string {
 		gray + "│ " + constitution + "Constitution" + reset + gray + " │  ← " + reset + dim + "global constraints, principles, priors" + reset,
 		gray + "└──────────────┘" + reset,
 		"",
-		whiteBold + "🧠 Optional Research Step" + reset + dim + ":" + reset,
-		gray + "  ┌────────────┐" + reset,
-		gray + "  │ " + brainstorm + "Brainstorm" + reset + gray + " │  ← " + reset + dim + "research, framing, options, affected artifacts" + reset,
-		gray + "  └─────┬──────┘" + reset,
-		gray + "        │" + reset,
-		gray + "        ▼" + reset,
+		whiteBold + "🔁 V2 Feature Workflow" + reset + dim + " (default):" + reset,
+		gray + "┌──────────────┐    ┌───────────────────────────────────────────────────────────────┐" + reset,
+		gray + "│ " + brainstorm + "Idea / Input" + reset + gray + " │ ─▶ │ " + spec + "kit spec <feature>" + reset + gray + "                                           │" + reset,
+		gray + "└──────────────┘    │ " + spec + "SPEC.md" + reset + gray + ": clarify → ready → implement → validate → reflect → deliver │" + reset,
+		gray + "                    └───────────────────────────────────────────────────────────────┘" + reset,
 		"",
-		whiteBold + "🔁 Core Development Loop" + reset + dim + ":" + reset,
-		gray + "┌───────────────┐    ┌──────┐    ┌───────┐    ┌────────────────┐    ┌────────────┐" + reset,
-		gray + "│ " + spec + "Specification" + reset + gray + " │ ─▶ │ " + plan + "Plan" + reset + gray + " │ ─▶ │ " + tasks + "Tasks" + reset + gray + " │ ─▶ │ " + implement + "Implementation" + reset + gray + " │ ─▶ │ " + reflect + "Reflection" + reset + gray + " │ ─┐" + reset,
-		gray + "└───────────────┘    └──────┘    └───────┘    └────────────────┘    └────────────┘  │" + reset,
-		gray + "       ▲                                                                            │" + reset,
-		gray + "       └────────────────────────────────────────────────────────────────────────────┘" + reset,
-		"",
-		whiteBold + "🗂️ Structured Engine: Artifact Pipeline" + reset,
-		"  1. " + constitution + "Constitution" + reset + dim + "   — strategy, patterns, long-term vision (kept updated)" + reset,
-		"  2. " + brainstorm + "Brainstorm" + reset + dim + "     — optional research and framing before the spec" + reset,
-		"  3. " + spec + "Specification" + reset + dim + "  — what is being built and why" + reset,
-		"  4. " + plan + "Plan" + reset + dim + "           — how it will be built" + reset,
-		"  5. " + tasks + "Tasks" + reset + dim + "          — executable work units" + reset,
-		"  6. " + implement + "Implementation" + reset + dim + " — execution begins after the readiness gate" + reset,
-		"  7. " + reflect + "Reflection" + reset + dim + "     — verify correctness, refine understanding" + reset,
+		whiteBold + "🗂️ Durable Artifacts" + reset,
+		"  1. " + constitution + "CONSTITUTION.md" + reset + dim + " — project contract and invariants" + reset,
+		"  2. " + spec + "SPEC.md" + reset + dim + "         — v2 feature artifact: thesis, context, clarifications, requirements, assumptions," + reset,
+		dim + "                    acceptance criteria, plan, task checklist, validation map, reflection, docs, delivery, evidence" + reset,
+		"  3. " + brainstorm + "BRAINSTORM/PLAN/TASKS" + reset + dim + " — legacy v1 staged artifacts, preserved as historical context when present" + reset,
 	}
 
 	return strings.Join(lines, "\n")

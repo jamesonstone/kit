@@ -83,7 +83,7 @@ callable for compatibility.
 Kit's current top-level command list mixes lifecycle commands, prompt-only
 support commands, maintenance commands, and duplicate aliases at the same
 level. The result is harder onboarding, denser root help, and overlapping
-ways to resume work (`catchup`, `backlog --pickup`, `brainstorm --pickup`)
+ways to resume work (`resume`, `backlog --pickup`)
 that require users to understand internal distinctions before they can move
 forward.
 
@@ -166,9 +166,8 @@ forward.
   toward `kit resume` as the canonical general resume flow
 - [SPEC-09] `kit brainstorm --backlog` must remain supported for deferred
   capture
-- [SPEC-10] `kit brainstorm --pickup` must remain callable for compatibility,
-  but it must be hidden from default help and documented as deprecated in favor
-  of `kit resume <feature>` or `kit backlog --pickup <feature>`
+- [SPEC-10] `kit brainstorm --pickup` must be removed in favor of
+  `kit resume <feature>` or `kit backlog --pickup <feature>`
 - [SPEC-11] Add `--all` to `kit status`
 - [SPEC-12] Default `kit status` text output must remain focused on the active
   feature and must no longer append the all-features table
@@ -194,18 +193,15 @@ forward.
   - Utilities
 - [SPEC-18] Root help grouping must apply only to the root command surface;
   subcommand help may continue using the generic template
-- [SPEC-19] `kit update` must remain callable but hidden from default help and
-  deprecated in favor of `kit upgrade`
-- [SPEC-20] `kit skills` must remain callable but hidden from default help and
-  deprecated in favor of `kit skill`
-- [SPEC-21] `kit catchup` must remain callable but hidden from default help and
-  deprecated in favor of `kit resume`
+- [SPEC-19] `kit update` must be removed in favor of `kit upgrade`
+- [SPEC-20] `kit skills` must be removed in favor of `kit skill`
+- [SPEC-21] `kit catchup` must be removed in favor of `kit resume`
 - [SPEC-22] `kit scaffold` must remain callable as a hidden compatibility
   command and must no longer be taught as a primary workflow step
-- [SPEC-23] `kit rollup` must remain callable as a hidden maintenance command
-  and must no longer be taught as part of the primary user workflow
+- [SPEC-23] `kit rollup` must be removed as a root command; lifecycle commands
+  continue to refresh `PROJECT_PROGRESS_SUMMARY.md` automatically
 - [SPEC-24] README, root help text, and canonical workflow docs must teach the
-  canonical commands and identify deprecated commands only as migration notes
+  canonical commands without migration-only command aliases
 
 ## ACCEPTANCE
 
@@ -220,10 +216,9 @@ forward.
   and paused or backlog state
 - `kit status --json` remains backward compatible
 - `kit status --all --json` returns the new all-features payload shape
-- `kit update`, `kit skills`, `kit catchup`, `kit scaffold`, and `kit rollup`
-  remain callable but are hidden from default help
-- `kit brainstorm --pickup` remains callable but is hidden from default help
-  and described as deprecated
+- `kit update`, `kit skills`, `kit catchup`, and `kit rollup` are not
+  registered commands
+- `kit brainstorm --pickup` is not registered as a flag
 - README and canonical workflow docs teach `resume`, `status --all`,
   `upgrade`, and `skill` as the canonical surfaces
 

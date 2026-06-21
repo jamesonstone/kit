@@ -59,21 +59,18 @@ Use markdown checkboxes to track completion:
 - **NOTES**: Keep this task behavior-preserving before adding review-loop orchestration.
 
 ### T002
-- **GOAL**: Add the public review-loop command surface and route `kit dispatch --loop` to the same runner.
+- **GOAL**: Add the public dispatch review-loop prompt-prep surface.
 - **SCOPE**:
   - Add `pkg/cli/review_loop.go`.
-  - Register `kit review-loop` as the canonical command.
-  - Add `--loop` to `dispatch` as an alias trigger.
+  - Add `--loop` to `dispatch` as the prompt-prep trigger.
   - Reject incompatible dispatch inputs when `--loop` is set.
   - Share output flags, editor flags, CodeRabbit filtering, watch mode, and max-subagent settings where applicable.
 - **ACCEPTANCE**:
-  - `kit review-loop --help` exposes the canonical command.
   - `kit dispatch --help` exposes `--loop`.
-  - `kit review-loop` and `kit dispatch --loop` call the same runner path.
+  - `kit dispatch --loop` calls the review-loop prompt-prep runner path.
   - Missing `--pr` and invalid flag combinations fail with actionable errors.
 - **VERIFY**:
   - `go test ./pkg/cli -run 'TestReviewLoop.*Command|TestDispatch.*Loop' -count=1`
-  - `go run ./cmd/kit review-loop --help`
   - `go run ./cmd/kit dispatch --help`
 - **EXPECTED FILES**:
   - `pkg/cli/review_loop.go`
@@ -81,7 +78,7 @@ Use markdown checkboxes to track completion:
   - `pkg/cli/root_help.go`
   - `pkg/cli/review_loop_test.go`
 - **RISK**: Medium; alias routing can drift or conflict with dispatch input precedence.
-- **ROLLBACK**: Remove `review-loop` command registration and `dispatch --loop` flag.
+- **ROLLBACK**: Remove the `dispatch --loop` flag.
 - **NOTES**: Do not implement GitHub mutation flags in this task.
 
 ### T003
@@ -152,22 +149,18 @@ Use markdown checkboxes to track completion:
 - **NOTES**: Do not write project files or `.kit/` artifacts.
 
 ### T006
-- **GOAL**: Make the new command discoverable in Kit command metadata, help, and user/agent docs.
+- **GOAL**: Make the dispatch review-loop workflow discoverable in Kit command metadata and user/agent docs.
 - **SCOPE**:
-  - Add a `review-loop` capability record.
   - Update dispatch capability metadata for `--loop`.
-  - Update command ordering and help grouping.
   - Update README command docs.
   - Update `docs/agents/TOOLING.md`.
   - Update `docs/specs/0000_INIT_PROJECT.md` if it documents command capabilities or generated guidance.
 - **ACCEPTANCE**:
-  - `kit capabilities review-loop --json` returns a targeted record.
+  - `kit capabilities review-loop --json` fails because the compatibility root command has been removed.
   - `kit capabilities --search review-loop --json` finds the review-loop surface.
-  - Root help lists `review-loop` in the intended category.
-  - Docs distinguish `review-loop`, `dispatch --loop`, and `dispatch --pr --coderabbit`.
+  - Docs distinguish `dispatch --loop` and `dispatch --pr --coderabbit`.
 - **VERIFY**:
   - `go test ./pkg/cli -run 'TestCapabilities|TestRootHelp' -count=1`
-  - `go run ./cmd/kit capabilities review-loop --json`
   - `go run ./cmd/kit capabilities --search review-loop --json`
   - `go run ./cmd/kit --help`
 - **EXPECTED FILES**:
@@ -238,7 +231,7 @@ Use markdown checkboxes to track completion:
   - Resolve currently matching unresolved, non-outdated GitHub review threads through GraphQL.
   - Preserve `--coderabbit` filtering for resolution candidates.
   - Require `--yes` so resolution cannot happen accidentally during prompt generation.
-  - Keep default `dispatch --pr`, `dispatch --loop`, and `review-loop` behavior read-only.
+  - Keep default `dispatch --pr` and `dispatch --loop` behavior read-only.
 - **ACCEPTANCE**:
   - `--resolve` fails without `--yes`.
   - Resolution candidates skip resolved and outdated threads.

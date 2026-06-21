@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
 	"github.com/jamesonstone/kit/internal/rollup"
 )
@@ -22,14 +23,15 @@ var completeAll bool
 var completeCmd = &cobra.Command{
 	Use:   "complete [feature]",
 	Short: "Mark a feature as complete",
-	Long: `Mark a feature as complete by appending the REFLECTION_COMPLETE marker
-to its TASKS.md file. This transitions the feature's phase from "reflect"
-to "complete" in kit status.
+	Long: `Mark a feature as complete.
+
+For v2 features, this sets SPEC.md front matter phase to complete. For explicit
+legacy staged features, this appends the REFLECTION_COMPLETE marker to TASKS.md.
 
 If no feature is specified, shows an interactive selection of eligible features.
 
-By default, all tasks in TASKS.md must be marked done (- [x]) before
-the feature can be completed. Use --force to override this check.
+By default, v2 features must be in deliver phase and legacy staged features
+must have all TASKS.md checkboxes done. Use --force to override this check.
 
 Use --all to mark every currently eligible feature in the completion list
 complete in one command.`,
@@ -88,8 +90,7 @@ func runComplete(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	tasksPath := filepath.Join(feat.Path, "TASKS.md")
-	if feature.DeterminePhaseFromTasks(tasksPath) == feature.PhaseComplete {
+	if feat.Phase == feature.PhaseComplete {
 		_, err := fmt.Fprintf(cmd.OutOrStdout(), "✓ Feature '%s' is already marked complete\n", feat.Slug)
 		return err
 	}
@@ -152,12 +153,17 @@ func eligibleFeaturesForCompletion(specsDir string, cfg *config.Config) ([]featu
 		if f.Paused {
 			continue
 		}
-		tasksPath := filepath.Join(f.Path, "TASKS.md")
-		if _, err := os.Stat(tasksPath); err != nil {
+		if isV2Feature(&f) {
+			if f.Phase == feature.PhaseDeliver {
+				candidates = append(candidates, f)
+			}
 			continue
 		}
 		if f.Phase != feature.PhaseComplete {
-			candidates = append(candidates, f)
+			tasksPath := filepath.Join(f.Path, "TASKS.md")
+			if _, err := os.Stat(tasksPath); err == nil {
+				candidates = append(candidates, f)
+			}
 		}
 	}
 	if len(candidates) == 0 {
@@ -167,6 +173,16 @@ func eligibleFeaturesForCompletion(specsDir string, cfg *config.Config) ([]featu
 }
 
 func validateFeatureCanComplete(feat *feature.Feature, force bool) (string, error) {
+	if isV2Feature(feat) {
+		if force || feat.Phase == feature.PhaseDeliver {
+			return filepath.Join(feat.Path, "SPEC.md"), nil
+		}
+		return "", fmt.Errorf(
+			"SPEC.md phase is %q; v2 features must reach deliver before completion or use --force",
+			feat.Phase,
+		)
+	}
+
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 	if _, err := os.Stat(tasksPath); os.IsNotExist(err) {
 		return "", fmt.Errorf("TASKS.md not found at %s — nothing to complete", tasksPath)
@@ -208,7 +224,7 @@ func markFeaturesComplete(
 	}
 
 	for i := range features {
-		if err := appendReflectionMarker(tasksPaths[i]); err != nil {
+		if err := markFeatureComplete(&features[i], tasksPaths[i]); err != nil {
 			return fmt.Errorf("failed to mark feature '%s' complete: %w", features[i].Slug, err)
 		}
 		if _, err := fmt.Fprintf(out, "✅ Feature '%s' marked complete\n", features[i].Slug); err != nil {
@@ -224,6 +240,41 @@ func markFeaturesComplete(
 		return err
 	}
 	return printProjectRefreshAdvisory(out)
+}
+
+func markFeatureComplete(feat *feature.Feature, path string) error {
+	if isV2Feature(feat) {
+		return setSpecPhase(path, feat.DirName, string(feature.PhaseComplete))
+	}
+	return appendReflectionMarker(path)
+}
+
+func setSpecPhase(specPath, featureDirName, phase string) error {
+	data, err := os.ReadFile(specPath)
+	if err != nil {
+		return err
+	}
+	updated, changed, err := document.UpsertMetadata(string(data), document.TypeSpec, document.MetadataUpsert{
+		Feature:         document.FeatureMetadataFromDir(featureDirName),
+		WorkflowVersion: 2,
+		Phase:           phase,
+	})
+	if err != nil {
+		return err
+	}
+	if !changed {
+		return nil
+	}
+	return os.WriteFile(specPath, []byte(updated), 0644)
+}
+
+func isV2Feature(feat *feature.Feature) bool {
+	if feat == nil {
+		return false
+	}
+	specPath := filepath.Join(feat.Path, "SPEC.md")
+	doc, err := document.ParseFile(specPath, document.TypeSpec)
+	return err == nil && doc.Metadata != nil && doc.Metadata.WorkflowVersion == 2
 }
 
 // appendReflectionMarker appends the REFLECTION_COMPLETE marker to a TASKS.md file.

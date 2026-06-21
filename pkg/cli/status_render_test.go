@@ -106,16 +106,19 @@ func TestOutputStatusTextIncludesKitVersion(t *testing.T) {
 }
 
 func TestOutputStatusTextShowsCurrentStepAndRemainingWork(t *testing.T) {
+	dir := t.TempDir()
+	specPath := filepath.Join(dir, "SPEC.md")
+	writeFile(t, specPath, validV2SpecWithPhase("0001-patient-import", "clarify"))
 	status := &feature.FeatureStatus{
 		ID:      "0001",
 		Name:    "patient-import",
-		Phase:   feature.PhaseBrainstorm,
+		Phase:   feature.PhaseClarify,
 		Summary: "Import patient records from partner feeds.",
 		Files: map[string]feature.FileStatus{
-			"brainstorm": {Exists: true, Path: "/tmp/BRAINSTORM.md"},
-			"spec":       {Exists: false, Path: "/tmp/SPEC.md"},
-			"plan":       {Exists: false, Path: "/tmp/PLAN.md"},
-			"tasks":      {Exists: false, Path: "/tmp/TASKS.md"},
+			"brainstorm": {Exists: false, Path: filepath.Join(dir, "BRAINSTORM.md")},
+			"spec":       {Exists: true, Path: specPath},
+			"plan":       {Exists: false, Path: filepath.Join(dir, "PLAN.md")},
+			"tasks":      {Exists: false, Path: filepath.Join(dir, "TASKS.md")},
 		},
 	}
 	out := &bytes.Buffer{}
@@ -129,11 +132,11 @@ func TestOutputStatusTextShowsCurrentStepAndRemainingWork(t *testing.T) {
 		"At a glance",
 		"State: active (not paused)",
 		"Paused: no",
-		"Current step: brainstorm",
-		"Left: SPEC.md -> PLAN.md -> TASKS.md -> implement tasks -> reflect -> complete",
-		"Next: Create specification from brainstorm: run `kit spec patient-import`",
-		"Artifact progress",
-		"BRAINSTORM",
+		"Current step: clarify",
+		"Left: clarify requirements -> ready gate -> implement -> validate -> reflect -> deliver -> complete",
+		"Next: Continue v2 clarification in SPEC.md until unresolved questions are 0 and acceptance criteria are binary-verifiable",
+		"V2 phase progress",
+		"CLARIFY",
 	} {
 		if !strings.Contains(content, check) {
 			t.Fatalf("expected output to contain %q, got %q", check, content)
@@ -209,13 +212,13 @@ func TestOutputStatusTextUsesANSIColorWhenTerminalEnabled(t *testing.T) {
 }
 
 func TestOutputAllFeaturesStatusText(t *testing.T) {
-	active := &feature.FeatureStatus{ID: "0002", Name: "beta", Phase: feature.PhasePlan}
+	active := &feature.FeatureStatus{ID: "0002", Name: "beta", Phase: feature.PhaseReady}
 	entries := []allFeatureStatusEntry{
 		{
 			Status: &feature.FeatureStatus{
 				ID:    "0001",
 				Name:  "alpha",
-				Phase: feature.PhaseSpec,
+				Phase: feature.PhaseClarify,
 				Files: map[string]feature.FileStatus{
 					"brainstorm": {Exists: false},
 					"spec":       {Exists: true},
@@ -224,13 +227,13 @@ func TestOutputAllFeaturesStatusText(t *testing.T) {
 				},
 			},
 			IsBacklog:  false,
-			NextAction: "kit plan alpha",
+			NextAction: "kit legacy plan alpha",
 		},
 		{
 			Status: &feature.FeatureStatus{
 				ID:    "0002",
 				Name:  "beta",
-				Phase: feature.PhasePlan,
+				Phase: feature.PhaseReady,
 				Files: map[string]feature.FileStatus{
 					"brainstorm": {Exists: false},
 					"spec":       {Exists: true},
@@ -239,13 +242,13 @@ func TestOutputAllFeaturesStatusText(t *testing.T) {
 				},
 			},
 			IsBacklog:  false,
-			NextAction: "kit tasks beta",
+			NextAction: "kit legacy tasks beta",
 		},
 		{
 			Status: &feature.FeatureStatus{
 				ID:     "0003",
 				Name:   "gamma",
-				Phase:  feature.PhaseBrainstorm,
+				Phase:  feature.PhaseClarify,
 				Paused: true,
 				Files: map[string]feature.FileStatus{
 					"brainstorm": {Exists: true},
@@ -270,12 +273,12 @@ func TestOutputAllFeaturesStatusText(t *testing.T) {
 		"Active feature: 0002-beta",
 		"Backlog items: 1",
 		"Feature",
-		"BRN",
-		"SPEC",
-		"PLAN",
-		"TASK",
+		"CLRFY",
+		"READY",
 		"IMPL",
+		"VALD",
 		"REFL",
+		"DLVR",
 		"DONE",
 		"State",
 		"Prog",
@@ -300,13 +303,13 @@ func TestOutputAllFeaturesStatusText_UsesANSIColorWhenTerminalEnabled(t *testing
 	terminalWriterCheck = func(_ io.Writer) bool { return true }
 	defer func() { terminalWriterCheck = previousCheck }()
 
-	active := &feature.FeatureStatus{ID: "0002", Name: "beta", Phase: feature.PhasePlan}
+	active := &feature.FeatureStatus{ID: "0002", Name: "beta", Phase: feature.PhaseReady}
 	entries := []allFeatureStatusEntry{
 		{
 			Status: &feature.FeatureStatus{
 				ID:    "0002",
 				Name:  "beta",
-				Phase: feature.PhasePlan,
+				Phase: feature.PhaseReady,
 				Files: map[string]feature.FileStatus{
 					"spec": {Exists: true},
 					"plan": {Exists: true},
@@ -334,7 +337,7 @@ func TestOutputAllFeaturesStatusText_DoesNotMarkDuplicateNumericIDsAsActive(t *t
 		ID:    "0012",
 		Name:  "implement-readiness-gate",
 		Path:  "/repo/docs/specs/0012-implement-readiness-gate",
-		Phase: feature.PhasePlan,
+		Phase: feature.PhaseReady,
 	}
 	entries := []allFeatureStatusEntry{
 		{
@@ -342,7 +345,7 @@ func TestOutputAllFeaturesStatusText_DoesNotMarkDuplicateNumericIDsAsActive(t *t
 				ID:    "0012",
 				Name:  "default-subagent-orchestration",
 				Path:  "/repo/docs/specs/0012-default-subagent-orchestration",
-				Phase: feature.PhaseSpec,
+				Phase: feature.PhaseClarify,
 				Files: map[string]feature.FileStatus{},
 			},
 		},
@@ -351,7 +354,7 @@ func TestOutputAllFeaturesStatusText_DoesNotMarkDuplicateNumericIDsAsActive(t *t
 				ID:    "0012",
 				Name:  "implement-readiness-gate",
 				Path:  "/repo/docs/specs/0012-implement-readiness-gate",
-				Phase: feature.PhasePlan,
+				Phase: feature.PhaseReady,
 				Files: map[string]feature.FileStatus{},
 			},
 		},

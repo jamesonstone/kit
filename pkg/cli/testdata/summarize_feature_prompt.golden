@@ -6,10 +6,10 @@ Summarize the current context window, focusing on feature **alpha**.
 
 Review and extract facts from:
 
-- /repo/docs/specs/0001-alpha/BRAINSTORM.md — optional research findings, affected files, and strategy
-- /repo/docs/specs/0001-alpha/SPEC.md — requirements and acceptance criteria
-- /repo/docs/specs/0001-alpha/PLAN.md — implementation approach and components
-- /repo/docs/specs/0001-alpha/TASKS.md — work units and their status
+- /repo/docs/specs/0001-alpha/SPEC.md — v2 durable workflow state, requirements, plan, tasks, validation, reflection, delivery, and evidence
+- /repo/docs/specs/0001-alpha/BRAINSTORM.md — optional legacy research findings, affected files, and strategy when present
+- /repo/docs/specs/0001-alpha/PLAN.md — optional legacy implementation approach when present
+- /repo/docs/specs/0001-alpha/TASKS.md — optional legacy work units and status when present
 - /repo/docs/specs/0001-alpha/ANALYSIS.md — understanding state and open questions
 
 ### Fact Retention Protocol
@@ -28,10 +28,10 @@ Review and extract facts from:
 - Error states and their resolutions
 - Dependencies and version constraints
 - Test requirements and acceptance criteria
-- Research findings and recommended strategy from BRAINSTORM.md when present
-- Feature-specific constraints from SPEC.md
-- Implementation choices from PLAN.md
-- Task status and dependencies from TASKS.md
+- Feature-specific constraints, implementation plan, task checklist, validation map, reflection notes, delivery state, and evidence from SPEC.md
+- Research findings and recommended strategy from BRAINSTORM.md when present as legacy context
+- Implementation choices from PLAN.md when present as legacy context
+- Task status and dependencies from TASKS.md when present as legacy context
 
 ### What to DISCARD
 

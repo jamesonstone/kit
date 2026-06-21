@@ -76,6 +76,25 @@ func TestRunPromptWithOptions_DirectCodingAgentBuiltIns(t *testing.T) {
 	}
 }
 
+func TestRunPromptWithOptions_DirectKitSpecBuiltInRendersV2Prompt(t *testing.T) {
+	projectRoot := newPromptContextProject(t)
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-alpha")
+	writePromptContextFeatureDocs(t, featurePath, true)
+	setWorkingDirectory(t, projectRoot)
+
+	output := captureStdout(t, func() {
+		if err := runPromptWithOptions([]string{"kit", "spec"}, true, false); err != nil {
+			t.Fatalf("runPromptWithOptions() error = %v", err)
+		}
+	})
+
+	assertV2SpecPromptContract(t, output)
+	assertV2SpecPromptExcludesV1StageAssumptions(t, output)
+	if !strings.Contains(output, "Kit v2 `kit spec` workflow for feature `alpha`") {
+		t.Fatalf("expected kit spec prompt output, got %q", output)
+	}
+}
+
 func TestRunPromptWithOptions_OutputOnlyCopyCopiesRawBuiltIn(t *testing.T) {
 	setupPromptTestEnvironment(t)
 
@@ -234,7 +253,8 @@ func TestRunPromptList_RendersEffectiveBuiltIns(t *testing.T) {
 		"ORIGIN",
 		"OVERRIDES",
 		"coding-agent short",
-		"workflow brainstorm",
+		"kit spec",
+		"workflow spec",
 		"support dispatch",
 		"none",
 	}
@@ -245,6 +265,11 @@ func TestRunPromptList_RendersEffectiveBuiltIns(t *testing.T) {
 	}
 	if strings.Index(output, "coding-agent instructions") > strings.Index(output, "project init") {
 		t.Fatalf("expected prompt list to be sorted by noun then verb, got %q", output)
+	}
+	for _, removed := range []string{"workflow brainstorm", "workflow plan", "workflow tasks", "workflow implement", "workflow reflect"} {
+		if strings.Contains(output, removed) {
+			t.Fatalf("expected prompt list to omit removed v1 workflow prompt %q, got %q", removed, output)
+		}
 	}
 }
 
