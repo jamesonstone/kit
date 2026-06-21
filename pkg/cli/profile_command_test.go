@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,6 +20,27 @@ func TestRunSpecFrontendProfilePersistsReferences(t *testing.T) {
 	restoreSpecFlags := restoreSpecFlagState()
 	defer restoreSpecFlags()
 	restorePromptProfileState(t, promptProfileFrontend, true)
+
+	previousWait := awaitEditorLaunchConfirmation
+	previousRunner := editorInputRunner
+	previousDeliveryPrompt := promptSpecDeliveryIntent
+	defer func() {
+		awaitEditorLaunchConfirmation = previousWait
+		editorInputRunner = previousRunner
+		promptSpecDeliveryIntent = previousDeliveryPrompt
+	}()
+	awaitEditorLaunchConfirmation = func(_ *os.File, _ io.Writer) error {
+		return nil
+	}
+	editorInputRunner = func(_ freeTextInputConfig, fieldName, _ string) (string, bool, error) {
+		if fieldName != "feature thesis" {
+			t.Fatalf("fieldName = %q, want feature thesis", fieldName)
+		}
+		return "Build the dashboard.", true, nil
+	}
+	promptSpecDeliveryIntent = func() (string, error) {
+		return specDeliveryIntentIdeaOnly, nil
+	}
 
 	cmd := newSpecProfileTestCommand()
 	if err := cmd.Flags().Set("output-only", "true"); err != nil {
@@ -169,6 +191,7 @@ func newSpecProfileTestCommand() *cobra.Command {
 	cmd.Flags().Bool("interactive", false, "")
 	cmd.Flags().Bool("output-only", false, "")
 	cmd.Flags().Bool("prompt-only", false, "")
+	cmd.Flags().BoolVar(&specReviseThesis, "revise-thesis", false, "")
 	return cmd
 }
 
@@ -192,17 +215,20 @@ func restoreSpecFlagState() func() {
 	previousEditor := specEditor
 	previousInline := specInline
 	previousOutputOnly := specOutputOnly
+	previousReviseThesis := specReviseThesis
 	previousUseVim := specUseVim
 	specCopy = false
 	specEditor = ""
 	specInline = false
 	specOutputOnly = false
+	specReviseThesis = false
 	specUseVim = false
 	return func() {
 		specCopy = previousCopy
 		specEditor = previousEditor
 		specInline = previousInline
 		specOutputOnly = previousOutputOnly
+		specReviseThesis = previousReviseThesis
 		specUseVim = previousUseVim
 	}
 }

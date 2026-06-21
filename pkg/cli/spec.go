@@ -19,6 +19,7 @@ var specCopy bool
 var specEditor string
 var specInline bool
 var specOutputOnly bool
+var specReviseThesis bool
 var specUseVim bool
 
 var promptSpecFeatureRef = readSpecFeatureRef
@@ -38,7 +39,7 @@ Updates PROJECT_PROGRESS_SUMMARY.md after creation.
 If no feature is specified, shows an interactive selection of eligible existing
 feature directories that can enter the v2 SPEC.md workflow. If there are no
 eligible existing features to select from, prompts for a new feature name and
-starts the interactive spec builder.
+opens one thesis/goal editor entry before rendering the v2 supervisor prompt.
 
 The generated prompt is the v2 supervisor contract. It keeps ideation,
 clarification, implementation planning, task tracking, implementation,
@@ -47,16 +48,16 @@ SPEC.md instead of requiring separate BRAINSTORM.md, PLAN.md, TASKS.md,
 implement, reflect, or standalone verification workflow commands.
 
 Modes:
-  Default:        Copy the v2 supervisor prompt to the clipboard and show status (non-interactive)
-  --interactive:  Prompt user for spec details, opening $EDITOR for free-text answers by default
-  --template:     Output template prompt without interactive questions (deprecated, same as default)
+  New SPEC.md:       Ask for one required thesis/goal entry, capture delivery intent, then copy the v2 supervisor prompt
+  Existing SPEC.md:  Preserve current SPEC.md content and regenerate/copy the v2 supervisor prompt
+  --revise-thesis:   Append a dated thesis note to an existing SPEC.md before prompt output
 
 Flags:
-  --output-only:  Output the raw prompt to stdout instead of copying it to the clipboard
-  --copy:         Copy prompt to clipboard (mainly useful with --output-only)
-  --interactive:  Force interactive prompts even when stdin is not a terminal
-  --vim:          Open free-text responses in a vim-compatible editor instead of $EDITOR
-  --inline:       Use inline multiline prompts instead of opening the editor`,
+  --output-only:     Output the raw prompt to stdout instead of copying it to the clipboard
+  --copy:            Copy prompt to clipboard (mainly useful with --output-only)
+  --revise-thesis:   Append a dated thesis note and refresh delivery intent before prompt output
+  --vim:             Open the thesis response in a vim-compatible editor instead of $EDITOR
+  --inline:          Use inline multiline thesis entry instead of opening the editor`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runSpec,
 }
@@ -68,7 +69,10 @@ func init() {
 	specCmd.Flags().Bool("interactive", false, "prompt user for spec details interactively")
 	specCmd.Flags().BoolVar(&specCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	specCmd.Flags().BoolVar(&specOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	specCmd.Flags().BoolVar(&specReviseThesis, "revise-thesis", false, "append a dated thesis note and refresh delivery intent before prompt output")
 	addPromptOnlyFlag(specCmd)
+	_ = specCmd.Flags().MarkHidden("template")
+	_ = specCmd.Flags().MarkHidden("interactive")
 	rootCmd.AddCommand(specCmd)
 }
 
@@ -97,10 +101,16 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	}
 
 	if promptOnly {
-		if specTemplateOnly || specInteractive || specUseVim || specEditor != "" || specInline {
-			return fmt.Errorf("--prompt-only cannot be used with --template, --interactive, --vim, --editor, or --inline")
+		if specTemplateOnly || specInteractive || specReviseThesis || specUseVim || specEditor != "" || specInline {
+			return fmt.Errorf("--prompt-only cannot be used with --template, --interactive, --revise-thesis, --vim, --editor, or --inline")
 		}
 		return runSpecPromptOnly(args, projectRoot, cfg, outputOnly)
+	}
+	if specTemplateOnly && specReviseThesis {
+		return fmt.Errorf("--template cannot be used with --revise-thesis")
+	}
+	if specTemplateOnly && specInteractive {
+		return fmt.Errorf("--template cannot be used with --interactive")
 	}
 
 	var (
@@ -144,13 +154,14 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// create SPEC.md if it doesn't exist
 	specPath := filepath.Join(feat.Path, "SPEC.md")
+	specWasCreated := false
 	if !document.Exists(specPath) {
 		content := templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
 		if err := document.Write(specPath, content); err != nil {
 			return fmt.Errorf("failed to create SPEC.md: %w", err)
 		}
+		specWasCreated = true
 		if !outputOnly {
 			fmt.Println("  ✓ Created SPEC.md")
 		}
@@ -171,15 +182,16 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// determine if we should run interactive mode
-	// default is non-interactive (template mode), unless --interactive is explicitly set
-	isInteractive := specInteractive && !specTemplateOnly
-	inputCfg := newFreeTextInputConfig(specUseVim, specEditor, specInline, isInteractive)
-	if (specUseVim || specEditor != "" || specInline) && !isInteractive {
-		return fmt.Errorf("--vim, --editor, and --inline require --interactive")
-	}
+	needsThesisInput := !specTemplateOnly && (specWasCreated || specReviseThesis)
+	inputCfg := newFreeTextInputConfig(specUseVim, specEditor, specInline, needsThesisInput)
 	if specInline && (specUseVim || specEditor != "") {
 		return fmt.Errorf("--inline cannot be used with --vim or --editor")
+	}
+	if specInteractive && !needsThesisInput {
+		return fmt.Errorf("--interactive has been replaced by the default thesis prompt for new SPEC.md files; use --revise-thesis for existing SPEC.md files")
+	}
+	if (specUseVim || specEditor != "" || specInline) && !needsThesisInput {
+		return fmt.Errorf("--vim, --editor, and --inline require a new SPEC.md or --revise-thesis")
 	}
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
@@ -192,6 +204,19 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		if err := clearPausedForExplicitResume(projectRoot, cfg, feat); err != nil {
 			return err
 		}
+	}
+
+	var compiledAnswers *specAnswers
+	if needsThesisInput {
+		compiledAnswers, err = runSpecInteractive(specPath, brainstormPath, feat, projectRoot, cfg, inputCfg, specWasCreated, outputOnly)
+		if err != nil {
+			return err
+		}
+		if !outputOnly {
+			fmt.Println("  ✓ Captured thesis and delivery intent in SPEC.md")
+		}
+	} else if specReviseThesis && !outputOnly {
+		fmt.Println("  ✓ Thesis revision skipped")
 	}
 
 	// update PROJECT_PROGRESS_SUMMARY.md
@@ -210,9 +235,8 @@ func runSpec(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if isInteractive {
-		// interactive mode: gather details and compile prompt
-		return runSpecInteractive(specPath, brainstormPath, feat, projectRoot, cfg, inputCfg, outputOnly)
+	if needsThesisInput {
+		return outputCompiledPrompt(specPath, brainstormPath, feat.Slug, projectRoot, cfg, compiledAnswers, outputOnly)
 	}
 
 	// template mode: output the template and instructions

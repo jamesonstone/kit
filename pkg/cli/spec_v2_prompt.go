@@ -142,6 +142,7 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 		doc.BulletList(
 			fmt.Sprintf("`%s` is the only durable feature workflow artifact for v2 feature work.", input.SpecPath),
 			"Use this fixed section order: Thesis, Context, Clarifications, Requirements, Assumptions, Acceptance Criteria, Implementation Plan, Task Checklist, Validation Map, Reflection Notes, Documentation Updates, Delivery Decision, Evidence.",
+			"The initial `SPEC.md` may contain only the user's thesis/goal plus delivery intent. Treat every other section as work to infer, research, clarify, and validate during the clarification loop before implementation.",
 			"Inside Context, maintain a `### Source Map` subsection for material repo facts, rules, API behavior, command behavior, user decisions, and existing patterns that affect implementation, validation, delivery, or user-visible behavior.",
 			"Keep compact front matter current: `workflow_version: 2`, `phase`, `references`, `relationships`, `skills`, and delivery-related routing metadata when present.",
 			"Valid phases are `clarify`, `ready`, `implement`, `validate`, `reflect`, `deliver`, `complete`, and `blocked`.",
@@ -410,25 +411,25 @@ func specV2UserContext(answers *specAnswers) string {
 	if answers == nil || (answers.Problem == "" && answers.Goals == "" && answers.NonGoals == "" &&
 		answers.Users == "" && answers.Requirements == "" && answers.Acceptance == "" &&
 		answers.EdgeCases == "" && answers.DeliveryIntent == "") {
-		return strings.TrimSpace(`<!-- Fill this section before sending the prompt when useful. Leave blanks only if the agent should derive the content from existing SPEC.md and repo context. -->
+		return strings.TrimSpace(`<!-- Derive these values from the current SPEC.md and repo context; ask clarification questions instead of inventing missing details. -->
 
 **THESIS**:
-<!-- Original idea, problem statement, or feature request. -->
+<!-- Read the current SPEC.md Thesis section. -->
 
 **CONTEXT**:
-<!-- Known repo, product, user, design, or operational context. -->
+<!-- Infer from SPEC.md, repo research, Source Map entries, and clarification answers. -->
 
 **REQUIREMENTS**:
-<!-- Initial requirements or constraints. -->
+<!-- Clarify before implementation; do not invent unstated requirements. -->
 
 **ACCEPTANCE CRITERIA**:
-<!-- Initial binary-verifiable acceptance criteria. -->
+<!-- Create stable binary-verifiable AC-### entries during clarification. -->
 
 **DELIVERY INTENT**:
-<!-- Existing in-flight changes, or later issue/branch/PR after validation. -->
+<!-- Read SPEC.md front matter delivery_intent and the Delivery Decision section. -->
 
 **NON-GOALS / EXCLUSIONS**:
-<!-- What should not be changed. -->`)
+<!-- Clarify explicitly before implementation. -->`)
 	}
 
 	var items []string
@@ -438,7 +439,7 @@ func specV2UserContext(answers *specAnswers) string {
 		}
 		items = append(items, fmt.Sprintf("**%s**: %s", label, value))
 	}
-	appendAnswer("THESIS / PROBLEM", answers.Problem)
+	appendAnswer("THESIS", answers.Problem)
 	appendAnswer("GOALS", answers.Goals)
 	appendAnswer("NON-GOALS", answers.NonGoals)
 	appendAnswer("USERS", answers.Users)

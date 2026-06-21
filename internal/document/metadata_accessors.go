@@ -49,6 +49,13 @@ func (d *Document) IntentText(sectionName string) string {
 	return ""
 }
 
+func (d *Document) DeliveryIntent() string {
+	if d.Metadata != nil {
+		return strings.TrimSpace(d.Metadata.DeliveryIntent)
+	}
+	return ""
+}
+
 func SkillsFromSection(section *Section) []MetadataSkill {
 	if section == nil {
 		return nil

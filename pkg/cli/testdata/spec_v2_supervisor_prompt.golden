@@ -4,7 +4,7 @@ You are the supervisor coding agent for the Kit v2 `kit spec` workflow for featu
 
 ## Context Provided By User
 
-**THESIS / PROBLEM**: Build the alpha workflow.
+**THESIS**: Build the alpha workflow.
 
 **REQUIREMENTS**: Keep the workflow deterministic.
 
@@ -83,6 +83,7 @@ You are the supervisor coding agent for the Kit v2 `kit spec` workflow for featu
 
 - `/repo/docs/specs/0001-alpha/SPEC.md` is the only durable feature workflow artifact for v2 feature work.
 - Use this fixed section order: Thesis, Context, Clarifications, Requirements, Assumptions, Acceptance Criteria, Implementation Plan, Task Checklist, Validation Map, Reflection Notes, Documentation Updates, Delivery Decision, Evidence.
+- The initial `SPEC.md` may contain only the user's thesis/goal plus delivery intent. Treat every other section as work to infer, research, clarify, and validate during the clarification loop before implementation.
 - Inside Context, maintain a `### Source Map` subsection for material repo facts, rules, API behavior, command behavior, user decisions, and existing patterns that affect implementation, validation, delivery, or user-visible behavior.
 - Keep compact front matter current: `workflow_version: 2`, `phase`, `references`, `relationships`, `skills`, and delivery-related routing metadata when present.
 - Valid phases are `clarify`, `ready`, `implement`, `validate`, `reflect`, `deliver`, `complete`, and `blocked`.
