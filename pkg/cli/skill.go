@@ -27,7 +27,7 @@ func newSkillRootCommand() *cobra.Command {
 		Use:   "skill",
 		Short: "Output skill extraction prompts for completed features",
 		Long: `Output a structured prompt that tells the active coding agent how to
-mine a reusable skill from a feature's spec pipeline and implemented delta.
+mine a reusable skill from a feature's v2 SPEC.md workflow and implemented delta.
 
 The command never writes a skill directly. It only outputs the prompt.
 
@@ -39,12 +39,11 @@ Commands:
 		Use:   "mine [feature]",
 		Short: "Output skill extraction prompt for the active coding agent",
 		Long: `Output a structured markdown prompt that instructs the active coding
-agent to analyze a feature's documents, compare planned work to implemented
-work, and draft a reusable SKILL.md only when a real cross-feature pattern
-exists.
+agent to analyze a feature's SPEC.md, compare intended work to implemented
+work, and draft a reusable SKILL.md only when a real cross-feature pattern exists.
 
 If no feature is specified, shows an interactive selection of features that
-have reached at least TASKS.md.`,
+have a SPEC.md.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: runSkillMine,
 	}
@@ -98,22 +97,9 @@ func runSkillMine(cmd *cobra.Command, args []string) error {
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 
-	if !document.Exists(tasksPath) {
-		return fmt.Errorf(
-			"TASKS.md not found. Run 'kit tasks %s' first",
-			feat.Slug,
-		)
-	}
 	if !document.Exists(specPath) {
 		return fmt.Errorf(
 			"SPEC.md not found for %s. Run 'kit spec %s' first",
-			feat.Slug,
-			feat.Slug,
-		)
-	}
-	if !document.Exists(planPath) {
-		return fmt.Errorf(
-			"PLAN.md not found for %s. Run 'kit plan %s' first",
 			feat.Slug,
 			feat.Slug,
 		)
@@ -134,7 +120,7 @@ func runSkillMine(cmd *cobra.Command, args []string) error {
 	}
 
 	if !outputOnly {
-		printWorkflowInstructions("skill mine (post-reflect step)", []string{
+		printWorkflowInstructions("skill mine", []string{
 			"review the generated SKILL.md draft before committing",
 			"run kit skill mine again on future features to grow the skills library",
 		})
@@ -144,7 +130,7 @@ func runSkillMine(cmd *cobra.Command, args []string) error {
 }
 
 // selectFeatureForSkillMine shows an interactive numbered list of features
-// that have TASKS.md and includes the current phase label.
+// that have SPEC.md and includes the current phase label.
 func selectFeatureForSkillMine(specsDir string) (*feature.Feature, error) {
 	features, err := feature.ListFeatures(specsDir)
 	if err != nil {
@@ -153,14 +139,14 @@ func selectFeatureForSkillMine(specsDir string) (*feature.Feature, error) {
 
 	var candidates []feature.Feature
 	for _, f := range features {
-		if document.Exists(filepath.Join(f.Path, "TASKS.md")) {
+		if document.Exists(filepath.Join(f.Path, "SPEC.md")) {
 			candidates = append(candidates, f)
 		}
 	}
 
 	if len(candidates) == 0 {
 		return nil, fmt.Errorf(
-			"no features ready for skill mining (need TASKS.md)\n\nRun 'kit tasks <feature>' to create tasks first",
+			"no features ready for skill mining (need SPEC.md)\n\nRun 'kit spec <feature>' first",
 		)
 	}
 

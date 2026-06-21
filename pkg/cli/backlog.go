@@ -19,7 +19,7 @@ var (
 var backlogCmd = &cobra.Command{
 	Use:   "backlog [feature]",
 	Short: "List deferred backlog items or pick one up",
-	Long: `List deferred backlog items captured as paused brainstorm-phase features.
+	Long: `List deferred backlog items captured as paused legacy brainstorm-phase features.
 
 Use --pickup to resume one of those items and output the standard brainstorm
 research prompt. Use ` + "`kit resume`" + ` as the canonical general resume flow.`,
@@ -116,7 +116,7 @@ func printBacklogList(w io.Writer, specsDir string, cfg *config.Config) error {
 	}
 
 	if len(entries) == 0 {
-		if _, err := fmt.Fprintln(w, style.muted("No backlog items. Run `kit brainstorm --backlog` to capture deferred work.")); err != nil {
+		if _, err := fmt.Fprintln(w, style.muted("No backlog items. Run `kit legacy brainstorm --backlog` to capture deferred legacy work.")); err != nil {
 			return err
 		}
 		if _, err := fmt.Fprintln(w); err != nil {

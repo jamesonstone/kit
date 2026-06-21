@@ -117,7 +117,7 @@ func TestBuildReconcilePromptIncludesVerificationMigrationRules(t *testing.T) {
 		"do not mark legacy docs invalid",
 		"do not guess verification commands from prose",
 		"leave uncertain commands as `not yet declared`",
-		"run `kit verify <feature> --dry-run`, refresh `.kit/state.json`, then rerun `kit check <feature>` and `kit check --project`",
+		"run `kit legacy verify <feature> --dry-run`, refresh `.kit/state.json`, then rerun `kit check <feature>` and `kit check --project`",
 	}
 	for _, check := range checks {
 		if !strings.Contains(prompt, check) {

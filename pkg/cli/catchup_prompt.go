@@ -35,16 +35,16 @@ func buildCatchupPrompt(
 	}
 	rows = append(rows, []string{"PROJECT_PROGRESS_SUMMARY", summaryPath, "cross-feature context"})
 	if status.Files["brainstorm"].Exists {
-		rows = append(rows, []string{"BRAINSTORM", brainstormPath, "upstream research and framing"})
+		rows = append(rows, []string{"BRAINSTORM", brainstormPath, "optional legacy research and framing"})
 	}
 	if status.Files["spec"].Exists {
-		rows = append(rows, []string{"SPEC", specPath, "requirements and acceptance"})
+		rows = append(rows, []string{"SPEC", specPath, "v2 durable workflow artifact"})
 	}
 	if status.Files["plan"].Exists {
-		rows = append(rows, []string{"PLAN", planPath, "approach and design decisions"})
+		rows = append(rows, []string{"PLAN", planPath, "optional legacy approach context"})
 	}
 	if status.Files["tasks"].Exists {
-		rows = append(rows, []string{"TASKS", tasksPath, "execution status and remaining work"})
+		rows = append(rows, []string{"TASKS", tasksPath, "optional legacy execution context"})
 	}
 	rows = append(rows, []string{"Project Root", projectRoot, "repository context"})
 
@@ -76,7 +76,8 @@ func buildCatchupPrompt(
 		"Read `CONSTITUTION.md` first",
 		"Read `PROJECT_PROGRESS_SUMMARY.md` for cross-feature context",
 		"Read the feature docs in order:\n- "+strings.Join(featureDocs, "\n- "),
-		"Reconstruct the current stage and state of the feature from the repository artifacts before making any recommendations",
+		"Treat SPEC.md as the durable v2 workflow source; use legacy BRAINSTORM.md, PLAN.md, and TASKS.md only as historical context when present",
+		"Reconstruct the current v2 phase and state of the feature from repository artifacts before making any recommendations",
 		"Start by asking clarifying questions in a short numbered batch",
 		"For each question, include your current best recommendation, assumption, or default",
 		fmt.Sprintf("Use the standard batch-approval syntax for clarification questions: %s", approvalSyntaxSummary),
@@ -104,7 +105,7 @@ func buildCatchupPrompt(
 			fmt.Sprintf("Active feature: %s", feat.DirName),
 			fmt.Sprintf("Current phase: %s", status.Phase),
 			fmt.Sprintf("Current state: %s", catchupStateSummary(status)),
-			fmt.Sprintf("Next canonical artifact: %s", resumeNextCanonicalArtifact(status)),
+			fmt.Sprintf("Next workflow gate: %s", resumeNextWorkflowGate(status)),
 			fmt.Sprintf("Next recommended command: %s", resumeNextRecommendedCommand(status)),
 			fmt.Sprintf("Known blockers: %s", resumeKnownBlockers(status)),
 			fmt.Sprintf("Validation state: %s", resumeValidationState(status)),
@@ -122,7 +123,7 @@ func buildCatchupPrompt(
 			"this command is feature-scoped; do not broaden into a project-wide handoff unless the user asks",
 			"do not duplicate the full `kit handoff` workflow",
 			"do not duplicate the full `kit summarize` workflow",
-			"do not output implementation instructions like `kit implement` unless the user explicitly asks to proceed",
+			"do not output legacy staged implementation instructions like `kit legacy implement` unless the user explicitly asks to proceed",
 			"repository documents and current code are the source of truth when prior conversation context is incomplete",
 			fmt.Sprintf("feature path: %s", feat.Path),
 			fmt.Sprintf("project root: %s", projectRoot),
@@ -133,9 +134,9 @@ func buildCatchupPrompt(
 func catchupStateSummary(status *feature.FeatureStatus) string {
 	var parts []string
 	parts = append(parts, fmt.Sprintf(
-		"artifacts - BRAINSTORM %s, SPEC %s, PLAN %s, TASKS %s",
-		presenceWord(status.Files["brainstorm"].Exists),
+		"documents - SPEC %s, legacy BRAINSTORM %s, legacy PLAN %s, legacy TASKS %s",
 		presenceWord(status.Files["spec"].Exists),
+		presenceWord(status.Files["brainstorm"].Exists),
 		presenceWord(status.Files["plan"].Exists),
 		presenceWord(status.Files["tasks"].Exists),
 	))
@@ -156,23 +157,32 @@ func catchupNextAction(status *feature.FeatureStatus) string {
 	return determineNextAction(status)
 }
 
-func resumeNextCanonicalArtifact(status *feature.FeatureStatus) string {
+func resumeNextWorkflowGate(status *feature.FeatureStatus) string {
 	if status == nil {
 		return "unknown"
 	}
-	if status.Phase == feature.PhaseComplete {
-		return "TASKS.md reflection marker"
+	switch status.Phase {
+	case feature.PhaseClarify:
+		return "clarification readiness gate in SPEC.md"
+	case feature.PhaseReady:
+		return "implementation start gate in SPEC.md"
+	case feature.PhaseImplement:
+		return "implementation checklist in SPEC.md"
+	case feature.PhaseValidate:
+		return "validation map in SPEC.md"
+	case feature.PhaseReflect:
+		return "reflection and documentation sync in SPEC.md"
+	case feature.PhaseDeliver:
+		return "delivery hard gate in SPEC.md"
+	case feature.PhaseComplete:
+		return "complete"
+	case feature.PhaseBlocked:
+		return "blocked; resolve blocker in SPEC.md"
 	}
 	if !status.Files["spec"].Exists {
 		return "SPEC.md"
 	}
-	if !status.Files["plan"].Exists {
-		return "PLAN.md"
-	}
-	if !status.Files["tasks"].Exists {
-		return "TASKS.md"
-	}
-	return "TASKS.md"
+	return "inspect SPEC.md phase"
 }
 
 func resumeNextRecommendedCommand(status *feature.FeatureStatus) string {
@@ -192,14 +202,8 @@ func resumeKnownBlockers(status *feature.FeatureStatus) string {
 	if !status.Files["spec"].Exists {
 		return "SPEC.md is missing"
 	}
-	if !status.Files["plan"].Exists {
-		return "PLAN.md is missing"
-	}
-	if !status.Files["tasks"].Exists {
-		return "TASKS.md is missing"
-	}
-	if status.Progress == nil || !status.Progress.HasTasks() {
-		return "TASKS.md has no markdown checkbox tasks"
+	if status.Phase == feature.PhaseBlocked {
+		return "SPEC.md phase is blocked"
 	}
 	return "none recorded in Kit artifacts"
 }

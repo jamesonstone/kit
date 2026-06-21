@@ -618,8 +618,8 @@ func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
 		"docs/agents/WORKFLOWS.md": {
 			"Authority order:",
 			"Execution order for feature work:",
-			"`TASKS.md` controls next action",
-			"`BRAINSTORM.md` is non-binding research context",
+			"`SPEC.md` controls requirements, plan, tasks, validation, reflection, delivery, and evidence",
+			"`BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` are non-binding historical context in v2",
 		},
 		"docs/agents/GUARDRAILS.md": {
 			"Never claim tests passed unless they ran",

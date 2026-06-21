@@ -56,15 +56,16 @@ const Constitution = `# CONSTITUTION
 
 ### Spec-Driven (Formal)
 
-<!-- use when: new features, kit brainstorm/kit spec, substantial architectural or behavioral changes -->
-<!-- workflow: optional BRAINSTORM.md → SPEC.md → PLAN.md → TASKS.md → implement → reflect -->
+<!-- use when: new features, kit spec, substantial architectural or behavioral changes -->
+<!-- workflow: kit spec <feature> → SPEC.md phases: clarify → ready → implement → validate → reflect → deliver -->
+<!-- legacy staged documents: BRAINSTORM.md, legacy SPEC.md, PLAN.md, TASKS.md only when explicitly chosen -->
 
 ### Ad Hoc (Lightweight)
 
 <!-- use when: bug fixes, security reviews, refactors, dependency updates, config changes, small refinements -->
 <!-- workflow: understand → implement → verify -->
 <!-- docs: update only practical docs (READMEs, inline docs, API docs) -->
-<!-- do NOT create SPEC.md / PLAN.md / TASKS.md for ad hoc work -->
+<!-- do NOT create feature SPEC.md or legacy staged artifacts for ad hoc work -->
 
 ### Ad Hoc with Existing Specs
 
@@ -160,7 +161,9 @@ func BuildSpecArtifactForFeature(feature document.FeatureMetadata) string {
 	content = replaceTemplateSection(content, "RELATIONSHIPS", "Relationships are tracked in front matter.")
 	content = replaceTemplateSection(content, "DEPENDENCIES", "References are tracked in front matter.")
 	updated, _, err := document.UpsertMetadata(content, document.TypeSpec, document.MetadataUpsert{
-		Feature: feature,
+		Feature:         feature,
+		WorkflowVersion: 2,
+		Phase:           "clarify",
 	})
 	if err != nil {
 		return content
@@ -219,58 +222,60 @@ func replaceTemplateSection(content, sectionName, sectionBody string) string {
 	return strings.Join(updatedLines, "\n")
 }
 
-// Spec template per spec section 6.2
+// Spec template for the v2 single-artifact workflow.
 const Spec = `# SPEC
 
-## SUMMARY
+## THESIS
 
-<!-- TODO: 1-2 sentence business summary of this feature -->
+<!-- TODO: capture the original idea, problem statement, or feature thesis in the user's terms -->
 
-## PROBLEM
+## CONTEXT
 
-<!-- TODO: describe the problem being solved -->
+<!-- TODO: record repo-grounded research findings, relevant files, references, relationships, and constraints -->
 
-## GOALS
+## CLARIFICATIONS
 
-<!-- TODO: list what this feature must achieve -->
-
-## NON-GOALS
-
-<!-- TODO: list what this feature will not do -->
-
-## USERS
-
-<!-- TODO: identify who will use this feature -->
-
-## SKILLS
-
-| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |
-| ----- | ------ | ---- | ------- | -------- |
-| none | n/a | n/a | no additional skills required | no |
-
-## RELATIONSHIPS
-
-none
-
-## DEPENDENCIES
-
-References are tracked in front matter.
+<!-- TODO: record clarification questions, answers, accepted defaults, rejected assumptions, and current confidence -->
 
 ## REQUIREMENTS
 
-<!-- TODO: list functional requirements -->
+<!-- TODO: list clarified requirements and non-goals with stable identifiers when useful -->
 
-## ACCEPTANCE
+## ASSUMPTIONS
 
-<!-- TODO: define acceptance criteria -->
+<!-- TODO: list accepted assumptions, removed assumptions, and any assumption that still blocks progress -->
 
-## EDGE-CASES
+## ACCEPTANCE CRITERIA
 
-<!-- TODO: document edge cases and how they should be handled -->
+<!-- TODO: define binary-verifiable acceptance criteria that can be mapped 1:1 to validation evidence -->
 
-## OPEN-QUESTIONS
+## IMPLEMENTATION PLAN
 
-<!-- TODO: list unresolved questions -->
+<!-- TODO: document the planned implementation approach, touched areas, risks, and rollback strategy -->
+
+## TASK CHECKLIST
+
+<!-- TODO: keep a concise durable checklist mapping tasks to lanes, acceptance criteria, status, and evidence -->
+
+## VALIDATION MAP
+
+<!-- TODO: map each acceptance criterion to exact tests, checks, runtime proof, documentation review, and evidence links -->
+
+## REFLECTION NOTES
+
+<!-- TODO: record post-implementation review findings, fixes, remaining risks, and confidence -->
+
+## DOCUMENTATION UPDATES
+
+<!-- TODO: list affected docs and whether each has been updated, verified, or intentionally left unchanged -->
+
+## DELIVERY DECISION
+
+<!-- TODO: record delivery intent, delivery lane, issue/branch/PR decision, and delivery hard-gate status -->
+
+## EVIDENCE
+
+<!-- TODO: summarize validation evidence and link detailed logs or run artifacts such as .kit/runs entries -->
 `
 
 // Plan template per spec section 6.3

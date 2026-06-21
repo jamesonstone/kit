@@ -4,10 +4,10 @@ const sharedRepositoryInstructionsCore = `## Source of truth
 
 - Primary authority for repository workflow, constraints, and change policy: ` + "`docs/CONSTITUTION.md`" + `
 - Feature specs live under: ` + "`docs/specs/<feature>/`" + `
-  - ` + "`BRAINSTORM.md`" + ` (optional research)
-  - ` + "`SPEC.md`" + ` (requirements)
-  - ` + "`PLAN.md`" + ` (implementation plan)
-  - ` + "`TASKS.md`" + ` (executable task list)
+  - ` + "`SPEC.md`" + ` (v2 workflow artifact: requirements, plan, task checklist, validation, reflection, delivery, evidence)
+  - ` + "`BRAINSTORM.md`" + ` (optional legacy staged research)
+  - ` + "`PLAN.md`" + ` (optional legacy staged implementation plan)
+  - ` + "`TASKS.md`" + ` (optional legacy staged executable task list)
   - ` + "`ANALYSIS.md`" + ` (optional, analysis scratchpad)
 - Keep repository instruction files aligned with the canonical docs: ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, ` + "`.github/copilot-instructions.md`" + `
 
@@ -41,7 +41,7 @@ Classify each request before implementation.
 
 Use when any apply:
 
-- request initiated through ` + "`kit brainstorm`" + ` or ` + "`kit spec`" + `
+- request initiated through ` + "`kit spec`" + ` or explicit legacy staged ` + "`kit legacy`" + ` commands
 - new feature or capability
 - substantial architectural or behavioral change
 - work touches code with existing feature specs under ` + "`docs/specs/<feature>/`" + `
@@ -49,13 +49,14 @@ Use when any apply:
 
 Required flow:
 
-- follow optional research + artifact pipeline: ` + "`BRAINSTORM.md`" + ` → ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + ` → implementation → reflection
+- use the v2 single-` + "`SPEC.md`" + ` workflow by default: clarify → ready → implement → validate → reflect → deliver → complete inside ` + "`SPEC.md`" + `
+- treat legacy ` + "`BRAINSTORM.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` as historical context unless the user explicitly chooses a legacy staged command
 
 ### 2) Ad Hoc (Lightweight Track)
 
 Use when all apply:
 
-- not initiated through ` + "`kit brainstorm`" + ` or ` + "`kit spec`" + `
+- not initiated through ` + "`kit spec`" + ` or explicit legacy staged ` + "`kit legacy`" + ` commands
 - bug fix, security review, refactor, dependency update, config change, or small refinement
 - scope is contained and can be verified directly
 
@@ -69,7 +70,8 @@ Required flow:
 
 If ad hoc work touches a feature with existing specs:
 
-- default to updating ` + "`SPEC.md`" + ` / ` + "`PLAN.md`" + ` / ` + "`TASKS.md`" + ` when behavior, requirements, or approach changes
+- default to updating ` + "`SPEC.md`" + ` when behavior, requirements, approach, validation, reflection, documentation, or delivery state changes
+- update legacy staged artifacts only when the user explicitly chooses a legacy staged flow or the historical artifact would otherwise mislead future work
 - skip spec updates only for mechanical edits (formatting, typo, dependency bump)
 
 ## Multi-feature rule
@@ -79,7 +81,8 @@ If ad hoc work touches a feature with existing specs:
 
 ## Document Completeness
 
-- For ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + `, every required section must be populated
+- For v2 feature work, every required ` + "`SPEC.md`" + ` section must be populated
+- For legacy staged workflows, every required section in the active staged artifact must be populated
 - Do not leave HTML TODO comments as the only content in a section
 - If a section has no additional detail, replace the placeholder comment with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + `
 
@@ -98,12 +101,13 @@ If ad hoc work touches a feature with existing specs:
 
 ---
 
-## Workflow: Plan → Act → Reflect (Spec-Driven Track)
+## Workflow: Clarify → Act → Validate → Reflect (Spec-Driven Track)
 
 ### Phase 1: PLAN
 
 - Locate the relevant feature directory in ` + "`docs/specs/<feature>/`" + `
-- Read ` + "`BRAINSTORM.md`" + ` when present, then ` + "`SPEC.md`" + ` → ` + "`PLAN.md`" + ` → ` + "`TASKS.md`" + `
+- Read ` + "`SPEC.md`" + ` first for v2 feature work
+- Use ` + "`BRAINSTORM.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` only as legacy staged context when they materially affect the current decision
 
 - Ask clarifying questions until you reach ≥95% confidence that you understand the problem and desired solution
 - Use numbered lists
@@ -129,9 +133,10 @@ If ad hoc work touches a feature with existing specs:
 
 ### Phase 2: ACT
 
-- Before writing code for spec-driven work, run an implementation readiness gate: adversarially challenge ` + "`CONSTITUTION.md`" + `, optional ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, and scope creep. If the gate fails, update docs first, then code.
-- Implement tasks strictly in order from ` + "`TASKS.md`" + `
-- When a selected task declares ` + "`VERIFY`" + ` commands, prefer ` + "`kit verify <feature> --task <task-id>`" + ` and cite the resulting run evidence before marking the task complete
+- Before writing code for spec-driven work, run the v2 readiness gates: adversarially challenge ` + "`CONSTITUTION.md`" + ` and ` + "`SPEC.md`" + ` for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, validation gaps, delivery ambiguity, and scope creep. If a gate fails, update ` + "`SPEC.md`" + ` first, then continue.
+- Implement tasks from the ` + "`SPEC.md`" + ` task checklist and keep task status current there
+- Map validation 1:1 to ` + "`SPEC.md`" + ` acceptance criteria and record evidence in ` + "`SPEC.md`" + `
+- Legacy staged flows may still use ` + "`TASKS.md`" + ` and ` + "`kit legacy verify <feature> --task <task-id>`" + ` evidence when those artifacts are active
 - Follow all code style guidelines and architectural standards
 - Ensure explicit error handling and input validation
 - Add or update tests required by the plan

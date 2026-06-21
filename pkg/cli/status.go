@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -17,10 +18,10 @@ var statusCmd = &cobra.Command{
 	Long: `Display the active feature's status, including:
   - Feature name and ID
   - Business summary from SPEC.md
-  - Current lifecycle step and paused state
-  - Remaining workflow steps
-  - File existence (BRAINSTORM, SPEC, PLAN, TASKS)
-  - Task completion progress (from markdown checkboxes)
+  - Current v2 SPEC.md phase and paused state
+  - Remaining workflow work
+  - File existence (SPEC plus optional legacy artifacts)
+  - Legacy task completion progress when TASKS.md is present
   - Suggested next action
 
 Output is optimized for coding agents to quickly understand
@@ -257,17 +258,38 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 		return fmt.Sprintf("Create specification from brainstorm: run `kit spec %s`", status.Name)
 	}
 
-	// check files in order
 	if !status.Files["spec"].Exists {
-		return fmt.Sprintf("Start research with `kit brainstorm %s` or create specification directly with `kit spec %s`", status.Name, status.Name)
+		return fmt.Sprintf("Start v2 workflow with `kit spec %s`; use `kit legacy brainstorm %s` only for staged migration research", status.Name, status.Name)
 	}
 
+	if statusUsesV2Workflow(status) {
+		switch status.Phase {
+		case feature.PhaseClarify:
+			return "Continue v2 clarification in SPEC.md until unresolved questions are 0 and acceptance criteria are binary-verifiable"
+		case feature.PhaseReady:
+			return "Begin v2 implementation from the SPEC.md implementation plan and task checklist"
+		case feature.PhaseImplement:
+			return "Continue v2 implementation and keep SPEC.md task status current"
+		case feature.PhaseValidate:
+			return "Run validation mapped 1:1 to SPEC.md acceptance criteria and record evidence"
+		case feature.PhaseReflect:
+			return "Record reflection notes, documentation sync status, and remaining risks in SPEC.md"
+		case feature.PhaseDeliver:
+			return fmt.Sprintf("Delivery gate is ready. Complete the feature with `kit complete %s` after any requested delivery mutation is resolved", status.Name)
+		case feature.PhaseBlocked:
+			return "Feature is blocked. Resolve the blocker recorded in SPEC.md or ask the user for the missing decision"
+		case feature.PhaseComplete:
+			return "Feature is complete"
+		}
+	}
+
+	// Legacy staged fallback.
 	if !status.Files["plan"].Exists {
-		return fmt.Sprintf("Create implementation plan: run `kit plan %s`", status.Name)
+		return fmt.Sprintf("Legacy staged feature: create implementation plan with `kit legacy plan %s`", status.Name)
 	}
 
 	if !status.Files["tasks"].Exists {
-		return fmt.Sprintf("Create task list: run `kit tasks %s`", status.Name)
+		return fmt.Sprintf("Legacy staged feature: create task list with `kit legacy tasks %s`", status.Name)
 	}
 
 	// tasks exist, check progress
@@ -276,9 +298,24 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 		if incomplete > 0 {
 			return fmt.Sprintf("Complete %d remaining task(s) in %s", incomplete, status.Files["tasks"].Path)
 		}
-		return fmt.Sprintf("All tasks are marked complete. If coding has not started, run `kit implement %s` to pass the implementation readiness gate; otherwise review and verify implementation.", status.Name)
+		return fmt.Sprintf("All tasks are marked complete. If legacy staged coding has not started, run `kit legacy implement %s`; otherwise review and validate implementation.", status.Name)
 	}
 
 	// tasks file exists but no checkboxes found
 	return fmt.Sprintf("Define tasks with markdown checkboxes in %s", status.Files["tasks"].Path)
+}
+
+func statusUsesV2Workflow(status *feature.FeatureStatus) bool {
+	if status == nil || status.Files == nil {
+		return false
+	}
+	spec, ok := status.Files["spec"]
+	if !ok || !spec.Exists {
+		return false
+	}
+	doc, err := document.ParseFile(spec.Path, document.TypeSpec)
+	if err != nil {
+		return false
+	}
+	return doc.Metadata != nil && doc.Metadata.WorkflowVersion == 2
 }

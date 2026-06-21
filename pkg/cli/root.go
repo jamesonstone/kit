@@ -12,9 +12,9 @@ var Version = "dev"
 
 var rootCmd = &cobra.Command{
 	Use:   "kit",
-	Short: "🧰 Kit is a general-purpose harness for thought work",
+	Short: "🧰 Kit v2 is a general-purpose harness for thought work",
 	Long: banner() + `
-Kit is a general-purpose harness for disciplined thought work.
+Kit v2 is a general-purpose harness for disciplined thought work.
 Its strongest engine is a document-first, spec-driven workflow, but the
 harness also supports ad hoc execution, catch-up, handoff, summarization,
 review, and orchestration.

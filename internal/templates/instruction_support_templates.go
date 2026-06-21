@@ -92,7 +92,8 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 
 ## Completion Bar
 
-- Populate all required sections in ` + "`BRAINSTORM.md`" + `, ` + "`SPEC.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + `
+- For v2 feature work, populate all required ` + "`SPEC.md`" + ` sections and keep front matter ` + "`workflow_version`" + `, ` + "`phase`" + `, references, relationships, and skills current
+- For legacy staged workflows, populate all required sections in the staged artifact being used
 - Replace placeholder-only sections with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + `
 - Always update affected documentation and ensure touched docs are current and properly formatted before calling work complete
 - Never claim tests passed unless they ran
@@ -145,7 +146,7 @@ const referencesTesting = `# Testing Reference
 ## Purpose
 
 - Record durable repo-wide testing guidance that is broader than one feature
-- Keep feature-specific testing details in the current feature's ` + "`PLAN.md`" + ` or ` + "`TASKS.md`" + `
+- Keep feature-specific testing details in the current feature's ` + "`SPEC.md`" + ` Validation Map and Evidence sections; legacy staged flows may still use ` + "`PLAN.md`" + ` or ` + "`TASKS.md`" + `
 
 ## Current State
 

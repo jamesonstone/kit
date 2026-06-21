@@ -10,16 +10,12 @@ import (
 
 func TestBuiltInDynamicPromptsDeclareContextRequirements(t *testing.T) {
 	dynamic := map[string]bool{
-		"workflow brainstorm": true,
-		"workflow spec":       true,
-		"workflow plan":       true,
-		"workflow tasks":      true,
-		"workflow implement":  true,
-		"workflow reflect":    true,
-		"support resume":      true,
-		"support reconcile":   true,
-		"support dispatch":    true,
-		"skill mine":          true,
+		"kit spec":          true,
+		"workflow spec":     true,
+		"support resume":    true,
+		"support reconcile": true,
+		"support dispatch":  true,
+		"skill mine":        true,
 	}
 
 	for _, prompt := range builtInKitPromptSource().Prompts {
@@ -44,7 +40,7 @@ func TestActivePromptFeatureContextInfersNewestActiveFeature(t *testing.T) {
 	writePromptContextFeatureDocs(t, featurePath, true)
 	setWorkingDirectory(t, projectRoot)
 
-	ctx, err := activePromptFeatureContext("workflow implement", "SPEC.md", "PLAN.md", "TASKS.md")
+	ctx, err := activePromptFeatureContext("workflow spec", "SPEC.md")
 	if err != nil {
 		t.Fatalf("activePromptFeatureContext() error = %v", err)
 	}
@@ -67,7 +63,7 @@ func TestActivePromptFeatureContextCapturesMissingFeatureThroughEditor(t *testin
 	var ctx *promptFeatureContext
 	output := withStdin(t, "y\n", func() string {
 		var err error
-		ctx, err = activePromptFeatureContext("workflow implement", "SPEC.md", "PLAN.md", "TASKS.md")
+		ctx, err = activePromptFeatureContext("workflow spec", "SPEC.md")
 		if err != nil {
 			t.Fatalf("activePromptFeatureContext() error = %v", err)
 		}
@@ -141,21 +137,6 @@ func TestRenderSupportDispatchPromptUsesEditorContext(t *testing.T) {
 	})
 }
 
-func TestRenderWorkflowImplementPromptInfersActiveFeature(t *testing.T) {
-	projectRoot := newPromptContextProject(t)
-	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-alpha")
-	writePromptContextFeatureDocs(t, featurePath, true)
-	setWorkingDirectory(t, projectRoot)
-
-	rendered, err := renderWorkflowImplementPrompt()
-	if err != nil {
-		t.Fatalf("renderWorkflowImplementPrompt() error = %v", err)
-	}
-	if !strings.Contains(rendered, "You are implementing the feature: alpha") {
-		t.Fatalf("expected implementation prompt for alpha, got %q", rendered)
-	}
-}
-
 func TestRenderWorkflowSpecPromptInfersActiveFeature(t *testing.T) {
 	projectRoot := newPromptContextProject(t)
 	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-alpha")
@@ -166,47 +147,13 @@ func TestRenderWorkflowSpecPromptInfersActiveFeature(t *testing.T) {
 	if err != nil {
 		t.Fatalf("renderWorkflowSpecPrompt() error = %v", err)
 	}
-	if !strings.Contains(rendered, "Please review and complete the specification") {
-		t.Fatalf("expected specification prompt, got %q", rendered)
+	assertV2SpecPromptContract(t, rendered)
+	assertV2SpecPromptExcludesV1StageAssumptions(t, rendered)
+	if !strings.Contains(rendered, "Kit v2 `kit spec` workflow for feature `alpha`") {
+		t.Fatalf("expected feature slug in v2 specification prompt, got %q", rendered)
 	}
-	if !strings.Contains(rendered, "This is a new feature: alpha") {
-		t.Fatalf("expected feature slug in specification prompt, got %q", rendered)
-	}
-}
-
-func TestRenderWorkflowPlanPromptInfersActiveFeature(t *testing.T) {
-	projectRoot := newPromptContextProject(t)
-	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-alpha")
-	writePromptContextFeatureDocs(t, featurePath, true)
-	setWorkingDirectory(t, projectRoot)
-
-	rendered, err := renderWorkflowPlanPrompt()
-	if err != nil {
-		t.Fatalf("renderWorkflowPlanPrompt() error = %v", err)
-	}
-	if !strings.Contains(rendered, "Please review and complete the implementation plan.") {
-		t.Fatalf("expected implementation plan prompt, got %q", rendered)
-	}
-	if !strings.Contains(rendered, "| Feature | alpha |") {
-		t.Fatalf("expected feature slug in plan prompt, got %q", rendered)
-	}
-}
-
-func TestRenderWorkflowTasksPromptInfersActiveFeature(t *testing.T) {
-	projectRoot := newPromptContextProject(t)
-	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-alpha")
-	writePromptContextFeatureDocs(t, featurePath, true)
-	setWorkingDirectory(t, projectRoot)
-
-	rendered, err := renderWorkflowTasksPrompt()
-	if err != nil {
-		t.Fatalf("renderWorkflowTasksPrompt() error = %v", err)
-	}
-	if !strings.Contains(rendered, "Please review and complete the task plan.") {
-		t.Fatalf("expected task plan prompt, got %q", rendered)
-	}
-	if !strings.Contains(rendered, "| Feature | alpha |") {
-		t.Fatalf("expected feature slug in tasks prompt, got %q", rendered)
+	if strings.Contains(rendered, "## Subagent Orchestration") {
+		t.Fatalf("workflow spec prompt should not append generic subagent guidance, got %q", rendered)
 	}
 }
 

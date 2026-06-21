@@ -39,7 +39,7 @@
 - `docs/agents/TOOLING.md` — skills, dispatch, project-directory workflow, and secondary global inputs
 - `docs/agents/GUARDRAILS.md` — completion bar, safety rules, and validation expectations
 - `docs/references/README.md` — durable repo-local references that are broader than one feature
-- `docs/specs/<feature>/` — feature-level source of truth for requirements, plans, and tasks
+- `docs/specs/<feature>/SPEC.md` — v2 feature source of truth for requirements, plan, tasks, validation, reflection, delivery, and evidence
 
 ## Constraints
 

@@ -169,8 +169,8 @@ func TestBuildProjectMap_IncludesDocumentMetadata(t *testing.T) {
 	if !docs[1].Exists || !docs[1].Required {
 		t.Fatalf("spec metadata = %+v, want required present document", docs[1])
 	}
-	if docs[2].Exists || !docs[2].Required {
-		t.Fatalf("plan metadata = %+v, want required missing document", docs[2])
+	if docs[2].Exists || docs[2].Required {
+		t.Fatalf("plan metadata = %+v, want optional missing document", docs[2])
 	}
 }
 

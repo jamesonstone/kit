@@ -96,7 +96,7 @@ func selectFeatureForMap(specsDir string, cfg *config.Config, input io.Reader, o
 		return nil, err
 	}
 	if len(features) == 0 {
-		return nil, fmt.Errorf("no features found\n\nRun 'kit brainstorm' or 'kit spec <feature>' to start a feature")
+		return nil, fmt.Errorf("no features found\n\nRun 'kit spec <feature>' to start a v2 feature, or 'kit legacy brainstorm' for staged migration work")
 	}
 
 	printSelectionHeaderTo(output, "Select a feature to map:")
@@ -325,10 +325,10 @@ func outputGlobalDocs(out io.Writer, style humanOutputStyle, glyphs mapGlyphs, d
 func outputFeatureDocKey(out io.Writer, style humanOutputStyle, glyphs mapGlyphs) {
 	_, _ = fmt.Fprintln(out, style.label("Feature Doc Key"))
 	rows := []string{
-		fmt.Sprintf("%s = BRAINSTORM.md [%s] via %s", mapDocKey(style, "B"), mapRequiredOptional(style, false), mapManagedBy(style, "kit brainstorm")),
+		fmt.Sprintf("%s = BRAINSTORM.md [%s] via %s", mapDocKey(style, "B"), mapRequiredOptional(style, false), mapManagedBy(style, "kit legacy brainstorm")),
 		fmt.Sprintf("%s = SPEC.md [%s] via %s", mapDocKey(style, "S"), mapRequiredOptional(style, true), mapManagedBy(style, "kit spec")),
-		fmt.Sprintf("%s = PLAN.md [%s] via %s", mapDocKey(style, "P"), mapRequiredOptional(style, true), mapManagedBy(style, "kit plan")),
-		fmt.Sprintf("%s = TASKS.md [%s] via %s", mapDocKey(style, "T"), mapRequiredOptional(style, true), mapManagedBy(style, "kit tasks")),
+		fmt.Sprintf("%s = PLAN.md [%s] via %s", mapDocKey(style, "P"), mapRequiredOptional(style, false), mapManagedBy(style, "kit legacy plan")),
+		fmt.Sprintf("%s = TASKS.md [%s] via %s", mapDocKey(style, "T"), mapRequiredOptional(style, false), mapManagedBy(style, "kit legacy tasks")),
 		fmt.Sprintf("%s = ANALYSIS.md [%s] via %s", mapDocKey(style, "A"), mapRequiredOptional(style, false), mapManagedBy(style, "manual / agent-authored")),
 		fmt.Sprintf("%s present  %s missing", mapPresenceMarker(style, glyphs, true), mapPresenceMarker(style, glyphs, false)),
 	}
@@ -977,13 +977,15 @@ func mapLifecycleLine(style humanOutputStyle) string {
 		mapDocumentPath(style, feature.MapDocument{Name: "CONSTITUTION.md", Path: "CONSTITUTION.md"}),
 		mapDocumentPath(style, feature.MapDocument{Name: "BRAINSTORM.md", Path: "BRAINSTORM.md"}) + mapMutedIfEnabled(style, " (optional)"),
 		mapDocumentPath(style, feature.MapDocument{Name: "SPEC.md", Path: "SPEC.md"}),
-		mapDocumentPath(style, feature.MapDocument{Name: "PLAN.md", Path: "PLAN.md"}),
-		mapDocumentPath(style, feature.MapDocument{Name: "TASKS.md", Path: "TASKS.md"}),
+		mapUnresolvedLabel(style, "clarify"),
+		mapUnresolvedLabel(style, "ready"),
 		mapUnresolvedLabel(style, "implement"),
+		mapUnresolvedLabel(style, "validate"),
 		reflect + "reflect" + reset,
+		mapUnresolvedLabel(style, "deliver"),
 	}
 	if !style.enabled {
-		parts = []string{"CONSTITUTION.md", "BRAINSTORM.md (optional)", "SPEC.md", "PLAN.md", "TASKS.md", "implement", "reflect"}
+		parts = []string{"CONSTITUTION.md", "BRAINSTORM.md (optional)", "SPEC.md", "clarify", "ready", "implement", "validate", "reflect", "deliver"}
 	}
 	return strings.Join(parts, " -> ")
 }

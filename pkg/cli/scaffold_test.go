@@ -53,7 +53,7 @@ func TestRunBrainstormPrepareCreatesScaffoldWithoutPrompt(t *testing.T) {
 	}
 }
 
-func TestScaffoldWorkflowSubcommandsCreatePhaseFiles(t *testing.T) {
+func TestScaffoldWorkflowSubcommandCreatesV2SpecScaffold(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
 	if err != nil {
@@ -70,60 +70,18 @@ func TestScaffoldWorkflowSubcommandsCreatePhaseFiles(t *testing.T) {
 	}
 	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-sample-feature")
 	assertFileExists(t, filepath.Join(featurePath, "SPEC.md"))
-
-	if _, err := scaffoldPlanWorkflow("sample-feature"); err != nil {
-		t.Fatalf("scaffoldPlanWorkflow() error = %v", err)
+	assertFileExists(t, filepath.Join(projectRoot, "docs", "notes", "0001-sample-feature", ".gitkeep"))
+	if _, err := os.Stat(filepath.Join(featurePath, "PLAN.md")); !os.IsNotExist(err) {
+		t.Fatalf("scaffold spec should not create PLAN.md, stat err=%v", err)
 	}
-	assertFileExists(t, filepath.Join(featurePath, "PLAN.md"))
-
-	if _, err := scaffoldTasksWorkflow("sample-feature"); err != nil {
-		t.Fatalf("scaffoldTasksWorkflow() error = %v", err)
-	}
-	assertFileExists(t, filepath.Join(featurePath, "TASKS.md"))
-}
-
-func TestScaffoldPlanRequiresSpec(t *testing.T) {
-	projectRoot, _ := setupLifecycleTestProject(t)
-	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
-	if err != nil {
-		t.Fatalf("ensureHandoffTestWorkingDirectory() error = %v", err)
-	}
-	defer restoreWD()
-
-	if err := os.MkdirAll(filepath.Join(projectRoot, "docs", "specs", "0001-sample"), 0755); err != nil {
-		t.Fatalf("os.MkdirAll() error = %v", err)
-	}
-
-	_, err = scaffoldPlanWorkflow("sample")
-	if err == nil || !strings.Contains(err.Error(), "SPEC.md not found") {
-		t.Fatalf("expected missing SPEC.md error, got %v", err)
-	}
-}
-
-func TestScaffoldTasksRequiresPlan(t *testing.T) {
-	projectRoot, _ := setupLifecycleTestProject(t)
-	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
-	if err != nil {
-		t.Fatalf("ensureHandoffTestWorkingDirectory() error = %v", err)
-	}
-	defer restoreWD()
-
-	if _, err := scaffoldSpecWorkflow("sample"); err != nil {
-		t.Fatalf("scaffoldSpecWorkflow() error = %v", err)
-	}
-
-	_, err = scaffoldTasksWorkflow("sample")
-	if err == nil || !strings.Contains(err.Error(), "PLAN.md not found") {
-		t.Fatalf("expected missing PLAN.md error, got %v", err)
+	if _, err := os.Stat(filepath.Join(featurePath, "TASKS.md")); !os.IsNotExist(err) {
+		t.Fatalf("scaffold spec should not create TASKS.md, stat err=%v", err)
 	}
 }
 
 func TestScaffoldCommandRegistersWorkflowSubcommands(t *testing.T) {
 	for _, args := range [][]string{
-		{"scaffold", "brainstorm"},
 		{"scaffold", "spec"},
-		{"scaffold", "plan"},
-		{"scaffold", "tasks"},
 		{"scaffold", "agents"},
 	} {
 		cmd, _, err := rootCmd.Find(args)
@@ -132,6 +90,16 @@ func TestScaffoldCommandRegistersWorkflowSubcommands(t *testing.T) {
 		}
 		if cmd == nil || cmd.Hidden {
 			t.Fatalf("expected visible command for %v", args)
+		}
+	}
+	for _, args := range [][]string{
+		{"scaffold", "brainstorm"},
+		{"scaffold", "plan"},
+		{"scaffold", "tasks"},
+	} {
+		cmd, _, err := rootCmd.Find(args)
+		if err == nil && cmd != nil && cmd.CommandPath() == "kit "+strings.Join(args, " ") {
+			t.Fatalf("expected %v to be removed from primary scaffold namespace", args)
 		}
 	}
 }

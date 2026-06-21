@@ -2,9 +2,12 @@ package cli
 
 import (
 	"bytes"
+	"regexp"
 	"strings"
 	"testing"
 )
+
+var ansiEscapeRE = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 	previousOut := rootCmd.OutOrStdout()
@@ -24,13 +27,21 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		t.Fatalf("rootCmd.Execute() error = %v", err)
 	}
 
-	content := out.String()
+	content := stripANSI(out.String())
 	checks := []string{
 		"Setup",
 		"Workflow",
 		"Inspect & Repair",
 		"Prompt Utilities",
 		"Utilities",
+		"V2 Feature Workflow",
+		"kit spec <feature>",
+		"SPEC.md: clarify",
+		"Durable Artifacts",
+		"v2 feature artifact",
+		"legacy v1 staged artifacts",
+		"legacy",
+		"List deprecated v1 staged workflow commands",
 		"scaffold",
 		"prompt",
 		"set",
@@ -57,10 +68,29 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"\n  review-loop ",
 		"\n  scaffold-agents ",
 		"\n  rollup ",
+		"\n  brainstorm ",
+		"\n  plan ",
+		"\n  tasks ",
+		"\n  implement ",
+		"\n  reflect ",
+		"\n  verify ",
 	}
 	for _, check := range hiddenChecks {
 		if strings.Contains(content, check) {
 			t.Fatalf("expected root help to omit hidden command %q, got %q", check, content)
+		}
+	}
+
+	staleWorkflowChecks := []string{
+		"Optional Research Step",
+		"Artifact Pipeline",
+		"Specification │ ─▶ │ Plan",
+		"Tasks │ ─▶ │ Implementation",
+		"Reflection     — verify correctness",
+	}
+	for _, check := range staleWorkflowChecks {
+		if strings.Contains(content, check) {
+			t.Fatalf("expected root help to omit stale v1 workflow text %q, got %q", check, content)
 		}
 	}
 }
@@ -73,11 +103,36 @@ func TestRemovedCompatibilityCommandsAreNotRegistered(t *testing.T) {
 		{"catchup"},
 		{"rollup"},
 		{"review-loop"},
+		{"brainstorm"},
+		{"plan"},
+		{"tasks"},
+		{"implement"},
+		{"reflect"},
+		{"verify"},
 	}
 
 	for _, args := range removed {
 		if cmd, _, err := rootCmd.Find(args); err == nil && cmd != nil && cmd.CommandPath() == "kit "+strings.Join(args, " ") {
 			t.Fatalf("expected %q to be removed", strings.Join(args, " "))
+		}
+	}
+}
+
+func TestLegacyNamespaceCommandsAreRegistered(t *testing.T) {
+	for _, args := range [][]string{
+		{"legacy", "brainstorm"},
+		{"legacy", "plan"},
+		{"legacy", "tasks"},
+		{"legacy", "implement"},
+		{"legacy", "reflect"},
+		{"legacy", "verify"},
+	} {
+		cmd, _, err := rootCmd.Find(args)
+		if err != nil {
+			t.Fatalf("rootCmd.Find(%v) error = %v", args, err)
+		}
+		if cmd == nil || cmd.CommandPath() != "kit "+strings.Join(args, " ") {
+			t.Fatalf("expected %q to be registered, got %#v", strings.Join(args, " "), cmd)
 		}
 	}
 }
@@ -199,4 +254,8 @@ func TestBrainstormPickupFlagIsRemoved(t *testing.T) {
 	if flag := brainstormCmd.Flags().Lookup("pickup"); flag != nil {
 		t.Fatalf("expected brainstorm pickup flag to be removed, got %#v", flag)
 	}
+}
+
+func stripANSI(input string) string {
+	return ansiEscapeRE.ReplaceAllString(input, "")
 }

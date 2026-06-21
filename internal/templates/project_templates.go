@@ -44,7 +44,7 @@ const ProjectProgressSummary = `# PROJECT PROGRESS SUMMARY
 
 ## PROJECT INTENT
 
-Kit is a document-first workflow harness for disciplined thought work. It keeps durable project context in canonical markdown artifacts so humans and coding agents can move from research to specification, planning, tasks, implementation, reflection, and completion with explicit traceability.
+Kit is a document-first workflow harness for disciplined thought work. It keeps durable project context in canonical markdown artifacts so humans and coding agents can move from idea to v2 SPEC.md, clarification, implementation, validation, reflection, delivery, and completion with explicit traceability.
 
 ## GLOBAL CONSTRAINTS
 
@@ -67,5 +67,5 @@ const FeatureSummaryTemplate = `### {{.FeatureName}}
 - **INTENT**: {{.Intent}}
 - **APPROACH**: {{.Approach}}
 - **OPEN ITEMS**: {{.OpenItems}}
-- **POINTERS**: ` + "`{{.Path}}/SPEC.md`" + `, ` + "`{{.Path}}/PLAN.md`" + `, ` + "`{{.Path}}/TASKS.md`" + `
+- **POINTERS**: ` + "`{{.Path}}/SPEC.md`" + `
 `

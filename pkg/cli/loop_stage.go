@@ -9,16 +9,18 @@ import (
 
 func parseLoopStage(value string) (loopStage, error) {
 	switch loopStage(strings.ToLower(strings.TrimSpace(value))) {
-	case loopStageSpec:
-		return loopStageSpec, nil
-	case loopStagePlan:
-		return loopStagePlan, nil
-	case loopStageTasks:
-		return loopStageTasks, nil
+	case "spec", loopStageClarify:
+		return loopStageClarify, nil
+	case loopStageReady:
+		return loopStageReady, nil
 	case loopStageImplement:
 		return loopStageImplement, nil
+	case loopStageValidate:
+		return loopStageValidate, nil
 	case loopStageReflect:
 		return loopStageReflect, nil
+	case loopStageDeliver:
+		return loopStageDeliver, nil
 	case loopStageComplete:
 		return loopStageComplete, nil
 	default:
@@ -32,18 +34,22 @@ func loopTargetComplete(current, until loopStage) bool {
 
 func loopStageRank(stage loopStage) int {
 	switch stage {
-	case loopStageSpec:
+	case loopStageClarify:
 		return 1
-	case loopStagePlan:
+	case loopStageReady:
 		return 2
-	case loopStageTasks:
-		return 3
 	case loopStageImplement:
+		return 3
+	case loopStageValidate:
 		return 4
 	case loopStageReflect:
 		return 5
-	case loopStageComplete:
+	case loopStageDeliver:
 		return 6
+	case loopStageComplete:
+		return 7
+	case loopStageBlocked:
+		return -1
 	default:
 		return 0
 	}

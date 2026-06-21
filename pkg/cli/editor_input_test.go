@@ -124,9 +124,9 @@ func TestFreeTextInputConfig_InlineOverridesDefaultEditor(t *testing.T) {
 }
 
 func TestInlineFlagRegisteredOnlyOnInlineCapableCommands(t *testing.T) {
-	brainstorm, _, err := rootCmd.Find([]string{"brainstorm"})
+	brainstorm, _, err := rootCmd.Find([]string{"legacy", "brainstorm"})
 	if err != nil {
-		t.Fatalf("rootCmd.Find(brainstorm) error = %v", err)
+		t.Fatalf("rootCmd.Find(legacy brainstorm) error = %v", err)
 	}
 	if brainstorm.Flags().Lookup("inline") == nil {
 		t.Fatal("expected brainstorm to expose --inline")

@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/jamesonstone/kit/internal/config"
 )
 
 func assertPromptGolden(t *testing.T, name, got string) {
@@ -42,6 +44,27 @@ func TestFeatureScopedSummarizeInstructions_Golden(t *testing.T) {
 		"summarize_feature_prompt.golden",
 		featureScopedSummarizeInstructions("/repo", "alpha", "/repo/docs/specs/0001-alpha"),
 	)
+}
+
+func TestBuildSpecV2SupervisorPrompt_Golden(t *testing.T) {
+	cfg := config.Default()
+	prompt := buildSpecV2SupervisorPrompt(specV2PromptInput{
+		SpecPath:       "/repo/docs/specs/0001-alpha/SPEC.md",
+		BrainstormPath: "/repo/docs/specs/0001-alpha/BRAINSTORM.md",
+		FeatureSlug:    "alpha",
+		ProjectRoot:    "/repo",
+		Config:         cfg,
+		Answers: &specAnswers{
+			Problem:        "Build the alpha workflow.",
+			Requirements:   "Keep the workflow deterministic.",
+			Acceptance:     "Acceptance criteria map to validation evidence.",
+			DeliveryIntent: "Use existing in-flight changes; defer PR until validation passes.",
+		},
+	})
+
+	assertPromptGolden(t, "spec_v2_supervisor_prompt.golden", prompt)
+	assertV2SpecPromptContract(t, prompt)
+	assertV2SpecPromptExcludesV1StageAssumptions(t, prompt)
 }
 
 func TestBuildReflectPrompt_Golden(t *testing.T) {

@@ -25,23 +25,31 @@ var promptSpecFeatureRef = readSpecFeatureRef
 
 var specCmd = &cobra.Command{
 	Use:   "spec [feature]",
-	Short: "Create or open a feature specification",
-	Long: `Create a new feature specification or open an existing one.
+	Short: "Run the v2 single-SPEC feature workflow",
+	Long: `Create or open the v2 single-SPEC feature workflow.
 
 Creates:
   - Feature directory (e.g., docs/specs/0001-my-feature/)
-  - SPEC.md with required sections and placeholder comments
+  - SPEC.md as the single durable feature workflow artifact
+  - Feature notes/reference-material directories for supporting inputs
 
 Updates PROJECT_PROGRESS_SUMMARY.md after creation.
 
-If no feature is specified, shows an interactive selection of pre-spec features.
-If there are no pre-spec features to select from, prompts for a new feature name
-and starts the interactive spec builder.
+If no feature is specified, shows an interactive selection of eligible existing
+feature directories that can enter the v2 SPEC.md workflow. If there are no
+eligible existing features to select from, prompts for a new feature name and
+starts the interactive spec builder.
+
+The generated prompt is the v2 supervisor contract. It keeps ideation,
+clarification, implementation planning, task tracking, implementation,
+validation, reflection, documentation updates, and delivery gating inside
+SPEC.md instead of requiring separate BRAINSTORM.md, PLAN.md, TASKS.md,
+implement, reflect, or standalone verification workflow commands.
 
 Modes:
-  Default:        Copy the generated prompt to the clipboard and show status (non-interactive)
+  Default:        Copy the v2 supervisor prompt to the clipboard and show status (non-interactive)
   --interactive:  Prompt user for spec details, opening $EDITOR for free-text answers by default
-  --template:     Output empty template without interactive questions (deprecated, same as default)
+  --template:     Output template prompt without interactive questions (deprecated, same as default)
 
 Flags:
   --output-only:  Output the raw prompt to stdout instead of copying it to the clipboard
@@ -149,7 +157,15 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	} else if !outputOnly {
 		fmt.Println("  ✓ SPEC.md already exists")
 	}
+	if changed, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName); err != nil {
+		return err
+	} else if changed && !outputOnly {
+		fmt.Println("  ✓ Updated SPEC.md for v2 workflow")
+	}
 	if effectivePromptProfile(feat.Path) == promptProfileFrontend {
+		if _, _, err := ensureFeatureDesignMaterialsDirs(projectRoot, feat.DirName); err != nil {
+			return err
+		}
 		if _, err := ensureFrontendProfileDependencyRows(specPath, document.TypeSpec, feat.DirName); err != nil {
 			return err
 		}
@@ -200,7 +216,7 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	}
 
 	// template mode: output the template and instructions
-	return runSpecTemplate(specPath, brainstormPath, feat.Slug, projectRoot, cfg, outputOnly)
+	return runSpecTemplate(specPath, brainstormPath, feat.Slug, projectRoot, cfg, outputOnly, false)
 }
 
 func runSpecPromptOnly(args []string, projectRoot string, cfg *config.Config, outputOnly bool) error {
@@ -230,11 +246,55 @@ func runSpecPromptOnly(args []string, projectRoot string, cfg *config.Config, ou
 	}
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
-	return runSpecTemplate(specPath, brainstormPath, feat.Slug, projectRoot, cfg, outputOnly)
+	return runSpecTemplate(specPath, brainstormPath, feat.Slug, projectRoot, cfg, outputOnly, true)
 }
 
 func ensureDir(path string) error {
 	return os.MkdirAll(path, 0755)
+}
+
+func ensureSpecV2Adoption(specPath, projectRoot, featureDirName string) (bool, error) {
+	before, err := os.ReadFile(specPath)
+	if err != nil {
+		return false, fmt.Errorf("failed to read %s: %w", specPath, err)
+	}
+
+	if err := document.MergeDocument(specPath, templates.Spec, document.TypeSpec); err != nil {
+		return false, fmt.Errorf("failed to add v2 SPEC.md sections to %s: %w", specPath, err)
+	}
+
+	afterMerge, err := os.ReadFile(specPath)
+	if err != nil {
+		return false, fmt.Errorf("failed to read %s after v2 section adoption: %w", specPath, err)
+	}
+
+	_, notesRelPath, err := ensureFeatureNotesDir(projectRoot, featureDirName)
+	if err != nil {
+		return false, err
+	}
+
+	phase := "clarify"
+	doc := document.Parse(string(afterMerge), specPath, document.TypeSpec)
+	if doc.Metadata != nil && doc.Metadata.WorkflowVersion == 2 && doc.Metadata.Phase != "" {
+		phase = doc.Metadata.Phase
+	}
+
+	updated, _, err := document.UpsertMetadata(string(afterMerge), document.TypeSpec, document.MetadataUpsert{
+		Feature:         document.FeatureMetadataFromDir(featureDirName),
+		WorkflowVersion: 2,
+		Phase:           phase,
+		References:      referencesForMetadataUpsert(string(afterMerge), document.TypeSpec, []document.MetadataReference{featureNotesReference(notesRelPath)}),
+	})
+	if err != nil {
+		return false, fmt.Errorf("failed to update v2 SPEC.md metadata in %s: %w", specPath, err)
+	}
+	if updated != string(afterMerge) {
+		if err := document.Write(specPath, updated); err != nil {
+			return false, fmt.Errorf("failed to write v2 SPEC.md metadata in %s: %w", specPath, err)
+		}
+	}
+
+	return string(before) != updated, nil
 }
 
 func readSpecFeatureRef() (string, error) {
@@ -245,7 +305,7 @@ func readSpecFeatureRef() (string, error) {
 	defer closeMultilineReadline(rl)
 
 	style := styleForStdout()
-	fmt.Println(style.muted("No pre-spec features found. Enter a feature/project name."))
+	fmt.Println(style.muted("No eligible v2 feature candidates found. Enter a feature/project name."))
 	fmt.Println(style.muted("It will be normalized to lowercase kebab-case and must be 5 words or fewer."))
 	featureRef := readLineRL(rl)
 	if featureRef == "" {

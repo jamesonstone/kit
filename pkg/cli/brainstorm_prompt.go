@@ -41,7 +41,7 @@ func outputExistingBrainstormPrompt(args []string, projectRoot string, cfg *conf
 
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
 	if !document.Exists(brainstormPath) {
-		return fmt.Errorf("BRAINSTORM.md not found for %s. Run 'kit brainstorm %s' first", feat.Slug, feat.Slug)
+		return fmt.Errorf("BRAINSTORM.md not found for %s. Run 'kit legacy brainstorm %s' first", feat.Slug, feat.Slug)
 	}
 
 	thesis := existingBrainstormThesis(brainstormPath)
@@ -86,7 +86,7 @@ func selectFeatureForBrainstormPromptOnly(specsDir string) (*feature.Feature, er
 	}
 
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no features with BRAINSTORM.md available\n\nRun 'kit brainstorm <feature>' first")
+		return nil, fmt.Errorf("no features with BRAINSTORM.md available\n\nRun 'kit legacy brainstorm <feature>' first")
 	}
 
 	printSelectionHeader("Select a feature to regenerate the brainstorm prompt for:")

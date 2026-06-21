@@ -23,8 +23,12 @@ var tasksOutputOnly bool
 
 var tasksCmd = &cobra.Command{
 	Use:   "tasks [feature]",
-	Short: "Create or open feature tasks",
-	Long: `Create a new task list for a feature.
+	Short: "Deprecated v1 staged workflow: create TASKS.md",
+	Long: `Deprecated v1 staged workflow: create a new task list for a feature.
+
+The default v2 feature workflow keeps the durable task checklist inside
+SPEC.md through the kit spec supervisor prompt. Use this command only when
+intentionally working in the legacy staged artifact flow.
 
 Creates:
   - TASKS.md with required sections, task table, and placeholder comments
@@ -45,7 +49,7 @@ func init() {
 	tasksCmd.Flags().BoolVar(&tasksCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	tasksCmd.Flags().BoolVar(&tasksOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	addPromptOnlyFlag(tasksCmd)
-	rootCmd.AddCommand(tasksCmd)
+	legacyCmd.AddCommand(tasksCmd)
 }
 
 func runTasks(cmd *cobra.Command, args []string) error {
@@ -120,7 +124,7 @@ func runTasks(cmd *cobra.Command, args []string) error {
 				fmt.Println("  ✓ Created PLAN.md (--force)")
 			}
 		} else {
-			return fmt.Errorf("PLAN.md not found. Run 'kit plan %s' first or use --force", feat.Slug)
+			return fmt.Errorf("PLAN.md not found. Run 'kit legacy plan %s' first or use --force", feat.Slug)
 		}
 	}
 
@@ -192,10 +196,10 @@ func runTasksPromptOnly(args []string, projectRoot string, cfg *config.Config, o
 		return fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first", feat.Slug)
 	}
 	if !document.Exists(filepath.Join(feat.Path, "PLAN.md")) {
-		return fmt.Errorf("PLAN.md not found. Run 'kit plan %s' first", feat.Slug)
+		return fmt.Errorf("PLAN.md not found. Run 'kit legacy plan %s' first", feat.Slug)
 	}
 	if !document.Exists(filepath.Join(feat.Path, "TASKS.md")) {
-		return fmt.Errorf("TASKS.md not found. Run 'kit tasks %s' first", feat.Slug)
+		return fmt.Errorf("TASKS.md not found. Run 'kit legacy tasks %s' first", feat.Slug)
 	}
 
 	return outputTasksPrompt(feat, projectRoot, cfg, outputOnly)
@@ -326,7 +330,7 @@ func selectFeatureForTasks(specsDir string) (*feature.Feature, error) {
 	}
 
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no features ready for tasks (need SPEC.md + PLAN.md without TASKS.md)\n\nRun 'kit plan <feature>' to create a plan first")
+		return nil, fmt.Errorf("no legacy staged features ready for tasks (need SPEC.md + PLAN.md without TASKS.md)\n\nRun 'kit legacy plan <feature>' to create a plan first")
 	}
 
 	printSelectionHeader("Select a feature to create tasks for:")
@@ -365,7 +369,7 @@ func selectFeatureForTasksPromptOnly(specsDir string) (*feature.Feature, error) 
 	}
 
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no task plans available to regenerate prompts for\n\nRun 'kit tasks <feature>' first")
+		return nil, fmt.Errorf("no task plans available to regenerate prompts for\n\nRun 'kit legacy tasks <feature>' first")
 	}
 
 	printSelectionHeader("Select a feature to regenerate the tasks prompt for:")

@@ -4,7 +4,7 @@
 
 - Use this file as a map, not the full manual
 - Start with `docs/agents/README.md` and then open only the linked docs needed for the current decision
-- Treat `docs/specs/<feature>/` as the feature system of record
+- Treat `docs/specs/<feature>/SPEC.md` as the v2 feature system of record
 - Use `docs/agents/RLM.md` when full-context loading would be noisy or wasteful
 - Keep context minimal and source-attributed
 
@@ -44,4 +44,4 @@
 - `docs/agents/TOOLING.md` — skills, dispatch, project-directory workflow, and secondary globals
 - `docs/agents/GUARDRAILS.md` — hard rules and completion bar
 - `docs/references/README.md` — durable repo-local references
-- `docs/specs/<feature>/` — feature source of truth
+- `docs/specs/<feature>/SPEC.md` — v2 feature source of truth

@@ -22,12 +22,18 @@ var reflectOutputOnly bool
 
 var reflectCmd = &cobra.Command{
 	Use:   "reflect [feature]",
-	Short: "Output reflection and verification instructions",
-	Long: `Output instructions for reflecting on recent changes to ensure
+	Short: "Deprecated v1 staged workflow: output reflection instructions",
+	Long: `Deprecated v1 staged workflow: output instructions for reflecting on recent changes to ensure
 implementation correctness.
+
+The default v2 feature workflow records validation, reflection notes,
+documentation updates, delivery state, and evidence inside SPEC.md through the
+kit spec supervisor prompt. Use this command only when intentionally working in
+the legacy staged artifact flow.
+
 When a feature is specified, instructions are scoped to that feature's context.
-Without a feature argument, shows an interactive selection of reflect-phase
-features whose task checkboxes are complete and whose reflection marker is not set.
+Without a feature argument, shows an interactive selection of legacy
+reflect-phase features whose task checkboxes are complete and whose reflection marker is not set.
 The reflection process uses git, lint, and tests to enforce a clean, working state.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runReflect,
@@ -37,7 +43,7 @@ func init() {
 	reflectCmd.Flags().BoolVar(&reflectCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	reflectCmd.Flags().BoolVar(&reflectOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	addPromptOnlyFlag(reflectCmd)
-	rootCmd.AddCommand(reflectCmd)
+	legacyCmd.AddCommand(reflectCmd)
 }
 
 func runReflect(cmd *cobra.Command, args []string) error {
@@ -110,7 +116,7 @@ func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
 	}
 
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no features ready for reflection (need all TASKS.md checkboxes complete without reflection marker)\n\nRun 'kit implement <feature>' until implementation tasks are complete")
+		return nil, fmt.Errorf("no legacy staged features ready for reflection (need all TASKS.md checkboxes complete without reflection marker)\n\nRun 'kit legacy implement <feature>' until implementation tasks are complete")
 	}
 
 	printSelectionHeader("Select a feature to reflect on:")
@@ -237,15 +243,15 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPa
 
 func latestVerificationEvidenceStep(projectRoot, tasksPath, featureSlug string) string {
 	if featureSlug == "" || tasksPath == "" {
-		return "Verification evidence\n- no feature-scoped verification evidence is required for generic reflection\n- if this reflection covers declared feature checks, run `kit verify <feature>` first"
+		return "Verification evidence\n- no feature-scoped verification evidence is required for generic reflection\n- if this reflection covers declared feature checks, run `kit legacy verify <feature>` first"
 	}
 	featureDir := filepath.Base(filepath.Dir(tasksPath))
 	run, ok, err := runstore.LatestForFeature(projectRoot, featureDir)
 	if err != nil {
-		return fmt.Sprintf("Verification evidence\n- unable to inspect latest run evidence: %v\n- run `kit verify %s` before marking reflection complete", err, featureSlug)
+		return fmt.Sprintf("Verification evidence\n- unable to inspect latest run evidence: %v\n- run `kit legacy verify %s` before marking reflection complete", err, featureSlug)
 	}
 	if !ok {
-		return fmt.Sprintf("Verification evidence\n- no local verification run found for `%s`\n- run `kit verify %s` and cite the resulting run ID before marking reflection complete", featureDir, featureSlug)
+		return fmt.Sprintf("Verification evidence\n- no local verification run found for `%s`\n- run `kit legacy verify %s` and cite the resulting run ID before marking reflection complete", featureDir, featureSlug)
 	}
 	lines := []string{
 		"Verification evidence",

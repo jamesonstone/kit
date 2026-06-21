@@ -25,7 +25,8 @@
 
 ## System Of Record
 
-- Feature requirements, plans, and tasks live under `docs/specs/<feature>/`
+- V2 feature requirements, implementation plan, task checklist, validation map, reflection notes, delivery decision, and evidence live in `docs/specs/<feature>/SPEC.md`
+- Legacy staged `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files may exist as historical context or when a legacy staged command is explicitly used
 - Broader repo references live under `docs/references/`
 - Durable repo-local rulesets live under `docs/references/rules/` and should be pointer-loaded through feature references
 - Keep durable guidance here instead of expanding the injected top-level instruction files

@@ -7,11 +7,11 @@
 ╚═╝  ╚═╝╚═╝   ╚═╝
 ```
 
-**General-Purpose Thought-Work Harness**
+**Kit v2 Thought-Work Harness**
 
 🎒 Portable harness without vendor lock-in.
 
-Kit is a general-purpose harness for disciplined thought work.
+Kit v2 is a general-purpose harness for disciplined thought work.
 Its deepest engine is a document-first, spec-driven workflow, but the harness
 also supports ad hoc execution, catch-up, handoff, summarization, review, and
 orchestration.
@@ -34,27 +34,25 @@ Harness principles:
 
 ### 🌍 Cross-Domain Concepts
 
-The artifact model is broader than software:
+The v2 artifact model is broader than software:
 
 | Kit Concept                                      | In Software                            | In Research                           | In Strategy / Ops                   | In Writing / Policy                     |
 | ------------------------------------------------ | -------------------------------------- | ------------------------------------- | ----------------------------------- | --------------------------------------- |
 | `CONSTITUTION.md`                                | engineering constraints                | study constraints                     | operating principles                | editorial or policy constraints         |
-| `BRAINSTORM.md`                                  | codebase research                      | literature scan                       | landscape scan                      | source gathering and framing            |
-| `SPEC.md`                                        | feature requirements                   | research question or hypothesis       | decision brief                      | argument or policy brief                |
-| `PLAN.md`                                        | implementation plan                    | study design                          | rollout plan                        | outline and revision plan               |
-| `TASKS.md`                                       | execution checklist                    | experiment tasks                      | workback schedule                   | drafting and review checklist           |
-| `implement`                                      | coding and integration                 | running the study                     | executing the change                | drafting and editing                    |
-| `reflect`                                        | verification and regression review     | results review                        | retro and validation                | revision review and critique            |
+| `SPEC.md`                                        | feature workflow artifact              | research question, study plan, proof  | decision brief, rollout, evidence   | argument, outline, revision evidence    |
+| `SPEC.md` acceptance criteria                    | binary behavior checks                 | falsifiable success criteria          | decision or rollout gates           | editorial acceptance standards          |
+| `SPEC.md` validation map and evidence            | tests, runtime checks, docs review     | result evidence and audit trail       | operational validation              | source/proof trail and revision notes   |
+| legacy v1 `BRAINSTORM.md` / `PLAN.md` / `TASKS.md` | historical staged artifacts            | historical staged artifacts           | historical staged artifacts         | historical staged artifacts             |
 | `reconcile` / `resume` / `summarize` / `handoff` | reconcile, resume, or transfer context | reconcile or resume the investigation | reconcile or transfer project state | reconcile or transfer editorial context |
 
 Feature artifacts use typed YAML front matter for canonical metadata such as
 artifact identity, feature identity, relationships, dependencies, skills, and
-summary/intent. Legacy markdown body sections remain readable during migration,
-but newly generated docs write canonical metadata in front matter.
+summary/intent. New v2 feature work uses `SPEC.md` as the single durable
+feature artifact; deprecated legacy v1 staged artifact files remain readable during migration.
 
 The names may be software-flavored today, but the structure is general:
-constraints, research, specification, planning, execution, verification, and
-transfer are common to most serious thought work.
+constraints, clarification, planning, execution, verification, reflection,
+delivery, evidence, and transfer are common to most serious thought work.
 
 ## ⚙️ Installation
 
@@ -97,30 +95,21 @@ kit prompt project refresh
 # refresh Kit-managed scaffold docs/files to the current Kit defaults
 kit init --refresh
 
-# optionally capture research first
-kit brainstorm my-feature
+# start the v2 single-SPEC feature workflow
+kit spec my-feature
 
 # for frontend-heavy work, opt into frontend-specific prompt guidance
-kit brainstorm dashboard-redesign --profile=frontend
+kit spec dashboard-redesign --profile=frontend
 
 # capture out-of-scope follow-up work without changing the active lane
-kit brainstorm --backlog shared-refactor
+kit legacy brainstorm --backlog shared-refactor
 
 # review deferred backlog items
 kit backlog
 
-# write the spec
-kit spec my-feature
-
-# define the plan
-kit plan my-feature
-
-# break work into tasks
-kit tasks my-feature
-
-# start implementation
-# runs the readiness gate, then outputs coding-agent context
-kit implement my-feature
+# paste the generated v2 supervisor prompt into your coding agent
+# clarification, planning, tasks, implementation, validation,
+# reflection, documentation updates, and delivery gating stay in SPEC.md
 
 # inspect progress at any time
 kit status
@@ -167,20 +156,19 @@ kit rm my-feature --yes --notes
 
 | Command                    | Description                                                                               |
 | -------------------------- | ----------------------------------------------------------------------------------------- |
-| `kit brainstorm [feature]` | Interactively create `BRAINSTORM.md` and output a research/documentation prompt          |
 | `kit backlog`              | List deferred brainstorm items or use `--pickup` as the backlog-specific resume shortcut  |
-| `kit spec <feature>`       | Create or open a feature specification, perform skills discovery, and track dependencies  |
-| `kit plan <feature>`       | Create or open an implementation plan and track planning dependencies                     |
-| `kit tasks <feature>`      | Create or open a task list                                                                |
-| `kit loop [feature]`       | Legacy alias for the feature workflow loop                                               |
+| `kit spec <feature>`       | Run the v2 single-SPEC feature workflow and output the supervisor prompt                  |
+| `kit legacy`               | List deprecated legacy v1 staged workflow commands retained for migration                 |
+| `kit loop [feature]`       | Convenience alias for `kit loop workflow [feature]`                                      |
 | `kit loop workflow [feature]` | Run the remaining workflow through a configured confidence-gated local agent loop      |
 | `kit loop review [feature]` | Run a coding-agent correctness review loop over changed code                            |
 | `kit resume [feature]`     | Resume backlog or in-flight work through the canonical prompt flow                        |
-| `kit implement [feature]`  | Run the implementation readiness gate and output implementation context for coding agents |
-| `kit reflect [feature]`    | Output reflection and verification instructions                                           |
 | `kit pause [feature]`      | Pause an in-flight feature without changing its underlying phase                          |
 | `kit complete [feature]`   | Mark a feature complete; supports `--all` for all eligible active features                |
 | `kit rm [feature]`         | Remove feature docs, retain notes by default, and show removed state in history/status; `kit remove` also works |
+
+Run `kit legacy --help` to list the deprecated legacy v1 staged commands retained for
+finishing existing `BRAINSTORM.md` / `PLAN.md` / `TASKS.md` work.
 
 ### 🔎 Inspect & Repair
 
@@ -192,7 +180,6 @@ kit rm my-feature --yes --notes
 | `kit capabilities`        | List command capabilities, mutation behavior, network use, and important flags; supports `--json`, `--full`, and `--search` |
 | `kit check <feature>`     | Validate feature documents and populated required sections                                       |
 | `kit check --project`     | Validate the repo-level document, init scaffold, and instruction contract                        |
-| `kit verify [feature]`    | Run declared verification checks from `TASKS.md` and write local run evidence                    |
 | `kit trace <target>`      | List feature verification runs or inspect one run ID                                             |
 | `kit replay <run-id>`     | Rerun commands from a prior verification run and compare outcomes                                |
 | `kit state [refresh]`     | Show or refresh generated pointer-only `.kit/state.json` for agents and tools                    |
@@ -307,12 +294,12 @@ deferred brainstorm items stay available through `kit backlog`,
 ### ♻️ Prompt Regeneration
 
 Feature-scoped prompt commands also accept `--prompt-only` to regenerate the
-selected feature's prompt without mutating repository docs:
-`kit brainstorm`, `kit spec`, `kit plan`, `kit tasks`, `kit implement`,
-`kit reflect`, `kit reconcile`, `kit handoff`, and `kit skill mine`. For
-`brainstorm`, `spec`, `plan`, and `tasks`, `--prompt-only` skips scaffolding
-and rollup writes, requires the existing artifact set, and uses the normal
-existing-feature selector when no feature argument is provided.
+selected feature's prompt without mutating repository docs. In the v2 feature
+workflow, `kit spec --prompt-only` emits the supervisor prompt without adding
+v2 metadata, missing sections, notes directories, or rollup updates. Legacy
+staged prompt commands such as `kit legacy brainstorm`, `kit legacy plan`,
+`kit legacy tasks`, `kit legacy implement`, and `kit legacy reflect` retain
+the same inspection-safe behavior for existing v1 artifact-stage flows.
 
 ### 📚 Prompt Library
 
@@ -359,7 +346,10 @@ Nouns and verbs normalize to lowercase kebab-case. `kit set prompt` defaults to
 local save inside a Kit project, asks before saving globally outside a project,
 and confirms before overwriting each selected scope. Built-ins include
 `coding-agent short`, `coding-agent long`, `coding-agent instructions`,
-workflow prompts, support prompts, `skill mine`, and `project init`.
+the v2 `kit spec` / `workflow spec` supervisor prompt, support prompts,
+`skill mine`, and `project init`. Use `kit spec <feature>` when Kit should
+create or adopt `SPEC.md`; use `kit prompt kit spec` to render the active
+feature's reusable prompt-library entry.
 
 ### ⛏️ Skill Mining
 
@@ -368,9 +358,10 @@ workflow prompts, support prompts, `skill mine`, and `project init`.
 | `kit skill mine [feature]` | Output skill extraction prompt for the active coding agent |
 
 `kit scaffold agents` creates or refreshes repository instruction files.
-`kit scaffold brainstorm`, `kit scaffold spec`, `kit scaffold plan`, and
-`kit scaffold tasks` create empty workflow document scaffolds without emitting
-agent prompts.
+`kit scaffold spec <feature>` creates or additively adopts the v2 `SPEC.md`
+scaffold plus notes/reference-material directories without emitting an agent
+prompt. Legacy staged document scaffolds are available only through
+`kit legacy` commands.
 
 When instruction files already exist:
 
@@ -405,11 +396,12 @@ status, or `kit init --refresh --file=.envrc --force` to overwrite one existing
 Kit-managed file explicitly. Use `kit init --refresh --dry-run --diff` to
 preview the managed-file changes without writing them.
 
-## 🗂️ Structured Engine: Artifact Pipeline
+## 🗂️ Structured Engine: V2 Single-SPEC Workflow
 
-The artifact pipeline is Kit's most structured operating engine. It is not the
-entire product, but it is the clearest path when a problem needs deliberate
-discovery, planning, and execution control in any domain.
+The v2 single-`SPEC.md` workflow is Kit's most structured operating engine. It
+is not the entire product, but it is the clearest path when a problem needs
+deliberate clarification, planning, implementation, validation, reflection,
+documentation sync, delivery gating, and evidence in any domain.
 
 ### 🏗️ Project Initialization
 
@@ -423,100 +415,84 @@ Run once, then refine as the project matures:
 └──────────────┘
 ```
 
-### 🧠 Optional Research Step
+### 🧠 Optional Research Material
 
 ```text
 ┌──────────────┐
-│ Brainstorm   │  ← codebase research, options, affected files
+│ Notes/Inputs │  ← reference materials, screenshots, research, constraints
 └──────────────┘
 ```
 
-### 🔁 Core Development Loop
+### 🔁 V2 Development Loop
 
 ```text
-┌──────────────┐    ┌───────────────┐    ┌──────┐    ┌───────┐    ┌────────────────┐    ┌────────────┐
-│ Brainstorm   │ ─▶ │ Specification │ ─▶ │ Plan │ ─▶ │ Tasks │ ─▶ │ Implementation │ ─▶ │ Reflection │ ─┐
-└──────────────┘    └───────────────┘    └──────┘    └───────┘    └────────────────┘    └────────────┘  │
-       ▲                                                                                                │
-       └────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────┐    ┌───────────────────────────────────────────────────────────────────────────────┐
+│ Idea / Input │ ─▶ │ kit spec <feature>                                                           │
+└──────────────┘    │ SPEC.md: clarify → ready → implement → validate → reflect → deliver/complete │
+                    └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 📝 Artifact Details
 
 1. 📜 **Constitution** — strategy, patterns, long-term vision
-2. 🧠 **Brainstorm** — optional research, findings, relationships, dependencies, strategy
-3. 📐 **Specification** — what is being built, why, and how it relates to prior features
-4. 🗺️ **Plan** — how it will be built
-5. ✅ **Tasks** — executable work units
-6. 🛠️ **Implementation** — execution after the readiness gate passes
-7. 🔍 **Reflection** — verification and learning after implementation
+2. 📐 **SPEC.md** — the v2 durable feature artifact: thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence
+3. 🧠 **Legacy staged artifacts** — existing `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` remain historical context for upgraded projects and are used by legacy staged commands
 
 When a core workflow command runs without a feature argument, its selector only
 shows features that are eligible for that command's next stage. Completed stages
 are omitted from earlier-stage selectors.
-If `kit spec` has no pre-spec features to list, it prompts for a new feature
-name and starts the interactive spec builder.
+If `kit spec` has no eligible existing feature candidates to list, it prompts
+for a new feature name and starts the interactive spec builder.
 
-Spec-driven prompts must populate every section in `BRAINSTORM.md`, `SPEC.md`,
-`PLAN.md`, and `TASKS.md`. If a section has no additional detail, replace the
-placeholder comment with `not applicable`, `not required`, or
-`no additional information required`.
+The v2 `kit spec` prompt treats `SPEC.md` as the single durable feature
+artifact and requires every acceptance criterion to map to validation evidence.
+Legacy staged prompts still populate their legacy artifacts when those commands
+are used directly.
 
-## 🧠 Brainstorm — Interactive Research Entry Point
+## 🧱 Foundations: V1 Staged Workflow
 
-`kit brainstorm` is now the optional front door for new feature work. It asks for:
+Kit v2 was built from the original staged workflow:
 
-1. the feature name using the same normalization rules as `kit spec`
-2. a short user thesis describing the issue or feature
+```text
+brainstorm -> specification -> plan -> tasks -> implement -> reflection
+```
 
-Then Kit:
+```text
+┌─────────────┐   ┌───────────────┐   ┌─────────────┐   ┌─────────────┐   ┌──────────────┐
+│ BRAINSTORM  │ → │ SPECIFICATION │ → │    PLAN     │ → │    TASKS    │ → │  REFLECTION  │
+└─────────────┘   └───────────────┘   └─────────────┘   └─────────────┘   └──────────────┘
+      idea             clarified           approach          checklist          review
+```
 
-- creates or reuses `docs/specs/<feature>/`
-- creates `BRAINSTORM.md` as the first artifact in that directory
-- requires the coding agent to keep front matter `relationships` current with explicit prior-feature lineage, falling back to `## RELATIONSHIPS` only for legacy docs without front matter
-- requires the coding agent to keep front matter `references` current with the inputs used during the brainstorm phase, including `target`, `relation`, and `read_policy`
-- opens `$EDITOR` by default for the multiline thesis, falling back to a vim-compatible editor when `$EDITOR` is unset, with step instructions and a press-any-key launch gate
-- supports `--inline` to use terminal multiline entry with `Shift+Enter` and `Ctrl+J`, including consecutive blank lines
-- keeps `--vim` and `--editor=vim` as explicit controls when a vim-compatible editor is desired
-- outputs a research/documentation prompt without native agent mode commands
-- tells the coding agent to research the codebase, use numbered lists, ask questions in batches of up to 10, and avoid implementation
-- requires the agent to include recommended defaults, accept `yes` / `y` for whole-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` for numbered approval, state uncertainties, output percentage-understanding progress after each batch, and continue until the spec is precise enough for a production-quality solution
-- supports `--backlog` to capture a deferred brainstorm item without outputting a research prompt
-- keeps `--pickup` callable as a hidden compatibility path while teaching `kit resume <feature>` or `kit backlog --pickup <feature>` as the primary resume flows
+That foundation still matters: v1 made ambiguity explicit, forced planning
+before execution, kept task progress durable, and closed the loop with review.
+Kit v2 keeps those semantics but removes the user-facing command sequence.
+`kit spec <feature>` now creates one durable `SPEC.md` whose phases carry the
+same work: clarify, ready, implement, validate, reflect, deliver, complete.
 
-### 💡 Why this matters
-
-`BRAINSTORM.md` becomes the durable bridge between early ideation and the formal artifact pipeline. When present, downstream commands use it as research context while still treating `SPEC.md`, `PLAN.md`, and `TASKS.md` as the binding execution contract.
+Historical `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files remain readable and
+non-disruptive in upgraded projects. Their commands live under `kit legacy` for
+finishing old staged work; they are no longer the default feature workflow.
 
 ### 🪜 Typical flow
 
 ```text
 You / team idea
   ↓
-kit brainstorm my-feature
-  ↓
-BRAINSTORM.md + research/documentation prompt
-  ↓
 kit spec my-feature
   ↓
-kit plan my-feature
+SPEC.md + v2 supervisor prompt
   ↓
-kit tasks my-feature
-  ↓
-kit implement my-feature
-  ↓
-kit reflect my-feature
+clarify → ready → implement → validate → reflect → deliver/complete
 ```
 
 ### 🔂 Autonomous Loop
 
-`kit loop workflow [feature]` can run the remaining workflow after the user has
-started with either `kit brainstorm <feature>` or `kit spec <feature>`. The
-legacy `kit loop [feature]` path still works. The workflow loop resolves the
-current strict stage, wraps that stage prompt with a required `KIT_LOOP_RESULT`
-JSON contract, sends the prompt to the configured local agent command over
-stdin, validates confidence and document state, then repeats until the target
-stage is complete or a blocker appears.
+`kit loop workflow [feature]` is the execution wrapper for prompt-level
+workflow automation. In v2, the user-facing entry point remains
+`kit spec <feature>` and the durable state remains `SPEC.md`; direct execution
+stays behind explicit loop/run behavior. The `kit loop [feature]` root form is
+a convenience alias for the same v2 workflow loop.
 
 ```yaml
 loop:
@@ -531,11 +507,11 @@ loop:
 # see the next loop action without running an agent
 kit loop workflow my-feature --dry-run
 
-# run until reflection is complete
+# run until the configured workflow target is complete
 kit loop workflow my-feature
 
-# stop after task generation is complete
-kit loop workflow my-feature --until tasks
+# stop after a v2 phase target when needed
+kit loop workflow my-feature --until validate
 
 # review changed code until local correctness converges
 kit loop review
@@ -544,44 +520,41 @@ kit loop review
 kit loop review --pr 14
 ```
 
-Loop evidence is written under `.kit/loops/<run-id>/`. Existing workflow
-commands remain manual prompt-producing commands; only `kit loop` invokes the
+Loop evidence is written under `.kit/loops/<run-id>/`. `kit spec` remains
+prompt-producing by default; only explicit loop/run behavior invokes the
 configured agent command.
 
-`kit implement` begins with an implementation readiness gate that adversarially
-challenges `CONSTITUTION.md`, optional `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`,
-and `TASKS.md` before any code work starts. If the gate fails, update the
-canonical docs first, then rerun the gate before implementing.
+The v2 supervisor prompt performs the readiness gate inside `SPEC.md` before
+implementation begins. It requires clarified assumptions, binary-verifiable
+acceptance criteria, a task checklist, a validation map, documentation sync,
+reflection notes, and evidence before delivery.
 
 ### ▶️ Usage
 
 ```bash
-# interactive brainstorm for a new feature
-kit brainstorm my-feature
+# start the v2 single-SPEC workflow
+kit spec my-feature
 
-# prepare notes and BRAINSTORM.md before starting the brainstorm prompt
-kit brainstorm my-feature --prepare
+# capture initial context interactively before generating the v2 supervisor prompt
+kit spec my-feature --interactive
 
-# frontend-heavy brainstorm with design-material scaffolding
-kit brainstorm dashboard-redesign --profile=frontend
+# regenerate the v2 supervisor prompt without v2 adoption writes
+kit spec my-feature --prompt-only
+
+# legacy staged workflow: prepare notes and BRAINSTORM.md
+kit legacy brainstorm my-feature --prepare
+
+# frontend-heavy v2 workflow with design-material scaffolding
+kit spec dashboard-redesign --profile=frontend
 
 # capture a deferred follow-up feature and leave it in backlog
-kit brainstorm --backlog shared-refactor
-
-# open or continue an existing brainstorm
-kit brainstorm my-feature
+kit legacy brainstorm --backlog shared-refactor
 
 # print the raw prompt to stdout instead of copying it
-kit brainstorm my-feature --output-only
+kit spec my-feature --output-only
 
-# regenerate the brainstorm prompt from an existing BRAINSTORM.md without touching repo docs
-kit brainstorm my-feature --prompt-only
-
-# opt out of default editor mode and use inline multiline entry
-kit brainstorm my-feature --inline
-
-# write the generated brainstorm prompt to a file
-kit brainstorm my-feature --output tmp/brainstorm-prompt.md
+# list legacy staged commands retained for existing v1 work
+kit legacy --help
 
 # list deferred backlog items
 kit backlog
@@ -597,15 +570,12 @@ kit resume shared-refactor
 by default, falling back to a vim-compatible editor when `$EDITOR` is unset. Use `kit spec <feature> --interactive --inline`
 to opt back into terminal multiline entry.
 
-### 📄 What goes in `BRAINSTORM.md`
+### 🧭 Legacy Staged Commands
 
-- summary of the issue or opportunity
-- user thesis in the user's own words
-- explicit relationship to prior features or `none`
-- codebase findings and relevant architecture notes
-- affected files with concrete paths
-- unresolved questions and viable options
-- recommended strategy and the next workflow step
+Use `kit legacy <command>` only when finishing existing v1 staged work or
+capturing backlog research that intentionally lives outside the active v2 lane.
+Those commands preserve `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` behavior for
+migration, but new feature work should start with `kit spec <feature>`.
 
 ## 🏛️ Project Structure
 
@@ -625,18 +595,19 @@ docs/
           .gitkeep
   specs/
     0001-my-feature/
-      BRAINSTORM.md         # optional research artifact
-      SPEC.md
-      PLAN.md
-      TASKS.md
+      SPEC.md               # v2 durable feature workflow artifact
+      BRAINSTORM.md         # optional legacy staged research artifact
+      PLAN.md               # optional legacy staged plan artifact
+      TASKS.md              # optional legacy staged task artifact
       ANALYSIS.md            # optional
   references/
     rules/
       frontend-ui.md          # optional durable pointer-loaded rulesets
 ```
 
-New `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md` files include
-front matter. `kit map`, `kit status`, `kit check`, and prompt-producing
+New v2 `SPEC.md` files include front matter with `workflow_version: 2` and a
+workflow `phase`. Legacy staged artifacts still include front matter when
+created, and `kit map`, `kit status`, `kit check`, and prompt-producing
 commands read front matter first and fall back to legacy body metadata when
 front matter is absent.
 

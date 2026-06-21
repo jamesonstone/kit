@@ -26,12 +26,8 @@ func TestBuiltInKitPromptSourceCatalog(t *testing.T) {
 	}
 
 	expected := []string{
-		"workflow brainstorm",
 		"workflow spec",
-		"workflow plan",
-		"workflow tasks",
-		"workflow implement",
-		"workflow reflect",
+		"kit spec",
 		"support resume",
 		"support handoff",
 		"support summarize",
@@ -47,6 +43,18 @@ func TestBuiltInKitPromptSourceCatalog(t *testing.T) {
 			t.Fatalf("missing built-in prompt %q", command)
 		}
 	}
+	removed := []string{
+		"workflow brainstorm",
+		"workflow plan",
+		"workflow tasks",
+		"workflow implement",
+		"workflow reflect",
+	}
+	for _, command := range removed {
+		if prompts[command] {
+			t.Fatalf("removed v1 workflow prompt %q is still registered", command)
+		}
+	}
 }
 
 func TestBuiltInPromptSourcesIncludesToolboxAndKitCatalogs(t *testing.T) {
@@ -57,7 +65,7 @@ func TestBuiltInPromptSourcesIncludesToolboxAndKitCatalogs(t *testing.T) {
 	if sources[0].Prompts[0].Identity.CommandName() != "coding-agent short" {
 		t.Fatalf("expected toolbox source first, got %q", sources[0].Prompts[0].Identity.CommandName())
 	}
-	if sources[1].Prompts[0].Identity.CommandName() != "workflow brainstorm" {
+	if sources[1].Prompts[0].Identity.CommandName() != "workflow spec" {
 		t.Fatalf("expected Kit source second, got %q", sources[1].Prompts[0].Identity.CommandName())
 	}
 }

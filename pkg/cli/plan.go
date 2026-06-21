@@ -23,8 +23,12 @@ var planOutputOnly bool
 
 var planCmd = &cobra.Command{
 	Use:   "plan [feature]",
-	Short: "Create or open a feature implementation plan",
-	Long: `Create a new implementation plan for a feature.
+	Short: "Deprecated v1 staged workflow: create PLAN.md",
+	Long: `Deprecated v1 staged workflow: create a new implementation plan for a feature.
+
+The default v2 feature workflow keeps the implementation plan inside SPEC.md
+through the kit spec supervisor prompt. Use this command only when intentionally
+working in the legacy staged artifact flow.
 
 Creates:
   - PLAN.md with required sections and placeholder comments
@@ -46,7 +50,7 @@ func init() {
 	planCmd.Flags().BoolVar(&planCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	planCmd.Flags().BoolVar(&planOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	addPromptOnlyFlag(planCmd)
-	rootCmd.AddCommand(planCmd)
+	legacyCmd.AddCommand(planCmd)
 }
 
 func runPlan(cmd *cobra.Command, args []string) error {
@@ -157,7 +161,7 @@ func runPlan(cmd *cobra.Command, args []string) error {
 		}
 		printNumberedNextSteps([]string{
 			fmt.Sprintf("Edit %s to define the implementation approach", planPath),
-			fmt.Sprintf("Run 'kit tasks %s' to create executable tasks", feat.Slug),
+			fmt.Sprintf("Run 'kit legacy tasks %s' to create executable tasks", feat.Slug),
 		})
 	}
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
@@ -198,7 +202,7 @@ func runPlanPromptOnly(args []string, projectRoot string, cfg *config.Config, wa
 		return fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first", feat.Slug)
 	}
 	if !document.Exists(planPath) {
-		return fmt.Errorf("PLAN.md not found. Run 'kit plan %s' first", feat.Slug)
+		return fmt.Errorf("PLAN.md not found. Run 'kit legacy plan %s' first", feat.Slug)
 	}
 
 	if warpMode {
@@ -255,7 +259,7 @@ func selectFeatureForPlanPromptOnly(specsDir string) (*feature.Feature, error) {
 	}
 
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no plans available to regenerate prompts for\n\nRun 'kit plan <feature>' first")
+		return nil, fmt.Errorf("no plans available to regenerate prompts for\n\nRun 'kit legacy plan <feature>' first")
 	}
 
 	printSelectionHeader("Select a feature to regenerate the plan prompt for:")

@@ -271,7 +271,7 @@ func featureDocuments(projectRoot string, feat Feature) []MapDocument {
 			Path:      relativePath(projectRoot, filepath.Join(feat.Path, "BRAINSTORM.md")),
 			Required:  false,
 			Exists:    document.Exists(filepath.Join(feat.Path, "BRAINSTORM.md")),
-			ManagedBy: "kit brainstorm",
+			ManagedBy: "kit legacy brainstorm",
 		},
 		{
 			Name:      "SPEC.md",
@@ -283,16 +283,16 @@ func featureDocuments(projectRoot string, feat Feature) []MapDocument {
 		{
 			Name:      "PLAN.md",
 			Path:      relativePath(projectRoot, filepath.Join(feat.Path, "PLAN.md")),
-			Required:  true,
+			Required:  false,
 			Exists:    document.Exists(filepath.Join(feat.Path, "PLAN.md")),
-			ManagedBy: "kit plan",
+			ManagedBy: "kit legacy plan",
 		},
 		{
 			Name:      "TASKS.md",
 			Path:      relativePath(projectRoot, filepath.Join(feat.Path, "TASKS.md")),
-			Required:  true,
+			Required:  false,
 			Exists:    document.Exists(filepath.Join(feat.Path, "TASKS.md")),
-			ManagedBy: "kit tasks",
+			ManagedBy: "kit legacy tasks",
 		},
 		{
 			Name:      "ANALYSIS.md",

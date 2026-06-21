@@ -51,6 +51,8 @@ func buildSkillMinePrompt(
 			constitutionPath,
 			summaryPath,
 			brainstormPath,
+			planPath,
+			tasksPath,
 			skillsDir,
 			claudeSkillsDir,
 			repoAgentsPath,
@@ -89,10 +91,14 @@ func skillMineContextRows(
 	if document.Exists(brainstormPath) {
 		rows = append(rows, []string{"BRAINSTORM", brainstormPath})
 	}
+	rows = append(rows, []string{"SPEC", specPath})
+	if document.Exists(planPath) {
+		rows = append(rows, []string{"PLAN", planPath})
+	}
+	if document.Exists(tasksPath) {
+		rows = append(rows, []string{"TASKS", tasksPath})
+	}
 	rows = append(rows,
-		[]string{"SPEC", specPath},
-		[]string{"PLAN", planPath},
-		[]string{"TASKS", tasksPath},
 		[]string{"Canonical Skills Root", skillsDir},
 		[]string{"Claude Mirror Root", claudeSkillsDir},
 		[]string{"Canonical Draft Output", skillPath},
@@ -104,7 +110,7 @@ func skillMineContextRows(
 }
 
 func skillMineTaskSteps(
-	constitutionPath, summaryPath, brainstormPath, skillsDir, claudeSkillsDir, repoAgentsPath, repoReferencesPath, skillPath, claudeSkillPath string,
+	constitutionPath, summaryPath, brainstormPath, planPath, tasksPath, skillsDir, claudeSkillsDir, repoAgentsPath, repoReferencesPath, skillPath, claudeSkillPath string,
 ) []string {
 	steps := []string{
 		fmt.Sprintf("Read `CONSTITUTION.md` first at `%s`", constitutionPath),
@@ -120,15 +126,15 @@ func skillMineTaskSteps(
 			"Read `PROJECT_PROGRESS_SUMMARY.md` at `%s` to understand cross-feature themes, what has been consistently hard, and what has been consistently smooth",
 			summaryPath,
 		),
-		fmt.Sprintf("Read the feature's spec pipeline in order:\n%s", skillMineSpecPipelineList(brainstormPath)),
+		fmt.Sprintf("Read the feature's v2 workflow context in this order:\n%s", skillMineSpecPipelineList(brainstormPath, planPath, tasksPath)),
 		"Run `git diff main` to capture what actually changed during implementation; if `main` does not exist, run `git diff master`",
 		fmt.Sprintf(
 			"Read all existing canonical skill bundles under `%s/*/SKILL.md` to avoid duplicating patterns that are already captured",
 			skillsDir,
 		),
-		"Analyze the delta between what the spec pipeline planned and what the git diff shows was actually implemented; this divergence is the highest-signal source of reusable pattern content",
+		"Analyze the delta between what SPEC.md planned, what SPEC.md evidence/reflection says happened, and what the git diff shows was actually implemented; this divergence is the highest-signal source of reusable pattern content",
 		"Extract patterns that are:\n- reusable across features or projects\n- not already covered by an existing skill in the skills directory\n- concrete and actionable rather than vague or project-specific",
-		"Beyond pattern extraction, derive novel insights by synthesizing across multiple signals:\n\nA) SPEC DELTA ANALYSIS\n- Compare what was originally specified in SPEC.md to what was actually built per git diff and TASKS.md completion state\n- Divergences are high-signal: they reveal where the spec was wrong, where implementation discovered something better, or where constraints changed mid-flight\n- Capture these divergences as insights, not just patterns\n\nB) FEATURE PROGRESSION ANALYSIS\n- Read PROJECT_PROGRESS_SUMMARY.md to understand the arc of the project: which features are complete, which are in flight, what has been consistently hard or consistently smooth\n- Look for recurring themes across multiple features - these are systemic insights, not one-off patterns\n- A theme that appears in 2+ features is a strong skill candidate\n\nC) CONSTITUTION ALIGNMENT\n- Read CONSTITUTION.md and identify where the implementation reinforced, challenged, or refined the stated principles\n- If the work revealed a principle that should exist but does not, that is a novel insight worth capturing as a skill\n\nD) EMERGENT WORKFLOW INSIGHTS\n- Look for implicit workflows the team has developed that are not yet formalized anywhere in the spec pipeline\n- These are the highest-value skills: the things the team does that work well but have never been written down\n\nFor each novel insight found, ask: \"Would a new coding agent working on this project benefit from knowing this?\" If yes, it is a skill candidate.",
+		"Beyond pattern extraction, derive novel insights by synthesizing across multiple signals:\n\nA) SPEC DELTA ANALYSIS\n- Compare what was originally specified in SPEC.md to what was actually built per git diff and SPEC.md validation evidence, reflection notes, and task checklist state\n- Treat legacy PLAN.md/TASKS.md as historical context only when present\n- Divergences are high-signal: they reveal where the spec was wrong, where implementation discovered something better, or where constraints changed mid-flight\n- Capture these divergences as insights, not just patterns\n\nB) FEATURE PROGRESSION ANALYSIS\n- Read PROJECT_PROGRESS_SUMMARY.md to understand the arc of the project: which features are complete, which are in flight, what has been consistently hard or consistently smooth\n- Look for recurring themes across multiple features - these are systemic insights, not one-off patterns\n- A theme that appears in 2+ features is a strong skill candidate\n\nC) CONSTITUTION ALIGNMENT\n- Read CONSTITUTION.md and identify where the implementation reinforced, challenged, or refined the stated principles\n- If the work revealed a principle that should exist but does not, that is a novel insight worth capturing as a skill\n\nD) EMERGENT WORKFLOW INSIGHTS\n- Look for implicit workflows the team has developed that are not yet formalized anywhere in SPEC.md or project docs\n- These are the highest-value skills: the things the team does that work well but have never been written down\n\nFor each novel insight found, ask: \"Would a new coding agent working on this project benefit from knowing this?\" If yes, it is a skill candidate.",
 		fmt.Sprintf("Write the canonical skill bundle to `%s`", skillPath),
 		fmt.Sprintf(
 			"Duplicate the full skill directory into the Claude mirror at `%s` so Claude Code can discover the same skill bundle",
@@ -143,16 +149,18 @@ func skillMineTaskSteps(
 	return steps
 }
 
-func skillMineSpecPipelineList(brainstormPath string) string {
+func skillMineSpecPipelineList(brainstormPath, planPath, tasksPath string) string {
 	docs := []string{}
 	if document.Exists(brainstormPath) {
-		docs = append(docs, "- `BRAINSTORM.md`")
+		docs = append(docs, "- `BRAINSTORM.md` (optional legacy research context)")
 	}
-	docs = append(docs,
-		"- `SPEC.md`",
-		"- `PLAN.md`",
-		"- `TASKS.md`",
-	)
+	docs = append(docs, "- `SPEC.md` (v2 durable workflow artifact)")
+	if document.Exists(planPath) {
+		docs = append(docs, "- `PLAN.md` (optional legacy historical context)")
+	}
+	if document.Exists(tasksPath) {
+		docs = append(docs, "- `TASKS.md` (optional legacy historical context)")
+	}
 
 	return strings.Join(docs, "\n")
 }
@@ -212,7 +220,8 @@ func skillMineRules(skillsDir, claudeSkillsDir, projectRoot string) []string {
 		"keep skill content procedural and agent-executable, not descriptive",
 		"the description frontmatter must be a triggering condition, not a summary",
 		"skill content must be dense: no fluff, no preamble, no obvious context",
-		"if the git diff is empty or unavailable, rely on spec pipeline only",
+		"if the git diff is empty or unavailable, rely on SPEC.md, recorded evidence, and project progress only",
+		"for v2 features, treat SPEC.md as the durable workflow source; use legacy BRAINSTORM.md, PLAN.md, and TASKS.md only when they exist",
 		"use the canonical skills root as the source of truth and the Claude root only as a duplicated discovery mirror",
 		"signal priority for insight derivation (highest to lowest):\n  1. spec-vs-implementation divergence (SPEC.md vs git diff)\n  2. recurring themes across 2+ features (PROJECT_PROGRESS_SUMMARY.md)\n  3. implicit workflows not yet in any document\n  4. single-feature reusable patterns\n  5. constitution alignment gaps",
 		"a skill derived from signal 1 or 2 is always worth writing",

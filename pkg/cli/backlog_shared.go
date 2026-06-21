@@ -56,7 +56,7 @@ func resolveBacklogFeature(specsDir string, cfg *config.Config, ref string) (*fe
 	}
 	if !feature.IsBacklogItem(*feat) {
 		return nil, fmt.Errorf(
-			"feature '%s' is not a backlog item. Backlog items must be paused brainstorm-phase features",
+			"feature '%s' is not a backlog item. Backlog items must be paused legacy brainstorm-phase features",
 			feat.Slug,
 		)
 	}
@@ -107,7 +107,7 @@ func resumeBacklogFeature(
 	}
 	if !feature.IsBacklogItem(*feat) {
 		return fmt.Errorf(
-			"feature '%s' is not a backlog item. Backlog items must be paused brainstorm-phase features",
+			"feature '%s' is not a backlog item. Backlog items must be paused legacy brainstorm-phase features",
 			feat.Slug,
 		)
 	}

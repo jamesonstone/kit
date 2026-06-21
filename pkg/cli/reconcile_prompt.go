@@ -81,7 +81,7 @@ func buildReconcilePrompt(report *reconcileReport) string {
 			"add `VERIFY`, `EXPECTED FILES`, `RISK`, and `ROLLBACK` only to tasks currently being implemented, verified, or reflected",
 			"do not guess verification commands from prose; infer commands only when already documented or obvious from repo tooling",
 			"if acceptance criteria are prose-only, propose runnable checks separately from confirmed checks and leave uncertain commands as `not yet declared`",
-			"after migration, run `kit verify <feature> --dry-run`, refresh `.kit/state.json`, then rerun `kit check <feature>` and `kit check --project`",
+			"after migration, run `kit legacy verify <feature> --dry-run`, refresh `.kit/state.json`, then rerun `kit check <feature>` and `kit check --project`",
 		)
 	}
 

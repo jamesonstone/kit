@@ -45,19 +45,19 @@ func specFinalResponseContract(featureSlug string) []finalResponseContractSectio
 	return []finalResponseContractSection{
 		{
 			Heading: "Summary",
-			Items:   []string{"1-2 sentences describing the locked feature contract and current confidence."},
+			Items:   []string{"1-2 sentences describing the current SPEC.md phase, feature state, and confidence."},
 		},
 		{
 			Heading: "Artifacts Updated",
 			Items:   []string{"List repo-relative paths for SPEC.md and any supporting artifacts updated."},
 		},
 		{
-			Heading: "Requirements Locked",
-			Items:   []string{"Bullets for the most important requirements, non-goals, and constraints now fixed in SPEC.md."},
+			Heading: "Workflow State",
+			Items:   []string{"Bullets for the current v2 phase, readiness gate status, acceptance criteria status, validation status, and delivery decision."},
 		},
 		{
-			Heading: "Acceptance Notes",
-			Items:   []string{"Bullets for the acceptance criteria or verification evidence the spec now requires."},
+			Heading: "Acceptance And Evidence",
+			Items:   []string{"Bullets for acceptance criteria, their mapped validation evidence, and any remaining gaps."},
 		},
 		{
 			Heading: "Open Questions",
@@ -65,7 +65,7 @@ func specFinalResponseContract(featureSlug string) []finalResponseContractSectio
 		},
 		{
 			Heading: "Next Step",
-			Items:   []string{"State the next Kit command, usually `kit plan " + featureSlug + "`."},
+			Items:   []string{"State whether the next action is more clarification, implementation, validation, reflection, delivery, or completion inside `SPEC.md`; regenerate with `kit spec " + featureSlug + " --prompt-only` when needed."},
 		},
 	}
 }
@@ -90,7 +90,7 @@ func planFinalResponseContract(featureSlug string) []finalResponseContractSectio
 		},
 		{
 			Heading: "Next Step",
-			Items:   []string{"State the next Kit command, usually `kit tasks " + featureSlug + "`."},
+			Items:   []string{"State the next Kit command, usually `kit legacy tasks " + featureSlug + "`."},
 		},
 	}
 }
@@ -115,7 +115,7 @@ func tasksFinalResponseContract(featureSlug string) []finalResponseContractSecti
 		},
 		{
 			Heading: "Next Step",
-			Items:   []string{"State the next Kit command, usually `kit implement " + featureSlug + "`."},
+			Items:   []string{"State the next Kit command, usually `kit legacy implement " + featureSlug + "`."},
 		},
 	}
 }

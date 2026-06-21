@@ -23,29 +23,17 @@ type scaffoldResult struct {
 
 var scaffoldCmd = &cobra.Command{
 	Use:   "scaffold",
-	Short: "Create empty workflow document structures and supporting directories",
+	Short: "Create v2 SPEC.md scaffolds and supporting directories",
 	Long: `Create empty document structures and supporting directories for a Kit workflow.
 
-Scaffold commands prepare files only. They do not emit workflow prompts and do
-not ask an agent to start the phase.`,
-}
-
-var scaffoldBrainstormCmd = &cobra.Command{
-	Use:   "brainstorm <feature>",
-	Short: "Prepare brainstorm directories and files without starting the brainstorm prompt",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		result, err := scaffoldBrainstormWorkflow(args[0])
-		if err != nil {
-			return err
-		}
-		return printScaffoldWorkflowResult(cmd.OutOrStdout(), "brainstorm", result)
-	},
+Scaffold commands prepare files only. They do not emit workflow prompts or ask
+an agent to start work. The normal v2 feature scaffold is SPEC.md plus
+supporting notes/reference-material directories.`,
 }
 
 var scaffoldSpecCmd = &cobra.Command{
 	Use:   "spec <feature>",
-	Short: "Create an empty SPEC.md scaffold without outputting the spec prompt",
+	Short: "Create the v2 SPEC.md scaffold without outputting the spec prompt",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		result, err := scaffoldSpecWorkflow(args[0])
@@ -56,37 +44,8 @@ var scaffoldSpecCmd = &cobra.Command{
 	},
 }
 
-var scaffoldPlanCmd = &cobra.Command{
-	Use:   "plan <feature>",
-	Short: "Create an empty PLAN.md scaffold without outputting the plan prompt",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		result, err := scaffoldPlanWorkflow(args[0])
-		if err != nil {
-			return err
-		}
-		return printScaffoldWorkflowResult(cmd.OutOrStdout(), "plan", result)
-	},
-}
-
-var scaffoldTasksCmd = &cobra.Command{
-	Use:   "tasks <feature>",
-	Short: "Create an empty TASKS.md scaffold without outputting the tasks prompt",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		result, err := scaffoldTasksWorkflow(args[0])
-		if err != nil {
-			return err
-		}
-		return printScaffoldWorkflowResult(cmd.OutOrStdout(), "tasks", result)
-	},
-}
-
 func init() {
-	scaffoldCmd.AddCommand(scaffoldBrainstormCmd)
 	scaffoldCmd.AddCommand(scaffoldSpecCmd)
-	scaffoldCmd.AddCommand(scaffoldPlanCmd)
-	scaffoldCmd.AddCommand(scaffoldTasksCmd)
 	rootCmd.AddCommand(scaffoldCmd)
 }
 
@@ -168,7 +127,20 @@ func scaffoldSpecWorkflow(featureRef string) (scaffoldResult, error) {
 			return scaffoldResult{}, fmt.Errorf("failed to create SPEC.md: %w", err)
 		}
 	}
+	if _, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName); err != nil {
+		return scaffoldResult{}, err
+	}
+	notesPath, _, err := ensureFeatureNotesDir(projectRoot, feat.DirName)
+	if err != nil {
+		return scaffoldResult{}, err
+	}
+	paths := []string{feat.Path, specPath, notesPath}
 	if effectivePromptProfile(feat.Path) == promptProfileFrontend {
+		designPath, _, err := ensureFeatureDesignMaterialsDirs(projectRoot, feat.DirName)
+		if err != nil {
+			return scaffoldResult{}, err
+		}
+		paths = append(paths, designPath)
 		if _, err := ensureFrontendProfileDependencyRows(specPath, document.TypeSpec, feat.DirName); err != nil {
 			return scaffoldResult{}, err
 		}
@@ -178,77 +150,7 @@ func scaffoldSpecWorkflow(featureRef string) (scaffoldResult, error) {
 		return scaffoldResult{}, fmt.Errorf("failed to update PROJECT_PROGRESS_SUMMARY.md: %w", err)
 	}
 
-	return scaffoldResult{Feature: *feat, Paths: []string{feat.Path, specPath}}, nil
-}
-
-func scaffoldPlanWorkflow(featureRef string) (scaffoldResult, error) {
-	projectRoot, cfg, specsDir, err := scaffoldWorkflowContext()
-	if err != nil {
-		return scaffoldResult{}, err
-	}
-
-	feat, err := loadFeatureWithState(specsDir, cfg, featureRef)
-	if err != nil {
-		return scaffoldResult{}, fmt.Errorf("feature '%s' not found. Run 'kit scaffold spec %s' first", featureRef, featureRef)
-	}
-
-	specPath := filepath.Join(feat.Path, "SPEC.md")
-	if !document.Exists(specPath) {
-		return scaffoldResult{}, fmt.Errorf("SPEC.md not found. Run 'kit scaffold spec %s' first", feat.Slug)
-	}
-
-	planPath := filepath.Join(feat.Path, "PLAN.md")
-	if !document.Exists(planPath) {
-		content := templates.BuildPlanArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
-		if err := document.Write(planPath, content); err != nil {
-			return scaffoldResult{}, fmt.Errorf("failed to create PLAN.md: %w", err)
-		}
-	}
-	if effectivePromptProfile(feat.Path) == promptProfileFrontend {
-		if _, err := ensureFrontendProfileDependencyRows(specPath, document.TypeSpec, feat.DirName); err != nil {
-			return scaffoldResult{}, err
-		}
-		if _, err := ensureFrontendProfileDependencyRows(planPath, document.TypePlan, feat.DirName); err != nil {
-			return scaffoldResult{}, err
-		}
-	}
-
-	if err := rollup.Update(projectRoot, cfg); err != nil {
-		return scaffoldResult{}, fmt.Errorf("failed to update PROJECT_PROGRESS_SUMMARY.md: %w", err)
-	}
-
-	return scaffoldResult{Feature: *feat, Paths: []string{feat.Path, planPath}}, nil
-}
-
-func scaffoldTasksWorkflow(featureRef string) (scaffoldResult, error) {
-	projectRoot, cfg, specsDir, err := scaffoldWorkflowContext()
-	if err != nil {
-		return scaffoldResult{}, err
-	}
-
-	feat, err := loadFeatureWithState(specsDir, cfg, featureRef)
-	if err != nil {
-		return scaffoldResult{}, fmt.Errorf("feature '%s' not found. Run 'kit scaffold spec %s' first", featureRef, featureRef)
-	}
-
-	planPath := filepath.Join(feat.Path, "PLAN.md")
-	if !document.Exists(planPath) {
-		return scaffoldResult{}, fmt.Errorf("PLAN.md not found. Run 'kit scaffold plan %s' first", feat.Slug)
-	}
-
-	tasksPath := filepath.Join(feat.Path, "TASKS.md")
-	if !document.Exists(tasksPath) {
-		content := templates.BuildTasksArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
-		if err := document.Write(tasksPath, content); err != nil {
-			return scaffoldResult{}, fmt.Errorf("failed to create TASKS.md: %w", err)
-		}
-	}
-
-	if err := rollup.Update(projectRoot, cfg); err != nil {
-		return scaffoldResult{}, fmt.Errorf("failed to update PROJECT_PROGRESS_SUMMARY.md: %w", err)
-	}
-
-	return scaffoldResult{Feature: *feat, Paths: []string{feat.Path, tasksPath}}, nil
+	return scaffoldResult{Feature: *feat, Paths: paths}, nil
 }
 
 func scaffoldWorkflowContext() (string, *config.Config, string, error) {

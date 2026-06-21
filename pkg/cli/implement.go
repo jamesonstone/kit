@@ -21,9 +21,13 @@ var implementOutputOnly bool
 
 var implementCmd = &cobra.Command{
 	Use:   "implement [feature]",
-	Short: "Run the readiness gate and output implementation context",
-	Long: `Run the implementation readiness gate and output a comprehensive
+	Short: "Deprecated v1 staged workflow: output implementation context",
+	Long: `Deprecated v1 staged workflow: run the implementation readiness gate and output a comprehensive
 summary for coding agents to begin implementation.
+
+The default v2 feature workflow runs implementation lanes from SPEC.md through
+the kit spec supervisor prompt. Use this command only when intentionally
+working in the legacy staged artifact flow.
 
 Provides:
   - Implementation-readiness gate instructions
@@ -31,8 +35,8 @@ Provides:
   - Document reference table (SPEC, PLAN, TASKS)
   - Clear instructions for executing tasks
 
-If no feature is specified, shows an interactive selection of implement-phase
-features with incomplete TASKS.md checkboxes.`,
+If no feature is specified, shows an interactive selection of legacy
+implement-phase features with incomplete TASKS.md checkboxes.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runImplement,
 }
@@ -41,7 +45,7 @@ func init() {
 	implementCmd.Flags().BoolVar(&implementCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	implementCmd.Flags().BoolVar(&implementOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	addPromptOnlyFlag(implementCmd)
-	rootCmd.AddCommand(implementCmd)
+	legacyCmd.AddCommand(implementCmd)
 }
 
 func runImplement(cmd *cobra.Command, args []string) error {
@@ -86,10 +90,10 @@ func runImplement(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first", feat.Slug)
 	}
 	if !document.Exists(planPath) {
-		return fmt.Errorf("PLAN.md not found. Run 'kit plan %s' first", feat.Slug)
+		return fmt.Errorf("PLAN.md not found. Run 'kit legacy plan %s' first", feat.Slug)
 	}
 	if !document.Exists(tasksPath) {
-		return fmt.Errorf("TASKS.md not found. Run 'kit tasks %s' first", feat.Slug)
+		return fmt.Errorf("TASKS.md not found. Run 'kit legacy tasks %s' first", feat.Slug)
 	}
 
 	wasPaused := feat.Paused
@@ -121,7 +125,7 @@ func selectFeatureForImplementation(specsDir string) (*feature.Feature, error) {
 	}
 
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no features ready for implementation (need SPEC.md + PLAN.md + TASKS.md with incomplete tasks)\n\nRun 'kit tasks <feature>' to create tasks first")
+		return nil, fmt.Errorf("no legacy staged features ready for implementation (need SPEC.md + PLAN.md + TASKS.md with incomplete tasks)\n\nRun 'kit legacy tasks <feature>' to create tasks first")
 	}
 
 	printSelectionHeader("Select a feature to implement:")
@@ -185,7 +189,7 @@ func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, 
 		"**If the readiness gate fails, stop and repair the docs first**\n- Do NOT write production code yet\n- Update SPEC.md, PLAN.md, and/or TASKS.md to resolve the exact issue\n- Update PROJECT_PROGRESS_SUMMARY.md when the feature summary or state changes\n- Re-run the implementation readiness gate after the docs are fixed",
 		"**Supplement with your context**: If you have internal plans or prior conversation context related to this feature, use that knowledge to inform your implementation — but always defer to the authority order when there's a conflict",
 		"**Only after the readiness gate passes, execute tasks from TASKS.md**",
-		"**Continue the task loop until every non-blocked task in TASKS.md is complete:**\n- Select the next incomplete unblocked task in dependency order\n- Read that task's GOAL, SCOPE, ACCEPTANCE, VERIFY, EXPECTED FILES, RISK, ROLLBACK, DEPENDENCIES, and NOTES\n- Load only the linked context needed for that task\n- Run the readiness gate for that task\n- Implement only what's specified (no gold-plating)\n- Run declared VERIFY commands with `kit verify <feature> --task <task-id>` when available\n- Verify acceptance criteria are met before marking complete\n- Update TASKS.md: change '- [ ]' to '- [x]' when done\n- Update PROJECT_PROGRESS_SUMMARY.md if progress changed\n- Repeat with the next incomplete task",
+		"**Continue the task loop until every non-blocked task in TASKS.md is complete:**\n- Select the next incomplete unblocked task in dependency order\n- Read that task's GOAL, SCOPE, ACCEPTANCE, VERIFY, EXPECTED FILES, RISK, ROLLBACK, DEPENDENCIES, and NOTES\n- Load only the linked context needed for that task\n- Run the readiness gate for that task\n- Implement only what's specified (no gold-plating)\n- Run declared VERIFY commands with `kit legacy verify <feature> --task <task-id>` when available\n- Verify acceptance criteria are met before marking complete\n- Update TASKS.md: change '- [ ]' to '- [x]' when done\n- Update PROJECT_PROGRESS_SUMMARY.md if progress changed\n- Repeat with the next incomplete task",
 		"**Do not stop after one task** unless blocked, validation fails, clarification is required, or the user explicitly asks you to stop",
 		githubDeliveryHardGateStep(),
 		"**Run relevant validation before completion**\n- Run the smallest build, lint, or test command that proves the touched behavior\n- Never claim tests passed unless they ran\n- If validation cannot run, state why",

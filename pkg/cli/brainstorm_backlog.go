@@ -36,7 +36,7 @@ func runBrainstormBacklog(
 
 	if !created && feat.Phase != feature.PhaseBrainstorm {
 		return fmt.Errorf(
-			"feature '%s' is in %s phase. Backlog capture only supports brainstorm-phase features",
+			"feature '%s' is in %s phase. Backlog capture only supports legacy brainstorm-phase features",
 			feat.Slug,
 			feat.Phase,
 		)

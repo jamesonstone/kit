@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 )
 
 // Feature represents a feature directory and its metadata.
@@ -26,18 +27,26 @@ type Feature struct {
 	Paused    bool      `json:"paused"`
 }
 
-// Phase represents the current phase of a feature in the artifact pipeline.
+// Phase represents the current phase of a feature.
 type Phase string
 
 const (
+	PhaseClarify   Phase = "clarify"
+	PhaseReady     Phase = "ready"
+	PhaseImplement Phase = "implement"
+	PhaseValidate  Phase = "validate"
+	PhaseReflect   Phase = "reflect"
+	PhaseDeliver   Phase = "deliver"
+	PhaseComplete  Phase = "complete"
+	PhaseBlocked   Phase = "blocked"
+	PhaseRemoved   Phase = "removed"
+
+	// Legacy staged phases are retained only for existing v1 artifacts and
+	// explicit `kit legacy` commands.
 	PhaseBrainstorm Phase = "brainstorm"
 	PhaseSpec       Phase = "spec"
 	PhasePlan       Phase = "plan"
 	PhaseTasks      Phase = "tasks"
-	PhaseImplement  Phase = "implement"
-	PhaseReflect    Phase = "reflect"
-	PhaseComplete   Phase = "complete"
-	PhaseRemoved    Phase = "removed"
 )
 
 // ReflectionCompleteMarker is the marker that indicates reflection is complete.
@@ -147,15 +156,19 @@ func ListFeatures(specsDir string) ([]Feature, error) {
 	return features, nil
 }
 
-// DeterminePhase checks which documents exist and returns the current phase.
-// phase progression: brainstorm → spec → plan → tasks → implement → reflect
+// DeterminePhase checks feature documents and returns the current phase.
+// v2 SPEC.md front matter is authoritative when present. Legacy staged artifact
+// inference is retained only as fallback for historical v1 feature directories.
 func DeterminePhase(featurePath string) Phase {
 	tasksPath := filepath.Join(featurePath, "TASKS.md")
 	planPath := filepath.Join(featurePath, "PLAN.md")
 	specPath := filepath.Join(featurePath, "SPEC.md")
 	brainstormPath := filepath.Join(featurePath, "BRAINSTORM.md")
 
-	// if tasks file exists, check task completion for implement vs reflect
+	if phase, ok := determineV2SpecPhase(specPath); ok {
+		return phase
+	}
+
 	if _, err := os.Stat(tasksPath); err == nil {
 		return DeterminePhaseFromTasks(tasksPath)
 	}
@@ -169,6 +182,43 @@ func DeterminePhase(featurePath string) Phase {
 		return PhaseBrainstorm
 	}
 	return PhaseBrainstorm
+}
+
+func determineV2SpecPhase(specPath string) (Phase, bool) {
+	if _, err := os.Stat(specPath); err != nil {
+		return "", false
+	}
+	doc, err := document.ParseFile(specPath, document.TypeSpec)
+	if err != nil || doc.Metadata == nil || doc.Metadata.WorkflowVersion != 2 {
+		return "", false
+	}
+	if phase, ok := V2PhaseFromString(doc.Metadata.Phase); ok {
+		return phase, true
+	}
+	return PhaseClarify, true
+}
+
+func V2PhaseFromString(value string) (Phase, bool) {
+	switch Phase(strings.TrimSpace(value)) {
+	case PhaseClarify:
+		return PhaseClarify, true
+	case PhaseReady:
+		return PhaseReady, true
+	case PhaseImplement:
+		return PhaseImplement, true
+	case PhaseValidate:
+		return PhaseValidate, true
+	case PhaseReflect:
+		return PhaseReflect, true
+	case PhaseDeliver:
+		return PhaseDeliver, true
+	case PhaseComplete:
+		return PhaseComplete, true
+	case PhaseBlocked:
+		return PhaseBlocked, true
+	default:
+		return "", false
+	}
 }
 
 // DeterminePhaseFromTasks determines phase based on task progress.

@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "ci", "verify", "loop review", "dispatch", "rules add", "skill mine"} {
+	for _, command := range []string{"capabilities", "ci", "legacy verify", "loop review", "dispatch", "rules add", "skill mine"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
@@ -38,12 +38,12 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		}
 	}
 
-	verify := findCompactCapability(payload.Commands, "verify")
+	verify := findCompactCapability(payload.Commands, "legacy verify")
 	if verify == nil {
-		t.Fatal("expected verify capability")
+		t.Fatal("expected legacy verify capability")
 	}
 	if verify.MutationLevel != mutationExecutesCommands {
-		t.Fatalf("verify mutation_level = %q, want %q", verify.MutationLevel, mutationExecutesCommands)
+		t.Fatalf("legacy verify mutation_level = %q, want %q", verify.MutationLevel, mutationExecutesCommands)
 	}
 	if !strings.Contains(verify.FileWrites.FlagDependent, "--no-write") {
 		t.Fatalf("expected verify file write behavior to mention --no-write, got %#v", verify.FileWrites)
@@ -84,9 +84,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 		t.Fatalf("expected init detailed flags to include --diff")
 	}
 
-	output, err := executeCapabilitiesCommand("--json", "verify")
+	output, err := executeCapabilitiesCommand("--json", "legacy", "verify")
 	if err != nil {
-		t.Fatalf("kit capabilities verify --json error = %v", err)
+		t.Fatalf("kit capabilities legacy verify --json error = %v", err)
 	}
 
 	var payload capabilityDetailPayload
@@ -96,8 +96,8 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if payload.Kind != "capability_detail" {
 		t.Fatalf("kind = %q, want capability_detail", payload.Kind)
 	}
-	if payload.Command.Command != "verify" {
-		t.Fatalf("command = %q, want verify", payload.Command.Command)
+	if payload.Command.Command != "legacy verify" {
+		t.Fatalf("command = %q, want legacy verify", payload.Command.Command)
 	}
 	if len(payload.Command.WhenToUse) == 0 || len(payload.Command.WhenNotToUse) == 0 || len(payload.Command.Examples) == 0 {
 		t.Fatalf("expected detailed guidance fields to be populated: %#v", payload.Command)

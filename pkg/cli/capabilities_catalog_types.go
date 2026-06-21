@@ -12,9 +12,10 @@ const (
 var capabilityCategoryOrder = map[string]int{
 	"Setup":            1,
 	"Workflow":         2,
-	"Inspect & Repair": 3,
-	"Prompt Utilities": 4,
-	"Utilities":        5,
+	"Legacy":           3,
+	"Inspect & Repair": 4,
+	"Prompt Utilities": 5,
+	"Utilities":        6,
 }
 
 type capabilityBehavior struct {

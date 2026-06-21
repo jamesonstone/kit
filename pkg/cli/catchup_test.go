@@ -40,7 +40,7 @@ func TestBuildCatchupPrompt(t *testing.T) {
 		"Active feature: 0007-catchup-command",
 		"Current phase: reflect",
 		"Current state:",
-		"Next canonical artifact: TASKS.md",
+		"Next workflow gate: reflection and documentation sync in SPEC.md",
 		"Next recommended command:",
 		"Known blockers: none recorded in Kit artifacts",
 		"Validation state: unknown from current artifacts",
@@ -56,7 +56,7 @@ func TestBuildCatchupPrompt(t *testing.T) {
 		"Do NOT switch from catch-up or clarification into implementation until the user explicitly approves that move",
 		"`kit summarize catchup-command`",
 		"do not duplicate the full `kit handoff` workflow",
-		"do not output implementation instructions like `kit implement` unless the user explicitly asks to proceed",
+		"do not output legacy staged implementation instructions like `kit legacy implement` unless the user explicitly asks to proceed",
 	}
 
 	for _, check := range checks {
@@ -98,7 +98,7 @@ func TestBuildCatchupPromptForCompleteFeature(t *testing.T) {
 	prompt := buildCatchupPrompt(feat, status, projectRoot)
 	checks := []string{
 		"Current phase: complete",
-		"Next canonical artifact: TASKS.md reflection marker",
+		"Next workflow gate: complete",
 		"This feature is already marked `complete`; treat this catch-up as review or reopen triage only",
 		"Do not assume implementation should resume unless the user explicitly asks to reopen work on this feature",
 	}

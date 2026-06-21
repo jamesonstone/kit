@@ -26,9 +26,13 @@ var (
 
 var brainstormCmd = &cobra.Command{
 	Use:   "brainstorm [feature]",
-	Short: "Create or update BRAINSTORM.md and output a research prompt",
-	Long: `Create or update a feature's BRAINSTORM.md document and output a
+	Short: "Deprecated v1 staged workflow: create BRAINSTORM.md or backlog research",
+	Long: `Deprecated v1 staged workflow: create or update a feature's BRAINSTORM.md document and output a
 research and documentation prompt for a coding agent.
+
+The default v2 feature workflow starts with kit spec <feature>. Use brainstorm
+when intentionally working in the legacy staged artifact flow or capturing a
+deferred backlog research item.
 
 Creates:
 	- Feature directory (e.g., docs/specs/0001-my-feature/)
@@ -44,12 +48,12 @@ coding agent to research the codebase, use numbered lists for clarifying
 questions, show percentage progress, and persist findings to BRAINSTORM.md.
 
 Examples:
-	kit brainstorm
-	kit brainstorm --inline
-	kit brainstorm --editor nvim
-	kit brainstorm patient-intake-redesign
-	kit brainstorm patient-intake-redesign --output-only
-	kit brainstorm -o docs/brainstorm-prompt.md`,
+	kit legacy brainstorm
+	kit legacy brainstorm --inline
+	kit legacy brainstorm --editor nvim
+	kit legacy brainstorm patient-intake-redesign
+	kit legacy brainstorm patient-intake-redesign --output-only
+	kit legacy brainstorm -o docs/brainstorm-prompt.md`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runBrainstorm,
 }
@@ -63,7 +67,7 @@ func init() {
 	brainstormCmd.Flags().BoolVar(&brainstormOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	brainstormCmd.Flags().BoolVar(&brainstormPrepare, "prepare", false, "create brainstorm directories and files without outputting the brainstorm prompt")
 	addPromptOnlyFlag(brainstormCmd)
-	rootCmd.AddCommand(brainstormCmd)
+	legacyCmd.AddCommand(brainstormCmd)
 }
 
 func runBrainstorm(cmd *cobra.Command, args []string) error {

@@ -25,9 +25,13 @@ var verifyTimeout string
 
 var verifyCmd = &cobra.Command{
 	Use:          "verify [feature]",
-	Short:        "Run declared verification checks",
+	Short:        "Run deprecated v1 staged verification checks",
 	SilenceUsage: true,
-	Long: `Run verification commands declared in TASKS.md.
+	Long: `Run verification commands declared in legacy TASKS.md.
+
+In the default v2 feature workflow, validation is orchestrated by the kit spec
+supervisor prompt and recorded in SPEC.md. This command remains available for
+legacy v1 staged artifacts and reusable local evidence runs.
 
 By default commands are parsed as argv and executed without shell evaluation.
 Use --dry-run to inspect selected commands without running them.`,
@@ -42,7 +46,7 @@ func init() {
 	verifyCmd.Flags().BoolVar(&verifyNoWrite, "no-write", false, "do not write .kit/runs artifacts")
 	verifyCmd.Flags().BoolVar(&verifyAllowShell, "allow-shell", false, "allow shell command declarations")
 	verifyCmd.Flags().StringVar(&verifyTimeout, "timeout", "", "per-command timeout such as 30s or 2m")
-	rootCmd.AddCommand(verifyCmd)
+	legacyCmd.AddCommand(verifyCmd)
 }
 
 func runVerify(cmd *cobra.Command, args []string) error {

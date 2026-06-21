@@ -9,13 +9,14 @@ import (
 )
 
 type specAnswers struct {
-	Problem      string
-	Goals        string
-	NonGoals     string
-	Users        string
-	Requirements string
-	Acceptance   string
-	EdgeCases    string
+	Problem        string
+	Goals          string
+	NonGoals       string
+	Users          string
+	Requirements   string
+	Acceptance     string
+	EdgeCases      string
+	DeliveryIntent string
 }
 
 func normalizeSpecAnswer(raw string) string {

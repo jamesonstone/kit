@@ -98,6 +98,8 @@ type MetadataSkill struct {
 type Metadata struct {
 	KitMetadataVersion int                            `yaml:"kit_metadata_version"`
 	Artifact           string                         `yaml:"artifact"`
+	WorkflowVersion    int                            `yaml:"workflow_version,omitempty"`
+	Phase              string                         `yaml:"phase,omitempty"`
 	Feature            FeatureMetadata                `yaml:"feature"`
 	Summary            string                         `yaml:"summary,omitempty"`
 	Intent             string                         `yaml:"intent,omitempty"`
@@ -130,13 +132,15 @@ type metadataBlock struct {
 }
 
 type MetadataUpsert struct {
-	Feature       FeatureMetadata
-	Artifact      string
-	Summary       string
-	Intent        string
-	Relationships []MetadataRelationship
-	References    []MetadataReference
-	Skills        []MetadataSkill
+	Feature         FeatureMetadata
+	Artifact        string
+	WorkflowVersion int
+	Phase           string
+	Summary         string
+	Intent          string
+	Relationships   []MetadataRelationship
+	References      []MetadataReference
+	Skills          []MetadataSkill
 }
 
 var featureDirPattern = regexp.MustCompile(`^([0-9]+)-(.+)$`)
@@ -560,6 +564,12 @@ func UpsertMetadata(content string, docType DocumentType, update MetadataUpsert)
 	setNodeInt(metadataNode, "kit_metadata_version", MetadataVersion)
 	if update.Artifact != "" {
 		setNodeString(metadataNode, "artifact", update.Artifact)
+	}
+	if update.WorkflowVersion != 0 {
+		setNodeInt(metadataNode, "workflow_version", update.WorkflowVersion)
+	}
+	if update.Phase != "" {
+		setNodeString(metadataNode, "phase", update.Phase)
 	}
 	if update.Feature != (FeatureMetadata{}) {
 		upsertFeatureMetadata(metadataNode, update.Feature)

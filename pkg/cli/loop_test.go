@@ -27,44 +27,62 @@ func TestResolveStrictLoopStage(t *testing.T) {
 	feat := &feature.Feature{Slug: "alpha", DirName: "0001-alpha", Path: featurePath}
 
 	state := resolveStrictLoopStage(projectRoot, feat)
-	if state.Stage != loopStageSpec || len(state.Diagnostics) == 0 {
-		t.Fatalf("missing SPEC stage = %#v, want spec diagnostics", state)
+	if state.Stage != loopStageClarify || len(state.Diagnostics) == 0 {
+		t.Fatalf("missing SPEC stage = %#v, want clarify diagnostics", state)
 	}
 
 	writeFile(t, filepath.Join(featurePath, "SPEC.md"), templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName)))
 	state = resolveStrictLoopStage(projectRoot, feat)
-	if state.Stage != loopStageSpec || len(state.Diagnostics) == 0 {
-		t.Fatalf("placeholder SPEC stage = %#v, want spec diagnostics", state)
+	if state.Stage != loopStageClarify || len(state.Diagnostics) == 0 {
+		t.Fatalf("placeholder SPEC stage = %#v, want clarify diagnostics", state)
 	}
 
-	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validSpecWithRelationships("none\n"))
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV2SpecWithPhase("0001-alpha", "clarify"))
 	state = resolveStrictLoopStage(projectRoot, feat)
-	if state.Stage != loopStagePlan || len(state.Diagnostics) == 0 {
-		t.Fatalf("valid SPEC stage = %#v, want plan diagnostics", state)
+	if state.Stage != loopStageClarify || len(state.Diagnostics) != 0 {
+		t.Fatalf("valid clarify SPEC stage = %#v, want clarify without diagnostics", state)
 	}
 
-	writeFile(t, filepath.Join(featurePath, "PLAN.md"), validPlan())
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV2SpecWithPhase("0001-alpha", "ready"))
 	state = resolveStrictLoopStage(projectRoot, feat)
-	if state.Stage != loopStageTasks || len(state.Diagnostics) == 0 {
-		t.Fatalf("valid PLAN stage = %#v, want tasks diagnostics", state)
+	if state.Stage != loopStageReady || len(state.Diagnostics) != 0 {
+		t.Fatalf("ready SPEC stage = %#v, want ready", state)
 	}
 
-	writeFile(t, filepath.Join(featurePath, "TASKS.md"), validTasks())
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV2SpecWithPhase("0001-alpha", "implement"))
 	state = resolveStrictLoopStage(projectRoot, feat)
-	if state.Stage != loopStageImplement || state.TasksTotal != 1 || state.TasksDone != 0 {
-		t.Fatalf("incomplete TASKS stage = %#v, want implement 0/1", state)
+	if state.Stage != loopStageImplement || len(state.Diagnostics) != 0 {
+		t.Fatalf("implement SPEC stage = %#v, want implement", state)
 	}
 
-	writeFile(t, filepath.Join(featurePath, "TASKS.md"), completedTasksWithoutReflection())
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV2SpecWithPhase("0001-alpha", "validate"))
 	state = resolveStrictLoopStage(projectRoot, feat)
-	if state.Stage != loopStageReflect || state.TasksTotal != 1 || state.TasksDone != 1 {
-		t.Fatalf("complete TASKS stage = %#v, want reflect 1/1", state)
+	if state.Stage != loopStageValidate || len(state.Diagnostics) != 0 {
+		t.Fatalf("validate SPEC stage = %#v, want validate", state)
 	}
 
-	writeFile(t, filepath.Join(featurePath, "TASKS.md"), completedTasksWithoutReflection()+"\n"+feature.ReflectionCompleteMarker+"\n")
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV2SpecWithPhase("0001-alpha", "reflect"))
 	state = resolveStrictLoopStage(projectRoot, feat)
-	if state.Stage != loopStageComplete {
-		t.Fatalf("reflection marker stage = %#v, want complete", state)
+	if state.Stage != loopStageReflect || len(state.Diagnostics) != 0 {
+		t.Fatalf("reflect SPEC stage = %#v, want reflect", state)
+	}
+
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV2SpecWithPhase("0001-alpha", "deliver"))
+	state = resolveStrictLoopStage(projectRoot, feat)
+	if state.Stage != loopStageDeliver || len(state.Diagnostics) != 0 {
+		t.Fatalf("deliver SPEC stage = %#v, want deliver", state)
+	}
+
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV2SpecWithPhase("0001-alpha", "complete"))
+	state = resolveStrictLoopStage(projectRoot, feat)
+	if state.Stage != loopStageComplete || len(state.Diagnostics) != 0 {
+		t.Fatalf("complete SPEC stage = %#v, want complete", state)
+	}
+
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV2SpecWithPhase("0001-alpha", "blocked"))
+	state = resolveStrictLoopStage(projectRoot, feat)
+	if state.Stage != loopStageBlocked || len(state.Diagnostics) != 0 {
+		t.Fatalf("blocked SPEC stage = %#v, want blocked", state)
 	}
 }
 
@@ -80,10 +98,8 @@ func TestLoopCommandSuppressesDuplicateErrorOutput(t *testing.T) {
 func TestResolveLoopFeatureWithoutArgShowsSelector(t *testing.T) {
 	projectRoot := t.TempDir()
 	specsDir := filepath.Join(projectRoot, "docs", "specs")
-	writeFile(t, filepath.Join(specsDir, "0001-alpha", "SPEC.md"), validSpecWithRelationships("none\n"))
-	writeFile(t, filepath.Join(specsDir, "0002-beta", "SPEC.md"), validSpecWithRelationships("none\n"))
-	writeFile(t, filepath.Join(specsDir, "0002-beta", "PLAN.md"), validPlan())
-	writeFile(t, filepath.Join(specsDir, "0002-beta", "TASKS.md"), completedTasksWithoutReflection()+"\n"+feature.ReflectionCompleteMarker+"\n")
+	writeFile(t, filepath.Join(specsDir, "0001-alpha", "SPEC.md"), validV2SpecWithPhase("0001-alpha", "clarify"))
+	writeFile(t, filepath.Join(specsDir, "0002-beta", "SPEC.md"), validV2SpecWithPhase("0002-beta", "complete"))
 	cfg := config.Default()
 
 	var selected *feature.Feature
@@ -111,10 +127,8 @@ func TestResolveLoopFeatureWithoutArgShowsSelector(t *testing.T) {
 func TestLoopFeatureCandidatesExcludeCompleteFeatures(t *testing.T) {
 	projectRoot := t.TempDir()
 	specsDir := filepath.Join(projectRoot, "docs", "specs")
-	writeFile(t, filepath.Join(specsDir, "0001-alpha", "SPEC.md"), validSpecWithRelationships("none\n"))
-	writeFile(t, filepath.Join(specsDir, "0002-beta", "SPEC.md"), validSpecWithRelationships("none\n"))
-	writeFile(t, filepath.Join(specsDir, "0002-beta", "PLAN.md"), validPlan())
-	writeFile(t, filepath.Join(specsDir, "0002-beta", "TASKS.md"), completedTasksWithoutReflection()+"\n"+feature.ReflectionCompleteMarker+"\n")
+	writeFile(t, filepath.Join(specsDir, "0001-alpha", "SPEC.md"), validV2SpecWithPhase("0001-alpha", "clarify"))
+	writeFile(t, filepath.Join(specsDir, "0002-beta", "SPEC.md"), validV2SpecWithPhase("0002-beta", "complete"))
 
 	candidates, err := loopFeatureCandidates(specsDir, config.Default())
 	if err != nil {
@@ -149,8 +163,8 @@ func TestExecuteLoopRunsConfiguredAgentUntilComplete(t *testing.T) {
 	if report.Status != "complete" {
 		t.Fatalf("Status = %q, want complete", report.Status)
 	}
-	if len(report.Iterations) != 5 {
-		t.Fatalf("Iterations = %d, want 5", len(report.Iterations))
+	if len(report.Iterations) != 6 {
+		t.Fatalf("Iterations = %d, want 6", len(report.Iterations))
 	}
 	if report.ArtifactDir == "" {
 		t.Fatal("ArtifactDir is empty")
@@ -318,24 +332,29 @@ func loopAgentScript(confidence int, emitResult bool, mutate bool) string {
 	mutations := ""
 	if mutate {
 		mutations = `case "$KIT_LOOP_STAGE" in
-  spec)
+  clarify)
     cat > docs/specs/0001-alpha/SPEC.md <<'DOC'
-` + validSpecWithRelationships("none\n") + `DOC
+` + validV2SpecWithPhase("0001-alpha", "ready") + `DOC
     ;;
-  plan)
-    cat > docs/specs/0001-alpha/PLAN.md <<'DOC'
-` + validPlan() + `DOC
-    ;;
-  tasks)
-    cat > docs/specs/0001-alpha/TASKS.md <<'DOC'
-` + validTasks() + `DOC
+  ready)
+    cat > docs/specs/0001-alpha/SPEC.md <<'DOC'
+` + validV2SpecWithPhase("0001-alpha", "implement") + `DOC
     ;;
   implement)
-    cat > docs/specs/0001-alpha/TASKS.md <<'DOC'
-` + completedTasksWithoutReflection() + `DOC
+    cat > docs/specs/0001-alpha/SPEC.md <<'DOC'
+` + validV2SpecWithPhase("0001-alpha", "validate") + `DOC
+    ;;
+  validate)
+    cat > docs/specs/0001-alpha/SPEC.md <<'DOC'
+` + validV2SpecWithPhase("0001-alpha", "reflect") + `DOC
     ;;
   reflect)
-    printf '\n` + feature.ReflectionCompleteMarker + `\n' >> docs/specs/0001-alpha/TASKS.md
+    cat > docs/specs/0001-alpha/SPEC.md <<'DOC'
+` + validV2SpecWithPhase("0001-alpha", "deliver") + `DOC
+    ;;
+  deliver)
+    cat > docs/specs/0001-alpha/SPEC.md <<'DOC'
+` + validV2SpecWithPhase("0001-alpha", "complete") + `DOC
     ;;
 esac
 `
@@ -347,12 +366,76 @@ cat >/dev/null
 `
 }
 
-func completedTasksWithoutReflection() string {
-	return strings.ReplaceAll(
-		strings.Replace(validTasks(), "| T001 | sample task | todo | agent | |", "| T001 | sample task | done | agent | |", 1),
-		"- [ ] T001: sample task",
-		"- [x] T001: sample task",
-	)
+func validV2SpecWithPhase(dirName string, phase string) string {
+	id, slug, ok := strings.Cut(dirName, "-")
+	if !ok {
+		id = ""
+		slug = dirName
+	}
+	return `---
+kit_metadata_version: 1
+artifact: spec
+workflow_version: 2
+phase: ` + phase + `
+feature:
+  id: "` + id + `"
+  slug: ` + slug + `
+  dir: ` + dirName + `
+---
+# SPEC
+
+## THESIS
+
+Thesis for ` + slug + `.
+
+## CONTEXT
+
+Repo-grounded context.
+
+## CLARIFICATIONS
+
+No unresolved clarification questions.
+
+## REQUIREMENTS
+
+- Requirement one.
+
+## ASSUMPTIONS
+
+No blocking assumptions.
+
+## ACCEPTANCE CRITERIA
+
+- AC1: Binary-verifiable criterion.
+
+## IMPLEMENTATION PLAN
+
+Implement the planned change.
+
+## TASK CHECKLIST
+
+- [x] T001: Maintain v2 workflow state.
+
+## VALIDATION MAP
+
+- AC1 -> go test ./...
+
+## REFLECTION NOTES
+
+No remaining risks.
+
+## DOCUMENTATION UPDATES
+
+README and command docs are current.
+
+## DELIVERY DECISION
+
+No delivery mutation requested.
+
+## EVIDENCE
+
+Validation evidence recorded.
+`
 }
 
 func fmtInt(value int) string {
