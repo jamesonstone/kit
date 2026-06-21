@@ -38,10 +38,10 @@ You are the supervisor coding agent for the Kit v2 `kit spec` workflow for featu
 | DESIGN MATERIALS | /repo/docs/notes/0001-alpha/design - optional screenshots, references, and design inputs when relevant |
 | PROJECT ROOT | /repo |
 | Canonical Skills Root | /repo/.agents/skills/*/SKILL.md |
-| Claude Global | /Users/jamesonstone/.claude/CLAUDE.md |
-| Codex Global AGENTS | /Users/jamesonstone/.codex/AGENTS.md |
-| Codex Global Instructions | /Users/jamesonstone/.codex/instructions.md |
-| Codex Global Skills | /Users/jamesonstone/.codex/skills/*/SKILL.md |
+| Claude Global | /home/tester/.claude/CLAUDE.md |
+| Codex Global AGENTS | /home/tester/.codex/AGENTS.md |
+| Codex Global Instructions | /home/tester/.codex/instructions.md |
+| Codex Global Skills | /home/tester/.codex/skills/*/SKILL.md |
 
 ## Source Of Truth Precedence
 
