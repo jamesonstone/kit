@@ -72,6 +72,9 @@ Delivery Contract:
 
 If any field is unknown, stop.
 
+The ` + "`PR title format`" + ` field must resolve to Conventional Commits title format with the GitHub issue as scope:
+` + "`<type>(<issue_number>): <gitmoji> <short title message>`" + `.
+
 ## No Generic GitHub Defaults In Kit Projects
 
 In a Kit-managed project, global agent/plugin GitHub workflows are fallback tools only. They do not define process.

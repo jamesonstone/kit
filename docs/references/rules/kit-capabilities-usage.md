@@ -23,7 +23,7 @@ read_policy_default: conditional
 ## Applies When
 
 - A coding agent is working in a Kit-managed downstream project and is unsure which Kit command, subcommand, flag, or alias applies.
-- A task involves choosing between Kit commands such as `kit map`, `kit check`, `kit verify`, `kit ci`, `kit dispatch`, `kit review-loop`, or `kit rules`.
+- A task involves choosing between Kit commands such as `kit map`, `kit check`, `kit verify`, `kit ci`, `kit dispatch`, `kit loop review`, or `kit rules`.
 - Project docs, scripts, or prompts mention Kit command behavior and should avoid stale assumptions.
 
 ## Rules
@@ -63,7 +63,7 @@ Choosing a command:
 
 ```bash
 kit capabilities --search review-loop --json
-kit capabilities review-loop --json
+kit capabilities loop review --json
 ```
 
 Checking command safety before use:

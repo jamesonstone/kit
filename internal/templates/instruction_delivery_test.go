@@ -36,6 +36,7 @@ func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 		"A Kit-managed project is any repository containing `.kit.yaml`, `docs/CONSTITUTION.md`, or `docs/agents/README.md`",
 		"Delivery Contract:",
 		"Branch/status/staleness check:",
+		"`<type>(<issue_number>): <gitmoji> <short title message>`",
 		"`codex/*` branches",
 		"global agent/plugin GitHub workflows are fallback tools only",
 	} {
