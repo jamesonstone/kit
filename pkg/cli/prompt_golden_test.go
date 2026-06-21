@@ -47,6 +47,9 @@ func TestFeatureScopedSummarizeInstructions_Golden(t *testing.T) {
 }
 
 func TestBuildSpecV2SupervisorPrompt_Golden(t *testing.T) {
+	t.Setenv("HOME", "/home/tester")
+	t.Setenv("CODEX_HOME", "/home/tester/.codex")
+
 	cfg := config.Default()
 	prompt := buildSpecV2SupervisorPrompt(specV2PromptInput{
 		SpecPath:       "/repo/docs/specs/0001-alpha/SPEC.md",
