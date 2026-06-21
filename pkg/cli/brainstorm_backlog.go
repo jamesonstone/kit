@@ -119,41 +119,6 @@ func runBrainstormBacklog(
 	return nil
 }
 
-func runBrainstormPickup(
-	projectRoot string,
-	cfg *config.Config,
-	specsDir string,
-	args []string,
-	outputOnly bool,
-) error {
-	var (
-		feat *feature.Feature
-		err  error
-	)
-
-	if len(args) == 1 {
-		feat, err = resolveBacklogFeature(specsDir, cfg, args[0])
-		if err != nil {
-			return err
-		}
-	} else {
-		feat, err = selectBacklogFeature(specsDir, cfg, "Select a backlog item to pick up:")
-		if err != nil {
-			return err
-		}
-	}
-
-	return resumeBacklogFeature(
-		projectRoot,
-		cfg,
-		feat,
-		outputOnly,
-		brainstormCopy,
-		brainstormOutput,
-		"brainstorm pickup",
-	)
-}
-
 func addBacklogRelationship(
 	brainstormPath string,
 	currentActive *feature.Feature,

@@ -20,7 +20,6 @@ var (
 	brainstormEditor     string
 	brainstormOutput     string
 	brainstormOutputOnly bool
-	brainstormPickup     bool
 	brainstormPrepare    bool
 	brainstormUseVim     bool
 )
@@ -62,12 +61,7 @@ func init() {
 	brainstormCmd.Flags().BoolVar(&brainstormCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	brainstormCmd.Flags().StringVarP(&brainstormOutput, "output", "o", "", "write output to file")
 	brainstormCmd.Flags().BoolVar(&brainstormOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
-	brainstormCmd.Flags().BoolVar(&brainstormPickup, "pickup", false, "resume a paused backlog item instead of starting a new brainstorm capture")
 	brainstormCmd.Flags().BoolVar(&brainstormPrepare, "prepare", false, "create brainstorm directories and files without outputting the brainstorm prompt")
-	if flag := brainstormCmd.Flags().Lookup("pickup"); flag != nil {
-		flag.Hidden = true
-		flag.Deprecated = "use `kit resume <feature>` or `kit backlog --pickup <feature>`"
-	}
 	addPromptOnlyFlag(brainstormCmd)
 	rootCmd.AddCommand(brainstormCmd)
 }
@@ -91,16 +85,12 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if brainstormBacklog && brainstormPickup {
-		return fmt.Errorf("--backlog and --pickup cannot be used together")
-	}
-
 	if brainstormPrepare {
 		if promptOnly {
 			return fmt.Errorf("--prepare cannot be used with --prompt-only")
 		}
-		if brainstormUseVim || brainstormEditor != "" || brainstormInline || brainstormBacklog || brainstormPickup {
-			return fmt.Errorf("--prepare cannot be used with --vim, --editor, --inline, --backlog, or --pickup")
+		if brainstormUseVim || brainstormEditor != "" || brainstormInline || brainstormBacklog {
+			return fmt.Errorf("--prepare cannot be used with --vim, --editor, --inline, or --backlog")
 		}
 		if brainstormOutput != "" || outputOnly || brainstormCopy {
 			return fmt.Errorf("--prepare does not output a prompt; remove --output, --output-only, and --copy")
@@ -116,20 +106,14 @@ func runBrainstorm(cmd *cobra.Command, args []string) error {
 	}
 
 	if promptOnly {
-		if brainstormUseVim || brainstormEditor != "" || brainstormInline || brainstormBacklog || brainstormPickup {
-			return fmt.Errorf("--prompt-only cannot be used with --vim, --editor, --inline, --backlog, or --pickup")
+		if brainstormUseVim || brainstormEditor != "" || brainstormInline || brainstormBacklog {
+			return fmt.Errorf("--prompt-only cannot be used with --vim, --editor, --inline, or --backlog")
 		}
 		return outputExistingBrainstormPrompt(args, projectRoot, cfg, outputOnly)
 	}
 
 	if brainstormInline && (brainstormUseVim || brainstormEditor != "") {
 		return fmt.Errorf("--inline cannot be used with --vim or --editor")
-	}
-	if brainstormPickup {
-		if brainstormUseVim || brainstormEditor != "" || brainstormInline {
-			return fmt.Errorf("--pickup cannot be used with --vim, --editor, or --inline")
-		}
-		return runBrainstormPickup(projectRoot, cfg, specsDir, args, outputOnly)
 	}
 	if brainstormBacklog {
 		if brainstormOutput != "" || outputOnly || brainstormCopy {

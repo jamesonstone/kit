@@ -16,7 +16,7 @@ func TestRunBrainstormPrepareCreatesScaffoldWithoutPrompt(t *testing.T) {
 	}
 	defer restoreWD()
 
-	restoreFlags := setBrainstormFlagState(false, false, "", false, false, false, false)
+	restoreFlags := setBrainstormFlagState(false, "", false, false, false, false)
 	defer restoreFlags()
 	brainstormPrepare = true
 

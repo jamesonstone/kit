@@ -103,24 +103,14 @@ func TestCapabilitiesFullAndHiddenPolicy(t *testing.T) {
 	if err := json.Unmarshal([]byte(fullOutput), &fullPayload); err != nil {
 		t.Fatalf("json.Unmarshal(full) error = %v", err)
 	}
-	update := findDetailCapability(fullPayload.Commands, "update")
-	if update == nil {
-		t.Fatal("expected full capabilities to include hidden update")
-	}
-	if !update.Hidden || !update.Deprecated {
-		t.Fatalf("expected update to be hidden and deprecated, got hidden=%v deprecated=%v", update.Hidden, update.Deprecated)
+	for _, command := range []string{"update", "skills", "skills mine", "catchup", "rollup", "review-loop"} {
+		if found := findDetailCapability(fullPayload.Commands, command); found != nil {
+			t.Fatalf("expected full capabilities to omit removed command %q, got %#v", command, found)
+		}
 	}
 
-	targetedOutput, err := executeCapabilitiesCommand("--json", "update")
-	if err != nil {
-		t.Fatalf("kit capabilities update --json error = %v", err)
-	}
-	var targeted capabilityDetailPayload
-	if err := json.Unmarshal([]byte(targetedOutput), &targeted); err != nil {
-		t.Fatalf("json.Unmarshal(targeted hidden) error = %v", err)
-	}
-	if targeted.Command.Command != "update" || !targeted.Command.Hidden || !targeted.Command.Deprecated {
-		t.Fatalf("expected targeted hidden lookup to return labeled update, got %#v", targeted.Command)
+	if _, err := executeCapabilitiesCommand("--json", "update"); err == nil || !strings.Contains(err.Error(), "unknown Kit command path") {
+		t.Fatalf("expected targeted update lookup to fail as removed, got %v", err)
 	}
 
 	searchOutput, err := executeCapabilitiesCommand("--search", "update", "--json")

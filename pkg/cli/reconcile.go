@@ -22,7 +22,7 @@ current Kit contract.
 
 Without a feature argument, reconciles the whole project by default.
 Use --all as an explicit alias for whole-project mode.
-With a feature argument, audits only that feature's docs plus related rollup drift.
+With a feature argument, audits only that feature's docs plus related project-summary drift.
 
 This command is prompt-only in v1. It does not edit files directly.`,
 	Args: cobra.MaximumNArgs(1),

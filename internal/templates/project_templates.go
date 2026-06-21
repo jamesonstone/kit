@@ -56,7 +56,7 @@ See docs/CONSTITUTION.md for project-wide constraints and principles.
 
 ## LAST UPDATED
 
-<!-- timestamp updated by kit rollup -->
+<!-- timestamp updated by Kit lifecycle refresh -->
 `
 
 // FeatureSummaryTemplate returns a template for a feature summary in PROJECT_PROGRESS_SUMMARY.md

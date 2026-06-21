@@ -34,7 +34,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 	}
 	for _, command := range []string{"update", "skills", "catchup", "rollup", "review-loop"} {
 		if findCompactCapability(payload.Commands, command) != nil {
-			t.Fatalf("expected compact capabilities to omit hidden/deprecated command %q", command)
+			t.Fatalf("expected compact capabilities to omit removed command %q", command)
 		}
 	}
 
@@ -212,27 +212,7 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 		t.Fatalf("expected loop review caveats to document agent setup failures, got %#v", loopReviewPayload.Command.Caveats)
 	}
 
-	reviewLoopOutput, err := executeCapabilitiesCommand("--json", "review-loop")
-	if err != nil {
-		t.Fatalf("kit capabilities review-loop --json error = %v", err)
-	}
-	var reviewLoopPayload capabilityDetailPayload
-	if err := json.Unmarshal([]byte(reviewLoopOutput), &reviewLoopPayload); err != nil {
-		t.Fatalf("json.Unmarshal(review-loop) error = %v", err)
-	}
-	if reviewLoopPayload.Command.Command != "review-loop" {
-		t.Fatalf("command = %q, want review-loop", reviewLoopPayload.Command.Command)
-	}
-	if !reviewLoopPayload.Command.Hidden || !reviewLoopPayload.Command.Deprecated {
-		t.Fatalf("expected review-loop to be hidden deprecated compatibility metadata, got %#v", reviewLoopPayload.Command)
-	}
-	if reviewLoopPayload.Command.MutationLevel != mutationNone || reviewLoopPayload.Command.GitMutation.Summary != "none" {
-		t.Fatalf("expected review-loop to be read-only, got %#v", reviewLoopPayload.Command)
-	}
-	if !strings.Contains(reviewLoopPayload.Command.NetworkUse.Summary, "PR metadata") {
-		t.Fatalf("expected review-loop network use to mention PR metadata, got %#v", reviewLoopPayload.Command.NetworkUse)
-	}
-	if findDetailedFlag(reviewLoopPayload.Command.DetailedFlagBehavior, "--watch") == nil {
-		t.Fatalf("expected review-loop to document --watch")
+	if _, err := executeCapabilitiesCommand("--json", "review-loop"); err == nil || !strings.Contains(err.Error(), "unknown Kit command path") {
+		t.Fatalf("expected review-loop lookup to fail as removed, got %v", err)
 	}
 }

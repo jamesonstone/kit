@@ -53,7 +53,7 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 		"`TASKS.md`: task `T001` exists in `PROGRESS TABLE` but not in `TASK DETAILS`",
 		"Search shortcuts:",
 		"`kit check sample`",
-		"`kit rollup`",
+		"also refresh `PROJECT_PROGRESS_SUMMARY.md`",
 		"`Findings`",
 		"`Updates`",
 		"`Verification`",
@@ -574,7 +574,7 @@ func TestRenderReconcileSummaryShowsCompactTable(t *testing.T) {
 				Severity:          reconcileSeverityWarning,
 				FilePath:          filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
 				Issue:             "progress summary is missing the feature summary heading for `0001-sample`",
-				UpdateInstruction: "refresh rollup",
+				UpdateInstruction: "refresh progress summary",
 			},
 		},
 	}

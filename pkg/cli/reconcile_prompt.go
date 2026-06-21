@@ -97,9 +97,9 @@ func buildReconcilePrompt(report *reconcileReport) string {
 		snapshot = append(snapshot, "verification migration: enabled")
 	}
 	if report.NeedsRollup {
-		snapshot = append(snapshot, "also run: `kit rollup`")
+		snapshot = append(snapshot, "also refresh `PROJECT_PROGRESS_SUMMARY.md`")
 	} else {
-		snapshot = append(snapshot, "also run `kit rollup` only if `PROJECT_PROGRESS_SUMMARY.md` changes")
+		snapshot = append(snapshot, "refresh `PROJECT_PROGRESS_SUMMARY.md` only if it changes")
 	}
 
 	issueBullets := make([]string, 0, len(fileSummaries))
@@ -237,7 +237,7 @@ func reconcileFindingCategory(finding reconcileFinding) string {
 	case strings.Contains(lowerIssue, "instruction file"):
 		return "instruction files"
 	case strings.Contains(lowerIssue, "progress summary") || base == "PROJECT_PROGRESS_SUMMARY.md":
-		return "rollup"
+		return "progress summary"
 	case strings.Contains(lowerIssue, "table"):
 		return "tables"
 	case strings.Contains(lowerIssue, "section"):
@@ -287,7 +287,7 @@ func shortActionForFinding(finding reconcileFinding) string {
 	case strings.Contains(issue, "instruction file"):
 		return "refresh instruction file"
 	case strings.Contains(issue, "progress summary"):
-		return "refresh rollup"
+		return "refresh progress summary"
 	case strings.Contains(issue, "table"):
 		return "repair required table"
 	case strings.Contains(issue, "missing required section"):

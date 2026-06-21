@@ -11,39 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func TestReviewLoopCommandRoutesToRunner(t *testing.T) {
-	previous := reviewLoopExecutor
-	defer func() { reviewLoopExecutor = previous }()
-
-	var got reviewLoopOptions
-	reviewLoopExecutor = func(_ *cobra.Command, opts reviewLoopOptions) error {
-		got = opts
-		return nil
-	}
-
-	cmd := newReviewLoopCommand()
-	cmd.SetArgs([]string{
-		"--pr", "Patient-Driven-Care/cortex#67",
-		"--coderabbit",
-		"--watch",
-		"--output-only",
-		"--max-subagents", "3",
-	})
-	if err := cmd.Execute(); err != nil {
-		t.Fatalf("review-loop command error = %v", err)
-	}
-
-	if got.PRRef != "Patient-Driven-Care/cortex#67" {
-		t.Fatalf("PRRef = %q", got.PRRef)
-	}
-	if !got.CodeRabbitOnly || !got.Watch || !got.OutputOnly {
-		t.Fatalf("expected coderabbit/watch/output-only options, got %#v", got)
-	}
-	if got.MaxSubagents != 3 {
-		t.Fatalf("MaxSubagents = %d, want 3", got.MaxSubagents)
-	}
-}
-
 func TestReviewLoopCommandRequiresPR(t *testing.T) {
 	err := runReviewLoop(&cobra.Command{}, reviewLoopOptions{MaxSubagents: 1})
 	if err == nil || !strings.Contains(err.Error(), "--pr is required") {

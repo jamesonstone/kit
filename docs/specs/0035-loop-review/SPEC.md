@@ -48,7 +48,7 @@ Kit has a feature workflow loop and a PR review prompt-prep command, but it does
 ## NON-GOALS
 
 - Do not stage, commit, push, post PR comments, resolve review threads, or merge pull requests.
-- Do not replace existing `kit review-loop` prompt-prep behavior in this feature.
+- Do not replace existing `kit dispatch --loop` prompt-prep behavior in this feature.
 - Do not create a background daemon, hidden database, webhook server, or long-lived scheduler.
 - Do not mathematically prove global correctness; the percentage is an agent-reported confidence gate backed by local validation.
 
@@ -91,7 +91,7 @@ not required
 - [SPEC-15] When local review reaches `done`, PR mode must perform one quick feedback check.
 - [SPEC-16] If CodeRabbit is still pending at local completion, default PR mode must exit with a provisional status and rerun guidance instead of waiting.
 - [SPEC-17] `--watch` and `--wait-for-coderabbit` must wait for CodeRabbit completion up to the existing timeout before finalizing.
-- [SPEC-18] Existing `kit review-loop` prompt-prep behavior must remain available as a compatibility surface.
+- [SPEC-18] Existing `kit dispatch --loop` prompt-prep behavior must remain available.
 - [SPEC-19] Command capability metadata and user/agent docs must describe the new command shape and safety boundaries.
 - [SPEC-20] `kit init --refresh` must add default loop agent configuration to `.kit.yaml` when `loop.agent.command` is missing, still set to the generated `your-agent` placeholder, or matches a known older generated default.
 - [SPEC-21] Review prompts must use one agent by default; `--subagents` must allow the parent review agent to pre-analyze the diff and choose subagents only when lanes are clearly independent.

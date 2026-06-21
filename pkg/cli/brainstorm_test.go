@@ -88,7 +88,7 @@ func TestRunBrainstorm_CreatesFeatureNotesDirAndSeedsReference(t *testing.T) {
 
 	restoreEditor := stubBrainstormEditor(t, "Need better import validation for malformed CSV uploads.")
 	defer restoreEditor()
-	restoreFlags := setBrainstormFlagState(false, false, "", false, false, false, false)
+	restoreFlags := setBrainstormFlagState(false, "", false, false, false, false)
 	defer restoreFlags()
 
 	cmd := newBrainstormTestCommand()
@@ -141,7 +141,7 @@ func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsReferences(t 
 
 	restoreEditor := stubBrainstormEditor(t, "Need a responsive dashboard redesign.")
 	defer restoreEditor()
-	restoreFlags := setBrainstormFlagState(false, false, "", false, false, false, false)
+	restoreFlags := setBrainstormFlagState(false, "", false, false, false, false)
 	defer restoreFlags()
 	restorePromptProfileState(t, promptProfileFrontend, true)
 

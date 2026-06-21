@@ -830,8 +830,8 @@ Flags:
   non-fix classifications in the summary output
 - remain read-only by default: no project-file writes, no git mutation, no PR
   comments, and no review-thread resolution
-- legacy `kit review-loop --pr <target>` remains available as a hidden
-  compatibility command for the same prompt-prep workflow
+- `kit dispatch --loop --pr <target>` is the prompt-prep workflow for current
+  unresolved PR review feedback
 - leave `kit dispatch --pr <target> --coderabbit` as the lower-level
   untriaged review-thread intake
 - after fixes or no-op decisions are complete, support
@@ -925,7 +925,7 @@ Nouns and verbs normalize to lowercase kebab-case.
 
 ### 8.4 Roll-Up
 
-#### `kit rollup`
+#### Project Progress Summary
 
 Purpose:
 
@@ -946,8 +946,7 @@ Behavior:
   docs are deleted
 - include retained notes pointers for removed features when
   `docs/notes/<feature>` still exists
-- remain callable as a maintenance command, not a primary workflow step taught
-  to new users
+- refresh automatically from normal feature lifecycle commands
 
 `PROJECT_PROGRESS_SUMMARY.md` is intended to be:
 
@@ -955,7 +954,8 @@ Behavior:
 - sufficient to onboard or fork the project
 - safe to hand to any coding agent as primary context
 
-This command is also executed automatically as the final stage of feature creation and refinement.
+Project summary refresh is executed automatically as the final stage of feature
+creation and refinement.
 
 ---
 
@@ -1069,8 +1069,8 @@ Verification:
 
 - run `kit check --all` for project-wide reconciliation or `kit check <feature>` for feature-scoped reconciliation
 - run `kit init --refresh --dry-run --diff` when reconcile reports init scaffold drift, then apply the intended refresh with `kit init --refresh`
-- run the maintenance command `kit rollup` when reconciled changes affect
-  `PROJECT_PROGRESS_SUMMARY.md`
+- refresh `PROJECT_PROGRESS_SUMMARY.md` when reconciled changes affect the
+  project summary
 
 ---
 

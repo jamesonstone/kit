@@ -30,7 +30,7 @@ references:
 
 ## APPROACH
 
-- [PLAN-01][SPEC-01][SPEC-02][SPEC-10] Update the shared prompt helper to make subagent guidance default-on, add `--single-agent`, and keep a hidden compatibility alias for `--subagents`.
+- [PLAN-01][SPEC-01][SPEC-02][SPEC-10] Update the shared prompt helper to make subagent guidance default-on, add `--single-agent`, and remove the legacy root `--subagents` compatibility alias.
 - [PLAN-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06][SPEC-07] Rewrite the shared orchestration suffix so it defaults to subagents while preserving conservative overlap handling and main-agent ownership.
 - [PLAN-03][SPEC-08] Verify that `dispatch` still uses the dedicated no-shared-subagent path.
 - [PLAN-04][SPEC-09] Update README and help-facing wording to reflect the new default and opt-out flag.
@@ -55,7 +55,7 @@ references:
 
 - No new persistent state.
 - Root persistent flag surface changes from documented `--subagents` opt-in to documented `--single-agent` opt-out.
-- `--subagents` may remain as a hidden compatibility alias only.
+- The legacy root `--subagents` compatibility alias is removed.
 
 ## INTERFACES
 
@@ -83,7 +83,7 @@ references:
 
 - Verify default prompt augmentation includes `## Subagent Orchestration`.
 - Verify `--single-agent` registration and behavior through the shared helper tests.
-- Verify the hidden compatibility alias for `--subagents` remains available.
+- Verify the legacy root `--subagents` compatibility alias is absent.
 - Verify dispatch output still omits the shared suffix.
 - Run:
   - `go test ./...`

@@ -98,7 +98,7 @@ func TestBuildProjectRefreshPrompt(t *testing.T) {
 		"Only update project-level documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
 		"docs/CONSTITUTION.md",
 		"kit reconcile --all",
-		"kit rollup",
+		"PROJECT_PROGRESS_SUMMARY.md",
 		"kit check --project",
 		"`Findings`",
 		"`Updates`",

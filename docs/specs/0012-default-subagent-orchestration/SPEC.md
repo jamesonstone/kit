@@ -85,7 +85,8 @@ none
 - [SPEC-07] The shared orchestration suffix must keep the main agent responsible for synthesis, integration, validation, and communication.
 - [SPEC-08] `kit dispatch` must keep using the no-shared-subagent-suffix output path so its dedicated prompt remains the only orchestration guidance in that command.
 - [SPEC-09] README and help output must describe the new default as “subagents by default” and `--single-agent` as the explicit opt-out.
-- [SPEC-10] The legacy `--subagents` flag may remain only as a hidden compatibility alias and must not be the documented primary interface.
+- [SPEC-10] The legacy root `--subagents` compatibility alias must be removed;
+  `--single-agent` is the only shared prompt-orchestration root flag.
 - [SPEC-11] Shared subagent guidance must distinguish repository-scale discovery from execution planning:
   - RLM narrows candidate docs, files, and workstreams first
   - dispatch or subagent execution begins only after that scope is narrowed enough to predict overlap conservatively
@@ -102,7 +103,7 @@ none
 ## EDGE-CASES
 
 - A user explicitly wants a one-lane prompt for narrow or risky work.
-- A user still passes the old `--subagents` flag from existing scripts.
+- A user still passes the removed root `--subagents` flag from existing scripts.
 - Dispatch output must remain unchanged even though subagents are now the shared default elsewhere.
 - The work is broad enough for subagents, but overlap confidence is low and must stay conservative.
 

@@ -57,11 +57,12 @@ Use markdown checkboxes to track completion:
 
 ### T004
 - **GOAL**: let users capture or resume deferred items directly from brainstorm
-- **SCOPE**: add `--backlog` capture-only mode and `--pickup` resume mode
-- **ACCEPTANCE**: deferred capture pauses brainstorm items and pickup clears
-  paused state before outputting the planning prompt
-- **NOTES**: `kit brainstorm --pickup` remains a compatibility path, while
-  `kit backlog --pickup` and `kit resume` are the taught resume flows
+- **SCOPE**: add `--backlog` capture-only mode and remove the brainstorm
+  pickup compatibility path
+- **ACCEPTANCE**: deferred capture pauses brainstorm items, and pickup is
+  available through `kit backlog --pickup` and `kit resume`
+- **NOTES**: `kit backlog --pickup` and `kit resume` are the taught resume
+  flows
 - **NOTES**: keep existing vim-default free-text behavior for new captures
 
 ### T005

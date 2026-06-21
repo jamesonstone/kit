@@ -71,14 +71,14 @@ func buildProjectRefreshPrompt(projectRoot string, cfg *config.Config) string {
 		doc.BulletList(
 			"`docs/CONSTITUTION.md`: refresh durable project-wide principles, constraints, definitions, and codebase map entries",
 			"`docs/agents/*`, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`: update only if routing or workflow guidance is stale; prefer `kit scaffold agents --append-only` when the generated contract changed",
-			"`docs/PROJECT_PROGRESS_SUMMARY.md`: update with `kit rollup` if feature summaries or project state change",
+			"`docs/PROJECT_PROGRESS_SUMMARY.md`: update if feature summaries or project state change",
 			"feature docs under `docs/specs/`: leave alone unless the project-level refresh reveals a direct inconsistency that belongs there",
 		)
 		doc.Paragraph("Verification:")
 		doc.BulletList(
 			"`kit check --project`",
 			"`kit check --all` if feature docs or repository instruction files were touched",
-			"`kit rollup` if `docs/PROJECT_PROGRESS_SUMMARY.md` needs regeneration",
+			"confirm `docs/PROJECT_PROGRESS_SUMMARY.md` reflects any feature-summary or project-state changes",
 			"`git diff -- docs AGENTS.md CLAUDE.md .github/copilot-instructions.md README.md`",
 		)
 		doc.Paragraph("Reply with exactly these sections:")

@@ -3,7 +3,6 @@ package cli
 import "strings"
 
 var singleAgent bool
-var legacySubagents bool
 
 func init() {
 	rootCmd.PersistentFlags().BoolVar(
@@ -12,17 +11,6 @@ func init() {
 		false,
 		"disable default subagent orchestration guidance and keep prompts in one lane",
 	)
-
-	rootCmd.PersistentFlags().BoolVar(
-		&legacySubagents,
-		"subagents",
-		false,
-		"deprecated: subagents are now enabled by default",
-	)
-	if flag := rootCmd.PersistentFlags().Lookup("subagents"); flag != nil {
-		flag.Hidden = true
-		flag.Deprecated = "subagents are enabled by default; use --single-agent to disable orchestration guidance"
-	}
 }
 
 func prepareAgentPrompt(prompt string) string {

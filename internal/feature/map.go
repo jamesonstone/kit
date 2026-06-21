@@ -238,7 +238,7 @@ func projectGlobalDocuments(projectRoot string, cfg *config.Config) []MapDocumen
 			Path:      relativePath(projectRoot, cfg.ProgressSummaryPath(projectRoot)),
 			Required:  true,
 			Exists:    document.Exists(cfg.ProgressSummaryPath(projectRoot)),
-			ManagedBy: "kit rollup",
+			ManagedBy: "Kit lifecycle commands",
 		},
 	}
 

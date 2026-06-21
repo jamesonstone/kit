@@ -248,13 +248,13 @@ references:
 
 ## SUMMARY
 
-Implement review-loop as a thin orchestration layer over the existing dispatch PR review intake: add a primary `kit review-loop` command and a `kit dispatch --loop` alias that resolve a PR, optionally wait for current-head CodeRabbit completion, fetch and classify current review-thread findings, prefill the same dispatch editor pipeline with only `FIX` items, and keep default execution read-only. Add an explicit `kit dispatch --pr <target> --resolve --yes` follow-up path for resolving already-handled review threads after fixes or no-op decisions are complete.
+Implement review-loop prompt preparation as a thin orchestration layer over the existing dispatch PR review intake: use `kit dispatch --loop` to resolve a PR, optionally wait for current-head CodeRabbit completion, fetch and classify current review-thread findings, prefill the same dispatch editor pipeline with only `FIX` items, and keep default execution read-only. Add an explicit `kit dispatch --pr <target> --resolve --yes` follow-up path for resolving already-handled review threads after fixes or no-op decisions are complete.
 
 ## APPROACH
 
 - Keep dispatch's current PR target parsing, review-thread GraphQL pagination, CodeRabbit prompt extraction, shared-instruction handling, and dedupe as shared lower-level helpers; do not fork a second PR-review collector.
-- Add a review-loop command layer that is responsible for PR metadata, watch timing, classification, summary rendering, and command wiring.
-- Treat `kit review-loop` as the canonical command and `kit dispatch --loop` as a route into the same review-loop runner with equivalent behavior.
+- Add a review-loop runner layer that is responsible for PR metadata, watch timing, classification, summary rendering, and dispatch command wiring.
+- Treat `kit dispatch --loop` as the runnable prompt-prep command path.
 - Use a small injectable command-runner seam for GitHub CLI calls and clock/sleeper behavior so watch-mode tests can run without real waiting or network calls.
 - Keep v1 timing constants fixed by default: 90 second initial wait before polling, 15 second polling, 15 minute timeout, and 60 second quiet window after CodeRabbit appears complete.
 - Use PR title/body, linked issue when available, and discoverable Kit feature docs as triage context, but keep classification output evidence-based and conservative.
@@ -266,9 +266,7 @@ Implement review-loop as a thin orchestration layer over the existing dispatch P
 ## COMPONENTS
 
 - `pkg/cli/review_loop.go`
-  - registers `kit review-loop`
-  - owns public review-loop flags and help text
-  - delegates execution to a shared runner
+  - owns shared review-loop prompt-prep execution
 - `pkg/cli/dispatch.go`
   - adds `--loop` as the alias trigger
   - adds `--resolve --yes` as the explicit review-thread resolution path
@@ -298,12 +296,9 @@ Implement review-loop as a thin orchestration layer over the existing dispatch P
 - `pkg/cli/review_loop_test.go`
   - covers command routing, watch timing, classification, rendering, no-action behavior, and read-only guarantees
 - `pkg/cli/capabilities_catalog.go`
-  - adds a targeted `review-loop` capability record
-  - updates `dispatch` metadata for the `--loop` alias
-- `pkg/cli/root_help.go`
-  - places `review-loop` in the visible command order and the appropriate help category
+  - updates `dispatch` metadata for the `--loop` workflow
 - `README.md`, `docs/agents/TOOLING.md`, and `docs/specs/0000_INIT_PROJECT.md`
-  - document when to use `review-loop`, `dispatch --loop`, and `dispatch --pr --coderabbit`
+  - document when to use `dispatch --loop` and `dispatch --pr --coderabbit`
 
 ## DATA
 
@@ -347,15 +342,9 @@ Implement review-loop as a thin orchestration layer over the existing dispatch P
 
 ## INTERFACES
 
-- `kit review-loop --pr <url|markdown-link|owner/repo#number|number>`
-  - canonical command path
-  - network-read PR review workflow
-- `kit review-loop --pr <target> --coderabbit`
-  - CodeRabbit-focused review-thread intake
-- `kit review-loop --pr <target> --watch`
-  - waits using the fixed timing contract before collecting current review tasks
 - `kit dispatch --loop --pr <target> [--coderabbit] [--watch]`
-  - alias path with equivalent behavior to `kit review-loop`
+  - network-read PR review workflow
+  - waits with `--watch` using the fixed timing contract before collecting current review tasks
 - `kit dispatch --pr <target> --resolve --yes [--coderabbit]`
   - explicit post-fix/no-op mutation path for resolving currently matching unresolved review threads
   - requires `--yes` and does not run as part of prompt generation
@@ -416,9 +405,9 @@ References are tracked in front matter.
   - only `FIX` findings enter the editor task block
   - non-fix findings remain visible in the summary
 - Command tests:
-  - `kit review-loop --help`
+  - `kit review-loop --help` fails because the compatibility root command has been removed
   - `kit dispatch --help` includes `--loop`
-  - `kit review-loop` and `kit dispatch --loop` route to the same runner
+  - `kit dispatch --loop` routes to the review-loop prompt-prep runner
   - invalid flag combinations fail actionably
   - no actionable feedback skips editor launch
 - Read-only safety tests:
@@ -429,9 +418,8 @@ References are tracked in front matter.
   - resolution candidates include unresolved, non-outdated review threads
   - `--coderabbit` limits resolution candidates to CodeRabbit-authored threads
 - Capability and documentation tests:
-  - `kit capabilities review-loop --json` returns a targeted record
+  - `kit capabilities review-loop --json` fails because the compatibility root command has been removed
   - `kit capabilities --search review-loop --json` finds the review-loop surface
-  - root help lists the command in the intended category
 - End verification:
   - `go test ./...`
   - `go run ./cmd/kit check 0034-review-loop`

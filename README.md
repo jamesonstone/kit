@@ -227,10 +227,6 @@ discovery; they should not maintain Kit's internal command catalog.
 | `kit version`    | Print the installed Kit version             |
 | `kit completion` | Generate shell autocompletion script        |
 
-Hidden compatibility commands remain callable for migration, but they are no longer shown in
-default help or primary docs: `kit update`, `kit skills`, `kit catchup`, `kit scaffold-agents`,
-`kit rollup`, and `kit brainstorm --pickup`.
-
 Prompt-producing commands default to subagent orchestration guidance. Pass
 `--single-agent` when you explicitly want to keep the work in one lane.
 
@@ -277,9 +273,9 @@ child-agent stdout/stderr to stderr; `--json` keeps stdout machine-readable and
 suppresses progress output. Agent command setup failures stop immediately with
 stderr context.
 
-Use `kit dispatch --loop --pr <target>` or the legacy hidden `kit review-loop`
-compatibility command only when you want a human-reviewed dispatch prompt from
-current unresolved PR review feedback instead of an agent repair loop.
+Use `kit dispatch --loop --pr <target>` only when you want a human-reviewed
+dispatch prompt from current unresolved PR review feedback instead of an agent
+repair loop.
 
 ### 📋 Output Behavior
 
@@ -640,9 +636,9 @@ docs/
 ```
 
 New `BRAINSTORM.md`, `SPEC.md`, `PLAN.md`, and `TASKS.md` files include
-front matter. `kit map`, `kit status`, `kit rollup`, `kit check`, and
-prompt-producing commands read front matter first and fall back to legacy body
-metadata when front matter is absent.
+front matter. `kit map`, `kit status`, `kit check`, and prompt-producing
+commands read front matter first and fall back to legacy body metadata when
+front matter is absent.
 
 ## ✨ Positioning
 
