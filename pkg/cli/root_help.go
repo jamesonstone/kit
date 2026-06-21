@@ -118,7 +118,7 @@ func renderRootHelp(cmd *cobra.Command) error {
 	out := cmd.OutOrStdout()
 	style := styleForWriter(out)
 
-	if _, err := fmt.Fprintln(out, strings.TrimRight(cmd.Long, "\n")); err != nil {
+	if _, err := fmt.Fprintln(out, strings.TrimRight(rootLong(style), "\n")); err != nil {
 		return err
 	}
 

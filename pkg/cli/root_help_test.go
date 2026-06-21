@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"io"
 	"regexp"
 	"strings"
 	"testing"
@@ -27,7 +28,12 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		t.Fatalf("rootCmd.Execute() error = %v", err)
 	}
 
-	content := stripANSI(out.String())
+	raw := out.String()
+	if ansiEscapeRE.MatchString(raw) {
+		t.Fatalf("expected non-terminal root help to omit ANSI escapes, got %q", raw)
+	}
+
+	content := stripANSI(raw)
 	checks := []string{
 		"Setup",
 		"Workflow",
@@ -36,10 +42,18 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"Utilities",
 		"V2 Feature Workflow",
 		"kit spec <feature>",
-		"SPEC.md: clarify",
+		"Idea / input",
+		"Clarifying Loop",
+		"source map",
+		"binary acceptance criteria",
+		"Supervisor + Agent Team Plan",
+		"Subagent Implementation",
+		"Subagent Reflection",
+		"Subagent Validation / Verification",
+		"Evidence + Delivery Gate",
 		"Durable Artifacts",
 		"v2 feature artifact",
-		"legacy v1 staged artifacts",
+		"legacy v1 artifacts",
 		"legacy",
 		"List deprecated v1 staged workflow commands",
 		"scaffold",
@@ -91,6 +105,52 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 	for _, check := range staleWorkflowChecks {
 		if strings.Contains(content, check) {
 			t.Fatalf("expected root help to omit stale v1 workflow text %q, got %q", check, content)
+		}
+	}
+}
+
+func TestRootNoCommandShowsV2WorkflowDiagram(t *testing.T) {
+	content := stripANSI(executeHelp(t, []string{}))
+
+	checks := []string{
+		"Kit v2 Thought-Work Harness",
+		"Idea / input",
+		"kit spec <feature> creates/updates one durable SPEC.md",
+		"Clarifying Loop",
+		"Subagent Implementation",
+		"Subagent Reflection",
+		"Subagent Validation / Verification",
+		"Evidence + Delivery Gate",
+		"Usage",
+		"Available Commands",
+	}
+	for _, check := range checks {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected no-command root help to contain %q, got %q", check, content)
+		}
+	}
+}
+
+func TestRootHelpUsesColorForTerminalOutput(t *testing.T) {
+	previousCheck := terminalWriterCheck
+	terminalWriterCheck = func(_ io.Writer) bool { return true }
+	defer func() { terminalWriterCheck = previousCheck }()
+
+	output := executeHelp(t, []string{"--help"})
+	if !ansiEscapeRE.MatchString(output) {
+		t.Fatalf("expected terminal root help to include ANSI color, got %q", output)
+	}
+
+	content := stripANSI(output)
+	for _, check := range []string{
+		"Idea / input",
+		"Clarifying Loop",
+		"Subagent Implementation",
+		"Subagent Reflection",
+		"Subagent Validation / Verification",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected colored root help to contain %q, got %q", check, content)
 		}
 	}
 }

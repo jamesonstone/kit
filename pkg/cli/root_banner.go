@@ -16,7 +16,21 @@ const (
 	reflect      = "\033[38;5;141m"
 )
 
-func banner() string {
+func rootLong(style humanOutputStyle) string {
+	return rootBanner(style) + `
+Kit v2 is a general-purpose harness for disciplined thought work.
+Its strongest engine is a document-first, spec-driven workflow, but the
+harness also supports ad hoc execution, catch-up, handoff, summarization,
+review, and orchestration.
+
+The current command surface is packaged around repository and software
+workflows, but the underlying harness patterns generalize to research,
+strategy, operations, writing, policy, and other structured fields.
+
+` + flowDiagram(style)
+}
+
+func rootBanner(style humanOutputStyle) string {
 	colors := []string{
 		"\033[38;5;213m",
 		"\033[38;5;177m",
@@ -37,32 +51,76 @@ func banner() string {
 
 	var result string
 	for i, line := range lines {
-		result += "                                        " + colors[i] + line + reset + "\n"
+		result += "                                        " + rootColor(style, colors[i], line) + "\n"
 	}
 	result += "\n"
-	result += "                                      " + dim + "Kit v2 Thought-Work Harness" + reset + "\n"
+	result += "                                      " + rootMuted(style, "Kit v2 Thought-Work Harness") + "\n"
 	return result
 }
 
-func flowDiagram() string {
+func flowDiagram(style humanOutputStyle) string {
+	idea := rootColor(style, brainstorm, "Idea")
+	specCommand := rootColor(style, spec, "kit spec <feature>")
+	clarify := rootColor(style, brainstorm, "Clarifying Loop")
+	planLane := rootColor(style, plan, "Supervisor + Agent Team Plan")
+	implementLane := rootColor(style, implement, "Subagent Implementation")
+	reflectLane := rootColor(style, reflect, "Subagent Reflection")
+	validateLane := rootColor(style, tasks, "Subagent Validation / Verification")
+	evidence := rootColor(style, constitution, "Evidence + Delivery Gate")
+
 	lines := []string{
-		whiteBold + "🧱 Project Initialization" + reset + dim + " (run once, update as needed):" + reset,
-		gray + "┌──────────────┐" + reset,
-		gray + "│ " + constitution + "Constitution" + reset + gray + " │  ← " + reset + dim + "global constraints, principles, priors" + reset,
-		gray + "└──────────────┘" + reset,
+		rootHeading(style, "🧱 Project Initialization") + rootMuted(style, " (run once, update as needed):"),
+		rootColor(style, gray, "┌──────────────┐"),
+		rootColor(style, gray, "│ ") + rootColor(style, constitution, "Constitution") + rootColor(style, gray, " │  ← ") + rootMuted(style, "global constraints, principles, priors"),
+		rootColor(style, gray, "└──────────────┘"),
 		"",
-		whiteBold + "🔁 V2 Feature Workflow" + reset + dim + " (default):" + reset,
-		gray + "┌──────────────┐    ┌───────────────────────────────────────────────────────────────┐" + reset,
-		gray + "│ " + brainstorm + "Idea / Input" + reset + gray + " │ ─▶ │ " + spec + "kit spec <feature>" + reset + gray + "                                           │" + reset,
-		gray + "└──────────────┘    │ " + spec + "SPEC.md" + reset + gray + ": clarify → ready → implement → validate → reflect → deliver │" + reset,
-		gray + "                    └───────────────────────────────────────────────────────────────┘" + reset,
+		rootHeading(style, "🔁 V2 Feature Workflow") + rootMuted(style, " (default):"),
+		"  " + idea + rootMuted(style, " / input"),
+		"    " + rootArrow(style),
+		"  " + specCommand + rootMuted(style, " creates/updates one durable SPEC.md"),
+		"    " + rootArrow(style),
+		"  " + clarify + rootMuted(style, " → questions, source map, binary acceptance criteria"),
+		"    " + rootArrow(style),
+		"  " + planLane + rootMuted(style, " → supervisor owns scope, lanes, touched files"),
+		"    " + rootArrow(style),
+		"  " + implementLane,
+		"    " + rootArrow(style),
+		"  " + reflectLane,
+		"    " + rootArrow(style),
+		"  " + validateLane + rootMuted(style, " → each criterion proved or routed back"),
+		"    " + rootArrow(style),
+		"  " + evidence + rootMuted(style, " → SPEC.md evidence, docs sync, complete"),
 		"",
-		whiteBold + "🗂️ Durable Artifacts" + reset,
-		"  1. " + constitution + "CONSTITUTION.md" + reset + dim + " — project contract and invariants" + reset,
-		"  2. " + spec + "SPEC.md" + reset + dim + "         — v2 feature artifact: thesis, context, clarifications, requirements, assumptions," + reset,
-		dim + "                    acceptance criteria, plan, task checklist, validation map, reflection, docs, delivery, evidence" + reset,
-		"  3. " + brainstorm + "BRAINSTORM/PLAN/TASKS" + reset + dim + " — legacy v1 staged artifacts, preserved as historical context when present" + reset,
+		rootHeading(style, "🗂️ Durable Artifacts"),
+		"  1. " + rootColor(style, constitution, "CONSTITUTION.md") + rootMuted(style, " — project contract and invariants"),
+		"  2. " + rootColor(style, spec, "SPEC.md") + rootMuted(style, "         — v2 feature artifact and workflow state"),
+		"  3. " + rootColor(style, brainstorm, "BRAINSTORM/PLAN/TASKS") + rootMuted(style, " — legacy v1 artifacts, historical unless using kit legacy"),
 	}
 
 	return strings.Join(lines, "\n")
+}
+
+func rootHeading(style humanOutputStyle, text string) string {
+	if !style.enabled {
+		return text
+	}
+	return whiteBold + text + reset
+}
+
+func rootMuted(style humanOutputStyle, text string) string {
+	if !style.enabled {
+		return text
+	}
+	return dim + text + reset
+}
+
+func rootColor(style humanOutputStyle, color string, text string) string {
+	if !style.enabled {
+		return text
+	}
+	return color + text + reset
+}
+
+func rootArrow(style humanOutputStyle) string {
+	return rootColor(style, gray, "│") + "\n    " + rootColor(style, gray, "▼")
 }
