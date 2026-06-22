@@ -19,6 +19,7 @@ func outputCompiledPrompt(
 		ProjectRoot:    projectRoot,
 		Config:         cfg,
 		Answers:        answers,
+		SingleAgent:    singleAgent,
 	})
 
 	preparedPrompt := preparePromptForFeature(prompt, false, filepath.Dir(specPath))

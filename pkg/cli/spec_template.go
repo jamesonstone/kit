@@ -52,5 +52,6 @@ func buildSpecTemplatePrompt(
 		ProjectRoot:    projectRoot,
 		Config:         cfg,
 		PromptOnly:     promptOnly,
+		SingleAgent:    singleAgent,
 	})
 }
