@@ -246,7 +246,9 @@ func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
 	checks := []string{
 		"Spec Thesis",
 		"A default editor will open for this response.",
-		"coding agent will infer, research, and clarify every other SPEC.md section",
+		"What to write",
+		"What Kit handles next",
+		"coding agent will infer, research, clarify, and fill every other SPEC.md section",
 	}
 	for _, check := range checks {
 		if !strings.Contains(output, check) {

@@ -81,7 +81,7 @@ artifacts and are available only through `kit legacy` workflows.
 | Command | Purpose |
 | --- | --- |
 | `kit init` | Initialize or refresh Kit-managed project scaffolding |
-| `kit spec <feature>` | Run the v2 single-SPEC feature workflow |
+| `kit spec <feature>` | Start or resume the v2 `SPEC.md` workflow |
 | `kit loop workflow <feature>` | Execute workflow phases through a configured local agent loop |
 | `kit loop review` | Review changed code until local correctness converges |
 | `kit status --all` | Show project-wide feature state |

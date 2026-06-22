@@ -56,7 +56,7 @@ kit rm my-feature --yes --notes
 | Command | Description |
 | --- | --- |
 | `kit backlog` | List deferred brainstorm items or use `--pickup` as the backlog-specific resume shortcut. |
-| `kit spec <feature>` | Run the v2 single-SPEC feature workflow and output the supervisor prompt. |
+| `kit spec <feature>` | Start or resume the v2 `SPEC.md` workflow and output the supervisor prompt. |
 | `kit legacy` | List deprecated legacy v1 staged workflow commands retained for migration. |
 | `kit loop [feature]` | Convenience alias for `kit loop workflow [feature]`. |
 | `kit loop workflow [feature]` | Run the remaining workflow through a configured confidence-gated local agent loop. |

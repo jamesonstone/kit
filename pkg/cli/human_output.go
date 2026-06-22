@@ -117,14 +117,14 @@ func helpTemplate(enabled bool) string {
 	moreInfoLabel := "Use"
 
 	if enabled {
-		usageHeader = "🚀 Usage"
-		aliasesHeader = "🏷️ Aliases"
-		examplesHeader = "🧪 Examples"
-		commandsHeader = "🧰 Available Commands"
-		flagsHeader = "⚙️ Flags"
-		globalFlagsHeader = "🌐 Global Flags"
-		additionalHelpHeader = "📚 Additional Help Topics"
-		moreInfoLabel = "🔎 Use"
+		usageHeader = whiteBold + "🚀 Usage" + reset
+		aliasesHeader = whiteBold + "🏷️ Aliases" + reset
+		examplesHeader = whiteBold + "🧪 Examples" + reset
+		commandsHeader = whiteBold + "🧰 Available Commands" + reset
+		flagsHeader = whiteBold + "⚙️ Flags" + reset
+		globalFlagsHeader = whiteBold + "🌐 Global Flags" + reset
+		additionalHelpHeader = whiteBold + "📚 Additional Help Topics" + reset
+		moreInfoLabel = whiteBold + "🔎 Use" + reset
 	}
 
 	return fmt.Sprintf(`{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}{{end}}
@@ -173,10 +173,10 @@ func usageTemplate(enabled bool) string {
 	globalFlagsHeader := "Global Flags:"
 
 	if enabled {
-		header = "🚀 Usage"
-		commandsHeader = "🧰 Available Commands"
-		flagsHeader = "⚙️ Flags"
-		globalFlagsHeader = "🌐 Global Flags"
+		header = whiteBold + "🚀 Usage" + reset
+		commandsHeader = whiteBold + "🧰 Available Commands" + reset
+		flagsHeader = whiteBold + "⚙️ Flags" + reset
+		globalFlagsHeader = whiteBold + "🌐 Global Flags" + reset
 	}
 
 	return fmt.Sprintf(`%s
