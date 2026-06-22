@@ -131,6 +131,51 @@ func TestRootNoCommandShowsV2WorkflowDiagram(t *testing.T) {
 	}
 }
 
+func TestSpecHelpUsesReadableV2InstructionStructure(t *testing.T) {
+	content := stripANSI(executeHelp(t, []string{"spec", "--help"}))
+
+	checks := []string{
+		"Start or resume Kit v2 feature work from one durable SPEC.md.",
+		"🧭 Human flow",
+		"Pick or provide a feature slug/name.",
+		"🧠 Agent workflow",
+		"idea → clarification loop → agent-team implementation → reflection",
+		"📦 What Kit writes",
+		"🔁 Modes",
+		"🚫 Git/GitHub safety",
+		"kit spec records delivery intent only",
+	}
+	for _, check := range checks {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected spec help to contain %q, got %q", check, content)
+		}
+	}
+}
+
+func TestSpecHelpUsesColorForTerminalOutput(t *testing.T) {
+	previousCheck := terminalWriterCheck
+	terminalWriterCheck = func(_ io.Writer) bool { return true }
+	defer func() { terminalWriterCheck = previousCheck }()
+
+	output := executeHelp(t, []string{"spec", "--help"})
+	if !ansiEscapeRE.MatchString(output) {
+		t.Fatalf("expected terminal spec help to include ANSI color, got %q", output)
+	}
+
+	content := stripANSI(output)
+	for _, check := range []string{
+		"🧭 Human flow",
+		"🧠 Agent workflow",
+		"🚫 Git/GitHub safety",
+		"🚀 Usage",
+		"⚙️ Flags",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected colored spec help to contain %q, got %q", check, content)
+		}
+	}
+}
+
 func TestRootHelpUsesColorForTerminalOutput(t *testing.T) {
 	previousCheck := terminalWriterCheck
 	terminalWriterCheck = func(_ io.Writer) bool { return true }

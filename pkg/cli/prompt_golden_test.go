@@ -70,6 +70,43 @@ func TestBuildSpecV2SupervisorPrompt_Golden(t *testing.T) {
 	assertV2SpecPromptExcludesV1StageAssumptions(t, prompt)
 }
 
+func TestBuildSpecV2SupervisorPrompt_SingleAgentMode(t *testing.T) {
+	t.Setenv("HOME", "/home/tester")
+	t.Setenv("CODEX_HOME", "/home/tester/.codex")
+
+	prompt := buildSpecV2SupervisorPrompt(specV2PromptInput{
+		SpecPath:    "/repo/docs/specs/0001-alpha/SPEC.md",
+		FeatureSlug: "alpha",
+		ProjectRoot: "/repo",
+		Config:      config.Default(),
+		SingleAgent: true,
+	})
+
+	checks := []string{
+		"`--single-agent` is active. Keep execution in one supervisor lane and do not require implementation or verification subagents.",
+		"Even in single-agent mode, record logical work lanes in the Agent Team Plan when they clarify sequencing, validation, or risk.",
+		"In final responses, state `single supervisor lane; no specialist or verification agents spawned` and cite `--single-agent` as the exception.",
+		"single supervisor lane; no specialist or verification agents spawned",
+		"state the exception that justified single-lane execution",
+	}
+	for _, check := range checks {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected single-agent prompt to contain %q", check)
+		}
+	}
+
+	unwanted := []string{
+		"Default to a subagent team for implementation and verification.",
+		"do not keep work single-lane merely because subagents were not explicitly re-requested.",
+	}
+	for _, check := range unwanted {
+		if strings.Contains(prompt, check) {
+			t.Fatalf("single-agent prompt should not contain default-mode instruction %q", check)
+		}
+	}
+	assertV2SpecPromptExcludesV1StageAssumptions(t, prompt)
+}
+
 func TestBuildReflectPrompt_Golden(t *testing.T) {
 	prompt := buildReflectPrompt(
 		"/repo",

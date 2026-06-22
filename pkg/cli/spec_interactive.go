@@ -58,9 +58,13 @@ func promptSpecThesis(inputCfg freeTextInputConfig) (string, error) {
 	style := styleForStdout()
 
 	printSectionBanner("📝", "Spec Thesis")
-	fmt.Println(style.muted("Describe the feature goal or thesis in one concise paragraph or a short set of paragraphs."))
-	fmt.Println(style.muted("The coding agent will infer, research, and clarify every other SPEC.md section before implementation."))
+	fmt.Println(style.label("What to write"))
+	fmt.Println(style.muted("  One concise paragraph or a short set of paragraphs describing the feature goal."))
+	fmt.Println()
+	fmt.Println(style.label("What Kit handles next"))
+	fmt.Println(style.muted("  The coding agent will infer, research, clarify, and fill every other SPEC.md section before implementation."))
 	if inputCfg.usesEditor() {
+		fmt.Println()
 		fmt.Printf("%s\n", style.muted(fmt.Sprintf("A %s will open for this response.", inputCfg.editorLabel())))
 		return readEditorText(inputCfg, "feature thesis", false)
 	}
@@ -71,6 +75,7 @@ func promptSpecThesis(inputCfg freeTextInputConfig) (string, error) {
 	}
 	defer closeMultilineReadline(rl)
 
+	fmt.Println()
 	fmt.Println(style.muted("Press Enter to submit. Use Shift+Enter or Ctrl+J to insert newlines."))
 	fmt.Println(style.muted("Consecutive blank lines are preserved."))
 	rl.SetPrompt(whiteBold + "   > " + reset)
@@ -89,11 +94,13 @@ func readSpecDeliveryIntent() (string, error) {
 	defer closeMultilineReadline(rl)
 
 	style := styleForStdout()
+	printSectionBanner("🚦", "Delivery Intent")
+	fmt.Println(style.muted("Kit records intent only. No Git or GitHub mutation happens here."))
 	fmt.Println()
-	fmt.Println(style.muted("Delivery intent? Press Enter for no."))
-	fmt.Println(style.muted("  yes      create a new issue, branch, and PR later through Kit-managed rules"))
-	fmt.Println(style.muted("  no       capture the idea only; no issue/branch/PR intent yet"))
-	fmt.Println(style.muted("  continue continue on the current branch/current issue/current PR if one exists"))
+	fmt.Printf("  %s  %s\n", style.label("no"), style.muted("capture the idea only; no issue/branch/PR intent yet (default)"))
+	fmt.Printf("  %s %s\n", style.label("yes"), style.muted("intend to create a new issue, branch, and PR later through Kit-managed rules"))
+	fmt.Printf("  %s   %s\n", style.label("continue"), style.muted("continue on the current branch/current issue/current PR if one exists"))
+	fmt.Println()
 	rl.SetPrompt(whiteBold + "   delivery intent [no/yes/continue]: " + reset)
 	return normalizeSpecDeliveryIntent(readLineRL(rl))
 }

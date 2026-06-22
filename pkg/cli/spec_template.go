@@ -16,11 +16,12 @@ func runSpecTemplate(
 	prompt := buildSpecTemplatePrompt(specPath, brainstormPath, featureSlug, projectRoot, cfg, promptOnly)
 
 	if !outputOnly {
-		fmt.Println()
-		fmt.Println(dim + "ℹ️  This prompt uses the current SPEC.md as the durable workflow state." + reset)
-		fmt.Println(dim + "   New SPEC.md files are seeded by one thesis/goal editor entry plus delivery intent." + reset)
-		fmt.Println(dim + "   Existing SPEC.md files are preserved unless you explicitly pass --revise-thesis." + reset)
-		fmt.Println(dim + "   Supporting artifacts can be placed in the feature notes/design directories referenced by the prompt." + reset)
+		style := styleForStdout()
+		printSectionBanner("🧠", "V2 Supervisor Prompt")
+		fmt.Println(style.bullet(style.label("Source of truth:") + " SPEC.md is the durable workflow state."))
+		fmt.Println(style.bullet(style.label("New specs:") + " one thesis/goal entry plus delivery intent starts the flow."))
+		fmt.Println(style.bullet(style.label("Existing specs:") + " content is preserved unless you pass --revise-thesis."))
+		fmt.Println(style.bullet(style.label("Supporting inputs:") + " add files under the referenced notes/design directories."))
 		fmt.Println()
 	}
 
@@ -30,8 +31,9 @@ func runSpecTemplate(
 	}
 	if !outputOnly {
 		printNumberedNextSteps([]string{
-			fmt.Sprintf("Review or edit %s as the single durable workflow artifact", specPath),
+			fmt.Sprintf("Review %s as the single durable workflow artifact", specPath),
 			"Paste the copied v2 supervisor prompt into your coding agent",
+			"Use the clarification loop to fill every unresolved SPEC.md section before implementation",
 		})
 	}
 
@@ -50,5 +52,6 @@ func buildSpecTemplatePrompt(
 		ProjectRoot:    projectRoot,
 		Config:         cfg,
 		PromptOnly:     promptOnly,
+		SingleAgent:    singleAgent,
 	})
 }

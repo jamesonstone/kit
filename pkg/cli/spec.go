@@ -26,38 +26,39 @@ var promptSpecFeatureRef = readSpecFeatureRef
 
 var specCmd = &cobra.Command{
 	Use:   "spec [feature]",
-	Short: "Run the v2 single-SPEC feature workflow",
-	Long: `Create or open the v2 single-SPEC feature workflow.
+	Short: "Start or resume the Kit v2 SPEC.md workflow",
+	Long: `Start or resume Kit v2 feature work from one durable SPEC.md.
 
-Creates:
-  - Feature directory (e.g., docs/specs/0001-my-feature/)
-  - SPEC.md as the single durable feature workflow artifact
-  - Feature notes/reference-material directories for supporting inputs
+🧭 Human flow
+  1. Pick or provide a feature slug/name.
+  2. Enter one thesis/goal in an editor.
+  3. Choose delivery intent: no, yes, or continue.
+  4. Paste the copied v2 supervisor prompt into your coding agent.
 
-Updates PROJECT_PROGRESS_SUMMARY.md after creation.
+🧠 Agent workflow
+  idea → clarification loop → agent-team implementation → reflection →
+  validation/verification → evidence + delivery gate
 
-If no feature is specified, shows an interactive selection of eligible existing
-feature directories that can enter the v2 SPEC.md workflow. If there are no
-eligible existing features to select from, prompts for a new feature name and
-opens one thesis/goal editor entry before rendering the v2 supervisor prompt.
+📦 What Kit writes
+  - docs/specs/<feature>/SPEC.md as the single durable v2 feature artifact
+  - docs/notes/<feature>/ reference-material directories for supporting inputs
+  - PROJECT_PROGRESS_SUMMARY.md after creation or adoption
 
-The generated prompt is the v2 supervisor contract. It keeps ideation,
+🔁 Modes
+  New SPEC.md       One thesis/goal entry + delivery intent, then prompt output
+  Existing SPEC.md  Preserve content and regenerate/copy the supervisor prompt
+  --revise-thesis   Append a dated thesis note; never silently replace the old one
+  --prompt-only     Read existing SPEC.md and print/copy the prompt without writes
+
+🧱 The generated prompt is the v2 supervisor contract. It keeps ideation,
 clarification, implementation planning, task tracking, implementation,
-validation, reflection, documentation updates, and delivery gating inside
-SPEC.md instead of requiring separate BRAINSTORM.md, PLAN.md, TASKS.md,
-implement, reflect, or standalone verification workflow commands.
+reflection, validation/verification, documentation updates, and delivery
+gating inside SPEC.md. It does not require BRAINSTORM.md, PLAN.md, TASKS.md,
+implement, reflect, or standalone verification commands in the normal v2 path.
 
-Modes:
-  New SPEC.md:       Ask for one required thesis/goal entry, capture delivery intent, then copy the v2 supervisor prompt
-  Existing SPEC.md:  Preserve current SPEC.md content and regenerate/copy the v2 supervisor prompt
-  --revise-thesis:   Append a dated thesis note to an existing SPEC.md before prompt output
-
-Flags:
-  --output-only:     Output the raw prompt to stdout instead of copying it to the clipboard
-  --copy:            Copy prompt to clipboard (mainly useful with --output-only)
-  --revise-thesis:   Append a dated thesis note and refresh delivery intent before prompt output
-  --vim:             Open the thesis response in a vim-compatible editor instead of $EDITOR
-  --inline:          Use inline multiline thesis entry instead of opening the editor`,
+🚫 Git/GitHub safety
+  kit spec records delivery intent only. It does not create issues, branches,
+  commits, pushes, pull requests, or review-thread mutations.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runSpec,
 }
@@ -147,10 +148,11 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	}
 
 	if !outputOnly {
+		style := styleForStdout()
 		if created {
-			fmt.Printf("📁 Created feature directory: %s\n", feat.DirName)
+			fmt.Printf("%s %s\n", style.title("📁", "Created feature directory:"), feat.DirName)
 		} else {
-			fmt.Printf("📁 Using existing feature: %s\n", feat.DirName)
+			fmt.Printf("%s %s\n", style.title("📁", "Using existing feature:"), feat.DirName)
 		}
 	}
 
@@ -229,7 +231,8 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	}
 
 	if !outputOnly {
-		fmt.Printf("\n✅ Feature '%s' ready!\n", feat.Slug)
+		style := styleForStdout()
+		fmt.Printf("\n%s %s\n", style.title("✅", "Feature ready:"), feat.Slug)
 		if wasPaused {
 			fmt.Println("  ✓ Cleared paused state")
 		}
@@ -329,8 +332,10 @@ func readSpecFeatureRef() (string, error) {
 	defer closeMultilineReadline(rl)
 
 	style := styleForStdout()
-	fmt.Println(style.muted("No eligible v2 feature candidates found. Enter a feature/project name."))
-	fmt.Println(style.muted("It will be normalized to lowercase kebab-case and must be 5 words or fewer."))
+	printSectionBanner("🏷️", "Feature Name")
+	fmt.Println(style.muted("No eligible v2 feature candidates were found."))
+	fmt.Println(style.muted("Enter a short feature or project name; Kit will normalize it to lowercase kebab-case."))
+	fmt.Println(style.muted("Keep it 5 words or fewer."))
 	featureRef := readLineRL(rl)
 	if featureRef == "" {
 		return "", fmt.Errorf("feature name cannot be empty")

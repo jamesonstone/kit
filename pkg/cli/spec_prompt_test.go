@@ -246,7 +246,9 @@ func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
 	checks := []string{
 		"Spec Thesis",
 		"A default editor will open for this response.",
-		"coding agent will infer, research, and clarify every other SPEC.md section",
+		"What to write",
+		"What Kit handles next",
+		"coding agent will infer, research, clarify, and fill every other SPEC.md section",
 	}
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
@@ -543,17 +545,28 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"Do not skip phases.",
 		"## Agent Team Model",
 		"The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.",
+		"Default to a subagent team for implementation and verification.",
+		"Use a single supervisor lane only when the work is trivial, tightly coupled, the active runtime cannot spawn subagents, or `--single-agent` is explicitly active.",
+		"do not keep work single-lane merely because subagents were not explicitly re-requested.",
+		"Treat planned lanes as logical work routing until separate agents are actually spawned.",
+		"single supervisor lane; no specialist or verification agents spawned",
+		"Do not describe logical lanes as agents, spawned lanes, or verification agents unless separate agents actually ran.",
 		"Default max concurrent lanes: 3.",
 		"Hard ceiling: 4, only when predicted file overlap is clearly low.",
 		"Do not use \"as many agents as possible.\"",
 		"Verification lanes are read-only by default.",
 		"## Agent Team Plan",
+		"implementation lanes that will actually be spawned as subagents",
+		"read-only verification lanes that will actually be spawned as subagents",
+		"logical-only lanes that will not be spawned",
+		"reason for each omitted implementation or verification subagent",
 		"predicted touched files per lane",
 		"## Implementation Rules",
 		"## Acceptance Coverage Audit",
 		"Each acceptance criterion row must include criterion id, implementation evidence, validation command or review evidence, documentation impact, verifier result, and gap status.",
 		"## Validation And Verification Phase",
 		"Map validation 1:1 to Acceptance Criteria in `SPEC.md`",
+		"Use at least one read-only verification subagent by default after implementation",
 		"Read-only verification lanes must not edit files",
 		"For each verifier gap, record `gap id -> acceptance criterion id -> Source Map id -> fix diff area -> rerun evidence -> verifier closure`",
 		"If validation is impossible, record reason, risk, substitute evidence, user-visible impact, owner or next action, and whether delivery is blocked.",
@@ -567,6 +580,8 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"## Response Scope",
 		"Clarification-loop replies should use numbered questions",
 		"## Final Response Contract",
+		"state the exception that justified single-lane execution",
+		"do not present logical planning lanes as spawned agents",
 	}
 
 	for _, check := range checks {

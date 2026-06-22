@@ -18,6 +18,7 @@ type specV2PromptInput struct {
 	Config         *config.Config
 	Answers        *specAnswers
 	PromptOnly     bool
+	SingleAgent    bool
 }
 
 func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
@@ -36,6 +37,7 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 	designPath := featureDesignMaterialsPath(input.ProjectRoot, featureDir)
 	hasBrainstorm := document.Exists(input.BrainstormPath)
 	useRLM := specNeedsRLM(input.FeatureSlug, input.SpecPath, input.BrainstormPath, input.Answers)
+	agentTeamModeBullets := specV2AgentTeamModeBullets(input.SingleAgent)
 
 	durableRows := [][]string{
 		{"SPEC", fmt.Sprintf("%s - single durable feature artifact and workflow state", input.SpecPath)},
@@ -205,7 +207,7 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 			"first validation strategy, rollback checkpoint, and evidence locations",
 			"dirty-worktree status and ownership classification for existing changes",
 			"Source Map status, including unverified or stale claims",
-			"whether the work should stay single-lane or requires a later Agent Team Plan",
+			"subagent team plan: implementation subagents, read-only verification subagents, logical-only lanes, omitted lanes, concurrency, and any single-lane exception",
 		)
 
 		doc.Heading(2, "Clarification Loop")
@@ -278,10 +280,16 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 		)
 
 		doc.Heading(2, "Agent Team Model")
-		doc.BulletList(
+		agentTeamBullets := []string{
 			"The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.",
+		}
+		agentTeamBullets = append(agentTeamBullets, agentTeamModeBullets...)
+		agentTeamBullets = append(agentTeamBullets,
 			"Use dynamic lanes with a fixed supervisor contract.",
 			"Create specialist lanes only when work separates into low-overlap files, packages, services, UI/backend areas, docs, tests, or validation surfaces.",
+			"Treat planned lanes as logical work routing until separate agents are actually spawned.",
+			"If no subagents or verification agents actually ran, report exactly: `single supervisor lane; no specialist or verification agents spawned`.",
+			"Do not describe logical lanes as agents, spawned lanes, or verification agents unless separate agents actually ran.",
 			"Default max concurrent lanes: 3.",
 			"Hard ceiling: 4, only when predicted file overlap is clearly low.",
 			"Do not use \"as many agents as possible.\"",
@@ -290,13 +298,18 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 			"Verification agents record gaps; the supervisor routes fixes back to implementation lanes.",
 			"The supervisor must update `SPEC.md` after each phase: clarified decisions, task status, validation evidence, reflection notes, and delivery state.",
 		)
+		doc.BulletList(agentTeamBullets...)
 
 		doc.Heading(2, "Agent Team Plan")
-		doc.Paragraph("Before implementation, output an Agent Team Plan and persist the durable parts in `SPEC.md`.")
+		doc.Paragraph("Before implementation, output an Agent Team Plan and persist the durable parts in `SPEC.md`. In default mode, the plan must identify the subagents that will actually be spawned unless a single-lane exception applies.")
 		doc.BulletList(
 			"supervisor responsibilities",
 			"proposed lanes",
+			"implementation lanes that will actually be spawned as subagents",
+			"read-only verification lanes that will actually be spawned as subagents",
+			"logical-only lanes that will not be spawned",
 			"intentionally omitted lanes",
+			"reason for each omitted implementation or verification subagent",
 			"predicted touched files per lane",
 			"overlap risks",
 			"max concurrency",
@@ -333,7 +346,8 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 			"Map validation 1:1 to Acceptance Criteria in `SPEC.md`; every criterion must have evidence or a documented blocker.",
 			"Use the smallest relevant checks that prove the behavior: tests, linters, typechecks, build commands, runtime inspection, manual UI verification, docs review, or targeted scripts.",
 			"Record concise evidence inline in `SPEC.md` and link detailed artifacts under `.kit/runs/...` or other stable local evidence locations when available.",
-			"Assign one or more read-only verification lanes when the change has enough surface area to justify independent review.",
+			"Use at least one read-only verification subagent by default after implementation unless the change is documentation-only, trivial, tightly coupled, `--single-agent` is active, or the active runtime cannot spawn subagents.",
+			"When verification stays single-lane, record the exception and substitute review method in `SPEC.md`.",
 			"Verification agents must compare `SPEC.md` against the actual diff, tests, runtime behavior, documentation updates, and evidence.",
 			"Read-only verification lanes must not edit files, stage changes, mark criteria complete, or close their own findings.",
 			"For each verifier gap, record `gap id -> acceptance criterion id -> Source Map id -> fix diff area -> rerun evidence -> verifier closure` in `SPEC.md`.",
@@ -454,6 +468,23 @@ func specV2UserContext(answers *specAnswers) string {
 	return strings.Join(items, "\n\n")
 }
 
+func specV2AgentTeamModeBullets(singleAgentMode bool) []string {
+	if singleAgentMode {
+		return []string{
+			"`--single-agent` is active. Keep execution in one supervisor lane and do not require implementation or verification subagents.",
+			"Even in single-agent mode, record logical work lanes in the Agent Team Plan when they clarify sequencing, validation, or risk.",
+			"In final responses, state `single supervisor lane; no specialist or verification agents spawned` and cite `--single-agent` as the exception.",
+		}
+	}
+
+	return []string{
+		"Default to a subagent team for implementation and verification.",
+		"Use a single supervisor lane only when the work is trivial, tightly coupled, the active runtime cannot spawn subagents, or `--single-agent` is explicitly active.",
+		"If implementation or verification stays single-lane, record the exact exception in `SPEC.md` before implementation or validation begins.",
+		"When the active coding-agent runtime supports subagents, spawn implementation and verification subagents according to the Agent Team Plan; do not keep work single-lane merely because subagents were not explicitly re-requested.",
+	}
+}
+
 func specV2FinalResponseContract() []finalResponseContractSection {
 	return []finalResponseContractSection{
 		{
@@ -478,7 +509,7 @@ func specV2FinalResponseContract() []finalResponseContractSection {
 		},
 		{
 			Heading: "Agent Team",
-			Items:   []string{"Summarize lanes used, lanes intentionally omitted, verification lanes, concurrency, and overlap decisions."},
+			Items:   []string{"Summarize actual lanes used, subagents actually spawned, lanes intentionally omitted, verification lanes, concurrency, and overlap decisions. If no separate agents actually ran, write `single supervisor lane; no specialist or verification agents spawned`, state the exception that justified single-lane execution, and do not present logical planning lanes as spawned agents."},
 		},
 		{
 			Heading: "Delivery",
