@@ -545,6 +545,9 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"Do not skip phases.",
 		"## Agent Team Model",
 		"The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.",
+		"Treat planned lanes as logical work routing until separate agents are actually spawned.",
+		"single supervisor lane; no specialist or verification agents spawned",
+		"Do not describe logical lanes as agents, spawned lanes, or verification agents unless separate agents actually ran.",
 		"Default max concurrent lanes: 3.",
 		"Hard ceiling: 4, only when predicted file overlap is clearly low.",
 		"Do not use \"as many agents as possible.\"",
@@ -569,6 +572,7 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"## Response Scope",
 		"Clarification-loop replies should use numbered questions",
 		"## Final Response Contract",
+		"do not present logical planning lanes as spawned agents",
 	}
 
 	for _, check := range checks {

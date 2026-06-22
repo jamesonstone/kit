@@ -282,6 +282,9 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 			"The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.",
 			"Use dynamic lanes with a fixed supervisor contract.",
 			"Create specialist lanes only when work separates into low-overlap files, packages, services, UI/backend areas, docs, tests, or validation surfaces.",
+			"Treat planned lanes as logical work routing until separate agents are actually spawned.",
+			"If no subagents or verification agents actually ran, report exactly: `single supervisor lane; no specialist or verification agents spawned`.",
+			"Do not describe logical lanes as agents, spawned lanes, or verification agents unless separate agents actually ran.",
 			"Default max concurrent lanes: 3.",
 			"Hard ceiling: 4, only when predicted file overlap is clearly low.",
 			"Do not use \"as many agents as possible.\"",
@@ -478,7 +481,7 @@ func specV2FinalResponseContract() []finalResponseContractSection {
 		},
 		{
 			Heading: "Agent Team",
-			Items:   []string{"Summarize lanes used, lanes intentionally omitted, verification lanes, concurrency, and overlap decisions."},
+			Items:   []string{"Summarize actual lanes used, lanes intentionally omitted, verification lanes, concurrency, and overlap decisions. If no separate agents actually ran, write `single supervisor lane; no specialist or verification agents spawned` and do not present logical planning lanes as spawned agents."},
 		},
 		{
 			Heading: "Delivery",
