@@ -1,15 +1,23 @@
 ```text
-██╗  ██╗██╗████████╗
-██║ ██╔╝██║╚══██╔══╝
-█████╔╝ ██║   ██║
-██╔═██╗ ██║   ██║
-██║  ██╗██║   ██║
-╚═╝  ╚═╝╚═╝   ╚═╝
+╭──────────────────────────────────────────────────────────────────────╮
+│                                                                      │
+│   K                                                                  │
+│      keep one durable SPEC.md as the source of truth                 │
+│                                                                      │
+│   I                                                                  │
+│      interrogate ambiguity before implementation                     │
+│                                                                      │
+│   T                                                                  │
+│      turn agent work into validation evidence                        │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│                    Kit v2 Thought-Work Harness                       │
+│             idea → clarity → agent teams → evidence                  │
+╰──────────────────────────────────────────────────────────────────────╯
 ```
 
-# Kit v2 Thought-Work Harness
-
-🎒 Kit is a portable, agent-agnostic harness for disciplined thought work.
+🎒 **Kit v2 Thought-Work Harness** is a portable, agent-agnostic harness for
+disciplined thought work.
 
 Its strongest engine is a document-first, spec-driven workflow for software
 projects, but the same structure works for research, operations, writing,
