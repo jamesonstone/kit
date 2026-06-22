@@ -17,13 +17,10 @@ func runSpecTemplate(
 
 	if !outputOnly {
 		fmt.Println()
-		fmt.Println(dim + "⚠️ IMPORTANT: Before submitting this prompt, fill in the context section" + reset)
-		fmt.Println(dim + "   with your idea, known constraints, acceptance criteria, and delivery intent." + reset)
-		fmt.Println(dim + "   Supporting artifacts can be placed in the feature notes/design directories" + reset)
-		fmt.Println(dim + "   referenced by the generated prompt." + reset)
-		fmt.Println()
-		fmt.Println(dim + "   Tip: Run 'kit spec <feature> --interactive' for a guided" + reset)
-		fmt.Println(dim + "   editor-first experience, or add '--inline' for terminal multiline entry." + reset)
+		fmt.Println(dim + "ℹ️  This prompt uses the current SPEC.md as the durable workflow state." + reset)
+		fmt.Println(dim + "   New SPEC.md files are seeded by one thesis/goal editor entry plus delivery intent." + reset)
+		fmt.Println(dim + "   Existing SPEC.md files are preserved unless you explicitly pass --revise-thesis." + reset)
+		fmt.Println(dim + "   Supporting artifacts can be placed in the feature notes/design directories referenced by the prompt." + reset)
 		fmt.Println()
 	}
 

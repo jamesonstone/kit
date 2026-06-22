@@ -19,6 +19,12 @@ type specAnswers struct {
 	DeliveryIntent string
 }
 
+const (
+	specDeliveryIntentIdeaOnly           = "idea_only"
+	specDeliveryIntentIssueBranchPRLater = "issue_branch_pr_later"
+	specDeliveryIntentContinueCurrent    = "continue_current"
+)
+
 func normalizeSpecAnswer(raw string) string {
 	return strings.TrimSpace(raw)
 }

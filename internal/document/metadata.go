@@ -100,6 +100,7 @@ type Metadata struct {
 	Artifact           string                         `yaml:"artifact"`
 	WorkflowVersion    int                            `yaml:"workflow_version,omitempty"`
 	Phase              string                         `yaml:"phase,omitempty"`
+	DeliveryIntent     string                         `yaml:"delivery_intent,omitempty"`
 	Feature            FeatureMetadata                `yaml:"feature"`
 	Summary            string                         `yaml:"summary,omitempty"`
 	Intent             string                         `yaml:"intent,omitempty"`
@@ -136,6 +137,7 @@ type MetadataUpsert struct {
 	Artifact        string
 	WorkflowVersion int
 	Phase           string
+	DeliveryIntent  string
 	Summary         string
 	Intent          string
 	Relationships   []MetadataRelationship
@@ -570,6 +572,9 @@ func UpsertMetadata(content string, docType DocumentType, update MetadataUpsert)
 	}
 	if update.Phase != "" {
 		setNodeString(metadataNode, "phase", update.Phase)
+	}
+	if update.DeliveryIntent != "" {
+		setNodeString(metadataNode, "delivery_intent", update.DeliveryIntent)
 	}
 	if update.Feature != (FeatureMetadata{}) {
 		upsertFeatureMetadata(metadataNode, update.Feature)

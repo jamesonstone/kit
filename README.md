@@ -535,8 +535,8 @@ reflection notes, and evidence before delivery.
 # start the v2 single-SPEC workflow
 kit spec my-feature
 
-# capture initial context interactively before generating the v2 supervisor prompt
-kit spec my-feature --interactive
+# append a dated thesis note to an existing SPEC.md before prompt output
+kit spec my-feature --revise-thesis
 
 # regenerate the v2 supervisor prompt without v2 adoption writes
 kit spec my-feature --prompt-only
@@ -566,9 +566,13 @@ kit backlog --pickup shared-refactor
 kit resume shared-refactor
 ```
 
-`kit spec <feature> --interactive` now opens `$EDITOR` for each free-text answer
-by default, falling back to a vim-compatible editor when `$EDITOR` is unset. Use `kit spec <feature> --interactive --inline`
-to opt back into terminal multiline entry.
+For a new `SPEC.md`, `kit spec <feature>` opens one thesis/goal editor entry,
+then asks for delivery intent: `no`/Enter for idea capture only, `yes` for a
+later Kit-managed issue/branch/PR lane, or `continue` for existing in-flight
+work. Existing `SPEC.md` files are preserved by default and only regenerate the
+v2 supervisor prompt; use `--revise-thesis` to append a dated thesis note and
+refresh delivery intent. `kit spec` never creates issues, branches, commits,
+pushes, or PRs during this intake step.
 
 ### 🧭 Legacy Staged Commands
 

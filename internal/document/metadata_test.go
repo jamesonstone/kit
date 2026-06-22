@@ -501,6 +501,7 @@ summary
 `
 
 	updated, changed, err := UpsertMetadata(content, TypeSpec, MetadataUpsert{
+		DeliveryIntent: "idea_only",
 		References: []MetadataReference{{
 			ID:         "feature-notes",
 			Name:       "Feature notes",
@@ -524,8 +525,14 @@ summary
 	if !strings.Contains(updated, "# SPEC\n\n## SUMMARY\n\nsummary\n") {
 		t.Fatalf("updated content lost body:\n%s", updated)
 	}
+	if !strings.Contains(updated, "delivery_intent: idea_only") {
+		t.Fatalf("updated content missing delivery intent:\n%s", updated)
+	}
 
 	doc := Parse(updated, "SPEC.md", TypeSpec)
+	if got := doc.DeliveryIntent(); got != "idea_only" {
+		t.Fatalf("DeliveryIntent() = %q, want idea_only", got)
+	}
 	if got := doc.References(); len(got) != 1 || got[0].Name != "Feature notes" || got[0].Target != "docs/notes/0001-alpha" {
 		t.Fatalf("References() = %#v, want upserted reference", got)
 	}
