@@ -203,6 +203,10 @@ git add <file_name>
 git diff --staged
 ```
 
+- Before staging, perform a self-review pass over the implementation and documentation changes.
+- During self-review, verify the current diff against the original ask, acceptance criteria, and repo-local rules.
+- Resolve known errors before staging, including compile errors, failing focused tests, lint/format failures, broken generated docs, stale command metadata, and obvious regressions found during review.
+- If any relevant error remains, stop and report it. Do not stage, commit, push, or open/update the PR with known-broken work unless the user explicitly instructs that exact exception.
 - Review each file before staging.
 - Stage files explicitly with `git add <file_name>`.
 - Never use `git add .` or `git add -A`.
@@ -211,6 +215,7 @@ git diff --staged
 ### Commit Workflow
 
 - Commit only after staged changes are reviewed and acceptable.
+- Before committing, confirm there are no known relevant errors remaining and that focused verification has passed or any skipped verification has been explicitly reported and accepted by the user.
 - Re-confirm author and committer before committing; abort on any non-human identity:
 
 ```bash

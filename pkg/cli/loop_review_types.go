@@ -26,6 +26,7 @@ type loopReviewOptions struct {
 	DryRun            bool
 	JSON              bool
 	UseSubagents      bool
+	ResolvePRFeedback bool
 	Agent             config.LoopAgentConfig
 	Progress          io.Writer
 }

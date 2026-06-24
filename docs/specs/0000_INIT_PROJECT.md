@@ -709,6 +709,42 @@ Flags:
 
 ---
 
+#### `kit pr fix [feature]`
+
+- provide the default human-facing PR review repair entrypoint
+- without `--pr`, list open pull requests in the current repository and ask
+  which one to repair
+- with `--pr <target>`, accept the same PR target forms as dispatch PR intake:
+  full GitHub PR URL, Markdown PR link, `owner/repo#123`, or current-repo PR
+  number
+- route the selected PR through the existing `kit loop review --pr` repair path
+- preserve the delivery boundary: do not stage, commit, push, or post PR
+  comments from the repair loop
+- after fixes or no-op decisions are validated, ask the delegated agent to
+  resolve all matching current unresolved review threads on the PR, including
+  human reviewer and CodeRabbit feedback, through
+  `kit dispatch --pr <target> --resolve --yes`
+- resolve only feedback verified as fixed or intentionally no-op; do not
+  resolve unfixed, uncertain, stale, or unrelated feedback
+- keep `kit dispatch --pr <target> --coderabbit` as the raw unresolved
+  review-thread prompt intake path
+- keep `kit dispatch --pr <target> --resolve --yes` as the explicit mutation
+  path after fixes or no-op decisions are complete
+
+Flags:
+
+- `--pr <target>` — target a PR without using the selector
+- `--watch` — wait for CodeRabbit completion before finalizing PR mode
+- `--wait-for-coderabbit` — alias for `--watch`
+- `--dry-run` — show the first review prompt without invoking the agent
+- `--min-confidence <0-100>` — override `loop.min_confidence`
+- `--max-iterations <n>` — override `loop.max_iterations`
+- `--subagents` — allow parent review pre-analysis to choose subagents when
+  the changed-code lanes are clearly independent
+- `--json` — output the loop review report as JSON; requires `--pr`
+
+---
+
 #### `kit legacy implement [feature]` (Legacy Staged)
 
 - output implementation context for a coding agent in the legacy staged workflow
@@ -793,7 +829,8 @@ Flags:
 - default output lists visible canonical commands with compact metadata
 - support `--json` with `schema_version: 1` and `kind: capabilities_index`
 - support targeted command paths such as `kit capabilities legacy verify --json`,
-  `kit capabilities rules add --json`, and `kit capabilities skill mine --json`
+  `kit capabilities pr fix --json`, `kit capabilities rules add --json`, and
+  `kit capabilities skill mine --json`
   with `kind: capability_detail`
 - support `--full --json` with detailed records, including hidden and
   deprecated compatibility commands labeled explicitly

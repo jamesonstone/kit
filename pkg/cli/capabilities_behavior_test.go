@@ -80,6 +80,7 @@ func TestCapabilitiesNestedCommandPaths(t *testing.T) {
 		{"prompt", "list"},
 		{"set", "prompt"},
 		{"skill", "mine"},
+		{"pr", "fix"},
 		{"rules", "add"},
 		{"rules", "list"},
 		{"rules", "view"},

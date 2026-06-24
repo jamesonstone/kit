@@ -79,6 +79,7 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit capabilities` | List command capabilities, mutation behavior, network use, and important flags. |
 | `kit check <feature>` | Validate feature documents and required populated sections. |
 | `kit check --project` | Validate repo-level docs, init scaffold, and instruction contract. |
+| `kit pr fix` | Select or target an open PR and run the review feedback repair loop. |
 | `kit trace <target>` | List feature verification runs or inspect one run ID. |
 | `kit replay <run-id>` | Rerun commands from a prior verification run and compare outcomes. |
 | `kit state [refresh]` | Show or refresh generated pointer-only `.kit/state.json`. |
@@ -130,6 +131,17 @@ Use `kit dispatch` when you need formal overlap clustering and queue planning
 for a raw task set. Use the default prompt path when an agent should use
 subagents opportunistically.
 
+Use `kit pr fix` as the default PR review repair entrypoint. With no flags it
+lists open pull requests in the current repository and asks which one to repair.
+Use `kit pr fix --pr <url|owner/repo#number|number>` to target a specific PR.
+The command wraps the `kit loop review --pr` repair path, so it may write
+`.kit/loops` evidence and the configured agent may edit local files, but it
+does not stage, commit, push, post PR comments, or perform GitHub delivery.
+After fixes or no-op decisions are validated, `kit pr fix` asks the delegated
+agent to resolve all matching current unresolved review threads, including
+human reviewer and CodeRabbit feedback, through
+`kit dispatch --pr <target> --resolve --yes`.
+
 Use `kit dispatch --pr <url|number>` to prefill the dispatch editor from
 unresolved, non-outdated GitHub PR review threads. Add `--coderabbit` to keep
 only CodeRabbit-authored review comments.
@@ -137,7 +149,7 @@ only CodeRabbit-authored review comments.
 After fixes or no-op decisions are complete, use
 `kit dispatch --pr <target> --resolve --yes` to resolve matching unresolved
 review threads on GitHub. Resolution is an explicit GitHub mutation and is
-never part of default prompt generation.
+not part of raw dispatch prompt generation.
 
 Use `kit loop review` when changed code should be reviewed until the local
 agent reports at least 95% correctness and no high, medium, or

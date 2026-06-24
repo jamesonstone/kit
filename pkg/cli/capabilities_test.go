@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "ci", "legacy verify", "loop review", "dispatch", "rules add", "skill mine"} {
+	for _, command := range []string{"capabilities", "ci", "pr fix", "legacy verify", "loop review", "dispatch", "rules add", "skill mine"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
@@ -210,6 +210,42 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "stop immediately") {
 		t.Fatalf("expected loop review caveats to document agent setup failures, got %#v", loopReviewPayload.Command.Caveats)
+	}
+
+	prFixOutput, err := executeCapabilitiesCommand("--json", "pr", "fix")
+	if err != nil {
+		t.Fatalf("kit capabilities pr fix --json error = %v", err)
+	}
+	var prFixPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(prFixOutput), &prFixPayload); err != nil {
+		t.Fatalf("json.Unmarshal(pr fix) error = %v", err)
+	}
+	if prFixPayload.Command.Command != "pr fix" {
+		t.Fatalf("command = %q, want pr fix", prFixPayload.Command.Command)
+	}
+	if prFixPayload.Command.MutationLevel != mutationExecutesCommands {
+		t.Fatalf("expected pr fix to execute the configured repair agent, got %#v", prFixPayload.Command)
+	}
+	if !strings.Contains(prFixPayload.Command.NetworkUse.Summary, "gh pr list") {
+		t.Fatalf("expected pr fix to document open-PR selector network use, got %#v", prFixPayload.Command.NetworkUse)
+	}
+	if !strings.Contains(prFixPayload.Command.GitMutation.Summary, "forbid staging") {
+		t.Fatalf("expected pr fix to forbid git mutation, got %#v", prFixPayload.Command.GitMutation)
+	}
+	if !strings.Contains(prFixPayload.Command.NetworkUse.FlagDependent, "human and CodeRabbit review threads") {
+		t.Fatalf("expected pr fix to document human and CodeRabbit resolution, got %#v", prFixPayload.Command.NetworkUse)
+	}
+	if findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--pr") == nil {
+		t.Fatalf("expected pr fix to document --pr")
+	}
+	if findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--json") == nil {
+		t.Fatalf("expected pr fix to document --json")
+	}
+	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "does not push") {
+		t.Fatalf("expected pr fix caveats to document push boundary, got %#v", prFixPayload.Command.Caveats)
+	}
+	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "without `--coderabbit`") {
+		t.Fatalf("expected pr fix caveats to document all-reviewer resolution, got %#v", prFixPayload.Command.Caveats)
 	}
 
 	if _, err := executeCapabilitiesCommand("--json", "review-loop"); err == nil || !strings.Contains(err.Error(), "unknown Kit command path") {
