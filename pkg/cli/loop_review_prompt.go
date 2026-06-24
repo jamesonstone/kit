@@ -53,7 +53,14 @@ func buildLoopReviewPrompt(
 	builder.WriteString("- Run the smallest relevant validation commands and add or update focused tests when needed.\n")
 	builder.WriteString("- Emit concise progress updates for long-running work, command failures, blockers, and any pending user input.\n")
 	builder.WriteString("- Share brief rationale summaries for decisions; do not expose private chain-of-thought.\n")
-	builder.WriteString("- Do not stage, commit, push, post PR comments, resolve review threads, or mutate GitHub.\n")
+	if prCtx != nil && opts.ResolvePRFeedback {
+		builder.WriteString("- Do not stage, commit, push, post PR comments, or mutate GitHub except for the review-thread resolution step below.\n")
+		builder.WriteString(fmt.Sprintf("- After fixes and no-op decisions are validated, resolve all matching current unresolved review threads for `%s`, including human and CodeRabbit feedback, with `kit dispatch --pr %d --resolve --yes` without `--coderabbit`.\n", reviewLoopTargetRef(prCtx.Target), prCtx.Target.Number))
+		builder.WriteString("- Resolve only feedback you verified as fixed or intentionally no-op; do not resolve unfixed, uncertain, stale, or unrelated feedback.\n")
+		builder.WriteString("- Report the review-thread resolution command and result in the final response.\n")
+	} else {
+		builder.WriteString("- Do not stage, commit, push, post PR comments, resolve review threads, or mutate GitHub.\n")
+	}
 	builder.WriteString("- If no blocking issues remain, report `done`; otherwise make the next minimal fix and report what changed.\n")
 	builder.WriteString(fmt.Sprintf("- Do not report `done` unless correctness is at least %d%% and there are no high, medium, or correctness-impacting issues.\n", opts.MinConfidence))
 	prompt := builder.String()
@@ -69,7 +76,7 @@ func buildLoopReviewPrompt(
 		appendLoopReviewSubagentPreAnalysis(&final)
 		final.WriteString("\n")
 	}
-	appendLoopReviewFinalOutput(&final, prCtx != nil)
+	appendLoopReviewFinalOutput(&final, prCtx != nil, prCtx != nil && opts.ResolvePRFeedback)
 	return final.String()
 }
 
@@ -81,7 +88,7 @@ func appendLoopReviewSubagentPreAnalysis(builder *strings.Builder) {
 	builder.WriteString("- Keep the parent agent responsible for final synthesis, correctness scoring, validation, and the required final output.\n")
 }
 
-func appendLoopReviewFinalOutput(builder *strings.Builder, includePRPending bool) {
+func appendLoopReviewFinalOutput(builder *strings.Builder, includePRPending bool, includeResolutionStatus bool) {
 	builder.WriteString("## Required Final Output\n\n")
 	builder.WriteString("Keep the final response information dense and short:\n\n")
 	builder.WriteString("```text\n")
@@ -89,6 +96,9 @@ func appendLoopReviewFinalOutput(builder *strings.Builder, includePRPending bool
 	builder.WriteString("Status: <short status>\n\n")
 	builder.WriteString("- Issue: <short finding>; Fix: <short action>.\n")
 	builder.WriteString("- Issue: <short finding>; Fix: <short action>.\n")
+	if includeResolutionStatus {
+		builder.WriteString("\nReview threads: <resolved count and skipped/remaining reason>.\n")
+	}
 	if includePRPending {
 		builder.WriteString("\nCodeRabbit has not completed for PR #<number> yet.\n")
 		builder.WriteString("Rerun: kit loop review --pr <number>\n")

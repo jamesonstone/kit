@@ -26,10 +26,10 @@
 
 ## Review Loop
 
-- Use `kit pr fix` as the default PR review repair entrypoint when current CodeRabbit feedback should be fixed locally.
+- Use `kit pr fix` as the default PR review repair entrypoint when current PR review feedback should be fixed locally.
 - With no `--pr`, `kit pr fix` lists open pull requests in the current repository and asks which one to repair.
 - Use `kit pr fix --pr <target>` when the PR is known; accepted targets match dispatch PR intake: URL, Markdown link, `owner/repo#number`, or current-repo number.
-- `kit pr fix` wraps the `kit loop review --pr` repair path and follows the same local-only boundary.
+- `kit pr fix` wraps the `kit loop review --pr` repair path, keeps staging/commit/push outside the repair loop, and asks the delegated agent to resolve verified fixed/no-op review threads.
 - Use `kit loop review` when changed code should be locally reviewed and repaired by the configured loop agent until the final response reports at least 95% correctness and ends with `done`.
 - Without `--pr`, `kit loop review` reviews current-branch changes relative to `origin/main`, falling back to local `main`, plus staged and unstaged changes.
 - Use `kit loop review --pr <target>` when current unresolved CodeRabbit PR feedback should be opportunistically folded into the repair loop while local review starts immediately.
@@ -40,8 +40,10 @@
 - Agent command setup failures stop immediately with stderr context instead of consuming the whole iteration budget.
 - Use `kit dispatch --loop --pr <target>` when current unresolved CodeRabbit PR review feedback should become a human-reviewed dispatch prompt instead of an agent repair loop.
 - Use `kit dispatch --pr <target> --coderabbit` only when you need raw unresolved CodeRabbit review-thread intake without review-loop watch, classification, or summary behavior.
-- Treat `kit pr fix` and `kit loop review` as local repair only: they may edit files through the configured agent and write `.kit/loops` evidence, but they must not stage, commit, push, post PR comments, or resolve review threads.
-- After fixes or no-op decisions are complete, `kit dispatch --pr <target> --resolve --yes` may resolve currently matching unresolved review threads on GitHub; this is an explicit GitHub mutation and must not be run speculatively.
+- Treat `kit loop review` as local repair only: it may edit files through the configured agent and write `.kit/loops` evidence, but it must not stage, commit, push, post PR comments, or resolve review threads.
+- In `kit pr fix`, after fixes or no-op decisions are complete and validation has run, ask the delegated agent to resolve all matching current unresolved review threads on the PR, including human reviewer and CodeRabbit feedback, with `kit dispatch --pr <target> --resolve --yes`.
+- Resolve only feedback verified as fixed or intentionally no-op; do not resolve unfixed, uncertain, stale, or unrelated feedback.
+- `kit dispatch --pr <target> --resolve --yes` is an explicit GitHub mutation and must not be run speculatively.
 
 ## Project Directory
 

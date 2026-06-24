@@ -67,6 +67,9 @@ func TestRunPRFixCommandRoutesExplicitPRToLoopReview(t *testing.T) {
 	if !gotOpts.WaitForCodeRabbit || !gotOpts.DryRun || !gotOpts.UseSubagents {
 		t.Fatalf("expected watch, dry-run, and subagents to be forwarded: %#v", gotOpts)
 	}
+	if !gotOpts.ResolvePRFeedback {
+		t.Fatalf("expected pr fix to enable review-thread resolution guidance: %#v", gotOpts)
+	}
 	if gotOpts.MinConfidence != 98 || gotOpts.MaxIterations != 3 {
 		t.Fatalf("loop bounds not forwarded: %#v", gotOpts)
 	}

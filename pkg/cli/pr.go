@@ -48,10 +48,11 @@ func newPRCommand() *cobra.Command {
 		SilenceErrors: true,
 		Long: `Run pull-request repair workflows.
 
-Use kit pr fix to select or target a pull request, ingest current CodeRabbit
-review feedback, and run the local review repair loop. Kit itself does not
-stage, commit, push, post PR comments, or resolve review threads from this
-command; those remain behind the repo-local delivery gate.`,
+Use kit pr fix to select or target a pull request, ingest current PR review
+feedback, and run the review repair loop. Kit itself does not stage,
+commit, push, or post PR comments. The delegated repair agent is instructed to
+resolve only verified fixed or no-op review threads through the explicit
+kit dispatch --pr <target> --resolve --yes mutation path.`,
 	}
 	cmd.AddCommand(newPRFixCommand())
 	return cmd
@@ -61,10 +62,10 @@ func newPRFixCommand() *cobra.Command {
 	opts := prFixOptions{}
 	cmd := &cobra.Command{
 		Use:           "fix [feature]",
-		Short:         "Repair a pull request from CodeRabbit feedback",
+		Short:         "Repair a pull request from review feedback",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Long: `Repair a pull request from current CodeRabbit feedback.
+		Long: `Repair a pull request from current review feedback.
 
 With --pr, the target can be a GitHub PR URL, a Markdown PR link,
 owner/repo#number, or a pull request number in the current repository.
@@ -72,7 +73,9 @@ owner/repo#number, or a pull request number in the current repository.
 Without --pr, Kit lists open pull requests in the current repository and asks
 which one to repair. The selected PR is passed to the same correctness loop as
 kit loop review --pr, so local changes can be made by the configured agent but
-GitHub delivery remains a separate, explicit step.`,
+GitHub delivery remains a separate, explicit step. Once fixes or no-op
+decisions are validated, the delegated agent is instructed to resolve matching
+current review feedback from both human reviewers and CodeRabbit.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runPRFixCommand(cmd, args, opts)
@@ -110,6 +113,7 @@ func runPRFixCommand(cmd *cobra.Command, args []string, opts prFixOptions) error
 		DryRun:            opts.DryRun,
 		JSON:              opts.JSON,
 		UseSubagents:      opts.UseSubagents,
+		ResolvePRFeedback: true,
 	})
 }
 

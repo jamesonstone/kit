@@ -147,7 +147,8 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"Use subagents when the work cleanly separates into low-overlap lanes after discovery",
 			"Keep broad or noisy discovery in RLM first",
 			"Use `kit pr fix` as the default PR review repair entrypoint",
-			"Treat `kit pr fix` and `kit loop review` as local repair only",
+			"resolve all matching current unresolved review threads",
+			"including human reviewer and CodeRabbit feedback",
 		},
 	}
 
@@ -168,6 +169,8 @@ func TestInstructionTemplatesIncludeDocAndExportHygiene(t *testing.T) {
 			"unused exports",
 			"reduce its visibility",
 			"attached pasted-text file",
+			"self-review and no-known-errors gate",
+			"Before staging or committing, self-review the diff",
 		},
 	}
 

@@ -718,8 +718,14 @@ Flags:
   full GitHub PR URL, Markdown PR link, `owner/repo#123`, or current-repo PR
   number
 - route the selected PR through the existing `kit loop review --pr` repair path
-- preserve the same local-only boundary as loop review: do not stage, commit,
-  push, post PR comments, or resolve review threads
+- preserve the delivery boundary: do not stage, commit, push, or post PR
+  comments from the repair loop
+- after fixes or no-op decisions are validated, ask the delegated agent to
+  resolve all matching current unresolved review threads on the PR, including
+  human reviewer and CodeRabbit feedback, through
+  `kit dispatch --pr <target> --resolve --yes`
+- resolve only feedback verified as fixed or intentionally no-op; do not
+  resolve unfixed, uncertain, stale, or unrelated feedback
 - keep `kit dispatch --pr <target> --coderabbit` as the raw unresolved
   review-thread prompt intake path
 - keep `kit dispatch --pr <target> --resolve --yes` as the explicit mutation

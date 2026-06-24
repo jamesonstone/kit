@@ -40,6 +40,7 @@ Before creating or mutating issues, branches, staging, commits, pushes, or PRs, 
    - issue reuse/create rules
    - branch naming convention
    - base branch refresh and staleness rules
+   - self-review and no-known-errors gate before staging or commit
    - staging rule
    - commit message format
    - PR draft/ready convention
@@ -101,6 +102,7 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 - Never guess file contents, APIs, or behavior
 - If validation cannot run, state why
 - Fix relevant lint and test failures before calling work complete
+- Before staging or committing, self-review the diff against the ask, acceptance criteria, and repo-local rules; fix known relevant errors first
 - Keep canonical front matter references and relationships current when those docs are touched
 
 ## Code Hygiene
