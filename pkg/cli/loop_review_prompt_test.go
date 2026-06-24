@@ -26,6 +26,16 @@ func TestBuildLoopReviewPromptDefaultsToSingleAgent(t *testing.T) {
 	if !strings.Contains(prompt, "## Required Final Output") {
 		t.Fatalf("expected final output contract in prompt:\n%s", prompt)
 	}
+	for _, want := range []string{
+		"Use Kit RLM",
+		"docs/CONSTITUTION.md",
+		"docs/references/rules/*",
+		"verify every finding against current code",
+	} {
+		if !strings.Contains(prompt, want) {
+			t.Fatalf("expected prompt to contain %q:\n%s", want, prompt)
+		}
+	}
 	if !strings.HasSuffix(strings.TrimSpace(prompt), "```") {
 		t.Fatalf("expected final output contract to remain last section:\n%s", prompt)
 	}

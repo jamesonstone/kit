@@ -79,6 +79,7 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit capabilities` | List command capabilities, mutation behavior, network use, and important flags. |
 | `kit check <feature>` | Validate feature documents and required populated sections. |
 | `kit check --project` | Validate repo-level docs, init scaffold, and instruction contract. |
+| `kit pr fix` | Select or target an open PR and run the CodeRabbit-oriented repair loop. |
 | `kit trace <target>` | List feature verification runs or inspect one run ID. |
 | `kit replay <run-id>` | Rerun commands from a prior verification run and compare outcomes. |
 | `kit state [refresh]` | Show or refresh generated pointer-only `.kit/state.json`. |
@@ -129,6 +130,14 @@ common generated-UI pitfalls.
 Use `kit dispatch` when you need formal overlap clustering and queue planning
 for a raw task set. Use the default prompt path when an agent should use
 subagents opportunistically.
+
+Use `kit pr fix` as the default PR review repair entrypoint. With no flags it
+lists open pull requests in the current repository and asks which one to repair.
+Use `kit pr fix --pr <url|owner/repo#number|number>` to target a specific PR.
+The command wraps the `kit loop review --pr` repair path, so it may write
+`.kit/loops` evidence and the configured agent may edit local files, but it
+does not stage, commit, push, post PR comments, resolve threads, or perform
+GitHub delivery.
 
 Use `kit dispatch --pr <url|number>` to prefill the dispatch editor from
 unresolved, non-outdated GitHub PR review threads. Add `--coderabbit` to keep

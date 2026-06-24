@@ -92,6 +92,7 @@ artifacts and are available only through `kit legacy` workflows.
 | `kit spec <feature>` | Start or resume the v2 `SPEC.md` workflow |
 | `kit loop workflow <feature>` | Execute workflow phases through a configured local agent loop |
 | `kit loop review` | Review changed code until local correctness converges |
+| `kit pr fix` | Select or target a PR and repair current CodeRabbit feedback locally |
 | `kit status --all` | Show project-wide feature state |
 | `kit map --all` | Show the project document map |
 | `kit capabilities --search <term>` | Inspect command behavior and mutation boundaries |

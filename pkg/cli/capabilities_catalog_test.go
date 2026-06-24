@@ -60,6 +60,7 @@ func TestCapabilityCatalogNestedCommandsAreRegistered(t *testing.T) {
 		{"skill", "mine"},
 		{"loop", "workflow"},
 		{"loop", "review"},
+		{"pr", "fix"},
 		{"rules", "add"},
 		{"rules", "list"},
 		{"rules", "view"},

@@ -31,6 +31,7 @@ var commandOrder = map[string]int{
 	"remove":       23,
 	"check":        24,
 	"ci":           25,
+	"pr":           26,
 	"verify":       6,
 	"trace":        27,
 	"replay":       28,
@@ -71,7 +72,7 @@ var rootCommandSections = []commandSection{
 			"rm",
 		},
 	},
-	{title: "Inspect & Repair", commands: []string{"status", "map", "capabilities", "check", "ci", "trace", "replay", "state", "eval", "rules", "reconcile"}},
+	{title: "Inspect & Repair", commands: []string{"status", "map", "capabilities", "check", "ci", "pr", "trace", "replay", "state", "eval", "rules", "reconcile"}},
 	{title: "Prompt Utilities", commands: []string{"prompt", "set", "handoff", "summarize", "dispatch", "code-review", "skill"}},
 	{title: "Utilities", commands: []string{"upgrade", "version", "completion", "help"}},
 }

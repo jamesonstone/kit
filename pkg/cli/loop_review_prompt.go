@@ -46,7 +46,10 @@ func buildLoopReviewPrompt(
 	}
 	builder.WriteString("\n## Instructions\n\n")
 	builder.WriteString("- Inspect the actual diff and surrounding code before changing anything.\n")
+	builder.WriteString("- Use Kit RLM: load repo-local docs just in time, prefer the smallest relevant sections, and stop loading once the repair decision is supported.\n")
+	builder.WriteString("- When repository invariants, progress history, or workflow rules affect the fix, consult `docs/CONSTITUTION.md`, `docs/PROJECT_PROGRESS_SUMMARY.md`, active feature docs, and relevant `docs/references/rules/*` files.\n")
 	builder.WriteString("- Fix high, medium, and correctness-impacting issues; do not churn on low-risk style unless it affects correctness.\n")
+	builder.WriteString("- For PR feedback, verify every finding against current code; skip stale, resolved, or no-op feedback with a brief reason.\n")
 	builder.WriteString("- Run the smallest relevant validation commands and add or update focused tests when needed.\n")
 	builder.WriteString("- Emit concise progress updates for long-running work, command failures, blockers, and any pending user input.\n")
 	builder.WriteString("- Share brief rationale summaries for decisions; do not expose private chain-of-thought.\n")
