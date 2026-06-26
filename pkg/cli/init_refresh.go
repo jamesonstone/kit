@@ -130,6 +130,9 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 
 	if !opts.outputOnly {
 		fmt.Println("\n✅ Kit project refresh complete!")
+		if stats.created+stats.updated+stats.merged == 0 {
+			fmt.Println("   No Kit-managed project changes needed.")
+		}
 		fmt.Printf(
 			"   Created: %d, Updated: %d, Merged: %d, Skipped: %d\n",
 			stats.created,

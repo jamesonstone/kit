@@ -35,6 +35,7 @@ Creates:
   - ~/.config/kit/.kit.yaml global configuration file
   - docs/CONSTITUTION.md
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
+  - Registry-managed rulesets from the Kit GitHub registry
 
 If files already exist, Kit preserves them. Kit-managed markdown documents may
 be merged by adding missing required sections.
@@ -204,6 +205,10 @@ func runInit(cmd *cobra.Command, args []string) error {
 				fmt.Printf("  ✓ %s exists, skipping\n", relativePath)
 			}
 		}
+	}
+
+	if err := runInitRefresh(cwd, initRefreshOptions{outputOnly: true}); err != nil {
+		return err
 	}
 
 	if !initOutputOnly {
