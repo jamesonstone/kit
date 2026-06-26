@@ -75,6 +75,8 @@ func withInitFlags(t *testing.T, run func()) {
 func setupInitHome(t *testing.T) string {
 	t.Helper()
 
+	stubRulesetRegistry(t)
+
 	homeDir := t.TempDir()
 	t.Setenv("HOME", homeDir)
 	return homeDir

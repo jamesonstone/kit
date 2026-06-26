@@ -193,6 +193,17 @@ func planInstructionArtifactWrite(
 	case instructionFileWriteModeOverwrite:
 		result := instructionFileCreated
 		if existed {
+			existingContent, err := readInstructionFile(absolutePath)
+			if err != nil {
+				return instructionFileWritePlan{}, fmt.Errorf("failed to read %s: %w", relativePath, err)
+			}
+			if existingContent == content {
+				return instructionFileWritePlan{
+					relativePath: relativePath,
+					absolutePath: absolutePath,
+					result:       instructionFileSkipped,
+				}, nil
+			}
 			result = instructionFileUpdated
 		}
 		return instructionFileWritePlan{

@@ -38,6 +38,7 @@ func TestSelectedInstructionFiles_ReturnsOnlyExplicitTargets(t *testing.T) {
 
 func TestRunInit_CreatesRepositoryInstructionFiles(t *testing.T) {
 	tempDir := t.TempDir()
+	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
 
 	previous := clipboardCopyFunc

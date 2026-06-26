@@ -61,6 +61,9 @@ func planRefreshInitScaffoldFile(
 	}
 
 	if exists && opts.force && explicit {
+		if before == content {
+			return *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped), nil
+		}
 		return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileUpdated), nil
 	}
 	if exists && merge {
