@@ -84,6 +84,21 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 		t.Fatalf("expected init detailed flags to include --diff")
 	}
 
+	specOutput, err := executeCapabilitiesCommand("--json", "spec")
+	if err != nil {
+		t.Fatalf("kit capabilities spec --json error = %v", err)
+	}
+	var specPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(specOutput), &specPayload); err != nil {
+		t.Fatalf("json.Unmarshal(spec) error = %v", err)
+	}
+	if !strings.Contains(specPayload.Command.FileWrites.Summary, "setup readiness") {
+		t.Fatalf("expected spec file writes to document setup gate, got %#v", specPayload.Command.FileWrites)
+	}
+	if !strings.Contains(strings.Join(specPayload.Command.Caveats, " "), "bypass creates only the minimal baseline") {
+		t.Fatalf("expected spec caveats to document bypass behavior, got %#v", specPayload.Command.Caveats)
+	}
+
 	output, err := executeCapabilitiesCommand("--json", "legacy", "verify")
 	if err != nil {
 		t.Fatalf("kit capabilities legacy verify --json error = %v", err)

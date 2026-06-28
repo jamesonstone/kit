@@ -142,6 +142,8 @@ func TestSpecHelpUsesReadableV2InstructionStructure(t *testing.T) {
 		"🧠 Agent workflow",
 		"idea → clarification loop → agent-team implementation → reflection",
 		"📦 What Kit writes",
+		"🧱 Setup gate",
+		"copy the kit init prompt and stop",
 		"🔁 Modes",
 		"🚫 Git/GitHub safety",
 		"kit spec records delivery intent only",

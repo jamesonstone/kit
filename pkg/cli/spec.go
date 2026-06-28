@@ -23,6 +23,7 @@ var specReviseThesis bool
 var specUseVim bool
 
 var promptSpecFeatureRef = readSpecFeatureRef
+var promptSpecSetupGate = readSpecSetupGateDecision
 
 var specCmd = &cobra.Command{
 	Use:   "spec [feature]",
@@ -43,6 +44,12 @@ var specCmd = &cobra.Command{
   - docs/specs/<feature>/SPEC.md as the single durable v2 feature artifact
   - docs/notes/<feature>/ reference-material directories for supporting inputs
   - PROJECT_PROGRESS_SUMMARY.md after creation or adoption
+
+🧱 Setup gate
+  Before writing feature artifacts, Kit checks whether project setup appears
+  complete. If .kit.yaml, docs/CONSTITUTION.md, or required instruction docs
+  are missing or the Constitution still looks like an unfilled starter, you
+  can continue into the spec or copy the kit init prompt and stop.
 
 🔁 Modes
   New SPEC.md       One thesis/goal entry + delivery intent, then prompt output
@@ -83,35 +90,35 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
 	promptOnly := promptOnlyEnabled(cmd)
 
-	// find project root
-	projectRoot, err := config.FindProjectRoot()
-	if err != nil {
-		return err
-	}
-
-	cfg, err := config.Load(projectRoot)
-	if err != nil {
-		return err
-	}
-
-	specsDir := cfg.SpecsPath(projectRoot)
-
-	// ensure specs directory exists
-	if err := ensureDir(specsDir); err != nil {
-		return err
-	}
-
 	if promptOnly {
 		if specTemplateOnly || specInteractive || specReviseThesis || specUseVim || specEditor != "" || specInline {
 			return fmt.Errorf("--prompt-only cannot be used with --template, --interactive, --revise-thesis, --vim, --editor, or --inline")
 		}
-		return runSpecPromptOnly(args, projectRoot, cfg, outputOnly)
 	}
 	if specTemplateOnly && specReviseThesis {
 		return fmt.Errorf("--template cannot be used with --revise-thesis")
 	}
 	if specTemplateOnly && specInteractive {
 		return fmt.Errorf("--template cannot be used with --interactive")
+	}
+
+	projectRoot, cfg, setupStatus, err := resolveSpecProjectContext(promptOnly)
+	if err != nil {
+		return err
+	}
+
+	if promptOnly {
+		return runSpecPromptOnly(args, projectRoot, cfg, outputOnly)
+	}
+
+	stop, err := runSpecSetupGate(projectRoot, cfg, setupStatus, outputOnly)
+	if err != nil || stop {
+		return err
+	}
+
+	specsDir := cfg.SpecsPath(projectRoot)
+	if err := ensureDir(specsDir); err != nil {
+		return err
 	}
 
 	var (

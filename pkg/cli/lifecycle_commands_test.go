@@ -270,14 +270,49 @@ func setupLifecycleTestProject(t *testing.T) (string, *config.Config) {
 
 	projectRoot := t.TempDir()
 	cfg := config.Default()
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
+	}
+	writeFile(t, filepath.Join(projectRoot, cfg.ConstitutionPath), readyConstitutionForTest())
+	for _, relativePath := range instructionArtifactPaths(
+		cfg,
+		instructionFileSelection{},
+		cfg.InstructionScaffoldVersion,
+		true,
+	) {
+		content, _, err := instructionArtifactContent(relativePath, cfg.InstructionScaffoldVersion)
+		if err != nil {
+			t.Fatalf("instructionArtifactContent(%q) error = %v", relativePath, err)
+		}
+		writeFile(t, filepath.Join(projectRoot, relativePath), content)
 	}
 	if err := os.MkdirAll(filepath.Join(projectRoot, "docs", "specs"), 0755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	return projectRoot, cfg
+}
+
+func readyConstitutionForTest() string {
+	return `# CONSTITUTION
+
+## PRINCIPLES
+
+Clarity and correctness guide all project decisions.
+
+## CONSTRAINTS
+
+Keep generated and human-authored project guidance aligned.
+
+## NON-GOALS
+
+No additional non-goals for this test fixture.
+
+## DEFINITIONS
+
+Kit-managed project means a repository with Kit configuration and guidance.
+`
 }
 
 func setRemoveFlagsForTest(t *testing.T, yes bool, notes bool) {
