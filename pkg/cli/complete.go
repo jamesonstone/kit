@@ -234,12 +234,12 @@ func markFeaturesComplete(
 
 	if err := rollup.Update(projectRoot, cfg); err != nil {
 		_, _ = fmt.Fprintf(errOut, "  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
-		return printProjectRefreshAdvisory(out)
+		return printProjectRefreshAdvisory(out, projectRoot, cfg)
 	}
 	if _, err := fmt.Fprintln(out, "  ✓ Updated PROJECT_PROGRESS_SUMMARY.md"); err != nil {
 		return err
 	}
-	return printProjectRefreshAdvisory(out)
+	return printProjectRefreshAdvisory(out, projectRoot, cfg)
 }
 
 func markFeatureComplete(feat *feature.Feature, path string) error {

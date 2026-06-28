@@ -27,7 +27,7 @@ Run once, then refine as the project matures:
 
 ```bash
 kit init
-kit prompt project refresh
+kit project refresh
 kit init --refresh
 ```
 
@@ -37,7 +37,7 @@ kit init --refresh
 └──────────────┘
 ```
 
-Use `kit prompt project refresh` when early feature work reveals durable
+Use `kit project refresh` when early feature work reveals durable
 project-level rules, vocabulary, or constraints that should update
 `CONSTITUTION.md`.
 
@@ -112,7 +112,7 @@ stays behind explicit loop/run behavior.
 ```yaml
 loop:
   min_confidence: 95
-  max_iterations: 10
+  max_iterations: 20
   agent:
     command: codex
     args: ["--ask-for-approval", "never", "exec", "--model", "gpt-5.5", "--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-"]

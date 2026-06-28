@@ -36,7 +36,11 @@ func ensureInitLoopReviewConfig(cfg *config.Config) bool {
 		changed = true
 	}
 	if cfg.Loop.MaxIterations <= 0 {
-		cfg.Loop.MaxIterations = 10
+		cfg.Loop.MaxIterations = config.DefaultLoopMaxIterations
+		changed = true
+	} else if cfg.Loop.MaxIterations == 10 &&
+		(shouldBackfillInitLoopAgent(cfg.Loop.Agent) || sameLoopAgentConfig(cfg.Loop.Agent, defaultInitLoopAgentConfig())) {
+		cfg.Loop.MaxIterations = config.DefaultLoopMaxIterations
 		changed = true
 	}
 	if shouldBackfillInitLoopAgent(cfg.Loop.Agent) {

@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "ci", "pr fix", "legacy verify", "loop review", "dispatch", "rules add", "skill mine"} {
+	for _, command := range []string{"capabilities", "ci", "pr fix", "legacy verify", "loop review", "project refresh", "dispatch", "rules add", "skill mine"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
@@ -82,6 +82,21 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if findDetailedFlag(initPayload.Command.DetailedFlagBehavior, "--diff") == nil {
 		t.Fatalf("expected init detailed flags to include --diff")
+	}
+
+	specOutput, err := executeCapabilitiesCommand("--json", "spec")
+	if err != nil {
+		t.Fatalf("kit capabilities spec --json error = %v", err)
+	}
+	var specPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(specOutput), &specPayload); err != nil {
+		t.Fatalf("json.Unmarshal(spec) error = %v", err)
+	}
+	if !strings.Contains(specPayload.Command.FileWrites.Summary, "setup readiness") {
+		t.Fatalf("expected spec file writes to document setup gate, got %#v", specPayload.Command.FileWrites)
+	}
+	if !strings.Contains(strings.Join(specPayload.Command.Caveats, " "), "bypass creates only the minimal baseline") {
+		t.Fatalf("expected spec caveats to document bypass behavior, got %#v", specPayload.Command.Caveats)
 	}
 
 	output, err := executeCapabilitiesCommand("--json", "legacy", "verify")
@@ -246,6 +261,27 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "without `--coderabbit`") {
 		t.Fatalf("expected pr fix caveats to document all-reviewer resolution, got %#v", prFixPayload.Command.Caveats)
+	}
+
+	projectRefreshOutput, err := executeCapabilitiesCommand("--json", "project", "refresh")
+	if err != nil {
+		t.Fatalf("kit capabilities project refresh --json error = %v", err)
+	}
+	var projectRefreshPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(projectRefreshOutput), &projectRefreshPayload); err != nil {
+		t.Fatalf("json.Unmarshal(project refresh) error = %v", err)
+	}
+	if projectRefreshPayload.Command.Command != "project refresh" {
+		t.Fatalf("command = %q, want project refresh", projectRefreshPayload.Command.Command)
+	}
+	if findDetailedFlag(projectRefreshPayload.Command.DetailedFlagBehavior, "--now") == nil {
+		t.Fatalf("expected project refresh to document --now")
+	}
+	if !strings.Contains(projectRefreshPayload.Command.FileWrites.FlagDependent, ".kit.yaml") {
+		t.Fatalf("expected project refresh file writes to document .kit.yaml cadence state, got %#v", projectRefreshPayload.Command.FileWrites)
+	}
+	if !strings.Contains(strings.Join(projectRefreshPayload.Command.WhenNotToUse, " "), "automatic changelog") {
+		t.Fatalf("expected project refresh guidance to reject automatic changelog usage, got %#v", projectRefreshPayload.Command.WhenNotToUse)
 	}
 
 	if _, err := executeCapabilitiesCommand("--json", "review-loop"); err == nil || !strings.Contains(err.Error(), "unknown Kit command path") {

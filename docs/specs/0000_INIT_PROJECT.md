@@ -43,7 +43,7 @@ The names are software-friendly, but the pattern is general across domains:
 **Project Initialization** (run once, update as needed):
 
 1. **Constitution** — strategy, patterns, long-term vision (kept updated with priors)
-2. **Project refresh prompt** — `kit prompt project refresh` asks an agent to re-analyze the maturing repository and update durable project-level docs without rerunning init
+2. **Project refresh prompt** — `kit project refresh` asks an agent to re-analyze the maturing repository and update durable project-level docs without rerunning init
 
 **Optional Research Material**:
 
@@ -401,7 +401,7 @@ constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false # if true, kit legacy plan/tasks create missing prerequisites
 loop:
   min_confidence: 95
-  max_iterations: 10
+  max_iterations: 20
   agent:
     command: codex
     args:
@@ -416,6 +416,10 @@ loop:
       - --color
       - never
       - "-"
+project_refresh:
+  constitution:
+    feature_interval: 5
+    max_age_days: 30
 instruction_scaffold_version: 2
 feature_state:
   0001-feat-name:
@@ -684,7 +688,7 @@ Flags:
   issue/fix bullets, and end with a final line exactly equal to `done`
 - continue looping until correctness is at least the configured threshold and
   no high, medium, or correctness-impacting issues remain
-- default to `loop.max_iterations`, then 10
+- default to `loop.max_iterations`, then 20
 - write local loop evidence under `.kit/loops/<run-id>/`
 - never stage, commit, push, post PR comments, or resolve review threads
 - with `--pr <target>`, start local review immediately and opportunistically
@@ -1193,12 +1197,12 @@ Reflection Process:
 3. cross-reference with repository context and codebase
 4. verify correctness checklist (compiles, no errors, edge cases handled)
 5. run lint and tests, then fix ALL failures (including out-of-scope failures) before completion
-6. run the soft project-refresh advisory gate: if work revealed durable project-level rules, run `kit prompt project refresh`; otherwise state no project refresh is needed
+6. run the soft project-refresh advisory gate: if work revealed durable project-level rules, run `kit project refresh`; otherwise state no project refresh is needed
 7. do not run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 
 Completion advisory:
 
-- after `kit complete` succeeds, Kit prints a non-blocking reminder to run `kit prompt project refresh` if the completed work changed durable project-level truth
+- after `kit complete` succeeds, Kit prints a non-blocking reminder to run `kit project refresh` if the completed work changed durable project-level truth
 
 ---
 

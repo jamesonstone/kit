@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -257,9 +259,19 @@ func checkProjectContract(projectRoot string, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+	refreshStatus, refreshErr := calculateProjectRefreshStatus(projectRoot, cfg, time.Now().UTC())
 
 	if len(report.Findings) == 0 {
 		fmt.Printf("  ✅ Project contract is coherent!\n")
+		if refreshErr == nil {
+			if refreshStatus.Due {
+				fmt.Printf("  ⚠ Project refresh due: %s. Run `kit project refresh`.\n", strings.Join(refreshStatus.Reasons, "; "))
+			} else {
+				fmt.Printf("  ℹ Project refresh %s.\n", formatProjectRefreshDueSummary(refreshStatus))
+			}
+			return nil
+		}
+		fmt.Printf("  ⚠ Project refresh due status unavailable: %v\n", refreshErr)
 		return nil
 	}
 
@@ -278,6 +290,11 @@ func checkProjectContract(projectRoot string, cfg *config.Config) error {
 		for _, finding := range warnings {
 			fmt.Printf("  - [%s] %s\n", relativeCheckPath(projectRoot, finding.FilePath), finding.Issue)
 		}
+	}
+	if refreshErr != nil {
+		fmt.Printf("\n⚠️ Project refresh due status unavailable: %v\n", refreshErr)
+	} else if refreshStatus.Due {
+		fmt.Printf("\n⚠️ Project refresh due: %s\n", formatProjectRefreshDueSummary(refreshStatus))
 	}
 
 	if len(errors) > 0 {

@@ -133,3 +133,30 @@ func TestBuildReflectPrompt_Golden(t *testing.T) {
 		"Follow-ups",
 	)
 }
+
+func TestBuildReflectPromptIncludesProjectRefreshDueState(t *testing.T) {
+	projectRoot, cfg := setupProjectRefreshTestProject(t)
+	cfg.ProjectRefresh.Constitution.FeatureInterval = 1
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+	createCompletedV2Feature(t, projectRoot, "0001-alpha")
+
+	prompt := buildReflectPrompt(
+		projectRoot,
+		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
+		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
+		"",
+		filepath.Join(projectRoot, "docs", "specs", "0001-alpha", "SPEC.md"),
+		"",
+		"",
+		"alpha",
+	)
+
+	if !strings.Contains(prompt, "current due state: due") {
+		t.Fatalf("expected reflect prompt to include due project refresh state, got:\n%s", prompt)
+	}
+	if !strings.Contains(prompt, "kit project refresh") {
+		t.Fatalf("expected reflect prompt to point to kit project refresh, got:\n%s", prompt)
+	}
+}

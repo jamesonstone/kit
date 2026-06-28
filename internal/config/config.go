@@ -13,9 +13,12 @@ import (
 const ConfigFileName = ".kit.yaml"
 
 const (
-	InstructionScaffoldVersionVerbose = 1
-	InstructionScaffoldVersionTOC     = 2
-	DefaultInstructionScaffoldVersion = InstructionScaffoldVersionTOC
+	InstructionScaffoldVersionVerbose    = 1
+	InstructionScaffoldVersionTOC        = 2
+	DefaultInstructionScaffoldVersion    = InstructionScaffoldVersionTOC
+	DefaultLoopMaxIterations             = 20
+	DefaultProjectRefreshFeatureInterval = 5
+	DefaultProjectRefreshMaxAgeDays      = 30
 )
 
 // Config represents the .kit.yaml configuration file.
@@ -34,6 +37,18 @@ type Config struct {
 	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
 	Registry                   RegistryConfig                   `yaml:"registry,omitempty"`
 	GitHub                     GitHubConfig                     `yaml:"github,omitempty"`
+	ProjectRefresh             ProjectRefreshConfig             `yaml:"project_refresh,omitempty"`
+}
+
+type ProjectRefreshConfig struct {
+	Constitution ConstitutionRefreshConfig `yaml:"constitution,omitempty"`
+}
+
+type ConstitutionRefreshConfig struct {
+	FeatureInterval           int    `yaml:"feature_interval,omitempty"`
+	MaxAgeDays                int    `yaml:"max_age_days,omitempty"`
+	LastReviewedAt            string `yaml:"last_reviewed_at,omitempty"`
+	LastCompletedFeatureCount int    `yaml:"last_completed_feature_count,omitempty"`
 }
 
 type RegistryConfig struct {
@@ -88,7 +103,7 @@ func (c LoopConfig) IsZero() bool {
 	if c.MinConfidence == 0 && c.MaxIterations == 0 {
 		return true
 	}
-	return c.MinConfidence == 95 && c.MaxIterations == 10
+	return c.MinConfidence == 95 && c.MaxIterations == DefaultLoopMaxIterations
 }
 
 func (c LoopAgentConfig) IsZero() bool {
@@ -122,7 +137,13 @@ func Default() *Config {
 		AllowOutOfOrder:  false,
 		Loop: LoopConfig{
 			MinConfidence: 95,
-			MaxIterations: 10,
+			MaxIterations: DefaultLoopMaxIterations,
+		},
+		ProjectRefresh: ProjectRefreshConfig{
+			Constitution: ConstitutionRefreshConfig{
+				FeatureInterval: DefaultProjectRefreshFeatureInterval,
+				MaxAgeDays:      DefaultProjectRefreshMaxAgeDays,
+			},
 		},
 		Agents: []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
 		FeatureNaming: FeatureNaming{

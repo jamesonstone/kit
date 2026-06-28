@@ -52,7 +52,7 @@ Configure the local agent in .kit.yaml:
 
 loop:
   min_confidence: 95
-  max_iterations: 10
+  max_iterations: 20
   agent:
     command: codex
     args: ["--ask-for-approval", "never", "exec", "--model", "gpt-5.5", "--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-"]`,
@@ -90,7 +90,7 @@ func addWorkflowLoopFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&loopDryRun, "dry-run", false, "show the next loop action without running the configured agent")
 	cmd.Flags().StringVar(&loopUntil, "until", "complete", "run until this v2 phase is complete: clarify, ready, implement, validate, reflect, deliver, complete")
 	cmd.Flags().IntVar(&loopMinConfidence, "min-confidence", 0, "minimum agent confidence required to advance (0 uses loop config, goal_percentage, then 95)")
-	cmd.Flags().IntVar(&loopMaxIterations, "max-iterations", 0, "maximum loop iterations (0 uses loop config, then 10)")
+	cmd.Flags().IntVar(&loopMaxIterations, "max-iterations", 0, "maximum loop iterations (0 uses loop config, then 20)")
 	cmd.Flags().BoolVar(&loopJSON, "json", false, "output loop report as JSON")
 }
 
