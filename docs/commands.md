@@ -48,7 +48,7 @@ kit rm my-feature --yes --notes
 
 | Command | Description |
 | --- | --- |
-| `kit init` | Initialize project, user config, local env files, `.gitignore`, review config, and GitHub PR template. |
+| `kit init` | Initialize project, user config, local env files, `.gitignore`, review config, GitHub PR template, and optional auto-assignment workflow. |
 | `kit scaffold` | Create empty workflow document structures, support directories, and agent files. |
 
 ## Workflow
@@ -245,7 +245,11 @@ Instruction scaffold versions:
 projects. It creates missing Kit-managed files, migrates known generated v1
 instruction files to the v2 thin docs model, refreshes generated support docs,
 imports known registry rulesets, and records ruleset registry state in
-`.kit.yaml`.
+`.kit.yaml`. It also creates or refreshes the Kit-managed
+`.github/workflows/auto-assign.yml` workflow. That workflow assigns new issues
+and pull requests to `github.default_assignees` from the project `.kit.yaml`,
+falls back to the global `~/.config/kit/.kit.yaml`, and safely no-ops when no
+assignees are configured.
 
 Use `kit init --refresh --dry-run --diff` to preview managed-file changes
 without writing them.

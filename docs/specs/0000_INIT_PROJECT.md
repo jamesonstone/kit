@@ -494,6 +494,9 @@ CLI flags always override `.kit.yaml`.
 - include `.env` and `.envrc` in `.gitignore`
 - create `.coderabbit.yaml` if missing
 - create `.github/pull_request_template.md` if missing
+- create `.github/workflows/auto-assign.yml` if missing, using project-local
+  `github.default_assignees` with global config fallback and a non-blocking
+  no-op when no assignees are configured
 - create `docs/CONSTITUTION.md` if missing
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, preserve them; Kit-managed markdown documents may merge missing required sections
@@ -1131,7 +1134,7 @@ Findings:
 
 - missing `.gitignore` or missing current Kit-managed `.gitignore` entries
 - missing local init scaffold artifacts such as `.env` or `.envrc`
-- missing tracked init scaffold artifacts such as `.coderabbit.yaml` or `.github/pull_request_template.md`
+- missing tracked init scaffold artifacts such as `.coderabbit.yaml`, `.github/pull_request_template.md`, or `.github/workflows/auto-assign.yml`
 - missing required docs or sections
 - placeholder-only required sections
 - malformed `SKILLS`, `DEPENDENCIES`, or `PROGRESS TABLE` tables

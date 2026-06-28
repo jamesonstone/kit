@@ -33,7 +33,7 @@ all decisions.
 - No vendor lock-in to any coding agent (Claude, Copilot, Codex, etc.).
 - Documents use only markdown and YAML — universally readable.
 - Repository instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) stay aligned with canonical docs and summarize the active workflow contract for supported tools.
-- `kit init` also creates shared local support files, including `.env`, `.envrc`, `.coderabbit.yaml`, and `.github/pull_request_template.md`, without overwriting existing local versions.
+- `kit init` also creates shared local support files, including `.env`, `.envrc`, `.coderabbit.yaml`, `.github/pull_request_template.md`, and the optional `.github/workflows/auto-assign.yml` workflow, without overwriting custom local versions.
 - Agents can be swapped with zero document changes.
 
 ### 4. Minimal Magic, Explicit State
@@ -339,6 +339,7 @@ The structural refresh flow for updating Kit-managed project files to the curren
 
 - Invoked with `kit init --refresh`
 - Creates missing Kit-managed scaffold files, instruction docs, support docs, and known registry rulesets
+- Creates or refreshes the Kit-managed `.github/workflows/auto-assign.yml` workflow from project-local `github.default_assignees`, falling back to global `~/.config/kit/.kit.yaml`, and rendering a non-blocking no-op when no assignees are configured
 - Merges or appends missing Kit-managed documentation sections by default instead of overwriting project-specific content
 - Adopts existing registry rulesets into `.kit.yaml` registry state and syncs safe upstream ruleset updates from the Kit GitHub `main` branch
 - Preserves local ruleset `status` while comparing registry content, because activation and silencing are project-local choices
@@ -534,7 +535,7 @@ allow_out_of_order: false
 # Autonomous workflow loop policy and local agent command
 loop:
   min_confidence: 95
-  max_iterations: 10
+  max_iterations: 20
   agent:
     command: codex
     args:
@@ -557,6 +558,16 @@ agents:
   - AGENTS.md
   - CLAUDE.md
   - .github/copilot-instructions.md
+
+# GitHub integration defaults
+github:
+  repository: owner/repo
+  default_branch: main
+  # Project-local assignees take precedence over global config.
+  # Omit or set null to fall back to ~/.config/kit/.kit.yaml.
+  # Set [] to make the generated workflow no-op.
+  default_assignees:
+    - github-login
 # Feature lifecycle state
 feature_state:
   0001-feat-name:

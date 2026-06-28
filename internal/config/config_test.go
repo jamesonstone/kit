@@ -194,6 +194,9 @@ func TestLoadParsesGitHubConfig(t *testing.T) {
 github:
   repository: jamesonstone/kit
   default_branch: main
+  default_assignees:
+    - jamesonstone
+    - octocat
 `), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
@@ -208,6 +211,12 @@ github:
 	if cfg.GitHub.DefaultBranch != "main" {
 		t.Fatalf("GitHub.DefaultBranch = %q, want main", cfg.GitHub.DefaultBranch)
 	}
+	if cfg.GitHub.DefaultAssignees == nil {
+		t.Fatalf("GitHub.DefaultAssignees = nil, want configured assignees")
+	}
+	if !reflect.DeepEqual(*cfg.GitHub.DefaultAssignees, []string{"jamesonstone", "octocat"}) {
+		t.Fatalf("GitHub.DefaultAssignees = %v, want jamesonstone and octocat", *cfg.GitHub.DefaultAssignees)
+	}
 
 	if err := Save(projectRoot, cfg); err != nil {
 		t.Fatalf("Save() error = %v", err)
@@ -216,7 +225,7 @@ github:
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
-	for _, check := range []string{"github:", "repository: jamesonstone/kit", "default_branch: main"} {
+	for _, check := range []string{"github:", "repository: jamesonstone/kit", "default_branch: main", "default_assignees:", "- jamesonstone", "- octocat"} {
 		if !strings.Contains(string(data), check) {
 			t.Fatalf("saved config missing %q, got:\n%s", check, data)
 		}

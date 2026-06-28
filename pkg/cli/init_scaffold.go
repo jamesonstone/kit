@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/templates"
 )
@@ -13,6 +14,7 @@ import (
 const codeRabbitConfigPath = ".coderabbit.yaml"
 const envPath = ".env"
 const envrcPath = ".envrc"
+const autoAssignWorkflowPath = ".github/workflows/auto-assign.yml"
 const pullRequestTemplatePath = ".github/pull_request_template.md"
 const gitignorePath = ".gitignore"
 
@@ -152,6 +154,28 @@ func scaffoldPullRequestTemplate(projectRoot string, outputOnly bool) error {
 	}
 	if !outputOnly {
 		fmt.Printf("  ✓ Created %s\n", pullRequestTemplatePath)
+	}
+	return nil
+}
+
+func scaffoldAutoAssignWorkflow(projectRoot string, cfg *config.Config, outputOnly bool) error {
+	change, err := planRefreshAutoAssignWorkflowFile(projectRoot, initRefreshOptions{}, cfg, nil)
+	if err != nil {
+		return err
+	}
+	if err := applyInitRefreshFileChange(change); err != nil {
+		return err
+	}
+	if outputOnly {
+		return nil
+	}
+	switch change.result {
+	case instructionFileCreated:
+		fmt.Printf("  ✓ Created %s\n", autoAssignWorkflowPath)
+	case instructionFileUpdated:
+		fmt.Printf("  ✓ Updated %s\n", autoAssignWorkflowPath)
+	case instructionFileSkipped:
+		fmt.Printf("  ✓ %s exists, skipping\n", autoAssignWorkflowPath)
 	}
 	return nil
 }

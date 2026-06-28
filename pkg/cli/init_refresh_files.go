@@ -12,7 +12,12 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
-func planRefreshInitScaffoldFiles(projectRoot string, opts initRefreshOptions, targets map[string]bool) ([]initRefreshFileChange, error) {
+func planRefreshInitScaffoldFiles(
+	projectRoot string,
+	opts initRefreshOptions,
+	cfg *config.Config,
+	targets map[string]bool,
+) ([]initRefreshFileChange, error) {
 	files := []struct {
 		relativePath string
 		content      string
@@ -31,6 +36,13 @@ func planRefreshInitScaffoldFiles(projectRoot string, opts initRefreshOptions, t
 			continue
 		}
 		change, err := planRefreshInitScaffoldFile(projectRoot, opts, targets, file.relativePath, file.content, file.merge)
+		if err != nil {
+			return nil, err
+		}
+		changes = append(changes, change)
+	}
+	if initRefreshTargetMatches(targets, autoAssignWorkflowPath) {
+		change, err := planRefreshAutoAssignWorkflowFile(projectRoot, opts, cfg, targets)
 		if err != nil {
 			return nil, err
 		}

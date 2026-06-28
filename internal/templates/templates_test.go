@@ -51,6 +51,42 @@ func TestFeatureArtifactBuildersIncludeCanonicalFrontMatter(t *testing.T) {
 	}
 }
 
+func TestBuildAutoAssignWorkflowRendersSafeGitHubActionsWorkflow(t *testing.T) {
+	content := BuildAutoAssignWorkflow([]string{"jamesonstone", "octocat"})
+
+	for _, check := range []string{
+		"# Kit-managed auto-assignment workflow.",
+		"pull_request_target:",
+		"issues: write",
+		"pull-requests: read",
+		"continue-on-error: true",
+		`"jamesonstone"`,
+		`"octocat"`,
+		"github.rest.issues.addAssignees",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected workflow to contain %q, got:\n%s", check, content)
+		}
+	}
+	if strings.Contains(content, "actions/checkout") {
+		t.Fatalf("auto-assign workflow must not check out pull request code:\n%s", content)
+	}
+}
+
+func TestBuildAutoAssignWorkflowNoOpsWithoutAssignees(t *testing.T) {
+	content := BuildAutoAssignWorkflow(nil)
+
+	for _, check := range []string{
+		"const assignees = [];",
+		"No Kit auto-assignees configured; skipping.",
+		"continue-on-error: true",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected empty-assignee workflow to contain %q, got:\n%s", check, content)
+		}
+	}
+}
+
 func TestFeatureArtifactBuildersDoNotDuplicateCanonicalBodyTables(t *testing.T) {
 	featureMeta := document.FeatureMetadataFromDir("0001-sample-feature")
 	for name, content := range map[string]string{

@@ -58,8 +58,9 @@ type RegistryConfig struct {
 }
 
 type GitHubConfig struct {
-	Repository    string `yaml:"repository,omitempty"`
-	DefaultBranch string `yaml:"default_branch,omitempty"`
+	Repository       string    `yaml:"repository,omitempty"`
+	DefaultBranch    string    `yaml:"default_branch,omitempty"`
+	DefaultAssignees *[]string `yaml:"default_assignees,omitempty"`
 }
 
 type RegistrySource struct {
