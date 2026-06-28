@@ -23,8 +23,14 @@ func TestDefaultIncludesLoopPolicy(t *testing.T) {
 	if cfg.Loop.MinConfidence != 95 {
 		t.Fatalf("Loop.MinConfidence = %d, want 95", cfg.Loop.MinConfidence)
 	}
-	if cfg.Loop.MaxIterations != 10 {
-		t.Fatalf("Loop.MaxIterations = %d, want 10", cfg.Loop.MaxIterations)
+	if cfg.Loop.MaxIterations != 20 {
+		t.Fatalf("Loop.MaxIterations = %d, want 20", cfg.Loop.MaxIterations)
+	}
+	if cfg.ProjectRefresh.Constitution.FeatureInterval != 5 {
+		t.Fatalf("ProjectRefresh.Constitution.FeatureInterval = %d, want 5", cfg.ProjectRefresh.Constitution.FeatureInterval)
+	}
+	if cfg.ProjectRefresh.Constitution.MaxAgeDays != 30 {
+		t.Fatalf("ProjectRefresh.Constitution.MaxAgeDays = %d, want 30", cfg.ProjectRefresh.Constitution.MaxAgeDays)
 	}
 }
 
@@ -94,6 +100,37 @@ loop:
 	wantArgs := []string{"run", "--stdin"}
 	if !reflect.DeepEqual(cfg.Loop.Agent.Args, wantArgs) {
 		t.Fatalf("Loop.Agent.Args = %v, want %v", cfg.Loop.Agent.Args, wantArgs)
+	}
+}
+
+func TestLoadParsesProjectRefreshConfig(t *testing.T) {
+	projectRoot := t.TempDir()
+	configPath := filepath.Join(projectRoot, ConfigFileName)
+	if err := os.WriteFile(configPath, []byte(`
+project_refresh:
+  constitution:
+    feature_interval: 3
+    max_age_days: 14
+    last_reviewed_at: "2026-06-01T12:00:00Z"
+    last_completed_feature_count: 8
+`), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	cfg, err := Load(projectRoot)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	refresh := cfg.ProjectRefresh.Constitution
+	if refresh.FeatureInterval != 3 || refresh.MaxAgeDays != 14 {
+		t.Fatalf("ProjectRefresh.Constitution thresholds = %#v", refresh)
+	}
+	if refresh.LastReviewedAt != "2026-06-01T12:00:00Z" {
+		t.Fatalf("LastReviewedAt = %q", refresh.LastReviewedAt)
+	}
+	if refresh.LastCompletedFeatureCount != 8 {
+		t.Fatalf("LastCompletedFeatureCount = %d, want 8", refresh.LastCompletedFeatureCount)
 	}
 }
 

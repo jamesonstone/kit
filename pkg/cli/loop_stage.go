@@ -75,7 +75,7 @@ func effectiveLoopMaxIterations(cfg *config.Config, override int) int {
 	if cfg != nil && cfg.Loop.MaxIterations > 0 {
 		return cfg.Loop.MaxIterations
 	}
-	return 10
+	return config.DefaultLoopMaxIterations
 }
 
 func clampPercentage(value int) int {

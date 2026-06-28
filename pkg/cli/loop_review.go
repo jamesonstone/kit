@@ -40,7 +40,7 @@ stderr; --json keeps stdout machine-readable and suppresses progress output.`,
 	cmd.Flags().BoolVar(&opts.WaitForCodeRabbit, "wait-for-coderabbit", false, "wait for CodeRabbit completion before finalizing PR-mode review")
 	cmd.Flags().BoolVar(&opts.DryRun, "dry-run", false, "show the first review prompt without running the configured agent")
 	cmd.Flags().IntVar(&opts.MinConfidence, "min-confidence", 0, "minimum correctness percentage required to stop (0 uses loop config, goal_percentage, then 95)")
-	cmd.Flags().IntVar(&opts.MaxIterations, "max-iterations", 0, "maximum review iterations (0 uses loop config, then 10)")
+	cmd.Flags().IntVar(&opts.MaxIterations, "max-iterations", 0, "maximum review iterations (0 uses loop config, then 20)")
 	cmd.Flags().BoolVar(&opts.UseSubagents, "subagents", false, "allow the review agent to pre-analyze and choose subagents")
 	cmd.Flags().BoolVar(&opts.JSON, "json", false, "output loop review report as JSON")
 	return cmd

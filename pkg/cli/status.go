@@ -2,8 +2,10 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -135,7 +137,10 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		if backlogErr != nil {
 			return fmt.Errorf("failed to list backlog items: %w", backlogErr)
 		}
-		return outputNoActiveFeature(cmd.OutOrStdout(), jsonOutput, version, len(backlog))
+		if err := outputNoActiveFeature(cmd.OutOrStdout(), jsonOutput, version, len(backlog)); err != nil {
+			return err
+		}
+		return outputProjectRefreshStatusForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput)
 	}
 
 	// get full status
@@ -149,7 +154,10 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		return outputStatusJSON(cmd.OutOrStdout(), status, version)
 	}
 
-	return outputStatusText(cmd.OutOrStdout(), status, version)
+	if err := outputStatusText(cmd.OutOrStdout(), status, version); err != nil {
+		return err
+	}
+	return outputProjectRefreshStatusForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput)
 }
 
 func runStatusAll(
@@ -183,7 +191,22 @@ func runStatusAll(
 		return outputAllFeaturesStatusJSON(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version)
 	}
 
-	return outputAllFeaturesStatusText(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version)
+	if err := outputAllFeaturesStatusText(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version); err != nil {
+		return err
+	}
+	return outputProjectRefreshStatusForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput)
+}
+
+func outputProjectRefreshStatusForHuman(out io.Writer, projectRoot string, cfg *config.Config, jsonOutput bool) error {
+	if jsonOutput {
+		return nil
+	}
+	status, err := calculateProjectRefreshStatus(projectRoot, cfg, time.Now().UTC())
+	if err != nil {
+		_, writeErr := fmt.Fprintf(out, "  ⚠ Project refresh due status unavailable: %v\n", err)
+		return writeErr
+	}
+	return printProjectRefreshStatusSummary(out, status)
 }
 
 func buildAllFeatureStatusEntries(projectRoot string, specsDir string, cfg *config.Config) ([]allFeatureStatusEntry, int, error) {

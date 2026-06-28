@@ -211,12 +211,12 @@ printf 'Correctness: 96%%\nStatus: done\n\n- Issue: nil path; Fix: added guard.\
 		"🤖 single-agent mode enabled",
 		"target resolved: base=origin/main changed_files=1",
 		"artifacts: " + report.ArtifactDir,
-		"iteration 1/10: prompt written",
-		"iteration 1/10: running agent:",
+		"iteration 1/20: prompt written",
+		"iteration 1/20: running agent:",
 		"agent process started",
 		"agent stderr: agent-visible-status",
 		"agent stdout: Correctness: 96%",
-		"iteration 1/10: parsed result done=true correctness=96%",
+		"iteration 1/20: parsed result done=true correctness=96%",
 		"run " + report.RunID + " complete: correctness=96%",
 	} {
 		if !strings.Contains(output, want) {

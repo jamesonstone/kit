@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
@@ -146,6 +147,7 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPa
 	cfg, _ := loadRepoInstructionContext(projectRoot)
 	repoAgentsPath := repoKnowledgeEntrypointPath(projectRoot, cfg)
 	repoReferencesPath := repoReferencesEntrypointPath(projectRoot, cfg)
+	refreshStatus, _ := calculateProjectRefreshStatus(projectRoot, cfg, time.Now().UTC())
 
 	goal := "ensure changes are correct, minimal, and consistent"
 	if featureScoped {
@@ -204,7 +206,7 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPa
 	if featureScoped {
 		steps = append(steps, "Documentation generation\n- if exists, use the repositories documentation generation tools to update any affected documentation\n- always update affected documentation and ensure all touched documents are current and properly formatted\n- ensure documentation is agent-readable: clear structure, explicit examples, complete contracts\n- document public APIs with examples showing both normal usage and error handling")
 	}
-	steps = append(steps, projectRefreshAdvisoryStep())
+	steps = append(steps, projectRefreshAdvisoryStepForStatus(refreshStatus))
 	steps = append(steps, githubDeliveryHardGateStep())
 	steps = append(steps, "Final pass\n- rerun:\n  - git status\n  - git diff\n  - git diff --staged\n- summarize remaining issues, if any\n- propose next steps")
 	if featureScoped {

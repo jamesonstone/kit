@@ -60,6 +60,7 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"prompt",
 		"set",
 		"resume",
+		"project",
 		"status",
 		"capabilities",
 		"ci",

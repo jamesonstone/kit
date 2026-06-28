@@ -30,7 +30,7 @@ hook that runs `make build` before every commit.
 
 ```bash
 kit init
-kit prompt project refresh
+kit project refresh
 kit init --refresh
 kit spec my-feature
 kit spec dashboard-redesign --profile=frontend
@@ -64,6 +64,7 @@ kit rm my-feature --yes --notes
 | `kit resume [feature]` | Resume backlog or in-flight work through the canonical prompt flow. |
 | `kit pause [feature]` | Pause an in-flight feature without changing its underlying phase. |
 | `kit complete [feature]` | Mark a feature complete; supports `--all`. |
+| `kit project refresh` | Generate or record a semantic refresh of durable project-level docs and Constitution cadence state. |
 | `kit rm [feature]` | Remove feature docs, retain notes by default, and show removed state in history/status. `kit remove` also works. |
 
 Run `kit legacy --help` to list v1 staged commands retained for finishing
@@ -98,7 +99,7 @@ discovery, not maintain Kit's internal command catalog.
 | --- | --- |
 | `kit prompt [noun] [verb]` | Resolve and copy a reusable prompt from local, global, or built-in prompt libraries. |
 | `kit prompt list` | List effective merged prompts with origin and override metadata. |
-| `kit prompt project refresh` | Prompt an agent to refresh durable project-level docs after the repo matures. |
+| `kit prompt project refresh` | Render the reusable prompt-library version of the project refresh prompt. |
 | `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor. |
 | `kit handoff [feature]` | Prompt the current agent session to sync docs and prepare a handoff. |
 | `kit summarize [feature]` | Output context summarization instructions. |

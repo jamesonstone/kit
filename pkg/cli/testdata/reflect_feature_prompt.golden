@@ -97,8 +97,10 @@ Steps:
    - ensure documentation is agent-readable: clear structure, explicit examples, complete contracts
    - document public APIs with examples showing both normal usage and error handling
 10. Project refresh advisory gate
+    - current due state: not due: 0/5 completed feature(s) since last review; max age 30 day(s)
     - decide whether this work revealed durable project-wide rules, constraints, vocabulary, conventions, or workflow changes
-    - if yes, run `kit prompt project refresh` and refresh project-level docs before final handoff
+    - if the project refresh is due, or if durable project-level truth changed, run `kit project refresh` and refresh project-level docs before final handoff
+    - after completing a reviewed semantic Constitution refresh, run `kit project refresh --now` to record the cadence state
     - if no, state `no project refresh needed` in the reflection notes
 11. **GitHub delivery hard gate**
     - If the user asks to create or mutate an issue, branch, staging, commit, push, or pull request, stop before that mutation

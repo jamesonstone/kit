@@ -26,6 +26,9 @@ func assertDefaultInitLoopAgent(t *testing.T, cfg *config.Config) {
 	if !stringSlicesEqual(cfg.Loop.Agent.Args, want.Args) {
 		t.Fatalf("Loop.Agent.Args = %v, want %v", cfg.Loop.Agent.Args, want.Args)
 	}
+	if cfg.Loop.MaxIterations != config.DefaultLoopMaxIterations {
+		t.Fatalf("Loop.MaxIterations = %d, want %d", cfg.Loop.MaxIterations, config.DefaultLoopMaxIterations)
+	}
 }
 
 func stringSlicesEqual(left, right []string) bool {

@@ -130,11 +130,42 @@ func TestMarkFeaturesCompleteAllTargets(t *testing.T) {
 	if errOut.Len() != 0 {
 		t.Fatalf("expected no stderr output, got %q", errOut.String())
 	}
-	if got := strings.Count(out.String(), "kit prompt project refresh"); got != 1 {
+	if got := strings.Count(out.String(), "kit project refresh"); got != 1 {
 		t.Fatalf("expected one project refresh advisory, got %d in %q", got, out.String())
+	}
+	if !strings.Contains(out.String(), "Project refresh not due") {
+		t.Fatalf("expected completion output to report project refresh due state, got %q", out.String())
 	}
 	if _, statErr := os.Stat(filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md")); statErr != nil {
 		t.Fatalf("expected PROJECT_PROGRESS_SUMMARY.md to be written, got %v", statErr)
+	}
+}
+
+func TestMarkFeaturesCompleteReportsDueProjectRefresh(t *testing.T) {
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	if err := os.MkdirAll(specsDir, 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+
+	featureA := createFeatureTasks(t, specsDir, "0001-alpha", "- [x] done\n")
+	cfg := config.Default()
+	cfg.ProjectRefresh.Constitution.FeatureInterval = 1
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+
+	if err := markFeaturesComplete(
+		out,
+		errOut,
+		[]feature.Feature{featureA},
+		false,
+		projectRoot,
+		cfg,
+	); err != nil {
+		t.Fatalf("markFeaturesComplete() error = %v", err)
+	}
+	if !strings.Contains(out.String(), "Project refresh due") {
+		t.Fatalf("expected due project refresh advisory, got %q", out.String())
 	}
 }
 

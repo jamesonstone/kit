@@ -5,7 +5,7 @@ constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false
 loop:
     min_confidence: 95
-    max_iterations: 10
+    max_iterations: 20
     agent:
         command: codex
         args:
@@ -76,3 +76,7 @@ registry:
           source_path: docs/references/rules/work-lane-gating.md
           installed_hash: sha256:7bd18273b06425a7809a315378acc147c745d6966e9f92399c0143d92539ae76
           state: managed
+project_refresh:
+    constitution:
+        feature_interval: 5
+        max_age_days: 30
