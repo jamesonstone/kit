@@ -74,7 +74,7 @@ func TestOpenCIDispatchPromptUsesEditorInitialContent(t *testing.T) {
 	if !strings.Contains(initial, "Error: expected nil") {
 		t.Fatalf("expected editor initial content to include evidence, got:\n%s", initial)
 	}
-	if !strings.Contains(copied, "Prepare a subagent dispatch plan") {
+	if !strings.Contains(copied, "Prepare an Agent Team Plan") || !strings.Contains(copied, "Effective max subagents: 3") {
 		t.Fatalf("expected dispatch prompt copied, got:\n%s", copied)
 	}
 }

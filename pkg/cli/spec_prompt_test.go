@@ -545,6 +545,7 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"Do not skip phases.",
 		"## Agent Team Model",
 		"The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.",
+		"docs/references/rules/agent-team-orchestration.md",
 		"Default to a subagent team for implementation and verification.",
 		"Use a single supervisor lane only when the work is trivial, tightly coupled, the active runtime cannot spawn subagents, or `--single-agent` is explicitly active.",
 		"do not keep work single-lane merely because subagents were not explicitly re-requested.",

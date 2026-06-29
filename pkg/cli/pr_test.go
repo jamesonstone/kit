@@ -20,20 +20,29 @@ func TestPRFixCommandIsRegistered(t *testing.T) {
 	if flag := cmd.Flags().Lookup("pr"); flag == nil {
 		t.Fatal("expected pr fix to expose --pr")
 	}
-	if flag := cmd.Flags().Lookup("subagents"); flag == nil {
-		t.Fatal("expected pr fix to expose --subagents")
+	if flag := cmd.Flags().Lookup("coderabbit"); flag == nil {
+		t.Fatal("expected pr fix to expose --coderabbit")
 	}
-	if flag := cmd.Flags().Lookup("wait-for-coderabbit"); flag == nil {
-		t.Fatal("expected pr fix to expose --wait-for-coderabbit")
+	if flag := cmd.Flags().Lookup("output-only"); flag == nil {
+		t.Fatal("expected pr fix to expose --output-only")
+	}
+	if flag := cmd.Flags().Lookup("max-subagents"); flag == nil {
+		t.Fatal("expected pr fix to expose --max-subagents")
+	} else if flag.DefValue != "3" || !strings.Contains(flag.Usage, "hard ceiling 4") {
+		t.Fatalf("unexpected --max-subagents flag metadata: def=%q usage=%q", flag.DefValue, flag.Usage)
+	}
+	if !strings.Contains(cmd.Long, "only active (unresolved, non-outdated) review threads") {
+		t.Fatalf("expected pr fix help to document active review-thread filtering, got:\n%s", cmd.Long)
+	}
+	if !strings.Contains(cmd.Long, "post-push reflection") {
+		t.Fatalf("expected pr fix help to document post-push reflection, got:\n%s", cmd.Long)
 	}
 }
 
-func TestRunPRFixCommandRoutesExplicitPRToLoopReview(t *testing.T) {
-	var gotArgs []string
-	var gotOpts loopReviewOptions
+func TestRunPRFixCommandRoutesExplicitPRToDispatchPrompt(t *testing.T) {
+	var gotOpts prFixDispatchOptions
 	restore := installPRFixFakes(t,
-		func(cmd *cobra.Command, args []string, opts loopReviewOptions) error {
-			gotArgs = append([]string(nil), args...)
+		func(_ *cobra.Command, opts prFixDispatchOptions) error {
 			gotOpts = opts
 			return nil
 		},
@@ -47,38 +56,31 @@ func TestRunPRFixCommandRoutesExplicitPRToLoopReview(t *testing.T) {
 	cmd.SetErr(out)
 	cmd.SetArgs([]string{
 		"--pr", "Patient-Driven-Care/cortex#67",
-		"--watch",
-		"--dry-run",
-		"--subagents",
-		"--min-confidence", "98",
-		"--max-iterations", "3",
-		"review-loop",
+		"--coderabbit",
+		"--output-only",
+		"--copy",
+		"--max-subagents", "3",
+		"--editor", "vim",
 	})
 
 	if err := cmd.Execute(); err != nil {
 		t.Fatalf("kit pr fix --pr error = %v", err)
 	}
-	if strings.Join(gotArgs, " ") != "review-loop" {
-		t.Fatalf("args = %#v, want feature arg", gotArgs)
-	}
 	if gotOpts.PRRef != "Patient-Driven-Care/cortex#67" {
 		t.Fatalf("PRRef = %q", gotOpts.PRRef)
 	}
-	if !gotOpts.WaitForCodeRabbit || !gotOpts.DryRun || !gotOpts.UseSubagents {
-		t.Fatalf("expected watch, dry-run, and subagents to be forwarded: %#v", gotOpts)
+	if !gotOpts.CodeRabbitOnly || !gotOpts.OutputOnly || !gotOpts.Copy {
+		t.Fatalf("expected dispatch prompt flags to be forwarded: %#v", gotOpts)
 	}
-	if !gotOpts.ResolvePRFeedback {
-		t.Fatalf("expected pr fix to enable review-thread resolution guidance: %#v", gotOpts)
-	}
-	if gotOpts.MinConfidence != 98 || gotOpts.MaxIterations != 3 {
-		t.Fatalf("loop bounds not forwarded: %#v", gotOpts)
+	if gotOpts.MaxSubagents != 3 || gotOpts.Editor != "vim" {
+		t.Fatalf("dispatch prompt options not forwarded: %#v", gotOpts)
 	}
 }
 
 func TestRunPRFixCommandSelectsOpenPRWhenOmitted(t *testing.T) {
 	var gotPRRef string
 	restore := installPRFixFakes(t,
-		func(_ *cobra.Command, _ []string, opts loopReviewOptions) error {
+		func(_ *cobra.Command, opts prFixDispatchOptions) error {
 			gotPRRef = opts.PRRef
 			return nil
 		},
@@ -113,7 +115,7 @@ func TestRunPRFixCommandSelectsOpenPRWhenOmitted(t *testing.T) {
 func TestRunPRFixCommandSelectorAcceptsPullRequestNumber(t *testing.T) {
 	var gotPRRef string
 	restore := installPRFixFakes(t,
-		func(_ *cobra.Command, _ []string, opts loopReviewOptions) error {
+		func(_ *cobra.Command, opts prFixDispatchOptions) error {
 			gotPRRef = opts.PRRef
 			return nil
 		},
@@ -140,18 +142,18 @@ func TestRunPRFixCommandSelectorAcceptsPullRequestNumber(t *testing.T) {
 	}
 }
 
-func TestRunPRFixCommandRequiresPRForJSON(t *testing.T) {
+func TestRunPRFixCommandRejectsLegacyFeatureArgument(t *testing.T) {
 	cmd := newPRFixCommand()
-	cmd.SetArgs([]string{"--json"})
-	if err := cmd.Execute(); err == nil || !strings.Contains(err.Error(), "--json requires --pr") {
-		t.Fatalf("expected JSON selection guard, got %v", err)
+	cmd.SetArgs([]string{"legacy-feature"})
+	if err := cmd.Execute(); err == nil || !strings.Contains(err.Error(), "legacy-feature") {
+		t.Fatalf("expected no-args guard, got %v", err)
 	}
 }
 
 func TestRunPRFixCommandReportsNoOpenPullRequests(t *testing.T) {
 	restore := installPRFixFakes(t,
-		func(_ *cobra.Command, _ []string, _ loopReviewOptions) error {
-			t.Fatal("loop review runner should not be called")
+		func(_ *cobra.Command, _ prFixDispatchOptions) error {
+			t.Fatal("dispatch prompt runner should not be called")
 			return nil
 		},
 		func() ([]prFixOpenPullRequest, error) {
@@ -183,20 +185,20 @@ func TestRunPRFixCommandPropagatesPullRequestListError(t *testing.T) {
 
 func installPRFixFakes(
 	t *testing.T,
-	runner func(*cobra.Command, []string, loopReviewOptions) error,
+	runner func(*cobra.Command, prFixDispatchOptions) error,
 	lister func() ([]prFixOpenPullRequest, error),
 ) func() {
 	t.Helper()
-	previousRunner := prFixLoopReviewRunner
+	previousRunner := prFixDispatchRunner
 	previousLister := prFixOpenPRLister
 	if runner != nil {
-		prFixLoopReviewRunner = runner
+		prFixDispatchRunner = runner
 	}
 	if lister != nil {
 		prFixOpenPRLister = lister
 	}
 	return func() {
-		prFixLoopReviewRunner = previousRunner
+		prFixDispatchRunner = previousRunner
 		prFixOpenPRLister = previousLister
 	}
 }

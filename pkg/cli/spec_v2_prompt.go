@@ -191,6 +191,7 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 			"Inventory acceptance criteria and convert them to stable IDs such as `AC-001` before implementation.",
 			"Build or update the `### Source Map` for every material claim that could change implementation, validation, delivery, or user-visible behavior if wrong.",
 			"List expected validation commands and any validations that may need environment, credentials, services, fixtures, or manual review.",
+			"When present, load `docs/references/rules/agent-team-orchestration.md` before deciding whether implementation or verification should use subagents.",
 			"Ask clarification questions instead of editing when any readiness, Source Map, dirty-worktree, ownership, or validation gate fails.",
 		)
 
@@ -282,6 +283,7 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 		doc.Heading(2, "Agent Team Model")
 		agentTeamBullets := []string{
 			"The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.",
+			"When present, `docs/references/rules/agent-team-orchestration.md` is the durable rule for deciding whether work uses specialist subagents, read-only verification agents, or a recorded single supervisor lane.",
 		}
 		agentTeamBullets = append(agentTeamBullets, agentTeamModeBullets...)
 		agentTeamBullets = append(agentTeamBullets,

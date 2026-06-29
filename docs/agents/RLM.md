@@ -40,6 +40,7 @@
 - Use generated `.kit/state.json` and task bundles only as pointer/index data; recurse back to the canonical Markdown section before changing behavior
 - Use `kit trace` and `.kit/runs/` as evidence pointers; do not inline large stdout/stderr artifacts into prompts unless the specific failure requires it
 - Treat rulesets under `docs/references/rules/` as just-in-time context; load only the linked ruleset sections whose `read_policy` and `applies_to` match the current decision
+- Load `docs/references/rules/agent-team-orchestration.md` only when the immediate decision includes execution topology, subagent lanes, or read-only verification; do not load it for trivial single-lane tasks
 - Use indices first: start with `kit map <feature>` and `docs/PROJECT_PROGRESS_SUMMARY.md` to shortlist candidate prior features under `docs/specs/`
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
 - Do not load every ruleset by default; feature front matter references determine when a ruleset is must-read, conditional, evidence, or skipped

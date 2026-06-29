@@ -19,7 +19,8 @@ SPEC.md: clarify → ready → implement → validate → reflect → deliver/co
 
 `kit spec <feature>` remains prompt-producing by default. The generated
 supervisor prompt instructs a coding agent to keep all durable workflow state in
-`SPEC.md`.
+`SPEC.md`, including the Agent Team Plan when implementation, validation, or
+review may benefit from specialist lanes.
 
 ## Project Initialization
 
@@ -137,6 +138,7 @@ implementation begins. It requires:
 - binary-verifiable acceptance criteria
 - a task checklist
 - a validation map
+- an Agent Team Plan or recorded single-lane exception
 - documentation sync
 - reflection notes
 - evidence before delivery

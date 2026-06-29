@@ -90,7 +90,8 @@ func TestBuildLoopReviewPromptIncludesSubagentGuidanceWhenRequested(t *testing.T
 	for _, want := range []string{
 		"## Subagent Orchestration",
 		"## Review Subagent Pre-Analysis",
-		"planned subagent count",
+		"actual subagents spawned",
+		"never exceed 4",
 		"## Required Final Output",
 	} {
 		if !strings.Contains(prompt, want) {

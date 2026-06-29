@@ -213,6 +213,6 @@ func openCIDispatchPrompt(opts ciOptions, diagnosis ciDiagnosis) error {
 	} else if abs, err := filepath.Abs(workingDirectory); err == nil {
 		workingDirectory = abs
 	}
-	prompt := buildDispatchPrompt(tasks, dispatchMaxSubagents, workingDirectory, dispatchInputSourceEditor, dispatchPromptOptions{})
+	prompt := buildDispatchPrompt(tasks, defaultDispatchMaxSubagents, workingDirectory, dispatchInputSourceEditor, dispatchPromptOptions{})
 	return outputPromptWithoutSubagentsWithClipboardDefault(prompt, false, false)
 }

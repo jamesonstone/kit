@@ -11,25 +11,32 @@ func TestBuildDispatchPrompt(t *testing.T) {
 		{ID: "D002", Index: 2, Body: "Refresh README"},
 	}
 
-	prompt := buildDispatchPrompt(tasks, 10, "/tmp/project", dispatchInputSourceEditor, dispatchPromptOptions{})
+	prompt := buildDispatchPrompt(tasks, defaultDispatchMaxSubagents, "/tmp/project", dispatchInputSourceEditor, dispatchPromptOptions{})
 	checks := []string{
-		"Prepare a subagent dispatch plan",
+		"Prepare an Agent Team Plan",
 		"Working directory: /tmp/project",
 		"Input source: editor",
-		"Effective max subagents: 10",
+		"Effective max subagents: 3",
+		"Default max concurrent lanes: 3",
+		"Hard ceiling: 4",
 		"### D001",
 		"### D002",
+		"one accountable supervisor",
 		"Do NOT launch any subagents yet",
+		"agent-team-orchestration.md",
 		"anticipate which files are likely to change",
-		"overlap clusters",
-		"dispatch queue",
-		"subagent assignments",
+		"proposed lanes",
+		"subagents that will actually be spawned",
+		"logical-only lanes that will not be spawned",
+		"intentionally omitted implementation or verification lanes with reasons",
+		"validation/review lanes",
 		"risks and unknowns",
 		"Wait for explicit user approval",
-		"launch at most 10 concurrent subagents",
+		"launch at most 3 concurrent subagents",
 		"Keep all subagent work in the existing project directory",
 		"do not create or use git worktrees",
 		"stop and ask the user how to proceed instead of creating an alternate checkout",
+		"single supervisor lane; no specialist or verification agents spawned",
 	}
 
 	for _, check := range checks {
@@ -38,11 +45,24 @@ func TestBuildDispatchPrompt(t *testing.T) {
 		}
 	}
 
-	if !strings.HasPrefix(prompt, "Prepare a subagent dispatch plan") {
+	if !strings.HasPrefix(prompt, "Prepare an Agent Team Plan") {
 		t.Fatalf("expected prompt to start with dispatch header, got %q", prompt[:40])
 	}
 	if strings.Contains(prompt, "/plan") || strings.Contains(prompt, "planning mode") {
 		t.Fatalf("expected prompt to avoid native plan-mode triggers, got %q", prompt)
+	}
+	if strings.Contains(prompt, "PR Reflection and Resolution Cycle") {
+		t.Fatalf("expected non-PR dispatch prompt to omit PR reflection cycle, got %q", prompt)
+	}
+}
+
+func TestDispatchCommandMaxSubagentsDefaultAndCeiling(t *testing.T) {
+	flag := dispatchCmd.Flags().Lookup("max-subagents")
+	if flag == nil {
+		t.Fatal("expected dispatch to expose --max-subagents")
+	}
+	if flag.DefValue != "3" || !strings.Contains(flag.Usage, "hard ceiling 4") {
+		t.Fatalf("unexpected --max-subagents flag metadata: def=%q usage=%q", flag.DefValue, flag.Usage)
 	}
 }
 
@@ -68,6 +88,63 @@ func TestBuildDispatchPromptIncludesCommonReviewInstruction(t *testing.T) {
 	for _, check := range checks {
 		if !strings.Contains(prompt, check) {
 			t.Fatalf("expected prompt to contain %q", check)
+		}
+	}
+}
+
+func TestBuildDispatchPromptIncludesPRReflectionCycle(t *testing.T) {
+	tasks := []dispatchTask{
+		{ID: "D001", Index: 1, Body: "Source: internal/app.go:12\nReview task:\nFix the stale assertion"},
+	}
+
+	prompt := buildDispatchPrompt(
+		tasks,
+		3,
+		"/tmp/project",
+		dispatchInputSourcePR,
+		dispatchPromptOptions{PRTarget: "14"},
+	)
+
+	checks := []string{
+		"PR Reflection and Resolution Cycle",
+		"after validation and push-to-PR",
+		"gh pr view \"14\" --json headRefOid -q .headRefOid",
+		"git rev-parse HEAD",
+		"Run a reflection cycle against the pushed diff",
+		"no code has been pushed to the PR after your push",
+		"kit dispatch --pr \"14\" --resolve --yes",
+		"resolved conversation count or reason resolution was skipped",
+	}
+	for _, check := range checks {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected prompt to contain %q, got:\n%s", check, prompt)
+		}
+	}
+	if strings.Contains(prompt, "--coderabbit --resolve") {
+		t.Fatalf("expected default PR resolution to include all active conversations, got:\n%s", prompt)
+	}
+}
+
+func TestBuildDispatchPromptScopesPRReflectionCycleToCodeRabbit(t *testing.T) {
+	tasks := []dispatchTask{
+		{ID: "D001", Index: 1, Body: "Source: internal/app.go:12\nReview task:\nFix the stale assertion"},
+	}
+
+	prompt := buildDispatchPrompt(
+		tasks,
+		3,
+		"/tmp/project",
+		dispatchInputSourcePR,
+		dispatchPromptOptions{CodeRabbitOnly: true, PRTarget: "14"},
+	)
+
+	checks := []string{
+		"all active CodeRabbit-authored PR review conversations",
+		"kit dispatch --pr \"14\" --coderabbit --resolve --yes",
+	}
+	for _, check := range checks {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected prompt to contain %q, got:\n%s", check, prompt)
 		}
 	}
 }
@@ -334,8 +411,14 @@ func TestValidateDispatchMaxSubagents(t *testing.T) {
 	if err := validateDispatchMaxSubagents(1); err != nil {
 		t.Fatalf("expected positive max-subagents to be valid: %v", err)
 	}
+	if err := validateDispatchMaxSubagents(hardDispatchMaxSubagents); err != nil {
+		t.Fatalf("expected hard ceiling max-subagents to be valid: %v", err)
+	}
 
 	if err := validateDispatchMaxSubagents(0); err == nil {
 		t.Fatalf("expected max-subagents validation to fail for zero")
+	}
+	if err := validateDispatchMaxSubagents(hardDispatchMaxSubagents + 1); err == nil {
+		t.Fatalf("expected max-subagents validation to fail above hard ceiling")
 	}
 }

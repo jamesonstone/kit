@@ -18,30 +18,36 @@
 
 ## Dispatch
 
-- Use `kit dispatch` when broad work must be turned into safe multi-lane execution
+- Use `kit dispatch` when broad work must be turned into a safe Agent Team Plan
+- Load `docs/references/rules/agent-team-orchestration.md` when dispatch, direct subagent execution, or read-only verification topology affects the task
+- Keep one accountable supervisor responsible for scope, integration, validation, evidence, delivery gating, and final reporting
 - Use subagents when the work cleanly separates into low-overlap lanes after discovery
+- Keep single-lane work in one supervisor lane when the task is trivial, tightly coupled, high-overlap, high-ambiguity, cannot spawn subagents, or the user requested single-agent execution
+- Default to at most 3 concurrent lanes; never exceed 4
 - Keep broad or noisy discovery in RLM first; use dispatch or direct subagent execution only after the relevant workstreams are narrow enough to predict overlap
 - Predict overlap conservatively before parallelizing
-- Keep the main agent responsible for synthesis, integration, validation, and communication
+- Use read-only verification subagents by default after implementation unless a recorded exception applies
 
-## Review Loop
+## PR Review Feedback
 
-- Use `kit pr fix` as the default PR review repair entrypoint when current PR review feedback should be fixed locally.
+- Use `kit pr fix` as the default PR review feedback entrypoint when current PR review feedback should become an editable dispatch prompt.
 - With no `--pr`, `kit pr fix` lists open pull requests in the current repository and asks which one to repair.
 - Use `kit pr fix --pr <target>` when the PR is known; accepted targets match dispatch PR intake: URL, Markdown link, `owner/repo#number`, or current-repo number.
-- `kit pr fix` wraps the `kit loop review --pr` repair path, keeps staging/commit/push outside the repair loop, and asks the delegated agent to resolve verified fixed/no-op review threads.
+- `kit pr fix` uses the prompt-producing `kit dispatch --pr` path: it pre-populates the editor with unresolved review feedback, lets the user edit the task list, and copies the resulting dispatch prompt for a coding agent.
+- The generated PR-fix prompt requires a post-push reflection cycle before review-thread resolution: the coding agent must review the pushed diff in context, confirm the PR head still matches the commit it pushed, and only then resolve verified addressed conversations.
+- `kit pr fix` does not run the loop agent, edit files, write `.kit/loops` evidence, stage, commit, push, post PR comments, or resolve review threads.
 - Use `kit loop review` when changed code should be locally reviewed and repaired by the configured loop agent until the final response reports at least 95% correctness and ends with `done`.
 - Without `--pr`, `kit loop review` reviews current-branch changes relative to `origin/main`, falling back to local `main`, plus staged and unstaged changes.
 - Use `kit loop review --pr <target>` when current unresolved CodeRabbit PR feedback should be opportunistically folded into the repair loop while local review starts immediately.
 - Use `kit loop review --pr <target> --watch` or `--wait-for-coderabbit` only when finalization should block for CodeRabbit completion.
-- Review prompts use one agent by default; pass `--subagents` to let the parent review agent pre-analyze the diff and choose subagents only when the lanes are clearly independent.
+- Review prompts use one agent by default; pass `--subagents` to let the parent review agent pre-analyze the diff and choose subagents only when the lanes are clearly independent under `agent-team-orchestration` limits.
 - Human-readable `kit loop review` runs stream emoji-marked runner progress and child-agent stdout/stderr to stderr; `--json` suppresses progress output and keeps stdout machine-readable.
 - In an interactive terminal, `kit loop review` asks before rerunning when prior review-loop evidence exists or the current run reaches max iterations.
 - Agent command setup failures stop immediately with stderr context instead of consuming the whole iteration budget.
 - Use `kit dispatch --loop --pr <target>` when current unresolved CodeRabbit PR review feedback should become a human-reviewed dispatch prompt instead of an agent repair loop.
 - Use `kit dispatch --pr <target> --coderabbit` only when you need raw unresolved CodeRabbit review-thread intake without review-loop watch, classification, or summary behavior.
 - Treat `kit loop review` as local repair only: it may edit files through the configured agent and write `.kit/loops` evidence, but it must not stage, commit, push, post PR comments, or resolve review threads.
-- In `kit pr fix`, after fixes or no-op decisions are complete and validation has run, ask the delegated agent to resolve all matching current unresolved review threads on the PR, including human reviewer and CodeRabbit feedback, with `kit dispatch --pr <target> --resolve --yes`.
+- After fixes or no-op decisions are complete, validation has run, the repair is pushed, and reflection confirms no other code was pushed after the repair commit, resolve matching current unresolved review threads on the PR, including human reviewer and CodeRabbit feedback, with `kit dispatch --pr <target> --resolve --yes`.
 - Resolve only feedback verified as fixed or intentionally no-op; do not resolve unfixed, uncertain, stale, or unrelated feedback.
 - `kit dispatch --pr <target> --resolve --yes` is an explicit GitHub mutation and must not be run speculatively.
 

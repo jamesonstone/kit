@@ -121,6 +121,7 @@ You are the supervisor coding agent for the Kit v2 `kit spec` workflow for featu
 - Inventory acceptance criteria and convert them to stable IDs such as `AC-001` before implementation.
 - Build or update the `### Source Map` for every material claim that could change implementation, validation, delivery, or user-visible behavior if wrong.
 - List expected validation commands and any validations that may need environment, credentials, services, fixtures, or manual review.
+- When present, load `docs/references/rules/agent-team-orchestration.md` before deciding whether implementation or verification should use subagents.
 - Ask clarification questions instead of editing when any readiness, Source Map, dirty-worktree, ownership, or validation gate fails.
 
 ## Pre-Instruction Report
@@ -206,6 +207,7 @@ Keep the Source Map inside the Context section of `SPEC.md` as `### Source Map`.
 ## Agent Team Model
 
 - The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.
+- When present, `docs/references/rules/agent-team-orchestration.md` is the durable rule for deciding whether work uses specialist subagents, read-only verification agents, or a recorded single supervisor lane.
 - Default to a subagent team for implementation and verification.
 - Use a single supervisor lane only when the work is trivial, tightly coupled, the active runtime cannot spawn subagents, or `--single-agent` is explicitly active.
 - If implementation or verification stays single-lane, record the exact exception in `SPEC.md` before implementation or validation begins.
