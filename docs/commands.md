@@ -33,6 +33,7 @@ kit init
 kit project refresh
 kit init --refresh
 kit spec my-feature
+kit notes my-feature --add --source slack
 kit spec dashboard-redesign --profile=frontend
 kit status --all
 kit resume my-feature
@@ -57,6 +58,7 @@ kit rm my-feature --yes --notes
 | --- | --- |
 | `kit backlog` | List deferred brainstorm items or use `--pickup` as the backlog-specific resume shortcut. |
 | `kit spec <feature>` | Start or resume the v2 `SPEC.md` workflow and output the supervisor prompt. |
+| `kit notes [feature]` | Select, create, or add source-material notes under `docs/notes/<feature>`, including gitignored private conversation notes. |
 | `kit legacy` | List deprecated legacy v1 staged workflow commands retained for migration. |
 | `kit loop [feature]` | Convenience alias for `kit loop workflow [feature]`. |
 | `kit loop workflow [feature]` | Run the remaining workflow through a configured confidence-gated local agent loop. |
@@ -116,6 +118,25 @@ discovery, not maintain Kit's internal command catalog.
 | `kit completion` | Generate shell autocompletion scripts. |
 
 ## Prompt Profiles And Subagents
+
+## Feature Notes
+
+Use `kit notes` to prepare or add optional source material for a feature before
+or during the `kit spec` workflow. Notes live under `docs/notes/<feature>/`:
+
+- `inbox/` stores raw captured notes and conversation excerpts.
+- `references/` stores source material, links, examples, and assets.
+- `responses/` stores draft or sent responses.
+- `private/` stores local-only conversation history and is ignored by git.
+
+`kit notes <feature>` ensures the scaffold. `kit notes <feature> --add` creates
+a timestamped note template with front matter for `kind`, `source`, `status`,
+`sensitivity`, `captured_at`, and `feature`. Add `--private` for sensitive
+conversation context that should not enter the repository. Notes are source
+material; promote durable decisions into `SPEC.md`, `docs/CONSTITUTION.md`, or
+another canonical document before relying on them for implementation.
+Use `docs/references/rules/feature-notes.md` for the agent-facing rules on
+loading, referencing, promoting, and ignoring notes.
 
 Prompt-producing commands default to accountable-supervisor orchestration
 guidance. They use subagents only when low-overlap lanes improve correctness or
@@ -260,3 +281,9 @@ assignees are configured.
 
 Use `kit init --refresh --dry-run --diff` to preview managed-file changes
 without writing them.
+
+Use `kit init --refresh --force` after reviewing local generated-file changes
+when you want to accept refreshed generated guidance. After the structural
+refresh completes, Kit copies a documentation review prompt to the clipboard so
+an agent can update `docs/CONSTITUTION.md`, agent docs, references, command
+docs, and directly affected feature specs semantically.

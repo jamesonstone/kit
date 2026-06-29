@@ -40,12 +40,8 @@ func featureDesignMaterialsPath(projectRoot, featureDirName string) string {
 
 func ensureFeatureNotesDir(projectRoot, featureDirName string) (string, string, error) {
 	notesPath := featureNotesPath(projectRoot, featureDirName)
-	if err := os.MkdirAll(notesPath, 0755); err != nil {
+	if err := ensureFeatureNotesScaffold(projectRoot, featureDirName); err != nil {
 		return "", "", fmt.Errorf("failed to create feature notes directory: %w", err)
-	}
-
-	if err := ensurePlaceholderFile(notesPath); err != nil {
-		return "", "", fmt.Errorf("failed to create feature notes placeholder: %w", err)
 	}
 
 	return notesPath, featureNotesRelPath(featureDirName), nil

@@ -47,7 +47,7 @@ The names are software-friendly, but the pattern is general across domains:
 
 **Optional Research Material**:
 
-1. **Feature notes/reference material** — supporting artifacts, screenshots, research, constraints, and prior context
+1. **Feature notes/reference material** — supporting artifacts, screenshots, research, constraints, prior context, draft responses, and local-only conversation history under tracked/ignored sections
 
 **V2 Feature Workflow**:
 
@@ -509,6 +509,9 @@ CLI flags always override `.kit.yaml`.
 - support `--refresh` backfilling or upgrading known generated default `loop.agent.command` config needed by `kit loop review`
 - support `--refresh --dry-run --diff` to print planned Kit-managed file changes without writing them
 - support `--refresh --force` for generated documentation and ruleset overwrites
+- after full `--refresh --force`, copy a documentation review prompt to the
+  clipboard so an agent can update `docs/CONSTITUTION.md`, agent docs,
+  references, command docs, and directly affected feature specs semantically
 - support `--refresh --file=<path> --force` for targeted per-file scaffold overwrites
 
 ---
@@ -607,6 +610,30 @@ CLI flags always override `.kit.yaml`.
 - when no eligible existing feature candidates are available, prompt for a new feature name and
   start the interactive spec builder
 - update `docs/PROJECT_PROGRESS_SUMMARY.md`
+
+---
+
+#### `kit notes [feature]`
+
+- manage optional source-material directories under `docs/notes/<feature>`
+- with a feature argument, create or refresh that feature's notes scaffold
+- without a feature argument, show an interactive selector for existing features
+  or creating a new feature notes directory
+- create feature directories when needed so notes can be captured before
+  `SPEC.md` exists
+- scaffold `README.md`, `inbox/.gitkeep`, `references/.gitkeep`,
+  `responses/.gitkeep`, `private/.gitignore`, and `private/README.md`
+- preserve local files and create missing scaffold files only
+- treat notes as source material, not canonical truth; durable conclusions must
+  move into `SPEC.md`, `docs/CONSTITUTION.md`, or another canonical project doc
+- use `docs/references/rules/feature-notes.md` when deciding how agents should
+  load, reference, promote, or ignore feature notes
+- keep `private/` contents ignored by git while tracking the private directory
+  contract files
+- support `--add` to create a timestamped note template with front matter:
+  `kind`, `source`, `status`, `sensitivity`, `captured_at`, and `feature`
+- support `--section`, `--source`, `--status`, `--sensitivity`, `--private`,
+  `--copy-path`, and `--json`
 
 ---
 
@@ -1073,8 +1100,8 @@ Purpose:
 
 Subcommands:
 
-- `kit scaffold brainstorm <feature>` — create or reuse the feature directory, create `BRAINSTORM.md`, and create `docs/notes/<feature>/.gitkeep`
-- `kit scaffold spec <feature>` — create or reuse the feature directory and create `SPEC.md`
+- `kit scaffold brainstorm <feature>` — create or reuse the feature directory, create `BRAINSTORM.md`, and create the full `docs/notes/<feature>` scaffold
+- `kit scaffold spec <feature>` — create or reuse the feature directory, create `SPEC.md`, and create the full `docs/notes/<feature>` scaffold
 - `kit scaffold plan <feature>` — require `SPEC.md` and create `PLAN.md`
 - `kit scaffold tasks <feature>` — require `PLAN.md` and create `TASKS.md`
 - `kit scaffold agents` — create or refresh repository instruction files
@@ -1086,7 +1113,8 @@ Completion output:
 #### `kit legacy brainstorm <feature> --prepare`
 
 - aliases the brainstorm workflow scaffold behavior
-- creates `BRAINSTORM.md` and `docs/notes/<feature>/.gitkeep`
+- creates `BRAINSTORM.md` and the full `docs/notes/<feature>` scaffold
+- current notes scaffolding includes `README.md`, `inbox/`, `references/`, `responses/`, and tracked private-directory guardrails
 - when the frontend profile is active, also creates design-materials directories
 - does not ask for a brainstorm thesis
 - does not output or copy the brainstorm prompt

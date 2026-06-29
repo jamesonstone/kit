@@ -55,6 +55,29 @@ func TestCapabilitiesSelfGuidanceDistinguishesMaintainersAndDownstreamProjects(t
 	}
 }
 
+func TestCapabilitiesIncludesNotesCommandGuidance(t *testing.T) {
+	output, err := executeCapabilitiesCommand("--json", "notes")
+	if err != nil {
+		t.Fatalf("kit capabilities notes --json error = %v", err)
+	}
+
+	var payload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(output), &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v\noutput: %s", err, output)
+	}
+	combined := strings.Join(append(payload.Command.WhenToUse, payload.Command.Caveats...), "\n")
+	for _, want := range []string{
+		"Slack excerpts",
+		"private notes",
+		"feature-notes.md",
+		"ignore .gitkeep",
+	} {
+		if !strings.Contains(combined, want) {
+			t.Fatalf("expected notes capabilities guidance to contain %q, got:\n%s", want, combined)
+		}
+	}
+}
+
 func TestCapabilitiesUnknownCommandIsActionable(t *testing.T) {
 	_, err := executeCapabilitiesCommand("--json", "does-not-exist")
 	if err == nil {

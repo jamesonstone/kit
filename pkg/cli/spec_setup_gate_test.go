@@ -55,6 +55,11 @@ func TestRunSpecSetupGateAllowsBypassForFreshProject(t *testing.T) {
 		filepath.Join(projectRoot, config.ConfigFileName),
 		filepath.Join(projectRoot, "docs", "CONSTITUTION.md"),
 		filepath.Join(projectRoot, "docs", "specs", "0001-first-feature", "SPEC.md"),
+		filepath.Join(projectRoot, "docs", "notes", "0001-first-feature", "README.md"),
+		filepath.Join(projectRoot, "docs", "notes", "0001-first-feature", "inbox", ".gitkeep"),
+		filepath.Join(projectRoot, "docs", "notes", "0001-first-feature", "references", ".gitkeep"),
+		filepath.Join(projectRoot, "docs", "notes", "0001-first-feature", "responses", ".gitkeep"),
+		filepath.Join(projectRoot, "docs", "notes", "0001-first-feature", "private", ".gitignore"),
 	} {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("expected %s to exist after bypass: %v", path, err)

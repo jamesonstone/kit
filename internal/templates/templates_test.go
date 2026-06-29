@@ -170,6 +170,9 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"docs/PROJECT_PROGRESS_SUMMARY.md",
 			"conditional reads only",
 			"agent-team-orchestration.md",
+			"feature-notes.md",
+			"docs/notes/<feature>/README.md",
+			"Promote durable conclusions from notes",
 			"shared interface or contract",
 			"Inspect at most 5 prior feature directories",
 			"discovery and context selection first",
@@ -275,11 +278,26 @@ func TestConstitutionTemplateIncludesKitManagedBaselineRules(t *testing.T) {
 	for _, check := range []string{
 		"### Kit-Managed Baseline Rules",
 		"BEGIN KIT-MANAGED BASELINE RULES",
+		"docs/notes/<feature>",
+		"optional source material, not canonical truth",
 		"Prefer implementation/source code files around 300 lines",
 		"Do not apply the code-file size guideline to documentation files",
 	} {
 		if !strings.Contains(Constitution, check) {
 			t.Fatalf("expected Constitution template to contain %q", check)
+		}
+	}
+}
+
+func TestReferencesTemplateMentionsFeatureNotesRuleset(t *testing.T) {
+	content := fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/references/README.md")
+	for _, check := range []string{
+		"rules/feature-notes.md",
+		"docs/notes/<feature>",
+		"not canonical truth",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected references README template to contain %q, got:\n%s", check, content)
 		}
 	}
 }

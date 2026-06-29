@@ -82,12 +82,19 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "github.default_assignees") {
 		t.Fatalf("expected init file writes to document auto-assignee config fallback, got %#v", initPayload.Command.FileWrites)
 	}
+	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "documentation review prompt") {
+		t.Fatalf("expected init file writes to document force refresh prompt, got %#v", initPayload.Command.FileWrites)
+	}
 	refreshFlag := findDetailedFlag(initPayload.Command.DetailedFlagBehavior, "--refresh")
 	if refreshFlag == nil || !strings.Contains(refreshFlag.Summary, "loop.agent.command") || !strings.Contains(refreshFlag.Summary, "auto-assignment workflow") {
 		t.Fatalf("expected --refresh flag to document loop agent and auto-assignment workflow backfill, got %#v", refreshFlag)
 	}
 	if findDetailedFlag(initPayload.Command.DetailedFlagBehavior, "--diff") == nil {
 		t.Fatalf("expected init detailed flags to include --diff")
+	}
+	forceFlag := findDetailedFlag(initPayload.Command.DetailedFlagBehavior, "--force")
+	if forceFlag == nil || !strings.Contains(forceFlag.Summary, "documentation review prompt") {
+		t.Fatalf("expected --force flag to document documentation review prompt, got %#v", forceFlag)
 	}
 
 	specOutput, err := executeCapabilitiesCommand("--json", "spec")

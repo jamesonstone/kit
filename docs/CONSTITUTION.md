@@ -75,6 +75,7 @@ all decisions.
 <!-- BEGIN KIT-MANAGED BASELINE RULES -->
 - Treat `docs/CONSTITUTION.md` as the canonical project contract.
 - Keep `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` aligned with the repo-local docs tree.
+- Treat `docs/notes/<feature>` as optional source material, not canonical truth; promote durable decisions into `SPEC.md`, `docs/CONSTITUTION.md`, or durable references.
 - Prefer implementation/source code files around 300 lines or less when splitting improves clarity and ownership.
 - Do not apply the code-file size guideline to documentation files, all `docs/**`, all `.kit/**`, or `.kit.yaml`.
 - Do not split or rewrite docs, generated state, or Kit config artifacts solely because they exceed 300 lines.
@@ -265,9 +266,11 @@ The default feature workflow that keeps durable state in one feature artifact:
 
 2. **Specification (SPEC.md)** — Single durable v2 feature artifact. Captures thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence.
 
-3. **Implementation** — Code execution after the `SPEC.md` readiness gates pass. The supervisor keeps task status, lane decisions, validation still needed, and rollback notes current in `SPEC.md`.
+3. **Feature Notes** — Optional source material under `docs/notes/<feature>`. Notes may hold raw context, screenshots, research, Slack/customer excerpts, draft responses, and local-only private context, but they do not replace `SPEC.md`, `docs/CONSTITUTION.md`, or durable references.
 
-4. **Validation and Reflection** — Verification against every acceptance criterion, reflection on correctness and drift, documentation sync, delivery decision, and evidence recorded in `SPEC.md`.
+4. **Implementation** — Code execution after the `SPEC.md` readiness gates pass. The supervisor keeps task status, lane decisions, validation still needed, and rollback notes current in `SPEC.md`.
+
+5. **Validation and Reflection** — Verification against every acceptance criterion, reflection on correctness and drift, documentation sync, delivery decision, and evidence recorded in `SPEC.md`.
 
 Legacy staged artifacts (`BRAINSTORM.md`, `PLAN.md`, `TASKS.md`) may exist in upgraded projects and remain readable historical context. They are binding only when a legacy staged command is explicitly used.
 
@@ -278,6 +281,16 @@ A self-contained unit of work with its own directory under `docs/specs/`. Identi
 - **Numeric prefix**: Reserved by Kit's feature allocator, using repo-shared Git common-dir state when available and falling back to local `docs/specs/` inspection (e.g., `0001`)
 - **Slug**: Lowercase kebab-case name, max 5 words (e.g., `init-project`)
 - **Directory**: Combined format (e.g., `0001-init-project`)
+
+Feature notes may exist separately under `docs/notes/<feature>` before, during, or after feature work. The standard scaffold is:
+
+- `README.md` — note directory contract and feature pointer.
+- `inbox/` — raw captured inputs, conversation excerpts, and transient context.
+- `references/` — source material, links, screenshots, research, and external references.
+- `responses/` — draft or sent responses tied to the feature.
+- `private/` — local-only ignored context; only `README.md` and `.gitignore` are tracked.
+
+Agents should load note files only when they materially affect the current decision, ignore `.gitkeep` placeholders, and promote durable conclusions into canonical project artifacts.
 
 ### Phase
 
@@ -407,6 +420,7 @@ kit/
     ├── PROJECT_PROGRESS_SUMMARY.md
     ├── agents/              # repo-local agent routing docs
     ├── future/              # non-binding future architecture notes
+    ├── notes/               # optional feature source material; private contents ignored
     ├── references/          # durable repo references and pointer-loaded rulesets
     └── specs/               # feature directories and core spec
 ```

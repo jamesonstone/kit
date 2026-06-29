@@ -16,6 +16,7 @@ var commandOrder = map[string]int{
 	"brainstorm":   1,
 	"backlog":      10,
 	"spec":         11,
+	"notes":        12,
 	"plan":         2,
 	"tasks":        3,
 	"loop":         14,
@@ -64,6 +65,7 @@ var rootCommandSections = []commandSection{
 		title: "Workflow",
 		commands: []string{
 			"spec",
+			"notes",
 			"backlog",
 			"legacy",
 			"loop",

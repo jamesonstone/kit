@@ -50,7 +50,7 @@ Flags:
   --copy:         Copy prompt to clipboard even with --output-only
   --dry-run:      Preview --refresh without writing files
   --diff:         Print planned --refresh changes as a unified diff with --dry-run
-  --force:        Overwrite refreshable generated docs during --refresh
+  --force:        Overwrite refreshable generated docs during --refresh and copy a documentation review prompt
   --file:         Limit --refresh to one Kit-managed file; repeat for multiple files`,
 	RunE: runInit,
 }
