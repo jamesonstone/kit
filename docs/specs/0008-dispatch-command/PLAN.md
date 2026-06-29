@@ -46,7 +46,7 @@ references:
 
 - [PLAN-01][SPEC-01][SPEC-02][SPEC-03][SPEC-04][SPEC-05][SPEC-06][SPEC-07][SPEC-08][SPEC-09][SPEC-10][SPEC-11][SPEC-12][SPEC-13][SPEC-16][SPEC-27] Add a new `pkg/cli/dispatch.go` command with standard prompt flags, input-source precedence, default editor-backed capture, pre-editor instructions, any-key launch gating, file/stdin support, and max-subagent validation.
 - [PLAN-02][SPEC-14][SPEC-15] Add focused task-normalization helpers that split only top-level paragraphs, bullets, and numbered items into dispatchable units while preserving nested detail under the parent task.
-- [PLAN-03][SPEC-17][SPEC-18][SPEC-19][SPEC-20][SPEC-21][SPEC-22][SPEC-23][SPEC-24][SPEC-25][SPEC-26] Build a dedicated prompt builder that embeds the normalized task list and enforces discovery-first clustering, conservative overlap handling, dry-run reporting, and approval gating before subagent launch.
+- [PLAN-03][SPEC-17][SPEC-18][SPEC-19][SPEC-20][SPEC-21][SPEC-22][SPEC-23][SPEC-24][SPEC-25][SPEC-26] Build a dedicated prompt builder that embeds the normalized task list and enforces discovery-first clustering, conservative overlap handling, and Agent Team Plan recording before self-directed subagent launch.
 - [PLAN-04][SPEC-28] Register the new command in help ordering and README so the public CLI surface matches the shipped behavior.
 - [PLAN-05] Add focused tests for input-source precedence, task normalization, prompt invariants, and flag validation, then run the standard verification commands.
 - [PLAN-06] Switch `dispatch` to the shared clipboard-first helper that preserves dispatch's no-subagent-suffix prompt shape.

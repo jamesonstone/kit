@@ -35,7 +35,6 @@ func buildDispatchPrompt(
 		doc.OrderedList(1,
 			"Act as the one accountable supervisor for scope, integration, validation, evidence, delivery gating, and final reporting",
 			"Stay in discovery and assignment-design workflow first",
-			"Do NOT launch any subagents yet",
 			"When present and relevant, load `docs/references/rules/agent-team-orchestration.md` before finalizing the team shape",
 			"Inspect the repository and anticipate which files are likely to change for each normalized task before assigning work",
 			"Build a predicted touched-file set for each task",
@@ -46,9 +45,8 @@ func buildDispatchPrompt(
 			fmt.Sprintf("Parallelize only disjoint clusters and never exceed %d concurrent subagents", maxSubagents),
 			"If the number of clusters exceeds the concurrency cap, queue the remaining clusters and state their execution order explicitly",
 			"Include at least one read-only verification lane by default after implementation unless the change is documentation-only, trivial, tightly coupled, the runtime cannot spawn subagents, or the user requested single-agent execution",
-			"Output a dry-run Agent Team Plan with the exact sections listed below before any subagent execution begins",
-			"Wait for explicit user approval after the Agent Team Plan and proposed queue before launching any subagents",
-			fmt.Sprintf("After approval, launch at most %d concurrent subagents and keep queued clusters serialized behind them", maxSubagents),
+			"Output an Agent Team Plan with the exact sections listed below before any subagent execution begins",
+			fmt.Sprintf("After recording the Agent Team Plan, self-direct execution by launching at most %d concurrent subagents and keeping queued clusters serialized behind them", maxSubagents),
 			"Keep all subagent work in the existing project directory; do not create or use git worktrees",
 			"If the current branch or dirty state is unsuitable for a subagent, stop and ask the user how to proceed instead of creating an alternate checkout",
 		)
@@ -79,7 +77,7 @@ func buildDispatchPrompt(
 			"subagents must not create branches, stage, commit, push, open PRs, resolve review threads, or mark the whole workflow complete unless explicitly assigned and allowed by the supervisor",
 			"verification agents are read-only by default and must not edit files, stage changes, commit, push, resolve threads, or close their own findings",
 			"do not create or use git worktrees for agent work",
-			"keep the Agent Team Plan reviewable and explicit before asking for approval",
+			"keep the Agent Team Plan reviewable and explicit before self-directed execution",
 			"final reporting must state actual subagents spawned, logical lanes not spawned, and any single-lane exception; if no separate agents ran, state exactly: `single supervisor lane; no specialist or verification agents spawned`",
 		)
 		if inputSource == dispatchInputSourcePR {

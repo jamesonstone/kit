@@ -20,7 +20,7 @@ func builtInKitPromptSource() promptlib.Source {
 			builtInPrompt("support", "handoff", "Generate documentation-sync handoff instructions.", renderSupportHandoffPrompt),
 			builtInPrompt("support", "summarize", "Generate context-window summarization instructions.", renderSupportSummarizePrompt),
 			dynamicBuiltInPrompt("support", "reconcile", "Generate a documentation reconciliation prompt.", []string{promptContextReconciliationReport}, renderSupportReconcilePrompt),
-			dynamicBuiltInPrompt("support", "dispatch", "Generate a subagent dispatch dry-run prompt.", []string{promptContextTaskList}, renderSupportDispatchPrompt),
+			dynamicBuiltInPrompt("support", "dispatch", "Generate an Agent Team Plan prompt.", []string{promptContextTaskList}, renderSupportDispatchPrompt),
 			builtInPrompt("support", "code-review", "Generate branch code-review instructions.", renderSupportCodeReviewPrompt),
 			dynamicBuiltInPrompt("skill", "mine", "Generate a reusable-skill mining prompt for a feature.", []string{promptContextActiveFeature}, renderSkillMinePrompt),
 			builtInPrompt("project", "init", "Generate project constitution drafting instructions.", renderProjectInitPrompt),
