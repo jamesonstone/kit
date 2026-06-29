@@ -24,6 +24,9 @@ agents:
     - AGENTS.md
     - CLAUDE.md
     - .github/copilot-instructions.md
+github:
+    default_assignees:
+        - jamesonstone
 instruction_scaffold_version: 2
 feature_naming:
     numeric_width: 4

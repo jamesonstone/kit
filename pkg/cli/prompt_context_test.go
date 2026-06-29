@@ -127,7 +127,7 @@ func TestRenderSupportDispatchPromptUsesEditorContext(t *testing.T) {
 		if err != nil {
 			t.Fatalf("renderSupportDispatchPrompt() error = %v", err)
 		}
-		if !strings.Contains(rendered, "Prepare a subagent dispatch plan") {
+		if !strings.Contains(rendered, "Prepare an Agent Team Plan") {
 			t.Fatalf("expected dispatch prompt, got %q", rendered)
 		}
 		if !strings.Contains(rendered, "D001") || !strings.Contains(rendered, "D002") {

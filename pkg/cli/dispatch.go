@@ -23,9 +23,14 @@ var (
 	dispatchMaxSubagents int
 )
 
+const (
+	defaultDispatchMaxSubagents = 3
+	hardDispatchMaxSubagents    = 4
+)
+
 var dispatchCmd = &cobra.Command{
 	Use:   "dispatch",
-	Short: "Output a subagent dispatch dry-run prompt",
+	Short: "Output an Agent Team Plan prompt",
 	Long: `Output a prompt that tells a coding agent how to discover file overlap
 across a task set, cluster related work, and queue subagents safely.
 
@@ -62,8 +67,8 @@ func init() {
 	dispatchCmd.Flags().IntVar(
 		&dispatchMaxSubagents,
 		"max-subagents",
-		10,
-		"maximum concurrent subagents allowed in the generated prompt",
+		defaultDispatchMaxSubagents,
+		"maximum concurrent subagents allowed in the generated prompt; default 3, hard ceiling 4",
 	)
 	rootCmd.AddCommand(dispatchCmd)
 }
@@ -153,7 +158,11 @@ func loadDispatchInputForCommand(
 		prInput, found, err := loadDispatchPRInput(dispatchPR, dispatchCodeRabbit, inputCfg)
 		return prInput.RawTasks,
 			dispatchInputSourcePR,
-			dispatchPromptOptions{CommonReviewInstruction: prInput.CommonReviewInstruction},
+			dispatchPromptOptions{
+				CodeRabbitOnly:          dispatchCodeRabbit,
+				CommonReviewInstruction: prInput.CommonReviewInstruction,
+				PRTarget:                dispatchPR,
+			},
 			found,
 			err
 	}
@@ -164,7 +173,10 @@ func loadDispatchInputForCommand(
 
 func validateDispatchMaxSubagents(maxSubagents int) error {
 	if maxSubagents < 1 {
-		return fmt.Errorf("--max-subagents must be >= 1")
+		return fmt.Errorf("--max-subagents must be between 1 and %d", hardDispatchMaxSubagents)
+	}
+	if maxSubagents > hardDispatchMaxSubagents {
+		return fmt.Errorf("--max-subagents must be between 1 and %d", hardDispatchMaxSubagents)
 	}
 
 	return nil

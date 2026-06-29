@@ -8,6 +8,7 @@
 - Store durable rulesets under `rules/<slug>.md` and link them with `kit rules link` instead of copying rules into agent instruction files
 - Use `rules/kit-capabilities-usage.md` in downstream projects for Kit command discovery guidance
 - Use `rules/command-capabilities.md` only inside the Kit source repository for maintainer command-surface work
+- Use `rules/agent-team-orchestration.md` when deciding supervisor/subagent topology, concurrency, file-overlap handling, or read-only verification lanes
 - Use `kit rules add` to import or activate available registry rulesets from the Kit GitHub `main` branch
 - Use `kit rules view <slug>` to preview a local or registry ruleset before importing it
 - Use `kit init --refresh` to adopt existing registry rules into `.kit.yaml` registry state and pick up safe upstream ruleset updates

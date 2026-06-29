@@ -51,6 +51,42 @@ func TestFeatureArtifactBuildersIncludeCanonicalFrontMatter(t *testing.T) {
 	}
 }
 
+func TestBuildAutoAssignWorkflowRendersSafeGitHubActionsWorkflow(t *testing.T) {
+	content := BuildAutoAssignWorkflow([]string{"jamesonstone", "octocat"})
+
+	for _, check := range []string{
+		"# Kit-managed auto-assignment workflow.",
+		"pull_request_target:",
+		"issues: write",
+		"pull-requests: read",
+		"continue-on-error: true",
+		`"jamesonstone"`,
+		`"octocat"`,
+		"github.rest.issues.addAssignees",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected workflow to contain %q, got:\n%s", check, content)
+		}
+	}
+	if strings.Contains(content, "actions/checkout") {
+		t.Fatalf("auto-assign workflow must not check out pull request code:\n%s", content)
+	}
+}
+
+func TestBuildAutoAssignWorkflowNoOpsWithoutAssignees(t *testing.T) {
+	content := BuildAutoAssignWorkflow(nil)
+
+	for _, check := range []string{
+		"const assignees = [];",
+		"No Kit auto-assignees configured; skipping.",
+		"continue-on-error: true",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected empty-assignee workflow to contain %q, got:\n%s", check, content)
+		}
+	}
+}
+
 func TestFeatureArtifactBuildersDoNotDuplicateCanonicalBodyTables(t *testing.T) {
 	featureMeta := document.FeatureMetadataFromDir("0001-sample-feature")
 	for name, content := range map[string]string{
@@ -133,6 +169,7 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"specific section over full file",
 			"docs/PROJECT_PROGRESS_SUMMARY.md",
 			"conditional reads only",
+			"agent-team-orchestration.md",
 			"shared interface or contract",
 			"Inspect at most 5 prior feature directories",
 			"discovery and context selection first",
@@ -144,10 +181,16 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"Use `kit capabilities` when choosing among Kit commands",
 			"`docs/references/rules/kit-capabilities-usage.md`",
 			"do not maintain Kit's internal command catalog from a downstream project",
+			"safe Agent Team Plan",
+			"agent-team-orchestration.md",
 			"Use subagents when the work cleanly separates into low-overlap lanes after discovery",
+			"Default to at most 3 concurrent lanes; never exceed 4",
 			"Keep broad or noisy discovery in RLM first",
-			"Use `kit pr fix` as the default PR review repair entrypoint",
-			"resolve all matching current unresolved review threads",
+			"Use `kit pr fix` as the default PR review feedback entrypoint",
+			"uses the prompt-producing `kit dispatch --pr` path",
+			"does not run the loop agent",
+			"post-push reflection cycle before review-thread resolution",
+			"resolve matching current unresolved review threads",
 			"including human reviewer and CodeRabbit feedback",
 		},
 	}

@@ -27,7 +27,7 @@ references:
 
 - Change Kit's shared prompt-orchestration default from single-agent to subagent-first.
 - Add `--single-agent` as the explicit opt-out when a user wants one lane only.
-- Keep `kit dispatch` as the stricter discovery-first queue-planning command with explicit approval before launch.
+- Keep `kit dispatch` as the stricter discovery-first queue-planning command with an Agent Team Plan before self-directed launch.
 - Clarify that repository-scale RLM discovery narrows context first, while dispatch and subagents handle execution planning after discovery.
 
 ## PROBLEM

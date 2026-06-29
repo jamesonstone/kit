@@ -58,7 +58,9 @@ func runReviewLoopPrompt(
 	}
 
 	prompt := buildDispatchPrompt(tasks, opts.MaxSubagents, workingDirectory, dispatchInputSourcePR, dispatchPromptOptions{
+		CodeRabbitOnly:          opts.CodeRabbitOnly,
 		CommonReviewInstruction: commonInstruction,
+		PRTarget:                opts.PRRef,
 	})
 	if err := outputPromptWithoutSubagentsWithClipboardDefault(prompt, opts.OutputOnly, opts.Copy); err != nil {
 		return err

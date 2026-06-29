@@ -32,6 +32,7 @@ Creates:
   - .env and .envrc local environment files
   - .coderabbit.yaml review configuration file
   - .github/pull_request_template.md pull request template
+  - .github/workflows/auto-assign.yml issue and pull request assignment workflow
   - ~/.config/kit/.kit.yaml global configuration file
   - docs/CONSTITUTION.md
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
@@ -142,6 +143,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if err := scaffoldPullRequestTemplate(cwd, initOutputOnly); err != nil {
+		return err
+	}
+	if err := scaffoldAutoAssignWorkflow(cwd, cfg, initOutputOnly); err != nil {
 		return err
 	}
 

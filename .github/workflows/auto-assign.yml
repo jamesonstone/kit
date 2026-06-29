@@ -1,0 +1,38 @@
+# Kit-managed auto-assignment workflow.
+# Update github.default_assignees in .kit.yaml or ~/.config/kit/.kit.yaml, then run kit init --refresh.
+name: Auto assign
+
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  assign:
+    name: Assign configured maintainers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Assign issue or pull request
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const assignees = [
+              "jamesonstone"
+            ];
+            if (assignees.length === 0) {
+              core.info("No Kit auto-assignees configured; skipping.");
+              return;
+            }
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees,
+            });

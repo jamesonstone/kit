@@ -82,10 +82,12 @@ func buildLoopReviewPrompt(
 
 func appendLoopReviewSubagentPreAnalysis(builder *strings.Builder) {
 	builder.WriteString("## Review Subagent Pre-Analysis\n\n")
-	builder.WriteString("- Before launching any subagents, inspect the diff at a high level and identify independent review lanes.\n")
-	builder.WriteString("- Emit a concise progress update naming the planned subagent count and lane boundaries.\n")
-	builder.WriteString("- Use zero subagents when the changed files are tightly coupled or the split is unclear.\n")
-	builder.WriteString("- Keep the parent agent responsible for final synthesis, correctness scoring, validation, and the required final output.\n")
+	builder.WriteString("- Before launching any subagents, inspect the diff at a high level and prepare an Agent Team Plan for independent review lanes.\n")
+	builder.WriteString("- Keep the parent review agent as the one accountable supervisor for lane choice, synthesis, correctness scoring, validation, and the required final output.\n")
+	builder.WriteString("- Use zero subagents when the changed files are tightly coupled, the split is unclear, or parallel review would increase interpretation risk.\n")
+	builder.WriteString(fmt.Sprintf("- Default to at most %d concurrent review lanes and never exceed %d.\n", defaultDispatchMaxSubagents, hardDispatchMaxSubagents))
+	builder.WriteString("- Treat verification subagents as read-only unless the parent explicitly assigns a repair lane; read-only lanes must not edit files or mutate git/GitHub state.\n")
+	builder.WriteString("- Emit a concise progress update naming actual subagents spawned, logical lanes not spawned, omitted lanes, and lane boundaries.\n")
 }
 
 func appendLoopReviewFinalOutput(builder *strings.Builder, includePRPending bool, includeResolutionStatus bool) {

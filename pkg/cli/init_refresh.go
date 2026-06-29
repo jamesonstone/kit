@@ -79,7 +79,7 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 	var notes []string
 
 	var stats initRefreshStats
-	scaffoldChanges, err := planRefreshInitScaffoldFiles(projectRoot, opts, targets)
+	scaffoldChanges, err := planRefreshInitScaffoldFiles(projectRoot, opts, cfg, targets)
 	if err != nil {
 		return err
 	}
@@ -153,6 +153,7 @@ func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map
 		envrcPath:                              true,
 		codeRabbitConfigPath:                   true,
 		pullRequestTemplatePath:                true,
+		autoAssignWorkflowPath:                 true,
 		cfg.ConstitutionPath:                   true,
 		filepath.ToSlash(cfg.ConstitutionPath): true,
 	}

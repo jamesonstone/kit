@@ -167,6 +167,144 @@ func TestRunInit_PopulatesGlobalConfig(t *testing.T) {
 	})
 }
 
+func TestRunInit_CreatesAutoAssignWorkflowFromGlobalFallback(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	assignees := []string{"jamesonstone"}
+	global := config.Default()
+	global.GitHub.DefaultAssignees = &assignees
+	if _, _, err := config.PopulateGlobalConfig(global); err != nil {
+		t.Fatalf("config.PopulateGlobalConfig() error = %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	content := readFile(t, filepath.Join(tempDir, autoAssignWorkflowPath))
+	for _, check := range []string{
+		"# Kit-managed auto-assignment workflow.",
+		"pull_request_target:",
+		"continue-on-error: true",
+		`"jamesonstone"`,
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected auto-assign workflow to contain %q, got:\n%s", check, content)
+		}
+	}
+	if strings.Contains(content, "actions/checkout") {
+		t.Fatalf("auto-assign workflow must not check out PR code:\n%s", content)
+	}
+}
+
+func TestRunInit_UsesProjectAutoAssignAssigneesBeforeGlobalFallback(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	globalAssignees := []string{"jamesonstone"}
+	global := config.Default()
+	global.GitHub.DefaultAssignees = &globalAssignees
+	if _, _, err := config.PopulateGlobalConfig(global); err != nil {
+		t.Fatalf("config.PopulateGlobalConfig() error = %v", err)
+	}
+	projectAssignees := []string{"octocat", "@hubot"}
+	project := config.Default()
+	project.GitHub.DefaultAssignees = &projectAssignees
+	if err := config.Save(tempDir, project); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	content := readFile(t, filepath.Join(tempDir, autoAssignWorkflowPath))
+	for _, check := range []string{`"octocat"`, `"hubot"`} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected project assignee %q in workflow, got:\n%s", check, content)
+		}
+	}
+	if strings.Contains(content, "jamesonstone") {
+		t.Fatalf("project assignees should take precedence over global fallback:\n%s", content)
+	}
+}
+
+func TestRunInit_ExplicitEmptyProjectAutoAssignAssigneesSkipsGlobalFallback(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	globalAssignees := []string{"jamesonstone"}
+	global := config.Default()
+	global.GitHub.DefaultAssignees = &globalAssignees
+	if _, _, err := config.PopulateGlobalConfig(global); err != nil {
+		t.Fatalf("config.PopulateGlobalConfig() error = %v", err)
+	}
+	projectAssignees := []string{}
+	project := config.Default()
+	project.GitHub.DefaultAssignees = &projectAssignees
+	if err := config.Save(tempDir, project); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	content := readFile(t, filepath.Join(tempDir, autoAssignWorkflowPath))
+	if strings.Contains(content, "jamesonstone") {
+		t.Fatalf("explicit empty project assignees should not fall back to global config:\n%s", content)
+	}
+	if !strings.Contains(content, "const assignees = [];") {
+		t.Fatalf("expected explicit empty project assignees to render a no-op workflow, got:\n%s", content)
+	}
+}
+
+func TestRunInit_CreatesNonBlockingAutoAssignWorkflowWithoutAssignees(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	content := readFile(t, filepath.Join(tempDir, autoAssignWorkflowPath))
+	for _, check := range []string{
+		"const assignees = [];",
+		"No Kit auto-assignees configured; skipping.",
+		"continue-on-error: true",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected no-assignee workflow to contain %q, got:\n%s", check, content)
+		}
+	}
+}
+
 func TestRunInit_CreatesLoopReviewAgentConfig(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)

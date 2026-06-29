@@ -48,7 +48,7 @@ kit rm my-feature --yes --notes
 
 | Command | Description |
 | --- | --- |
-| `kit init` | Initialize project, user config, local env files, `.gitignore`, review config, and GitHub PR template. |
+| `kit init` | Initialize project, user config, local env files, `.gitignore`, review config, GitHub PR template, and optional auto-assignment workflow. |
 | `kit scaffold` | Create empty workflow document structures, support directories, and agent files. |
 
 ## Workflow
@@ -80,7 +80,7 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit capabilities` | List command capabilities, mutation behavior, network use, and important flags. |
 | `kit check <feature>` | Validate feature documents and required populated sections. |
 | `kit check --project` | Validate repo-level docs, init scaffold, and instruction contract. |
-| `kit pr fix` | Select or target an open PR and run the review feedback repair loop. |
+| `kit pr fix` | Select or target an open PR and prepare a dispatch prompt from review feedback. |
 | `kit trace <target>` | List feature verification runs or inspect one run ID. |
 | `kit replay <run-id>` | Rerun commands from a prior verification run and compare outcomes. |
 | `kit state [refresh]` | Show or refresh generated pointer-only `.kit/state.json`. |
@@ -103,7 +103,7 @@ discovery, not maintain Kit's internal command catalog.
 | `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor. |
 | `kit handoff [feature]` | Prompt the current agent session to sync docs and prepare a handoff. |
 | `kit summarize [feature]` | Output context summarization instructions. |
-| `kit dispatch` | Output a discovery-first prompt for clustering tasks and queueing subagents. |
+| `kit dispatch` | Output a discovery-first Agent Team Plan prompt for clustering tasks and queueing subagents. |
 | `kit code-review` | Output instructions for branch code review. |
 | `kit skill mine [feature]` | Output skill extraction prompt for the active coding agent. |
 
@@ -117,7 +117,9 @@ discovery, not maintain Kit's internal command catalog.
 
 ## Prompt Profiles And Subagents
 
-Prompt-producing commands default to subagent orchestration guidance. Pass
+Prompt-producing commands default to accountable-supervisor orchestration
+guidance. They use subagents only when low-overlap lanes improve correctness or
+throughput, default to at most 3 concurrent lanes, and never exceed 4. Pass
 `--single-agent` when you explicitly want to keep work in one lane.
 
 Prompt-producing commands also support `--profile=frontend` for frontend-heavy
@@ -128,20 +130,23 @@ common generated-UI pitfalls.
 
 ## Dispatch And Review Loops
 
-Use `kit dispatch` when you need formal overlap clustering and queue planning
-for a raw task set. Use the default prompt path when an agent should use
-subagents opportunistically.
+Use `kit dispatch` when you need formal overlap clustering and Agent Team Plan
+queue planning for a raw task set. Use the default prompt path when an agent
+should apply `agent-team-orchestration` opportunistically. Dispatch prompts use
+`--max-subagents` to cap concurrent spawned agents; the default is 3 and the
+hard ceiling is 4.
 
-Use `kit pr fix` as the default PR review repair entrypoint. With no flags it
+Use `kit pr fix` as the default PR review feedback entrypoint. With no flags it
 lists open pull requests in the current repository and asks which one to repair.
 Use `kit pr fix --pr <url|owner/repo#number|number>` to target a specific PR.
-The command wraps the `kit loop review --pr` repair path, so it may write
-`.kit/loops` evidence and the configured agent may edit local files, but it
-does not stage, commit, push, post PR comments, or perform GitHub delivery.
-After fixes or no-op decisions are validated, `kit pr fix` asks the delegated
-agent to resolve all matching current unresolved review threads, including
-human reviewer and CodeRabbit feedback, through
-`kit dispatch --pr <target> --resolve --yes`.
+The command uses the same prompt-producing path as `kit dispatch --pr`: it
+prefills the editor from unresolved, non-outdated review threads, lets you edit
+the task list, and copies the resulting dispatch prompt for a coding agent. It
+does not run the loop agent, edit files, write `.kit/loops` evidence, stage,
+commit, push, post PR comments, resolve review threads, or perform GitHub
+delivery. The generated prompt tells the coding agent to run a post-push
+reflection cycle, confirm the PR head still matches its pushed commit, and only
+then resolve verified addressed conversations.
 
 Use `kit dispatch --pr <url|number>` to prefill the dispatch editor from
 unresolved, non-outdated GitHub PR review threads. Add `--coderabbit` to keep
@@ -150,7 +155,9 @@ only CodeRabbit-authored review comments.
 After fixes or no-op decisions are complete, use
 `kit dispatch --pr <target> --resolve --yes` to resolve matching unresolved
 review threads on GitHub. Resolution is an explicit GitHub mutation and is
-not part of raw dispatch prompt generation.
+not part of raw dispatch prompt generation. Use broad resolution only after the
+post-push reflection proves every active conversation in scope was addressed and
+no other code was pushed after the repair commit.
 
 Use `kit loop review` when changed code should be reviewed until the local
 agent reports at least 95% correctness and no high, medium, or
@@ -245,7 +252,11 @@ Instruction scaffold versions:
 projects. It creates missing Kit-managed files, migrates known generated v1
 instruction files to the v2 thin docs model, refreshes generated support docs,
 imports known registry rulesets, and records ruleset registry state in
-`.kit.yaml`.
+`.kit.yaml`. It also creates or refreshes the Kit-managed
+`.github/workflows/auto-assign.yml` workflow. That workflow assigns new issues
+and pull requests to `github.default_assignees` from the project `.kit.yaml`,
+falls back to the global `~/.config/kit/.kit.yaml`, and safely no-ops when no
+assignees are configured.
 
 Use `kit init --refresh --dry-run --diff` to preview managed-file changes
 without writing them.

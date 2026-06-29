@@ -40,14 +40,14 @@ references:
 ## SUMMARY
 
 - Add a new `kit dispatch` command that outputs a prompt for a coding agent to discover likely file overlap across a pasted task set, cluster overlapping work, and queue subagents safely.
-- The command must be prompt-only and must force a discovery-and-approval step before any subagent execution begins.
+- The command must be prompt-only and must force an Agent Team Plan before self-directed subagent execution begins.
 - Default command output must copy the generated prompt to the clipboard and reserve raw stdout prompt output for `--output-only`.
 
 ## PROBLEM
 
 - Kit has prompt generators for planning, catch-up, implementation, reflection, and skill mining, but no prompt-only command specialized for turning a raw task list into a safe subagent dispatch plan.
 - When users hand a coding agent a mixed set of bullets, numbered items, and paragraphs, the agent can parallelize too aggressively and create conflicting edits across the same files.
-- Users need a deterministic prompt that tells the coding agent to discover first, predict touched files, merge ambiguous overlap conservatively, and wait for approval before launching subagents.
+- Users need a deterministic prompt that tells the coding agent to discover first, predict touched files, merge ambiguous overlap conservatively, record the Agent Team Plan, and then self-direct subagent execution.
 
 ## GOALS
 
@@ -122,15 +122,15 @@ none
 - [SPEC-21] The generated prompt must instruct the coding agent to assign one subagent per overlap cluster and preserve task order within each cluster.
 - [SPEC-22] The generated prompt must instruct the coding agent to parallelize only disjoint clusters.
 - [SPEC-23] The generated prompt must instruct the coding agent to merge low-confidence or ambiguous overlap into the same cluster instead of parallelizing it.
-- [SPEC-24] The generated prompt must require a dry-run discovery report before any subagent execution.
-- [SPEC-25] The dry-run discovery report must include:
+- [SPEC-24] The generated prompt must require an Agent Team Plan before any subagent execution.
+- [SPEC-25] The Agent Team Plan must include:
   - normalized tasks
   - predicted touched files per task
   - overlap clusters
   - dispatch queue
   - subagent assignments
   - risks and unknowns
-- [SPEC-26] The generated prompt must instruct the coding agent to wait for explicit user approval after the dry-run report and before launching any subagents.
+- [SPEC-26] The generated prompt must instruct the coding agent to self-direct execution after recording the Agent Team Plan, without requiring an additional user approval gate before launching subagents.
 - [SPEC-27] The command must call `printWorkflowInstructions(...)` after prompt output when not in `--output-only` mode.
 - [SPEC-28] Root help and README must document the new command.
 - [SPEC-29] The command must support `--pr <url|number>` for fetching unresolved, non-outdated GitHub PR review threads through `gh`.

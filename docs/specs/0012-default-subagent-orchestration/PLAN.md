@@ -64,7 +64,7 @@ references:
   - `--single-agent` disables the shared orchestration suffix
 - `kit dispatch`:
   - still outputs only its dedicated dispatch-planning prompt
-  - still requires explicit approval before any subagent launch
+  - still requires an Agent Team Plan before self-directed subagent launch
 
 ## DEPENDENCIES
 

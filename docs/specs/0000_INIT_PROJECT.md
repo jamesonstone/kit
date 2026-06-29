@@ -494,6 +494,9 @@ CLI flags always override `.kit.yaml`.
 - include `.env` and `.envrc` in `.gitignore`
 - create `.coderabbit.yaml` if missing
 - create `.github/pull_request_template.md` if missing
+- create `.github/workflows/auto-assign.yml` if missing, using project-local
+  `github.default_assignees` with global config fallback and a non-blocking
+  no-op when no assignees are configured
 - create `docs/CONSTITUTION.md` if missing
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, preserve them; Kit-managed markdown documents may merge missing required sections
@@ -713,21 +716,23 @@ Flags:
 
 ---
 
-#### `kit pr fix [feature]`
+#### `kit pr fix`
 
-- provide the default human-facing PR review repair entrypoint
+- provide the default human-facing PR review feedback prompt entrypoint
 - without `--pr`, list open pull requests in the current repository and ask
   which one to repair
 - with `--pr <target>`, accept the same PR target forms as dispatch PR intake:
   full GitHub PR URL, Markdown PR link, `owner/repo#123`, or current-repo PR
   number
-- route the selected PR through the existing `kit loop review --pr` repair path
-- preserve the delivery boundary: do not stage, commit, push, or post PR
-  comments from the repair loop
-- after fixes or no-op decisions are validated, ask the delegated agent to
-  resolve all matching current unresolved review threads on the PR, including
-  human reviewer and CodeRabbit feedback, through
-  `kit dispatch --pr <target> --resolve --yes`
+- route the selected PR through the prompt-producing `kit dispatch --pr` path:
+  prepopulate the editor from unresolved review feedback, let the user edit the
+  task list, and copy the resulting dispatch prompt for a coding agent
+- preserve the delivery boundary: do not run the loop agent, edit files, write
+  `.kit/loops` evidence, stage, commit, push, post PR comments, resolve review
+  threads, or perform GitHub delivery
+- after fixes or no-op decisions are validated, resolve matching current
+  unresolved review threads on the PR, including human reviewer and CodeRabbit
+  feedback, through `kit dispatch --pr <target> --resolve --yes`
 - resolve only feedback verified as fixed or intentionally no-op; do not
   resolve unfixed, uncertain, stale, or unrelated feedback
 - keep `kit dispatch --pr <target> --coderabbit` as the raw unresolved
@@ -738,14 +743,13 @@ Flags:
 Flags:
 
 - `--pr <target>` — target a PR without using the selector
-- `--watch` — wait for CodeRabbit completion before finalizing PR mode
-- `--wait-for-coderabbit` — alias for `--watch`
-- `--dry-run` — show the first review prompt without invoking the agent
-- `--min-confidence <0-100>` — override `loop.min_confidence`
-- `--max-iterations <n>` — override `loop.max_iterations`
-- `--subagents` — allow parent review pre-analysis to choose subagents when
-  the changed-code lanes are clearly independent
-- `--json` — output the loop review report as JSON; requires `--pr`
+- `--coderabbit` — include only CodeRabbit-authored review comments
+- `--editor <cmd>` — open review tasks in a specific editor command
+- `--vim` — open review tasks in a vim-compatible editor
+- `--copy` — copy generated prompt output even with `--output-only`
+- `--output-only` — print prompt text instead of copying it
+- `--max-subagents <n>` — maximum concurrent subagents allowed in the
+  generated prompt; default 3, hard ceiling 4
 
 ---
 
@@ -1131,7 +1135,7 @@ Findings:
 
 - missing `.gitignore` or missing current Kit-managed `.gitignore` entries
 - missing local init scaffold artifacts such as `.env` or `.envrc`
-- missing tracked init scaffold artifacts such as `.coderabbit.yaml` or `.github/pull_request_template.md`
+- missing tracked init scaffold artifacts such as `.coderabbit.yaml`, `.github/pull_request_template.md`, or `.github/workflows/auto-assign.yml`
 - missing required docs or sections
 - placeholder-only required sections
 - malformed `SKILLS`, `DEPENDENCIES`, or `PROGRESS TABLE` tables

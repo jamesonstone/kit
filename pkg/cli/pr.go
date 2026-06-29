@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 
@@ -12,18 +13,28 @@ import (
 )
 
 var (
-	prFixLoopReviewRunner = runLoopReviewCommand
-	prFixOpenPRLister     = listPRFixOpenPullRequests
+	prFixDispatchRunner = runPRFixDispatchPrompt
+	prFixOpenPRLister   = listPRFixOpenPullRequests
 )
 
 type prFixOptions struct {
-	PRRef             string
-	WaitForCodeRabbit bool
-	MinConfidence     int
-	MaxIterations     int
-	DryRun            bool
-	JSON              bool
-	UseSubagents      bool
+	PRRef          string
+	CodeRabbitOnly bool
+	Copy           bool
+	Editor         string
+	MaxSubagents   int
+	OutputOnly     bool
+	UseVim         bool
+}
+
+type prFixDispatchOptions struct {
+	PRRef          string
+	CodeRabbitOnly bool
+	Copy           bool
+	Editor         string
+	MaxSubagents   int
+	OutputOnly     bool
+	UseVim         bool
 }
 
 type prFixOpenPullRequest struct {
@@ -49,10 +60,11 @@ func newPRCommand() *cobra.Command {
 		Long: `Run pull-request repair workflows.
 
 Use kit pr fix to select or target a pull request, ingest current PR review
-feedback, and run the review repair loop. Kit itself does not stage,
-commit, push, or post PR comments. The delegated repair agent is instructed to
-resolve only verified fixed or no-op review threads through the explicit
-kit dispatch --pr <target> --resolve --yes mutation path.`,
+feedback, open the dispatch editor for review, and copy the resulting agent
+prompt. Kit itself does not edit files, stage, commit, push, post PR comments,
+or resolve review threads from this path. After fixes or no-op decisions are
+complete, pushed, and reflected against the PR head, resolve handled review
+threads explicitly with kit dispatch --pr <target> --resolve --yes.`,
 	}
 	cmd.AddCommand(newPRFixCommand())
 	return cmd
@@ -61,7 +73,7 @@ kit dispatch --pr <target> --resolve --yes mutation path.`,
 func newPRFixCommand() *cobra.Command {
 	opts := prFixOptions{}
 	cmd := &cobra.Command{
-		Use:           "fix [feature]",
+		Use:           "fix",
 		Short:         "Repair a pull request from review feedback",
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -71,33 +83,29 @@ With --pr, the target can be a GitHub PR URL, a Markdown PR link,
 owner/repo#number, or a pull request number in the current repository.
 
 Without --pr, Kit lists open pull requests in the current repository and asks
-which one to repair. The selected PR is passed to the same correctness loop as
-kit loop review --pr, so local changes can be made by the configured agent but
-GitHub delivery remains a separate, explicit step. Once fixes or no-op
-decisions are validated, the delegated agent is instructed to resolve matching
-current review feedback from both human reviewers and CodeRabbit.`,
-		Args: cobra.MaximumNArgs(1),
+which one to repair. The selected PR uses the same prompt-producing flow as
+kit dispatch --pr: only active (unresolved, non-outdated) review threads
+pre-populate the editor, the saved task list becomes a dispatch prompt, and the
+prompt is copied for pasting to a coding agent. GitHub delivery remains a
+separate, explicit step. The generated prompt requires post-push reflection
+before resolving verified addressed review conversations.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runPRFixCommand(cmd, args, opts)
 		},
 	}
+	addFreeTextInputFlags(cmd, &opts.UseVim, &opts.Editor)
 	cmd.Flags().StringVar(&opts.PRRef, "pr", "", "pull request URL, Markdown link, owner/repo#number, or current-repo number")
-	cmd.Flags().BoolVar(&opts.WaitForCodeRabbit, "watch", false, "wait for CodeRabbit completion before finalizing PR-mode review")
-	cmd.Flags().BoolVar(&opts.WaitForCodeRabbit, "wait-for-coderabbit", false, "wait for CodeRabbit completion before finalizing PR-mode review")
-	cmd.Flags().BoolVar(&opts.DryRun, "dry-run", false, "show the first review prompt without running the configured agent")
-	cmd.Flags().IntVar(&opts.MinConfidence, "min-confidence", 0, "minimum correctness percentage required to stop (0 uses loop config, goal_percentage, then 95)")
-	cmd.Flags().IntVar(&opts.MaxIterations, "max-iterations", 0, "maximum review iterations (0 uses loop config, then 20)")
-	cmd.Flags().BoolVar(&opts.UseSubagents, "subagents", false, "allow the review agent to pre-analyze and choose subagents")
-	cmd.Flags().BoolVar(&opts.JSON, "json", false, "output loop review report as JSON")
+	cmd.Flags().BoolVar(&opts.CodeRabbitOnly, "coderabbit", false, "include only CodeRabbit-authored review comments")
+	cmd.Flags().BoolVar(&opts.Copy, "copy", false, "copy prompt to clipboard even with --output-only")
+	cmd.Flags().BoolVar(&opts.OutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	cmd.Flags().IntVar(&opts.MaxSubagents, "max-subagents", defaultDispatchMaxSubagents, "maximum concurrent subagents allowed in the generated prompt; default 3, hard ceiling 4")
 	return cmd
 }
 
-func runPRFixCommand(cmd *cobra.Command, args []string, opts prFixOptions) error {
+func runPRFixCommand(cmd *cobra.Command, _ []string, opts prFixOptions) error {
 	prRef := strings.TrimSpace(opts.PRRef)
 	if prRef == "" {
-		if opts.JSON {
-			return fmt.Errorf("--json requires --pr because interactive PR selection writes human-readable output")
-		}
 		selected, err := selectPRFixOpenPullRequest(cmd.InOrStdin(), cmd.OutOrStdout())
 		if err != nil {
 			return err
@@ -105,16 +113,66 @@ func runPRFixCommand(cmd *cobra.Command, args []string, opts prFixOptions) error
 		prRef = selected
 	}
 
-	return prFixLoopReviewRunner(cmd, args, loopReviewOptions{
-		PRRef:             prRef,
-		WaitForCodeRabbit: opts.WaitForCodeRabbit,
-		MinConfidence:     opts.MinConfidence,
-		MaxIterations:     opts.MaxIterations,
-		DryRun:            opts.DryRun,
-		JSON:              opts.JSON,
-		UseSubagents:      opts.UseSubagents,
-		ResolvePRFeedback: true,
+	return prFixDispatchRunner(cmd, prFixDispatchOptions{
+		PRRef:          prRef,
+		CodeRabbitOnly: opts.CodeRabbitOnly,
+		Copy:           opts.Copy,
+		Editor:         opts.Editor,
+		MaxSubagents:   opts.MaxSubagents,
+		OutputOnly:     opts.OutputOnly,
+		UseVim:         opts.UseVim,
 	})
+}
+
+func runPRFixDispatchPrompt(cmd *cobra.Command, opts prFixDispatchOptions) error {
+	if err := validateDispatchMaxSubagents(opts.MaxSubagents); err != nil {
+		return err
+	}
+
+	inputCfg := newFreeTextInputConfig(opts.UseVim, opts.Editor, false, true)
+	prInput, found, err := loadDispatchPRInput(opts.PRRef, opts.CodeRabbitOnly, inputCfg)
+	if err != nil {
+		return err
+	}
+	if !found {
+		_, err := fmt.Fprintln(cmd.OutOrStdout(), "No actionable PR review comments found.")
+		return err
+	}
+
+	tasks, err := normalizeDispatchTasks(prInput.RawTasks)
+	if err != nil {
+		return err
+	}
+
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get working directory: %w", err)
+	}
+
+	prompt := buildDispatchPrompt(
+		tasks,
+		opts.MaxSubagents,
+		workingDirectory,
+		dispatchInputSourcePR,
+		dispatchPromptOptions{
+			CodeRabbitOnly:          opts.CodeRabbitOnly,
+			CommonReviewInstruction: prInput.CommonReviewInstruction,
+			PRTarget:                opts.PRRef,
+		},
+	)
+	if err := outputPromptWithoutSubagentsWithClipboardDefault(prompt, opts.OutputOnly, opts.Copy); err != nil {
+		return err
+	}
+
+	if !opts.OutputOnly {
+		printWorkflowInstructions("pr fix (dispatch prompt)", []string{
+			"paste the copied prompt into your coding agent",
+			"verify each finding against current code before changing files",
+			"after push-to-PR and reflection, resolve verified handled threads explicitly with kit dispatch --pr <target> --resolve --yes",
+		})
+	}
+
+	return nil
 }
 
 func listPRFixOpenPullRequests() ([]prFixOpenPullRequest, error) {

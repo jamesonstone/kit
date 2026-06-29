@@ -76,9 +76,15 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "--dry-run") {
 		t.Fatalf("expected init file writes to document dry-run, got %#v", initPayload.Command.FileWrites)
 	}
+	if !strings.Contains(initPayload.Command.FileWrites.Summary, "auto-assign.yml") {
+		t.Fatalf("expected init file writes to document auto-assign workflow, got %#v", initPayload.Command.FileWrites)
+	}
+	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "github.default_assignees") {
+		t.Fatalf("expected init file writes to document auto-assignee config fallback, got %#v", initPayload.Command.FileWrites)
+	}
 	refreshFlag := findDetailedFlag(initPayload.Command.DetailedFlagBehavior, "--refresh")
-	if refreshFlag == nil || !strings.Contains(refreshFlag.Summary, "loop.agent.command") {
-		t.Fatalf("expected --refresh flag to document loop agent backfill, got %#v", refreshFlag)
+	if refreshFlag == nil || !strings.Contains(refreshFlag.Summary, "loop.agent.command") || !strings.Contains(refreshFlag.Summary, "auto-assignment workflow") {
+		t.Fatalf("expected --refresh flag to document loop agent and auto-assignment workflow backfill, got %#v", refreshFlag)
 	}
 	if findDetailedFlag(initPayload.Command.DetailedFlagBehavior, "--diff") == nil {
 		t.Fatalf("expected init detailed flags to include --diff")
@@ -184,6 +190,13 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if yesFlag == nil || !strings.Contains(yesFlag.Summary, "confirm --resolve") {
 		t.Fatalf("expected --yes flag to document resolve confirmation, got %#v", yesFlag)
 	}
+	dispatchMaxFlag := findDetailedFlag(dispatchPayload.Command.DetailedFlagBehavior, "--max-subagents")
+	if dispatchMaxFlag == nil || !strings.Contains(dispatchMaxFlag.Summary, "default 3") || !strings.Contains(dispatchMaxFlag.Summary, "hard ceiling 4") {
+		t.Fatalf("expected dispatch --max-subagents to document default and ceiling, got %#v", dispatchMaxFlag)
+	}
+	if !strings.Contains(strings.Join(dispatchPayload.Command.Caveats, " "), "Agent Team Plan") {
+		t.Fatalf("expected dispatch caveats to document Agent Team Plan, got %#v", dispatchPayload.Command.Caveats)
+	}
 
 	loopReviewOutput, err := executeCapabilitiesCommand("--json", "loop", "review")
 	if err != nil {
@@ -211,7 +224,7 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if findDetailedFlag(loopReviewPayload.Command.DetailedFlagBehavior, "--subagents") == nil {
 		t.Fatalf("expected loop review to document --subagents")
 	}
-	if !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "one agent by default") {
+	if !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "one agent by default") || !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "hard ceiling 4") {
 		t.Fatalf("expected loop review caveats to document subagent orchestration, got %#v", loopReviewPayload.Command.Caveats)
 	}
 	if !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "--ignore-user-config") {
@@ -238,29 +251,39 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if prFixPayload.Command.Command != "pr fix" {
 		t.Fatalf("command = %q, want pr fix", prFixPayload.Command.Command)
 	}
-	if prFixPayload.Command.MutationLevel != mutationExecutesCommands {
-		t.Fatalf("expected pr fix to execute the configured repair agent, got %#v", prFixPayload.Command)
+	if prFixPayload.Command.MutationLevel != mutationNetwork {
+		t.Fatalf("expected pr fix to fetch PR feedback for prompt generation, got %#v", prFixPayload.Command)
 	}
 	if !strings.Contains(prFixPayload.Command.NetworkUse.Summary, "gh pr list") {
 		t.Fatalf("expected pr fix to document open-PR selector network use, got %#v", prFixPayload.Command.NetworkUse)
 	}
-	if !strings.Contains(prFixPayload.Command.GitMutation.Summary, "forbid staging") {
-		t.Fatalf("expected pr fix to forbid git mutation, got %#v", prFixPayload.Command.GitMutation)
+	if !strings.Contains(prFixPayload.Command.GitMutation.Summary, "none") {
+		t.Fatalf("expected pr fix to document no git mutation, got %#v", prFixPayload.Command.GitMutation)
 	}
 	if !strings.Contains(prFixPayload.Command.NetworkUse.FlagDependent, "human and CodeRabbit review threads") {
-		t.Fatalf("expected pr fix to document human and CodeRabbit resolution, got %#v", prFixPayload.Command.NetworkUse)
+		t.Fatalf("expected pr fix to document human and CodeRabbit review-thread intake, got %#v", prFixPayload.Command.NetworkUse)
 	}
 	if findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--pr") == nil {
 		t.Fatalf("expected pr fix to document --pr")
 	}
-	if findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--json") == nil {
-		t.Fatalf("expected pr fix to document --json")
+	if findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--output-only") == nil {
+		t.Fatalf("expected pr fix to document --output-only")
 	}
-	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "does not push") {
-		t.Fatalf("expected pr fix caveats to document push boundary, got %#v", prFixPayload.Command.Caveats)
+	prFixMaxFlag := findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--max-subagents")
+	if prFixMaxFlag == nil || !strings.Contains(prFixMaxFlag.Summary, "default 3") || !strings.Contains(prFixMaxFlag.Summary, "hard ceiling 4") {
+		t.Fatalf("expected pr fix --max-subagents to document default and ceiling, got %#v", prFixMaxFlag)
 	}
-	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "without `--coderabbit`") {
-		t.Fatalf("expected pr fix caveats to document all-reviewer resolution, got %#v", prFixPayload.Command.Caveats)
+	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "does not run the loop agent") {
+		t.Fatalf("expected pr fix caveats to document prompt-only dispatch behavior, got %#v", prFixPayload.Command.Caveats)
+	}
+	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "Agent Team Plan") {
+		t.Fatalf("expected pr fix caveats to document Agent Team Plan, got %#v", prFixPayload.Command.Caveats)
+	}
+	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "post-push reflection") {
+		t.Fatalf("expected pr fix caveats to document post-push reflection, got %#v", prFixPayload.Command.Caveats)
+	}
+	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "kit dispatch --pr <target> --resolve --yes") {
+		t.Fatalf("expected pr fix caveats to document explicit resolution path, got %#v", prFixPayload.Command.Caveats)
 	}
 
 	projectRefreshOutput, err := executeCapabilitiesCommand("--json", "project", "refresh")
