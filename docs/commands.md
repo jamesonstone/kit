@@ -135,6 +135,8 @@ a timestamped note template with front matter for `kind`, `source`, `status`,
 conversation context that should not enter the repository. Notes are source
 material; promote durable decisions into `SPEC.md`, `docs/CONSTITUTION.md`, or
 another canonical document before relying on them for implementation.
+Use `docs/references/rules/feature-notes.md` for the agent-facing rules on
+loading, referencing, promoting, and ignoring notes.
 
 Prompt-producing commands default to accountable-supervisor orchestration
 guidance. They use subagents only when low-overlap lanes improve correctness or

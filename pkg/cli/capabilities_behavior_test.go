@@ -69,6 +69,7 @@ func TestCapabilitiesIncludesNotesCommandGuidance(t *testing.T) {
 	for _, want := range []string{
 		"Slack excerpts",
 		"private notes",
+		"feature-notes.md",
 		"ignore .gitkeep",
 	} {
 		if !strings.Contains(combined, want) {

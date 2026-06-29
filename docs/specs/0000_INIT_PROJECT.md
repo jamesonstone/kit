@@ -623,6 +623,8 @@ CLI flags always override `.kit.yaml`.
 - preserve local files and create missing scaffold files only
 - treat notes as source material, not canonical truth; durable conclusions must
   move into `SPEC.md`, `docs/CONSTITUTION.md`, or another canonical project doc
+- use `docs/references/rules/feature-notes.md` when deciding how agents should
+  load, reference, promote, or ignore feature notes
 - keep `private/` contents ignored by git while tracking the private directory
   contract files
 - support `--add` to create a timestamped note template with front matter:

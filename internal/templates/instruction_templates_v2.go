@@ -235,6 +235,10 @@ const agentsRLM = `# RLM
 - For v2 feature-scoped work, keep must-read inputs small: the current ` + "`SPEC.md`" + ` section or decision, plus directly linked references, relationships, rules, evidence, or historical staged artifacts only when they affect that decision
 - Treat generated ` + "`.kit/state.json`" + ` and task bundles as pointer/index data; recurse back to canonical Markdown before changing behavior
 - Treat rulesets under ` + "`docs/references/rules/`" + ` as just-in-time context; load only the linked ruleset sections whose ` + "`read_policy`" + ` and ` + "`applies_to`" + ` match the current decision
+- Treat ` + "`docs/notes/<feature>`" + ` as optional source material, not canonical truth; load ` + "`docs/references/rules/feature-notes.md`" + ` when notes may materially affect the task
+- For feature notes, read ` + "`docs/notes/<feature>/README.md`" + ` when the notes contract is unclear, then inspect only relevant files under ` + "`inbox/`" + `, ` + "`references/`" + `, or ` + "`responses/`" + `
+- Do not load every note by default, ignore ` + "`.gitkeep`" + ` placeholders, and do not read ` + "`private/`" + ` unless the user explicitly points to local private context
+- Promote durable conclusions from notes into ` + "`SPEC.md`" + `, ` + "`docs/CONSTITUTION.md`" + `, or durable references, and record materially used note files in front matter references
 - Load ` + "`docs/references/rules/agent-team-orchestration.md`" + ` only when the immediate decision includes execution topology, subagent lanes, or read-only verification; do not load it for trivial single-lane tasks
 - Use indices first: start with ` + "`kit map <feature>`" + ` and ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` to shortlist candidate prior features under ` + "`docs/specs/`" + `
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
