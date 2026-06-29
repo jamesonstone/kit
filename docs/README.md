@@ -42,4 +42,4 @@ Use this directory as the durable documentation map for Kit. The root
 
 - `docs/specs/<feature>/SPEC.md` is the v2 durable feature workflow artifact.
 - Legacy `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files may exist under feature directories as historical staged artifacts.
-- `docs/notes/<feature>/` stores optional supporting materials, screenshots, references, and design inputs.
+- `docs/notes/<feature>/` stores optional source material, screenshots, references, draft responses, design inputs, and gitignored private conversation context.
