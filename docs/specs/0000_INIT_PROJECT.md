@@ -509,6 +509,9 @@ CLI flags always override `.kit.yaml`.
 - support `--refresh` backfilling or upgrading known generated default `loop.agent.command` config needed by `kit loop review`
 - support `--refresh --dry-run --diff` to print planned Kit-managed file changes without writing them
 - support `--refresh --force` for generated documentation and ruleset overwrites
+- after full `--refresh --force`, copy a documentation review prompt to the
+  clipboard so an agent can update `docs/CONSTITUTION.md`, agent docs,
+  references, command docs, and directly affected feature specs semantically
 - support `--refresh --file=<path> --force` for targeted per-file scaffold overwrites
 
 ---

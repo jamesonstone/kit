@@ -281,3 +281,9 @@ assignees are configured.
 
 Use `kit init --refresh --dry-run --diff` to preview managed-file changes
 without writing them.
+
+Use `kit init --refresh --force` after reviewing local generated-file changes
+when you want to accept refreshed generated guidance. After the structural
+refresh completes, Kit copies a documentation review prompt to the clipboard so
+an agent can update `docs/CONSTITUTION.md`, agent docs, references, command
+docs, and directly affected feature specs semantically.

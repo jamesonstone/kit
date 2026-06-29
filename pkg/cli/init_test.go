@@ -404,6 +404,14 @@ func TestRunInitRefresh_ForceIsIdempotentAfterConvergence(t *testing.T) {
 		initRefresh = true
 		initForce = true
 
+		previous := clipboardCopyFunc
+		defer func() {
+			clipboardCopyFunc = previous
+		}()
+		clipboardCopyFunc = func(text string) error {
+			return nil
+		}
+
 		output = captureStdout(t, func() {
 			if err := runInit(initCmd, nil); err != nil {
 				t.Fatalf("second force refresh error = %v", err)
@@ -423,6 +431,70 @@ func TestRunInitRefresh_ForceIsIdempotentAfterConvergence(t *testing.T) {
 	}
 	if !strings.Contains(output, "No Kit-managed project changes needed.") {
 		t.Fatalf("expected converged force refresh to report no changes, got:\n%s", output)
+	}
+}
+
+func TestRunInitRefreshForceCopiesDocumentationPrompt(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	var copied string
+	withInitFlags(t, func() {
+		initRefresh = true
+		initForce = true
+
+		previous := clipboardCopyFunc
+		defer func() {
+			clipboardCopyFunc = previous
+		}()
+		clipboardCopyFunc = func(text string) error {
+			copied = text
+			return nil
+		}
+
+		output := captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("force refresh error = %v", err)
+			}
+		})
+
+		for _, want := range []string{
+			"Documentation refresh prompt:",
+			"Copied the prepared text to the clipboard.",
+			"Paste the copied prompt into your agent to review semantic project documentation updates",
+		} {
+			if !strings.Contains(output, want) {
+				t.Fatalf("expected force refresh output to contain %q, got:\n%s", want, output)
+			}
+		}
+		if strings.Contains(output, "Post Init Refresh Documentation Review") {
+			t.Fatalf("expected force refresh output not to print raw prompt, got:\n%s", output)
+		}
+	})
+
+	for _, want := range []string{
+		"## Post Init Refresh Documentation Review",
+		"docs/CONSTITUTION.md",
+		"docs/agents",
+		"docs/references",
+		"kit check --project",
+		"no documentation updates needed",
+	} {
+		if !strings.Contains(copied, want) {
+			t.Fatalf("expected copied prompt to contain %q, got:\n%s", want, copied)
+		}
 	}
 }
 
