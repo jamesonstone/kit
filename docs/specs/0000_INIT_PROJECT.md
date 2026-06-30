@@ -898,12 +898,19 @@ Flags:
 - default text output remains focused on the active feature only
 - show current summary, phase, paused state, file presence, progress, and next
   recommended action for the active feature
-- keep the existing default `--json` payload shape for the active-feature view
+- include a compact Kit-managed files section that reports whether generated
+  project files are locally unsynced and whether locally tracked registry rules
+  are conflict, local-custom, or missing
+- keep the existing default `--json` active-feature fields while adding a
+  top-level `kit_managed` object for managed-file and registry sync state
 - support `--all` as the explicit fleet overview mode
 - `--all` text output shows every feature in a terminal-friendly fixed-width
   lifecycle matrix with paused or backlog state and available task progress
 - `--all` includes removed feature tombstones with `State` set to `REMOVED`
   and a notes-retention marker
+- support `--sync` to fetch the Kit ruleset registry from GitHub and report
+  remote registry-rule staleness; default status remains local-only and performs
+  no network access
 - when writing to a terminal, status views may color lifecycle markers and
   state labels for scanability without changing non-TTY output
 - `--all --json` uses a dedicated all-features payload and does not replace the

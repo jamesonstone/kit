@@ -76,8 +76,9 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 
 | Command | Description |
 | --- | --- |
-| `kit status` | Show active feature status, including paused state; supports `--json`. |
-| `kit status --all` | Show the project-wide lifecycle matrix with state and task progress. |
+| `kit status` | Show active feature status, local Kit-managed file sync state, and project refresh status; supports `--json`. |
+| `kit status --all` | Show the project-wide lifecycle matrix plus Kit-managed sync state. |
+| `kit status --sync` | Fetch the Kit ruleset registry and report remote registry-rule staleness. |
 | `kit map [feature]` | Select or show a feature map; supports `--all` for the full project document map. |
 | `kit capabilities` | List command capabilities, mutation behavior, network use, and important flags. |
 | `kit check <feature>` | Validate feature documents and required populated sections. |
