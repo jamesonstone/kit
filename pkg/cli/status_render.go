@@ -9,13 +9,23 @@ import (
 )
 
 func outputNoActiveFeature(w io.Writer, asJSON bool, version string, backlogCount int) error {
+	return outputNoActiveFeatureWithManagedStatus(w, asJSON, version, backlogCount, nil)
+}
+
+func outputNoActiveFeatureWithManagedStatus(
+	w io.Writer,
+	asJSON bool,
+	version string,
+	backlogCount int,
+	kitManaged *statusKitManagedSummary,
+) error {
 	message := "No active feature in progress"
 	if backlogCount > 0 {
 		message = fmt.Sprintf("No active feature in progress (%d backlog item(s) available)", backlogCount)
 	}
 
 	if asJSON {
-		data, err := json.MarshalIndent(statusJSONPayload(nil, version, message), "", "  ")
+		data, err := json.MarshalIndent(statusJSONPayload(nil, version, message, kitManaged), "", "  ")
 		if err != nil {
 			return err
 		}
@@ -53,11 +63,23 @@ func outputNoActiveFeature(w io.Writer, asJSON bool, version string, backlogCoun
 		return err
 	}
 	_, err := fmt.Fprintln(w, style.muted(formatKitVersionInfo(version)))
-	return err
+	if err != nil {
+		return err
+	}
+	return outputStatusKitManagedSummaryForHuman(w, kitManaged)
 }
 
 func outputStatusJSON(w io.Writer, status *feature.FeatureStatus, version string) error {
-	data, err := json.MarshalIndent(statusJSONPayload(status, version, ""), "", "  ")
+	return outputStatusJSONWithManagedStatus(w, status, version, nil)
+}
+
+func outputStatusJSONWithManagedStatus(
+	w io.Writer,
+	status *feature.FeatureStatus,
+	version string,
+	kitManaged *statusKitManagedSummary,
+) error {
+	data, err := json.MarshalIndent(statusJSONPayload(status, version, "", kitManaged), "", "  ")
 	if err != nil {
 		return err
 	}
@@ -173,14 +195,19 @@ func outputAllFeaturesStatusJSON(
 	entries []allFeatureStatusEntry,
 	backlogCount int,
 	version string,
+	kitManaged ...*statusKitManagedSummary,
 ) error {
-	data, err := json.MarshalIndent(map[string]interface{}{
+	payload := map[string]interface{}{
 		"mode":           "all",
 		"kit_version":    version,
 		"active_feature": activeStatus,
 		"backlog_count":  backlogCount,
 		"features":       entries,
-	}, "", "  ")
+	}
+	if len(kitManaged) > 0 && kitManaged[0] != nil {
+		payload["kit_managed"] = kitManaged[0]
+	}
+	data, err := json.MarshalIndent(payload, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -268,6 +295,7 @@ func statusJSONPayload(
 	status *feature.FeatureStatus,
 	version string,
 	message string,
+	kitManaged ...*statusKitManagedSummary,
 ) map[string]interface{} {
 	output := map[string]interface{}{
 		"active_feature": status,
@@ -275,6 +303,9 @@ func statusJSONPayload(
 	}
 	if message != "" {
 		output["message"] = message
+	}
+	if len(kitManaged) > 0 && kitManaged[0] != nil {
+		output["kit_managed"] = kitManaged[0]
 	}
 	return output
 }

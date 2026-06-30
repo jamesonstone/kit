@@ -95,6 +95,7 @@ func formatStatusFeatureID(number int) string {
 func init() {
 	statusCmd.Flags().Bool("json", false, "output status as JSON")
 	statusCmd.Flags().Bool("all", false, "show all features instead of only the active feature")
+	statusCmd.Flags().Bool("sync", false, "fetch the ruleset registry and check for remote Kit-managed updates")
 	rootCmd.AddCommand(statusCmd)
 }
 
@@ -108,6 +109,7 @@ type allFeatureStatusEntry struct {
 func runStatus(cmd *cobra.Command, args []string) error {
 	jsonOutput, _ := cmd.Flags().GetBool("json")
 	allOutput, _ := cmd.Flags().GetBool("all")
+	syncChecked, _ := cmd.Flags().GetBool("sync")
 	version := currentVersion()
 
 	projectRoot, err := config.FindProjectRoot()
@@ -119,11 +121,15 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	kitManaged, err := buildStatusKitManagedSummary(cmd.Context(), projectRoot, cfg, syncChecked)
+	if err != nil {
+		return err
+	}
 
 	specsDir := cfg.SpecsPath(projectRoot)
 
 	if allOutput {
-		return runStatusAll(cmd, projectRoot, specsDir, cfg, jsonOutput, version)
+		return runStatusAll(cmd, projectRoot, specsDir, cfg, jsonOutput, version, kitManaged)
 	}
 
 	// find active feature
@@ -137,10 +143,10 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		if backlogErr != nil {
 			return fmt.Errorf("failed to list backlog items: %w", backlogErr)
 		}
-		if err := outputNoActiveFeature(cmd.OutOrStdout(), jsonOutput, version, len(backlog)); err != nil {
+		if err := outputNoActiveFeatureWithManagedStatus(cmd.OutOrStdout(), jsonOutput, version, len(backlog), kitManaged); err != nil {
 			return err
 		}
-		return outputProjectRefreshStatusForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput)
+		return outputProjectStatusSummariesForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput, nil)
 	}
 
 	// get full status
@@ -151,13 +157,13 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	attachFeatureNotesStatus(projectRoot, status, feat.DirName)
 
 	if jsonOutput {
-		return outputStatusJSON(cmd.OutOrStdout(), status, version)
+		return outputStatusJSONWithManagedStatus(cmd.OutOrStdout(), status, version, kitManaged)
 	}
 
 	if err := outputStatusText(cmd.OutOrStdout(), status, version); err != nil {
 		return err
 	}
-	return outputProjectRefreshStatusForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput)
+	return outputProjectStatusSummariesForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput, kitManaged)
 }
 
 func runStatusAll(
@@ -167,6 +173,7 @@ func runStatusAll(
 	cfg *config.Config,
 	jsonOutput bool,
 	version string,
+	kitManaged *statusKitManagedSummary,
 ) error {
 	activeFeat, err := feature.FindActiveFeatureWithState(specsDir, cfg)
 	if err != nil {
@@ -188,13 +195,29 @@ func runStatusAll(
 	}
 
 	if jsonOutput {
-		return outputAllFeaturesStatusJSON(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version)
+		return outputAllFeaturesStatusJSON(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version, kitManaged)
 	}
 
 	if err := outputAllFeaturesStatusText(cmd.OutOrStdout(), activeStatus, entries, backlogCount, version); err != nil {
 		return err
 	}
-	return outputProjectRefreshStatusForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput)
+	return outputProjectStatusSummariesForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput, kitManaged)
+}
+
+func outputProjectStatusSummariesForHuman(
+	out io.Writer,
+	projectRoot string,
+	cfg *config.Config,
+	jsonOutput bool,
+	kitManaged *statusKitManagedSummary,
+) error {
+	if jsonOutput {
+		return nil
+	}
+	if err := outputStatusKitManagedSummaryForHuman(out, kitManaged); err != nil {
+		return err
+	}
+	return outputProjectRefreshStatusForHuman(out, projectRoot, cfg, jsonOutput)
 }
 
 func outputProjectRefreshStatusForHuman(out io.Writer, projectRoot string, cfg *config.Config, jsonOutput bool) error {
