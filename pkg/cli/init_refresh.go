@@ -85,6 +85,13 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 		return err
 	}
 	changes = append(changes, scaffoldChanges...)
+	readmeChange, err := planRefreshReadmeFile(projectRoot, cfg, targets)
+	if err != nil {
+		return err
+	}
+	if readmeChange != nil {
+		changes = append(changes, *readmeChange)
+	}
 	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets)
 	if err != nil {
 		return err
@@ -164,6 +171,7 @@ func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map
 		codeRabbitConfigPath:                   true,
 		pullRequestTemplatePath:                true,
 		autoAssignWorkflowPath:                 true,
+		readmePath:                             true,
 		cfg.ConstitutionPath:                   true,
 		filepath.ToSlash(cfg.ConstitutionPath): true,
 	}
