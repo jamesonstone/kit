@@ -79,7 +79,7 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(initPayload.Command.FileWrites.Summary, "auto-assign.yml") {
 		t.Fatalf("expected init file writes to document auto-assign workflow, got %#v", initPayload.Command.FileWrites)
 	}
-	if !strings.Contains(initPayload.Command.FileWrites.Summary, "README.md managed status badges") {
+	if !strings.Contains(initPayload.Command.FileWrites.Summary, "README.md managed status badges and final Maintainers section") {
 		t.Fatalf("expected init file writes to document README badge management, got %#v", initPayload.Command.FileWrites)
 	}
 	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "github.default_assignees") {
@@ -88,12 +88,15 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "github.repository") {
 		t.Fatalf("expected init file writes to document README badge repository source, got %#v", initPayload.Command.FileWrites)
 	}
+	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "jamesonstone attribution") {
+		t.Fatalf("expected init file writes to document README Maintainers attribution, got %#v", initPayload.Command.FileWrites)
+	}
 	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "documentation review prompt") {
 		t.Fatalf("expected init file writes to document force refresh prompt, got %#v", initPayload.Command.FileWrites)
 	}
 	refreshFlag := findDetailedFlag(initPayload.Command.DetailedFlagBehavior, "--refresh")
-	if refreshFlag == nil || !strings.Contains(refreshFlag.Summary, "loop.agent.command") || !strings.Contains(refreshFlag.Summary, "auto-assignment workflow") || !strings.Contains(refreshFlag.Summary, "README.md managed badges") {
-		t.Fatalf("expected --refresh flag to document loop agent, README badge, and auto-assignment workflow backfill, got %#v", refreshFlag)
+	if refreshFlag == nil || !strings.Contains(refreshFlag.Summary, "loop.agent.command") || !strings.Contains(refreshFlag.Summary, "auto-assignment workflow") || !strings.Contains(refreshFlag.Summary, "README.md managed badges and Maintainers section") {
+		t.Fatalf("expected --refresh flag to document loop agent, README badge, Maintainers, and auto-assignment workflow backfill, got %#v", refreshFlag)
 	}
 	if findDetailedFlag(initPayload.Command.DetailedFlagBehavior, "--diff") == nil {
 		t.Fatalf("expected init detailed flags to include --diff")

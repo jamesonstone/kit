@@ -36,6 +36,7 @@ read_policy_default: conditional
   - one plain-language product paragraph
   - compact badge/status-badge line or block when badges already exist, are requested, or are managed by Kit
   - subsequent sections such as boundaries, setup, API, architecture, or contribution guidance
+  - final `## Maintainers` section
 - The fenced header block is required and must be the first substantial project-identity content.
 - The header block must use this shape:
 
@@ -65,6 +66,16 @@ read_policy_default: conditional
 - Do not include a License badge in the default Kit-managed badge set.
 - When `kit init --refresh` manages badges, preserve the Kit marker comments around the badge block and update only the block between those markers.
 - Keep installation details, long architecture notes, changelogs, and contribution guidance after the header, tagline, and opening paragraph.
+- Every top-level `README.md` must end with a `## Maintainers` section as the last H2 header.
+- The default Kit-managed maintainer copy is:
+
+```markdown
+## Maintainers
+
+Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+```
+
+- Use `## Maintainers`, not `## Maintainer`, even when there is currently only one maintainer.
 - Preserve existing stronger brand guidance when a repository already has an intentional, current README identity.
 - Do not invent product claims, operational capabilities, compliance posture, customer names, or integrations that are not supported by repository evidence.
 
@@ -74,6 +85,7 @@ read_policy_default: conditional
 - Treating badges as a substitute for the fenced identity block or product paragraph.
 - Adding a default License badge when the project did not explicitly request one.
 - Editing outside the Kit-managed badge marker block when the only requested change is refreshing default badges.
+- Leaving `## Maintainer` singular or any other H2 section after `## Maintainers`.
 - Using a decorative banner without a tagline.
 - Putting the tagline outside the fenced `text` block.
 - Writing a tagline that is vague, marketing-only, or disconnected from what the repository actually does.
@@ -93,6 +105,8 @@ Before completing README work, verify:
 - Badges and status badges, when present, do not replace or obscure the identity opening.
 - Kit-managed badge blocks include Last commit, Open issues, Pull requests, Release, and a CI badge only when a conventional CI workflow exists.
 - Kit-managed badge blocks do not include a License badge by default.
+- `README.md` ends with `## Maintainers` as the last H2 header.
+- The Maintainers section includes [Jameson](https://github.com/jamesonstone) and the `jamesonstone` GitHub username.
 - The opening does not claim unsupported capabilities, integrations, users, or status.
 - Setup, architecture, and contribution sections remain below the identity opening.
 
@@ -122,6 +136,10 @@ Example Service is the Go service that receives partner events, validates payloa
 <!-- BEGIN KIT-MANAGED README BADGES -->
 [![Last commit](https://img.shields.io/github/last-commit/acme/example-service)](https://github.com/acme/example-service/commits) [![Open issues](https://img.shields.io/github/issues/acme/example-service)](https://github.com/acme/example-service/issues) [![Pull requests](https://img.shields.io/github/issues-pr/acme/example-service)](https://github.com/acme/example-service/pulls) [![CI](https://github.com/acme/example-service/actions/workflows/ci.yml/badge.svg)](https://github.com/acme/example-service/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/acme/example-service)](https://github.com/acme/example-service/releases)
 <!-- END KIT-MANAGED README BADGES -->
+
+## Maintainers
+
+Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
 ````
 
 Compact wordmark variant:
@@ -134,4 +152,8 @@ ACME WORKER
 ```
 
 Acme Worker runs account maintenance jobs, reconciles partner state, and emits operational facts for the Acme platform.
+
+## Maintainers
+
+Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
 ````

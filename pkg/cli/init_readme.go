@@ -27,14 +27,6 @@ func planRefreshReadmeFile(
 		return nil, nil
 	}
 
-	repository, err := readmeGitHubRepository(projectRoot, cfg)
-	if err != nil {
-		if len(targets) > 0 {
-			return nil, err
-		}
-		return nil, nil
-	}
-
 	path := filepath.Join(projectRoot, readmePath)
 	exists := document.Exists(path)
 	before := ""
@@ -46,8 +38,14 @@ func planRefreshReadmeFile(
 		before = string(data)
 	}
 
-	badgeBlock := managedReadmeBadgeBlock(repository, readmeCIWorkflow(projectRoot))
-	after := upsertReadmeBadgeBlock(before, repository, badgeBlock)
+	after := before
+	if repository, err := readmeGitHubRepository(projectRoot, cfg); err == nil {
+		badgeBlock := managedReadmeBadgeBlock(repository, readmeCIWorkflow(projectRoot))
+		after = upsertReadmeBadgeBlock(after, repository, badgeBlock)
+	} else if !exists {
+		after = newReadmeStarterForName(filepath.Base(projectRoot), "")
+	}
+	after = upsertReadmeMaintainersSection(after)
 	if !exists {
 		return newInitRefreshFileChange(projectRoot, readmePath, before, after, instructionFileCreated), nil
 	}
@@ -249,10 +247,18 @@ func joinReadmeParts(before, middle, after string) string {
 
 func newReadmeStarter(repository, badgeBlock string) string {
 	name := strings.TrimSpace(strings.TrimPrefix(repository, strings.Split(repository, "/")[0]+"/"))
+	return newReadmeStarterForName(name, badgeBlock)
+}
+
+func newReadmeStarterForName(name, badgeBlock string) string {
 	title := readmeTitle(name)
 	wordmark := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(name, "-", " "), "_", " "))
 	paragraph := fmt.Sprintf("%s is a Kit-managed project. Update this README with the repository purpose, boundaries, setup, and operating notes.", title)
-	return fmt.Sprintf("```text\n%s\n\n                         %s\n```\n\n%s\n\n%s", wordmark, readmeStarterTagline, paragraph, badgeBlock)
+	content := fmt.Sprintf("```text\n%s\n\n                         %s\n```\n\n%s\n", wordmark, readmeStarterTagline, paragraph)
+	if strings.TrimSpace(badgeBlock) == "" {
+		return content
+	}
+	return joinReadmeParts(content, badgeBlock, "")
 }
 
 func readmeTitle(name string) string {

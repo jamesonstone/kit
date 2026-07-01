@@ -49,7 +49,7 @@ kit rm my-feature --yes --notes
 
 | Command | Description |
 | --- | --- |
-| `kit init` | Initialize project, user config, local env files, `.gitignore`, review config, GitHub PR template, managed README badges, and optional auto-assignment workflow. |
+| `kit init` | Initialize project, user config, local env files, `.gitignore`, review config, GitHub PR template, managed README badges and Maintainers section, and optional auto-assignment workflow. |
 | `kit scaffold` | Create empty workflow document structures, support directories, and agent files. |
 
 ## Workflow
@@ -278,7 +278,8 @@ imports known registry rulesets, and records ruleset registry state in
 when a GitHub repository is configured or discoverable from `origin`. Default
 badges cover last commit, open issues, pull requests, releases, and conventional
 CI workflows; License badges are not added by default. It also creates or
-refreshes the Kit-managed
+refreshes `## Maintainers` as the last README H2 with the managed Jameson /
+`jamesonstone` attribution. It also creates or refreshes the Kit-managed
 `.github/workflows/auto-assign.yml` workflow. That workflow assigns new issues
 and pull requests to `github.default_assignees` from the project `.kit.yaml`,
 falls back to the global `~/.config/kit/.kit.yaml`, and safely no-ops when no

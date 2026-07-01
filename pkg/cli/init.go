@@ -33,7 +33,7 @@ Creates:
   - .coderabbit.yaml review configuration file
   - .github/pull_request_template.md pull request template
   - .github/workflows/auto-assign.yml issue and pull request assignment workflow
-  - README.md Kit-managed status badges when a GitHub repository is configured or discoverable
+  - README.md Kit-managed status badges and final Maintainers section
   - ~/.config/kit/.kit.yaml global configuration file
   - docs/CONSTITUTION.md
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
