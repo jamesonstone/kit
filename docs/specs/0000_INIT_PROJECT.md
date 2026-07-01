@@ -497,6 +497,10 @@ CLI flags always override `.kit.yaml`.
 - create `.github/workflows/auto-assign.yml` if missing, using project-local
   `github.default_assignees` with global config fallback and a non-blocking
   no-op when no assignees are configured
+- create or refresh the Kit-managed `README.md` badge block when a GitHub
+  repository is configured or discoverable from `origin`; default badges cover
+  last commit, open issues, pull requests, releases, and conventional CI
+  workflows, with no default License badge
 - create `docs/CONSTITUTION.md` if missing
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, preserve them; Kit-managed markdown documents may merge missing required sections
@@ -507,6 +511,7 @@ CLI flags always override `.kit.yaml`.
 - support `--copy` to also copy the prompt when `--output-only` is set
 - support `--refresh` as the existing-project structural refresh mode for Kit-managed files
 - support `--refresh` backfilling or upgrading known generated default `loop.agent.command` config needed by `kit loop review`
+- support `--refresh --file=README.md` for targeted README badge-block adoption or update
 - support `--refresh --dry-run --diff` to print planned Kit-managed file changes without writing them
 - support `--refresh --force` for generated documentation and ruleset overwrites
 - after full `--refresh --force`, copy a documentation review prompt to the

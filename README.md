@@ -19,6 +19,10 @@
 🎒 **Kit v2 Thought-Work Harness** is a portable, agent-agnostic harness for
 disciplined thought work.
 
+<!-- BEGIN KIT-MANAGED README BADGES -->
+[![Last commit](https://img.shields.io/github/last-commit/jamesonstone/kit)](https://github.com/jamesonstone/kit/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/kit)](https://github.com/jamesonstone/kit/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/kit)](https://github.com/jamesonstone/kit/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/kit)](https://github.com/jamesonstone/kit/releases)
+<!-- END KIT-MANAGED README BADGES -->
+
 Its strongest engine is a document-first, spec-driven workflow for software
 projects, but the same structure works for research, operations, writing,
 policy, strategy, and other work where constraints, evidence, reflection, and

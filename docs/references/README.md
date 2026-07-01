@@ -10,6 +10,7 @@
 - Use `rules/command-capabilities.md` only inside the Kit source repository for maintainer command-surface work
 - Use `rules/agent-team-orchestration.md` when deciding supervisor/subagent topology, concurrency, file-overlap handling, or read-only verification lanes
 - Use `rules/feature-notes.md` when deciding how to load, reference, promote, or ignore source material under `docs/notes/<feature>`
+- Use `rules/readme-header-tagline.md` when creating or materially updating top-level README openings
 - Use `kit rules add` to import or activate available registry rulesets from the Kit GitHub `main` branch
 - Use `kit rules view <slug>` to preview a local or registry ruleset before importing it
 - Use `kit init --refresh` to adopt existing registry rules into `.kit.yaml` registry state and pick up safe upstream ruleset updates
