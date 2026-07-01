@@ -501,6 +501,8 @@ CLI flags always override `.kit.yaml`.
   repository is configured or discoverable from `origin`; default badges cover
   last commit, open issues, pull requests, releases, and conventional CI
   workflows, with no default License badge
+- create or refresh `## Maintainers` as the last README H2 with the managed
+  Jameson / `jamesonstone` attribution
 - create `docs/CONSTITUTION.md` if missing
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, preserve them; Kit-managed markdown documents may merge missing required sections
@@ -511,7 +513,8 @@ CLI flags always override `.kit.yaml`.
 - support `--copy` to also copy the prompt when `--output-only` is set
 - support `--refresh` as the existing-project structural refresh mode for Kit-managed files
 - support `--refresh` backfilling or upgrading known generated default `loop.agent.command` config needed by `kit loop review`
-- support `--refresh --file=README.md` for targeted README badge-block adoption or update
+- support `--refresh --file=README.md` for targeted README badge-block and
+  Maintainers section adoption or update
 - support `--refresh --dry-run --diff` to print planned Kit-managed file changes without writing them
 - support `--refresh --force` for generated documentation and ruleset overwrites
 - after full `--refresh --force`, copy a documentation review prompt to the

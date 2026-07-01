@@ -120,18 +120,6 @@ See [docs/commands.md](docs/commands.md) for the full command guide.
 
 MIT
 
-## Maintainer
+## Maintainers
 
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/jamesonstone">
-        <img src="https://github.com/jamesonstone.png" width="100px;" alt="Jameson Stone"/>
-        <br />
-        <sub><b>Jameson Stone</b></sub>
-      </a>
-      <br />
-      <sub>Lead Maintainer</sub>
-    </td>
-  </tr>
-</table>
+Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
