@@ -276,14 +276,16 @@ instruction files to the v2 thin docs model, refreshes generated support docs,
 imports known registry rulesets, and records ruleset registry state in
 `.kit.yaml`. It also creates or refreshes the Kit-managed README badge block
 when a GitHub repository is configured or discoverable from `origin`. Default
-badges cover last commit, open issues, pull requests, releases, and conventional
-CI workflows; License badges are not added by default. It also creates or
-refreshes `## Maintainers` as the last README H2 with the managed Jameson /
-`jamesonstone` attribution. It also creates or refreshes the Kit-managed
-`.github/workflows/auto-assign.yml` workflow. That workflow assigns new issues
-and pull requests to `github.default_assignees` from the project `.kit.yaml`,
-falls back to the global `~/.config/kit/.kit.yaml`, and safely no-ops when no
-assignees are configured.
+public-repository badges cover last commit, open issues, pull requests,
+releases, and conventional CI workflows. Private repositories skip public
+Shields GitHub metadata badges and keep only native GitHub Actions workflow
+badges when a conventional workflow exists. License badges are not added by
+default. It also creates or refreshes `## Maintainers` as the last README H2
+with the managed Jameson / `jamesonstone` attribution. It also creates or
+refreshes the Kit-managed `.github/workflows/auto-assign.yml` workflow. That
+workflow assigns new issues and pull requests to `github.default_assignees` from
+the project `.kit.yaml`, falls back to the global `~/.config/kit/.kit.yaml`, and
+safely no-ops when no assignees are configured.
 
 Use `kit init --refresh --dry-run --diff` to preview managed-file changes
 without writing them.

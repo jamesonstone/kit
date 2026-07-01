@@ -498,9 +498,11 @@ CLI flags always override `.kit.yaml`.
   `github.default_assignees` with global config fallback and a non-blocking
   no-op when no assignees are configured
 - create or refresh the Kit-managed `README.md` badge block when a GitHub
-  repository is configured or discoverable from `origin`; default badges cover
-  last commit, open issues, pull requests, releases, and conventional CI
-  workflows, with no default License badge
+  repository is configured or discoverable from `origin`; default public
+  repository badges cover last commit, open issues, pull requests, releases,
+  and conventional CI workflows; private repositories skip public Shields GitHub
+  metadata badges and keep only native GitHub Actions workflow badges when a
+  conventional workflow exists; no default License badge is added
 - create or refresh `## Maintainers` as the last README H2 with the managed
   Jameson / `jamesonstone` attribution
 - create `docs/CONSTITUTION.md` if missing

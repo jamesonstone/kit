@@ -57,12 +57,13 @@ read_policy_default: conditional
 - Follow the header block with one plain-language paragraph that starts with the project or product name and explains what it is, who it serves, and what it does.
 - Keep the opening paragraph concrete. Prefer product, service, workflow, and ownership nouns over generic adjectives.
 - Badges and status badges are allowed near the top of the README when they are useful and compact.
-- For Kit-managed repositories, include the default out-of-the-box badge set unless the user explicitly declines it:
+- For Kit-managed public repositories, include the default out-of-the-box badge set unless the user explicitly declines it:
   - Last commit: `https://img.shields.io/github/last-commit/<owner>/<repo>`
   - Open issues: `https://img.shields.io/github/issues/<owner>/<repo>`
   - Pull requests: `https://img.shields.io/github/issues-pr/<owner>/<repo>`
   - Release: `https://img.shields.io/github/v/release/<owner>/<repo>`
   - CI: `https://github.com/<owner>/<repo>/actions/workflows/<workflow>.yml/badge.svg` only when a conventional CI workflow exists, such as `ci.yml`, `ci.yaml`, `test.yml`, `test.yaml`, `build.yml`, or `build.yaml`
+- For Kit-managed private repositories, do not include public Shields GitHub metadata badges because public Shields cannot authenticate to private GitHub repository metadata. Include only the native GitHub Actions workflow badge when a conventional workflow exists.
 - Do not include a License badge in the default Kit-managed badge set.
 - When `kit init --refresh` manages badges, preserve the Kit marker comments around the badge block and update only the block between those markers.
 - Keep installation details, long architecture notes, changelogs, and contribution guidance after the header, tagline, and opening paragraph.
@@ -84,6 +85,7 @@ Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`
 - Letting badges, status badges, installation commands, or a generic H1 replace the header, tagline, or concrete opening paragraph.
 - Treating badges as a substitute for the fenced identity block or product paragraph.
 - Adding a default License badge when the project did not explicitly request one.
+- Adding public Shields GitHub metadata badges to private repositories.
 - Editing outside the Kit-managed badge marker block when the only requested change is refreshing default badges.
 - Leaving `## Maintainer` singular or any other H2 section after `## Maintainers`.
 - Using a decorative banner without a tagline.
@@ -103,7 +105,8 @@ Before completing README work, verify:
 - The tagline is visually offset inside the fenced block when the wordmark is wide.
 - The first paragraph after the block starts with the project or product name and explains the repository in concrete terms.
 - Badges and status badges, when present, do not replace or obscure the identity opening.
-- Kit-managed badge blocks include Last commit, Open issues, Pull requests, Release, and a CI badge only when a conventional CI workflow exists.
+- Kit-managed public-repository badge blocks include Last commit, Open issues, Pull requests, Release, and a CI badge only when a conventional CI workflow exists.
+- Kit-managed private-repository badge blocks exclude public Shields GitHub metadata badges and include only a native CI workflow badge when a conventional workflow exists.
 - Kit-managed badge blocks do not include a License badge by default.
 - `README.md` ends with `## Maintainers` as the last H2 header.
 - The Maintainers section includes [Jameson](https://github.com/jamesonstone) and the `jamesonstone` GitHub username.

@@ -39,9 +39,9 @@ func planRefreshReadmeFile(
 	}
 
 	after := before
-	if repository, err := readmeGitHubRepository(projectRoot, cfg); err == nil {
-		badgeBlock := managedReadmeBadgeBlock(repository, readmeCIWorkflow(projectRoot))
-		after = upsertReadmeBadgeBlock(after, repository, badgeBlock)
+	if repo, err := readmeGitHubRepository(projectRoot, cfg); err == nil {
+		badgeBlock := managedReadmeBadgeBlock(repo.Repository, readmeCIWorkflow(projectRoot), repo.Visibility)
+		after = upsertReadmeBadgeBlock(after, repo.Repository, badgeBlock)
 	} else if !exists {
 		after = newReadmeStarterForName(filepath.Base(projectRoot), "")
 	}
@@ -59,37 +59,14 @@ func planRefreshReadmeFile(
 	return newInitRefreshFileChange(projectRoot, readmePath, before, after, result), nil
 }
 
-func readmeGitHubRepository(projectRoot string, cfg *config.Config) (string, error) {
-	if cfg != nil {
-		if repository, ok := normalizeGitHubRepository(cfg.GitHub.Repository); ok {
-			return repository, nil
-		}
-	}
-
-	output, err := execCICommandRunner{}.Output(projectRoot, "git", "remote", "get-url", "origin")
-	if err != nil {
-		return "", fmt.Errorf("failed to resolve GitHub repository for README badges: %w", err)
-	}
-	owner, repo, err := parseGitHubRemoteURL(strings.TrimSpace(string(output)))
-	if err != nil {
-		return "", fmt.Errorf("failed to resolve GitHub repository for README badges: %w", err)
-	}
-	return owner + "/" + repo, nil
-}
-
-func normalizeGitHubRepository(raw string) (string, bool) {
-	parts := strings.Split(strings.Trim(strings.TrimSpace(raw), "/"), "/")
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return "", false
-	}
-	return parts[0] + "/" + strings.TrimSuffix(parts[1], ".git"), true
-}
-
-func managedReadmeBadgeBlock(repository, workflowPath string) string {
-	badges := []string{
-		readmeBadge("Last commit", "https://img.shields.io/github/last-commit/"+repository, "https://github.com/"+repository+"/commits"),
-		readmeBadge("Open issues", "https://img.shields.io/github/issues/"+repository, "https://github.com/"+repository+"/issues"),
-		readmeBadge("Pull requests", "https://img.shields.io/github/issues-pr/"+repository, "https://github.com/"+repository+"/pulls"),
+func managedReadmeBadgeBlock(repository, workflowPath string, visibility string) string {
+	var badges []string
+	if !strings.EqualFold(visibility, "PRIVATE") {
+		badges = append(badges,
+			readmeBadge("Last commit", "https://img.shields.io/github/last-commit/"+repository, "https://github.com/"+repository+"/commits"),
+			readmeBadge("Open issues", "https://img.shields.io/github/issues/"+repository, "https://github.com/"+repository+"/issues"),
+			readmeBadge("Pull requests", "https://img.shields.io/github/issues-pr/"+repository, "https://github.com/"+repository+"/pulls"),
+		)
 	}
 	if workflowPath != "" {
 		workflowFile := filepath.Base(workflowPath)
@@ -99,11 +76,16 @@ func managedReadmeBadgeBlock(repository, workflowPath string) string {
 			"https://github.com/"+repository+"/actions/workflows/"+workflowFile,
 		))
 	}
-	badges = append(badges, readmeBadge(
-		"Release",
-		"https://img.shields.io/github/v/release/"+repository,
-		"https://github.com/"+repository+"/releases",
-	))
+	if !strings.EqualFold(visibility, "PRIVATE") {
+		badges = append(badges, readmeBadge(
+			"Release",
+			"https://img.shields.io/github/v/release/"+repository,
+			"https://github.com/"+repository+"/releases",
+		))
+	}
+	if len(badges) == 0 {
+		return ""
+	}
 
 	return readmeBadgeStart + "\n" + strings.Join(badges, " ") + "\n" + readmeBadgeEnd + "\n"
 }
@@ -160,12 +142,33 @@ func upsertReadmeBadgeBlock(content, repository, badgeBlock string) string {
 		end := strings.Index(content[start:], readmeBadgeEnd)
 		if end >= 0 {
 			end = start + end + len(readmeBadgeEnd)
+			if strings.TrimSpace(badgeBlock) == "" {
+				return removeReadmeRange(content, start, end)
+			}
 			return joinReadmeParts(content[:start], badgeBlock, content[end:])
 		}
 	}
 
+	if strings.TrimSpace(badgeBlock) == "" {
+		return content
+	}
 	insertAt := readmeBadgeInsertIndex(content)
 	return joinReadmeParts(content[:insertAt], badgeBlock, content[insertAt:])
+}
+
+func removeReadmeRange(content string, start int, end int) string {
+	before := strings.TrimRight(content[:start], "\n")
+	after := strings.TrimLeft(content[end:], "\n")
+	switch {
+	case before == "" && after == "":
+		return ""
+	case before == "":
+		return after
+	case after == "":
+		return before + "\n"
+	default:
+		return before + "\n\n" + after
+	}
 }
 
 func readmeBadgeInsertIndex(content string) int {
