@@ -73,6 +73,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(initPayload.Command.NetworkUse.FlagDependent, "--refresh") {
 		t.Fatalf("expected init network use to document refresh registry fetch, got %#v", initPayload.Command.NetworkUse)
 	}
+	if !strings.Contains(initPayload.Command.NetworkUse.FlagDependent, "gh repo visibility") {
+		t.Fatalf("expected init network use to document README badge visibility lookup, got %#v", initPayload.Command.NetworkUse)
+	}
 	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "--dry-run") {
 		t.Fatalf("expected init file writes to document dry-run, got %#v", initPayload.Command.FileWrites)
 	}
@@ -87,6 +90,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "github.repository") {
 		t.Fatalf("expected init file writes to document README badge repository source, got %#v", initPayload.Command.FileWrites)
+	}
+	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "private repositories skip public Shields") {
+		t.Fatalf("expected init file writes to document private README badge behavior, got %#v", initPayload.Command.FileWrites)
 	}
 	if !strings.Contains(initPayload.Command.FileWrites.FlagDependent, "jamesonstone attribution") {
 		t.Fatalf("expected init file writes to document README Maintainers attribution, got %#v", initPayload.Command.FileWrites)

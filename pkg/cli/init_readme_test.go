@@ -12,6 +12,7 @@ func TestRunInitRefresh_AddsManagedReadmeBadgesAndStaysIdempotent(t *testing.T) 
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
+	withReadmeVisibility(t, "acme/widget", "PUBLIC")
 	cfg := config.Default()
 	cfg.GitHub.Repository = "acme/widget"
 	if err := config.Save(tempDir, cfg); err != nil {
@@ -81,6 +82,7 @@ func TestRunInitRefresh_CreatesReadmeStarterWithManagedBadges(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
+	withReadmeVisibility(t, "acme/background-worker", "PUBLIC")
 	cfg := config.Default()
 	cfg.GitHub.Repository = "acme/background-worker"
 	if err := config.Save(tempDir, cfg); err != nil {
@@ -122,6 +124,7 @@ func TestRunInitRefresh_ReplacesMaintainerSectionAndKeepsMaintainersLast(t *test
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
+	withReadmeVisibility(t, "acme/widget", "PUBLIC")
 	cfg := config.Default()
 	cfg.GitHub.Repository = "acme/widget"
 	if err := config.Save(tempDir, cfg); err != nil {
