@@ -98,16 +98,30 @@ Before completing README work, verify:
 
 ## Examples
 
-Recommended opening:
+Preferred ASCII-art opening:
 
 ````markdown
 ```text
-EXAMPLE SERVICE
+EEEE  X   X  AAA  M   M PPPP  L     EEEE
+E      X X  A   A MM MM P   P L     E
+EEE     X   AAAAA M M M PPPP  L     EEE
+E      X X  A   A M   M P     L     E
+EEEE  X   X A   A M   M P     LLLL  EEEE
+
+SSSS  EEEE RRRR  V   V III  CCCC EEEE
+S     E    R   R V   V  I  C     E
+SSSS  EEE  RRRR  V   V  I  C     EEE
+   S  E    R  R   V V   I  C     E
+SSSS  EEEE R   R   V   III  CCCC EEEE
 
                      event intake and routing for partner integrations
 ```
 
 Example Service is the Go service that receives partner events, validates payloads, records delivery facts, and routes accepted work to downstream processors.
+
+<!-- BEGIN KIT-MANAGED README BADGES -->
+[![Last commit](https://img.shields.io/github/last-commit/acme/example-service)](https://github.com/acme/example-service/commits) [![Open issues](https://img.shields.io/github/issues/acme/example-service)](https://github.com/acme/example-service/issues) [![Pull requests](https://img.shields.io/github/issues-pr/acme/example-service)](https://github.com/acme/example-service/pulls) [![CI](https://github.com/acme/example-service/actions/workflows/ci.yml/badge.svg)](https://github.com/acme/example-service/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/acme/example-service)](https://github.com/acme/example-service/releases)
+<!-- END KIT-MANAGED README BADGES -->
 ````
 
 Compact wordmark variant:
