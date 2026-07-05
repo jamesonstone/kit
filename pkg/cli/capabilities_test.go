@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "ci", "pr fix", "legacy verify", "loop review", "project refresh", "dispatch", "rules add", "skill mine"} {
+	for _, command := range []string{"capabilities", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "dispatch", "rules add", "skill mine"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
@@ -218,6 +218,33 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(dispatchPayload.Command.Caveats, " "), "Agent Team Plan") {
 		t.Fatalf("expected dispatch caveats to document Agent Team Plan, got %#v", dispatchPayload.Command.Caveats)
+	}
+
+	loopPromptOutput, err := executeCapabilitiesCommand("--json", "loop", "prompt")
+	if err != nil {
+		t.Fatalf("kit capabilities loop prompt --json error = %v", err)
+	}
+	var loopPromptPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(loopPromptOutput), &loopPromptPayload); err != nil {
+		t.Fatalf("json.Unmarshal(loop prompt) error = %v", err)
+	}
+	if loopPromptPayload.Command.Command != "loop prompt" {
+		t.Fatalf("command = %q, want loop prompt", loopPromptPayload.Command.Command)
+	}
+	if loopPromptPayload.Command.MutationLevel != mutationNone {
+		t.Fatalf("expected loop prompt to be prompt-only, got %#v", loopPromptPayload.Command)
+	}
+	if !strings.Contains(loopPromptPayload.Command.FileWrites.Summary, "none") {
+		t.Fatalf("expected loop prompt to document no file writes, got %#v", loopPromptPayload.Command.FileWrites)
+	}
+	if !strings.Contains(loopPromptPayload.Command.GitMutation.Summary, "none") {
+		t.Fatalf("expected loop prompt to document no git mutation, got %#v", loopPromptPayload.Command.GitMutation)
+	}
+	if findDetailedFlag(loopPromptPayload.Command.DetailedFlagBehavior, "--output-only") == nil {
+		t.Fatalf("expected loop prompt to document --output-only")
+	}
+	if !strings.Contains(strings.Join(loopPromptPayload.Command.WhenToUse, " "), "ad hoc") {
+		t.Fatalf("expected loop prompt guidance to document ad hoc usage, got %#v", loopPromptPayload.Command.WhenToUse)
 	}
 
 	loopReviewOutput, err := executeCapabilitiesCommand("--json", "loop", "review")

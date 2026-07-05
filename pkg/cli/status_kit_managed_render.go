@@ -23,7 +23,7 @@ func outputStatusKitManagedSummaryForHuman(out io.Writer, summary *statusKitMana
 	if err := printStatusField(out, style, "Managed files", formatManagedFileSummary(summary.ManagedFiles)); err != nil {
 		return err
 	}
-	if err := printStatusField(out, style, "Registry", formatRegistrySummary(summary.Registry, summary.SyncChecked)); err != nil {
+	if err := printStatusField(out, style, "Registry", formatRegistrySummary(summary.Registry)); err != nil {
 		return err
 	}
 	if err := printStatusKitManagedItems(out, summary.Items); err != nil {
@@ -74,11 +74,11 @@ func formatKitManagedState(style humanOutputStyle, state string) string {
 		return label
 	}
 	switch state {
-	case statusKitManagedStateSynced:
+	case statusKitManagedStateCurrent:
 		return plan + label + reset
-	case statusKitManagedStateUnsynced:
+	case statusKitManagedStateRefreshAvailable:
 		return implement + label + reset
-	case statusKitManagedStateStale:
+	case statusKitManagedStateAttentionNeeded:
 		return tasks + label + reset
 	default:
 		return dim + label + reset
@@ -86,8 +86,8 @@ func formatKitManagedState(style humanOutputStyle, state string) string {
 }
 
 func formatManagedFileSummary(summary statusManagedFilesSummary) string {
-	if summary.Unsynced == 0 {
-		return fmt.Sprintf("synced (%d checked)", summary.Skipped)
+	if summary.Planned == 0 {
+		return fmt.Sprintf("current (%d checked)", summary.Skipped)
 	}
 	parts := []string{}
 	if summary.Created > 0 {
@@ -99,22 +99,18 @@ func formatManagedFileSummary(summary statusManagedFilesSummary) string {
 	if summary.Merged > 0 {
 		parts = append(parts, fmt.Sprintf("%d merged", summary.Merged))
 	}
-	return strings.Join(parts, ", ")
+	if len(parts) == 0 {
+		return fmt.Sprintf("%d planned change(s)", summary.Planned)
+	}
+	return fmt.Sprintf("%d planned change(s): %s", summary.Planned, strings.Join(parts, ", "))
 }
 
-func formatRegistrySummary(summary statusRegistrySummary, syncChecked bool) string {
+func formatRegistrySummary(summary statusRegistrySummary) string {
 	var parts []string
-	if syncChecked {
-		parts = append(parts, "remote checked")
-	} else {
-		parts = append(parts, "local state only")
-	}
+	parts = append(parts, "local state only")
 	parts = append(parts, fmt.Sprintf("%d managed", summary.Managed))
 	if summary.Missing > 0 {
 		parts = append(parts, fmt.Sprintf("%d missing", summary.Missing))
-	}
-	if summary.UpdateAvailable > 0 {
-		parts = append(parts, fmt.Sprintf("%d update available", summary.UpdateAvailable))
 	}
 	if summary.LocalCustom > 0 {
 		parts = append(parts, fmt.Sprintf("%d local custom", summary.LocalCustom))

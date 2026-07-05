@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"context"
-	"fmt"
 	"path/filepath"
 
 	"github.com/jamesonstone/kit/internal/config"
@@ -10,15 +8,13 @@ import (
 )
 
 const (
-	statusKitManagedStateSynced   = "synced"
-	statusKitManagedStateUnsynced = "unsynced"
-	statusKitManagedStateStale    = "stale"
-	statusKitManagedStateUnknown  = "unknown"
+	statusKitManagedStateCurrent          = "current"
+	statusKitManagedStateRefreshAvailable = "refresh_available"
+	statusKitManagedStateAttentionNeeded  = "attention_needed"
 )
 
 type statusKitManagedSummary struct {
 	State        string                    `json:"state"`
-	SyncChecked  bool                      `json:"sync_checked"`
 	ManagedFiles statusManagedFilesSummary `json:"managed_files"`
 	Registry     statusRegistrySummary     `json:"registry"`
 	Items        []statusKitManagedItem    `json:"items,omitempty"`
@@ -26,25 +22,22 @@ type statusKitManagedSummary struct {
 }
 
 type statusManagedFilesSummary struct {
-	Created  int `json:"created"`
-	Updated  int `json:"updated"`
-	Merged   int `json:"merged"`
-	Skipped  int `json:"skipped"`
-	Unsynced int `json:"unsynced"`
+	Created int `json:"created"`
+	Updated int `json:"updated"`
+	Merged  int `json:"merged"`
+	Skipped int `json:"skipped"`
+	Planned int `json:"planned_changes"`
 }
 
 type statusRegistrySummary struct {
-	Checked         bool   `json:"checked"`
-	SourceRepo      string `json:"source_repo,omitempty"`
-	SourceBranch    string `json:"source_branch,omitempty"`
-	SourceCommit    string `json:"source_commit,omitempty"`
-	Total           int    `json:"total"`
-	Managed         int    `json:"managed"`
-	Missing         int    `json:"missing"`
-	UpdateAvailable int    `json:"update_available"`
-	LocalCustom     int    `json:"local_custom"`
-	Conflicts       int    `json:"conflicts"`
-	Unknown         int    `json:"unknown"`
+	SourceRepo   string `json:"source_repo,omitempty"`
+	SourceBranch string `json:"source_branch,omitempty"`
+	Total        int    `json:"total"`
+	Managed      int    `json:"managed"`
+	Missing      int    `json:"missing"`
+	LocalCustom  int    `json:"local_custom"`
+	Conflicts    int    `json:"conflicts"`
+	Unknown      int    `json:"unknown"`
 }
 
 type statusKitManagedItem struct {
@@ -55,14 +48,11 @@ type statusKitManagedItem struct {
 }
 
 func buildStatusKitManagedSummary(
-	ctx context.Context,
 	projectRoot string,
 	cfg *config.Config,
-	syncChecked bool,
 ) (*statusKitManagedSummary, error) {
 	summary := &statusKitManagedSummary{
-		State:       statusKitManagedStateUnknown,
-		SyncChecked: syncChecked,
+		State: statusKitManagedStateCurrent,
 		Registry: statusRegistrySummary{
 			SourceRepo:   cfg.Registry.Source.Repo,
 			SourceBranch: cfg.Registry.Source.Branch,
@@ -75,13 +65,7 @@ func buildStatusKitManagedSummary(
 	}
 	recordStatusManagedFileChanges(summary, changes)
 
-	if syncChecked {
-		if err := recordStatusRemoteRegistry(ctx, projectRoot, summary); err != nil {
-			return nil, err
-		}
-	} else {
-		recordStatusLocalRegistry(projectRoot, cfg, summary)
-	}
+	recordStatusLocalRegistry(projectRoot, cfg, summary)
 
 	summary.State = determineStatusKitManagedState(summary)
 	summary.NextActions = statusKitManagedNextActions(summary)
@@ -138,7 +122,7 @@ func recordStatusManagedFileChanges(summary *statusKitManagedSummary, changes []
 		if change.result == instructionFileSkipped {
 			continue
 		}
-		summary.ManagedFiles.Unsynced++
+		summary.ManagedFiles.Planned++
 		summary.Items = append(summary.Items, statusKitManagedItem{
 			Path:  change.relativePath,
 			Kind:  "managed-file",
@@ -192,100 +176,27 @@ func recordStatusLocalRegistry(projectRoot string, cfg *config.Config, summary *
 	}
 }
 
-func recordStatusRemoteRegistry(ctx context.Context, projectRoot string, summary *statusKitManagedSummary) error {
-	registry, err := rulesetRegistryFetcher(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to refresh Kit ruleset registry for status: %w", err)
-	}
-	registry = projectRulesetRegistry(registry)
-	summary.Registry.Checked = true
-	summary.Registry.SourceRepo = rulesetRegistryRepoFullName()
-	summary.Registry.SourceBranch = rulesetRegistryBranch
-	for _, item := range registry {
-		if item.SourceCommit != "" {
-			summary.Registry.SourceCommit = item.SourceCommit
-			break
-		}
-	}
-
-	entries, err := buildRegistrySelectorEntries(projectRoot, registry)
-	if err != nil {
-		return err
-	}
-	for _, entry := range entries {
-		path := rulesetTarget(entry.Registry.Slug)
-		summary.Registry.Total++
-		if !entry.Installed {
-			summary.Registry.Missing++
-			summary.Items = append(summary.Items, statusKitManagedItem{
-				Path:   path,
-				Kind:   "registry-ruleset",
-				State:  "missing",
-				Detail: "available in registry but not installed locally",
-			})
-			continue
-		}
-		recordStatusRemoteRegistryEntry(summary, path, entry.RegistryState)
-	}
-	return nil
-}
-
-func recordStatusRemoteRegistryEntry(summary *statusKitManagedSummary, path string, state string) {
-	switch state {
-	case registryArtifactStateManaged:
-		summary.Registry.Managed++
-	case "update-available":
-		summary.Registry.UpdateAvailable++
-		summary.Items = append(summary.Items, statusKitManagedItem{
-			Path:   path,
-			Kind:   "registry-ruleset",
-			State:  state,
-			Detail: "registry has newer managed content",
-		})
-	case registryArtifactStateLocalCustom:
-		summary.Registry.LocalCustom++
-		summary.Items = append(summary.Items, statusKitManagedItem{
-			Path:   path,
-			Kind:   "registry-ruleset",
-			State:  state,
-			Detail: "local custom content is not registry-managed",
-		})
-	case registryArtifactStateConflict:
-		summary.Registry.Conflicts++
-		summary.Items = append(summary.Items, statusKitManagedItem{
-			Path:   path,
-			Kind:   "registry-ruleset",
-			State:  state,
-			Detail: "registry refresh detected a conflict",
-		})
-	default:
-		summary.Registry.Unknown++
-	}
-}
-
 func determineStatusKitManagedState(summary *statusKitManagedSummary) string {
-	if summary.Registry.Conflicts+summary.Registry.LocalCustom+summary.Registry.UpdateAvailable > 0 {
-		return statusKitManagedStateStale
+	if summary.Registry.Conflicts+summary.Registry.LocalCustom+summary.Registry.Unknown > 0 {
+		return statusKitManagedStateAttentionNeeded
 	}
-	if summary.ManagedFiles.Unsynced+summary.Registry.Missing > 0 {
-		return statusKitManagedStateUnsynced
+	if summary.ManagedFiles.Planned+summary.Registry.Missing > 0 {
+		return statusKitManagedStateRefreshAvailable
 	}
-	if !summary.SyncChecked {
-		return statusKitManagedStateUnknown
-	}
-	return statusKitManagedStateSynced
+	return statusKitManagedStateCurrent
 }
 
 func statusKitManagedNextActions(summary *statusKitManagedSummary) []string {
 	var actions []string
-	if summary.ManagedFiles.Unsynced+summary.Registry.Missing > 0 {
+	attentionNeeded := summary.Registry.Conflicts+summary.Registry.LocalCustom+summary.Registry.Unknown > 0
+	refreshAvailable := summary.ManagedFiles.Planned+summary.Registry.Missing > 0
+	if attentionNeeded {
+		actions = append(actions, "run `kit reconcile --output-only` to audit local custom, conflicted, or unknown Kit-managed files")
+		actions = append(actions, "use `kit init --refresh --force` only when accepting registry content is intended")
+	}
+	if refreshAvailable {
 		actions = append(actions, "run `kit init --refresh --dry-run --diff` to preview managed-file updates")
-	}
-	if summary.Registry.Conflicts+summary.Registry.LocalCustom > 0 {
-		actions = append(actions, "review registry ruleset notes, then use `kit init --refresh --force` only when accepting registry content is intended")
-	}
-	if !summary.SyncChecked {
-		actions = append(actions, "run `kit status --sync` to fetch the registry and check for remote rule updates")
+		actions = append(actions, "run `kit init --refresh` to apply reviewed managed-file updates")
 	}
 	if len(actions) == 0 {
 		actions = append(actions, "no Kit-managed refresh action needed")

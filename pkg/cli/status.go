@@ -95,7 +95,6 @@ func formatStatusFeatureID(number int) string {
 func init() {
 	statusCmd.Flags().Bool("json", false, "output status as JSON")
 	statusCmd.Flags().Bool("all", false, "show all features instead of only the active feature")
-	statusCmd.Flags().Bool("sync", false, "fetch the ruleset registry and check for remote Kit-managed updates")
 	rootCmd.AddCommand(statusCmd)
 }
 
@@ -109,7 +108,6 @@ type allFeatureStatusEntry struct {
 func runStatus(cmd *cobra.Command, args []string) error {
 	jsonOutput, _ := cmd.Flags().GetBool("json")
 	allOutput, _ := cmd.Flags().GetBool("all")
-	syncChecked, _ := cmd.Flags().GetBool("sync")
 	version := currentVersion()
 
 	projectRoot, err := config.FindProjectRoot()
@@ -121,7 +119,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	kitManaged, err := buildStatusKitManagedSummary(cmd.Context(), projectRoot, cfg, syncChecked)
+	kitManaged, err := buildStatusKitManagedSummary(projectRoot, cfg)
 	if err != nil {
 		return err
 	}
