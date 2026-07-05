@@ -188,13 +188,15 @@ func determineStatusKitManagedState(summary *statusKitManagedSummary) string {
 
 func statusKitManagedNextActions(summary *statusKitManagedSummary) []string {
 	var actions []string
-	if summary.ManagedFiles.Planned+summary.Registry.Missing > 0 {
-		actions = append(actions, "run `kit init --refresh --dry-run --diff` to preview managed-file updates")
-		actions = append(actions, "run `kit init --refresh` to apply reviewed managed-file updates")
-	}
-	if summary.Registry.Conflicts+summary.Registry.LocalCustom+summary.Registry.Unknown > 0 {
+	attentionNeeded := summary.Registry.Conflicts+summary.Registry.LocalCustom+summary.Registry.Unknown > 0
+	refreshAvailable := summary.ManagedFiles.Planned+summary.Registry.Missing > 0
+	if attentionNeeded {
 		actions = append(actions, "run `kit reconcile --output-only` to audit local custom, conflicted, or unknown Kit-managed files")
 		actions = append(actions, "use `kit init --refresh --force` only when accepting registry content is intended")
+	}
+	if refreshAvailable {
+		actions = append(actions, "run `kit init --refresh --dry-run --diff` to preview managed-file updates")
+		actions = append(actions, "run `kit init --refresh` to apply reviewed managed-file updates")
 	}
 	if len(actions) == 0 {
 		actions = append(actions, "no Kit-managed refresh action needed")

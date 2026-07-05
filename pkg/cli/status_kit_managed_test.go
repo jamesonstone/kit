@@ -87,3 +87,21 @@ func TestStatusManagedSummaryUsesLocalRegistryStateOnly(t *testing.T) {
 		}
 	}
 }
+
+func TestStatusManagedNextActionsPrioritizesReconcile(t *testing.T) {
+	summary := &statusKitManagedSummary{
+		ManagedFiles: statusManagedFilesSummary{Planned: 1},
+		Registry:     statusRegistrySummary{Conflicts: 1},
+	}
+
+	actions := statusKitManagedNextActions(summary)
+	want := []string{
+		"run `kit reconcile --output-only` to audit local custom, conflicted, or unknown Kit-managed files",
+		"use `kit init --refresh --force` only when accepting registry content is intended",
+		"run `kit init --refresh --dry-run --diff` to preview managed-file updates",
+		"run `kit init --refresh` to apply reviewed managed-file updates",
+	}
+	if strings.Join(actions, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("actions = %#v, want %#v", actions, want)
+	}
+}
