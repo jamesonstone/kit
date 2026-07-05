@@ -54,7 +54,8 @@ all decisions.
 ### 6. Tooling Should Disappear
 
 - Kit's job is done once documents are complete and correct.
-- Implementation happens outside Kit's scope.
+- Application implementation remains outside Kit's product scope.
+- Kit may run declared local verification commands or configured agent loops only when an explicit command contract says so.
 - The CLI becomes unnecessary once understanding is achieved.
 - Teams should reach clarity faster with fewer reworks.
 
@@ -129,10 +130,17 @@ all decisions.
    - Validation evidence belongs in `SPEC.md` Evidence and Validation Map sections; legacy executable verification may still use task-level `VERIFY` fields where available
    - Generated JSON state and run artifacts must point back to source documents instead of replacing them
 
-7. **External Review Tools**
+7. **Execution Boundaries**
+   - Prompt-only and inspection commands must not mutate files, git, GitHub, or external services
+   - Local execution surfaces must be explicit in command help and `kit capabilities`
+   - Verification, replay, eval, and loop commands may run local commands or configured agent commands only within their documented command contracts
+   - Local run evidence under `.kit/runs/` and loop evidence under `.kit/loops/` is generated, inspectable, and non-authoritative
+   - Kit must not become a general-purpose task runner, CI replacement, daemon, or hidden supervisor
+
+8. **External Review Tools**
    - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 
-8. **Project Directory Git Workflow**
+9. **Project Directory Git Workflow**
    - Work in the existing project directory by default
    - Do not create or use git worktrees for agent work
    - If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
@@ -228,7 +236,7 @@ Kit explicitly does NOT:
 
 ### Process & Execution
 
-- ❌ Execute code or run tests
+- ❌ Run undeclared arbitrary commands or act as a general-purpose task runner
 - ❌ Manage agents directly or maintain hidden prompt registries outside YAML files
 - ❌ Merge branches or manage PRs
 - ❌ Replace CI/CD systems
@@ -393,6 +401,8 @@ kit/
 │   ├── status*.go           # active and project-wide lifecycle views
 │   ├── map.go               # document map and relationship rendering
 │   ├── reconcile*.go        # structural doc drift audit and prompt
+│   ├── loop*.go             # workflow, review, and prompt loop surfaces
+│   ├── pr*.go               # PR review-feedback command aliases
 │   ├── prompt*.go           # prompt library, profiles, IR helpers, output wrappers
 │   ├── scaffold.go          # empty workflow document structure scaffolding
 │   ├── scaffold_agents*.go  # repository instruction scaffolding under kit scaffold agents
