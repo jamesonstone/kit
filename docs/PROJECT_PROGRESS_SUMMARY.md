@@ -40,6 +40,7 @@
 | 0034 | review-loop | `docs/specs/0034-review-loop` | complete | no | 2026-06-21 | Add a Kit-native review-loop prompt-prep workflow, exposed through `kit dispatch --loop`, that turns current unresolved CodeRabbit PR feedback into a human-reviewed dispatch prompt with optional review-completion waiting and no git or GitHub mutation without explicit approval. |
 | 0035 | loop-review | `docs/specs/0035-loop-review` | reflect | no | 2026-06-21 | Expose `kit loop review` as an agent-driven correctness loop that reviews changes on the current branch relative to the remote mainline, optionally folds in CodeRabbit PR feedback, and repeats until the agent emits a compact `done` summary with at least 95% correctness. |
 | 0036 | kit-dream | `docs/specs/0036-kit-dream` | removed | no | 2026-06-21 | Removed by kit rm on 2026-06-21. |
+| 0038 | auto-improvement-v1 | `docs/specs/0038-auto-improvement-v1` | clarify | no | 2026-07-05 | Define and implement V1 of `kit improve`, a benchmark-backed self-improvement workflow for Kit harness changes with deterministic evals, traces, candidate validation, reports, and delivery gating. |
 
 ## PROJECT INTENT
 
@@ -376,6 +377,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: removed; original docs path was `docs/specs/0036-kit-dream`
 
+### auto-improvement-v1
+
+- **STATUS**: clarify
+- **PAUSED**: no
+- **INTENT**: Define and implement V1 of `kit improve`, a benchmark-backed self-improvement workflow for Kit harness changes.
+- **APPROACH**: V2 workflow state lives in `SPEC.md`; source strategy material lives under feature notes.
+- **OPEN ITEMS**: clarification pending for fixture repository scope.
+- **POINTERS**: `docs/specs/0038-auto-improvement-v1/SPEC.md`, `docs/notes/0038-auto-improvement-v1/README.md`
+
 ## LAST UPDATED
 
-2026-06-21 15:25:35 EDT
+2026-07-05 16:45:11 EDT
