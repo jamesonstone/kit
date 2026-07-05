@@ -12,7 +12,7 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 )
 
-func TestRunStatusJSONIncludesKitManagedSummaryWithoutRegistryFetch(t *testing.T) {
+func TestRunStatusJSONIncludesLocalKitManagedRefreshSummary(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	t.Setenv("HOME", t.TempDir())
 	setWorkingDirectory(t, projectRoot)
@@ -29,7 +29,6 @@ func TestRunStatusJSONIncludesKitManagedSummaryWithoutRegistryFetch(t *testing.T
 	cmd := &cobra.Command{}
 	cmd.Flags().Bool("json", false, "")
 	cmd.Flags().Bool("all", false, "")
-	cmd.Flags().Bool("sync", false, "")
 	if err := cmd.Flags().Set("json", "true"); err != nil {
 		t.Fatalf("Flags().Set(json) error = %v", err)
 	}
@@ -48,21 +47,19 @@ func TestRunStatusJSONIncludesKitManagedSummaryWithoutRegistryFetch(t *testing.T
 	if !ok {
 		t.Fatalf("expected kit_managed JSON summary, got %#v", payload)
 	}
-	if got := kitManaged["sync_checked"]; got != false {
-		t.Fatalf("sync_checked = %v, want false", got)
+	if got, exists := kitManaged["sync_checked"]; exists {
+		t.Fatalf("sync_checked should be omitted from status JSON, got %v", got)
 	}
-	if got := kitManaged["state"]; got != statusKitManagedStateUnsynced {
-		t.Fatalf("state = %v, want %q", got, statusKitManagedStateUnsynced)
+	if got := kitManaged["state"]; got != statusKitManagedStateRefreshAvailable {
+		t.Fatalf("state = %v, want %q", got, statusKitManagedStateRefreshAvailable)
 	}
 }
 
-func TestStatusSyncDetectsRegistryUpdateAvailable(t *testing.T) {
+func TestStatusManagedSummaryUsesLocalRegistryStateOnly(t *testing.T) {
 	projectRoot := t.TempDir()
 	setupInitHome(t)
 	base := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
-	remoteContent := strings.Replace(base.Content, "## Verification", "- Remote registry addition.\n\n## Verification", 1)
-	remote := registryRulesetWithContentForTest(base.Slug, remoteContent, "new-commit")
-	stubRulesetRegistry(t, remote)
+	stubRulesetRegistry(t, registryRulesetWithContentForTest(base.Slug, strings.Replace(base.Content, "## Verification", "- Remote registry addition.\n\n## Verification", 1), "new-commit"))
 
 	cfg := config.Default()
 	recordRulesetRegistryState(cfg, base, registryArtifactStateManaged, base.NormalizedHash, base.Content)
@@ -71,17 +68,22 @@ func TestStatusSyncDetectsRegistryUpdateAvailable(t *testing.T) {
 	}
 	writeFile(t, filepath.Join(projectRoot, rulesetTarget(base.Slug)), base.Content)
 
-	summary, err := buildStatusKitManagedSummary(context.Background(), projectRoot, cfg, true)
+	summary, err := buildStatusKitManagedSummary(projectRoot, cfg)
 	if err != nil {
 		t.Fatalf("buildStatusKitManagedSummary() error = %v", err)
 	}
-	if !summary.SyncChecked || !summary.Registry.Checked {
-		t.Fatalf("expected registry sync check, got %#v", summary.Registry)
+	if summary.Registry.Missing != 0 {
+		t.Fatalf("Missing = %d, want 0; summary=%#v", summary.Registry.Missing, summary.Registry)
 	}
-	if summary.Registry.UpdateAvailable != 1 {
-		t.Fatalf("UpdateAvailable = %d, want 1; summary=%#v", summary.Registry.UpdateAvailable, summary.Registry)
+	if summary.Registry.Managed != 1 {
+		t.Fatalf("Managed = %d, want 1; summary=%#v", summary.Registry.Managed, summary.Registry)
 	}
-	if summary.State != statusKitManagedStateStale {
-		t.Fatalf("State = %q, want %q", summary.State, statusKitManagedStateStale)
+	if summary.Registry.Total != 1 {
+		t.Fatalf("Total = %d, want 1; summary=%#v", summary.Registry.Total, summary.Registry)
+	}
+	for _, item := range summary.Items {
+		if item.State == "update-available" {
+			t.Fatalf("status should not report remote update availability; item=%#v", item)
+		}
 	}
 }

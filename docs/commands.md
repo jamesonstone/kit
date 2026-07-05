@@ -76,9 +76,8 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 
 | Command | Description |
 | --- | --- |
-| `kit status` | Show active feature status, local Kit-managed file sync state, and project refresh status; supports `--json`. |
-| `kit status --all` | Show the project-wide lifecycle matrix plus Kit-managed sync state. |
-| `kit status --sync` | Fetch the Kit ruleset registry and report remote registry-rule staleness. |
+| `kit status` | Show active feature status, local Kit-managed refresh state, and project refresh status; supports `--json`. |
+| `kit status --all` | Show the project-wide lifecycle matrix plus local Kit-managed refresh state. |
 | `kit map [feature]` | Select or show a feature map; supports `--all` for the full project document map. |
 | `kit capabilities` | List command capabilities, mutation behavior, network use, and important flags. |
 | `kit check <feature>` | Validate feature documents and required populated sections. |
@@ -89,7 +88,7 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit state [refresh]` | Show or refresh generated pointer-only `.kit/state.json`. |
 | `kit eval` | Run small local harness regression checks. |
 | `kit rules` / `kit rule` | Import, preview, create, list, and link repo-local rulesets. |
-| `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift. |
+| `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift. Use `kit init --refresh --dry-run --diff` to preview managed-file updates and `kit init --refresh` to apply them. |
 
 Inside the Kit source repository, every new command, subcommand, flag, alias,
 or command behavior extension must update `kit capabilities` in the same
