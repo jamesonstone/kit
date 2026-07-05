@@ -1,0 +1,26 @@
+name: Kit Improve Validate
+
+on:
+  pull_request:
+    paths:
+      - "docs/evals/kit-improve/**"
+      - "internal/improve/**"
+      - "pkg/cli/improve*.go"
+      - "pkg/cli/capabilities_catalog.go"
+      - ".github/workflows/kit-improve-*.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Test Kit improve packages
+        run: go test ./internal/improve ./pkg/cli
+      - name: Build Kit
+        run: go build -o bin/kit ./cmd/kit
+      - name: Run default suite
+        run: ./bin/kit improve run --suite default --json

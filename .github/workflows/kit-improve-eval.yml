@@ -1,0 +1,25 @@
+name: Kit Improve Eval
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * *"
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build Kit
+        run: go build -o bin/kit ./cmd/kit
+      - name: Run Kit improve default suite
+        run: ./bin/kit improve run --suite default --json
+      - name: Upload Kit improve artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kit-improve-${{ github.run_id }}
+          path: .kit/improve/
+          if-no-files-found: error

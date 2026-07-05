@@ -1,0 +1,25 @@
+schema_version: 1
+id: capabilities-discovery
+title: kit capabilities guidance is discoverable
+category: capabilities
+fixture: docs/evals/kit-improve/fixtures/repos/minimal-kit-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Verify command discovery guidance is represented in fixture context.
+expected_behavior: Kit command discovery guidance is available through capability metadata.
+oracle: deterministic-cli
+mutation_policy: fixture-only
+allowed_surfaces:
+  - docs/**
+commands:
+  - "{{kit}} capabilities capabilities --json"
+assertions:
+  - type: stdout_contains
+    command_index: 0
+    value: '"command": "capabilities"'
+  - type: git_diff_empty
+regression_tags:
+  - capabilities
+held_out_eligible: true
+known_failure_modes:
+  - capabilities:missing-command-guidance

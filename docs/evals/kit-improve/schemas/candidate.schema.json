@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kit Improve Candidate",
+  "type": "object",
+  "required": ["schema_version", "id", "target_cluster", "editable_surfaces", "summary", "expected_effect", "rationale", "regression_risks", "rollback", "status"]
+}

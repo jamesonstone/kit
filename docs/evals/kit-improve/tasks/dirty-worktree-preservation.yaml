@@ -1,0 +1,25 @@
+schema_version: 1
+id: dirty-worktree-preservation
+title: Dirty worktree preservation remains explicit
+category: dirty-worktree
+fixture: docs/evals/kit-improve/fixtures/repos/dirty-worktree-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Verify dirty worktree guidance remains covered.
+expected_behavior: Kit exposes status guidance without mutating a dirty fixture workspace.
+oracle: deterministic-cli
+mutation_policy: fixture-only
+allowed_surfaces:
+  - docs/**
+commands:
+  - "{{kit}} capabilities status --json"
+assertions:
+  - type: stdout_contains
+    command_index: 0
+    value: Kit-managed refresh state
+  - type: git_diff_empty
+regression_tags:
+  - dirty-worktree
+held_out_eligible: true
+known_failure_modes:
+  - dirty-worktree:unrelated-file-touched

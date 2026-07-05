@@ -1,0 +1,20 @@
+goal_percentage: 95
+specs_dir: docs/specs
+constitution_path: docs/CONSTITUTION.md
+registry:
+  schema_version: 1
+  source:
+    repo: jamesonstone/kit
+    branch: main
+  artifacts:
+    - kind: ruleset
+      slug: github-pr-delivery
+      path: docs/references/rules/github-pr-delivery.md
+      source_repo: jamesonstone/kit
+      source_branch: main
+      source_commit: fixture
+      source_path: docs/references/rules/github-pr-delivery.md
+      installed_hash: sha256:fixture
+      state: managed
+agents:
+  - AGENTS.md

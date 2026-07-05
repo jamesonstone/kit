@@ -1,0 +1,27 @@
+schema_version: 1
+id: init-refresh-idempotency
+title: kit init refresh is idempotent
+category: registry-refresh
+fixture: docs/evals/kit-improve/fixtures/repos/registry-drift-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Run Kit refresh twice and verify the second run is a no-op.
+expected_behavior: Kit documents refresh idempotency and dry-run behavior in init capability metadata.
+oracle: deterministic-cli
+mutation_policy: fixture-only
+allowed_surfaces:
+  - .kit.yaml
+  - docs/**
+commands:
+  - "{{kit}} capabilities init --json"
+assertions:
+  - type: stdout_contains
+    command_index: 0
+    value: --refresh
+  - type: git_diff_empty
+regression_tags:
+  - init
+  - registry
+held_out_eligible: true
+known_failure_modes:
+  - refresh-not-idempotent:managed-rules

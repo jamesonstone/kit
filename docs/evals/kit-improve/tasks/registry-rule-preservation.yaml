@@ -1,0 +1,26 @@
+schema_version: 1
+id: registry-rule-preservation
+title: Registry refresh preserves local rule state
+category: registry-refresh
+fixture: docs/evals/kit-improve/fixtures/repos/registry-drift-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Verify registry managed rule state is preserved.
+expected_behavior: Kit exposes registry rule add/view/list guidance without mutating fixture rules.
+oracle: deterministic-cli
+mutation_policy: fixture-only
+allowed_surfaces:
+  - .kit.yaml
+  - docs/references/rules/**
+commands:
+  - "{{kit}} capabilities rules add --json"
+assertions:
+  - type: stdout_contains
+    command_index: 0
+    value: rules view
+  - type: git_diff_empty
+regression_tags:
+  - registry
+held_out_eligible: true
+known_failure_modes:
+  - registry:local-status-overwritten

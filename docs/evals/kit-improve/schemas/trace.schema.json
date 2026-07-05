@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kit Improve Trace",
+  "type": "object",
+  "required": ["schema_version", "task_id", "suite", "kit_version", "git_commit", "started_at", "duration_ms", "status", "workspace_path", "repeat_index", "commands", "assertions", "changed_files", "allowed_surface_violations", "oracle_results"]
+}

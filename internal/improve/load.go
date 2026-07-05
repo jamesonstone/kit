@@ -1,0 +1,143 @@
+package improve
+
+import (
+	"bytes"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+
+	"gopkg.in/yaml.v3"
+)
+
+const (
+	EvalDir     = "docs/evals/kit-improve"
+	ArtifactDir = ".kit/improve"
+)
+
+func LoadSuite(projectRoot, name string) (Suite, []Task, error) {
+	if strings.TrimSpace(name) == "" {
+		name = "default"
+	}
+	suitePath := filepath.Join(projectRoot, EvalDir, "suites", name+".yaml")
+	data, err := os.ReadFile(suitePath)
+	if err != nil {
+		return Suite{}, nil, err
+	}
+	var suite Suite
+	if err := decodeStrictYAML(data, &suite); err != nil {
+		return Suite{}, nil, err
+	}
+	if err := validateSuite(suite); err != nil {
+		return Suite{}, nil, err
+	}
+	tasks, err := loadTasks(projectRoot)
+	if err != nil {
+		return Suite{}, nil, err
+	}
+	selected := selectTasks(suite, tasks)
+	if len(selected) < suite.MinimumTasks {
+		return Suite{}, nil, fmt.Errorf("suite %q selected %d tasks, minimum is %d", suite.ID, len(selected), suite.MinimumTasks)
+	}
+	return suite, selected, nil
+}
+
+func loadTasks(projectRoot string) ([]Task, error) {
+	dir := filepath.Join(projectRoot, EvalDir, "tasks")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var tasks []Task
+	for _, entry := range entries {
+		if entry.IsDir() || (!strings.HasSuffix(entry.Name(), ".yaml") && !strings.HasSuffix(entry.Name(), ".yml")) {
+			continue
+		}
+		path := filepath.Join(dir, entry.Name())
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		var task Task
+		if err := decodeStrictYAML(data, &task); err != nil {
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
+		if err := validateTask(task); err != nil {
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
+		tasks = append(tasks, task)
+	}
+	sort.Slice(tasks, func(i, j int) bool { return tasks[i].ID < tasks[j].ID })
+	return tasks, nil
+}
+
+func decodeStrictYAML(data []byte, out any) error {
+	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	decoder.KnownFields(true)
+	return decoder.Decode(out)
+}
+
+func validateSuite(suite Suite) error {
+	if suite.SchemaVersion != SchemaVersion {
+		return fmt.Errorf("unsupported suite schema_version %d", suite.SchemaVersion)
+	}
+	if strings.TrimSpace(suite.ID) == "" {
+		return fmt.Errorf("suite id is required")
+	}
+	if suite.Repeat <= 0 {
+		return fmt.Errorf("suite repeat must be positive")
+	}
+	return nil
+}
+
+func validateTask(task Task) error {
+	if task.SchemaVersion != SchemaVersion {
+		return fmt.Errorf("unsupported task schema_version %d", task.SchemaVersion)
+	}
+	required := map[string]string{
+		"id":                task.ID,
+		"title":             task.Title,
+		"category":          task.Category,
+		"fixture":           task.Fixture,
+		"expected_behavior": task.ExpectedBehavior,
+		"oracle":            task.Oracle,
+		"mutation_policy":   task.MutationPolicy,
+	}
+	for field, value := range required {
+		if strings.TrimSpace(value) == "" {
+			return fmt.Errorf("task %q missing %s", task.ID, field)
+		}
+	}
+	if len(task.Commands) == 0 && strings.TrimSpace(task.InputPrompt) == "" {
+		return fmt.Errorf("task %q requires commands or input_prompt", task.ID)
+	}
+	if len(task.Assertions) == 0 {
+		return fmt.Errorf("task %q requires assertions", task.ID)
+	}
+	return nil
+}
+
+func selectTasks(suite Suite, tasks []Task) []Task {
+	include := map[string]struct{}{}
+	for _, tag := range suite.HeldIn.IncludeTags {
+		include[tag] = struct{}{}
+	}
+	if len(include) == 0 {
+		return tasks
+	}
+	var selected []Task
+	for _, task := range tasks {
+		for _, tag := range task.RegressionTags {
+			if _, ok := include[tag]; ok {
+				selected = append(selected, task)
+				break
+			}
+		}
+	}
+	return selected
+}
+
+func artifactRoot(projectRoot string) string {
+	return filepath.Join(projectRoot, ArtifactDir)
+}

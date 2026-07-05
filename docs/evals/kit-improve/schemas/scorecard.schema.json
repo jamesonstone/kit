@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kit Improve Scorecard",
+  "type": "object",
+  "required": ["schema_version", "candidate_id", "score", "acceptance", "reasons", "validation_commands"]
+}
