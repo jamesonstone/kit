@@ -1253,6 +1253,7 @@ V1 is complete when:
 | SRC-012 | User clarification response | `n 5` | User requested creating the issue, branch, and pull request for this feature rather than only preparing a PR package after validation. | Delivery decision | AC-010 | confirmed |
 | SRC-013 | GitHub issue | `#46` | Issue `#46` was created for this feature and assigned to `jamesonstone`. | Delivery traceability | AC-010 | confirmed |
 | SRC-014 | Git branch | `GH-46` | Branch `GH-46` was created from freshly fetched `origin/main`; branch HEAD matched `origin/main` immediately after checkout. | Delivery traceability | AC-010 | confirmed |
+| SRC-015 | GitHub pull request | `#47` | Pull request `#47` was created ready for review from `GH-46` into `main` and assigned to `jamesonstone`. | Delivery traceability | AC-010 | confirmed |
 
 ## CLARIFICATIONS
 
@@ -1412,7 +1413,7 @@ User requested creating a new issue, branch, and pull request for this feature u
 
 - Issue: `#46` (`https://github.com/jamesonstone/kit/issues/46`), assigned to `jamesonstone`.
 - Branch: `GH-46`, created from freshly fetched `origin/main`.
-- PR: pending.
+- PR: `#47` (`https://github.com/jamesonstone/kit/pull/47`), ready for review and assigned to `jamesonstone`.
 
 No implementation commit may claim feature completion before implementation, validation, reflection, and delivery hard-gate checks are stable. The initial delivery PR is expected to carry the current spec/notes setup and remain open for future implementation updates.
 
@@ -1426,3 +1427,4 @@ Initial evidence:
 - `AUTO_IMPROVEMENT.md` moved to `docs/notes/0038-auto-improvement-v1/references/AUTO_IMPROVEMENT.md` per user instruction.
 - GitHub issue `#46` created and verified assigned to `jamesonstone`.
 - Branch `GH-46` created from fetched `origin/main`; checkout assertion and branch-base assertion passed.
+- Pull request `#47` created ready for review from `GH-46` into `main` and assigned to `jamesonstone`.
