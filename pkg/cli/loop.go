@@ -45,8 +45,9 @@ var loopCmd = &cobra.Command{
 	SilenceErrors: true,
 	Long: `Run Kit agent loops.
 
-Use kit loop workflow [feature] to run the v2 single-SPEC workflow through a
-configured local agent. Use kit loop review for changed-code correctness review.
+Use kit loop prompt [feature] to create work-to-completion prompts, kit loop
+workflow [feature] to run the v2 single-SPEC workflow through a configured
+local agent, and kit loop review for changed-code correctness review.
 
 Configure the local agent in .kit.yaml:
 
@@ -62,6 +63,7 @@ loop:
 
 func init() {
 	addWorkflowLoopFlags(loopCmd)
+	loopCmd.AddCommand(newLoopPromptCommand())
 	loopCmd.AddCommand(newLoopWorkflowCommand())
 	loopCmd.AddCommand(newLoopReviewCommand())
 	rootCmd.AddCommand(loopCmd)
