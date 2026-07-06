@@ -119,23 +119,33 @@ func validateTask(task Task) error {
 }
 
 func selectTasks(suite Suite, tasks []Task) []Task {
-	include := map[string]struct{}{}
-	for _, tag := range suite.HeldIn.IncludeTags {
-		include[tag] = struct{}{}
-	}
-	if len(include) == 0 {
-		return tasks
-	}
 	var selected []Task
 	for _, task := range tasks {
-		for _, tag := range task.RegressionTags {
-			if _, ok := include[tag]; ok {
-				selected = append(selected, task)
-				break
-			}
+		if taskMatchesSelector(task, suite.HeldOut) {
+			continue
 		}
+		if len(suite.HeldIn.IncludeTags) > 0 && !taskMatchesSelector(task, suite.HeldIn) {
+			continue
+		}
+		selected = append(selected, task)
 	}
 	return selected
+}
+
+func taskMatchesSelector(task Task, selector TaskSelector) bool {
+	if len(selector.IncludeTags) == 0 {
+		return false
+	}
+	include := map[string]struct{}{}
+	for _, tag := range selector.IncludeTags {
+		include[tag] = struct{}{}
+	}
+	for _, tag := range task.RegressionTags {
+		if _, ok := include[tag]; ok {
+			return true
+		}
+	}
+	return false
 }
 
 func artifactRoot(projectRoot string) string {

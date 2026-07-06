@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -234,7 +235,10 @@ func runImproveOverview(cmd *cobra.Command) error {
 }
 
 func currentGitCommit(projectRoot string) string {
-	out, err := exec.Command("git", "-C", projectRoot, "rev-parse", "HEAD").Output()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	out, err := exec.CommandContext(ctx, "git", "-C", projectRoot, "rev-parse", "HEAD").Output()
 	if err != nil {
 		return "unknown"
 	}

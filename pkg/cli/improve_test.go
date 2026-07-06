@@ -11,7 +11,7 @@ func TestImproveCommandOverview(t *testing.T) {
 	out := &bytes.Buffer{}
 	cmd.SetOut(out)
 	cmd.SetErr(out)
-	cmd.SetArgs(nil)
+	cmd.SetArgs([]string{})
 
 	if err := cmd.Execute(); err != nil {
 		t.Fatalf("kit improve error = %v", err)

@@ -22,6 +22,41 @@ func TestLoadSuiteSelectsDefaultTasks(t *testing.T) {
 	}
 }
 
+func TestSelectTasksExcludesHeldOutWhenTagsOverlap(t *testing.T) {
+	suite := Suite{
+		HeldIn: TaskSelector{IncludeTags: []string{"shared", "held-in"}},
+		HeldOut: TaskSelector{
+			IncludeTags:        []string{"shared"},
+			HiddenFromProposer: true,
+		},
+	}
+	tasks := []Task{
+		{ID: "held-in", RegressionTags: []string{"held-in"}},
+		{ID: "overlap", RegressionTags: []string{"shared"}},
+	}
+	selected := selectTasks(suite, tasks)
+	if len(selected) != 1 || selected[0].ID != "held-in" {
+		t.Fatalf("selected = %#v, want only held-in", selected)
+	}
+}
+
+func TestSelectTasksWithEmptyHeldInStillExcludesHeldOut(t *testing.T) {
+	suite := Suite{
+		HeldOut: TaskSelector{
+			IncludeTags:        []string{"held-out"},
+			HiddenFromProposer: true,
+		},
+	}
+	tasks := []Task{
+		{ID: "candidate", RegressionTags: []string{"review-loop"}},
+		{ID: "hidden", RegressionTags: []string{"held-out"}},
+	}
+	selected := selectTasks(suite, tasks)
+	if len(selected) != 1 || selected[0].ID != "candidate" {
+		t.Fatalf("selected = %#v, want only candidate", selected)
+	}
+}
+
 func TestRunWritesTraceArtifacts(t *testing.T) {
 	root := fixtureProjectRoot(t)
 	kitBinary := fakeKitBinary(t)
@@ -118,6 +153,29 @@ func TestProposeMinesWhenWeaknessReportIsMissing(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(manifest.RunDir, "weakness-report.json")); err != nil {
 		t.Fatalf("weakness-report.json missing after Propose(): %v", err)
+	}
+}
+
+func TestProposeReturnsCorruptWeaknessReportError(t *testing.T) {
+	root := fixtureProjectRoot(t)
+	manifest, err := Run(context.Background(), RunOptions{ProjectRoot: root, SuiteName: "default", KitBinary: fakeKitBinary(t)})
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	reportPath := filepath.Join(manifest.RunDir, "weakness-report.json")
+	invalidJSON := []byte("{not-json")
+	if err := os.WriteFile(reportPath, invalidJSON, 0o644); err != nil {
+		t.Fatalf("write corrupt weakness report: %v", err)
+	}
+	if _, err := Propose(root, manifest.RunDir, 3); err == nil {
+		t.Fatalf("Propose() error = nil, want corrupt report error")
+	}
+	got, err := os.ReadFile(reportPath)
+	if err != nil {
+		t.Fatalf("read corrupt weakness report: %v", err)
+	}
+	if string(got) != string(invalidJSON) {
+		t.Fatalf("corrupt weakness report was overwritten: %q", got)
 	}
 }
 

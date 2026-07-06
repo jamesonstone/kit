@@ -2,6 +2,7 @@ package improve
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -57,8 +58,12 @@ func Mine(projectRoot, from string) (WeaknessReport, error) {
 
 func Propose(projectRoot, from string, maxCandidates int) ([]Candidate, error) {
 	sourceDir := resolveArtifactDir(projectRoot, from)
-	report, err := readWeaknessReport(filepath.Join(sourceDir, "weakness-report.json"))
+	reportPath := filepath.Join(sourceDir, "weakness-report.json")
+	report, err := readWeaknessReport(reportPath)
 	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return nil, err
+		}
 		report, err = Mine(projectRoot, sourceDir)
 		if err != nil {
 			return nil, err
