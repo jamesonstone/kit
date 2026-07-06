@@ -1,0 +1,22 @@
+schema_version: 1
+id: default
+title: Default Kit harness regression suite
+held_in:
+  include_tags:
+    - init
+    - github-delivery
+    - review-loop
+    - registry
+    - capabilities
+    - dirty-worktree
+    - readme
+    - privacy
+held_out:
+  include_tags:
+    - held-out
+  hidden_from_proposer: true
+repeat: 1
+minimum_tasks: 8
+selection_rules:
+  - include at least one task from each required V1 category when available
+  - do not put two fixture variants of the same failure in both held-in and held-out

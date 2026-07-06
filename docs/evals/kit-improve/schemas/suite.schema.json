@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kit Improve Suite",
+  "type": "object",
+  "required": ["schema_version", "id", "title", "held_in", "held_out", "repeat", "minimum_tasks", "selection_rules"],
+  "additionalProperties": false
+}

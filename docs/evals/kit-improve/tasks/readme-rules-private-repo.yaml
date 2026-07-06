@@ -1,0 +1,25 @@
+schema_version: 1
+id: readme-rules-private-repo
+title: README rules avoid broken private-repo badges
+category: readme
+fixture: docs/evals/kit-improve/fixtures/repos/minimal-kit-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Verify private repository README badge guidance remains covered.
+expected_behavior: Kit documents private repository README badge behavior in init capability metadata.
+oracle: deterministic-cli
+mutation_policy: fixture-only
+allowed_surfaces:
+  - README.md
+commands:
+  - "{{kit}} capabilities init --json"
+assertions:
+  - type: stdout_contains
+    command_index: 0
+    value: private repositories skip
+  - type: git_diff_empty
+regression_tags:
+  - readme
+held_out_eligible: true
+known_failure_modes:
+  - readme:private-badges-broken

@@ -1,0 +1,5 @@
+goal_percentage: 95
+specs_dir: docs/specs
+constitution_path: docs/CONSTITUTION.md
+agents:
+  - AGENTS.md

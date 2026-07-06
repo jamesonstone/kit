@@ -1,0 +1,25 @@
+schema_version: 1
+id: coderabbit-review-loop
+title: CodeRabbit review loop keeps unresolved feedback actionable
+category: review-loop
+fixture: docs/evals/kit-improve/fixtures/repos/existing-pr-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Verify unresolved review feedback remains available for prompt preparation.
+expected_behavior: Kit exposes review-loop command guidance for unresolved PR feedback intake.
+oracle: deterministic-cli
+mutation_policy: fixture-only
+allowed_surfaces:
+  - docs/**
+commands:
+  - "{{kit}} capabilities pr fix --json"
+assertions:
+  - type: stdout_contains
+    command_index: 0
+    value: CodeRabbit
+  - type: git_diff_empty
+regression_tags:
+  - review-loop
+held_out_eligible: true
+known_failure_modes:
+  - review-loop:resolved-comments-not-filtered

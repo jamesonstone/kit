@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "dispatch", "rules add", "skill mine"} {
+	for _, command := range []string{"capabilities", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
@@ -218,6 +218,27 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(dispatchPayload.Command.Caveats, " "), "Agent Team Plan") {
 		t.Fatalf("expected dispatch caveats to document Agent Team Plan, got %#v", dispatchPayload.Command.Caveats)
+	}
+
+	improveOutput, err := executeCapabilitiesCommand("--json", "improve")
+	if err != nil {
+		t.Fatalf("kit capabilities improve --json error = %v", err)
+	}
+	var improvePayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(improveOutput), &improvePayload); err != nil {
+		t.Fatalf("json.Unmarshal(improve) error = %v", err)
+	}
+	if improvePayload.Command.Command != "improve" {
+		t.Fatalf("command = %q, want improve", improvePayload.Command.Command)
+	}
+	if improvePayload.Command.MutationLevel != mutationExecutesCommands {
+		t.Fatalf("improve mutation_level = %q, want %q", improvePayload.Command.MutationLevel, mutationExecutesCommands)
+	}
+	if !strings.Contains(improvePayload.Command.FileWrites.Summary, ".kit/improve/runs") {
+		t.Fatalf("expected improve file writes to document artifacts, got %#v", improvePayload.Command.FileWrites)
+	}
+	if !strings.Contains(strings.Join(improvePayload.Command.Caveats, " "), "does not embed a model runtime") {
+		t.Fatalf("expected improve caveats to document deterministic V1 boundary, got %#v", improvePayload.Command.Caveats)
 	}
 
 	loopPromptOutput, err := executeCapabilitiesCommand("--json", "loop", "prompt")

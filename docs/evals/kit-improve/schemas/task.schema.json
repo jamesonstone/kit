@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kit Improve Task",
+  "type": "object",
+  "required": ["schema_version", "id", "title", "category", "fixture", "expected_behavior", "oracle", "mutation_policy", "allowed_surfaces", "assertions", "regression_tags", "held_out_eligible"],
+  "additionalProperties": false
+}
