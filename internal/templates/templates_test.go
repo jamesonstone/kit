@@ -388,6 +388,16 @@ func TestSpecTemplateUsesV2SingleArtifactSections(t *testing.T) {
 	if doc.Metadata == nil || doc.Metadata.WorkflowVersion != 2 || doc.Metadata.Phase != "clarify" {
 		t.Fatalf("expected generated spec metadata to mark v2 clarify workflow, got %#v", doc.Metadata)
 	}
+	clarification, ok := doc.ClarificationState()
+	if !ok || clarification.Status != document.ClarificationStatusOpen {
+		t.Fatalf("expected generated spec metadata to include open clarification state, got %#v ok=%v", clarification, ok)
+	}
+	if confidence, ok := clarification.ConfidenceValue(); !ok || confidence != 0 {
+		t.Fatalf("clarification confidence = %d, %v; want 0, true", confidence, ok)
+	}
+	if unresolved, ok := clarification.UnresolvedQuestionsValue(); !ok || unresolved != 1 {
+		t.Fatalf("clarification unresolved = %d, %v; want 1, true", unresolved, ok)
+	}
 }
 
 func TestPlanTemplateUsesReferenceProseSection(t *testing.T) {

@@ -127,7 +127,7 @@ func scaffoldSpecWorkflow(featureRef string) (scaffoldResult, error) {
 			return scaffoldResult{}, fmt.Errorf("failed to create SPEC.md: %w", err)
 		}
 	}
-	if _, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName); err != nil {
+	if _, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName, cfg.GoalPercentage); err != nil {
 		return scaffoldResult{}, err
 	}
 	notesPath, _, err := ensureFeatureNotesDir(projectRoot, feat.DirName)

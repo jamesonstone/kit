@@ -31,7 +31,7 @@ func executeLoop(ctx context.Context, opts loopOptions) (loopReport, error) {
 	}
 
 	if opts.DryRun {
-		state := resolveStrictLoopStage(opts.ProjectRoot, opts.Feature)
+		state := resolveStrictLoopStageWithMinConfidence(opts.ProjectRoot, opts.Feature, opts.MinConfidence)
 		stage := state.Stage
 		report.Status = "dry_run"
 		report.StopReason = fmt.Sprintf("next stage: %s", stage)
@@ -67,7 +67,7 @@ func executeLoop(ctx context.Context, opts loopOptions) (loopReport, error) {
 
 	var lastImplementProgress feature.TaskProgress
 	for i := 1; i <= opts.MaxIterations; i++ {
-		before := resolveStrictLoopStage(opts.ProjectRoot, opts.Feature)
+		before := resolveStrictLoopStageWithMinConfidence(opts.ProjectRoot, opts.Feature, opts.MinConfidence)
 		if loopTargetComplete(before.Stage, opts.Until) {
 			report.Status = "complete"
 			report.StopReason = fmt.Sprintf("target stage %s complete", opts.Until)
@@ -183,7 +183,7 @@ func executeLoop(ctx context.Context, opts loopOptions) (loopReport, error) {
 			return report, err
 		}
 
-		after := resolveStrictLoopStage(opts.ProjectRoot, opts.Feature)
+		after := resolveStrictLoopStageWithMinConfidence(opts.ProjectRoot, opts.Feature, opts.MinConfidence)
 		iteration.After = after
 		if validationErr := validateLoopProgress(before, after, lastImplementProgress); validationErr != nil {
 			report.Iterations = append(report.Iterations, iteration)

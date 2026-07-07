@@ -86,6 +86,50 @@ func TestResolveStrictLoopStage(t *testing.T) {
 	}
 }
 
+func TestResolveStrictLoopStageRejectsReadyBeforeClarificationReady(t *testing.T) {
+	projectRoot := t.TempDir()
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-alpha")
+	if err := os.MkdirAll(featurePath, 0755); err != nil {
+		t.Fatalf("MkdirAll(feature) error = %v", err)
+	}
+	feat := &feature.Feature{Slug: "alpha", DirName: "0001-alpha", Path: featurePath}
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), v2SpecWithClarification("0001-alpha", "ready", "open", 80, 2))
+
+	state := resolveStrictLoopStage(projectRoot, feat)
+	if state.Stage != loopStageClarify {
+		t.Fatalf("stage = %#v, want clarify diagnostics", state)
+	}
+	diagnostics := strings.Join(state.Diagnostics, "\n")
+	for _, check := range []string{
+		"clarification.status",
+		"clarification.confidence",
+		"clarification.unresolved_questions",
+	} {
+		if !strings.Contains(diagnostics, check) {
+			t.Fatalf("expected diagnostics to contain %q, got %#v", check, state.Diagnostics)
+		}
+	}
+}
+
+func TestResolveStrictLoopStageRejectsUnmappedAcceptanceCriteria(t *testing.T) {
+	projectRoot := t.TempDir()
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-alpha")
+	if err := os.MkdirAll(featurePath, 0755); err != nil {
+		t.Fatalf("MkdirAll(feature) error = %v", err)
+	}
+	feat := &feature.Feature{Slug: "alpha", DirName: "0001-alpha", Path: featurePath}
+	spec := strings.Replace(validV2SpecWithPhase("0001-alpha", "ready"), "- AC-001 -> go test ./...", "- AC-999 -> go test ./...", 1)
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), spec)
+
+	state := resolveStrictLoopStage(projectRoot, feat)
+	if state.Stage != loopStageClarify {
+		t.Fatalf("stage = %#v, want clarify diagnostics", state)
+	}
+	if diagnostics := strings.Join(state.Diagnostics, "\n"); !strings.Contains(diagnostics, "AC-001") {
+		t.Fatalf("expected missing AC-001 validation mapping diagnostic, got %#v", state.Diagnostics)
+	}
+}
+
 func TestLoopCommandSuppressesDuplicateErrorOutput(t *testing.T) {
 	if !loopCmd.SilenceUsage {
 		t.Fatal("loopCmd.SilenceUsage = false, want true")
@@ -367,6 +411,21 @@ cat >/dev/null
 }
 
 func validV2SpecWithPhase(dirName string, phase string) string {
+	status := "open"
+	confidence := 0
+	unresolved := 1
+	switch phase {
+	case "ready", "implement", "validate", "reflect", "deliver", "complete":
+		status = "ready"
+		confidence = 95
+		unresolved = 0
+	case "blocked":
+		status = "blocked"
+	}
+	return v2SpecWithClarification(dirName, phase, status, confidence, unresolved)
+}
+
+func v2SpecWithClarification(dirName string, phase string, status string, confidence int, unresolved int) string {
 	id, slug, ok := strings.Cut(dirName, "-")
 	if !ok {
 		id = ""
@@ -377,6 +436,10 @@ kit_metadata_version: 1
 artifact: spec
 workflow_version: 2
 phase: ` + phase + `
+clarification:
+  status: ` + status + `
+  confidence: ` + fmtInt(confidence) + `
+  unresolved_questions: ` + fmtInt(unresolved) + `
 feature:
   id: "` + id + `"
   slug: ` + slug + `
@@ -406,7 +469,7 @@ No blocking assumptions.
 
 ## ACCEPTANCE CRITERIA
 
-- AC1: Binary-verifiable criterion.
+- AC-001: Binary-verifiable criterion.
 
 ## IMPLEMENTATION PLAN
 
@@ -418,7 +481,7 @@ Implement the planned change.
 
 ## VALIDATION MAP
 
-- AC1 -> go test ./...
+- AC-001 -> go test ./...
 
 ## REFLECTION NOTES
 

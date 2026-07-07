@@ -56,6 +56,22 @@ func (d *Document) DeliveryIntent() string {
 	return ""
 }
 
+func (d *Document) ClarificationState() (MetadataClarification, bool) {
+	if d.Metadata == nil || d.Metadata.Clarification == nil {
+		return MetadataClarification{}, false
+	}
+	clarification := MetadataClarification{
+		Status: strings.TrimSpace(d.Metadata.Clarification.Status),
+	}
+	if value, ok := d.Metadata.Clarification.ConfidenceValue(); ok {
+		clarification.Confidence = intPtr(value)
+	}
+	if value, ok := d.Metadata.Clarification.UnresolvedQuestionsValue(); ok {
+		clarification.UnresolvedQuestions = intPtr(value)
+	}
+	return clarification, true
+}
+
 func SkillsFromSection(section *Section) []MetadataSkill {
 	if section == nil {
 		return nil

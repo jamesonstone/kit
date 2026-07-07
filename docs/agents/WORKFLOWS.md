@@ -6,12 +6,13 @@
 - Do not load every artifact up front
 - In v2 feature work, start from `SPEC.md`; it is the single durable feature artifact
 - Use `SPEC.md` sections for thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence
+- Track clarification in front matter with `clarification.status`, `clarification.confidence`, and `clarification.unresolved_questions`
 - Treat legacy `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` as historical context unless the user explicitly chooses a legacy staged command
 - Use `BRAINSTORM.md` only for unresolved historical rationale
 - Use `PLAN.md` and `TASKS.md` only for legacy staged flows or historical comparison
 - Use prior feature docs only through explicit dependency or relationship links
-- Ask clarification questions until confidence is high and unresolved assumptions are zero
-- Run the v2 readiness gates before writing code: clarification complete, acceptance criteria binary-verifiable, task checklist mapped to criteria, validation mapped 1:1, delivery intent known
+- Ask numbered clarification questions with recommended defaults until `clarification.status` is `ready`, confidence meets the configured goal, and unresolved questions are zero
+- Run the v2 readiness gates before writing code: clarification state ready, acceptance criteria binary-verifiable, task checklist mapped to criteria, validation mapped 1:1, delivery intent known
 - Update docs first when the implementation changes behavior, requirements, or approach
 
 ## Source Of Truth
@@ -56,5 +57,5 @@ Execution order for feature work:
 
 - `docs/specs/<feature>/` remains the source of truth for feature-scoped work
 - v2 feature work keeps durable workflow state in `SPEC.md`
-- `SPEC.md` front matter should include `workflow_version: 2` and a current `phase`
+- `SPEC.md` front matter should include `workflow_version: 2`, a current `phase`, and structured clarification state
 - Keep references, relationships, and skills metadata current when those docs are touched

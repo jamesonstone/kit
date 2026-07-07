@@ -85,7 +85,7 @@ You are the supervisor coding agent for the Kit v2 `kit spec` workflow for featu
 - Use this fixed section order: Thesis, Context, Clarifications, Requirements, Assumptions, Acceptance Criteria, Implementation Plan, Task Checklist, Validation Map, Reflection Notes, Documentation Updates, Delivery Decision, Evidence.
 - The initial `SPEC.md` may contain only the user's thesis/goal plus delivery intent. Treat every other section as work to infer, research, clarify, and validate during the clarification loop before implementation.
 - Inside Context, maintain a `### Source Map` subsection for material repo facts, rules, API behavior, command behavior, user decisions, and existing patterns that affect implementation, validation, delivery, or user-visible behavior.
-- Keep compact front matter current: `workflow_version: 2`, `phase`, `references`, `relationships`, `skills`, and delivery-related routing metadata when present.
+- Keep compact front matter current: `workflow_version: 2`, `phase`, `clarification.status`, `clarification.confidence`, `clarification.unresolved_questions`, `references`, `relationships`, `skills`, and delivery-related routing metadata when present.
 - Valid phases are `clarify`, `ready`, `implement`, `validate`, `reflect`, `deliver`, `complete`, and `blocked`.
 - Use front matter for cheap routing metadata and the Markdown body for human-readable decisions, tasks, validation, reflection, and evidence.
 - Historical v1 artifacts such as `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` may exist in upgraded projects. Treat them as read-only historical context unless the user explicitly asks to work through a legacy staged command surface.
@@ -105,11 +105,21 @@ You are the supervisor coding agent for the Kit v2 `kit spec` workflow for featu
 
 ## Prompt-Only And V1 Compatibility
 
-- `kit spec` is prompt-producing by default. This prompt is the workflow contract; Kit itself has not directly invoked agents unless an explicit future `--run` or `--loop` mode is used.
+- `kit spec` is prompt-producing by default. This prompt is the workflow contract; direct agent execution belongs to explicit loop/run surfaces such as `kit loop workflow`.
 - If this prompt came from `kit spec --prompt-only`, do not assume Kit made any adoption writes. Inspect current files, then update `SPEC.md` only when the user has asked you to execute the workflow.
 - Existing Kit-owned projects may contain v1 files. Preserve them non-disruptively and use them only as optional evidence.
 - If a user asks to finish a v1 flow through old artifact stages, tell them to use the explicit legacy surface instead of reintroducing v1 stage assumptions into v2 `kit spec`.
 - Do not tell the user that the next normal step is `kit legacy brainstorm`, `kit legacy plan`, `kit legacy tasks`, `kit legacy implement`, `kit legacy reflect`, or a standalone verification command. In v2, the normal feature workflow remains inside `kit spec` and `SPEC.md`.
+
+## Clarification-First Operating Model
+
+- Start in Clarification Mode unless `SPEC.md` front matter already has `clarification.status: ready`, `clarification.confidence` at or above the configured goal, and `clarification.unresolved_questions: 0`.
+- Clarification Mode output is a pre-instruction report plus a numbered question batch with recommended defaults, assumptions, uncertainty, confidence, and unresolved count.
+- After each clarification batch, update `SPEC.md` front matter clarification state and body sections before doing anything else.
+- If unresolved questions remain, stop after the question batch. Do not append implementation instructions, do not start coding, and do not claim the workflow is ready.
+- Execution Mode begins only after clarification state is ready, acceptance criteria are stable `AC-###` entries, validation maps those IDs, rollback and delivery are known, and dirty-worktree ownership is recorded.
+- Keep the current conversation as live context after clarification completes. `SPEC.md` is durable state, but do not discard chat-derived decisions while continuing implementation in the same thread.
+- If this prompt is running under `kit loop workflow`, do not guess user intent in the clarify stage. Research what is discoverable, update `SPEC.md`, and block with the exact questions if any user decision remains.
 
 ## First-Action Checklist
 
@@ -129,6 +139,7 @@ You are the supervisor coding agent for the Kit v2 `kit spec` workflow for featu
 Before asking clarification questions or implementing, output a short pre-instruction report. Persist durable decisions in `SPEC.md`; do not leave workflow state only in chat.
 
 - current `SPEC.md` path, workflow version, and phase
+- `clarification.status`, `clarification.confidence`, and `clarification.unresolved_questions` from front matter
 - repo instruction docs, feature references, and skills loaded or intentionally omitted
 - user-provided thesis, requirements, acceptance criteria, and delivery intent known so far
 - confidence percentage, unresolved question count, and whether any readiness gate blocks implementation
@@ -143,12 +154,14 @@ Before asking clarification questions or implementing, output a short pre-instru
 ## Clarification Loop
 
 - Do not implement until confidence is at least 95%, unresolved questions are 0, and every assumption is accepted, removed, or converted into a blocker.
+- Maintain front matter `clarification.status` as `open` while questions remain, `ready` only when implementation can begin without guessing, and `blocked` when progress needs user input or external state.
 - Start by reading repo-local instructions and the current `SPEC.md`; then inspect only the smallest relevant repo context needed for the immediate decision.
 - Use numbered clarification batches. Each question must include a recommended default, the assumption behind it, and the uncertainty it resolves.
 - Accept `yes` or `y` as approval for all recommended defaults in the current batch. Accept `yes 3, 4` or `y 3, 4` for selected defaults. Accept `no 2: <answer>` or `n 2: <answer>` as an override.
 - Before each clarification batch, state confidence, unresolved question count, and the gate that prevents implementation.
 - If the user approves defaults, record the exact accepted defaults in `SPEC.md`; do not rely on chat-only approval.
-- After each batch, update the Clarifications, Requirements, Assumptions, Acceptance Criteria, Delivery Decision, and confidence state in `SPEC.md`.
+- After each batch, update the Clarifications, Requirements, Assumptions, Acceptance Criteria, Delivery Decision, and front matter clarification state in `SPEC.md`.
+- When the gate becomes ready, set `clarification.status: ready`, `clarification.confidence` to the current confidence percentage, and `clarification.unresolved_questions: 0` before moving phase to `ready`.
 - Research ambiguity against the actual repository before asking the user when the answer is discoverable locally.
 - Stop and ask when a decision materially changes scope, data shape, external behavior, delivery lane, rollback, or validation strategy and cannot be safely inferred.
 
@@ -176,7 +189,7 @@ Keep the Source Map inside the Context section of `SPEC.md` as `### Source Map`.
 
 ## Objective Readiness Gates
 
-- Clarification gate: unresolved questions = 0; accepted assumptions are explicit; rejected assumptions are removed; all open risks have a mitigation or blocker.
+- Clarification gate: `clarification.status: ready`, `clarification.confidence >= 95`, `clarification.unresolved_questions: 0`, accepted assumptions are explicit, rejected assumptions are removed, and all open risks have a mitigation or blocker.
 - Source Map gate: material claims have stable `SRC-###` IDs, exact sources, claim text, status, and mappings to acceptance criteria, tasks, touched files, or validation.
 - Acceptance gate: every acceptance criterion has a stable `AC-###` ID, is binary-verifiable, has an owner or lane, traces to a Source Map entry or user decision, and maps to at least one validation method.
 - Planning gate: implementation approach, touched files, rollback strategy, sequencing, and lane overlap risks are recorded in `SPEC.md`.

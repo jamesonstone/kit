@@ -14,13 +14,17 @@ Idea / input
   ↓
 kit spec <feature>
   ↓
-SPEC.md: clarify → ready → implement → validate → reflect → deliver/complete
+SPEC.md seeded with clarification.status=open
+  ↓
+clarify → ready → implement → validate → reflect → deliver/complete
 ```
 
 `kit spec <feature>` remains prompt-producing by default. The generated
 supervisor prompt instructs a coding agent to keep all durable workflow state in
 `SPEC.md`, including the Agent Team Plan when implementation, validation, or
-review may benefit from specialist lanes.
+review may benefit from specialist lanes. The prompt starts in clarification
+mode unless the structured clarification state is already ready, and the same
+conversation may continue into implementation after the readiness gate passes.
 
 ## Project Initialization
 
@@ -56,7 +60,7 @@ needed. They are supporting inputs, not replacements for `SPEC.md`.
 ## V2 Artifact Details
 
 1. 📜 **Constitution** - strategy, constraints, long-term project rules, and priors.
-2. 📐 **SPEC.md** - thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence.
+2. 📐 **SPEC.md** - front matter phase and clarification state plus thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence.
 3. 🧠 **Legacy staged artifacts** - historical `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files retained for upgraded projects or explicit legacy flows.
 
 When a core workflow command runs without a feature argument, its selector only
@@ -82,6 +86,11 @@ Delivery intent options:
 Existing `SPEC.md` files are preserved by default. Use `--revise-thesis` to
 append a dated thesis note and refresh delivery intent.
 
+New specs default to `clarification.status: open`,
+`clarification.confidence: 0`, and `clarification.unresolved_questions: 1`.
+Normal adoption backfills missing clarification metadata without disturbing the
+body; `--prompt-only` remains read-only and does not write adoption metadata.
+
 `kit spec` does not create issues, branches, commits, pushes, or PRs during
 intake. Delivery mutations remain behind the repo-local delivery hard gate.
 
@@ -101,7 +110,9 @@ kit spec my-feature
   ↓
 SPEC.md + v2 supervisor prompt
   ↓
-clarify → ready → implement → validate → reflect → deliver/complete
+numbered clarification batches → ready gate → same-thread implementation
+  ↓
+validate → reflect → deliver/complete
 ```
 
 ## Autonomous Loop
@@ -109,6 +120,12 @@ clarify → ready → implement → validate → reflect → deliver/complete
 `kit loop workflow [feature]` is the execution wrapper for prompt-level
 workflow automation. The durable state remains `SPEC.md`; direct execution
 stays behind explicit loop/run behavior.
+
+During the clarify stage, loop automation may research repository facts and
+update `SPEC.md`, but it must not guess user intent. If questions remain, it
+stops with the exact questions and does not advance past clarify. It advances
+only when `clarification.status` is `ready`, confidence meets the configured
+threshold, and unresolved questions are `0`.
 
 ```yaml
 loop:
@@ -135,6 +152,9 @@ The v2 supervisor prompt performs readiness gates inside `SPEC.md` before
 implementation begins. It requires:
 
 - clarified assumptions
+- `clarification.status: ready`
+- confidence at or above the configured goal
+- `clarification.unresolved_questions: 0`
 - binary-verifiable acceptance criteria
 - a task checklist
 - a validation map
@@ -205,7 +225,8 @@ docs/
       frontend-ui.md         # optional durable pointer-loaded rulesets
 ```
 
-New v2 `SPEC.md` files include front matter with `workflow_version: 2` and a
-workflow `phase`. Legacy staged artifacts still include front matter when
-created, and Kit commands read front matter first before falling back to legacy
+New v2 `SPEC.md` files include front matter with `workflow_version: 2`, a
+workflow `phase`, and structured clarification state. Legacy staged artifacts
+still include front matter when created, and Kit commands read front matter
+first before falling back to legacy
 body metadata.

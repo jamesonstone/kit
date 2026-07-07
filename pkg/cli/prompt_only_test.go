@@ -87,7 +87,7 @@ func TestEnsureSpecV2AdoptionAddsMetadataAndMissingSections(t *testing.T) {
 	specPath := filepath.Join(projectRoot, "docs", "specs", "0001-sample", "SPEC.md")
 	writeFile(t, specPath, "# SPEC\n\n## SUMMARY\n\nlegacy summary\n\n## PROBLEM\n\nlegacy problem\n")
 
-	changed, err := ensureSpecV2Adoption(specPath, projectRoot, "0001-sample")
+	changed, err := ensureSpecV2Adoption(specPath, projectRoot, "0001-sample", 95)
 	if err != nil {
 		t.Fatalf("ensureSpecV2Adoption() error = %v", err)
 	}
@@ -103,6 +103,10 @@ func TestEnsureSpecV2AdoptionAddsMetadataAndMissingSections(t *testing.T) {
 	for _, check := range []string{
 		"workflow_version: 2",
 		"phase: clarify",
+		"clarification:",
+		"  status: open",
+		"  confidence: 0",
+		"  unresolved_questions: 1",
 		"legacy summary",
 		"legacy problem",
 		"target: docs/notes/0001-sample",
@@ -115,6 +119,9 @@ func TestEnsureSpecV2AdoptionAddsMetadataAndMissingSections(t *testing.T) {
 	doc := document.Parse(text, specPath, document.TypeSpec)
 	if doc.Metadata == nil || doc.Metadata.WorkflowVersion != 2 || doc.Metadata.Phase != "clarify" {
 		t.Fatalf("expected v2 metadata, got %#v", doc.Metadata)
+	}
+	if clarification, ok := doc.ClarificationState(); !ok || clarification.Status != document.ClarificationStatusOpen {
+		t.Fatalf("expected clarification metadata, got %#v ok=%v", clarification, ok)
 	}
 	for _, section := range doc.RequiredSections() {
 		if !doc.HasSection(section) {

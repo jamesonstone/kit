@@ -177,7 +177,7 @@ func runSpec(cmd *cobra.Command, args []string) error {
 	} else if !outputOnly {
 		fmt.Println("  ✓ SPEC.md already exists")
 	}
-	if changed, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName); err != nil {
+	if changed, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName, cfg.GoalPercentage); err != nil {
 		return err
 	} else if changed && !outputOnly {
 		fmt.Println("  ✓ Updated SPEC.md for v2 workflow")
@@ -287,7 +287,7 @@ func ensureDir(path string) error {
 	return os.MkdirAll(path, 0755)
 }
 
-func ensureSpecV2Adoption(specPath, projectRoot, featureDirName string) (bool, error) {
+func ensureSpecV2Adoption(specPath, projectRoot, featureDirName string, goalPercentage int) (bool, error) {
 	before, err := os.ReadFile(specPath)
 	if err != nil {
 		return false, fmt.Errorf("failed to read %s: %w", specPath, err)
@@ -312,11 +312,13 @@ func ensureSpecV2Adoption(specPath, projectRoot, featureDirName string) (bool, e
 	if doc.Metadata != nil && doc.Metadata.WorkflowVersion == 2 && doc.Metadata.Phase != "" {
 		phase = doc.Metadata.Phase
 	}
+	clarification := clarificationMetadataForAdoption(doc, phase, goalPercentage)
 
 	updated, _, err := document.UpsertMetadata(string(afterMerge), document.TypeSpec, document.MetadataUpsert{
 		Feature:         document.FeatureMetadataFromDir(featureDirName),
 		WorkflowVersion: 2,
 		Phase:           phase,
+		Clarification:   clarification,
 		References:      referencesForMetadataUpsert(string(afterMerge), document.TypeSpec, []document.MetadataReference{featureNotesReference(notesRelPath)}),
 	})
 	if err != nil {
@@ -329,6 +331,39 @@ func ensureSpecV2Adoption(specPath, projectRoot, featureDirName string) (bool, e
 	}
 
 	return string(before) != updated, nil
+}
+
+func clarificationMetadataForAdoption(doc *document.Document, phase string, goalPercentage int) *document.MetadataClarification {
+	status := document.ClarificationStatusOpen
+	confidence := 0
+	unresolvedQuestions := 1
+	switch feature.Phase(phase) {
+	case feature.PhaseReady, feature.PhaseImplement, feature.PhaseValidate, feature.PhaseReflect, feature.PhaseDeliver, feature.PhaseComplete:
+		status = document.ClarificationStatusReady
+		confidence = clampPercentage(goalPercentage)
+		if confidence == 0 {
+			confidence = 95
+		}
+		unresolvedQuestions = 0
+	case feature.PhaseBlocked:
+		status = document.ClarificationStatusBlocked
+	}
+
+	if doc != nil {
+		if existing, ok := doc.ClarificationState(); ok {
+			if existing.Status != "" {
+				status = existing.Status
+			}
+			if value, ok := existing.ConfidenceValue(); ok {
+				confidence = value
+			}
+			if value, ok := existing.UnresolvedQuestionsValue(); ok {
+				unresolvedQuestions = value
+			}
+		}
+	}
+	clarification := document.NewMetadataClarification(status, confidence, unresolvedQuestions)
+	return &clarification
 }
 
 func readSpecFeatureRef() (string, error) {
