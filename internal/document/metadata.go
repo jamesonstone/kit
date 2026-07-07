@@ -17,6 +17,10 @@ const (
 	ArtifactPlan       = "plan"
 	ArtifactTasks      = "tasks"
 
+	ClarificationStatusOpen    = "open"
+	ClarificationStatusReady   = "ready"
+	ClarificationStatusBlocked = "blocked"
+
 	RelationshipBuildsOn  = "builds_on"
 	RelationshipDependsOn = "depends_on"
 	RelationshipRelatedTo = "related_to"
@@ -95,12 +99,19 @@ type MetadataSkill struct {
 	Required bool   `yaml:"required"`
 }
 
+type MetadataClarification struct {
+	Status              string `yaml:"status,omitempty"`
+	Confidence          *int   `yaml:"confidence,omitempty"`
+	UnresolvedQuestions *int   `yaml:"unresolved_questions,omitempty"`
+}
+
 type Metadata struct {
 	KitMetadataVersion int                            `yaml:"kit_metadata_version"`
 	Artifact           string                         `yaml:"artifact"`
 	WorkflowVersion    int                            `yaml:"workflow_version,omitempty"`
 	Phase              string                         `yaml:"phase,omitempty"`
 	DeliveryIntent     string                         `yaml:"delivery_intent,omitempty"`
+	Clarification      *MetadataClarification         `yaml:"clarification,omitempty"`
 	Feature            FeatureMetadata                `yaml:"feature"`
 	Summary            string                         `yaml:"summary,omitempty"`
 	Intent             string                         `yaml:"intent,omitempty"`
@@ -138,6 +149,7 @@ type MetadataUpsert struct {
 	WorkflowVersion int
 	Phase           string
 	DeliveryIntent  string
+	Clarification   *MetadataClarification
 	Summary         string
 	Intent          string
 	Relationships   []MetadataRelationship
@@ -157,6 +169,32 @@ func FeatureMetadataFromDir(dirName string) FeatureMetadata {
 		Slug: matches[2],
 		Dir:  strings.TrimSpace(dirName),
 	}
+}
+
+func NewMetadataClarification(status string, confidence int, unresolvedQuestions int) MetadataClarification {
+	return MetadataClarification{
+		Status:              status,
+		Confidence:          intPtr(confidence),
+		UnresolvedQuestions: intPtr(unresolvedQuestions),
+	}
+}
+
+func (c MetadataClarification) ConfidenceValue() (int, bool) {
+	if c.Confidence == nil {
+		return 0, false
+	}
+	return *c.Confidence, true
+}
+
+func (c MetadataClarification) UnresolvedQuestionsValue() (int, bool) {
+	if c.UnresolvedQuestions == nil {
+		return 0, false
+	}
+	return *c.UnresolvedQuestions, true
+}
+
+func intPtr(value int) *int {
+	return &value
 }
 
 func ArtifactForDocumentType(docType DocumentType) string {
@@ -300,6 +338,8 @@ func validateMetadata(metadata Metadata, docType DocumentType) []MetadataDiagnos
 		))
 	}
 
+	diagnostics = append(diagnostics, validateClarificationMetadata(metadata, docType)...)
+
 	for i, reference := range metadata.References {
 		field := fmt.Sprintf("references[%d]", i)
 		if strings.TrimSpace(reference.Name) == "" {
@@ -363,6 +403,58 @@ func validateMetadata(metadata Metadata, docType DocumentType) []MetadataDiagnos
 		}
 	}
 
+	return diagnostics
+}
+
+func validateClarificationMetadata(metadata Metadata, docType DocumentType) []MetadataDiagnostic {
+	if docType != TypeSpec || metadata.WorkflowVersion != 2 {
+		return nil
+	}
+	if metadata.Clarification == nil {
+		return []MetadataDiagnostic{metadataWarning(
+			"clarification",
+			"v2 SPEC.md front matter should include clarification state",
+			"run `kit spec <feature>` to backfill clarification.status, clarification.confidence, and clarification.unresolved_questions",
+		)}
+	}
+
+	clarification := metadata.Clarification
+	var diagnostics []MetadataDiagnostic
+	switch strings.TrimSpace(clarification.Status) {
+	case ClarificationStatusOpen, ClarificationStatusReady, ClarificationStatusBlocked:
+	default:
+		diagnostics = append(diagnostics, metadataError(
+			"clarification.status",
+			fmt.Sprintf("invalid clarification status %q", clarification.Status),
+			"set clarification.status to one of: open, ready, blocked",
+		))
+	}
+	if clarification.Confidence == nil {
+		diagnostics = append(diagnostics, metadataWarning(
+			"clarification.confidence",
+			"v2 SPEC.md front matter should include clarification confidence",
+			"set clarification.confidence to an integer from 0 to 100",
+		))
+	} else if *clarification.Confidence < 0 || *clarification.Confidence > 100 {
+		diagnostics = append(diagnostics, metadataError(
+			"clarification.confidence",
+			fmt.Sprintf("clarification confidence %d is outside 0..100", *clarification.Confidence),
+			"set clarification.confidence to an integer from 0 to 100",
+		))
+	}
+	if clarification.UnresolvedQuestions == nil {
+		diagnostics = append(diagnostics, metadataWarning(
+			"clarification.unresolved_questions",
+			"v2 SPEC.md front matter should include unresolved question count",
+			"set clarification.unresolved_questions to an integer greater than or equal to 0",
+		))
+	} else if *clarification.UnresolvedQuestions < 0 {
+		diagnostics = append(diagnostics, metadataError(
+			"clarification.unresolved_questions",
+			fmt.Sprintf("clarification unresolved question count %d is negative", *clarification.UnresolvedQuestions),
+			"set clarification.unresolved_questions to an integer greater than or equal to 0",
+		))
+	}
 	return diagnostics
 }
 
@@ -576,6 +668,9 @@ func UpsertMetadata(content string, docType DocumentType, update MetadataUpsert)
 	if update.DeliveryIntent != "" {
 		setNodeString(metadataNode, "delivery_intent", update.DeliveryIntent)
 	}
+	if update.Clarification != nil {
+		upsertClarification(metadataNode, *update.Clarification)
+	}
 	if update.Feature != (FeatureMetadata{}) {
 		upsertFeatureMetadata(metadataNode, update.Feature)
 	}
@@ -653,6 +748,19 @@ func upsertFeatureMetadata(parent *yaml.Node, feature FeatureMetadata) {
 	}
 	if feature.Dir != "" {
 		setNodeString(featureNode, "dir", feature.Dir)
+	}
+}
+
+func upsertClarification(parent *yaml.Node, clarification MetadataClarification) {
+	clarificationNode := findOrCreateMapping(parent, "clarification")
+	if clarification.Status != "" {
+		setNodeString(clarificationNode, "status", clarification.Status)
+	}
+	if clarification.Confidence != nil {
+		setNodeInt(clarificationNode, "confidence", *clarification.Confidence)
+	}
+	if clarification.UnresolvedQuestions != nil {
+		setNodeInt(clarificationNode, "unresolved_questions", *clarification.UnresolvedQuestions)
 	}
 }
 

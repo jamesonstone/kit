@@ -35,7 +35,7 @@ func ensureLoopStageArtifact(projectRoot string, cfg *config.Config, feat *featu
 			return fmt.Errorf("failed to create SPEC.md: %w", err)
 		}
 	}
-	if _, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName); err != nil {
+	if _, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName, cfg.GoalPercentage); err != nil {
 		return err
 	}
 	if effectivePromptProfile(feat.Path) == promptProfileFrontend {
@@ -53,6 +53,7 @@ func appendLoopContract(prompt string, stage loopStage, minConfidence int) strin
 	builder.WriteString("This run is controlled by `kit loop workflow`. Advance the current v2 SPEC.md phase, write all durable changes to repository files, and end your final output with exactly one machine-readable result line.\n\n")
 	builder.WriteString("- Do not report `status: \"done\"` unless SPEC.md is updated and the current phase has advanced, completed, or become blocked with explicit blockers.\n")
 	builder.WriteString(fmt.Sprintf("- Do not proceed with unresolved assumptions or confidence below %d.\n", minConfidence))
+	builder.WriteString("- During the clarify stage, research only discoverable facts. If user intent is still ambiguous, set `status` to `blocked`, include the exact clarification questions, and do not guess.\n")
 	builder.WriteString("- If blocked, set `status` to `blocked`, include concrete blockers, and do not guess.\n")
 	builder.WriteString("- The result line must be a single line of JSON prefixed with `KIT_LOOP_RESULT:`.\n\n")
 	builder.WriteString("Required result line:\n\n")

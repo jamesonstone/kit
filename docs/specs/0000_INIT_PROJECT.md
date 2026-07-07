@@ -51,8 +51,8 @@ The names are software-friendly, but the pattern is general across domains:
 
 **V2 Feature Workflow**:
 
-1. **`kit spec <feature>`** — emits the v2 supervisor prompt
-2. **`SPEC.md`** — single durable feature artifact carrying thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence
+1. **`kit spec <feature>`** — emits the v2 supervisor prompt and seeds the clarification gate
+2. **`SPEC.md`** — single durable feature artifact carrying phase and clarification front matter plus thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence
 3. **Implementation** — begins only after objective readiness gates pass
 4. **Validation and reflection** — prove every acceptance criterion, update docs, record evidence, and route gaps back to implementation before delivery
 
@@ -238,14 +238,17 @@ Required front matter:
 
 - `workflow_version: 2`
 - `phase: clarify | ready | implement | validate | reflect | deliver | complete | blocked`
+- `clarification.status: open | ready | blocked`
+- `clarification.confidence: 0..100`
+- `clarification.unresolved_questions: 0 or greater`
 
 Rules:
 
 - `SPEC.md` is the single durable v2 feature artifact
-- keep thesis, context, requirements, plan, tasks, validation, reflection, documentation updates, delivery decision, and evidence in this file
+- keep thesis, context, clarifications, requirements, plan, tasks, validation, reflection, documentation updates, delivery decision, and evidence in this file
 - acceptance criteria must be binary-verifiable and mapped 1:1 to validation
 - the task checklist must be concise, durable, and mapped to lanes, acceptance criteria, status, and evidence
-- implementation must not begin until clarification is complete, unresolved questions are zero, assumptions are accepted or removed, validation is mapped, touched files are predicted, delivery lane is resolved, and rollback is known
+- implementation must not begin until `clarification.status` is `ready`, confidence meets `goal_percentage`, unresolved questions are zero, assumptions are accepted or removed, validation is mapped, touched files are predicted, delivery lane is resolved, and rollback is known
 - validation evidence should be summarized inline and may reference detailed logs under `.kit/runs/...`
 - legacy staged `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files remain readable historical context but are not the default v2 workflow contract
 - `## RELATIONSHIPS` must be either `none` or one bullet per explicit cross-feature relationship using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
@@ -602,10 +605,13 @@ CLI flags always override `.kit.yaml`.
 #### `kit spec <feature>`
 
 - create or adopt `docs/specs/<feature>/SPEC.md` as the v2 durable feature artifact
-- keep `kit spec` prompt-producing by default; direct execution remains behind explicit future `--run` / `--loop` behavior
+- keep `kit spec` prompt-producing by default; direct execution belongs to explicit loop/run surfaces such as `kit loop workflow`
 - add compact v2 front matter and missing v2 sections during normal execution, but avoid migration writes under `--prompt-only`
+- add or backfill structured clarification metadata during normal execution:
+  `clarification.status`, `clarification.confidence`, and
+  `clarification.unresolved_questions`
 - template uses the fixed v2 section order: Thesis, Context, Clarifications, Requirements, Assumptions, Acceptance Criteria, Implementation Plan, Task Checklist, Validation Map, Reflection Notes, Documentation Updates, Delivery Decision, Evidence
-- prompt instructions define the supervisor contract, repo-grounded clarification loop, readiness gates, dynamic agent team model, implementation rules, validation/verification phase, reflection phase, documentation sync, delivery gate, `SPEC.md` update requirements, and final response contract
+- prompt instructions define the supervisor contract, clarification-first output modes, repo-grounded ambiguity scan, readiness gates, same-thread continuation after clarification, dynamic agent team model, implementation rules, validation/verification phase, reflection phase, documentation sync, delivery gate, `SPEC.md` update requirements, and final response contract
 - prompt instructions require indices-first prior work discovery through
   `kit map <feature>` and `docs/PROJECT_PROGRESS_SUMMARY.md`
 - prompt instructions require prior feature docs to stay conditional and
@@ -692,13 +698,18 @@ Flags:
 
 ---
 
-#### `kit loop workflow [feature]` (Legacy Staged Execution Wrapper)
+#### `kit loop workflow [feature]`
 
-- run the remaining legacy staged workflow through a configured local agent
-- keep `kit spec` as the v2 prompt-producing entry point; v2 direct execution is a later `--run` / `--loop` extension
+- run the v2 feature workflow through a configured local agent loop
+- keep `kit spec` as the v2 prompt-producing entry point; `kit loop workflow` is the explicit execution surface for the same `SPEC.md` contract
 - keep legacy staged commands under `kit legacy`, such as `kit legacy plan`, `kit legacy tasks`, `kit legacy implement`, and `kit legacy reflect`
   as compatibility prompt/artifact builders rather than primary v2 workflow commands
 - resolve the next strict stage from canonical docs, not file existence alone
+- reject advancement past clarify unless `clarification.status` is `ready`,
+  confidence meets the loop threshold, `clarification.unresolved_questions` is
+  `0`, acceptance criteria use stable IDs, and validation maps those IDs
+- during clarify, research discoverable repository facts and update `SPEC.md`;
+  if user decisions remain, stop with exact questions instead of guessing
 - require each agent turn to end with `KIT_LOOP_RESULT` JSON containing stage,
   status, confidence, and blockers
 - stop on nonzero agent exit, low confidence, blockers, malformed loop result,
@@ -710,8 +721,8 @@ Flags:
 Flags:
 
 - `--dry-run` — show the next loop action without invoking the configured agent
-- `--until <stage>` — run until `spec`, `plan`, `tasks`, `implement`,
-  `reflect`, or `complete` is complete
+- `--until <stage>` — run until `clarify`/`spec`, `ready`, `implement`,
+  `validate`, `reflect`, `deliver`, or `complete` is complete
 - `--min-confidence <0-100>` — override `loop.min_confidence`
 - `--max-iterations <n>` — override `loop.max_iterations`
 - `--json` — output the loop report as JSON

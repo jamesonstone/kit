@@ -142,6 +142,7 @@ func updateSpecThesisAndDeliveryIntent(specPath, thesis, deliveryIntent string, 
 		WorkflowVersion: 2,
 		Phase:           "clarify",
 		DeliveryIntent:  deliveryIntent,
+		Clarification:   clarificationState(document.ClarificationStatusOpen, 0, 1),
 	}
 	if doc.Metadata != nil && doc.Metadata.Feature != (document.FeatureMetadata{}) {
 		metadataUpdate.Feature = doc.Metadata.Feature

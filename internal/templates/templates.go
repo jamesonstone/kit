@@ -165,11 +165,17 @@ func BuildSpecArtifactForFeature(feature document.FeatureMetadata) string {
 		Feature:         feature,
 		WorkflowVersion: 2,
 		Phase:           "clarify",
+		Clarification:   clarificationMetadata(document.ClarificationStatusOpen, 0, 1),
 	})
 	if err != nil {
 		return content
 	}
 	return updated
+}
+
+func clarificationMetadata(status string, confidence int, unresolvedQuestions int) *document.MetadataClarification {
+	clarification := document.NewMetadataClarification(status, confidence, unresolvedQuestions)
+	return &clarification
 }
 
 func BuildPlanArtifactForFeature(feature document.FeatureMetadata) string {

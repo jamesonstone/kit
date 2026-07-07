@@ -263,6 +263,9 @@ func TestRunSpecInteractive_UsesEditorByDefault(t *testing.T) {
 	if got := doc.DeliveryIntent(); got != specDeliveryIntentIssueBranchPRLater {
 		t.Fatalf("delivery intent = %q, want %q", got, specDeliveryIntentIssueBranchPRLater)
 	}
+	if clarification, ok := doc.ClarificationState(); !ok || clarification.Status != document.ClarificationStatusOpen {
+		t.Fatalf("expected thesis capture to reset clarification state, got %#v ok=%v", clarification, ok)
+	}
 	if !strings.Contains(text, "User intends to create a new issue, branch, and PR later") {
 		t.Fatalf("expected Delivery Decision to describe issue/branch/PR intent, got:\n%s", text)
 	}
@@ -334,6 +337,9 @@ func TestRunSpecWithoutSelectionCandidatesStartsInteractiveCreation(t *testing.T
 	doc := document.Parse(text, specPath, document.TypeSpec)
 	if got := doc.DeliveryIntent(); got != specDeliveryIntentIdeaOnly {
 		t.Fatalf("delivery intent = %q, want %q", got, specDeliveryIntentIdeaOnly)
+	}
+	if clarification, ok := doc.ClarificationState(); !ok || clarification.Status != document.ClarificationStatusOpen {
+		t.Fatalf("expected new SPEC.md to include open clarification state, got %#v ok=%v", clarification, ok)
 	}
 }
 
@@ -455,6 +461,9 @@ func TestRunSpecReviseThesisAppendsDatedNoteAndDeliveryIntent(t *testing.T) {
 	if got := doc.DeliveryIntent(); got != specDeliveryIntentContinueCurrent {
 		t.Fatalf("delivery intent = %q, want %q", got, specDeliveryIntentContinueCurrent)
 	}
+	if clarification, ok := doc.ClarificationState(); !ok || clarification.Status != document.ClarificationStatusOpen {
+		t.Fatalf("expected thesis revision to reopen clarification state, got %#v ok=%v", clarification, ok)
+	}
 }
 
 func TestOutputCompiledPrompt_IncludesRLMGuidanceWhenContextRequiresIt(t *testing.T) {
@@ -525,15 +534,23 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"Valid phases are `clarify`, `ready`, `implement`, `validate`, `reflect`, `deliver`, `complete`, and `blocked`.",
 		"## Supervisor Responsibilities",
 		"## Prompt-Only And V1 Compatibility",
+		"## Clarification-First Operating Model",
+		"Start in Clarification Mode unless `SPEC.md` front matter already has `clarification.status: ready`",
+		"Execution Mode begins only after clarification state is ready",
+		"Keep the current conversation as live context after clarification completes.",
+		"do not guess user intent in the clarify stage",
 		"## First-Action Checklist",
 		"git status --short",
 		"## Dirty Worktree And Ownership Gate",
 		"Classify existing changes as user-owned, in-scope, unrelated, or unknown",
 		"## Pre-Instruction Report",
 		"confidence percentage, unresolved question count, and whether any readiness gate blocks implementation",
+		"`clarification.status`, `clarification.confidence`, and `clarification.unresolved_questions`",
 		"## Clarification Loop",
+		"Maintain front matter `clarification.status` as `open` while questions remain",
 		"repo evidence before implementation begins",
 		"record the exact accepted defaults in `SPEC.md`",
+		"When the gate becomes ready, set `clarification.status: ready`",
 		"## Source Map Mechanics",
 		"Required columns: ID, Source, Selector, Claim / Fact, Used For, Maps To, Status.",
 		"Source Map gate",

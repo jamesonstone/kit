@@ -225,6 +225,28 @@ func TestCheckFeatureAllowsLegacyDocsWithoutFrontMatter(t *testing.T) {
 	}
 }
 
+func TestCheckFeatureWarnsForV2SpecMissingClarificationMetadata(t *testing.T) {
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	featurePath := filepath.Join(specsDir, "0001-alpha")
+	spec := strings.Replace(
+		validV2SpecWithPhase("0001-alpha", "clarify"),
+		"clarification:\n  status: open\n  confidence: 0\n  unresolved_questions: 1\n",
+		"",
+		1,
+	)
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), spec)
+
+	output := captureStdout(t, func() {
+		if err := checkFeature(projectRoot, specsDir, "alpha"); err != nil {
+			t.Fatalf("expected missing clarification metadata to warn without failing, got %v", err)
+		}
+	})
+	if !strings.Contains(output, "clarification state") {
+		t.Fatalf("expected clarification warning, got:\n%s", output)
+	}
+}
+
 func TestCheckFeatureFailsWhenFrontMatterIdentityDriftsFromDirectory(t *testing.T) {
 	projectRoot := t.TempDir()
 	specsDir := filepath.Join(projectRoot, "docs", "specs")
