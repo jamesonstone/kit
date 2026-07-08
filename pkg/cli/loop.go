@@ -106,6 +106,8 @@ type loopOptions struct {
 	DryRun        bool
 	JSON          bool
 	Agent         config.LoopAgentConfig
+	ReflectRunner reflectEvidenceRunner
+	ReflectNow    func() time.Time
 }
 
 type loopReport struct {

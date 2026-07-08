@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -195,11 +196,15 @@ func TestExecuteLoopRunsConfiguredAgentUntilComplete(t *testing.T) {
 	}
 
 	report, err := executeLoop(context.Background(), loopOptions{
-		ProjectRoot: projectRoot,
-		Config:      cfg,
-		Feature:     feat,
-		Until:       loopStageComplete,
-		Agent:       cfg.Loop.Agent,
+		ProjectRoot:   projectRoot,
+		Config:        cfg,
+		Feature:       feat,
+		Until:         loopStageComplete,
+		Agent:         cfg.Loop.Agent,
+		ReflectRunner: loopReflectRunnerForTest(),
+		ReflectNow: func() time.Time {
+			return time.Unix(1700001800, 0).UTC()
+		},
 	})
 	if err != nil {
 		t.Fatalf("executeLoop() error = %v\nreport=%#v", err, report)
@@ -218,6 +223,17 @@ func TestExecuteLoopRunsConfiguredAgentUntilComplete(t *testing.T) {
 	}
 	if state := resolveStrictLoopStage(projectRoot, feat); state.Stage != loopStageComplete {
 		t.Fatalf("final stage = %#v, want complete", state)
+	}
+	var verdict ReflectVerdict
+	reflectData, err := os.ReadFile(filepath.Join(feat.Path, reflectVerdictFileName))
+	if err != nil {
+		t.Fatalf("expected REFLECT.json to be written: %v", err)
+	}
+	if err := json.Unmarshal(reflectData, &verdict); err != nil {
+		t.Fatalf("REFLECT.json is invalid JSON: %v\n%s", err, string(reflectData))
+	}
+	if !verdict.TestsPass || verdict.ScopeDrift != "none" || verdict.Timestamp == "" {
+		t.Fatalf("unexpected reflect verdict: %#v", verdict)
 	}
 }
 
@@ -477,7 +493,7 @@ Implement the planned change.
 
 ## TASK CHECKLIST
 
-- [x] T001: Maintain v2 workflow state.
+- [x] T001: Maintain v2 workflow state. Expected files: ` + "`docs/specs/" + dirName + "/SPEC.md`" + `.
 
 ## VALIDATION MAP
 
@@ -503,4 +519,33 @@ Validation evidence recorded.
 
 func fmtInt(value int) string {
 	return strconv.Itoa(value)
+}
+
+func loopReflectRunnerForTest() fakeReflectEvidenceRunner {
+	return fakeReflectEvidenceRunner{
+		"make test": {ExitCode: 0},
+		"make lint": {ExitCode: 0},
+		"git merge-base HEAD origin/main": {
+			ExitCode: 0,
+			Stdout:   "base\n",
+		},
+		"git diff --name-only base...HEAD": {
+			ExitCode: 0,
+			Stdout:   "docs/specs/0001-alpha/SPEC.md\n",
+		},
+		"git diff --name-only":                     {ExitCode: 0},
+		"git diff --name-only --cached":            {ExitCode: 0},
+		"git ls-files --others --exclude-standard": {ExitCode: 0},
+		"git log --format=%H%x00%ct -- docs/specs/0001-alpha/SPEC.md": {
+			ExitCode: 0,
+			Stdout:   "readyhash\x001700000000\n",
+		},
+		"git show readyhash:docs/specs/0001-alpha/SPEC.md": {
+			ExitCode: 0,
+			Stdout:   validV2SpecWithPhase("0001-alpha", "ready"),
+		},
+		"git log --format=%H readyhash..HEAD -- docs/specs/0001-alpha/SPEC.md": {
+			ExitCode: 0,
+		},
+	}
 }

@@ -378,6 +378,7 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 		doc.BulletList(
 			"After validation passes, reflect on whether the final implementation still matches the thesis, requirements, implementation plan, and acceptance criteria in `SPEC.md`.",
 			"Review for regressions, hidden scope creep, dead code, unused public surfaces, missing error handling, missing tests, and documentation drift.",
+			"`kit loop workflow` writes runtime-owned `REFLECT.json` verdict evidence next to `SPEC.md` when the reflect stage completes; agents record human reflection notes in `SPEC.md` but must not fabricate or self-report verdict values.",
 			"Record reflection notes, remaining risks, skipped validations, and any follow-up recommendations in `SPEC.md`.",
 			"If reflection finds a correctness gap, route it back through implementation and validation before delivery.",
 		)

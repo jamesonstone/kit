@@ -182,6 +182,25 @@ func executeLoop(ctx context.Context, opts loopOptions) (loopReport, error) {
 			_ = writeLoopRunArtifact(opts.ProjectRoot, report)
 			return report, err
 		}
+		if before.Stage == loopStageReflect {
+			reflectNow := time.Now().UTC()
+			if opts.ReflectNow != nil {
+				reflectNow = opts.ReflectNow().UTC()
+			}
+			if _, err := writeLoopReflectVerdict(ctx, reflectVerdictOptions{
+				ProjectRoot: opts.ProjectRoot,
+				Feature:     opts.Feature,
+				Runner:      opts.ReflectRunner,
+				Now:         reflectNow,
+			}); err != nil {
+				report.Iterations = append(report.Iterations, iteration)
+				report.Status = "stopped"
+				report.StopReason = fmt.Sprintf("reflect verdict failed: %v", err)
+				report.EndedAt = time.Now().UTC()
+				_ = writeLoopRunArtifact(opts.ProjectRoot, report)
+				return report, errors.New(report.StopReason)
+			}
+		}
 
 		after := resolveStrictLoopStageWithMinConfidence(opts.ProjectRoot, opts.Feature, opts.MinConfidence)
 		iteration.After = after

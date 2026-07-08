@@ -268,6 +268,24 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 		t.Fatalf("expected loop prompt guidance to document ad hoc usage, got %#v", loopPromptPayload.Command.WhenToUse)
 	}
 
+	loopWorkflowOutput, err := executeCapabilitiesCommand("--json", "loop", "workflow")
+	if err != nil {
+		t.Fatalf("kit capabilities loop workflow --json error = %v", err)
+	}
+	var loopWorkflowPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(loopWorkflowOutput), &loopWorkflowPayload); err != nil {
+		t.Fatalf("json.Unmarshal(loop workflow) error = %v", err)
+	}
+	if loopWorkflowPayload.Command.Command != "loop workflow" {
+		t.Fatalf("command = %q, want loop workflow", loopWorkflowPayload.Command.Command)
+	}
+	if !strings.Contains(loopWorkflowPayload.Command.FileWrites.Summary, "REFLECT.json") {
+		t.Fatalf("expected loop workflow file writes to mention REFLECT.json, got %#v", loopWorkflowPayload.Command.FileWrites)
+	}
+	if !strings.Contains(strings.Join(loopWorkflowPayload.Command.Caveats, " "), "raw command, git, and diff evidence") {
+		t.Fatalf("expected loop workflow caveats to document raw reflect evidence, got %#v", loopWorkflowPayload.Command.Caveats)
+	}
+
 	loopReviewOutput, err := executeCapabilitiesCommand("--json", "loop", "review")
 	if err != nil {
 		t.Fatalf("kit capabilities loop review --json error = %v", err)

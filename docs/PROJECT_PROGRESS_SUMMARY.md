@@ -11,11 +11,11 @@
 | 0005 | version-command | `docs/specs/0005-version-command` | reflect | no | 2026-05-18 | - Add an explicit `kit version` subcommand that prints the installed Kit version from the same build metadata already used by `--version`. - The command must be stable, script-friendly, and visible in CLI help so users can inspect their installed release version directly. |
 | 0006 | skill-mine-command | `docs/specs/0006-skill-mine-command` | reflect | no | 2026-05-18 | - Add a new canonical `kit skill mine [feature]` command, plus a deprecated hidden `skills` compatibility alias, that outputs a prompt for an active coding agent to mine reusable procedural skills from a completed feature. - The command must follow the same clipboard-first output-prompt contract as `kit implement` and `kit reflect` and write nothing itself except the generated prompt. - The command must also accept `--prompt-only` as a consistency flag for regenerating the selected feature prompt without mutating repo docs. - Mined skills must use a transferable directory bundle layout that can be consumed by multiple coding agent systems. |
 | 0007 | catchup-command | `docs/specs/0007-catchup-command` | reflect | no | 2026-05-18 | - Add a new `kit catchup [feature]` command that outputs a prompt for a coding agent to recover the current state of a selected feature before any implementation resumes. After command-surface simplification, `catchup` remains callable as a hidden deprecated compatibility surface while `kit resume` becomes the canonical general resume command. - The command must be prompt-only, feature-scoped, and explicitly keep the agent in plan mode until the user approves moving into implementation. - Default command output must copy the generated prompt to the clipboard and reserve raw stdout prompt output for `--output-only`. |
-| 0008 | dispatch-command | `docs/specs/0008-dispatch-command` | reflect | no | 2026-06-02 | - Add a new `kit dispatch` command that outputs a prompt for a coding agent to discover likely file overlap across a pasted task set, cluster overlapping work, and queue subagents safely. - The command must be prompt-only and must force an Agent Team Plan before self-directed subagent execution begins. - Default command output must copy the generated prompt to the clipboard and reserve raw stdout prompt output for `--output-only`. |
+| 0008 | dispatch-command | `docs/specs/0008-dispatch-command` | reflect | no | 2026-06-29 | - Add a new `kit dispatch` command that outputs a prompt for a coding agent to discover likely file overlap across a pasted task set, cluster overlapping work, and queue subagents safely. - The command must be prompt-only and must force an Agent Team Plan before self-directed subagent execution begins. - Default command output must copy the generated prompt to the clipboard and reserve raw stdout prompt output for `--output-only`. |
 | 0009 | spec-skills-discovery | `docs/specs/0009-spec-skills-discovery` | reflect | no | 2026-05-18 | - Add a mandatory skills discovery phase to `kit spec`, keep the chosen skills in `SPEC.md`, and separately track the broader supporting dependencies that shaped the spec. |
 | 0010 | support-command-clipboard-defaults | `docs/specs/0010-support-command-clipboard-defaults` | reflect | no | 2026-05-18 | - Change `kit handoff`, `kit summarize`, and `kit code-review` to copy generated output to the clipboard by default. - Reserve raw stdout prompt output for explicit `--output-only` usage while keeping `--copy` as an explicit override for `--output-only`. |
 | 0011 | handoff-document-sync | `docs/specs/0011-handoff-document-sync` | reflect | no | 2026-05-18 | - Change `kit handoff` from a passive “new session context dump” into an active prompt for the current coding agent session to reconcile feature docs with implementation reality before transfer. - Require the generated prompt to produce a concise final response that confirms documentation sync, includes a full-path document table, and summarizes the most recent conversation context. |
-| 0012 | default-subagent-orchestration | `docs/specs/0012-default-subagent-orchestration` | reflect | no | 2026-06-21 | - Change Kit's shared prompt-orchestration default from single-agent to subagent-first. - Add `--single-agent` as the explicit opt-out when a user wants one lane only. - Keep `kit dispatch` as the stricter discovery-first queue-planning command with an Agent Team Plan before self-directed launch. - Clarify that repository-scale RLM discovery narrows context first, while dispatch and subagents handle execution planning after discovery. |
+| 0012 | default-subagent-orchestration | `docs/specs/0012-default-subagent-orchestration` | reflect | no | 2026-06-29 | - Change Kit's shared prompt-orchestration default from single-agent to subagent-first. - Add `--single-agent` as the explicit opt-out when a user wants one lane only. - Keep `kit dispatch` as the stricter discovery-first queue-planning command with an Agent Team Plan before self-directed launch. - Clarify that repository-scale RLM discovery narrows context first, while dispatch and subagents handle execution planning after discovery. |
 | 0013 | scaffold-agents-safe-merge | `docs/specs/0013-scaffold-agents-safe-merge` | reflect | no | 2026-05-18 | - Make `kit scaffold-agents` safer when repository instruction files already exist by adding an overwrite confirmation gate and an explicit append-only mode. - Keep append-only deterministic and constrained to known Kit-managed sections; do not attempt fuzzy free-form merges. |
 | 0014 | human-readable-terminal-output | `docs/specs/0014-human-readable-terminal-output` | reflect | no | 2026-05-18 | - Improve human-readable terminal output with clearer spacing, semantic emoji markers, and more readable help sections. - Keep generated coding-agent prompts, scaffolded agent instruction files, `--output-only` raw stdout, and `--json` output unchanged. |
 | 0015 | pause-remove-commands | `docs/specs/0015-pause-remove-commands` | complete | no | 2026-05-18 | Add `kit pause`, `kit rm`, and the `kit remove` compatibility alias so users can explicitly pause in-flight work or remove a feature's docs while keeping Kit's generated progress views, removed-history rows, retained notes, and selectors consistent. |
@@ -40,7 +40,8 @@
 | 0034 | review-loop | `docs/specs/0034-review-loop` | complete | no | 2026-06-21 | Add a Kit-native review-loop prompt-prep workflow, exposed through `kit dispatch --loop`, that turns current unresolved CodeRabbit PR feedback into a human-reviewed dispatch prompt with optional review-completion waiting and no git or GitHub mutation without explicit approval. |
 | 0035 | loop-review | `docs/specs/0035-loop-review` | reflect | no | 2026-06-21 | Expose `kit loop review` as an agent-driven correctness loop that reviews changes on the current branch relative to the remote mainline, optionally folds in CodeRabbit PR feedback, and repeats until the agent emits a compact `done` summary with at least 95% correctness. |
 | 0036 | kit-dream | `docs/specs/0036-kit-dream` | removed | no | 2026-06-21 | Removed by kit rm on 2026-06-21. |
-| 0038 | auto-improvement-v1 | `docs/specs/0038-auto-improvement-v1` | clarify | no | 2026-07-05 | Define and implement V1 of `kit improve`, a benchmark-backed self-improvement workflow for Kit harness changes with deterministic evals, traces, candidate validation, reports, and delivery gating. |
+| 0038 | auto-improvement-v1 | `docs/specs/0038-auto-improvement-v1` | deliver | no | 2026-07-07 | (no description) |
+| 0039 | reflect-scoring | `docs/specs/0039-reflect-scoring` | deliver | no | 2026-07-08 | Added scored v2 reflection output so `kit loop workflow` writes additive, runtime-owned `REFLECT.json` verdict evidence during the reflect stage using accepted defaults for lint evidence and the v2 approval boundary; GitHub delivery is in progress on issue `#50` and branch `GH-50`. |
 
 ## PROJECT INTENT
 
@@ -379,13 +380,22 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 
 ### auto-improvement-v1
 
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: (no description)
+- **APPROACH**: (see PLAN.md)
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0038-auto-improvement-v1/SPEC.md`, `docs/specs/0038-auto-improvement-v1/PLAN.md`, `docs/specs/0038-auto-improvement-v1/TASKS.md`
+
+### reflect-scoring
+
 - **STATUS**: clarify
 - **PAUSED**: no
-- **INTENT**: Define and implement V1 of `kit improve`, a benchmark-backed self-improvement workflow for Kit harness changes.
-- **APPROACH**: V2 workflow state lives in `SPEC.md`; source strategy material lives under feature notes.
-- **OPEN ITEMS**: clarification pending for fixture repository scope.
-- **POINTERS**: `docs/specs/0038-auto-improvement-v1/SPEC.md`, `docs/notes/0038-auto-improvement-v1/README.md`
+- **INTENT**: Add a binary-verifiable reflect verdict JSON artifact without changing existing reflect markdown/prompt content or touching dispatch, prompt curation, metrics, or self-editing logic.
+- **APPROACH**: V2 workflow state lives in `SPEC.md`; the likely implementation path is a `kit loop workflow` reflect-stage hook plus v2 prompt guidance, but TASKS and code are intentionally withheld pending approval.
+- **OPEN ITEMS**: Resolve lint-delta source semantics and v2 approval/start boundary semantics.
+- **POINTERS**: `docs/specs/0039-reflect-scoring/SPEC.md`, `docs/notes/0039-reflect-scoring/README.md`
 
 ## LAST UPDATED
 
-2026-07-05 16:45:11 EDT
+2026-07-08 08:15:38 EDT

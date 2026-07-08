@@ -589,6 +589,8 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"For each verifier gap, record `gap id -> acceptance criterion id -> Source Map id -> fix diff area -> rerun evidence -> verifier closure`",
 		"If validation is impossible, record reason, risk, substitute evidence, user-visible impact, owner or next action, and whether delivery is blocked.",
 		"## Reflection Phase",
+		"`kit loop workflow` writes runtime-owned `REFLECT.json` verdict evidence next to `SPEC.md`",
+		"must not fabricate or self-report verdict values",
 		"## Zero-Error Completion Gate",
 		"No known errors remain",
 		"## Documentation Update Rules",
