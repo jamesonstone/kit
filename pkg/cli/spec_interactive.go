@@ -97,24 +97,33 @@ func readSpecDeliveryIntent() (string, error) {
 	printSectionBanner("🚦", "Delivery Intent")
 	fmt.Println(style.muted("Kit records intent only. No Git or GitHub mutation happens here."))
 	fmt.Println()
-	fmt.Printf("  %s  %s\n", style.label("no"), style.muted("capture the idea only; no issue/branch/PR intent yet (default)"))
-	fmt.Printf("  %s %s\n", style.label("yes"), style.muted("intend to create a new issue, branch, and PR later through Kit-managed rules"))
-	fmt.Printf("  %s   %s\n", style.label("continue"), style.muted("continue on the current branch/current issue/current PR if one exists"))
+	fmt.Printf("  %s  %s\n", style.label("1"), style.muted("create a new issue, branch, and PR later through Kit-managed rules (default)"))
+	fmt.Printf("  %s  %s\n", style.label("2"), style.muted("capture the idea only; no issue/branch/PR intent yet"))
+	fmt.Printf("  %s  %s\n", style.label("3"), style.muted("continue on the current branch/current issue/current PR if one exists"))
 	fmt.Println()
-	rl.SetPrompt(whiteBold + "   delivery intent [no/yes/continue]: " + reset)
+	fmt.Printf("  %s %s  %s %s  %s %s\n",
+		style.label("yes/y"),
+		style.muted("= 1"),
+		style.label("no/n"),
+		style.muted("= 2"),
+		style.label("continue/c"),
+		style.muted("= 3"),
+	)
+	fmt.Println()
+	rl.SetPrompt(whiteBold + "   delivery intent [1/2/3]: " + reset)
 	return normalizeSpecDeliveryIntent(readLineRL(rl))
 }
 
 func normalizeSpecDeliveryIntent(raw string) (string, error) {
 	switch strings.ToLower(strings.TrimSpace(raw)) {
-	case "", "n", "no":
-		return specDeliveryIntentIdeaOnly, nil
-	case "y", "yes":
+	case "", "1", "y", "yes":
 		return specDeliveryIntentIssueBranchPRLater, nil
-	case "c", "continue":
+	case "2", "n", "no":
+		return specDeliveryIntentIdeaOnly, nil
+	case "3", "c", "continue":
 		return specDeliveryIntentContinueCurrent, nil
 	default:
-		return "", fmt.Errorf("delivery intent must be yes, no, or continue")
+		return "", fmt.Errorf("delivery intent must be 1, 2, 3, yes, no, or continue")
 	}
 }
 

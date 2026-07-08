@@ -33,7 +33,7 @@ Run once, then refine as the project matures:
 ```bash
 kit init
 kit project refresh
-kit init --refresh
+kit reconcile
 ```
 
 ```text
@@ -79,9 +79,9 @@ For a new `SPEC.md`, `kit spec <feature>` asks for:
 
 Delivery intent options:
 
-- `no` / Enter - capture the idea only; no issue/branch/PR intent yet
-- `yes` - user intends to create a Kit-managed issue/branch/PR later
-- `continue` - coding agent should continue on the current branch/current issue/current PR if one exists
+- `1` / Enter / `yes` - create a Kit-managed issue, branch, and pull request later
+- `2` / `no` - capture the idea only; no issue/branch/PR intent yet
+- `3` / `continue` - coding agent should continue on the current branch/current issue/current PR if one exists
 
 Existing `SPEC.md` files are preserved by default. Use `--revise-thesis` to
 append a dated thesis note and refresh delivery intent.
@@ -123,9 +123,13 @@ stays behind explicit loop/run behavior.
 
 During the clarify stage, loop automation may research repository facts and
 update `SPEC.md`, but it must not guess user intent. If questions remain, it
-stops with the exact questions and does not advance past clarify. It advances
-only when `clarification.status` is `ready`, confidence meets the configured
-threshold, and unresolved questions are `0`.
+stops with a clearly labeled `Open Questions` section. Each question should be
+numbered and include the recommended answer, the current assumption, and why
+the answer matters. If no questions remain, it must state
+`Understanding: <n>%`, `Open Questions: none`, and
+`No more input required from the user`. It advances only when
+`clarification.status` is `ready`, confidence meets the configured threshold,
+and unresolved questions are `0`.
 
 ```yaml
 loop:

@@ -1,7 +1,10 @@
 package cli
 
 import (
+	"context"
+	"errors"
 	"path/filepath"
+	"time"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
@@ -11,6 +14,8 @@ const (
 	statusKitManagedStateCurrent          = "current"
 	statusKitManagedStateRefreshAvailable = "refresh_available"
 	statusKitManagedStateAttentionNeeded  = "attention_needed"
+	statusKitManagedStateUnknown          = "unknown"
+	statusKitManagedRefreshTimeout        = 30 * time.Second
 )
 
 type statusKitManagedSummary struct {
@@ -22,11 +27,13 @@ type statusKitManagedSummary struct {
 }
 
 type statusManagedFilesSummary struct {
-	Created int `json:"created"`
-	Updated int `json:"updated"`
-	Merged  int `json:"merged"`
-	Skipped int `json:"skipped"`
-	Planned int `json:"planned_changes"`
+	Created    int    `json:"created"`
+	Updated    int    `json:"updated"`
+	Merged     int    `json:"merged"`
+	Skipped    int    `json:"skipped"`
+	Planned    int    `json:"planned_changes"`
+	Unchecked  bool   `json:"unchecked,omitempty"`
+	CheckError string `json:"check_error,omitempty"`
 }
 
 type statusRegistrySummary struct {
@@ -47,6 +54,12 @@ type statusKitManagedItem struct {
 	Detail string `json:"detail,omitempty"`
 }
 
+type statusManagedFileChangePlan struct {
+	changes    []initRefreshFileChange
+	unchecked  bool
+	checkError string
+}
+
 func buildStatusKitManagedSummary(
 	projectRoot string,
 	cfg *config.Config,
@@ -59,11 +72,16 @@ func buildStatusKitManagedSummary(
 		},
 	}
 
-	changes, err := planStatusManagedFileChanges(projectRoot)
+	filePlan, err := planStatusManagedFileChanges(projectRoot)
 	if err != nil {
 		return nil, err
 	}
-	recordStatusManagedFileChanges(summary, changes)
+	if filePlan.unchecked {
+		summary.ManagedFiles.Unchecked = true
+		summary.ManagedFiles.CheckError = filePlan.checkError
+	} else {
+		recordStatusManagedFileChanges(summary, filePlan.changes)
+	}
 
 	recordStatusLocalRegistry(projectRoot, cfg, summary)
 
@@ -72,39 +90,23 @@ func buildStatusKitManagedSummary(
 	return summary, nil
 }
 
-func planStatusManagedFileChanges(projectRoot string) ([]initRefreshFileChange, error) {
-	targets := map[string]bool{}
-	opts := initRefreshOptions{dryRun: true, outputOnly: true}
+func planStatusManagedFileChanges(projectRoot string) (statusManagedFileChangePlan, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), statusKitManagedRefreshTimeout)
+	defer cancel()
 
-	cfg, configChange, err := initRefreshConfig(projectRoot, opts, targets)
+	plan, err := buildInitRefreshPlan(ctx, projectRoot, initRefreshOptions{dryRun: true, outputOnly: true})
 	if err != nil {
-		return nil, err
+		var registryErr *initRefreshRegistryError
+		if errors.As(err, &registryErr) || errors.Is(err, context.DeadlineExceeded) {
+			checkError := err.Error()
+			if registryErr != nil {
+				checkError = registryErr.Error()
+			}
+			return statusManagedFileChangePlan{unchecked: true, checkError: checkError}, nil
+		}
+		return statusManagedFileChangePlan{}, err
 	}
-
-	var changes []initRefreshFileChange
-	if configChange != nil {
-		changes = append(changes, *configChange)
-	}
-	scaffoldChanges, err := planRefreshInitScaffoldFiles(projectRoot, opts, cfg, targets)
-	if err != nil {
-		return nil, err
-	}
-	changes = append(changes, scaffoldChanges...)
-
-	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets)
-	if err != nil {
-		return nil, err
-	}
-	if constitutionChange != nil {
-		changes = append(changes, *constitutionChange)
-	}
-
-	instructionChanges, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
-	if err != nil {
-		return nil, err
-	}
-	changes = append(changes, instructionChanges...)
-	return changes, nil
+	return statusManagedFileChangePlan{changes: plan.changes}, nil
 }
 
 func recordStatusManagedFileChanges(summary *statusKitManagedSummary, changes []initRefreshFileChange) {
@@ -180,6 +182,9 @@ func determineStatusKitManagedState(summary *statusKitManagedSummary) string {
 	if summary.Registry.Conflicts+summary.Registry.LocalCustom+summary.Registry.Unknown > 0 {
 		return statusKitManagedStateAttentionNeeded
 	}
+	if summary.ManagedFiles.Unchecked {
+		return statusKitManagedStateUnknown
+	}
 	if summary.ManagedFiles.Planned+summary.Registry.Missing > 0 {
 		return statusKitManagedStateRefreshAvailable
 	}
@@ -190,13 +195,16 @@ func statusKitManagedNextActions(summary *statusKitManagedSummary) []string {
 	var actions []string
 	attentionNeeded := summary.Registry.Conflicts+summary.Registry.LocalCustom+summary.Registry.Unknown > 0
 	refreshAvailable := summary.ManagedFiles.Planned+summary.Registry.Missing > 0
+	if summary.ManagedFiles.Unchecked {
+		actions = append(actions, "managed-file freshness was not checked because the registry was unavailable; rerun `kit status` when registry access is restored")
+	}
 	if attentionNeeded {
 		actions = append(actions, "run `kit reconcile --output-only` to audit local custom, conflicted, or unknown Kit-managed files")
-		actions = append(actions, "use `kit init --refresh --force` only when accepting registry content is intended")
+		actions = append(actions, "run `kit reconcile --include-files --force` only when accepting registry content is intended")
 	}
 	if refreshAvailable {
-		actions = append(actions, "run `kit init --refresh --dry-run --diff` to preview managed-file updates")
-		actions = append(actions, "run `kit init --refresh` to apply reviewed managed-file updates")
+		actions = append(actions, "run `kit reconcile --include-files --dry-run --diff` to preview managed-file updates")
+		actions = append(actions, "run `kit reconcile --include-files` to apply reviewed managed-file updates")
 	}
 	if len(actions) == 0 {
 		actions = append(actions, "no Kit-managed refresh action needed")

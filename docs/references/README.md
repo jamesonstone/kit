@@ -13,8 +13,8 @@
 - Use `rules/readme-header-tagline.md` when creating or materially updating top-level README openings
 - Use `kit rules add` to import or activate available registry rulesets from the Kit GitHub `main` branch
 - Use `kit rules view <slug>` to preview a local or registry ruleset before importing it
-- Use `kit init --refresh` to adopt existing registry rules into `.kit.yaml` registry state and pick up safe upstream ruleset updates
-- Use `kit init --refresh --force --file=docs/references/rules/<slug>.md` only when you intentionally want to accept the latest registry content for a customized ruleset
+- Use `kit reconcile --include-files` to adopt existing registry rules into `.kit.yaml` registry state and pick up safe upstream ruleset updates
+- Use `kit reconcile --include-files --force --file=docs/references/rules/<slug>.md` only when you intentionally want to accept the latest registry content for a customized ruleset
 - Use `kit rules add --custom` for the interactive `$EDITOR` ruleset builder
 - `kit rule` is the singular alias for `kit rules`
 

@@ -86,6 +86,7 @@ func TestRunProjectRefreshOutputOnlyEmitsPromptWithoutWritingConstitution(t *tes
 		"Analyze for durable changes:",
 		"Update guidance:",
 		"Verification:",
+		"`kit reconcile --all --include-files`",
 		"`Findings`",
 	} {
 		if !strings.Contains(output, check) {

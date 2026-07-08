@@ -55,7 +55,7 @@ Before completing downstream instruction or prompt work that references Kit comm
 - `kit capabilities --search <term> --json` discovers the relevant Kit command.
 - `kit capabilities <command> --json` accurately describes mutation, network, file-write, git, flag, example, and caveat behavior.
 - Downstream project docs use `kit capabilities` for command discovery and do not require editing Kit source files.
-- `kit init --refresh` installs or refreshes this usage rule without installing the maintainer-only `command-capabilities` rule.
+- `kit reconcile --include-files` installs or refreshes this usage rule without installing the maintainer-only `command-capabilities` rule.
 
 ## Examples
 
@@ -76,5 +76,5 @@ kit capabilities dispatch --json
 Refreshing an existing downstream project:
 
 ```bash
-kit init --refresh
+kit reconcile --include-files
 ```

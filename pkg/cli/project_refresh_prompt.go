@@ -49,10 +49,10 @@ func buildProjectRefreshPromptWithOptions(projectRoot string, cfg *config.Config
 		doc.BulletList(
 			docsOnlyWorkflowRule("project-level documentation"),
 			"this is semantic project refresh, not re-initialization; do not rerun `kit init` as the fix",
-			"use `kit reconcile --all` for structural Kit contract drift instead of duplicating that audit manually",
+			"use `kit reconcile --all --include-files` for structural Kit contract drift instead of duplicating that audit manually",
 			"preserve existing project wording when it remains accurate",
 			"update `docs/CONSTITUTION.md` only for durable project-wide rules, constraints, vocabulary, conventions, or long-term direction",
-			"do not use this command for structural scaffold updates; use `kit init --refresh` or `kit reconcile --all` for that work",
+			"do not use this command for structural scaffold updates; use `kit reconcile --all --include-files` for that work",
 		)
 		doc.Paragraph("Current cadence state:")
 		doc.BulletList(projectRefreshStatusBullets(opts.Status)...)
@@ -64,7 +64,7 @@ func buildProjectRefreshPromptWithOptions(projectRoot string, cfg *config.Config
 			"`git diff --stat`",
 			"`kit status --all`",
 			"`kit check --project`",
-			"`kit reconcile --all` if structural document drift is suspected",
+			"`kit reconcile --all --include-files` if structural scaffold or managed-file drift is suspected",
 			fmt.Sprintf(
 				"`rg -n \"TODO|placeholder|stale|outdated|%s\" %s %s`",
 				filepath.Base(constitutionPath),

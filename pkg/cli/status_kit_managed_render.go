@@ -86,6 +86,12 @@ func formatKitManagedState(style humanOutputStyle, state string) string {
 }
 
 func formatManagedFileSummary(summary statusManagedFilesSummary) string {
+	if summary.Unchecked {
+		if summary.CheckError != "" {
+			return fmt.Sprintf("unchecked (%s)", summary.CheckError)
+		}
+		return "unchecked"
+	}
 	if summary.Planned == 0 {
 		return fmt.Sprintf("current (%d checked)", summary.Skipped)
 	}

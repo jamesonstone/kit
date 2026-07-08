@@ -34,7 +34,7 @@ func buildInitRefreshDocumentationPrompt(projectRoot string, cfg *config.Config)
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Heading(2, "Post Init Refresh Documentation Review")
-		doc.Paragraph(fmt.Sprintf("Review semantic project documentation updates after `kit init --refresh --force` ran in %s.", projectRoot))
+		doc.Paragraph(fmt.Sprintf("Review semantic project documentation updates after Kit-managed project files were refreshed in %s.", projectRoot))
 		doc.Paragraph("Goal:")
 		doc.BulletList(
 			"bring durable project documentation into alignment with refreshed Kit-managed files, registry rulesets, generated instruction docs, and command guidance",
@@ -57,7 +57,7 @@ func buildInitRefreshDocumentationPrompt(projectRoot string, cfg *config.Config)
 			"`git status --short`",
 			"`git diff -- docs AGENTS.md CLAUDE.md .github/copilot-instructions.md README.md`",
 			"`kit rules list`",
-			"`kit capabilities init --json`",
+			"`kit capabilities reconcile --json`",
 			"`kit check --project`",
 		)
 		doc.Paragraph("Update guidance:")
