@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -116,6 +117,40 @@ func TestStatusManagedSummaryFallsBackWhenRegistryUnavailable(t *testing.T) {
 	}
 }
 
+func TestStatusManagedSummaryUsesBoundedRegistryContext(t *testing.T) {
+	projectRoot, cfg := setupLifecycleTestProject(t)
+	observedDeadline := false
+	stubRulesetRegistryFunc(t, func(ctx context.Context) ([]registryRuleset, error) {
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			t.Fatal("rulesetRegistryFetcher context has no deadline")
+		}
+		remaining := time.Until(deadline)
+		if remaining <= 0 || remaining > statusKitManagedRefreshTimeout {
+			t.Fatalf("deadline remaining = %v, want within %v", remaining, statusKitManagedRefreshTimeout)
+		}
+		observedDeadline = true
+		return nil, context.DeadlineExceeded
+	})
+
+	summary, err := buildStatusKitManagedSummary(projectRoot, cfg)
+	if err != nil {
+		t.Fatalf("buildStatusKitManagedSummary() error = %v", err)
+	}
+	if !observedDeadline {
+		t.Fatal("expected rulesetRegistryFetcher to observe a bounded context")
+	}
+	if summary.State != statusKitManagedStateUnknown {
+		t.Fatalf("State = %q, want %q; summary=%#v", summary.State, statusKitManagedStateUnknown, summary)
+	}
+	if !summary.ManagedFiles.Unchecked {
+		t.Fatalf("ManagedFiles.Unchecked = false, want true; summary=%#v", summary.ManagedFiles)
+	}
+	if !strings.Contains(summary.ManagedFiles.CheckError, context.DeadlineExceeded.Error()) {
+		t.Fatalf("CheckError = %q, want deadline cause", summary.ManagedFiles.CheckError)
+	}
+}
+
 func TestRunStatusJSONReportsUncheckedKitManagedFilesWhenRegistryUnavailable(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	t.Setenv("HOME", t.TempDir())
@@ -178,11 +213,16 @@ func TestStatusManagedNextActionsPrioritizesReconcile(t *testing.T) {
 
 func stubRulesetRegistryError(t *testing.T, err error) {
 	t.Helper()
+	stubRulesetRegistryFunc(t, func(_ context.Context) ([]registryRuleset, error) {
+		return nil, err
+	})
+}
+
+func stubRulesetRegistryFunc(t *testing.T, fetch func(context.Context) ([]registryRuleset, error)) {
+	t.Helper()
 	previous := rulesetRegistryFetcher
 	t.Cleanup(func() {
 		rulesetRegistryFetcher = previous
 	})
-	rulesetRegistryFetcher = func(_ context.Context) ([]registryRuleset, error) {
-		return nil, err
-	}
+	rulesetRegistryFetcher = fetch
 }

@@ -161,10 +161,14 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if err := json.Unmarshal([]byte(statusOutput), &statusPayload); err != nil {
 		t.Fatalf("json.Unmarshal(status) error = %v", err)
 	}
+	if !strings.Contains(statusPayload.Command.NetworkUse.Summary, "30s timeout") {
+		t.Fatalf("expected status network use to document registry timeout, got %#v", statusPayload.Command.NetworkUse)
+	}
 	if !strings.Contains(statusPayload.Command.NetworkUse.FlagDependent, "unchecked/unknown") {
 		t.Fatalf("expected status network use to document registry fallback, got %#v", statusPayload.Command.NetworkUse)
 	}
-	if !strings.Contains(strings.Join(statusPayload.Command.Caveats, " "), "managed_files.unchecked") {
+	statusCaveats := strings.Join(statusPayload.Command.Caveats, " ")
+	if !strings.Contains(statusCaveats, "deadline expiry") || !strings.Contains(statusCaveats, "managed_files.unchecked") {
 		t.Fatalf("expected status caveats to document unchecked managed files, got %#v", statusPayload.Command.Caveats)
 	}
 

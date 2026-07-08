@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"time"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
@@ -14,6 +15,7 @@ const (
 	statusKitManagedStateRefreshAvailable = "refresh_available"
 	statusKitManagedStateAttentionNeeded  = "attention_needed"
 	statusKitManagedStateUnknown          = "unknown"
+	statusKitManagedRefreshTimeout        = 30 * time.Second
 )
 
 type statusKitManagedSummary struct {
@@ -89,11 +91,18 @@ func buildStatusKitManagedSummary(
 }
 
 func planStatusManagedFileChanges(projectRoot string) (statusManagedFileChangePlan, error) {
-	plan, err := buildInitRefreshPlan(context.Background(), projectRoot, initRefreshOptions{dryRun: true, outputOnly: true})
+	ctx, cancel := context.WithTimeout(context.Background(), statusKitManagedRefreshTimeout)
+	defer cancel()
+
+	plan, err := buildInitRefreshPlan(ctx, projectRoot, initRefreshOptions{dryRun: true, outputOnly: true})
 	if err != nil {
 		var registryErr *initRefreshRegistryError
-		if errors.As(err, &registryErr) {
-			return statusManagedFileChangePlan{unchecked: true, checkError: registryErr.Error()}, nil
+		if errors.As(err, &registryErr) || errors.Is(err, context.DeadlineExceeded) {
+			checkError := err.Error()
+			if registryErr != nil {
+				checkError = registryErr.Error()
+			}
+			return statusManagedFileChangePlan{unchecked: true, checkError: checkError}, nil
 		}
 		return statusManagedFileChangePlan{}, err
 	}
