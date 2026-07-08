@@ -418,6 +418,7 @@ Accepted direction after user clarification:
 | SRC-016 | User clarification | current conversation | Scoring belongs to the reflection phase of the current `kit spec` workflow, not the deprecated legacy reflect command. | Accepted command/workflow target | AC-001, AC-006, AC-009, AC-010 | confirmed |
 | SRC-017 | `pkg/cli/spec_v2_prompt.go` | `Reflection Phase` | The generated v2 supervisor prompt defines reflection as a post-validation review recorded in `SPEC.md`, but does not currently require `REFLECT.json`. | Prompt update target | AC-001, AC-006 | confirmed |
 | SRC-018 | External self-improvement loops source | linked `SKILL.md` | The scoring signal should be outside agent-editable prompt content, tied to raw artifacts rather than agent reports, scoped to the lowest sufficient workflow change, and leave evaluator/surface expansion decisions human-gated. | Self-improvement-aligned constraints | AC-001, AC-005, AC-006, AC-011 | confirmed |
+| SRC-019 | `docs/CONSTITUTION.md`; `docs/agents/GUARDRAILS.md` | source file length constraint | Source code files should stay around 300 lines; docs, tests fixtures, and `.kit` generated artifacts are excluded from that repository hygiene rule. | PR update line-length pass | TASK-007 | confirmed |
 
 ## CLARIFICATIONS
 
@@ -573,6 +574,7 @@ Rollback strategy:
 - [x] TASK-004 - Update v2 prompt guidance and command capability metadata for the reflect-stage `REFLECT.json` artifact. Expected files: `pkg/cli/spec_v2_prompt.go`, `pkg/cli/capabilities_catalog.go`, `pkg/cli/*_test.go`.
 - [x] TASK-005 - Add focused validation coverage for test exit evidence, lint parser evidence, scope-drift tiers, git-boundary fail-closed behavior, spoof-resistant scoring, v2 prompt wording, capability metadata, and legacy reflect stability. Expected files: `pkg/cli/loop_reflect_verdict_test.go`, `pkg/cli/*_test.go`.
 - [x] TASK-006 - Run validation and record evidence in this SPEC. Expected files: `docs/specs/0039-reflect-scoring/SPEC.md`, `docs/PROJECT_PROGRESS_SUMMARY.md`.
+- [x] TASK-007 - Update the existing PR with a repository-wide source-file length pass so tracked and newly split Go source files are at or below the ~300-line rule. Expected files: oversized `.go` source files split into same-package sibling files plus this SPEC/progress summary.
 
 ## VALIDATION MAP
 
@@ -599,6 +601,7 @@ Reflection completed after validation.
 - `REFLECT.json` is written atomically only after required evidence is available and parseable. The missing-ready-boundary test proves the fail-closed no-file-write path.
 - The accepted lint default is implemented, but the repository currently has broad lint debt. `make lint` fails on pre-existing findings outside this feature; diff-only lint reports `0 issues`.
 - This remains the lowest sufficient self-improvement rung: no prompt evolution, dispatch, prompt stats, metrics aggregation, self-editing, candidate promotion, or evaluator tuning was added.
+- Follow-up PR update: oversized Go source files were split into same-package sibling files to satisfy the ~300-line source-file rule without changing public behavior; the two single-declaration outliers were refactored into explicit helper functions.
 
 ## DOCUMENTATION UPDATES
 
@@ -614,6 +617,7 @@ Planned implementation documentation updates:
 - `pkg/cli/spec_v2_prompt.go` and `pkg/cli/testdata/spec_v2_supervisor_prompt.golden`: updated v2 reflection guidance so agents know the verdict is runtime-owned and must not be fabricated.
 - README/root help were not updated because no visible command, flag, or root help contract changed.
 - Dispatch, prompt curation, prompt stats, metrics aggregation, and self-editing docs were intentionally not updated because those surfaces stayed out of scope.
+- Repository hygiene update: Go source files over the ~300-line rule were split into same-package sibling files; no README/root help update was needed because this does not change user-facing command behavior.
 
 ## DELIVERY DECISION
 
@@ -621,7 +625,7 @@ User requested GitHub delivery on 2026-07-08 using Kit-managed repository rules.
 
 - Issue: `#50` (`https://github.com/jamesonstone/kit/issues/50`), assigned to `jamesonstone`.
 - Branch: `GH-50`, created from refreshed `origin/main`.
-- PR: pending at commit time; create ready PR after commit and push.
+- PR: `#51` (`https://github.com/jamesonstone/kit/pull/51`), ready for review; update this existing PR with the repository line-length pass.
 
 ## EVIDENCE
 
@@ -652,8 +656,17 @@ Implementation and validation evidence:
 - `go test ./pkg/cli`: passed.
 - `go test ./...`: passed.
 - `go vet ./...`: passed with no output.
-- `make lint`: failed with 58 pre-existing repo-wide issues (`errcheck`, `staticcheck`, `unused`); no reported finding referenced `pkg/cli/loop_reflect_verdict.go` or `pkg/cli/loop_reflect_verdict_test.go`.
+- Repository line-length inventory: source-file scan across tracked and newly split files, excluding `docs/`, `.kit/`, Markdown docs, and `testdata/` fixtures, produced no files over 300 lines after the split.
+- Oversized Go files were split into same-package sibling files; generated test splits were renamed to end in `_test.go` so they remain test-only compilation units.
+- `pkg/cli/spec_v2_prompt_part2.go`: extracted prompt section helpers so the generated v2 prompt content stays byte-for-byte covered by existing golden tests while the file stays under the line rule.
+- `pkg/cli/capabilities_part2_test.go` and focused `capabilities_targeted_*_test.go` helpers: split the targeted capability JSON assertions without reducing command coverage.
+- `go test ./...`: passed after the repository line-length pass.
+- `go vet ./...`: passed with no output after the repository line-length pass.
+- `go run ./cmd/kit check 0039-reflect-scoring`: passed.
+- `git diff --check`: passed.
+- `make lint`: failed with 53 pre-existing repo-wide issues (`errcheck`, `staticcheck`, `unused`); diff-only lint remains clean.
 - `golangci-lint run --new-from-rev=HEAD ./...`: passed with `0 issues`.
+- `golangci-lint run --new-from-rev=origin/main ./...`: passed with `0 issues`.
 - `go run ./cmd/kit capabilities loop workflow --json`: passed and reported `writes loop prompts, stdout, stderr, and run summaries under .kit/loops; when the v2 reflect stage completes, writes runtime-owned REFLECT.json next to SPEC.md`.
 - `git diff -- pkg/cli/reflect.go pkg/cli/dispatch.go pkg/cli/improve.go pkg/cli/prompt_stats.go`: no diff.
 - `git diff -- go.mod go.sum`: no diff.

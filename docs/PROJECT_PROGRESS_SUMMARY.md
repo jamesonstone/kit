@@ -41,7 +41,7 @@
 | 0035 | loop-review | `docs/specs/0035-loop-review` | reflect | no | 2026-06-21 | Expose `kit loop review` as an agent-driven correctness loop that reviews changes on the current branch relative to the remote mainline, optionally folds in CodeRabbit PR feedback, and repeats until the agent emits a compact `done` summary with at least 95% correctness. |
 | 0036 | kit-dream | `docs/specs/0036-kit-dream` | removed | no | 2026-06-21 | Removed by kit rm on 2026-06-21. |
 | 0038 | auto-improvement-v1 | `docs/specs/0038-auto-improvement-v1` | deliver | no | 2026-07-07 | (no description) |
-| 0039 | reflect-scoring | `docs/specs/0039-reflect-scoring` | deliver | no | 2026-07-08 | Added scored v2 reflection output so `kit loop workflow` writes additive, runtime-owned `REFLECT.json` verdict evidence during the reflect stage using accepted defaults for lint evidence and the v2 approval boundary; GitHub delivery is in progress on issue `#50` and branch `GH-50`. |
+| 0039 | reflect-scoring | `docs/specs/0039-reflect-scoring` | deliver | no | 2026-07-08 | Added scored v2 reflection output so `kit loop workflow` writes additive, runtime-owned `REFLECT.json` verdict evidence during the reflect stage using accepted defaults for lint evidence and the v2 approval boundary; GitHub delivery is in progress on issue `#50`, branch `GH-50`, and PR `#51`, with a follow-up repository source-file length pass included. |
 
 ## PROJECT INTENT
 
