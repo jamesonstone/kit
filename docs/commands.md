@@ -31,7 +31,7 @@ hook that runs `make build` before every commit.
 ```bash
 kit init
 kit project refresh
-kit init --refresh
+kit reconcile
 kit spec my-feature
 kit notes my-feature --add --source slack
 kit spec dashboard-redesign --profile=frontend
@@ -88,7 +88,7 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit state [refresh]` | Show or refresh generated pointer-only `.kit/state.json`. |
 | `kit eval` | Run small local harness regression checks. |
 | `kit rules` / `kit rule` | Import, preview, create, list, and link repo-local rulesets. |
-| `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift. Use `kit init --refresh --dry-run --diff` to preview managed-file updates and `kit init --refresh` to apply them. |
+| `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift. Without a feature argument, the interactive menu asks whether to include files, force changes, and output the coding-agent prompt. Use `--include-files --dry-run --diff` to preview managed-file updates. |
 
 Inside the Kit source repository, every new command, subcommand, flag, alias,
 or command behavior extension must update `kit capabilities` in the same
@@ -269,8 +269,8 @@ Instruction scaffold versions:
 - existing repos keep their current model unless `--version` explicitly switches them
 - switching models is repo-wide and requires `--force`
 
-`kit init --refresh` is the consolidated refresh command for existing Kit
-projects. It creates missing Kit-managed files, migrates known generated v1
+`kit reconcile` is the consolidated reviewed refresh command for existing Kit
+projects. When files are included, it creates missing Kit-managed files, migrates known generated v1
 instruction files to the v2 thin docs model, refreshes generated support docs,
 imports known registry rulesets, and records ruleset registry state in
 `.kit.yaml`. It also creates or refreshes the Kit-managed README badge block
@@ -286,11 +286,14 @@ workflow assigns new issues and pull requests to `github.default_assignees` from
 the project `.kit.yaml`, falls back to the global `~/.config/kit/.kit.yaml`, and
 safely no-ops when no assignees are configured.
 
-Use `kit init --refresh --dry-run --diff` to preview managed-file changes
-without writing them.
+Run `kit reconcile` interactively to choose whether to include files, force
+changes, and output the follow-up coding-agent prompt.
 
-Use `kit init --refresh --force` after reviewing local generated-file changes
-when you want to accept refreshed generated guidance. After the structural
-refresh completes, Kit copies a documentation review prompt to the clipboard so
-an agent can update `docs/CONSTITUTION.md`, agent docs, references, command
-docs, and directly affected feature specs semantically.
+Use `kit reconcile --include-files --dry-run --diff` to preview managed-file
+changes without writing them.
+
+Use `kit reconcile --include-files --force` after reviewing local generated-file
+changes when you want to accept refreshed generated guidance. When requested,
+Kit outputs a documentation review prompt so an agent can update
+`docs/CONSTITUTION.md`, agent docs, references, command docs, and directly
+affected feature specs semantically.

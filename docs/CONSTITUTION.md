@@ -354,11 +354,11 @@ The semantic refresh flow for updating durable project-level truth after a repos
 - Uses `kit reconcile --all` for structural contract drift instead of duplicating reconciliation
 - Remains advisory and docs-only; it does not rerun `kit init` or block lifecycle commands
 
-### Init Refresh
+### Reconcile Refresh
 
 The structural refresh flow for updating Kit-managed project files to the current Kit defaults:
 
-- Invoked with `kit init --refresh`
+- Invoked with `kit reconcile`, then choose whether to include files, force changes, and output the coding-agent prompt
 - Creates missing Kit-managed scaffold files, instruction docs, support docs, and known registry rulesets
 - Creates or refreshes the Kit-managed `.github/workflows/auto-assign.yml` workflow from project-local `github.default_assignees`, falling back to global `~/.config/kit/.kit.yaml`, and rendering a non-blocking no-op when no assignees are configured
 - Merges or appends missing Kit-managed documentation sections by default instead of overwriting project-specific content
@@ -366,9 +366,9 @@ The structural refresh flow for updating Kit-managed project files to the curren
 - Preserves local ruleset `status` while comparing registry content, because activation and silencing are project-local choices
 - Skips and reports local-custom or conflicted rulesets instead of writing conflict markers or silently overwriting project guidance
 - Migrates old verbose repository instruction files to the v2 thin ToC/RLM model when they still match known generated templates
-- Uses `kit init --refresh --dry-run --diff` to preview managed-file changes without writing them
-- Uses `kit init --refresh --force` for generated documentation overwrites and for accepting latest registry ruleset content while preserving local ruleset status
-- Uses `kit init --refresh --file=<path> --force` for targeted overwrites such as `.envrc` or `docs/references/rules/<slug>.md`
+- Uses `kit reconcile --include-files --dry-run --diff` to preview managed-file changes without writing them
+- Uses `kit reconcile --include-files --force` for generated documentation overwrites and for accepting latest registry ruleset content while preserving local ruleset status
+- Uses `kit reconcile --include-files --file=<path> --force` for targeted overwrites such as `.envrc` or `docs/references/rules/<slug>.md`
 
 ### Map
 

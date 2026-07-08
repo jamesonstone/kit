@@ -929,10 +929,11 @@ Flags:
   lifecycle matrix with paused or backlog state and available task progress
 - `--all` includes removed feature tombstones with `State` set to `REMOVED`
   and a notes-retention marker
-- `kit status` remains local-only and performs no network access; use
-  `kit init --refresh --dry-run --diff` to preview registry and managed-file
-  updates, `kit init --refresh` to apply reviewed updates, and `kit reconcile`
-  to audit Kit-managed documentation drift
+- `kit status` may fetch the Kit ruleset registry so its managed-file refresh
+  state uses the same planning engine as refresh; use `kit reconcile
+  --include-files --dry-run --diff` to preview registry and managed-file
+  updates, and `kit reconcile` to interactively apply reviewed updates or
+  audit Kit-managed documentation drift
 - when writing to a terminal, status views may color lifecycle markers and
   state labels for scanability without changing non-TTY output
 - `--all --json` uses a dedicated all-features payload and does not replace the
@@ -1177,12 +1178,17 @@ Completion output:
 Purpose:
 
 - audit Kit-managed docs and init scaffold artifacts against the current Kit contract
+- include current Kit-managed file and ruleset refreshes when requested
 - output a prompt for a coding agent to reconcile stale or missing documentation and scaffold drift
-- keep v1 scoped to Kit-managed docs and scaffold files, with no product-code edits
+- keep reconciliation scoped to Kit-managed docs and scaffold files, with no product-code edits
 
 Behavior:
 
 - without feature argument: audits the whole project by default
+- when run interactively without flags, asks `include files?`, `force these changes?`, and `output coding-agent prompt too?`
+- `--include-files` refreshes Kit-managed project files, registry rulesets, README badges, config backfills, init scaffold artifacts, and instruction docs before auditing documentation
+- `--force` replaces supported generated files and registry rulesets only when the user intentionally accepts those changes
+- `--dry-run --diff` previews included file refreshes without writing files
 - with feature argument: audits the selected feature plus related rollup drift
 - whole-project audits include repo-local artifacts created or updated by `kit init`
 - emits a short clean result when no reconciliation is needed
@@ -1206,7 +1212,7 @@ Findings:
 Verification:
 
 - run `kit check --all` for project-wide reconciliation or `kit check <feature>` for feature-scoped reconciliation
-- run `kit init --refresh --dry-run --diff` when reconcile reports init scaffold drift, then apply the intended refresh with `kit init --refresh`
+- run `kit reconcile --include-files --dry-run --diff` when reconcile reports init scaffold drift, then apply the intended refresh with `kit reconcile`
 - refresh `PROJECT_PROGRESS_SUMMARY.md` when reconciled changes affect the
   project summary
 

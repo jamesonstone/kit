@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -70,6 +71,51 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 	}
 	if strings.Contains(prompt, "/plan") {
 		t.Fatalf("expected reconcile prompt to avoid native plan-mode triggers, got %q", prompt)
+	}
+}
+
+func TestReadReconcileMenuUsesReadableDefaults(t *testing.T) {
+	var out bytes.Buffer
+
+	choice, err := readReconcileMenu(strings.NewReader("\n\n\n"), &out)
+	if err != nil {
+		t.Fatalf("readReconcileMenu() error = %v", err)
+	}
+	if !choice.IncludeFiles {
+		t.Fatalf("IncludeFiles = false, want true")
+	}
+	if choice.Force {
+		t.Fatalf("Force = true, want false")
+	}
+	if !choice.OutputPrompt {
+		t.Fatalf("OutputPrompt = false, want true")
+	}
+	for _, check := range []string{"Reconcile Options", "include files?", "force these changes?", "output coding-agent prompt too?"} {
+		if !strings.Contains(out.String(), check) {
+			t.Fatalf("expected menu output to contain %q, got %q", check, out.String())
+		}
+	}
+}
+
+func TestReadReconcileMenuCanSkipFilesAndPrompt(t *testing.T) {
+	choice, err := readReconcileMenu(strings.NewReader("n\nn\n"), io.Discard)
+	if err != nil {
+		t.Fatalf("readReconcileMenu() error = %v", err)
+	}
+	if choice.IncludeFiles {
+		t.Fatalf("IncludeFiles = true, want false")
+	}
+	if choice.Force {
+		t.Fatalf("Force = true, want false")
+	}
+	if choice.OutputPrompt {
+		t.Fatalf("OutputPrompt = true, want false")
+	}
+}
+
+func TestReadReconcileMenuRejectsInvalidAnswer(t *testing.T) {
+	if got, err := readReconcileMenu(strings.NewReader("maybe\n"), io.Discard); err == nil {
+		t.Fatalf("readReconcileMenu() = %#v, want error", got)
 	}
 }
 

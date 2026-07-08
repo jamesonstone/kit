@@ -28,7 +28,7 @@ func newProjectCommand() *cobra.Command {
 
 Use kit project refresh to generate a semantic refresh prompt for durable
 project-level documentation, especially docs/CONSTITUTION.md. This is separate
-from kit init --refresh, which refreshes structural Kit-managed files.`,
+from kit reconcile, which refreshes structural Kit-managed files.`,
 	}
 	cmd.AddCommand(newProjectRefreshCommand())
 	return cmd

@@ -74,8 +74,9 @@ references:
 
 ## SUMMARY
 
-- Add a new `kit reconcile [feature]` command that audits Kit-managed project documents against the current Kit document contract and outputs a prompt for an agent to reconcile stale or missing documentation.
-- The command must default to whole-project reconciliation, stay prompt-only in v1, and emit exact file targets, update instructions, and codebase search guidance instead of editing docs directly.
+- Add a `kit reconcile [feature]` command that audits Kit-managed project documents against the current Kit document contract and outputs a prompt for an agent to reconcile stale or missing documentation.
+- The original v1 command defaults to whole-project reconciliation and emits exact file targets, update instructions, and codebase search guidance instead of editing docs directly.
+- GH-52 extends project-wide `kit reconcile` into the reviewed refresh surface for Kit-managed files, rulesets, and follow-up coding-agent prompts.
 
 ## PROBLEM
 
@@ -96,10 +97,12 @@ references:
 - Tell the agent exactly how to update each stale document and how to search the codebase for the missing evidence.
 - Keep v1 strictly prompt-only and documentation-scoped.
 - Keep the raw prompt concise enough to stay readable for repo-wide audits.
+- In project-wide interactive mode, ask whether to include managed files, force changes, and output the coding-agent prompt.
+- When managed files are included, reuse the init refresh planner to refresh `.kit.yaml`, README managed sections, rulesets, init scaffold artifacts, and instruction docs.
 
 ## NON-GOALS
 
-- Automatically editing project documents in v1.
+- Automatically editing project documents in v1 documentation-audit mode.
 - Automatically filling missing document content from code in v1.
 - Producing machine-readable JSON, SARIF, or migration reports in v1.
 - Changing product code as part of reconciliation instructions.
@@ -144,7 +147,12 @@ references:
 - The command must support `--all` as an explicit alias for whole-project mode.
 - Passing both a feature argument and `--all` must fail with an actionable error.
 - The command must support `--copy`, `--output-only`, and `--prompt-only`, and must use the shared clipboard-first prompt-output helper.
-- If reconciliation finds no issues, the command must print a concise success result and must not emit a prompt body or copy anything to the clipboard.
+- In project-wide interactive terminals, the command must ask `include files?`, `force these changes?`, and `output coding-agent prompt too?` unless flags already make those choices explicit.
+- The command must support `--include-files`, `--force`, `--dry-run`, `--diff`, and repeatable `--file` for managed-file refreshes.
+- `--diff` must require `--dry-run`.
+- Feature-scoped reconciliation and `--prompt-only` must remain prompt/audit-only and must not prompt for managed-file refresh choices.
+- If reconciliation finds no issues in documentation-audit mode, the command must print a concise success result and must not emit a prompt body or copy anything to the clipboard.
+- If managed files were included and the user requested the coding-agent prompt, a clean documentation audit may still emit the post-refresh documentation review prompt.
 - If reconciliation finds issues, the command must emit a prompt that begins with `/plan`.
 - The raw prompt body must stay plain text and concise in both normal and `--output-only` modes.
 - Human-readable non-`--output-only` terminal output may add compact graphical summaries such as ASCII tables or boxed sections, but must not change the raw prompt payload.

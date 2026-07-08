@@ -52,7 +52,7 @@ func buildProjectRefreshPromptWithOptions(projectRoot string, cfg *config.Config
 			"use `kit reconcile --all` for structural Kit contract drift instead of duplicating that audit manually",
 			"preserve existing project wording when it remains accurate",
 			"update `docs/CONSTITUTION.md` only for durable project-wide rules, constraints, vocabulary, conventions, or long-term direction",
-			"do not use this command for structural scaffold updates; use `kit init --refresh` or `kit reconcile --all` for that work",
+			"do not use this command for structural scaffold updates; use `kit reconcile --all` for that work",
 		)
 		doc.Paragraph("Current cadence state:")
 		doc.BulletList(projectRefreshStatusBullets(opts.Status)...)

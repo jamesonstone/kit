@@ -92,3 +92,38 @@ func TestNormalizeSpecAnswer_WhitespaceOnlyBecomesEmpty(t *testing.T) {
 		t.Fatalf("expected empty string, got %q", got)
 	}
 }
+
+func TestNormalizeSpecDeliveryIntentAcceptsNumberedDefaults(t *testing.T) {
+	tests := []struct {
+		name string
+		raw  string
+		want string
+	}{
+		{name: "empty defaults to issue branch PR later", raw: "", want: specDeliveryIntentIssueBranchPRLater},
+		{name: "one selects issue branch PR later", raw: "1", want: specDeliveryIntentIssueBranchPRLater},
+		{name: "yes alias selects issue branch PR later", raw: "yes", want: specDeliveryIntentIssueBranchPRLater},
+		{name: "y alias selects issue branch PR later", raw: "y", want: specDeliveryIntentIssueBranchPRLater},
+		{name: "two selects idea only", raw: "2", want: specDeliveryIntentIdeaOnly},
+		{name: "no alias selects idea only", raw: "no", want: specDeliveryIntentIdeaOnly},
+		{name: "three selects continue current", raw: "3", want: specDeliveryIntentContinueCurrent},
+		{name: "continue alias selects continue current", raw: "continue", want: specDeliveryIntentContinueCurrent},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := normalizeSpecDeliveryIntent(tt.raw)
+			if err != nil {
+				t.Fatalf("normalizeSpecDeliveryIntent(%q) error = %v", tt.raw, err)
+			}
+			if got != tt.want {
+				t.Fatalf("normalizeSpecDeliveryIntent(%q) = %q, want %q", tt.raw, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeSpecDeliveryIntentRejectsInvalidNumber(t *testing.T) {
+	if got, err := normalizeSpecDeliveryIntent("4"); err == nil {
+		t.Fatalf("normalizeSpecDeliveryIntent(4) = %q, want error", got)
+	}
+}

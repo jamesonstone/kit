@@ -190,7 +190,7 @@ func runSpecSetupGate(projectRoot string, cfg *config.Config, status specSetupSt
 		if !outputOnly {
 			printNumberedNextSteps([]string{
 				"Paste the copied prompt into your agent to populate docs/CONSTITUTION.md",
-				"Run `kit init --refresh` if missing support docs need to be restored",
+				"Run `kit reconcile --include-files` if missing support docs need to be restored",
 				"Run `kit spec <feature>` again when setup is ready",
 			})
 		}

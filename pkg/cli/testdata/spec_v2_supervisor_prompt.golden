@@ -114,7 +114,10 @@ You are the supervisor coding agent for the Kit v2 `kit spec` workflow for featu
 ## Clarification-First Operating Model
 
 - Start in Clarification Mode unless `SPEC.md` front matter already has `clarification.status: ready`, `clarification.confidence` at or above the configured goal, and `clarification.unresolved_questions: 0`.
-- Clarification Mode output is a pre-instruction report plus a numbered question batch with recommended defaults, assumptions, uncertainty, confidence, and unresolved count.
+- Clarification Mode output is a pre-instruction report plus a clearly labeled `Open Questions` section.
+- `Open Questions` must be maximized for user review: use numbered questions, readable spacing, recommended defaults, assumptions, uncertainty resolved, and exactly what answer format the user can use.
+- If open questions remain, each question must include `Recommendation`, `Assumption`, and `Why this matters` lines so the user can review and approve quickly.
+- If no open questions remain, output `Understanding: <n>%`, `Open Questions: none`, and `No more input required from the user` before continuing.
 - After each clarification batch, update `SPEC.md` front matter clarification state and body sections before doing anything else.
 - If unresolved questions remain, stop after the question batch. Do not append implementation instructions, do not start coding, and do not claim the workflow is ready.
 - Execution Mode begins only after clarification state is ready, acceptance criteria are stable `AC-###` entries, validation maps those IDs, rollback and delivery are known, and dirty-worktree ownership is recorded.
@@ -156,9 +159,11 @@ Before asking clarification questions or implementing, output a short pre-instru
 - Do not implement until confidence is at least 95%, unresolved questions are 0, and every assumption is accepted, removed, or converted into a blocker.
 - Maintain front matter `clarification.status` as `open` while questions remain, `ready` only when implementation can begin without guessing, and `blocked` when progress needs user input or external state.
 - Start by reading repo-local instructions and the current `SPEC.md`; then inspect only the smallest relevant repo context needed for the immediate decision.
+- Use a visibly labeled `Open Questions` section for every clarification batch.
 - Use numbered clarification batches. Each question must include a recommended default, the assumption behind it, and the uncertainty it resolves.
 - Accept `yes` or `y` as approval for all recommended defaults in the current batch. Accept `yes 3, 4` or `y 3, 4` for selected defaults. Accept `no 2: <answer>` or `n 2: <answer>` as an override.
 - Before each clarification batch, state confidence, unresolved question count, and the gate that prevents implementation.
+- When no more questions remain, state the current understanding percentage, state `Open Questions: none`, and state that no other input is required from the user.
 - If the user approves defaults, record the exact accepted defaults in `SPEC.md`; do not rely on chat-only approval.
 - After each batch, update the Clarifications, Requirements, Assumptions, Acceptance Criteria, Delivery Decision, and front matter clarification state in `SPEC.md`.
 - When the gate becomes ready, set `clarification.status: ready`, `clarification.confidence` to the current confidence percentage, and `clarification.unresolved_questions: 0` before moving phase to `ready`.
@@ -344,7 +349,8 @@ Before reflection, delivery, or the final response, update a coverage table in `
 
 ## Response Scope
 
-- Clarification-loop replies should use numbered questions with defaults, assumptions, uncertainty, confidence, and unresolved count; do not append the full final-response contract to each clarification batch.
+- Clarification-loop replies must include a clearly labeled `Open Questions` section with numbered questions, recommendations, assumptions, uncertainty, confidence, and unresolved count; do not append the full final-response contract to each clarification batch.
+- If no questions remain, write `Understanding: <n>%`, `Open Questions: none`, and `No more input required from the user` before continuing or summarizing readiness.
 - Use the Final Response Contract only when returning a phase result, blocker, delivery result, or completed workflow summary.
 
 ## Final Response Contract

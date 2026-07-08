@@ -65,7 +65,7 @@ read_policy_default: conditional
   - CI: `https://github.com/<owner>/<repo>/actions/workflows/<workflow>.yml/badge.svg` only when a conventional CI workflow exists, such as `ci.yml`, `ci.yaml`, `test.yml`, `test.yaml`, `build.yml`, or `build.yaml`
 - For Kit-managed private repositories, do not include public Shields GitHub metadata badges because public Shields cannot authenticate to private GitHub repository metadata. Include only the native GitHub Actions workflow badge when a conventional workflow exists.
 - Do not include a License badge in the default Kit-managed badge set.
-- When `kit init --refresh` manages badges, preserve the Kit marker comments around the badge block and update only the block between those markers.
+- When Kit-managed refresh updates badges, preserve the Kit marker comments around the badge block and update only the block between those markers.
 - Keep installation details, long architecture notes, changelogs, and contribution guidance after the header, tagline, and opening paragraph.
 - Every top-level `README.md` must end with a `## Maintainers` section as the last H2 header.
 - The default Kit-managed maintainer copy is:

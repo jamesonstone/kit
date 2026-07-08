@@ -33,7 +33,7 @@ var specCmd = &cobra.Command{
 🧭 Human flow
   1. Pick or provide a feature slug/name.
   2. Enter one thesis/goal in an editor.
-  3. Choose delivery intent: no, yes, or continue.
+  3. Choose delivery intent: 1 creates a later issue/branch/PR, 2 captures only, 3 continues current work.
   4. Paste the copied v2 supervisor prompt into your coding agent.
 
 🧠 Agent workflow

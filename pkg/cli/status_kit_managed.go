@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"path/filepath"
 
 	"github.com/jamesonstone/kit/internal/config"
@@ -73,38 +74,11 @@ func buildStatusKitManagedSummary(
 }
 
 func planStatusManagedFileChanges(projectRoot string) ([]initRefreshFileChange, error) {
-	targets := map[string]bool{}
-	opts := initRefreshOptions{dryRun: true, outputOnly: true}
-
-	cfg, configChange, err := initRefreshConfig(projectRoot, opts, targets)
+	plan, err := buildInitRefreshPlan(context.Background(), projectRoot, initRefreshOptions{dryRun: true, outputOnly: true})
 	if err != nil {
 		return nil, err
 	}
-
-	var changes []initRefreshFileChange
-	if configChange != nil {
-		changes = append(changes, *configChange)
-	}
-	scaffoldChanges, err := planRefreshInitScaffoldFiles(projectRoot, opts, cfg, targets)
-	if err != nil {
-		return nil, err
-	}
-	changes = append(changes, scaffoldChanges...)
-
-	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets)
-	if err != nil {
-		return nil, err
-	}
-	if constitutionChange != nil {
-		changes = append(changes, *constitutionChange)
-	}
-
-	instructionChanges, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
-	if err != nil {
-		return nil, err
-	}
-	changes = append(changes, instructionChanges...)
-	return changes, nil
+	return plan.changes, nil
 }
 
 func recordStatusManagedFileChanges(summary *statusKitManagedSummary, changes []initRefreshFileChange) {
@@ -192,11 +166,11 @@ func statusKitManagedNextActions(summary *statusKitManagedSummary) []string {
 	refreshAvailable := summary.ManagedFiles.Planned+summary.Registry.Missing > 0
 	if attentionNeeded {
 		actions = append(actions, "run `kit reconcile --output-only` to audit local custom, conflicted, or unknown Kit-managed files")
-		actions = append(actions, "use `kit init --refresh --force` only when accepting registry content is intended")
+		actions = append(actions, "run `kit reconcile --include-files --force` only when accepting registry content is intended")
 	}
 	if refreshAvailable {
-		actions = append(actions, "run `kit init --refresh --dry-run --diff` to preview managed-file updates")
-		actions = append(actions, "run `kit init --refresh` to apply reviewed managed-file updates")
+		actions = append(actions, "run `kit reconcile --include-files --dry-run --diff` to preview managed-file updates")
+		actions = append(actions, "run `kit reconcile --include-files` to apply reviewed managed-file updates")
 	}
 	if len(actions) == 0 {
 		actions = append(actions, "no Kit-managed refresh action needed")

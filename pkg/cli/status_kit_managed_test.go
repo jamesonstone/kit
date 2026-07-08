@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"encoding/json"
 	"path/filepath"
 	"strings"
@@ -16,15 +15,7 @@ func TestRunStatusJSONIncludesLocalKitManagedRefreshSummary(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	t.Setenv("HOME", t.TempDir())
 	setWorkingDirectory(t, projectRoot)
-
-	previousFetcher := rulesetRegistryFetcher
-	t.Cleanup(func() {
-		rulesetRegistryFetcher = previousFetcher
-	})
-	rulesetRegistryFetcher = func(_ context.Context) ([]registryRuleset, error) {
-		t.Fatal("default kit status must not fetch the registry")
-		return nil, nil
-	}
+	stubRulesetRegistry(t)
 
 	cmd := &cobra.Command{}
 	cmd.Flags().Bool("json", false, "")
@@ -55,7 +46,7 @@ func TestRunStatusJSONIncludesLocalKitManagedRefreshSummary(t *testing.T) {
 	}
 }
 
-func TestStatusManagedSummaryUsesLocalRegistryStateOnly(t *testing.T) {
+func TestStatusManagedSummaryReportsRemoteRegistryRefresh(t *testing.T) {
 	projectRoot := t.TempDir()
 	setupInitHome(t)
 	base := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
@@ -81,10 +72,20 @@ func TestStatusManagedSummaryUsesLocalRegistryStateOnly(t *testing.T) {
 	if summary.Registry.Total != 1 {
 		t.Fatalf("Total = %d, want 1; summary=%#v", summary.Registry.Total, summary.Registry)
 	}
+	if summary.ManagedFiles.Planned == 0 {
+		t.Fatalf("Planned = 0, want remote registry refresh to be planned; summary=%#v", summary)
+	}
+	if summary.State != statusKitManagedStateRefreshAvailable {
+		t.Fatalf("State = %q, want %q", summary.State, statusKitManagedStateRefreshAvailable)
+	}
+	var foundRulesetUpdate bool
 	for _, item := range summary.Items {
-		if item.State == "update-available" {
-			t.Fatalf("status should not report remote update availability; item=%#v", item)
+		if item.Path == rulesetTarget(base.Slug) && item.State == string(instructionFileUpdated) {
+			foundRulesetUpdate = true
 		}
+	}
+	if !foundRulesetUpdate {
+		t.Fatalf("expected ruleset update item for %s, got %#v", rulesetTarget(base.Slug), summary.Items)
 	}
 }
 
@@ -97,9 +98,9 @@ func TestStatusManagedNextActionsPrioritizesReconcile(t *testing.T) {
 	actions := statusKitManagedNextActions(summary)
 	want := []string{
 		"run `kit reconcile --output-only` to audit local custom, conflicted, or unknown Kit-managed files",
-		"use `kit init --refresh --force` only when accepting registry content is intended",
-		"run `kit init --refresh --dry-run --diff` to preview managed-file updates",
-		"run `kit init --refresh` to apply reviewed managed-file updates",
+		"run `kit reconcile --include-files --force` only when accepting registry content is intended",
+		"run `kit reconcile --include-files --dry-run --diff` to preview managed-file updates",
+		"run `kit reconcile --include-files` to apply reviewed managed-file updates",
 	}
 	if strings.Join(actions, "\n") != strings.Join(want, "\n") {
 		t.Fatalf("actions = %#v, want %#v", actions, want)

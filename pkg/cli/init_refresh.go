@@ -24,11 +24,12 @@ const constitutionBaselineSection = `### ` + constitutionBaselineHeading + `
 <!-- END KIT-MANAGED BASELINE RULES -->`
 
 type initRefreshOptions struct {
-	force      bool
-	dryRun     bool
-	diff       bool
-	files      []string
-	outputOnly bool
+	force                       bool
+	dryRun                      bool
+	diff                        bool
+	files                       []string
+	outputOnly                  bool
+	suppressDocumentationPrompt bool
 }
 
 type initRefreshStats struct {
@@ -38,11 +39,63 @@ type initRefreshStats struct {
 	skipped int
 }
 
+type initRefreshPlan struct {
+	cfg     *config.Config
+	targets map[string]bool
+	changes []initRefreshFileChange
+	notes   []string
+	stats   initRefreshStats
+}
+
 func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 	ctx := context.Background()
-	targets, err := normalizeInitRefreshTargets(opts.files)
+	plan, err := buildInitRefreshPlan(ctx, projectRoot, opts)
 	if err != nil {
 		return err
+	}
+
+	if !opts.outputOnly && !opts.dryRun {
+		fmt.Println("🔄 Refreshing Kit-managed project files...")
+	}
+
+	if opts.dryRun {
+		printInitRefreshDryRun(plan.changes, plan.stats, opts)
+		printInitRefreshNotes(plan.notes, opts)
+		return nil
+	}
+
+	for _, change := range plan.changes {
+		if err := applyInitRefreshFileChange(change); err != nil {
+			return err
+		}
+	}
+
+	if !opts.outputOnly {
+		fmt.Println("\n✅ Kit project refresh complete!")
+		if plan.stats.created+plan.stats.updated+plan.stats.merged == 0 {
+			fmt.Println("   No Kit-managed project changes needed.")
+		}
+		fmt.Printf(
+			"   Created: %d, Updated: %d, Merged: %d, Skipped: %d\n",
+			plan.stats.created,
+			plan.stats.updated,
+			plan.stats.merged,
+			plan.stats.skipped,
+		)
+		printInitRefreshNotes(plan.notes, opts)
+		if shouldOutputInitRefreshDocumentationPrompt(opts, plan.targets) {
+			if err := outputInitRefreshDocumentationPrompt(projectRoot, plan.cfg); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefreshOptions) (*initRefreshPlan, error) {
+	targets, err := normalizeInitRefreshTargets(opts.files)
+	if err != nil {
+		return nil, err
 	}
 
 	needsRegistry := len(targets) == 0
@@ -57,23 +110,19 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 	if needsRegistry {
 		registry, err = rulesetRegistryFetcher(ctx)
 		if err != nil {
-			return fmt.Errorf("failed to refresh Kit ruleset registry: %w", err)
+			return nil, fmt.Errorf("failed to refresh Kit ruleset registry: %w", err)
 		}
 		registry = projectRulesetRegistry(registry)
 	}
 
 	cfg, configChange, err := initRefreshConfig(projectRoot, opts, targets)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	knownTargets := initRefreshKnownTargets(cfg, registry)
 	if err := validateInitRefreshTargets(targets, knownTargets); err != nil {
-		return err
-	}
-
-	if !opts.outputOnly && !opts.dryRun {
-		fmt.Println("🔄 Refreshing Kit-managed project files...")
+		return nil, err
 	}
 
 	var changes []initRefreshFileChange
@@ -82,84 +131,59 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 	var stats initRefreshStats
 	scaffoldChanges, err := planRefreshInitScaffoldFiles(projectRoot, opts, cfg, targets)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	changes = append(changes, scaffoldChanges...)
 	readmeChange, err := planRefreshReadmeFile(projectRoot, cfg, targets)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if readmeChange != nil {
 		changes = append(changes, *readmeChange)
 	}
 	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if constitutionChange != nil {
 		changes = append(changes, *constitutionChange)
 	}
 	instructionChanges, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	changes = append(changes, instructionChanges...)
 	rulesetChanges, rulesetNotes, registryChanged, err := planRefreshInitRulesets(ctx, projectRoot, opts, cfg, targets, registry)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	notes = append(notes, rulesetNotes...)
 	changes = append(changes, rulesetChanges...)
 	if configChange != nil || registryChanged {
 		configChange, err = finalizeInitRefreshConfigChange(projectRoot, cfg, configChange)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if configChange != nil {
 			changes = append([]initRefreshFileChange{*configChange}, changes...)
 		}
 	}
 
-	if opts.dryRun {
-		for _, change := range changes {
-			stats.recordFileChange(change)
-		}
-		printInitRefreshDryRun(changes, stats, opts)
-		printInitRefreshNotes(notes, opts)
-		return nil
-	}
-
 	for _, change := range changes {
-		if err := applyInitRefreshFileChange(change); err != nil {
-			return err
-		}
 		stats.recordFileChange(change)
 	}
 
-	if !opts.outputOnly {
-		fmt.Println("\n✅ Kit project refresh complete!")
-		if stats.created+stats.updated+stats.merged == 0 {
-			fmt.Println("   No Kit-managed project changes needed.")
-		}
-		fmt.Printf(
-			"   Created: %d, Updated: %d, Merged: %d, Skipped: %d\n",
-			stats.created,
-			stats.updated,
-			stats.merged,
-			stats.skipped,
-		)
-		printInitRefreshNotes(notes, opts)
-		if shouldOutputInitRefreshDocumentationPrompt(opts, targets) {
-			if err := outputInitRefreshDocumentationPrompt(projectRoot, cfg); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	return &initRefreshPlan{
+		cfg:     cfg,
+		targets: targets,
+		changes: changes,
+		notes:   notes,
+		stats:   stats,
+	}, nil
 }
 
 func shouldOutputInitRefreshDocumentationPrompt(opts initRefreshOptions, targets map[string]bool) bool {
-	return opts.force && !opts.dryRun && !opts.outputOnly && len(targets) == 0
+	return opts.force && !opts.dryRun && !opts.outputOnly && !opts.suppressDocumentationPrompt && len(targets) == 0
 }
 
 func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map[string]bool {
