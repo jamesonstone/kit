@@ -163,7 +163,7 @@ Before asking clarification questions or implementing, output a short pre-instru
 - Use numbered clarification batches. Each question must include a recommended default, the assumption behind it, and the uncertainty it resolves.
 - Accept `yes` or `y` as approval for all recommended defaults in the current batch. Accept `yes 3, 4` or `y 3, 4` for selected defaults. Accept `no 2: <answer>` or `n 2: <answer>` as an override.
 - Before each clarification batch, state confidence, unresolved question count, and the gate that prevents implementation.
-- When no more questions remain, state the current understanding percentage, state `Open Questions: none`, and state that no other input is required from the user.
+- When no more questions remain, output `Understanding: <n>%`, `Open Questions: none`, and `No more input required from the user`.
 - If the user approves defaults, record the exact accepted defaults in `SPEC.md`; do not rely on chat-only approval.
 - After each batch, update the Clarifications, Requirements, Assumptions, Acceptance Criteria, Delivery Decision, and front matter clarification state in `SPEC.md`.
 - When the gate becomes ready, set `clarification.status: ready`, `clarification.confidence` to the current confidence percentage, and `clarification.unresolved_questions: 0` before moving phase to `ready`.

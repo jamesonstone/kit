@@ -47,15 +47,27 @@ type initRefreshPlan struct {
 	stats   initRefreshStats
 }
 
+type initRefreshRegistryError struct {
+	err error
+}
+
+func (e *initRefreshRegistryError) Error() string {
+	return fmt.Sprintf("failed to refresh Kit ruleset registry: %v", e.err)
+}
+
+func (e *initRefreshRegistryError) Unwrap() error {
+	return e.err
+}
+
 func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
+	if !opts.outputOnly && !opts.dryRun {
+		fmt.Println("🔄 Refreshing Kit-managed project files...")
+	}
+
 	ctx := context.Background()
 	plan, err := buildInitRefreshPlan(ctx, projectRoot, opts)
 	if err != nil {
 		return err
-	}
-
-	if !opts.outputOnly && !opts.dryRun {
-		fmt.Println("🔄 Refreshing Kit-managed project files...")
 	}
 
 	if opts.dryRun {
@@ -110,7 +122,7 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	if needsRegistry {
 		registry, err = rulesetRegistryFetcher(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("failed to refresh Kit ruleset registry: %w", err)
+			return nil, &initRefreshRegistryError{err: err}
 		}
 		registry = projectRulesetRegistry(registry)
 	}

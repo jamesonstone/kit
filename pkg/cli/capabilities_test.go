@@ -129,10 +129,13 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(strings.Join(reconcilePayload.Command.WhenToUse, " "), "include files?") {
 		t.Fatalf("expected reconcile guidance to document interactive menu, got %#v", reconcilePayload.Command.WhenToUse)
 	}
-	for _, flagName := range []string{"--include-files", "--force", "--dry-run", "--diff", "--file"} {
+	for _, flagName := range []string{"--include-files", "--all", "--force", "--dry-run", "--diff", "--file"} {
 		if findDetailedFlag(reconcilePayload.Command.DetailedFlagBehavior, flagName) == nil {
 			t.Fatalf("expected reconcile detailed flags to include %s", flagName)
 		}
+	}
+	if !strings.Contains(strings.Join(reconcilePayload.Command.Examples, " "), "kit reconcile --all --include-files") {
+		t.Fatalf("expected reconcile examples to document whole-project file refresh, got %#v", reconcilePayload.Command.Examples)
 	}
 
 	specOutput, err := executeCapabilitiesCommand("--json", "spec")
@@ -148,6 +151,21 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(specPayload.Command.Caveats, " "), "bypass creates only the minimal baseline") {
 		t.Fatalf("expected spec caveats to document bypass behavior, got %#v", specPayload.Command.Caveats)
+	}
+
+	statusOutput, err := executeCapabilitiesCommand("--json", "status")
+	if err != nil {
+		t.Fatalf("kit capabilities status --json error = %v", err)
+	}
+	var statusPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(statusOutput), &statusPayload); err != nil {
+		t.Fatalf("json.Unmarshal(status) error = %v", err)
+	}
+	if !strings.Contains(statusPayload.Command.NetworkUse.FlagDependent, "unchecked/unknown") {
+		t.Fatalf("expected status network use to document registry fallback, got %#v", statusPayload.Command.NetworkUse)
+	}
+	if !strings.Contains(strings.Join(statusPayload.Command.Caveats, " "), "managed_files.unchecked") {
+		t.Fatalf("expected status caveats to document unchecked managed files, got %#v", statusPayload.Command.Caveats)
 	}
 
 	output, err := executeCapabilitiesCommand("--json", "legacy", "verify")
@@ -398,6 +416,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(projectRefreshPayload.Command.WhenNotToUse, " "), "automatic changelog") {
 		t.Fatalf("expected project refresh guidance to reject automatic changelog usage, got %#v", projectRefreshPayload.Command.WhenNotToUse)
+	}
+	if !strings.Contains(strings.Join(projectRefreshPayload.Command.WhenNotToUse, " "), "kit reconcile --all --include-files") {
+		t.Fatalf("expected project refresh guidance to point structural refreshes at reconcile include-files, got %#v", projectRefreshPayload.Command.WhenNotToUse)
 	}
 
 	if _, err := executeCapabilitiesCommand("--json", "review-loop"); err == nil || !strings.Contains(err.Error(), "unknown Kit command path") {
