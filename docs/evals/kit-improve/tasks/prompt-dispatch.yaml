@@ -1,0 +1,43 @@
+schema_version: 1
+id: prompt-dispatch
+title: Dispatch prompt routes low-overlap work safely
+category: prompt-routing
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: supervisor
+timeout_seconds: 30
+input_prompt: Render an Agent Team Plan from two representative tasks.
+expected_behavior: The prompt requires overlap discovery, bounded concurrency, one accountable supervisor, and read-only verification.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} dispatch --file dispatch-tasks.txt --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: Agent Team Plan
+  - type: stdout_contains
+    command_index: 0
+    value: file overlap
+  - type: stdout_contains
+    command_index: 0
+    value: read-only verification
+  - type: stdout_contains
+    command_index: 0
+    value: accountable supervisor
+  - type: stdout_not_contains
+    command_index: 0
+    value: Waiting for approval
+  - type: stdout_words_max
+    command_index: 0
+    max: 1200
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-routing:missing-overlap-plan

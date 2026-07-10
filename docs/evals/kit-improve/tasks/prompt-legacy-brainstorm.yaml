@@ -1,0 +1,40 @@
+schema_version: 1
+id: prompt-legacy-brainstorm
+title: Legacy brainstorm prompt preserves its research artifact contract
+category: prompt-legacy
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: researcher
+timeout_seconds: 30
+input_prompt: Render the explicit legacy brainstorm prompt.
+expected_behavior: The prompt researches and updates BRAINSTORM.md while asking only about material non-discoverable ambiguity.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} legacy brainstorm legacy-prompt --prompt-only --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: BRAINSTORM.md
+  - type: stdout_contains
+    command_index: 0
+    value: material non-discoverable choices
+  - type: stdout_not_contains
+    command_index: 0
+    value: batches of up to 10
+  - type: stdout_not_contains
+    command_index: 0
+    value: text.verbosity
+  - type: stdout_words_max
+    command_index: 0
+    max: 3000
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-legacy:brainstorm-contract

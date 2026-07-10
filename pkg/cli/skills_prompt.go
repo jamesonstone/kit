@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -25,21 +24,15 @@ func skillPromptSuffix() string {
 	var sb strings.Builder
 	sb.WriteString("## Skills\n")
 	if version == config.InstructionScaffoldVersionTOC {
-		sb.WriteString("- use the repository instruction entrypoints as a map, not the full manual\n")
+		sb.WriteString("- Treat repository instruction entrypoints as routing maps; start at `docs/agents/README.md` when present.\n")
 	} else {
-		sb.WriteString("- consult the repository instruction files for the active skills workflow before acting\n")
+		sb.WriteString("- Read the repository instruction entrypoints before acting.\n")
 	}
-	for _, path := range paths {
-		sb.WriteString(fmt.Sprintf("- repository instruction file: %s\n", path))
+	if len(paths) > 0 {
+		sb.WriteString(fmt.Sprintf("- Entrypoints: %s.\n", strings.Join(paths, ", ")))
 	}
-	if version == config.InstructionScaffoldVersionTOC {
-		sb.WriteString(fmt.Sprintf("- repo-local entrypoint: %s\n", filepath.Join(projectRootForPrompt(), "docs", "agents", "README.md")))
-		sb.WriteString("- load only the relevant docs under `docs/agents/*`, `docs/specs/*`, and `docs/references/*`\n")
-		sb.WriteString("- treat documented global inputs as secondary context after repo-local docs are exhausted\n")
-	}
-	sb.WriteString("- if the work is feature-scoped, read that feature's canonical front matter `skills` first, falling back to the legacy SPEC.md `## SKILLS` table only when front matter is absent\n")
-	sb.WriteString("- open each referenced `SKILL.md` and use those skills during execution\n")
-	sb.WriteString("- if the prompt provides explicit skill paths directly, open and use them\n")
+	sb.WriteString("- Load only the repo docs and skills needed for the current decision; repo-local guidance precedes secondary global inputs.\n")
+	sb.WriteString("- For feature work, use canonical front matter `skills` (legacy `## SKILLS` only as fallback), and open every selected or explicitly provided `SKILL.md`.\n")
 	return sb.String()
 }
 
@@ -70,27 +63,6 @@ func repoInstructionPromptPaths() ([]string, int) {
 	return relativePaths, version
 }
 
-func projectRootForPrompt() string {
-	projectRoot, err := config.FindProjectRoot()
-	if err != nil {
-		return "."
-	}
-	return projectRoot
-}
-
-func codexHome() string {
-	if home := os.Getenv("CODEX_HOME"); strings.TrimSpace(home) != "" {
-		return home
-	}
-
-	userHome, err := os.UserHomeDir()
-	if err != nil {
-		return filepath.Join("~", ".codex")
-	}
-
-	return filepath.Join(userHome, ".codex")
-}
-
 func repoInstructionPaths(projectRoot string, cfg *config.Config) []string {
 	relativePaths := instructionFiles(cfg)
 	paths := make([]string, 0, len(relativePaths))
@@ -98,18 +70,4 @@ func repoInstructionPaths(projectRoot string, cfg *config.Config) []string {
 		paths = append(paths, filepath.Join(projectRoot, relativePath))
 	}
 	return paths
-}
-
-func globalSkillDiscoveryInputs() []string {
-	userHome, err := os.UserHomeDir()
-	if err != nil {
-		userHome = "~"
-	}
-
-	return []string{
-		filepath.Join(userHome, ".claude", "CLAUDE.md"),
-		filepath.Join(codexHome(), "AGENTS.md"),
-		filepath.Join(codexHome(), "instructions.md"),
-		filepath.Join(codexHome(), "skills", "*", "SKILL.md"),
-	}
 }

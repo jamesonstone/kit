@@ -214,115 +214,55 @@ func outputTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Co
 
 	return nil
 }
-
 func buildTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Config) string {
-	// output easy-to-copy instruction for coding agents
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
-	hasBrainstorm := document.Exists(brainstormPath)
-	goalPct := cfg.GoalPercentage
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
-
-	steps := []string{
-		fmt.Sprintf("Read CONSTITUTION.md (file: %s) to understand project constraints and principles", constitutionPath),
-	}
-	if hasBrainstorm {
-		steps = append(steps, fmt.Sprintf("Read BRAINSTORM.md (file: %s) to preserve upstream research context", brainstormPath))
-	}
-	steps = append(steps,
-		fmt.Sprintf("Read SPEC.md (file: %s) and PLAN.md (file: %s) fully and treat them as fixed inputs", specPath, planPath),
-		fmt.Sprintf("Review the TASKS.md (file: %s) template and required sections", tasksPath),
-		fmt.Sprintf("Update TASKS.md directly at %s; do not leave the task breakdown only in chat", tasksPath),
-		"Derive an atomic, ordered task list that can be executed without ambiguity",
-		"Identify missing decisions that block task generation",
-	)
-	steps = append(steps, clarificationLoopSteps(
-		goalPct,
-		"Reassess and continue with additional batches of up to 10 questions until the task plan is precise enough to produce a correct, production-quality implementation",
-	)...)
+	hasBrainstorm := document.Exists(brainstormPath)
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph("Please review and complete the task plan.")
-		doc.Heading(2, "File References")
-		rows := [][]string{{"CONSTITUTION", constitutionPath}}
-		if hasBrainstorm {
-			rows = append(rows, []string{"BRAINSTORM", brainstormPath})
+		doc.Paragraph(fmt.Sprintf("Create the executable legacy task plan for feature `%s`. Update TASKS.md only; do not implement product code.", feat.Slug))
+		doc.Heading(2, "Context")
+		rows := [][]string{
+			{"SPEC.md", specPath, "Binding requirements and acceptance"},
+			{"PLAN.md", planPath, "Binding implementation strategy"},
+			{"TASKS.md", tasksPath, "Artifact to update"},
+			{"Constitution", constitutionPath, "Project invariants"},
 		}
-		rows = append(rows,
-			[]string{"SPEC", specPath},
-			[]string{"PLAN", planPath},
-			[]string{"TASKS", tasksPath},
-			[]string{"Feature", feat.Slug},
-			[]string{"Project Root", projectRoot},
+		if hasBrainstorm {
+			rows = append(rows, []string{"BRAINSTORM.md", brainstormPath, "Non-binding rationale only"})
+		}
+		doc.Table([]string{"Input", "Path", "Use"}, rows)
+
+		doc.Heading(2, "Task-Generation Contract")
+		doc.OrderedList(1,
+			fmt.Sprintf("Update TASKS.md directly at %s; do not leave the task breakdown only in chat.", tasksPath),
+			"Read SPEC.md and PLAN.md as fixed inputs. Resolve repository-discoverable ordering, file, and validation facts yourself.",
+			"Ask only when a material non-discoverable decision prevents an executable task breakdown; use concise numbered questions with recommended defaults and impact, then stop until answered.",
+			"Update TASKS.md directly with stable T001-style IDs, dependency order, and the smallest coherent tasks that can be completed and verified independently.",
+			"Map each task to PLAN/SPEC acceptance. Every task detail includes GOAL, SCOPE, ACCEPTANCE, VERIFY, EXPECTED FILES, RISK, ROLLBACK, DEPENDENCIES, and NOTES when needed.",
+			"Keep the progress table and markdown checkbox list consistent with task details. Initial implementation status is todo unless existing evidence proves otherwise.",
 		)
-		doc.Table([]string{"Document", "Path"}, rows)
-		doc.Paragraph("Your task:")
-		doc.OrderedList(1, steps...)
-		doc.Paragraph(fmt.Sprintf(
-			"Before you write or update TASKS.md:\n- after each batch of up to 10 questions, output your current percentage understanding of the task plan so the user can see progress\n- do NOT treat TASKS.md as complete until confidence reaches ≥%d%%",
-			goalPct,
-		))
-		doc.Heading(2, "TASKS.md Requirements")
-		doc.Raw(`A) PROGRESS TABLE (ALWAYS FIRST)
-- Fill the top table with one row per task
-- Use stable IDs (T001, T002, …)
-- STATUS ∈ todo | doing | blocked | done
-- OWNER is always "agent"
-- DEPENDENCIES lists task IDs (comma-separated) or empty
 
-Table columns:
-| ID | TASK | STATUS | OWNER | DEPENDENCIES |
-
-B) TASK LIST (MANDATORY - uses markdown checkboxes)
-- Use markdown checkboxes for tracking: - [ ] incomplete, - [x] complete
-- Format: - [ ] T001: task description
-- This enables 'kit status' to parse progress automatically
-
-C) TASK DETAILS SECTION
-For each task ID, include a short block:
-
-### T00X
-- GOAL: one sentence outcome
-- SCOPE: tight bullets, no fluff
-- ACCEPTANCE: concrete checks (what must be true)
-- NOTES: only if necessary
-
-D) DEPENDENCIES SECTION
-- list any cross-task or external blockers
-- include the exact missing decision if applicable
-- if there are no blockers or ordering notes, replace placeholder comments with "no additional information required" or "not applicable"
-
-E) NOTES SECTION
-- only if required to prevent ambiguity
-- otherwise write "not required"
-
-F) PLAN LINKS (OPTIONAL)
-- Link to PLAN sections using anchors from headings (lowercase, dashes)
-- Examples: [PLAN-APPROACH], [PLAN-COMPONENTS], [PLAN-DATA], [PLAN-RISKS]
-- Include in task descriptions to trace back to plan requirements`)
-		doc.Heading(2, "Rules")
+		doc.Heading(2, "Success Criteria")
 		doc.BulletList(
-			docsOnlyWorkflowRule("TASKS.md and supporting documentation"),
-			"focus on executable steps, not prose",
-			"use BRAINSTORM.md as research context only; SPEC.md and PLAN.md remain the binding inputs",
-			"do not invent new requirements or scope beyond SPEC.md",
-			"tasks must map back to PLAN items via section anchors",
-			"tasks must imply an unambiguous implementation order",
-			"Tasks gate: each task must include an explicit done-condition and required evidence artifact(s) before sign-off",
-			"keep language dense and factual",
-			"ensure tasks respect constraints defined in CONSTITUTION.md",
-			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
+			fmt.Sprintf("Confidence is at least %d and no blocking task-definition question remains.", cfg.GoalPercentage),
+			"Every acceptance criterion is covered; every task has a binary done condition and required evidence.",
+			"Ordering and dependencies are explicit, file overlap is visible, and a coding agent can execute the list without routine back-and-forth.",
+			"No requirement, implementation detail, or scope is invented beyond SPEC.md and PLAN.md; placeholders are removed and project progress is current.",
 		)
-		doc.Paragraph("Output goal:\n- a task list that a coding agent can execute linearly with minimal back-and-forth")
-		doc.Raw(renderNonEmptySectionRules("`TASKS.md`"))
+
+		doc.Heading(2, "Output")
+		doc.BulletList(
+			"Update TASKS.md and supporting documentation only.",
+			"Report task count/order, evidence coverage, blockers, and the next legacy implementation step.",
+		)
 		addFinalResponseContract(doc, tasksFinalResponseContract(feat.Slug)...)
 	})
 }
 
-// selectFeatureForTasks shows an interactive numbered list of features
-// that have SPEC.md and PLAN.md but no TASKS.md yet.
 func selectFeatureForTasks(specsDir string) (*feature.Feature, error) {
 	candidates, err := workflowStageCandidates(specsDir, workflowSelectionStageTasks)
 	if err != nil {

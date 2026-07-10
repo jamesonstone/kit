@@ -87,6 +87,7 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit replay <run-id>` | Rerun commands from a prior verification run and compare outcomes. |
 | `kit state [refresh]` | Show or refresh generated pointer-only `.kit/state.json`. |
 | `kit eval` | Run small local harness regression checks. |
+| `kit improve run` | Run deterministic fixture suites. `default` is capability smoke coverage; `prompt-system` renders representative prompts three times and supports `--kit-binary` for identical-definition comparisons. |
 | `kit rules` / `kit rule` | Import, preview, create, list, and link repo-local rulesets. |
 | `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift. Without a feature argument, the interactive menu asks whether to include files, force changes, and output the coding-agent prompt. Use `--include-files --dry-run --diff` to preview managed-file updates. |
 
@@ -139,8 +140,9 @@ Use `docs/references/rules/feature-notes.md` for the agent-facing rules on
 loading, referencing, promoting, and ignoring notes.
 
 Prompt-producing commands default to accountable-supervisor orchestration
-guidance. They use subagents only when low-overlap lanes improve correctness or
-throughput, default to at most 3 concurrent lanes, and never exceed 4. Pass
+guidance. The shared decorator stays compact: it uses subagents only when
+low-overlap lanes improve correctness or throughput, defaults to at most 3
+concurrent lanes, and never exceeds 4. Pass
 `--single-agent` when you explicitly want to keep work in one lane.
 
 Prompt-producing commands also support `--profile=frontend` for frontend-heavy
@@ -148,6 +150,13 @@ work. The profile keeps Kit's normal RLM flow while adding frontend-specific
 guidance for design-system fit, domain-appropriate UI, visual assets,
 responsive behavior, browser or screenshot validation, interaction states, and
 common generated-UI pitfalls.
+
+Generated prompts resolve repository-discoverable facts before asking the user.
+Outside explicit clarification workflows, they ask only for material choices
+that cannot be inferred safely and do not require routine approval for safe
+in-scope discovery or reversible edits. External, irreversible, production,
+Git, and GitHub mutations remain behind their explicit authorization and
+repo-local gates.
 
 ## Dispatch And Review Loops
 

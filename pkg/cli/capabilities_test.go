@@ -345,7 +345,7 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "--ignore-user-config") {
 		t.Fatalf("expected loop review caveats to document generated Codex config isolation, got %#v", loopReviewPayload.Command.Caveats)
 	}
-	if !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "gpt-5.5") {
+	if !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "gpt-5.6") {
 		t.Fatalf("expected loop review caveats to document generated Codex model pinning, got %#v", loopReviewPayload.Command.Caveats)
 	}
 	if !strings.Contains(strings.Join(loopReviewPayload.Command.Caveats, " "), "stderr") {

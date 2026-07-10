@@ -81,19 +81,12 @@ func appendPromptProfileSuffix(prompt string, profile promptProfile) string {
 func frontendPromptProfileSuffix() string {
 	return strings.Join([]string{
 		"## Frontend Profile",
-		"- Use RLM-style context loading first: identify the immediate frontend decision, load only the relevant feature docs, notes, design materials, and code, then stop once the decision is supported.",
-		"- Inspect existing frontend architecture, component libraries, styling systems, design tokens, layout conventions, and interaction patterns before inventing new UI.",
-		"- Tailor visual density, hierarchy, content, and interaction patterns to the product domain and audience; operational tools should favor scanability, restrained styling, and efficient repeated use, while games or expressive sites may be more immersive.",
-		"- Build or evaluate the actual usable screen, flow, app, tool, game, or site requested; do not substitute marketing placeholders for the primary experience.",
-		"- Use familiar UI affordances: icons for tool actions, swatches for color, segmented controls for modes, toggles or checkboxes for binary settings, sliders or inputs for numeric values, menus for option sets, tabs for alternate views, and tooltips for unfamiliar icon-only controls.",
-		"- Cover expected UI states and controls for the domain, including loading, empty, error, validation, disabled, hover/focus, interaction, and responsive states when relevant.",
-		"- Use relevant visual assets, screenshots, design-file nodes, or design notes when provided, but avoid broad asset loading when they are not needed for the immediate decision.",
-		"- For websites, games, product, place, person, or object-focused screens, use relevant real, provided, searched, or generated visual assets when they materially improve inspection or fidelity; avoid purely atmospheric placeholders when users need to inspect the subject.",
-		"- Avoid common generated-UI defaults unless explicitly requested: unnecessary landing pages, generic hero sections, nested cards, decorative gradients or blobs, one-note palettes, visible instructional copy, and placeholder-first layouts.",
-		"- Define stable responsive dimensions for fixed-format UI such as grids, boards, toolbars, counters, tiles, and media so hover states, labels, icons, loading text, and dynamic content do not shift or resize the layout unexpectedly.",
-		"- When a renderer is needed to validate the change, run the app and use browser or screenshot evidence across relevant desktop and mobile viewports before claiming completion.",
-		"- Before completion, render or inspect the UI for text overflow, clipping, overlapping elements, responsive layout failures, palette problems, spacing issues, clipped controls, and broken interaction states; revise until the rendered result matches the requirements.",
-		"- Stay tool-agnostic: use whatever browser, screenshot, or design-material workflow is available in the current environment unless the user or project dependencies require a specific tool.",
+		"- Load only the relevant feature docs, design materials, and frontend code; inspect existing components, tokens, layout, and interaction patterns before adding UI.",
+		"- Match the product domain and audience, and build the requested usable flow rather than a generic landing page or placeholder experience.",
+		"- Use familiar controls and relevant assets; cover loading, empty, error, validation, disabled, focus, interaction, and responsive states that matter to the flow.",
+		"- Avoid generated-UI defaults such as needless hero sections, nested cards, decorative blobs, one-note palettes, and instructional filler unless requested.",
+		"- Keep fixed-format UI dimensions stable. Run the app when rendering matters and inspect browser or screenshot evidence at relevant desktop and mobile sizes for overflow, clipping, overlap, spacing, palette, and broken interactions.",
+		"- Stay tool-agnostic unless the repository or user requires a specific browser, design, or screenshot workflow.",
 	}, "\n")
 }
 

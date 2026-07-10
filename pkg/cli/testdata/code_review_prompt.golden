@@ -1,99 +1,30 @@
-## Code Review Agent Instructions
+## Code Review
 
-**IMPORTANT: This is an INFORMATIONAL REVIEW ONLY.**
+Review the current branch against its remote mainline and report actionable findings. This is read-only: do not edit files or mutate Git/GitHub state.
 
-- Do NOT modify, edit, or change any code
-- Do NOT create new files or update existing files
-- Your sole task is to ANALYZE and EXPLAIN the changes
-- Output your findings as documentation only
+### Scope
 
-**REVIEW OBJECTIVES: Maximize for 100% CORRECTNESS and PERFORMANCE.**
+- Identify the repository's remote default branch and compute the merge-base diff to `HEAD`; include staged, unstaged, and untracked in-scope changes when the user asked to review the working tree.
+- Review changed files and only the minimal dependencies needed to establish whether a change is correct. Do not turn the review into a general repository audit.
+- Read relevant tests, contracts, generated sources, and repo-local rules when they determine expected behavior.
 
----
+### Review Priorities
 
-### Step 1: Get the Changed Files List
+- Correctness: broken behavior, edge cases, error handling, concurrency, compatibility, and violated invariants.
+- Security and data safety: trust boundaries, authorization, secrets, injection, destructive behavior, and unsafe defaults.
+- Performance and reliability: material complexity, resource leaks, blocking I/O, retries, timeouts, races, and failure recovery.
+- Tests and evidence: missing coverage only when it leaves changed behavior unproven; flag assertions that do not test the intended contract.
+- Documentation and interfaces: stale public docs, API/config/CLI drift, migration gaps, and generated-artifact inconsistency.
 
-Run: `git diff --name-only main..HEAD` (or master if main doesn't exist)
+### Finding Standard
 
-This output is the **ONLY** list of files you will review.
+- Report only issues introduced or exposed by the changed scope and supported by concrete evidence.
+- Order findings by severity. For each, give severity, `file:line`, failure mode, impact, evidence or reproduction, and the smallest credible fix direction.
+- Do not add praise, style preferences, speculative refactors, or vague best-practice claims. Verify external framework behavior only when it is material to a finding.
+- If no actionable findings exist, say `No findings.` and list only residual risks or tests you could not verify.
 
-**CRITICAL RULES:**
+### Output
 
-- If the output is empty, STOP — there are no changes to review
-- **ONLY** analyze files that appear in this output
-- Do **NOT** review files not in this list
-- Do **NOT** explore or analyze other files in the codebase
-
----
-
-### Step 2: For Each Changed File
-
-For **each file in the list above** (and ONLY those files):
-
-1. **Read the file** as it exists now
-2. **Understand** what it does and how it fits in the codebase
-3. **Analyze for correctness:**
-   - Does the logic work correctly?
-   - Are edge cases handled? (nil, empty, boundaries)
-   - Are errors handled properly? (no swallowed errors)
-   - Any potential panics or crashes?
-   - Any race conditions?
-4. **Analyze for performance:**
-   - Is the algorithm efficient?
-   - Any unnecessary allocations or copies?
-   - Any N+1 queries or unbatched I/O?
-5. **Check best practices:**
-   - Use MCP tools (Context7) to verify framework best practices
-   - Flag deprecated patterns or anti-patterns
-6. **Assess:** Is this change 👍 (net-positive) or 👎 (net-negative)?
-
----
-
-### Step 3: Analyze Test Files (if any changed)
-
-- For test files in the changed list: do they test the right behavior?
-- Do assertions match the application code changes?
-- Do NOT recommend adding more tests
-
----
-
-### Step 4: Output Your Analysis
-
-**Format:**
-
-```markdown
-## Code Review: [branch] → main
-
-### Files Reviewed
-[List ONLY the files from the git diff output]
-
-### Analysis
-
-| File | Summary | Correctness | Performance | Assessment |
-|------|---------|-------------|-------------|------------|
-| file.go | what changed | ✅/⚠️/❌ | ✅/⚠️/❌ | 👍/👎 |
-
-### Correctness Summary
-**Confidence: [0-100]%**
-- Bugs found: [list or "None"]
-- Edge cases missed: [list or "None"]
-
-### Performance Summary
-**Assessment: [Optimal/Acceptable/Needs Work/Critical]**
-- Issues: [list or "None"]
-
-### Recommendation
-[✅ APPROVE | ⚠️ APPROVE WITH NOTES | ❌ REQUEST CHANGES]
-[If not clean approve, list specific issues]
-```
-
----
-
-### Rules
-
-- **INFORMATIONAL ONLY** — do not modify any code
-- **ONLY REVIEW CHANGED FILES** — files from git diff output, nothing else
-- **DO NOT EXPLORE** other files unless directly imported by a changed file
-- **MAXIMIZE CORRECTNESS** — find all bugs, edge cases, error handling issues
-- **MAXIMIZE PERFORMANCE** — identify inefficiencies
-- Be thorough but stay focused on the changed files
+- `Findings`: ordered actionable items, or `No findings.`
+- `Validation reviewed`: commands/evidence inspected and anything not run.
+- `Residual risk`: concise unverified behavior, or `none`.

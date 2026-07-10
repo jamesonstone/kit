@@ -17,6 +17,8 @@ jobs:
         run: go build -o bin/kit ./cmd/kit
       - name: Run Kit improve default suite
         run: ./bin/kit improve run --suite default --json
+      - name: Run Kit improve prompt-system suite
+        run: ./bin/kit improve run --suite prompt-system --kit-binary ./bin/kit --json
       - name: Upload Kit improve artifacts
         uses: actions/upload-artifact@v4
         with:

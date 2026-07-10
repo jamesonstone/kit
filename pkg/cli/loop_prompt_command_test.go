@@ -38,22 +38,15 @@ func TestBuildLoopEngineeringPromptIncludesExecutionCycleAndDelivery(t *testing.
 	checks := []string{
 		"## Loop Goal",
 		"Treat `docs/specs/0007-billing/SPEC.md` as the implementation source of truth.",
-		"Continue until this scope is completed and validated",
-		"## Phase Execution Cycle",
-		"Re-read the current requirements, acceptance criteria, validation map, task checklist",
-		"Run relevant regression checks for previously completed phases",
-		"Re-review the immediately previous completed phase",
-		"## Phase Cycle Outputs",
-		"tests and validation commands run",
-		"## Validation And Regression Contract",
+		"Finish or explicitly block this scope",
+		"## Execution Contract",
+		"Implement the smallest coherent slice",
+		"fix failures and relevant regressions",
 		"go test ./... and OpenAPI validation",
-		"## Final Integration Review",
-		"Review all completed phases together",
-		"## GitHub Delivery Boundary",
-		"Create or reuse the correct GitHub issue before branching",
-		"Refresh the base with fetch-only behavior before branching",
-		"Stage explicitly with `git add <file>` only",
-		"Create the PR ready for review",
+		"## Constraints And Boundaries",
+		"Safe in-scope discovery and reversible edits need no routine approval",
+		"load repo-local rules, establish the exact delivery contract",
+		"## Success And Output",
 	}
 	for _, check := range checks {
 		if !strings.Contains(prompt, check) {
@@ -83,7 +76,7 @@ func TestBuildFeatureLoopPromptUsesExistingSpecState(t *testing.T) {
 		"Directory: `0001-alpha`",
 		"Current phase: `implement`",
 		"SPEC.md:",
-		"every remaining phase, task-checklist item, acceptance criterion",
+		"every remaining in-scope task, acceptance criterion",
 	} {
 		if !strings.Contains(prompt, check) {
 			t.Fatalf("expected feature prompt to contain %q, got:\n%s", check, prompt)

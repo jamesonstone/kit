@@ -12,12 +12,13 @@ import (
 )
 
 type RunOptions struct {
-	ProjectRoot string
-	SuiteName   string
-	DryRun      bool
-	KitBinary   string
-	KitVersion  string
-	GitCommit   string
+	ProjectRoot  string
+	SuiteName    string
+	DryRun       bool
+	RunnerBinary string
+	KitBinary    string
+	KitVersion   string
+	GitCommit    string
 }
 
 func Run(ctx context.Context, opts RunOptions) (RunManifest, error) {
@@ -25,6 +26,11 @@ func Run(ctx context.Context, opts RunOptions) (RunManifest, error) {
 	if err != nil {
 		return RunManifest{}, err
 	}
+	provenance, err := benchmarkProvenance(opts, suite, tasks)
+	if err != nil {
+		return RunManifest{}, err
+	}
+	opts.KitBinary = provenance.KitBinaryPath
 	start := time.Now().UTC()
 	runID := verify.NewRunID(start)
 	runDir := filepath.Join(artifactRoot(opts.ProjectRoot), "runs", runID)
@@ -36,6 +42,7 @@ func Run(ctx context.Context, opts RunOptions) (RunManifest, error) {
 		StartedAt:     start,
 		Status:        "pass",
 		RunDir:        runDir,
+		Provenance:    provenance,
 	}
 	if opts.DryRun {
 		manifest.Status = "dry_run"
@@ -58,6 +65,7 @@ func Run(ctx context.Context, opts RunOptions) (RunManifest, error) {
 		}
 	}
 	manifest.EndedAt = time.Now().UTC()
+	manifest.Metrics = summarizeRun(manifest.Traces)
 	if err := writeJSON(filepath.Join(runDir, "run.json"), manifest); err != nil {
 		return RunManifest{}, err
 	}
@@ -100,6 +108,19 @@ func runTask(ctx context.Context, opts RunOptions, suiteID, runDir string, task 
 	assertions := evaluateAssertions(task, run.Results, changed)
 	status := "passed"
 	var failed []string
+	for index, result := range run.Results {
+		if result.Status == "pass" && result.ExitCode == 0 {
+			continue
+		}
+		status = "failed"
+		message := fmt.Sprintf("command %d exited %d", index, result.ExitCode)
+		if result.TimedOut {
+			message = fmt.Sprintf("command %d timed out", index)
+		} else if strings.TrimSpace(result.Error) != "" {
+			message += ": " + result.Error
+		}
+		failed = append(failed, message)
+	}
 	for _, assertion := range assertions {
 		if assertion.Status != "passed" {
 			status = "failed"
@@ -127,7 +148,7 @@ func runTask(ctx context.Context, opts RunOptions, suiteID, runDir string, task 
 		ChangedFiles:             changed,
 		AllowedSurfaceViolations: violations,
 		OracleResults:            []OracleResult{{Oracle: task.Oracle, Status: status, Message: strings.Join(failed, "; ")}},
-		FailureSignature:         failureSignature(task, status),
+		FailureSignature:         failureSignature(task, run.Results, assertions, violations),
 	}
 	if status == "passed" {
 		trace.FailureSignature = ""
@@ -137,6 +158,62 @@ func runTask(ctx context.Context, opts RunOptions, suiteID, runDir string, task 
 		return Trace{}, err
 	}
 	return trace, nil
+}
+
+func summarizeRun(traces []Trace) RunMetrics {
+	metrics := RunMetrics{TaskRuns: len(traces)}
+	outputsByTask := map[string]map[string]struct{}{}
+	for _, trace := range traces {
+		if trace.Status == "passed" {
+			metrics.PassedTaskRuns++
+		} else {
+			metrics.FailedTaskRuns++
+		}
+		for _, assertion := range trace.Assertions {
+			metrics.Assertions++
+			if assertion.Status == "passed" {
+				metrics.PassedAssertions++
+			} else {
+				metrics.FailedAssertions++
+			}
+		}
+		var traceOutputHashes []string
+		for _, command := range trace.Commands {
+			metrics.CommandDurationMS += command.DurationMS
+			metrics.Stdout.Lines += command.Stdout.Lines
+			metrics.Stdout.Words += command.Stdout.Words
+			metrics.Stdout.Bytes += command.Stdout.Bytes
+			metrics.Stdout.EstimatedTokens += command.Stdout.EstimatedTokens
+			traceOutputHashes = append(traceOutputHashes, command.StdoutSHA256)
+		}
+		if outputsByTask[trace.TaskID] == nil {
+			outputsByTask[trace.TaskID] = map[string]struct{}{}
+		}
+		outputsByTask[trace.TaskID][strings.Join(traceOutputHashes, ":")] = struct{}{}
+	}
+	repeatsByTask := map[string]int{}
+	for _, trace := range traces {
+		repeatsByTask[trace.TaskID]++
+	}
+	for taskID, repeats := range repeatsByTask {
+		if repeats < 2 {
+			continue
+		}
+		metrics.RepeatedTasks++
+		if len(outputsByTask[taskID]) == 1 {
+			metrics.StableRepeatedTasks++
+		}
+	}
+	if metrics.TaskRuns > 0 {
+		metrics.TaskSuccessRate = float64(metrics.PassedTaskRuns) / float64(metrics.TaskRuns)
+	}
+	if metrics.Assertions > 0 {
+		metrics.OutputCompleteness = float64(metrics.PassedAssertions) / float64(metrics.Assertions)
+	}
+	if metrics.RepeatedTasks > 0 {
+		metrics.DeterminismRate = float64(metrics.StableRepeatedTasks) / float64(metrics.RepeatedTasks)
+	}
+	return metrics
 }
 
 func parseCommands(task Task, kitBinary string) ([]verify.Command, error) {

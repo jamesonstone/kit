@@ -7,6 +7,27 @@ on:
       - "internal/improve/**"
       - "pkg/cli/improve*.go"
       - "pkg/cli/capabilities_catalog.go"
+      - "pkg/cli/skills_prompt.go"
+      - "pkg/cli/subagents.go"
+      - "pkg/cli/prompt_profile.go"
+      - "pkg/cli/spec_v2_prompt.go"
+      - "pkg/cli/loop_prompt*.go"
+      - "pkg/cli/code_review.go"
+      - "pkg/cli/dispatch_prompt.go"
+      - "pkg/cli/prompt_builtin_toolbox.go"
+      - "pkg/cli/final_response_contract.go"
+      - "pkg/cli/brainstorm_prompt.go"
+      - "pkg/cli/clarification_loop.go"
+      - "pkg/cli/plan.go"
+      - "pkg/cli/tasks.go"
+      - "pkg/cli/implement.go"
+      - "pkg/cli/reflect.go"
+      - "pkg/cli/init_loop_config.go"
+      - "pkg/cli/testdata/**"
+      - "internal/templates/instruction_templates*.go"
+      - ".kit.yaml"
+      - "docs/CONSTITUTION.md"
+      - "docs/workflows.md"
       - ".github/workflows/kit-improve-*.yml"
   workflow_dispatch:
 
@@ -24,3 +45,5 @@ jobs:
         run: go build -o bin/kit ./cmd/kit
       - name: Run default suite
         run: ./bin/kit improve run --suite default --json
+      - name: Run prompt-system suite
+        run: ./bin/kit improve run --suite prompt-system --kit-binary ./bin/kit --json

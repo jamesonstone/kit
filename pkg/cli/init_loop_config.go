@@ -14,7 +14,7 @@ func defaultInitLoopAgentConfig() config.LoopAgentConfig {
 			"never",
 			"exec",
 			"--model",
-			"gpt-5.5",
+			"gpt-5.6",
 			"--sandbox",
 			"workspace-write",
 			"--ignore-user-config",
@@ -71,6 +71,20 @@ func isGeneratedInitLoopAgentConfig(agent config.LoopAgentConfig) bool {
 		return false
 	}
 	generatedArgs := [][]string{
+		defaultInitLoopAgentConfig().Args,
+		{
+			"--ask-for-approval",
+			"never",
+			"exec",
+			"--model",
+			"gpt-5.5",
+			"--sandbox",
+			"workspace-write",
+			"--ignore-user-config",
+			"--color",
+			"never",
+			"-",
+		},
 		{
 			"--ask-for-approval",
 			"never",

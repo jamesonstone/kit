@@ -64,16 +64,14 @@ func TestPreparePromptWithFrontendProfileOrdersSuffixes(t *testing.T) {
 		"## Skills",
 		"## Frontend Profile",
 		"## Subagent Orchestration",
-		"execution means documentation edits only",
-		"Use RLM-style context loading first",
-		"Inspect existing frontend architecture",
+		"Load only the relevant feature docs",
+		"inspect existing components, tokens, layout, and interaction patterns",
 		"product domain and audience",
-		"Use familiar UI affordances",
-		"unnecessary landing pages",
-		"stable responsive dimensions",
+		"Use familiar controls and relevant assets",
+		"Avoid generated-UI defaults",
+		"Keep fixed-format UI dimensions stable",
 		"browser or screenshot evidence",
-		"render or inspect the UI",
-		"text overflow",
+		"overflow, clipping, overlap",
 	}
 	for _, check := range checks {
 		if !strings.Contains(got, check) {

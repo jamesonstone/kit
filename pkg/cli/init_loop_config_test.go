@@ -43,11 +43,47 @@ func TestRunInitRefresh_BackfillsLoopReviewAgentConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read %s: %v", config.ConfigFileName, err)
 	}
-	for _, check := range []string{"loop:", "command: codex", "- exec", "- --model", "- gpt-5.5", "- workspace-write", "- --ignore-user-config"} {
+	for _, check := range []string{"loop:", "command: codex", "- exec", "- --model", "- gpt-5.6", "- workspace-write", "- --ignore-user-config"} {
 		if !strings.Contains(string(content), check) {
 			t.Fatalf("expected refreshed config to contain %q, got:\n%s", check, content)
 		}
 	}
+}
+
+func TestRunInitRefresh_UpgradesGeneratedGPT55LoopAgentConfig(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	stubRulesetRegistry(t)
+
+	cfg := config.Default()
+	cfg.Loop.Agent = config.LoopAgentConfig{
+		Command: "codex",
+		Args: []string{
+			"--ask-for-approval", "never", "exec", "--model", "gpt-5.5",
+			"--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-",
+		},
+	}
+	if err := config.Save(tempDir, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+		initRefreshFiles = []string{config.ConfigFileName}
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	updated, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	assertDefaultInitLoopAgent(t, updated)
 }
 
 func TestRunInitRefresh_ReplacesPlaceholderLoopAgentConfig(t *testing.T) {
@@ -268,5 +304,41 @@ func TestRunInitRefresh_PreservesCustomLoopAgentConfig(t *testing.T) {
 	}
 	if !stringSlicesEqual(updated.Loop.Agent.Args, []string{"run", "--stdin"}) {
 		t.Fatalf("Loop.Agent.Args = %v, want custom args", updated.Loop.Agent.Args)
+	}
+}
+
+func TestRunInitRefresh_PreservesCustomCodexModel(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	stubRulesetRegistry(t)
+
+	wantArgs := []string{
+		"--ask-for-approval", "never", "exec", "--model", "custom-model",
+		"--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-",
+	}
+	cfg := config.Default()
+	cfg.Loop.Agent = config.LoopAgentConfig{Command: "codex", Args: append([]string(nil), wantArgs...)}
+	if err := config.Save(tempDir, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+		initRefreshFiles = []string{config.ConfigFileName}
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	updated, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	if updated.Loop.Agent.Command != "codex" || !stringSlicesEqual(updated.Loop.Agent.Args, wantArgs) {
+		t.Fatalf("custom Codex model changed: %#v", updated.Loop.Agent)
 	}
 }

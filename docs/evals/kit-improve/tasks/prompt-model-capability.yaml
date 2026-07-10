@@ -1,0 +1,26 @@
+schema_version: 1
+id: prompt-model-capability
+title: Generated loop model guidance uses GPT-5.6
+category: prompt-model
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Verify the public loop capability describes the generated model default.
+expected_behavior: Loop capability metadata identifies GPT-5.6 as the generated default.
+oracle: deterministic-cli
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} capabilities loop --json"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: gpt-5.6
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-model:stale-generated-default

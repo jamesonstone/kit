@@ -1,0 +1,49 @@
+schema_version: 1
+id: prompt-v2-supervisor
+title: V2 supervisor prompt preserves the durable workflow contract
+category: prompt-supervisor
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Render the v2 supervisor prompt for the ready fixture feature.
+expected_behavior: The prompt identifies the durable SPEC, success criteria, validation, evidence, and delivery boundaries without API-only instructions.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} spec prompt-benchmark --prompt-only --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: SPEC.md
+  - type: stdout_contains
+    command_index: 0
+    value: validation
+  - type: stdout_contains
+    command_index: 0
+    value: evidence
+  - type: stdout_contains
+    command_index: 0
+    value: delivery
+  - type: stdout_not_contains
+    command_index: 0
+    value: Programmatic Tool Calling
+  - type: stdout_not_contains
+    command_index: 0
+    value: persisted reasoning
+  - type: stdout_not_contains
+    command_index: 0
+    value: text.verbosity
+  - type: stdout_words_max
+    command_index: 0
+    max: 6000
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-supervisor:missing-contract

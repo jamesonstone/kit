@@ -134,7 +134,7 @@ func TestOutputStatusTextShowsCurrentStepAndRemainingWork(t *testing.T) {
 		"Paused: no",
 		"Current step: clarify",
 		"Left: clarify requirements -> ready gate -> implement -> validate -> reflect -> deliver -> complete",
-		"Next: Continue v2 clarification in SPEC.md until unresolved questions are 0 and acceptance criteria are binary-verifiable",
+		"Next: Resolve remaining material non-discoverable ambiguity in SPEC.md until unresolved questions are 0 and acceptance criteria are binary-verifiable",
 		"V2 phase progress",
 		"CLARIFY",
 	} {

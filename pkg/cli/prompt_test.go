@@ -50,9 +50,9 @@ func TestRunPromptWithOptions_DirectCodingAgentBuiltIns(t *testing.T) {
 		wantText  string
 		rejectOne string
 	}{
-		{verb: "short", wantText: "Clarify before implementing.", rejectOne: "pbcopy"},
-		{verb: "long", wantText: "Stay in clarification and information-gathering workflow.", rejectOne: "osascript"},
-		{verb: "instructions", wantText: "Output a concise, comprehensive set of coding agent instructions.", rejectOne: "old_clipboard"},
+		{verb: "short", wantText: "Clarify only material choices", rejectOne: "pbcopy"},
+		{verb: "long", wantText: "Stay in explicit clarification workflow.", rejectOne: "osascript"},
+		{verb: "instructions", wantText: "Output implementation-ready coding-agent instructions", rejectOne: "old_clipboard"},
 	}
 
 	for _, tt := range tests {
@@ -90,7 +90,7 @@ func TestRunPromptWithOptions_DirectKitSpecBuiltInRendersV2Prompt(t *testing.T) 
 
 	assertV2SpecPromptContract(t, output)
 	assertV2SpecPromptExcludesV1StageAssumptions(t, output)
-	if !strings.Contains(output, "Kit v2 `kit spec` workflow for feature `alpha`") {
+	if !strings.Contains(output, "Supervise feature `alpha`") {
 		t.Fatalf("expected kit spec prompt output, got %q", output)
 	}
 }

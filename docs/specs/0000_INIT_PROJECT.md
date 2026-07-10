@@ -412,7 +412,7 @@ loop:
       - never
       - exec
       - --model
-      - gpt-5.5
+      - gpt-5.6
       - --sandbox
       - workspace-write
       - --ignore-user-config
@@ -557,8 +557,8 @@ CLI flags always override `.kit.yaml`.
   work instead of replaying full historical docs into chat or active artifacts
 - require the agent to keep `BRAINSTORM.md` `## DEPENDENCIES` current with the supporting inputs used during the research phase
 - require the agent to populate every `BRAINSTORM.md` section and replace placeholder-only sections with `not applicable`, `not required`, or `no additional information required`
-- require the agent to use numbered lists, ask clarifying questions in batches of up to 10, include a recommended default/proposed solution/assumption for every question, accept `yes` / `y` as full-batch approval and `yes 3, 4, 5` / `y 3, 4, 5` as numbered approval, support `no` / `n` overrides, state uncertainties, and output percentage-understanding progress after each batch
-- require the agent to continue until the configured understanding threshold is reached and the specification is precise enough for a correct, production-quality solution before writing implementation artifacts
+- require the agent to resolve repository-discoverable ambiguity itself and ask concise numbered questions only for material non-discoverable choices, with a recommended default and why each answer changes the result
+- require the agent to stop before finalizing while a material question remains, and otherwise continue when the configured understanding threshold is reached
 
 ---
 
@@ -611,7 +611,7 @@ CLI flags always override `.kit.yaml`.
   `clarification.status`, `clarification.confidence`, and
   `clarification.unresolved_questions`
 - template uses the fixed v2 section order: Thesis, Context, Clarifications, Requirements, Assumptions, Acceptance Criteria, Implementation Plan, Task Checklist, Validation Map, Reflection Notes, Documentation Updates, Delivery Decision, Evidence
-- prompt instructions define the supervisor contract, clarification-first output modes, repo-grounded ambiguity scan, readiness gates, same-thread continuation after clarification, dynamic agent team model, implementation rules, validation/verification phase, reflection phase, documentation sync, delivery gate, `SPEC.md` update requirements, and final response contract
+- prompt instructions define goals, context, constraints, approval boundaries, success criteria, stage-specific output contracts, a repo-grounded material-ambiguity gate, implementation rules, validation/verification, reflection, documentation sync, delivery, `SPEC.md` updates, and the final response contract
 - prompt instructions require indices-first prior work discovery through
   `kit map <feature>` and `docs/PROJECT_PROGRESS_SUMMARY.md`
 - prompt instructions require prior feature docs to stay conditional and

@@ -1,0 +1,40 @@
+schema_version: 1
+id: prompt-code-review
+title: Code-review prompt is read-only and finding-oriented
+category: prompt-review
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: reviewer
+timeout_seconds: 30
+input_prompt: Render the branch code-review prompt.
+expected_behavior: Review only the changed scope and return actionable findings without mutation or routine approval pauses.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} code-review --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: changed
+  - type: stdout_contains
+    command_index: 0
+    value: findings
+  - type: stdout_not_contains
+    command_index: 0
+    value: Waiting for approval
+  - type: stdout_not_contains
+    command_index: 0
+    value: Ask clarification questions until
+  - type: stdout_words_max
+    command_index: 0
+    max: 1600
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-review:missing-read-only-contract

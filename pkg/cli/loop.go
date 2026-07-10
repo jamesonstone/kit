@@ -56,7 +56,7 @@ loop:
   max_iterations: 20
   agent:
     command: codex
-    args: ["--ask-for-approval", "never", "exec", "--model", "gpt-5.5", "--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-"]`,
+    args: ["--ask-for-approval", "never", "exec", "--model", "gpt-5.6", "--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-"]`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runLoop,
 }

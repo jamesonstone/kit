@@ -1,6 +1,6 @@
 schema_version: 1
 id: default
-title: Default Kit harness regression suite
+title: Default Kit capability smoke suite
 held_in:
   include_tags:
     - init
@@ -20,3 +20,4 @@ minimum_tasks: 8
 selection_rules:
   - include at least one task from each required V1 category when available
   - do not put two fixture variants of the same failure in both held-in and held-out
+  - treat this suite as command-capability smoke coverage, not prompt or model-quality evidence

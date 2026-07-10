@@ -2,5 +2,67 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Kit Improve Trace",
   "type": "object",
-  "required": ["schema_version", "task_id", "suite", "kit_version", "git_commit", "started_at", "duration_ms", "status", "workspace_path", "repeat_index", "commands", "assertions", "changed_files", "allowed_surface_violations", "oracle_results"]
+  "required": ["schema_version", "task_id", "suite", "kit_version", "git_commit", "started_at", "duration_ms", "status", "workspace_path", "repeat_index", "seed", "commands", "assertions", "changed_files", "allowed_surface_violations", "oracle_results"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "task_id": {"type": "string"},
+    "suite": {"type": "string"},
+    "kit_version": {"type": "string"},
+    "git_commit": {"type": "string"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "duration_ms": {"type": "integer", "minimum": 0},
+    "status": {"enum": ["passed", "failed"]},
+    "workspace_path": {"type": "string"},
+    "baseline_trace_id": {"type": "string"},
+    "repeat_index": {"type": "integer", "minimum": 1},
+    "seed": {"type": "string"},
+    "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
+    "assertions": {"type": "array", "items": {"$ref": "#/$defs/assertion_result"}},
+    "changed_files": {"type": "array", "items": {"type": "string"}},
+    "allowed_surface_violations": {"type": "array", "items": {"type": "string"}},
+    "oracle_results": {"type": "array", "items": {"type": "object"}},
+    "failure_signature": {"type": "string"}
+  },
+  "$defs": {
+    "text_metrics": {
+      "type": "object",
+      "required": ["lines", "words", "bytes", "estimated_tokens"],
+      "properties": {
+        "lines": {"type": "integer", "minimum": 0},
+        "words": {"type": "integer", "minimum": 0},
+        "bytes": {"type": "integer", "minimum": 0},
+        "estimated_tokens": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "command": {
+      "type": "object",
+      "required": ["argv", "exit_code", "status", "duration_ms", "stdout", "stdout_sha256"],
+      "properties": {
+        "argv": {"type": "array", "items": {"type": "string"}},
+        "exit_code": {"type": "integer"},
+        "status": {"type": "string"},
+        "duration_ms": {"type": "integer", "minimum": 0},
+        "error": {"type": "string"},
+        "timed_out": {"type": "boolean"},
+        "stdout": {"$ref": "#/$defs/text_metrics"},
+        "stdout_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "stdout_path": {"type": "string"},
+        "stderr_path": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "assertion_result": {
+      "type": "object",
+      "required": ["type", "status"],
+      "properties": {
+        "type": {"type": "string"},
+        "command_index": {"type": "integer", "minimum": 0},
+        "status": {"enum": ["passed", "failed"]},
+        "message": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
 }

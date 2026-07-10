@@ -1,0 +1,43 @@
+schema_version: 1
+id: prompt-loop-feature
+title: Feature loop prompt preserves completion and evidence contracts
+category: prompt-loop
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Render the explicit feature-engineering loop prompt for the ready fixture feature.
+expected_behavior: The prompt is actionable for feature completion and preserves validation, evidence, and delivery boundaries.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} loop prompt prompt-benchmark --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: SPEC.md
+  - type: stdout_contains
+    command_index: 0
+    value: validation
+  - type: stdout_contains
+    command_index: 0
+    value: evidence
+  - type: stdout_not_contains
+    command_index: 0
+    value: Waiting for approval
+  - type: stdout_not_contains
+    command_index: 0
+    value: text.verbosity
+  - type: stdout_words_max
+    command_index: 0
+    max: 2200
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-loop:missing-completion-contract

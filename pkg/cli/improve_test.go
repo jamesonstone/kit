@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+
+	"github.com/jamesonstone/kit/internal/improve"
 )
 
 func TestImproveCommandOverview(t *testing.T) {
@@ -26,6 +28,20 @@ func TestImproveCommandOverview(t *testing.T) {
 		if !strings.Contains(content, want) {
 			t.Fatalf("expected overview to contain %q, got %q", want, content)
 		}
+	}
+}
+
+func TestImproveRunSupportsBinaryOverrideAndFailsFailedManifest(t *testing.T) {
+	cmd := newImproveRunCommand(&improveOptions{})
+	if cmd.Flags().Lookup("kit-binary") == nil {
+		t.Fatalf("expected --kit-binary flag")
+	}
+	err := improveRunFailure(improve.RunManifest{RunID: "run-1", RunDir: "/tmp/run-1", Status: "failed"})
+	if err == nil || !strings.Contains(err.Error(), "benchmark run-1 failed") {
+		t.Fatalf("improveRunFailure() = %v", err)
+	}
+	if err := improveRunFailure(improve.RunManifest{Status: "pass"}); err != nil {
+		t.Fatalf("passing manifest returned error: %v", err)
 	}
 }
 

@@ -282,45 +282,6 @@ func selectFeatureForPlanPromptOnly(specsDir string) (*feature.Feature, error) {
 	return &selected, nil
 }
 
-func appendPlanDependencyInventoryStep(
-	sb *strings.Builder,
-	step int,
-	planPath string,
-	specPath string,
-	brainstormPath string,
-	hasBrainstorm bool,
-) int {
-	sb.WriteString(fmt.Sprintf("%d. %s\n", step, strings.ReplaceAll(
-		planDependencyInventoryStepText(planPath, specPath, brainstormPath, hasBrainstorm),
-		"\n",
-		"\n   ",
-	)))
-	return step + 1
-}
-
-func planDependencyInventoryStepText(planPath, specPath, brainstormPath string, hasBrainstorm bool) string {
-	lines := []string{
-		fmt.Sprintf("Populate or refresh canonical front matter `references` in `%s` before sign-off:", planPath),
-		fmt.Sprintf("- carry forward still-relevant references from `%s`", specPath),
-	}
-	if hasBrainstorm {
-		lines = append(lines, fmt.Sprintf("- carry forward still-relevant references from `%s`", brainstormPath))
-	}
-	lines = append(lines,
-		"- include skills, MCP tools, repo docs, design refs, APIs, libraries, datasets, assets, and other resources that shape the implementation strategy",
-		"- use `name`, `type`, `target`, `relation`, `read_policy`, `used_for`, and `status`",
-		"- add a stable `id` when the reference may need to be updated later",
-		"- `selector_type` must be one of `artifact`, `heading`, `symbol`, `command`, `url`, or `node_id` when `selector` is set",
-		"- `relation` describes the referenced target's role relative to the source artifact, such as `constrains`, `guides`, `informs`, `implements`, `verifies`, or `uses`",
-		"- `read_policy` must be one of `must`, `conditional`, `evidence`, or `skip`",
-		"- `status` must be one of `active`, `optional`, or `stale`",
-		"- for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target` and use stable selectors when needed",
-		"- if a reference influenced the implementation strategy but is no longer current, keep it with `status: stale` and `read_policy: skip`",
-		"- if no additional references apply, leave front matter references empty and keep the body `## DEPENDENCIES` section prose-only",
-	)
-	return strings.Join(lines, "\n")
-}
-
 // outputStandardPlanPrompt outputs the standard coding agent prompt.
 func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) error {
 	projectRoot, err := config.FindProjectRoot()
@@ -335,7 +296,6 @@ func outputStandardPlanPrompt(planPath, specPath, brainstormPath string, feat *f
 
 	return nil
 }
-
 func buildStandardPlanPrompt(
 	planPath string,
 	specPath string,
@@ -345,181 +305,54 @@ func buildStandardPlanPrompt(
 	projectRoot string,
 ) string {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
-	goalPct := cfg.GoalPercentage
 	hasBrainstorm := document.Exists(brainstormPath)
 
-	steps := []string{
-		fmt.Sprintf("Read CONSTITUTION.md (file: %s) to understand project constraints and principles", constitutionPath),
-	}
-	if hasBrainstorm {
-		steps = append(steps, fmt.Sprintf("Read BRAINSTORM.md (file: %s) for upstream research context", brainstormPath))
-	}
-	steps = append(steps,
-		fmt.Sprintf("Read SPEC.md (file: %s) fully and treat it as a fixed contract", specPath),
-		relatedFeatureContextStepText(projectRoot, planPath),
-		fmt.Sprintf("Review the PLAN.md (file: %s) template and required sections", planPath),
-		"Identify any missing design decisions required for execution",
-		planDependencyInventoryStepText(planPath, specPath, brainstormPath, hasBrainstorm),
-	)
-	steps = append(steps, clarificationLoopSteps(
-		goalPct,
-		"Reassess and continue with additional batches of up to 10 questions until the plan is precise enough to produce a correct, production-quality implementation",
-	)...)
-	steps = append(steps, "Commit to concrete design decisions that make execution unambiguous")
-
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph("Please review and complete the implementation plan.")
-		doc.Heading(2, "File References")
-		rows := [][]string{{"CONSTITUTION", constitutionPath}}
-		if hasBrainstorm {
-			rows = append(rows, []string{"BRAINSTORM", brainstormPath})
+		doc.Paragraph(fmt.Sprintf("Complete the legacy implementation plan for feature `%s`. This is documentation-only; do not implement product code.", feat.Slug))
+		doc.Heading(2, "Context")
+		rows := [][]string{
+			{"SPEC.md", specPath, "Binding requirements and acceptance"},
+			{"PLAN.md", planPath, "Artifact to update"},
+			{"Constitution", constitutionPath, "Project invariants"},
+			{"Project root", projectRoot, "Discover existing implementation patterns"},
 		}
-		rows = append(rows,
-			[]string{"SPEC", specPath},
-			[]string{"PLAN", planPath},
-			[]string{"Feature", feat.Slug},
-			[]string{"Project Root", projectRoot},
+		if hasBrainstorm {
+			rows = append(rows, []string{"BRAINSTORM.md", brainstormPath, "Non-binding research context"})
+		}
+		doc.Table([]string{"Input", "Path", "Use"}, rows)
+
+		doc.Heading(2, "Planning Contract")
+		doc.OrderedList(1,
+			"Read SPEC.md as fixed scope. Inspect the smallest relevant code, tests, docs, and prior-feature context needed to ground design decisions; do not invent files or APIs.",
+			"Resolve repository-discoverable gaps yourself. Ask concise numbered questions only for a material non-discoverable design choice, with a recommended default and impact; stop before writing a final plan while such a choice remains.",
+			fmt.Sprintf("Update `%s` directly with the simplest viable approach, explicit tradeoffs, components/responsibilities, data and interfaces, exact dependencies/references, touched surfaces, sequencing, risks/rollback, and validation strategy.", planPath),
+			"Map every binding acceptance criterion to implementation responsibility and evidence. Keep exact external and repo references in front matter.",
+			"Make the resulting task breakdown deterministic without writing TASKS.md or implementation code.",
 		)
-		doc.Table([]string{"Document", "Path"}, rows)
-		doc.Paragraph("Your task:")
-		doc.OrderedList(1, steps...)
-		doc.Paragraph(fmt.Sprintf(
-			"Before you write or update PLAN.md:\n- after each batch of up to 10 questions, output your current percentage understanding of the implementation plan so the user can see progress\n- do NOT treat PLAN.md as complete until confidence reaches ≥%d%%",
-			goalPct,
-		))
-		doc.Paragraph("For each section, write only what is required to enable clear task breakdown:")
-		doc.Raw(`- SUMMARY
-  - one-paragraph overview of the chosen approach
 
-- APPROACH
-  - high-level strategy
-  - explicit tradeoff decisions
-  - no code
-
-- COMPONENTS
-  - logical components/modules
-  - clear responsibility boundaries
-
-- DATA
-  - data shapes, enums, tables, files
-  - no schema or serialization code unless unavoidable
-
-- INTERFACES
-  - commands, inputs, outputs, side effects
-  - files and artifacts touched
-
-- DEPENDENCIES
-  - the docs, tools, design refs, APIs, libraries, datasets, assets, and other resources shaping the implementation strategy
-  - keep exact URLs or file/node refs in front matter references
-  - use status = active, optional, or stale
-
-- RISKS
-  - top technical or design risks
-  - mitigation per risk
-
-- TESTING
-  - validation strategy
-  - test types, not test code`)
-		doc.Heading(2, "Rules")
+		doc.Heading(2, "Success Criteria")
 		doc.BulletList(
-			docsOnlyWorkflowRule("PLAN.md and supporting documentation"),
-			"focus on HOW, not WHAT",
-			"use BRAINSTORM.md as research context only; SPEC.md remains the binding contract",
-			"do not restate requirements",
-			"do not introduce new scope beyond SPEC.md",
-			"canonical front matter `references` must be current before sign-off and must keep exact targets and stable selectors for external design inputs",
-			"do not write tasks",
-			"keep language dense and factual",
-			"Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off",
-			"ensure plan respects constraints defined in CONSTITUTION.md",
-			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
+			fmt.Sprintf("Confidence is at least %d and no material design question remains.", cfg.GoalPercentage),
+			"PLAN.md adds implementation strategy rather than restating requirements, introduces no new scope, and follows repository invariants.",
+			"Each planned surface, risk, test, and documentation obligation traces to SPEC.md acceptance and has a concrete evidence method.",
+			"Empty optional sections state `not applicable`; placeholder comments are removed and the project progress summary remains accurate.",
 		)
-		doc.Paragraph("The output of PLAN.md must make TASKS.md obvious and deterministic.")
-		doc.Raw(renderNonEmptySectionRules("`PLAN.md`"))
+
+		doc.Heading(2, "Output")
+		doc.BulletList(
+			"Update PLAN.md and supporting documentation only.",
+			"Report key decisions, validation strategy, remaining risk, and the next legacy task-generation step.",
+		)
 		addFinalResponseContract(doc, planFinalResponseContract(feat.Slug)...)
 	})
 }
 
-// outputWarpPlanPrompt outputs a prompt for Warp coding agent to fill PLAN.md from Warp plan.
 func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *feature.Feature, cfg *config.Config, outputOnly bool) error {
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
 		return err
 	}
-	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
-	goalPct := cfg.GoalPercentage
-	hasBrainstorm := document.Exists(brainstormPath)
-
-	steps := []string{
-		fmt.Sprintf("Read CONSTITUTION.md (file: %s) to understand project constraints and principles", constitutionPath),
-	}
-	if hasBrainstorm {
-		steps = append(steps, fmt.Sprintf("Read BRAINSTORM.md (file: %s) for upstream research context", brainstormPath))
-	}
-	steps = append(steps,
-		"Read the Warp plan you created and extract the key design decisions",
-		fmt.Sprintf("Read SPEC.md (file: %s) to ensure alignment with requirements", specPath),
-		relatedFeatureContextStepText(projectRoot, planPath),
-		planDependencyInventoryStepText(planPath, specPath, brainstormPath, hasBrainstorm),
-		fmt.Sprintf(
-			"Fill out each section of PLAN.md (file: %s), adding implementation details beyond what's in the Warp plan:\n"+
-				"- SUMMARY: one-paragraph overview (expand from Warp plan's high-level description)\n"+
-				"- APPROACH: detailed strategy and tradeoff decisions\n"+
-				"- COMPONENTS: logical modules with clear responsibility boundaries\n"+
-				"- DATA: data shapes, structures, and storage decisions\n"+
-				"- INTERFACES: commands, inputs, outputs, side effects\n"+
-				"- DEPENDENCIES: prose summary of the resources that shape the implementation strategy; canonical pointers belong in front matter `references`\n"+
-				"- RISKS: technical risks with mitigation strategies\n"+
-				"- TESTING: validation strategy and test types",
-			planPath,
-		),
-		"Ensure PLAN.md has MORE detail than the Warp plan — it should make task breakdown obvious",
-	)
-	steps = append(steps, clarificationLoopSteps(
-		goalPct,
-		"Reassess and continue with additional batches of up to 10 questions until PLAN.md is precise enough to produce a correct, production-quality implementation",
-	)...)
-
-	prompt := renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph(fmt.Sprintf("I have created a Warp plan for the feature: %s", feat.Slug))
-		doc.Heading(2, "File References")
-		rows := [][]string{{"CONSTITUTION", constitutionPath}}
-		if hasBrainstorm {
-			rows = append(rows, []string{"BRAINSTORM", brainstormPath})
-		}
-		rows = append(rows,
-			[]string{"SPEC", specPath},
-			[]string{"PLAN", planPath},
-			[]string{"Project Root", projectRoot},
-		)
-		doc.Table([]string{"Document", "Path"}, rows)
-		doc.Paragraph(fmt.Sprintf(
-			"Please take the Warp plan you just generated and use it to fill out the PLAN.md document at:\n%s",
-			planPath,
-		))
-		doc.Paragraph("Your task:")
-		doc.OrderedList(1, steps...)
-		doc.Paragraph(fmt.Sprintf(
-			"After completing PLAN.md:\n- state your confidence level that TASKS.md can be derived unambiguously\n- do NOT treat PLAN.md as complete until confidence reaches ≥%d%%",
-			goalPct,
-		))
-		doc.Heading(2, "Rules")
-		doc.BulletList(
-			docsOnlyWorkflowRule("PLAN.md and supporting documentation"),
-			"focus on HOW, not WHAT (SPEC covers WHAT)",
-			"use BRAINSTORM.md as research context only; SPEC.md remains the binding contract",
-			"do not restate requirements verbatim",
-			"do not introduce new scope beyond the Warp plan and SPEC.md",
-			"canonical front matter `references` must be current before sign-off and must keep exact targets and stable selectors for external design inputs",
-			"keep language dense and factual",
-			"Plan gate: acceptance criteria must be testable and mapped to explicit evidence in PLAN.md before sign-off",
-			"ensure plan respects constraints defined in CONSTITUTION.md",
-			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature",
-		)
-		doc.Paragraph("The output of PLAN.md must make TASKS.md obvious and deterministic.")
-		doc.Raw(renderNonEmptySectionRules("`PLAN.md`"))
-		addFinalResponseContract(doc, planFinalResponseContract(feat.Slug)...)
-	})
+	prompt := buildWarpPlanPrompt(planPath, specPath, brainstormPath, feat, cfg, projectRoot)
 
 	if !outputOnly {
 		fmt.Println()
@@ -534,4 +367,56 @@ func outputWarpPlanPrompt(planPath, specPath, brainstormPath string, feat *featu
 	}
 
 	return nil
+}
+
+func buildWarpPlanPrompt(
+	planPath string,
+	specPath string,
+	brainstormPath string,
+	feat *feature.Feature,
+	cfg *config.Config,
+	projectRoot string,
+) string {
+	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	hasBrainstorm := document.Exists(brainstormPath)
+
+	return renderPromptDocument(func(doc *promptdoc.Document) {
+		doc.Paragraph(fmt.Sprintf("Convert the Warp plan in the current conversation into the legacy PLAN.md for feature `%s`. This is documentation-only; do not implement product code.", feat.Slug))
+		doc.Heading(2, "Context")
+		rows := [][]string{
+			{"Warp plan", "Current conversation", "Non-binding design input"},
+			{"SPEC.md", specPath, "Binding requirements and acceptance"},
+			{"PLAN.md", planPath, "Artifact to update"},
+			{"Constitution", constitutionPath, "Project invariants"},
+			{"Project root", projectRoot, "Discover implementation patterns"},
+		}
+		if hasBrainstorm {
+			rows = append(rows, []string{"BRAINSTORM.md", brainstormPath, "Non-binding research context"})
+		}
+		doc.Table([]string{"Input", "Path", "Use"}, rows)
+
+		doc.Heading(2, "Planning Contract")
+		doc.OrderedList(1,
+			"Extract the Warp plan's concrete design decisions, then verify them against SPEC.md, the constitution, and the smallest relevant code and test surfaces. SPEC.md wins on conflict.",
+			"Resolve repository-discoverable gaps yourself. Ask concise numbered questions only for a material non-discoverable design choice, with a recommended default and impact; stop before finalizing while such a choice remains.",
+			fmt.Sprintf("Update `%s` directly with the simplest viable approach, explicit tradeoffs, components/responsibilities, data and interfaces, exact dependencies/references, touched surfaces, sequencing, risks/rollback, and validation strategy.", planPath),
+			"Map every binding acceptance criterion to implementation responsibility and evidence. Keep exact external and repository references in front matter.",
+			"Add implementation detail where the Warp plan is abstract, but introduce no scope beyond SPEC.md and do not write TASKS.md or product code.",
+		)
+
+		doc.Heading(2, "Success Criteria")
+		doc.BulletList(
+			fmt.Sprintf("Confidence is at least %d and no material design question remains.", cfg.GoalPercentage),
+			"PLAN.md adds implementation strategy beyond the Warp plan without restating requirements or changing binding scope.",
+			"Each planned surface, risk, test, and documentation obligation traces to SPEC.md acceptance and has concrete evidence.",
+			"Empty optional sections state `not applicable`; placeholder comments are removed and the project progress summary remains accurate.",
+		)
+
+		doc.Heading(2, "Output")
+		doc.BulletList(
+			"Update PLAN.md and supporting documentation only.",
+			"Report key decisions carried forward or changed, validation strategy, remaining risk, and the next legacy task-generation step.",
+		)
+		addFinalResponseContract(doc, planFinalResponseContract(feat.Slug)...)
+	})
 }

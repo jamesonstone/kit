@@ -17,9 +17,8 @@ const copilotQuickRules = `## Fast rules for chat and code review
 - for spec-driven work:
   - read ` + "`SPEC.md`" + ` first for v2 feature work; it carries requirements, plan, task checklist, validation, reflection, delivery, and evidence
   - treat ` + "`BRAINSTORM.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` as legacy staged context unless the user explicitly chooses a legacy staged command
-  - ask numbered clarification questions until you reach ≥95% confidence
-  - include a recommended default, proposed solution, or assumption for every question
-  - accept approvals via ` + "`yes`" + ` / ` + "`y`" + `, partial approvals via ` + "`yes 3, 4`" + `, and overrides via ` + "`no 2: <answer>`" + `
+  - resolve repository-discoverable facts first and ask numbered questions only for material non-discoverable choices
+  - include a recommended default and impact for every question; proceed without routine approval when no material question remains
   - run the v2 readiness gates before writing code; if any gate fails, update ` + "`SPEC.md`" + ` first
   - implement from the ` + "`SPEC.md`" + ` task checklist and update ` + "`SPEC.md`" + ` first if implementation changes behavior, requirements, approach, validation, reflection, documentation, or delivery state
 - for ad hoc work:

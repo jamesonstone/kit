@@ -1,0 +1,37 @@
+schema_version: 1
+id: prompt-legacy-plan
+title: Legacy plan prompt preserves its staged artifact contract
+category: prompt-legacy
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: planner
+timeout_seconds: 30
+input_prompt: Render the explicit legacy plan prompt.
+expected_behavior: The prompt updates PLAN.md from known requirements and asks only for blocking ambiguity.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} legacy plan legacy-prompt --prompt-only --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: PLAN.md
+  - type: stdout_contains
+    command_index: 0
+    value: validation
+  - type: stdout_not_contains
+    command_index: 0
+    value: text.verbosity
+  - type: stdout_words_max
+    command_index: 0
+    max: 3000
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-legacy:plan-contract

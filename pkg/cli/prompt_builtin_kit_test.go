@@ -73,7 +73,7 @@ func TestBuiltInPromptSourcesIncludesToolboxAndKitCatalogs(t *testing.T) {
 func TestBuiltInKitStaticRenderAdapters(t *testing.T) {
 	tests := map[string]string{
 		"support summarize":   "## Context Summarization Instructions",
-		"support code-review": "## Code Review Agent Instructions",
+		"support code-review": "## Code Review",
 		"project init":        "This document will drive the \"rules for development\" going forward.",
 	}
 

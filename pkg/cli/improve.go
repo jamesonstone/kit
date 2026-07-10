@@ -16,6 +16,7 @@ import (
 
 type improveOptions struct {
 	suite         string
+	kitBinary     string
 	from          string
 	candidate     string
 	issue         string
@@ -37,10 +38,10 @@ func newImproveCommand() *cobra.Command {
 		SilenceUsage: true,
 		Long: `Run Kit's benchmark-backed self-improvement workflow.
 
-The improve workflow runs deterministic harness evals, mines recurring failure
-patterns, prepares bounded candidate prompts, validates candidate metadata and
-scorecards, and packages reviewable PR evidence without bypassing Kit delivery
-gates.`,
+The improve workflow runs deterministic fixture evals with binary and suite
+provenance, mines recurring failure patterns, prepares bounded candidate
+prompts, validates candidate metadata, and packages reviewable evidence without
+claiming unobserved model quality or bypassing Kit delivery gates.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runImproveOverview(cmd)
@@ -58,35 +59,52 @@ gates.`,
 
 func newImproveRunCommand(opts *improveOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "run",
-		Short: "Run a Kit improvement benchmark suite",
-		Args:  cobra.NoArgs,
+		Use:          "run",
+		Short:        "Run a Kit improvement benchmark suite",
+		Args:         cobra.NoArgs,
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			root, err := config.FindProjectRoot()
 			if err != nil {
 				return err
 			}
+			kitBinary := strings.TrimSpace(opts.kitBinary)
+			if kitBinary == "" {
+				kitBinary = currentExecutable()
+			}
 			manifest, err := improve.Run(context.Background(), improve.RunOptions{
-				ProjectRoot: root,
-				SuiteName:   opts.suite,
-				DryRun:      opts.dryRun,
-				KitBinary:   currentExecutable(),
-				KitVersion:  Version,
-				GitCommit:   currentGitCommit(root),
+				ProjectRoot:  root,
+				SuiteName:    opts.suite,
+				DryRun:       opts.dryRun,
+				RunnerBinary: currentExecutable(),
+				KitBinary:    kitBinary,
+				KitVersion:   Version,
+				GitCommit:    currentGitCommit(root),
 			})
 			if err != nil {
 				return err
 			}
 			if opts.json {
-				return outputJSON(cmd.OutOrStdout(), manifest)
+				if err := outputJSON(cmd.OutOrStdout(), manifest); err != nil {
+					return err
+				}
+			} else {
+				fmt.Fprintf(cmd.OutOrStdout(), "kit improve run %s: %s (%d traces)\n", manifest.RunID, manifest.Status, len(manifest.Traces))
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "kit improve run %s: %s (%d traces)\n", manifest.RunID, manifest.Status, len(manifest.Traces))
-			return nil
+			return improveRunFailure(manifest)
 		},
 	}
 	cmd.Flags().StringVar(&opts.suite, "suite", "default", "benchmark suite name")
+	cmd.Flags().StringVar(&opts.kitBinary, "kit-binary", "", "Kit executable evaluated by the suite; defaults to the current executable")
 	cmd.Flags().BoolVar(&opts.dryRun, "dry-run", false, "plan the run without writing artifacts")
 	return cmd
+}
+
+func improveRunFailure(manifest improve.RunManifest) error {
+	if manifest.Status == "failed" {
+		return fmt.Errorf("kit improve benchmark %s failed; inspect %s", manifest.RunID, manifest.RunDir)
+	}
+	return nil
 }
 
 func newImproveMineCommand(opts *improveOptions) *cobra.Command {
@@ -143,7 +161,7 @@ func newImproveProposeCommand(opts *improveOptions) *cobra.Command {
 func newImproveValidateCommand(opts *improveOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
-		Short: "Validate a Kit improvement candidate scorecard",
+		Short: "Validate Kit improvement candidate metadata",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			root, err := config.FindProjectRoot()
@@ -185,8 +203,8 @@ func newImproveReportCommand(opts *improveOptions) *cobra.Command {
 			if opts.json {
 				return outputJSON(cmd.OutOrStdout(), map[string]any{"schema_version": improve.SchemaVersion, "kind": "improve_report", "markdown": report})
 			}
-			fmt.Fprint(cmd.OutOrStdout(), report)
-			return nil
+			_, err = fmt.Fprint(cmd.OutOrStdout(), report)
+			return err
 		},
 	}
 	cmd.Flags().StringVar(&opts.from, "from", "", "artifact directory to read; defaults to .kit/improve/latest")
@@ -196,7 +214,7 @@ func newImproveReportCommand(opts *improveOptions) *cobra.Command {
 func newImprovePRCommand(opts *improveOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pr",
-		Short: "Prepare a PR body for an accepted Kit improvement candidate",
+		Short: "Prepare a PR body from Kit improvement run evidence",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			root, err := config.FindProjectRoot()
@@ -213,8 +231,8 @@ func newImprovePRCommand(opts *improveOptions) *cobra.Command {
 			if opts.json {
 				return outputJSON(cmd.OutOrStdout(), map[string]any{"schema_version": improve.SchemaVersion, "kind": "improve_pr_body", "body": body})
 			}
-			fmt.Fprint(cmd.OutOrStdout(), body)
-			return nil
+			_, err = fmt.Fprint(cmd.OutOrStdout(), body)
+			return err
 		},
 	}
 	cmd.Flags().StringVar(&opts.from, "from", "", "artifact directory to read; defaults to .kit/improve/latest")
@@ -226,7 +244,8 @@ func newImprovePRCommand(opts *improveOptions) *cobra.Command {
 func runImproveOverview(cmd *cobra.Command) error {
 	fmt.Fprintln(cmd.OutOrStdout(), "Kit improve")
 	fmt.Fprintln(cmd.OutOrStdout())
-	fmt.Fprintln(cmd.OutOrStdout(), "1. kit improve run --suite default")
+	fmt.Fprintln(cmd.OutOrStdout(), "1. kit improve run --suite default  # capability smoke")
+	fmt.Fprintln(cmd.OutOrStdout(), "   kit improve run --suite prompt-system --kit-binary <path>  # prompt regression")
 	fmt.Fprintln(cmd.OutOrStdout(), "2. kit improve mine --from .kit/improve/latest")
 	fmt.Fprintln(cmd.OutOrStdout(), "3. kit improve propose --from .kit/improve/latest")
 	fmt.Fprintln(cmd.OutOrStdout(), "4. kit improve validate --candidate <path>")

@@ -33,13 +33,13 @@ func TestBuiltInToolboxPromptSource(t *testing.T) {
 		}
 	}
 
-	if !strings.Contains(prompts["coding-agent short"], "Clarify before implementing") {
+	if !strings.Contains(prompts["coding-agent short"], "Clarify only material choices") {
 		t.Fatalf("short prompt does not preserve planning payload")
 	}
-	if !strings.Contains(prompts["coding-agent long"], "Ask clarifying questions until you have >=95% confidence") {
+	if !strings.Contains(prompts["coding-agent long"], "Ask only about a remaining choice that materially changes") {
 		t.Fatalf("long prompt does not preserve planning payload")
 	}
-	if !strings.Contains(prompts["coding-agent instructions"], "Files to Create / Modify") {
+	if !strings.Contains(prompts["coding-agent instructions"], "## Acceptance Criteria") {
 		t.Fatalf("instructions prompt does not preserve instruction payload")
 	}
 }

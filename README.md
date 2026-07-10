@@ -93,13 +93,14 @@ artifacts and are available only through `kit legacy` workflows.
 | Command | Purpose |
 | --- | --- |
 | `kit init` | Initialize or refresh Kit-managed project scaffolding |
-| `kit spec <feature>` | Start or resume the clarification-first v2 `SPEC.md` workflow |
+| `kit spec <feature>` | Start or resume the evidence-first v2 `SPEC.md` workflow |
 | `kit loop workflow <feature>` | Execute workflow phases through a configured local agent loop |
 | `kit loop review` | Review changed code until local correctness converges |
 | `kit pr fix` | Select or target a PR and prepare a review-feedback dispatch prompt |
 | `kit status --all` | Show project-wide feature state |
 | `kit map --all` | Show the project document map |
 | `kit capabilities --search <term>` | Inspect command behavior and mutation boundaries |
+| `kit improve run --suite prompt-system` | Run deterministic prompt regression and size checks |
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
 

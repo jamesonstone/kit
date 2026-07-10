@@ -33,11 +33,11 @@ func Mine(projectRoot, from string) (WeaknessReport, error) {
 		cluster := WeaknessCluster{
 			Signature:            signature,
 			ObservedFailureMode:  signature,
-			LikelyHarnessSurface: "unknown",
+			LikelyHarnessSurface: likelyHarnessSurface(signature),
 			Actionability:        "needs-review",
 			Confidence:           confidenceFor(values),
 			ReproducibilityCount: len(values),
-			FlakeRate:            0,
+			FlakeRate:            flakeRateFor(values, traces),
 			ProposedEvalTasks:    []string{"preserve " + signature},
 			AffectedTasks:        uniqueTaskIDs(values),
 			RepresentativeTraces: traceIDs(values),
@@ -54,6 +54,31 @@ func Mine(projectRoot, from string) (WeaknessReport, error) {
 		return WeaknessReport{}, err
 	}
 	return report, nil
+}
+
+func likelyHarnessSurface(signature string) string {
+	parts := strings.Split(signature, ":")
+	if len(parts) >= 2 && strings.TrimSpace(parts[1]) != "" {
+		return parts[1]
+	}
+	return "unknown"
+}
+
+func flakeRateFor(failures, all []Trace) float64 {
+	affected := map[string]struct{}{}
+	for _, trace := range failures {
+		affected[trace.TaskID] = struct{}{}
+	}
+	attempts := 0
+	for _, trace := range all {
+		if _, ok := affected[trace.TaskID]; ok {
+			attempts++
+		}
+	}
+	if attempts == 0 {
+		return 0
+	}
+	return 1 - float64(len(failures))/float64(attempts)
 }
 
 func Propose(projectRoot, from string, maxCandidates int) ([]Candidate, error) {
@@ -116,13 +141,12 @@ func Validate(projectRoot, candidatePath string) (Scorecard, error) {
 		CandidateID:        candidate.ID,
 		Score:              0,
 		Acceptance:         "inconclusive",
-		Reasons:            []string{"V1 validates candidate metadata and preserves delivery gates; behavioral patch validation is future work."},
+		Reasons:            []string{"This command validates candidate metadata only; it does not run or compare benchmark behavior."},
 		ValidationCommands: []string{"kit improve validate --candidate " + candidatePath + " --json"},
 	}
 	if candidate.Status == "proposed" {
-		scorecard.Score = 1
-		scorecard.Acceptance = "accepted-for-review"
-		scorecard.Reasons = []string{"candidate metadata is well-formed", "candidate remains subject to human review"}
+		scorecard.Acceptance = "metadata-only"
+		scorecard.Reasons = []string{"candidate metadata is well-formed", "score 0 is not a task-quality judgment", "run identical benchmark suites separately before review"}
 	}
 	return scorecard, nil
 }
@@ -135,9 +159,18 @@ func Report(projectRoot, from string) (string, error) {
 	}
 	var builder strings.Builder
 	builder.WriteString("# Kit Improve Report\n\n")
-	builder.WriteString(fmt.Sprintf("- Suite: `%s`\n", manifest.Suite))
-	builder.WriteString(fmt.Sprintf("- Status: `%s`\n", manifest.Status))
-	builder.WriteString(fmt.Sprintf("- Traces: `%d`\n", len(manifest.Traces)))
+	fmt.Fprintf(&builder, "- Suite: `%s`\n", manifest.Suite)
+	fmt.Fprintf(&builder, "- Status: `%s`\n", manifest.Status)
+	fmt.Fprintf(&builder, "- Traces: `%d`\n", len(manifest.Traces))
+	builder.WriteString(fmt.Sprintf("- Suite definition SHA-256: `%s`\n", manifest.Provenance.SuiteDefinitionSHA256))
+	builder.WriteString(fmt.Sprintf("- Benchmark runner SHA-256: `%s`\n", manifest.Provenance.RunnerBinarySHA256))
+	builder.WriteString(fmt.Sprintf("- Kit binary SHA-256: `%s`\n", manifest.Provenance.KitBinarySHA256))
+	builder.WriteString(fmt.Sprintf("- Task success: `%d/%d` (%.3f)\n", manifest.Metrics.PassedTaskRuns, manifest.Metrics.TaskRuns, manifest.Metrics.TaskSuccessRate))
+	builder.WriteString(fmt.Sprintf("- Required-output assertions: `%d/%d` (%.3f)\n", manifest.Metrics.PassedAssertions, manifest.Metrics.Assertions, manifest.Metrics.OutputCompleteness))
+	builder.WriteString(fmt.Sprintf("- Prompt/output size: `%d` lines, `%d` words, `%d` bytes, about `%d` tokens\n", manifest.Metrics.Stdout.Lines, manifest.Metrics.Stdout.Words, manifest.Metrics.Stdout.Bytes, manifest.Metrics.Stdout.EstimatedTokens))
+	builder.WriteString(fmt.Sprintf("- Aggregate command duration: `%d ms`\n", manifest.Metrics.CommandDurationMS))
+	builder.WriteString(fmt.Sprintf("- Repeated-output determinism: `%d/%d` (%.3f)\n", manifest.Metrics.StableRepeatedTasks, manifest.Metrics.RepeatedTasks, manifest.Metrics.DeterminismRate))
+	builder.WriteString("- Unobservable without instrumented model calls: model latency, provider cost, conversational turns, and live tool/subagent routing.\n")
 	builder.WriteString("\n## Tasks\n\n")
 	for _, trace := range manifest.Traces {
 		builder.WriteString(fmt.Sprintf("- `%s`: %s\n", trace.TaskID, trace.Status))
@@ -160,7 +193,8 @@ func PullRequestBody(projectRoot, from string, issue string) (string, error) {
 	}
 	return "## Description\n\n" +
 		"- :sparkles: Adds benchmark-backed Kit harness improvement evidence.\n" +
-		"- :white_check_mark: Includes scorecard and trace-based validation context.\n" +
+		"- :white_check_mark: Includes run provenance, aggregate metrics, and trace status.\n" +
+		"- :mag: Makes no candidate-acceptance claim; review candidate metadata and benchmark comparisons separately.\n" +
 		"- :memo: Preserves Kit delivery gates and human review boundaries.\n\n" +
 		"## How to Test\n\n" +
 		"1. `kit improve run --suite default --json`\n" +
@@ -214,7 +248,50 @@ func readWeaknessReport(path string) (WeaknessReport, error) {
 
 func readCandidate(path string) (Candidate, error) {
 	var candidate Candidate
-	return candidate, readJSON(path, &candidate)
+	if err := readJSON(path, &candidate); err != nil {
+		return Candidate{}, err
+	}
+	if err := validateCandidateMetadata(candidate); err != nil {
+		return Candidate{}, err
+	}
+	return candidate, nil
+}
+
+func validateCandidateMetadata(candidate Candidate) error {
+	var findings []string
+	if candidate.SchemaVersion != SchemaVersion {
+		findings = append(findings, fmt.Sprintf("schema_version must be %d", SchemaVersion))
+	}
+	requiredText := []struct {
+		name  string
+		value string
+	}{
+		{name: "id", value: candidate.ID},
+		{name: "target_cluster", value: candidate.TargetCluster},
+		{name: "summary", value: candidate.Summary},
+		{name: "expected_effect", value: candidate.ExpectedEffect},
+		{name: "rationale", value: candidate.Rationale},
+		{name: "rollback", value: candidate.Rollback},
+		{name: "status", value: candidate.Status},
+	}
+	for _, field := range requiredText {
+		if strings.TrimSpace(field.value) == "" {
+			findings = append(findings, field.name+" is required")
+		}
+	}
+	if len(candidate.EditableSurfaces) == 0 {
+		findings = append(findings, "editable_surfaces must not be empty")
+	}
+	if len(candidate.RegressionRisks) == 0 {
+		findings = append(findings, "regression_risks must not be empty")
+	}
+	if strings.TrimSpace(candidate.Status) != "" && candidate.Status != "proposed" {
+		findings = append(findings, "status must be proposed")
+	}
+	if len(findings) > 0 {
+		return fmt.Errorf("invalid candidate metadata: %s", strings.Join(findings, "; "))
+	}
+	return nil
 }
 
 func readRunManifest(path string) (RunManifest, error) {

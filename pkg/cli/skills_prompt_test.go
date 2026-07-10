@@ -9,36 +9,6 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 )
 
-func TestRepoInstructionContextRows_IncludeCopilotOnceInDefaultOrder(t *testing.T) {
-	projectRoot := t.TempDir()
-	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
-
-	rows := repoInstructionContextRows(projectRoot, cfg)
-
-	want := [][]string{
-		{"AGENTS.md", filepath.Join(projectRoot, "AGENTS.md")},
-		{"CLAUDE.md", filepath.Join(projectRoot, "CLAUDE.md")},
-		{"COPILOT", filepath.Join(projectRoot, ".github", "copilot-instructions.md")},
-	}
-
-	for i, row := range want {
-		if rows[i][0] != row[0] || rows[i][1] != row[1] {
-			t.Fatalf("repoInstructionContextRows()[%d] = %v, want %v", i, rows[i], row)
-		}
-	}
-
-	var copilotCount int
-	for _, row := range rows {
-		if row[1] == filepath.Join(projectRoot, ".github", "copilot-instructions.md") {
-			copilotCount++
-		}
-	}
-	if copilotCount != 1 {
-		t.Fatalf("expected one Copilot entry, got %d (%v)", copilotCount, rows)
-	}
-}
-
 func TestSkillPromptSuffix_ListsCopilotOnce(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()
