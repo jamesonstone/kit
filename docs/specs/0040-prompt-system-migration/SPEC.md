@@ -404,7 +404,7 @@ and subagent routing are not observable from the default suite.
 | T-010 Update docs, workflows, capability metadata, examples, and generated config | AC-001, AC-014 | complete | Documentation/config/catalog/workflow diff review |
 | T-011 Run identical post-change benchmark and full validation | AC-007, AC-009 through AC-015 | complete | Runs `20260710T132322.293199000Z-ce029f` and `20260710T132322.832544000Z-73ff54`; full validation below |
 | T-012 Complete reflection and ready-PR delivery | AC-011, AC-012, AC-015 | complete | Implementation commit `cf207b0`; ready PR #55; initial checks recorded pending and terminal state reported in handoff |
-| T-013 Repair PR #55 review findings and reflect before thread resolution | AC-002 through AC-015 | in progress | D001-D012 repaired and accepted by a fresh read-only verifier; push, fresh-head reflection, and verified thread resolution pending |
+| T-013 Repair PR #55 review findings and reflect before thread resolution | AC-002 through AC-015 | in progress | D001-D013 repaired; the original 12 findings passed verification and resolution, while the D013 follow-up push, fresh-head reflection, and thread resolution remain pending |
 
 ## VALIDATION MAP
 
@@ -490,8 +490,12 @@ trace-artifact/hash consistency, added whitespace-only reflection coverage,
 removed an unrelated README banner edit, and kept clarification status distinct
 from the separate code-enforced confidence gate.
 
-Thread resolution remains gated on a fresh read-only verifier, explicit
-staging, commit and push, pushed-head equality, and a second thread-state read.
+The completed CodeRabbit rerun added a thirteenth valid test-strength finding:
+the persisted-error regression compared two calls to the same redaction helper
+without independently asserting that raw secret material was absent. The repair
+adds that direct invariant. The original 12 threads are resolved; D013 resolution
+remains gated on validation, explicit staging, commit and push, pushed-head
+equality, and a second thread-state read.
 
 ### Remaining risk
 
@@ -670,6 +674,7 @@ identical for every surface.
 | D010 | valid | Reflection blocks feature-introduced scope contamination, not preserved unrelated user work. |
 | D011 | valid | The supervisor contract defines the exact no-agent sentence required by the repo orchestration rule. |
 | D012 | valid | README now describes `SPEC.md evidence and readiness gates` before same-thread implementation, removing clarification-gate framing. |
+| D013 | valid | The persisted-error regression directly requires the raw password to be absent and the redaction marker to be present, independently of helper-to-helper equality. |
 
 Local integration validation after the implementation lanes:
 

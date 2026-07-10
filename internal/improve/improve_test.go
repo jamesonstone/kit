@@ -315,6 +315,9 @@ func TestWriteCommandOutputRedactsPersistedMetadata(t *testing.T) {
 	if trace.Error != redactOutput(result.Error) {
 		t.Fatalf("trace.Error = %q, want redacted error", trace.Error)
 	}
+	if strings.Contains(trace.Error, password) || !strings.Contains(trace.Error, "[REDACTED]") {
+		t.Fatalf("trace.Error contains unredacted secret metadata: %q", trace.Error)
+	}
 	if trace.Stdout != measureText(persistedStdout) {
 		t.Fatalf("trace.Stdout = %#v, want persisted metrics %#v", trace.Stdout, measureText(persistedStdout))
 	}
