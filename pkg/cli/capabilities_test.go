@@ -285,6 +285,20 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(strings.Join(improvePayload.Command.Caveats, " "), "does not embed a model runtime") {
 		t.Fatalf("expected improve caveats to document deterministic V1 boundary, got %#v", improvePayload.Command.Caveats)
 	}
+	improveRunOutput, err := executeCapabilitiesCommand("--json", "improve", "run")
+	if err != nil {
+		t.Fatalf("kit capabilities improve run --json error = %v", err)
+	}
+	var improveRunPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(improveRunOutput), &improveRunPayload); err != nil {
+		t.Fatalf("json.Unmarshal(improve run) error = %v", err)
+	}
+	improveRunCaveats := strings.Join(improveRunPayload.Command.Caveats, " ")
+	for _, want := range []string{"redacted", "workspace-normalized", "200-line", "rather than raw command output"} {
+		if !strings.Contains(improveRunCaveats, want) {
+			t.Fatalf("expected improve run caveats to contain %q, got %#v", want, improveRunPayload.Command.Caveats)
+		}
+	}
 
 	loopPromptOutput, err := executeCapabilitiesCommand("--json", "loop", "prompt")
 	if err != nil {

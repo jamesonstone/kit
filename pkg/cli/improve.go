@@ -89,7 +89,9 @@ func newImproveRunCommand(opts *improveOptions) *cobra.Command {
 					return err
 				}
 			} else {
-				fmt.Fprintf(cmd.OutOrStdout(), "kit improve run %s: %s (%d traces)\n", manifest.RunID, manifest.Status, len(manifest.Traces))
+				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "kit improve run %s: %s (%d traces)\n", manifest.RunID, manifest.Status, len(manifest.Traces)); err != nil {
+					return err
+				}
 			}
 			return improveRunFailure(manifest)
 		},

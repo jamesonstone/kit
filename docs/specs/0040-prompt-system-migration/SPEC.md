@@ -404,6 +404,7 @@ and subagent routing are not observable from the default suite.
 | T-010 Update docs, workflows, capability metadata, examples, and generated config | AC-001, AC-014 | complete | Documentation/config/catalog/workflow diff review |
 | T-011 Run identical post-change benchmark and full validation | AC-007, AC-009 through AC-015 | complete | Runs `20260710T132322.293199000Z-ce029f` and `20260710T132322.832544000Z-73ff54`; full validation below |
 | T-012 Complete reflection and ready-PR delivery | AC-011, AC-012, AC-015 | complete | Implementation commit `cf207b0`; ready PR #55; initial checks recorded pending and terminal state reported in handoff |
+| T-013 Repair PR #55 review findings and reflect before thread resolution | AC-002 through AC-015 | in progress | D001-D012 repaired and accepted by a fresh read-only verifier; push, fresh-head reflection, and verified thread resolution pending |
 
 ## VALIDATION MAP
 
@@ -476,6 +477,21 @@ misleading improve candidate/PR claims, mislabeled benchmark coverage, and dead
 prompt helpers. Each confirmed finding was repaired and retested. Its final
 verdict reported no unresolved implementation defect; it explicitly retained
 the live-model observability limits above.
+
+### PR #55 review repair
+
+The review-repair round anchored local and remote PR head
+`323fbc61c92a681ca6d2048651e856c708a2a414` before editing and fetched 12 live,
+unresolved, non-outdated CodeRabbit threads. Three low-overlap implementation
+agents handled improve/CI, legacy prompts, and v2/team/docs respectively; the
+supervisor retained SPEC, integration, validation, delivery, and resolution.
+All 12 findings were valid. Integration review additionally tightened exact
+trace-artifact/hash consistency, added whitespace-only reflection coverage,
+removed an unrelated README banner edit, and kept clarification status distinct
+from the separate code-enforced confidence gate.
+
+Thread resolution remains gated on a fresh read-only verifier, explicit
+staging, commit and push, pushed-head equality, and a second thread-state read.
 
 ### Remaining risk
 
@@ -637,3 +653,41 @@ identical for every surface.
   baseline binary. The new feature 0040 passes its dedicated validator.
 - Read-only verifier — no unresolved defect; focused tests, vet, build, diff
   check, rendered forbidden-instruction review, and AC audit passed.
+
+### PR #55 Review Repair Evidence
+
+| Review task | Current-code verdict | Repair evidence |
+|---|---|---|
+| D001 | valid | Prompt regression workflow now watches `pkg/cli/prompt_builtin_*.go`. |
+| D002 | valid | Trace stdout is redacted, workspace-normalized, and limited once; persisted bytes, metrics, and SHA-256 are identical. Error/stderr and derived assertion/oracle failure messages are redacted. |
+| D003 | valid | Command-scoped assertion results use `*int`, so command index 0 persists while genuinely unassociated results omit it. |
+| D004 | valid | Human-readable improve-run output propagates writer errors, with a failing-writer regression. |
+| D005 | valid | Standard and Warp plan prompts resolve the constitution through `cfg.ConstitutionPath`, with custom-path tests. |
+| D006 | valid | Reflection trims `featureSlug` before every use; padded and whitespace-only cases are covered. |
+| D007 | valid | Material questions alone keep `clarification.status` open; residual uncertainty becomes an assumption/risk and confidence does not determine status. |
+| D008 | valid | Three lanes are the normal maximum; a fourth requires explicit exceptional authorization, low overlap, and independent validation. |
+| D009 | valid | The legacy tasks prompt authorizes only `TASKS.md` mutation. |
+| D010 | valid | Reflection blocks feature-introduced scope contamination, not preserved unrelated user work. |
+| D011 | valid | The supervisor contract defines the exact no-agent sentence required by the repo orchestration rule. |
+| D012 | valid | README now describes `SPEC.md evidence and readiness gates` before same-thread implementation, removing clarification-gate framing. |
+
+Local integration validation after the implementation lanes:
+
+- `go test ./...` — passed.
+- `go vet ./...` — passed.
+- `go build ./...` — passed.
+- `git diff --check` — passed.
+- Prompt-system run `20260710T140258.440174000Z-bdc9a0` — passed 45/45
+  task runs, 345/345 assertions, and 15/15 repeated-output hashes.
+- Default smoke run `20260710T140258.955300000Z-db5b70` — passed 8/8 task
+  runs and 16/16 assertions.
+- `kit check prompt-system-migration` — passed.
+- `make lint` and `kit check --project` retain the same pre-existing 44 lint
+  findings and historical feature-0038 metadata failures documented above.
+- Capability documentation now states that trace metrics/hash cover the exact
+  persisted redacted, workspace-normalized, 200-line excerpt; focused
+  capability tests pass.
+- Fresh read-only review-round verifier — no open gaps; D001-D012, capability
+  and evaluation documentation, source/golden/test consistency, diff scope,
+  formatting, full tests, vet, build, and feature validation accepted for
+  delivery.

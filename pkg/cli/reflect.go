@@ -142,7 +142,8 @@ func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
 
 // buildReflectPrompt builds the unified reflection prompt.
 func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPath, specPath, planPath, tasksPath, featureSlug string) string {
-	featureScoped := strings.TrimSpace(featureSlug) != ""
+	featureSlug = strings.TrimSpace(featureSlug)
+	featureScoped := featureSlug != ""
 	hasBrainstorm := featureScoped && document.Exists(brainstormPath)
 	cfg, _ := loadRepoInstructionContext(projectRoot)
 	refreshStatus, _ := calculateProjectRefreshStatus(projectRoot, cfg, time.Now().UTC())
@@ -188,7 +189,7 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPa
 
 		doc.Heading(2, "Completion And Delivery Boundaries")
 		rules := []string{
-			"Reflection completes only when no known relevant defect, unproven acceptance criterion, stale documentation, unrelated diff, or unresolved verifier finding remains.",
+			"Reflection completes only when no known relevant defect, unproven acceptance criterion, stale in-scope documentation, scope contamination introduced by this feature, or unresolved verifier finding remains.",
 			"Preserve unrelated and user-owned work. Do not broaden reflection into cleanup unrelated to the changed scope.",
 			"Before Git/GitHub delivery mutation, load repo-local delivery rules and establish the exact Delivery Contract; reflection evidence does not authorize mutation by itself.",
 			projectRefreshAdvisoryStepForStatus(refreshStatus),

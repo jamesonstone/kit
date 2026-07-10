@@ -22,12 +22,15 @@ func writeCommandOutput(runDir, taskID string, repeat int, results []verify.Comm
 	}
 	traces := make([]CommandTrace, 0, len(results))
 	for i, result := range results {
+		stdout := limitLines(normalizeOutputForPersistence(redactOutput(result.Stdout), result.CWD), 200)
+		stderr := limitLines(redactOutput(result.Stderr), 200)
+		commandError := redactOutput(result.Error)
 		stdoutPath := filepath.Join(outDir, fmt.Sprintf("%d.stdout.txt", i+1))
 		stderrPath := filepath.Join(outDir, fmt.Sprintf("%d.stderr.txt", i+1))
-		if err := os.WriteFile(stdoutPath, []byte(limitLines(redactOutput(result.Stdout), 200)), 0o644); err != nil {
+		if err := os.WriteFile(stdoutPath, []byte(stdout), 0o644); err != nil {
 			return nil, err
 		}
-		if err := os.WriteFile(stderrPath, []byte(limitLines(redactOutput(result.Stderr), 200)), 0o644); err != nil {
+		if err := os.WriteFile(stderrPath, []byte(stderr), 0o644); err != nil {
 			return nil, err
 		}
 		traces = append(traces, CommandTrace{
@@ -35,10 +38,10 @@ func writeCommandOutput(runDir, taskID string, repeat int, results []verify.Comm
 			ExitCode:     result.ExitCode,
 			Status:       result.Status,
 			DurationMS:   result.DurationMS,
-			Error:        result.Error,
+			Error:        commandError,
 			TimedOut:     result.TimedOut,
-			Stdout:       measureText(result.Stdout),
-			StdoutSHA256: hashText(normalizeOutputForHash(result.Stdout, result.CWD)),
+			Stdout:       measureText(stdout),
+			StdoutSHA256: hashText(stdout),
 			StdoutPath:   stdoutPath,
 			StderrPath:   stderrPath,
 		})
@@ -118,7 +121,7 @@ func assertCommandSucceeds(assertion Assertion, results []verify.CommandResult) 
 	if result.TimedOut {
 		message = "command timed out"
 	} else if strings.TrimSpace(result.Error) != "" {
-		message += ": " + result.Error
+		message += ": " + redactOutput(result.Error)
 	}
 	return failedAssertion(assertion, message)
 }
@@ -153,11 +156,16 @@ func commandResult(assertion Assertion, results []verify.CommandResult) (verify.
 }
 
 func passedAssertion(assertion Assertion) AssertionResult {
-	return AssertionResult{Type: assertion.Type, CommandIndex: assertion.CommandIndex, Status: "passed"}
+	return AssertionResult{Type: assertion.Type, CommandIndex: assertionCommandIndex(assertion), Status: "passed"}
 }
 
 func failedAssertion(assertion Assertion, message string) AssertionResult {
-	return AssertionResult{Type: assertion.Type, CommandIndex: assertion.CommandIndex, Status: "failed", Message: message}
+	return AssertionResult{Type: assertion.Type, CommandIndex: assertionCommandIndex(assertion), Status: "failed", Message: message}
+}
+
+func assertionCommandIndex(assertion Assertion) *int {
+	index := assertion.CommandIndex
+	return &index
 }
 
 func measureText(value string) TextMetrics {
@@ -180,7 +188,7 @@ func hashText(value string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func normalizeOutputForHash(value, workspace string) string {
+func normalizeOutputForPersistence(value, workspace string) string {
 	workspace = strings.TrimSpace(workspace)
 	if workspace == "" {
 		return value

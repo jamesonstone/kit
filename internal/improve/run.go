@@ -117,7 +117,7 @@ func runTask(ctx context.Context, opts RunOptions, suiteID, runDir string, task 
 		if result.TimedOut {
 			message = fmt.Sprintf("command %d timed out", index)
 		} else if strings.TrimSpace(result.Error) != "" {
-			message += ": " + result.Error
+			message += ": " + redactOutput(result.Error)
 		}
 		failed = append(failed, message)
 	}

@@ -50,8 +50,9 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 		"The supervisor owns scope",
 		"Agent Team Plan",
 		"low-overlap areas",
-		"at most 3 independent lanes",
-		"hard ceiling 4",
+		"In normal operation, run at most 3 independent lanes",
+		"fourth lane requires explicit exceptional authorization from the supervisor",
+		"never exceed 4 lanes",
 		"read-only verification agent",
 		"single supervisor lane; no specialist or verification agents spawned",
 		"use worktrees",
@@ -65,6 +66,9 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 
 	if strings.Count(got, "## Subagent Orchestration") != 1 {
 		t.Fatalf("expected one subagent section, got %q", got)
+	}
+	if strings.Contains(got, "at most 3 independent lanes (hard ceiling 4)") {
+		t.Fatalf("normal concurrency guidance should not imply an automatic fourth lane, got %q", got)
 	}
 }
 

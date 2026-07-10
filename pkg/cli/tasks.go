@@ -256,7 +256,7 @@ func buildTasksPrompt(feat *feature.Feature, projectRoot string, cfg *config.Con
 
 		doc.Heading(2, "Output")
 		doc.BulletList(
-			"Update TASKS.md and supporting documentation only.",
+			"Update TASKS.md only.",
 			"Report task count/order, evidence coverage, blockers, and the next legacy implementation step.",
 		)
 		addFinalResponseContract(doc, tasksFinalResponseContract(feat.Slug)...)

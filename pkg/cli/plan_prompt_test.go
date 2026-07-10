@@ -26,6 +26,7 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	defer restore()
 
 	cfg := config.Default()
+	cfg.ConstitutionPath = filepath.Join("governance", "PROJECT_RULES.md")
 	feat := &feature.Feature{Slug: "sample", DirName: "0012-sample", Path: featurePath}
 
 	output := captureStdout(t, func() {
@@ -36,6 +37,7 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	})
 
 	checks := []string{
+		filepath.Join(projectRoot, cfg.ConstitutionPath),
 		"Complete the legacy implementation plan",
 		"documentation-only; do not implement product code",
 		"Inspect the smallest relevant code, tests, docs, and prior-feature context",
@@ -51,6 +53,9 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)
 		}
+	}
+	if defaultPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md"); strings.Contains(output, defaultPath) {
+		t.Fatalf("expected output to use configured constitution path, not %q", defaultPath)
 	}
 	assertFinalResponseContractHeadings(t, output,
 		"Summary",
@@ -78,6 +83,7 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	defer restore()
 
 	cfg := config.Default()
+	cfg.ConstitutionPath = filepath.Join("governance", "PROJECT_RULES.md")
 	feat := &feature.Feature{Slug: "sample", DirName: "0012-sample", Path: featurePath}
 
 	output := captureStdout(t, func() {
@@ -88,6 +94,7 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	})
 
 	checks := []string{
+		filepath.Join(projectRoot, cfg.ConstitutionPath),
 		"Convert the Warp plan in the current conversation",
 		"documentation-only; do not implement product code",
 		"SPEC.md wins on conflict",
@@ -104,6 +111,9 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)
 		}
+	}
+	if defaultPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md"); strings.Contains(output, defaultPath) {
+		t.Fatalf("expected output to use configured constitution path, not %q", defaultPath)
 	}
 	for _, obsolete := range []string{
 		"additional batches of up to 10 questions",

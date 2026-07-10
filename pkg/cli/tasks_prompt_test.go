@@ -37,12 +37,16 @@ func TestOutputTasksPrompt_IncludesNonEmptySectionGuidance(t *testing.T) {
 		"stable T001-style IDs",
 		"GOAL, SCOPE, ACCEPTANCE, VERIFY, EXPECTED FILES, RISK, ROLLBACK, DEPENDENCIES",
 		"binary done condition and required evidence",
+		"Update TASKS.md only.",
 	}
 
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)
 		}
+	}
+	if strings.Contains(output, "supporting documentation") {
+		t.Fatalf("expected TASKS.md to be the only prompt-authorized mutation, got:\n%s", output)
 	}
 	assertFinalResponseContractHeadings(t, output,
 		"Summary",

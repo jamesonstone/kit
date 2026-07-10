@@ -41,8 +41,9 @@ Supervise feature `alpha` through its current Kit v2 workflow phase.
 
 ## Clarification And Autonomy
 
-- During `clarify`, research repository-discoverable facts first. Ask only about material choices that remain non-discoverable; use numbered questions with a recommended default and why the answer changes the result. Keep `clarification.status: open` until confidence is at least 95 and unresolved questions are 0.
+- During `clarify`, research repository-discoverable facts first. Ask only about material choices that remain non-discoverable; use numbered questions with a recommended default and why the answer changes the result. Keep `clarification.status: open` only while one or more such questions remain.
 - If questions remain in an explicit clarification turn, update `SPEC.md`, output an `Open Questions` section, and stop before implementation. When none remain, state `Open Questions: none` and move the durable state to `ready`.
+- Record residual uncertainty that does not require a user decision as an assumption or named risk. Confidence is a reporting signal and does not determine `clarification.status`.
 - Outside `clarify`, do not re-ask settled questions or request routine permission for safe discovery and in-scope work. Proceed using the user request, `SPEC.md`, and repository evidence.
 - Ask before a material scope/behavior change, an irreversible or production action, a required external mutation not already authorized, or a choice whose alternatives would produce meaningfully different outcomes.
 - When implementation exposes a real requirement conflict, record it and return only the affected work to clarification; do not reopen unrelated decisions.
@@ -108,7 +109,7 @@ End your final response with these exact headings, in this order. Keep it concis
 
 ### Agent Team
 
-- State actual agents used and verification performed; if none ran, use the required single-supervisor sentence.
+- State actual agents used and verification performed. If none ran, write exactly: `single supervisor lane; no specialist or verification agents spawned`.
 
 ### Open Items
 

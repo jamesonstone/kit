@@ -131,7 +131,7 @@ type CommandTrace struct {
 
 type AssertionResult struct {
 	Type         string `json:"type"`
-	CommandIndex int    `json:"command_index,omitempty"`
+	CommandIndex *int   `json:"command_index,omitempty"`
 	Status       string `json:"status"`
 	Message      string `json:"message,omitempty"`
 }

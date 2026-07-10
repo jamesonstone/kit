@@ -138,6 +138,62 @@ func TestBuildReflectPrompt_Golden(t *testing.T) {
 	)
 }
 
+func TestBuildReflectPromptTrimsFeatureSlugBeforeUse(t *testing.T) {
+	prompt := buildReflectPrompt(
+		"/repo",
+		"/repo/docs/CONSTITUTION.md",
+		"/repo/docs/PROJECT_PROGRESS_SUMMARY.md",
+		"/repo/docs/specs/0001-alpha/BRAINSTORM.md",
+		"/repo/docs/specs/0001-alpha/SPEC.md",
+		"/repo/docs/specs/0001-alpha/PLAN.md",
+		"/repo/docs/specs/0001-alpha/TASKS.md",
+		"  alpha  ",
+	)
+
+	for _, check := range []string{
+		"## Reflection — Feature: alpha",
+		"run `kit legacy verify alpha`",
+	} {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected trimmed feature slug in %q, got:\n%s", check, prompt)
+		}
+	}
+	if strings.Contains(prompt, "  alpha  ") {
+		t.Fatalf("expected raw whitespace-padded feature slug to be absent, got:\n%s", prompt)
+	}
+}
+
+func TestBuildReflectPromptWhitespaceOnlyFeatureSlugUsesGenericScope(t *testing.T) {
+	prompt := buildReflectPrompt(
+		"/repo",
+		"/repo/docs/CONSTITUTION.md",
+		"/repo/docs/PROJECT_PROGRESS_SUMMARY.md",
+		"/repo/docs/specs/0001-alpha/BRAINSTORM.md",
+		"/repo/docs/specs/0001-alpha/SPEC.md",
+		"/repo/docs/specs/0001-alpha/PLAN.md",
+		"/repo/docs/specs/0001-alpha/TASKS.md",
+		"   ",
+	)
+
+	for _, check := range []string{
+		"## Reflection\n",
+		"no feature-scoped verification evidence is required for generic reflection",
+	} {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected whitespace-only slug to use generic reflection scope with %q, got:\n%s", check, prompt)
+		}
+	}
+	for _, unwanted := range []string{
+		"## Reflection — Feature:",
+		"no local verification run found",
+		"`kit legacy verify  ",
+	} {
+		if strings.Contains(prompt, unwanted) {
+			t.Fatalf("expected whitespace-only slug to omit feature verification requirement %q, got:\n%s", unwanted, prompt)
+		}
+	}
+}
+
 func TestBuildReflectPromptIncludesProjectRefreshDueState(t *testing.T) {
 	projectRoot, cfg := setupProjectRefreshTestProject(t)
 	cfg.ProjectRefresh.Constitution.FeatureInterval = 1

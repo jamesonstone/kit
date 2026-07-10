@@ -39,14 +39,17 @@ test.
 - command success, exit code, error, timeout, and duration;
 - configured assertion success and required-output completeness;
 - changed files and allowed-surface violations;
-- stdout line, word, byte, and estimated-token counts;
-- SHA-256 output stability across repeated tasks after replacing the disposable
-  workspace path with `{{workspace}}`;
+- stdout line, word, byte, and estimated-token counts for the persisted
+  redacted, workspace-normalized, 200-line trace excerpt;
+- SHA-256 stability of those exact persisted stdout bytes across repeated
+  tasks;
 - exact suite/fixture/task definition and binary provenance.
 
 Estimated tokens are `ceil(stdout bytes / 4)`. This is a transparent size proxy,
-not provider token accounting. Command duration is local process wall time, not
-model latency unless a task actually invokes a model.
+not provider token accounting. Because trace output is bounded and normalized,
+these counts compare persisted benchmark evidence rather than raw provider
+output. Command duration is local process wall time, not model latency unless a
+task actually invokes a model.
 
 The deterministic suites do not observe provider cost, model latency,
 conversation turns, live clarification/approval decisions, or actual tool and

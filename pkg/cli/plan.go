@@ -304,7 +304,7 @@ func buildStandardPlanPrompt(
 	cfg *config.Config,
 	projectRoot string,
 ) string {
-	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	constitutionPath := filepath.Join(projectRoot, cfg.ConstitutionPath)
 	hasBrainstorm := document.Exists(brainstormPath)
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
@@ -377,7 +377,7 @@ func buildWarpPlanPrompt(
 	cfg *config.Config,
 	projectRoot string,
 ) string {
-	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	constitutionPath := filepath.Join(projectRoot, cfg.ConstitutionPath)
 	hasBrainstorm := document.Exists(brainstormPath)
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {

@@ -509,6 +509,9 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"## Clarification And Autonomy",
 		"research repository-discoverable facts first",
 		"Ask only about material choices that remain non-discoverable",
+		"Keep `clarification.status: open` only while one or more such questions remain",
+		"Record residual uncertainty that does not require a user decision as an assumption or named risk",
+		"Confidence is a reporting signal and does not determine `clarification.status`",
 		"Outside `clarify`, do not re-ask settled questions or request routine permission",
 		"## Constraints And Approval Boundaries",
 		"Safe repository reads and reversible in-scope edits need no extra approval",
@@ -521,6 +524,7 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"## Agent Routing",
 		"docs/references/rules/agent-team-orchestration.md",
 		"read-only verifier",
+		"single supervisor lane; no specialist or verification agents spawned",
 		"## Success Criteria",
 		"implementation evidence",
 		"exact validation evidence",
@@ -540,6 +544,7 @@ func assertV2SpecPromptContract(t *testing.T, output string) {
 		"Pro mode",
 		"text.verbosity",
 		"Ask clarification questions until",
+		"confidence is at least",
 	} {
 		if strings.Contains(output, forbidden) {
 			t.Fatalf("v2 spec prompt unexpectedly contains %q", forbidden)

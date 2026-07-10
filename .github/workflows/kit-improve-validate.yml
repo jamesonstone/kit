@@ -14,7 +14,7 @@ on:
       - "pkg/cli/loop_prompt*.go"
       - "pkg/cli/code_review.go"
       - "pkg/cli/dispatch_prompt.go"
-      - "pkg/cli/prompt_builtin_toolbox.go"
+      - "pkg/cli/prompt_builtin_*.go"
       - "pkg/cli/final_response_contract.go"
       - "pkg/cli/brainstorm_prompt.go"
       - "pkg/cli/clarification_loop.go"

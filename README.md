@@ -81,7 +81,7 @@ kit capabilities --search spec
 The default feature workflow is:
 
 ```text
-idea → kit spec <feature> → SPEC.md clarification gate → same-thread implementation → validation → reflection → delivery
+idea → kit spec <feature> → SPEC.md evidence and readiness gates → same-thread implementation → validation → reflection → delivery
 ```
 
 In v2, `SPEC.md` is the single durable feature artifact. Legacy

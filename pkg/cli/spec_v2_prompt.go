@@ -80,8 +80,9 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 
 		doc.Heading(2, "Clarification And Autonomy")
 		doc.BulletList(
-			fmt.Sprintf("During `clarify`, research repository-discoverable facts first. Ask only about material choices that remain non-discoverable; use numbered questions with a recommended default and why the answer changes the result. Keep `clarification.status: open` until confidence is at least %d and unresolved questions are 0.", cfg.GoalPercentage),
+			"During `clarify`, research repository-discoverable facts first. Ask only about material choices that remain non-discoverable; use numbered questions with a recommended default and why the answer changes the result. Keep `clarification.status: open` only while one or more such questions remain.",
 			"If questions remain in an explicit clarification turn, update `SPEC.md`, output an `Open Questions` section, and stop before implementation. When none remain, state `Open Questions: none` and move the durable state to `ready`.",
+			"Record residual uncertainty that does not require a user decision as an assumption or named risk. Confidence is a reporting signal and does not determine `clarification.status`.",
 			"Outside `clarify`, do not re-ask settled questions or request routine permission for safe discovery and in-scope work. Proceed using the user request, `SPEC.md`, and repository evidence.",
 			"Ask before a material scope/behavior change, an irreversible or production action, a required external mutation not already authorized, or a choice whose alternatives would produce meaningfully different outcomes.",
 			"When implementation exposes a real requirement conflict, record it and return only the affected work to clarification; do not reopen unrelated decisions.",
@@ -189,7 +190,7 @@ func specV2FinalResponseContract() []finalResponseContractSection {
 		{Heading: "Outcome", Items: []string{"State what changed and whether the workflow is complete, blocked, or ready for its next phase."}},
 		{Heading: "Evidence", Items: []string{"List acceptance coverage and exact validation results, including any skipped check and risk."}},
 		{Heading: "Artifacts And State", Items: []string{"List material repo-relative paths, current SPEC phase, and delivery state."}},
-		{Heading: "Agent Team", Items: []string{"State actual agents used and verification performed; if none ran, use the required single-supervisor sentence."}},
+		{Heading: "Agent Team", Items: []string{"State actual agents used and verification performed. If none ran, write exactly: `single supervisor lane; no specialist or verification agents spawned`."}},
 		{Heading: "Open Items", Items: []string{"List only genuine blockers or follow-ups; write `none` when clean."}},
 	}
 }

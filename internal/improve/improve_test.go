@@ -2,6 +2,8 @@ package improve
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -281,10 +283,88 @@ func TestEvaluateAssertionsReportsOutputMetricsAndActualCause(t *testing.T) {
 	}
 }
 
-func TestNormalizeOutputForHashRemovesDisposableWorkspace(t *testing.T) {
-	got := normalizeOutputForHash("read /tmp/run/workspace/docs/SPEC.md\n", "/tmp/run/workspace")
+func TestNormalizeOutputForPersistenceRemovesDisposableWorkspace(t *testing.T) {
+	got := normalizeOutputForPersistence("read /tmp/run/workspace/docs/SPEC.md\n", "/tmp/run/workspace")
 	if got != "read {{workspace}}/docs/SPEC.md\n" {
-		t.Fatalf("normalizeOutputForHash() = %q", got)
+		t.Fatalf("normalizeOutputForPersistence() = %q", got)
+	}
+}
+
+func TestWriteCommandOutputRedactsPersistedMetadata(t *testing.T) {
+	workspace := t.TempDir()
+	token := "ghp_" + "abcdefghijklmnopqrstuvwxyz0123456789"
+	password := "hunter" + "2"
+	lines := make([]string, 205)
+	for i := range lines {
+		lines[i] = fmt.Sprintf("workspace=%s line=%d", workspace, i)
+	}
+	lines[0] += " token=" + token
+	result := verify.CommandResult{
+		CWD:    workspace,
+		Stdout: strings.Join(lines, "\n") + "\n",
+		Stderr: "token=" + token + "\n",
+		Error:  "password=" + password,
+	}
+
+	traces, err := writeCommandOutput(t.TempDir(), "redaction", 1, []verify.CommandResult{result})
+	if err != nil {
+		t.Fatalf("writeCommandOutput() error = %v", err)
+	}
+	trace := traces[0]
+	persistedStdout := limitLines(normalizeOutputForPersistence(redactOutput(result.Stdout), workspace), 200)
+	if trace.Error != redactOutput(result.Error) {
+		t.Fatalf("trace.Error = %q, want redacted error", trace.Error)
+	}
+	if trace.Stdout != measureText(persistedStdout) {
+		t.Fatalf("trace.Stdout = %#v, want persisted metrics %#v", trace.Stdout, measureText(persistedStdout))
+	}
+	wantHash := hashText(persistedStdout)
+	if trace.StdoutSHA256 != wantHash {
+		t.Fatalf("trace.StdoutSHA256 = %q, want %q", trace.StdoutSHA256, wantHash)
+	}
+	for _, path := range []string{trace.StdoutPath, trace.StderrPath} {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read output artifact %q: %v", path, err)
+		}
+		if strings.Contains(string(content), token) {
+			t.Fatalf("output artifact %q contains secret material: %q", path, content)
+		}
+		if path == trace.StdoutPath && string(content) != persistedStdout {
+			t.Fatalf("stdout artifact differs from measured and hashed content")
+		}
+	}
+	if strings.Contains(persistedStdout, workspace) || !strings.Contains(persistedStdout, "{{workspace}}") {
+		t.Fatalf("persisted stdout did not normalize workspace path: %q", persistedStdout)
+	}
+	if !strings.HasSuffix(persistedStdout, "[truncated]\n") {
+		t.Fatalf("persisted stdout was not limited to 200 lines: %q", persistedStdout)
+	}
+	assertion := assertCommandSucceeds(
+		Assertion{Type: "command_succeeds", CommandIndex: 0},
+		[]verify.CommandResult{{Status: "failed", ExitCode: 1, Error: result.Error}},
+	)
+	if strings.Contains(assertion.Message, password) || !strings.Contains(assertion.Message, "[REDACTED]") {
+		t.Fatalf("assertion metadata was not redacted: %q", assertion.Message)
+	}
+}
+
+func TestAssertionResultPersistsZeroCommandIndex(t *testing.T) {
+	result := passedAssertion(Assertion{Type: "command_succeeds", CommandIndex: 0})
+	data, err := json.Marshal(result)
+	if err != nil {
+		t.Fatalf("json.Marshal() error = %v", err)
+	}
+	if !strings.Contains(string(data), `"command_index":0`) {
+		t.Fatalf("command-scoped assertion JSON = %s, want command_index 0", data)
+	}
+
+	unscoped, err := json.Marshal(AssertionResult{Type: "git_diff_empty", Status: "passed"})
+	if err != nil {
+		t.Fatalf("json.Marshal() unscoped error = %v", err)
+	}
+	if strings.Contains(string(unscoped), "command_index") {
+		t.Fatalf("unscoped assertion JSON = %s, want no command_index", unscoped)
 	}
 }
 
