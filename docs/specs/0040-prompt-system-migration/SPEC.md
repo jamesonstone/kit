@@ -403,7 +403,7 @@ and subagent routing are not observable from the default suite.
 | T-009 Modernize current and legacy prompt surfaces | AC-005, AC-006, AC-008 | complete | Focused contracts, goldens, and prompt-system suite |
 | T-010 Update docs, workflows, capability metadata, examples, and generated config | AC-001, AC-014 | complete | Documentation/config/catalog/workflow diff review |
 | T-011 Run identical post-change benchmark and full validation | AC-007, AC-009 through AC-015 | complete | Runs `20260710T132322.293199000Z-ce029f` and `20260710T132322.832544000Z-73ff54`; full validation below |
-| T-012 Complete reflection and ready-PR delivery | AC-011, AC-012, AC-015 | in progress | Reflection complete; commit, ready PR, and literal checks pending |
+| T-012 Complete reflection and ready-PR delivery | AC-011, AC-012, AC-015 | complete | Implementation commit `cf207b0`; ready PR #55; initial checks recorded pending and terminal state reported in handoff |
 
 ## VALIDATION MAP
 
@@ -498,7 +498,7 @@ the single GH-54 change set.
 | `pkg/cli/capabilities_catalog.go` | Model, prompt, and improve behavior metadata | updated and tested |
 | Golden files and test fixtures | Final generated prompt/config outputs | updated and tested |
 | `.github/workflows/kit-improve-*.yml` | Prompt-system coverage and truthful failure behavior | updated; local commands verified |
-| `docs/specs/0040-prompt-system-migration/SPEC.md` | Validation, reflection, comparison, delivery evidence | updated; delivery fields pending |
+| `docs/specs/0040-prompt-system-migration/SPEC.md` | Validation, reflection, comparison, delivery evidence | complete through ready-PR creation; live checks remain external state |
 
 ## DELIVERY DECISION
 
@@ -509,10 +509,14 @@ the single GH-54 change set.
   `feat(GH-54): :sparkles: modernize generated prompts for GPT-5.6`.
 - Planned PR ticket line: `Closes #54`.
 - Assignee: `jamesonstone`.
-- Delivery remains behind the validation, reflection, explicit staging, identity,
-  and literal-check gates defined by repository rules.
-- No PR exists yet. It will be opened ready for review only after all acceptance
-  criteria pass or any remaining exception is documented honestly.
+- Implementation commit: `cf207b0f6017d93d98d69018872a5545a2855e94`.
+- Ready PR: #55,
+  `https://github.com/jamesonstone/kit/pull/55`; open, assigned to
+  `jamesonstone`, head `GH-54`, base `main`, and `isDraft: false`.
+- Initial literal checks after PR creation: `Assign configured maintainers` —
+  pending; `validate` — pending. Checks are mutable external state, so their
+  terminal state is reported literally in the final handoff after this SPEC
+  update is pushed.
 
 ## EVIDENCE
 
