@@ -1,0 +1,2 @@
+1. Update the generated model default and prompt contracts.
+2. Verify prompt behavior, evidence, and final documentation.

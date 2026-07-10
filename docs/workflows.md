@@ -22,9 +22,10 @@ clarify → ready → implement → validate → reflect → deliver/complete
 `kit spec <feature>` remains prompt-producing by default. The generated
 supervisor prompt instructs a coding agent to keep all durable workflow state in
 `SPEC.md`, including the Agent Team Plan when implementation, validation, or
-review may benefit from specialist lanes. The prompt starts in clarification
-mode unless the structured clarification state is already ready, and the same
-conversation may continue into implementation after the readiness gate passes.
+review benefits from specialist lanes. In `clarify`, it resolves repository
+facts before asking only for material non-discoverable choices. A ready feature
+continues with safe in-scope work without routine clarification or approval
+pauses.
 
 ## Project Initialization
 
@@ -110,7 +111,7 @@ kit spec my-feature
   ↓
 SPEC.md + v2 supervisor prompt
   ↓
-numbered clarification batches → ready gate → same-thread implementation
+evidence-first clarification when needed → ready gate → same-thread implementation
   ↓
 validate → reflect → deliver/complete
 ```
@@ -121,13 +122,14 @@ validate → reflect → deliver/complete
 workflow automation. The durable state remains `SPEC.md`; direct execution
 stays behind explicit loop/run behavior.
 
-During the clarify stage, loop automation may research repository facts and
-update `SPEC.md`, but it must not guess user intent. If questions remain, it
-stops with a clearly labeled `Open Questions` section. Each question should be
-numbered and include the recommended answer, the current assumption, and why
-the answer matters. If no questions remain, it must state
-`Understanding: <n>%`, `Open Questions: none`, and
-`No more input required from the user`. It advances only when
+Each child run receives the durable feature context plus only its current phase
+contract. Kit does not reinject the complete lifecycle supervisor prompt on
+every fresh subprocess, and code still validates phase transitions.
+
+During `clarify`, loop automation researches repository facts and updates
+`SPEC.md` without guessing user intent. If a material non-discoverable choice
+remains, it stops with numbered `Open Questions`, recommended defaults, and the
+impact of each answer. It advances only when
 `clarification.status` is `ready`, confidence meets the configured threshold,
 and unresolved questions are `0`.
 
@@ -137,7 +139,7 @@ loop:
   max_iterations: 20
   agent:
     command: codex
-    args: ["--ask-for-approval", "never", "exec", "--model", "gpt-5.5", "--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-"]
+    args: ["--ask-for-approval", "never", "exec", "--model", "gpt-5.6", "--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-"]
 ```
 
 ```bash
@@ -149,6 +151,20 @@ kit loop review --pr 14
 ```
 
 Loop evidence is written under `.kit/loops/<run-id>/`.
+
+## Prompt-System Benchmarks
+
+`kit improve run --suite default` is a deterministic command-capability smoke
+test. It does not render prompts or measure model quality.
+
+`kit improve run --suite prompt-system --kit-binary <path>` renders the
+representative prompt surfaces three times and records command/assertion
+success, normalized output hashes, output size, local duration, and exact
+runner/binary/suite provenance. A failed command or assertion makes the CLI
+exit nonzero. Compare binaries only when the suite-definition SHA-256 matches.
+Provider cost, model latency, conversational turns, and actual tool/subagent
+routing remain unobservable unless a benchmark explicitly invokes and
+instruments a model.
 
 ## V2 Readiness And Completion
 

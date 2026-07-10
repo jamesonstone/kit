@@ -1,0 +1,37 @@
+schema_version: 1
+id: prompt-legacy-tasks
+title: Legacy tasks prompt preserves executable task contracts
+category: prompt-legacy
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: planner
+timeout_seconds: 30
+input_prompt: Render the explicit legacy tasks prompt.
+expected_behavior: The prompt maps atomic tasks to plan requirements, evidence, and done conditions.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} legacy tasks legacy-prompt --prompt-only --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: TASKS.md
+  - type: stdout_contains
+    command_index: 0
+    value: evidence
+  - type: stdout_not_contains
+    command_index: 0
+    value: text.verbosity
+  - type: stdout_words_max
+    command_index: 0
+    max: 2800
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-legacy:tasks-contract

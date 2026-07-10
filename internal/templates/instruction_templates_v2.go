@@ -145,7 +145,7 @@ const agentsWorkflows = `# Workflows
 - Use ` + "`BRAINSTORM.md`" + ` only for unresolved historical rationale
 - Use ` + "`PLAN.md`" + ` and ` + "`TASKS.md`" + ` only for legacy staged flows or historical comparison
 - Use prior feature docs only through explicit reference or relationship links
-- Ask clarification questions until confidence is high and unresolved assumptions are zero
+- Resolve repository-discoverable facts first; ask only about material non-discoverable choices, and begin implementation only when unresolved assumptions are zero
 - Run the v2 readiness gates before writing code: clarification complete, acceptance criteria binary-verifiable, task checklist mapped to criteria, validation mapped 1:1, delivery intent known
 - Update docs first when the implementation changes behavior, requirements, or approach
 

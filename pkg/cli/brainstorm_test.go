@@ -20,40 +20,20 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 	)
 
 	checks := []string{
-		"Research and document feature: **sample-feature**",
-		"Do NOT implement code, write production changes, or move into execution",
-		"Ask clarifying questions until you reach ≥95% confidence that you understand the problem and desired solution",
-		"Use numbered lists",
-		"Ask questions in batches of up to 10",
-		"For every question, include your current best recommended default, proposed solution, or assumption",
-		"State uncertainties",
-		"\"yes\" or \"y\" approves all recommended defaults in the batch",
-		"\"yes 3, 4, 5\" or \"y 3, 4, 5\" approves only those numbered defaults in the batch",
-		"If the user approves only specific question numbers, treat all other questions in that batch as unresolved",
-		"After each batch of up to 10 questions, output your current percentage understanding so the user can see progress",
-		"Only update BRAINSTORM.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
-		"research and documentation only; no implementation",
+		"Research feature `sample-feature`",
+		"durable research record. Do not implement product code",
+		"## Research Contract",
+		"Resolve discoverable ambiguity from repository evidence",
+		"material non-discoverable choices",
+		"recommended default and why the answer changes the result",
 		"kit spec sample-feature",
 		"/tmp/docs/specs/0001-sample/BRAINSTORM.md",
 		"/tmp/project/docs/notes/0001-sample",
-		"Inspect the feature notes directory",
-		"ignore `.gitkeep`",
-		"read only the notes relevant to the user thesis",
-		"record specific note files that shaped the brainstorm",
-		"leave the notes directory reference as `optional`",
+		"Ignore placeholders such as .gitkeep",
 		"/tmp/project/docs/CONSTITUTION.md",
-		"canonical front matter references",
-		"`name`, `type`, `target`, `relation`, `read_policy`, `used_for`, and `status`",
-		"Use an RLM-style just-in-time prior-work pass over `/tmp/docs/specs` before broad repository reads",
-		"/tmp/project/docs/PROJECT_PROGRESS_SUMMARY.md",
-		"conditional reads only",
-		"shared interface or contract",
-		"inspect at most 5 prior feature directories",
-		"do not paraphrase entire prior docs into chat",
-		"for Figma or other MCP-driven design references, store the exact design URL or file/node reference in `target` and use stable selectors when needed",
-		"`status: stale`",
-		"no section in `BRAINSTORM.md` may remain empty or contain only an HTML TODO comment",
-		"`not applicable`, `not required`, or `no additional information required`",
+		"Keep front matter references and feature relationships current",
+		"## Success Criteria",
+		"`not applicable`",
 	}
 
 	for _, check := range checks {
@@ -69,7 +49,7 @@ func TestBuildBrainstormPrompt(t *testing.T) {
 		"Next Step",
 	)
 
-	if !strings.HasPrefix(prompt, "Research and document feature: **sample-feature**\n\n") {
+	if !strings.HasPrefix(prompt, "Research feature `sample-feature`") {
 		t.Fatalf("expected prompt to start with research header, got %q", prompt[:64])
 	}
 	if strings.Contains(prompt, "/plan") || strings.Contains(prompt, "planning mode") {
@@ -190,7 +170,7 @@ func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsReferences(t 
 	promptChecks := []string{
 		"DESIGN MATERIALS",
 		designPath,
-		"ignore `.gitkeep`",
+		"Ignore placeholders such as .gitkeep",
 		"## Frontend Profile",
 	}
 	for _, check := range promptChecks {

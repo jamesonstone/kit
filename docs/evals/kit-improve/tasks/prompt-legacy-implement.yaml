@@ -1,0 +1,40 @@
+schema_version: 1
+id: prompt-legacy-implement
+title: Legacy implement prompt preserves task and validation gates
+category: prompt-legacy
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Render the explicit legacy implementation prompt.
+expected_behavior: The prompt executes the staged task set, validates results, records evidence, and respects delivery boundaries.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} legacy implement legacy-prompt --prompt-only --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: TASKS.md
+  - type: stdout_contains
+    command_index: 0
+    value: validation
+  - type: stdout_contains
+    command_index: 0
+    value: evidence
+  - type: stdout_not_contains
+    command_index: 0
+    value: Waiting for approval
+  - type: stdout_words_max
+    command_index: 0
+    max: 3800
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-legacy:implement-contract

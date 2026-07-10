@@ -25,39 +25,18 @@ func TestBuildImplementationPrompt_IncludesReadinessGate(t *testing.T) {
 	)
 
 	checks := []string{
+		"Implement every remaining non-blocked task",
 		"implementation readiness gate",
-		"adversarial preflight",
-		"contradictions, ambiguous requirements, hidden assumptions, missing edge cases or failure modes, task gaps, and scope creep",
-		"Produce an explicit go/no-go decision before coding",
-		"Do NOT write production code yet",
-		"Update SPEC.md, PLAN.md, and/or TASKS.md to resolve the exact issue",
-		"Re-run the implementation readiness gate after the docs are fixed",
-		"Do not begin coding until the implementation readiness gate passes",
-		"Open `TASKS.md` first",
-		"Load only the relevant `PLAN.md` section",
-		"Load only the relevant `SPEC.md` requirement",
-		"Load `CONSTITUTION.md` only when required",
-		"Use an RLM-style just-in-time prior-work pass over",
-		filepath.Join(root, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
-		"conditional reads only",
-		"shared interface or contract",
-		"inspect at most 5 prior feature directories",
-		"do not paraphrase entire prior docs into chat",
-		"Inspect the relevant code before editing",
-		"Run relevant validation before completion",
-		"GitHub delivery hard gate",
-		"issue, branch, staging, commit, push, or pull request",
-		"Delivery Contract",
-		"branch/status/staleness recon",
-		"`codex/*` branches",
-		"Start by opening TASKS.md and selecting the first incomplete unblocked task",
-		"Continue the task loop until every non-blocked task in TASKS.md is complete",
-		"Select the next incomplete unblocked task in dependency order",
-		"Repeat with the next incomplete task",
+		"unambiguous, in scope, mapped to acceptance/evidence",
+		"material choice remains non-discoverable",
+		"do not request routine approval for safe in-scope work",
+		"kit legacy verify sample --task <task-id>",
+		"record exact validation evidence",
+		"Repeat in dependency order until every non-blocked task is complete",
 		"Do not stop after one task",
-		"Complete every non-blocked task in dependency order from TASKS.md before reporting implementation complete",
-		"until every non-blocked task in TASKS.md is complete",
-		"Only for unresolved rationale; non-binding context",
+		"Delivery Contract",
+		"## Success And Output",
+		"mapped acceptance criteria are complete with validation and documentation evidence",
 	}
 
 	for _, check := range checks {
@@ -119,7 +98,7 @@ func TestBuildImplementationPrompt_IncludesRepoDocsForTOCRepos(t *testing.T) {
 	for _, check := range []string{
 		"docs/agents/README.md",
 		"docs/references/README.md",
-		"Repo-local runtime routing index",
+		"Load only when present and relevant",
 	} {
 		if !strings.Contains(prompt, check) {
 			t.Fatalf("expected prompt to contain %q", check)

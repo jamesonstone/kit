@@ -45,18 +45,54 @@ type Assertion struct {
 	Type         string `json:"type" yaml:"type"`
 	CommandIndex int    `json:"command_index,omitempty" yaml:"command_index,omitempty"`
 	Value        string `json:"value,omitempty" yaml:"value,omitempty"`
+	Max          int    `json:"max,omitempty" yaml:"max,omitempty"`
 }
 
 type RunManifest struct {
-	SchemaVersion int       `json:"schema_version"`
-	Kind          string    `json:"kind"`
-	RunID         string    `json:"run_id"`
-	Suite         string    `json:"suite"`
-	StartedAt     time.Time `json:"started_at"`
-	EndedAt       time.Time `json:"ended_at"`
-	Status        string    `json:"status"`
-	RunDir        string    `json:"run_dir"`
-	Traces        []Trace   `json:"traces"`
+	SchemaVersion int                 `json:"schema_version"`
+	Kind          string              `json:"kind"`
+	RunID         string              `json:"run_id"`
+	Suite         string              `json:"suite"`
+	StartedAt     time.Time           `json:"started_at"`
+	EndedAt       time.Time           `json:"ended_at"`
+	Status        string              `json:"status"`
+	RunDir        string              `json:"run_dir"`
+	Provenance    BenchmarkProvenance `json:"provenance"`
+	Metrics       RunMetrics          `json:"metrics"`
+	Traces        []Trace             `json:"traces"`
+}
+
+type BenchmarkProvenance struct {
+	SuiteDefinitionSHA256 string `json:"suite_definition_sha256"`
+	RunnerBinaryPath      string `json:"runner_binary_path"`
+	RunnerBinarySHA256    string `json:"runner_binary_sha256"`
+	KitBinaryPath         string `json:"kit_binary_path"`
+	KitBinarySHA256       string `json:"kit_binary_sha256"`
+	KitVersion            string `json:"kit_version"`
+	HarnessGitCommit      string `json:"harness_git_commit"`
+}
+
+type RunMetrics struct {
+	TaskRuns            int         `json:"task_runs"`
+	PassedTaskRuns      int         `json:"passed_task_runs"`
+	FailedTaskRuns      int         `json:"failed_task_runs"`
+	Assertions          int         `json:"assertions"`
+	PassedAssertions    int         `json:"passed_assertions"`
+	FailedAssertions    int         `json:"failed_assertions"`
+	TaskSuccessRate     float64     `json:"task_success_rate"`
+	OutputCompleteness  float64     `json:"output_completeness"`
+	CommandDurationMS   int64       `json:"command_duration_ms"`
+	RepeatedTasks       int         `json:"repeated_tasks"`
+	StableRepeatedTasks int         `json:"stable_repeated_tasks"`
+	DeterminismRate     float64     `json:"determinism_rate"`
+	Stdout              TextMetrics `json:"stdout"`
+}
+
+type TextMetrics struct {
+	Lines           int `json:"lines"`
+	Words           int `json:"words"`
+	Bytes           int `json:"bytes"`
+	EstimatedTokens int `json:"estimated_tokens"`
 }
 
 type Trace struct {
@@ -81,16 +117,23 @@ type Trace struct {
 }
 
 type CommandTrace struct {
-	Argv       []string `json:"argv"`
-	ExitCode   int      `json:"exit_code"`
-	StdoutPath string   `json:"stdout_path,omitempty"`
-	StderrPath string   `json:"stderr_path,omitempty"`
+	Argv         []string    `json:"argv"`
+	ExitCode     int         `json:"exit_code"`
+	Status       string      `json:"status"`
+	DurationMS   int64       `json:"duration_ms"`
+	Error        string      `json:"error,omitempty"`
+	TimedOut     bool        `json:"timed_out,omitempty"`
+	Stdout       TextMetrics `json:"stdout"`
+	StdoutSHA256 string      `json:"stdout_sha256"`
+	StdoutPath   string      `json:"stdout_path,omitempty"`
+	StderrPath   string      `json:"stderr_path,omitempty"`
 }
 
 type AssertionResult struct {
-	Type    string `json:"type"`
-	Status  string `json:"status"`
-	Message string `json:"message,omitempty"`
+	Type         string `json:"type"`
+	CommandIndex *int   `json:"command_index,omitempty"`
+	Status       string `json:"status"`
+	Message      string `json:"message,omitempty"`
 }
 
 type OracleResult struct {

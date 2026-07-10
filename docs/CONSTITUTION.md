@@ -191,11 +191,11 @@ Use when ANY of these apply:
 
 **Clarification protocol for formal planning phases**:
 
-- Ask in numbered batches of up to 10 questions with a recommended default for each question
-- `yes` / `y` approves all recommended defaults in the current batch
-- `yes 3, 4, 5` / `y 3, 4, 5` approves only those numbered defaults
-- `no 2: <answer>` / `n 2: <answer>` overrides a numbered default
-- `no` / `n` rejects the full batch and requires explicit replacements before proceeding
+- Resolve repository-discoverable facts before asking the user
+- Ask concise numbered questions only for material non-discoverable choices
+- Include a recommended default and explain how the answer changes scope, behavior, risk, validation, or delivery
+- Outside explicit clarification, continue safe in-scope work without routine approval pauses
+- Record durable answers in `SPEC.md`; block rather than guess when a required choice remains
 
 ### Ad Hoc (Lightweight)
 
@@ -320,7 +320,7 @@ A single integer (0–100) reported by the coding agent indicating:
 - Completeness of requirements understanding
 - Clarity of implementation approach
 - Readiness to proceed to next phase
-- Surfaced after each batch of up to 10 numbered clarification questions so the user can see progress
+- Recorded with clarification state when readiness is evaluated; it need not be repeated when no material question remains
 
 Kit does not define a scoring rubric — the agent determines the value.
 
@@ -567,7 +567,7 @@ loop:
       - never
       - exec
       - --model
-      - gpt-5.5
+      - gpt-5.6
       - --sandbox
       - workspace-write
       - --ignore-user-config

@@ -3,5 +3,26 @@
   "title": "Kit Improve Suite",
   "type": "object",
   "required": ["schema_version", "id", "title", "held_in", "held_out", "repeat", "minimum_tasks", "selection_rules"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "held_in": {"$ref": "#/$defs/selector"},
+    "held_out": {"$ref": "#/$defs/selector"},
+    "repeat": {"type": "integer", "minimum": 1},
+    "minimum_tasks": {"type": "integer", "minimum": 1},
+    "selection_rules": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "selector": {
+      "type": "object",
+      "required": ["include_tags"],
+      "properties": {
+        "include_tags": {"type": "array", "items": {"type": "string"}},
+        "hidden_from_proposer": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
   "additionalProperties": false
 }

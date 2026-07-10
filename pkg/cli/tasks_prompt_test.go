@@ -32,16 +32,21 @@ func TestOutputTasksPrompt_IncludesNonEmptySectionGuidance(t *testing.T) {
 	checks := []string{
 		"Update TASKS.md directly at",
 		"do not leave the task breakdown only in chat",
-		"Only update TASKS.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
-		"no section in `TASKS.md` may remain empty or contain only an HTML TODO comment",
-		"if there are no blockers or ordering notes, replace placeholder comments with \"no additional information required\" or \"not applicable\"",
-		"otherwise write \"not required\"",
+		"Update TASKS.md only; do not implement product code",
+		"material non-discoverable decision",
+		"stable T001-style IDs",
+		"GOAL, SCOPE, ACCEPTANCE, VERIFY, EXPECTED FILES, RISK, ROLLBACK, DEPENDENCIES",
+		"binary done condition and required evidence",
+		"Update TASKS.md only.",
 	}
 
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)
 		}
+	}
+	if strings.Contains(output, "supporting documentation") {
+		t.Fatalf("expected TASKS.md to be the only prompt-authorized mutation, got:\n%s", output)
 	}
 	assertFinalResponseContractHeadings(t, output,
 		"Summary",

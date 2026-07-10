@@ -1,0 +1,34 @@
+schema_version: 1
+id: prompt-toolbox-short
+title: Short clarification toolbox prompt stays compact
+category: prompt-toolbox
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: planner
+timeout_seconds: 30
+input_prompt: Render the short explicit clarification prompt.
+expected_behavior: The prompt asks only for material unresolved details and makes no changes.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} prompt coding-agent short --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: Clarify
+  - type: stdout_not_contains
+    command_index: 0
+    value: Programmatic Tool Calling
+  - type: stdout_words_max
+    command_index: 0
+    max: 100
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-toolbox:short-bloat

@@ -26,6 +26,7 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	defer restore()
 
 	cfg := config.Default()
+	cfg.ConstitutionPath = filepath.Join("governance", "PROJECT_RULES.md")
 	feat := &feature.Feature{Slug: "sample", DirName: "0012-sample", Path: featurePath}
 
 	output := captureStdout(t, func() {
@@ -36,25 +37,25 @@ func TestOutputStandardPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	})
 
 	checks := []string{
-		"Populate or refresh canonical front matter `references`",
-		"`status` must be one of `active`, `optional`, or `stale`",
-		"Use an RLM-style just-in-time prior-work pass over",
-		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
-		"conditional reads only",
-		"shared interface or contract",
-		"inspect at most 5 prior feature directories",
-		"do not paraphrase entire prior docs into chat",
-		"for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target`",
-		"- DEPENDENCIES",
-		"canonical front matter `references` must be current before sign-off",
-		"Only update PLAN.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
-		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
+		filepath.Join(projectRoot, cfg.ConstitutionPath),
+		"Complete the legacy implementation plan",
+		"documentation-only; do not implement product code",
+		"Inspect the smallest relevant code, tests, docs, and prior-feature context",
+		"Ask concise numbered questions only for a material non-discoverable design choice",
+		"simplest viable approach",
+		"exact dependencies/references",
+		"Map every binding acceptance criterion",
+		"validation strategy",
+		"`not applicable`",
 	}
 
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)
 		}
+	}
+	if defaultPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md"); strings.Contains(output, defaultPath) {
+		t.Fatalf("expected output to use configured constitution path, not %q", defaultPath)
 	}
 	assertFinalResponseContractHeadings(t, output,
 		"Summary",
@@ -82,6 +83,7 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	defer restore()
 
 	cfg := config.Default()
+	cfg.ConstitutionPath = filepath.Join("governance", "PROJECT_RULES.md")
 	feat := &feature.Feature{Slug: "sample", DirName: "0012-sample", Path: featurePath}
 
 	output := captureStdout(t, func() {
@@ -92,23 +94,34 @@ func TestOutputWarpPlanPrompt_IncludesDependencyGuidance(t *testing.T) {
 	})
 
 	checks := []string{
-		"Populate or refresh canonical front matter `references`",
-		"DEPENDENCIES: prose summary of the resources that shape the implementation strategy",
-		"Use an RLM-style just-in-time prior-work pass over",
-		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
-		"conditional reads only",
-		"shared interface or contract",
-		"inspect at most 5 prior feature directories",
-		"do not paraphrase entire prior docs into chat",
-		"for Figma or MCP-driven design references, store the exact design URL or file/node reference in `target`",
-		"canonical front matter `references` must be current before sign-off",
-		"Only update PLAN.md and supporting documentation; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
-		"no section in `PLAN.md` may remain empty or contain only an HTML TODO comment",
+		filepath.Join(projectRoot, cfg.ConstitutionPath),
+		"Convert the Warp plan in the current conversation",
+		"documentation-only; do not implement product code",
+		"SPEC.md wins on conflict",
+		"smallest relevant code and test surfaces",
+		"Ask concise numbered questions only for a material non-discoverable design choice",
+		"simplest viable approach",
+		"Map every binding acceptance criterion",
+		"introduce no scope beyond SPEC.md",
+		"validation strategy",
+		"`not applicable`",
 	}
 
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected output to contain %q", check)
+		}
+	}
+	if defaultPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md"); strings.Contains(output, defaultPath) {
+		t.Fatalf("expected output to use configured constitution path, not %q", defaultPath)
+	}
+	for _, obsolete := range []string{
+		"additional batches of up to 10 questions",
+		"inspect at most 5 prior feature directories",
+		"The output of PLAN.md must make TASKS.md obvious and deterministic",
+	} {
+		if strings.Contains(output, obsolete) {
+			t.Fatalf("expected compact Warp prompt to omit %q", obsolete)
 		}
 	}
 	assertFinalResponseContractHeadings(t, output,

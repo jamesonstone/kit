@@ -22,19 +22,28 @@ func writeCommandOutput(runDir, taskID string, repeat int, results []verify.Comm
 	}
 	traces := make([]CommandTrace, 0, len(results))
 	for i, result := range results {
+		stdout := limitLines(normalizeOutputForPersistence(redactOutput(result.Stdout), result.CWD), 200)
+		stderr := limitLines(redactOutput(result.Stderr), 200)
+		commandError := redactOutput(result.Error)
 		stdoutPath := filepath.Join(outDir, fmt.Sprintf("%d.stdout.txt", i+1))
 		stderrPath := filepath.Join(outDir, fmt.Sprintf("%d.stderr.txt", i+1))
-		if err := os.WriteFile(stdoutPath, []byte(limitLines(redactOutput(result.Stdout), 200)), 0o644); err != nil {
+		if err := os.WriteFile(stdoutPath, []byte(stdout), 0o644); err != nil {
 			return nil, err
 		}
-		if err := os.WriteFile(stderrPath, []byte(limitLines(redactOutput(result.Stderr), 200)), 0o644); err != nil {
+		if err := os.WriteFile(stderrPath, []byte(stderr), 0o644); err != nil {
 			return nil, err
 		}
 		traces = append(traces, CommandTrace{
-			Argv:       append([]string(nil), result.Argv...),
-			ExitCode:   result.ExitCode,
-			StdoutPath: stdoutPath,
-			StderrPath: stderrPath,
+			Argv:         append([]string(nil), result.Argv...),
+			ExitCode:     result.ExitCode,
+			Status:       result.Status,
+			DurationMS:   result.DurationMS,
+			Error:        commandError,
+			TimedOut:     result.TimedOut,
+			Stdout:       measureText(stdout),
+			StdoutSHA256: hashText(stdout),
+			StdoutPath:   stdoutPath,
+			StderrPath:   stderrPath,
 		})
 	}
 	return traces, nil
@@ -44,8 +53,16 @@ func evaluateAssertions(task Task, results []verify.CommandResult, changed []str
 	var out []AssertionResult
 	for _, assertion := range task.Assertions {
 		switch assertion.Type {
+		case "command_succeeds":
+			out = append(out, assertCommandSucceeds(assertion, results))
 		case "stdout_contains":
 			out = append(out, assertStdoutContains(assertion, results))
+		case "stdout_not_contains":
+			out = append(out, assertStdoutNotContains(assertion, results))
+		case "stdout_nonempty":
+			out = append(out, assertStdoutNonempty(assertion, results))
+		case "stdout_lines_max", "stdout_words_max", "stdout_estimated_tokens_max":
+			out = append(out, assertStdoutMaximum(assertion, results))
 		case "git_diff_empty":
 			if len(changed) == 0 {
 				out = append(out, AssertionResult{Type: assertion.Type, Status: "passed"})
@@ -60,23 +77,145 @@ func evaluateAssertions(task Task, results []verify.CommandResult, changed []str
 }
 
 func assertStdoutContains(assertion Assertion, results []verify.CommandResult) AssertionResult {
-	if assertion.CommandIndex < 0 || assertion.CommandIndex >= len(results) {
-		return AssertionResult{Type: assertion.Type, Status: "inconclusive", Message: "command_index out of range"}
+	result, failure := commandResult(assertion, results)
+	if failure != nil {
+		return *failure
 	}
-	if strings.Contains(results[assertion.CommandIndex].Stdout, assertion.Value) {
-		return AssertionResult{Type: assertion.Type, Status: "passed"}
+	if strings.Contains(result.Stdout, assertion.Value) {
+		return passedAssertion(assertion)
 	}
-	return AssertionResult{Type: assertion.Type, Status: "failed", Message: fmt.Sprintf("stdout missing %q", assertion.Value)}
+	return failedAssertion(assertion, fmt.Sprintf("stdout missing %q", assertion.Value))
 }
 
-func failureSignature(task Task, status string) string {
-	if status == "passed" {
-		return ""
+func assertStdoutNotContains(assertion Assertion, results []verify.CommandResult) AssertionResult {
+	result, failure := commandResult(assertion, results)
+	if failure != nil {
+		return *failure
 	}
-	if len(task.KnownFailureModes) > 0 {
-		return task.KnownFailureModes[0]
+	if !strings.Contains(result.Stdout, assertion.Value) {
+		return passedAssertion(assertion)
 	}
-	return task.Category + ":" + task.ID
+	return failedAssertion(assertion, fmt.Sprintf("stdout unexpectedly contains %q", assertion.Value))
+}
+
+func assertStdoutNonempty(assertion Assertion, results []verify.CommandResult) AssertionResult {
+	result, failure := commandResult(assertion, results)
+	if failure != nil {
+		return *failure
+	}
+	if strings.TrimSpace(result.Stdout) != "" {
+		return passedAssertion(assertion)
+	}
+	return failedAssertion(assertion, "stdout is empty")
+}
+
+func assertCommandSucceeds(assertion Assertion, results []verify.CommandResult) AssertionResult {
+	result, failure := commandResult(assertion, results)
+	if failure != nil {
+		return *failure
+	}
+	if result.Status == "pass" && result.ExitCode == 0 {
+		return passedAssertion(assertion)
+	}
+	message := fmt.Sprintf("command exited %d", result.ExitCode)
+	if result.TimedOut {
+		message = "command timed out"
+	} else if strings.TrimSpace(result.Error) != "" {
+		message += ": " + redactOutput(result.Error)
+	}
+	return failedAssertion(assertion, message)
+}
+
+func assertStdoutMaximum(assertion Assertion, results []verify.CommandResult) AssertionResult {
+	result, failure := commandResult(assertion, results)
+	if failure != nil {
+		return *failure
+	}
+	metrics := measureText(result.Stdout)
+	actual := 0
+	switch assertion.Type {
+	case "stdout_lines_max":
+		actual = metrics.Lines
+	case "stdout_words_max":
+		actual = metrics.Words
+	case "stdout_estimated_tokens_max":
+		actual = metrics.EstimatedTokens
+	}
+	if actual <= assertion.Max {
+		return passedAssertion(assertion)
+	}
+	return failedAssertion(assertion, fmt.Sprintf("stdout %s %d exceeds maximum %d", strings.TrimPrefix(assertion.Type, "stdout_"), actual, assertion.Max))
+}
+
+func commandResult(assertion Assertion, results []verify.CommandResult) (verify.CommandResult, *AssertionResult) {
+	if assertion.CommandIndex < 0 || assertion.CommandIndex >= len(results) {
+		failure := failedAssertion(assertion, "command_index out of range")
+		return verify.CommandResult{}, &failure
+	}
+	return results[assertion.CommandIndex], nil
+}
+
+func passedAssertion(assertion Assertion) AssertionResult {
+	return AssertionResult{Type: assertion.Type, CommandIndex: assertionCommandIndex(assertion), Status: "passed"}
+}
+
+func failedAssertion(assertion Assertion, message string) AssertionResult {
+	return AssertionResult{Type: assertion.Type, CommandIndex: assertionCommandIndex(assertion), Status: "failed", Message: message}
+}
+
+func assertionCommandIndex(assertion Assertion) *int {
+	index := assertion.CommandIndex
+	return &index
+}
+
+func measureText(value string) TextMetrics {
+	metrics := TextMetrics{
+		Words: len(strings.Fields(value)),
+		Bytes: len([]byte(value)),
+	}
+	if value != "" {
+		metrics.Lines = strings.Count(value, "\n")
+		if !strings.HasSuffix(value, "\n") {
+			metrics.Lines++
+		}
+	}
+	metrics.EstimatedTokens = (metrics.Bytes + 3) / 4
+	return metrics
+}
+
+func hashText(value string) string {
+	sum := sha256.Sum256([]byte(value))
+	return hex.EncodeToString(sum[:])
+}
+
+func normalizeOutputForPersistence(value, workspace string) string {
+	workspace = strings.TrimSpace(workspace)
+	if workspace == "" {
+		return value
+	}
+	return strings.ReplaceAll(value, workspace, "{{workspace}}")
+}
+
+func failureSignature(task Task, commandResults []verify.CommandResult, assertions []AssertionResult, violations []string) string {
+	for index, result := range commandResults {
+		if result.Status == "pass" && result.ExitCode == 0 {
+			continue
+		}
+		cause := fmt.Sprintf("exit-%d", result.ExitCode)
+		if result.TimedOut {
+			cause = "timeout"
+		}
+		return fmt.Sprintf("command:%s:%d:%s", task.ID, index, cause)
+	}
+	for index, assertion := range assertions {
+		if assertion.Status != "passed" {
+			return fmt.Sprintf("assertion:%s:%s:%d", task.ID, assertion.Type, index)
+		}
+	}
+	if len(violations) > 0 {
+		return "allowed-surface:" + task.ID
+	}
+	return ""
 }
 
 func writeJSON(filePath string, value any) error {

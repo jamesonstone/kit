@@ -309,7 +309,7 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 	if statusUsesV2Workflow(status) {
 		switch status.Phase {
 		case feature.PhaseClarify:
-			return "Continue v2 clarification in SPEC.md until unresolved questions are 0 and acceptance criteria are binary-verifiable"
+			return "Resolve remaining material non-discoverable ambiguity in SPEC.md until unresolved questions are 0 and acceptance criteria are binary-verifiable"
 		case feature.PhaseReady:
 			return "Begin v2 implementation from the SPEC.md implementation plan and task checklist"
 		case feature.PhaseImplement:

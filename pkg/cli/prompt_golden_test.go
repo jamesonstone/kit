@@ -11,8 +11,15 @@ import (
 
 func assertPromptGolden(t *testing.T, name, got string) {
 	t.Helper()
+	path := filepath.Join("testdata", name)
+	if os.Getenv("UPDATE_GOLDEN") == "1" {
+		if err := os.WriteFile(path, []byte(strings.TrimSuffix(got, "\n")+"\n"), 0o644); err != nil {
+			t.Fatalf("WriteFile(%q): %v", name, err)
+		}
+		return
+	}
 
-	wantBytes, err := os.ReadFile(filepath.Join("testdata", name))
+	wantBytes, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("ReadFile(%q): %v", name, err)
 	}
@@ -83,11 +90,8 @@ func TestBuildSpecV2SupervisorPrompt_SingleAgentMode(t *testing.T) {
 	})
 
 	checks := []string{
-		"`--single-agent` is active. Keep execution in one supervisor lane and do not require implementation or verification subagents.",
-		"Even in single-agent mode, record logical work lanes in the Agent Team Plan when they clarify sequencing, validation, or risk.",
-		"In final responses, state `single supervisor lane; no specialist or verification agents spawned` and cite `--single-agent` as the exception.",
+		"`--single-agent` is active: keep execution and verification in one supervisor lane",
 		"single supervisor lane; no specialist or verification agents spawned",
-		"state the exception that justified single-lane execution",
 	}
 	for _, check := range checks {
 		if !strings.Contains(prompt, check) {
@@ -96,8 +100,8 @@ func TestBuildSpecV2SupervisorPrompt_SingleAgentMode(t *testing.T) {
 	}
 
 	unwanted := []string{
-		"Default to a subagent team for implementation and verification.",
-		"do not keep work single-lane merely because subagents were not explicitly re-requested.",
+		"For nontrivial separable work",
+		"use at least one read-only verifier",
 	}
 	for _, check := range unwanted {
 		if strings.Contains(prompt, check) {
@@ -132,6 +136,62 @@ func TestBuildReflectPrompt_Golden(t *testing.T) {
 		"Final Status",
 		"Follow-ups",
 	)
+}
+
+func TestBuildReflectPromptTrimsFeatureSlugBeforeUse(t *testing.T) {
+	prompt := buildReflectPrompt(
+		"/repo",
+		"/repo/docs/CONSTITUTION.md",
+		"/repo/docs/PROJECT_PROGRESS_SUMMARY.md",
+		"/repo/docs/specs/0001-alpha/BRAINSTORM.md",
+		"/repo/docs/specs/0001-alpha/SPEC.md",
+		"/repo/docs/specs/0001-alpha/PLAN.md",
+		"/repo/docs/specs/0001-alpha/TASKS.md",
+		"  alpha  ",
+	)
+
+	for _, check := range []string{
+		"## Reflection — Feature: alpha",
+		"run `kit legacy verify alpha`",
+	} {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected trimmed feature slug in %q, got:\n%s", check, prompt)
+		}
+	}
+	if strings.Contains(prompt, "  alpha  ") {
+		t.Fatalf("expected raw whitespace-padded feature slug to be absent, got:\n%s", prompt)
+	}
+}
+
+func TestBuildReflectPromptWhitespaceOnlyFeatureSlugUsesGenericScope(t *testing.T) {
+	prompt := buildReflectPrompt(
+		"/repo",
+		"/repo/docs/CONSTITUTION.md",
+		"/repo/docs/PROJECT_PROGRESS_SUMMARY.md",
+		"/repo/docs/specs/0001-alpha/BRAINSTORM.md",
+		"/repo/docs/specs/0001-alpha/SPEC.md",
+		"/repo/docs/specs/0001-alpha/PLAN.md",
+		"/repo/docs/specs/0001-alpha/TASKS.md",
+		"   ",
+	)
+
+	for _, check := range []string{
+		"## Reflection\n",
+		"no feature-scoped verification evidence is required for generic reflection",
+	} {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected whitespace-only slug to use generic reflection scope with %q, got:\n%s", check, prompt)
+		}
+	}
+	for _, unwanted := range []string{
+		"## Reflection — Feature:",
+		"no local verification run found",
+		"`kit legacy verify  ",
+	} {
+		if strings.Contains(prompt, unwanted) {
+			t.Fatalf("expected whitespace-only slug to omit feature verification requirement %q, got:\n%s", unwanted, prompt)
+		}
+	}
 }
 
 func TestBuildReflectPromptIncludesProjectRefreshDueState(t *testing.T) {

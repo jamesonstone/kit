@@ -151,7 +151,7 @@ kit spec dashboard
 	checks := []string{
 		"DESIGN MATERIALS",
 		designPath,
-		"ignore `.gitkeep`",
+		"Ignore placeholders such as .gitkeep",
 		"## Frontend Profile",
 	}
 	for _, check := range checks {
@@ -240,7 +240,7 @@ kit spec alpha
 	if strings.Contains(output, "0002-beta") {
 		t.Fatalf("expected selector to exclude non-brainstorm feature, got %q", output)
 	}
-	if !strings.Contains(output, "feature: **alpha**") {
+	if !strings.Contains(output, "Research feature `alpha`") {
 		t.Fatalf("expected prompt for selected feature, got %q", output)
 	}
 }

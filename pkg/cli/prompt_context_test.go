@@ -149,7 +149,7 @@ func TestRenderWorkflowSpecPromptInfersActiveFeature(t *testing.T) {
 	}
 	assertV2SpecPromptContract(t, rendered)
 	assertV2SpecPromptExcludesV1StageAssumptions(t, rendered)
-	if !strings.Contains(rendered, "Kit v2 `kit spec` workflow for feature `alpha`") {
+	if !strings.Contains(rendered, "Supervise feature `alpha`") {
 		t.Fatalf("expected feature slug in v2 specification prompt, got %q", rendered)
 	}
 	if strings.Contains(rendered, "## Subagent Orchestration") {

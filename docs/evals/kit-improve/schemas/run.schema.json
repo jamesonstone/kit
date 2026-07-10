@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kit Improve Run Manifest",
+  "type": "object",
+  "required": ["schema_version", "kind", "run_id", "suite", "started_at", "ended_at", "status", "run_dir", "provenance", "metrics", "traces"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "improve_run"},
+    "run_id": {"type": "string"},
+    "suite": {"type": "string"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "ended_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["pass", "failed", "dry_run"]},
+    "run_dir": {"type": "string"},
+    "provenance": {
+      "type": "object",
+      "required": ["suite_definition_sha256", "runner_binary_path", "runner_binary_sha256", "kit_binary_path", "kit_binary_sha256", "kit_version", "harness_git_commit"]
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["task_runs", "passed_task_runs", "failed_task_runs", "assertions", "passed_assertions", "failed_assertions", "task_success_rate", "output_completeness", "command_duration_ms", "repeated_tasks", "stable_repeated_tasks", "determinism_rate", "stdout"]
+    },
+    "traces": {"type": "array", "items": {"type": "object"}}
+  },
+  "additionalProperties": false
+}

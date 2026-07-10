@@ -18,13 +18,9 @@ var codeReviewCmd = &cobra.Command{
 	Long: `Output instructions that guide a coding agent through a systematic
 code review of changes on the current branch compared to main/master.
 
-The agent will:
-  1. Identify the base branch (main or master)
-  2. Diff all changes on the current branch
-  3. Verify best practices using MCP tools (Context7)
-  4. Analyze each change with thumbs up/down assessment
-  5. Output a markdown table of findings
-  6. Provide a summary with overall approval recommendation`,
+The agent identifies the remote default branch, reviews the merge-base change
+set and relevant contracts, and reports evidence-backed findings in severity
+order. The generated prompt is read-only and does not mutate code or GitHub.`,
 	Args: cobra.NoArgs,
 	RunE: runCodeReview,
 }
@@ -40,7 +36,7 @@ func runCodeReview(cmd *cobra.Command, args []string) error {
 
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
 
-	if err := outputPromptWithClipboardDefault(output, outputOnly, codeReviewCopy); err != nil {
+	if err := outputPromptWithoutSubagentsWithClipboardDefault(output, outputOnly, codeReviewCopy); err != nil {
 		return err
 	}
 	if !outputOnly {
@@ -60,79 +56,38 @@ func runCodeReview(cmd *cobra.Command, args []string) error {
 
 func codeReviewInstructions() string {
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Heading(2, "Code Review Agent Instructions")
-		doc.Paragraph("**IMPORTANT: This is an INFORMATIONAL REVIEW ONLY.**")
+		doc.Heading(2, "Code Review")
+		doc.Paragraph("Review the current branch against its remote mainline and report actionable findings. This is read-only: do not edit files or mutate Git/GitHub state.")
+
+		doc.Heading(3, "Scope")
 		doc.BulletList(
-			"Do NOT modify, edit, or change any code",
-			"Do NOT create new files or update existing files",
-			"Your sole task is to ANALYZE and EXPLAIN the changes",
-			"Output your findings as documentation only",
+			"Identify the repository's remote default branch and compute the merge-base diff to `HEAD`; include staged, unstaged, and untracked in-scope changes when the user asked to review the working tree.",
+			"Review changed files and only the minimal dependencies needed to establish whether a change is correct. Do not turn the review into a general repository audit.",
+			"Read relevant tests, contracts, generated sources, and repo-local rules when they determine expected behavior.",
 		)
-		doc.Paragraph("**REVIEW OBJECTIVES: Maximize for 100% CORRECTNESS and PERFORMANCE.**")
-		doc.Raw("---")
-		doc.Heading(3, "Step 1: Get the Changed Files List")
-		doc.Paragraph("Run: `git diff --name-only main..HEAD` (or master if main doesn't exist)")
-		doc.Paragraph("This output is the **ONLY** list of files you will review.")
-		doc.Paragraph("**CRITICAL RULES:**")
+
+		doc.Heading(3, "Review Priorities")
 		doc.BulletList(
-			"If the output is empty, STOP — there are no changes to review",
-			"**ONLY** analyze files that appear in this output",
-			"Do **NOT** review files not in this list",
-			"Do **NOT** explore or analyze other files in the codebase",
+			"Correctness: broken behavior, edge cases, error handling, concurrency, compatibility, and violated invariants.",
+			"Security and data safety: trust boundaries, authorization, secrets, injection, destructive behavior, and unsafe defaults.",
+			"Performance and reliability: material complexity, resource leaks, blocking I/O, retries, timeouts, races, and failure recovery.",
+			"Tests and evidence: missing coverage only when it leaves changed behavior unproven; flag assertions that do not test the intended contract.",
+			"Documentation and interfaces: stale public docs, API/config/CLI drift, migration gaps, and generated-artifact inconsistency.",
 		)
-		doc.Raw("---")
-		doc.Heading(3, "Step 2: For Each Changed File")
-		doc.Paragraph("For **each file in the list above** (and ONLY those files):")
-		doc.OrderedList(1,
-			"**Read the file** as it exists now",
-			"**Understand** what it does and how it fits in the codebase",
-			"**Analyze for correctness:**\n- Does the logic work correctly?\n- Are edge cases handled? (nil, empty, boundaries)\n- Are errors handled properly? (no swallowed errors)\n- Any potential panics or crashes?\n- Any race conditions?",
-			"**Analyze for performance:**\n- Is the algorithm efficient?\n- Any unnecessary allocations or copies?\n- Any N+1 queries or unbatched I/O?",
-			"**Check best practices:**\n- Use MCP tools (Context7) to verify framework best practices\n- Flag deprecated patterns or anti-patterns",
-			"**Assess:** Is this change 👍 (net-positive) or 👎 (net-negative)?",
-		)
-		doc.Raw("---")
-		doc.Heading(3, "Step 3: Analyze Test Files (if any changed)")
+
+		doc.Heading(3, "Finding Standard")
 		doc.BulletList(
-			"For test files in the changed list: do they test the right behavior?",
-			"Do assertions match the application code changes?",
-			"Do NOT recommend adding more tests",
+			"Report only issues introduced or exposed by the changed scope and supported by concrete evidence.",
+			"Order findings by severity. For each, give severity, `file:line`, failure mode, impact, evidence or reproduction, and the smallest credible fix direction.",
+			"Do not add praise, style preferences, speculative refactors, or vague best-practice claims. Verify external framework behavior only when it is material to a finding.",
+			"If no actionable findings exist, say `No findings.` and list only residual risks or tests you could not verify.",
 		)
-		doc.Raw("---")
-		doc.Heading(3, "Step 4: Output Your Analysis")
-		doc.Paragraph("**Format:**")
-		doc.CodeBlock("markdown", `## Code Review: [branch] → main
 
-### Files Reviewed
-[List ONLY the files from the git diff output]
-
-### Analysis
-
-| File | Summary | Correctness | Performance | Assessment |
-|------|---------|-------------|-------------|------------|
-| file.go | what changed | ✅/⚠️/❌ | ✅/⚠️/❌ | 👍/👎 |
-
-### Correctness Summary
-**Confidence: [0-100]%**
-- Bugs found: [list or "None"]
-- Edge cases missed: [list or "None"]
-
-### Performance Summary
-**Assessment: [Optimal/Acceptable/Needs Work/Critical]**
-- Issues: [list or "None"]
-
-### Recommendation
-[✅ APPROVE | ⚠️ APPROVE WITH NOTES | ❌ REQUEST CHANGES]
-[If not clean approve, list specific issues]`)
-		doc.Raw("---")
-		doc.Heading(3, "Rules")
+		doc.Heading(3, "Output")
 		doc.BulletList(
-			"**INFORMATIONAL ONLY** — do not modify any code",
-			"**ONLY REVIEW CHANGED FILES** — files from git diff output, nothing else",
-			"**DO NOT EXPLORE** other files unless directly imported by a changed file",
-			"**MAXIMIZE CORRECTNESS** — find all bugs, edge cases, error handling issues",
-			"**MAXIMIZE PERFORMANCE** — identify inefficiencies",
-			"Be thorough but stay focused on the changed files",
+			"`Findings`: ordered actionable items, or `No findings.`",
+			"`Validation reviewed`: commands/evidence inspected and anything not run.",
+			"`Residual risk`: concise unverified behavior, or `none`.",
 		)
 	})
 }

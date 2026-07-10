@@ -16,14 +16,12 @@ func buildDispatchPrompt(
 	options dispatchPromptOptions,
 ) string {
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph("Prepare an Agent Team Plan for the following task set.")
+		doc.Paragraph("Prepare an Agent Team Plan for the following task set, then execute it conservatively.")
 		doc.Heading(2, "Dispatch Context")
 		doc.BulletList(
-			fmt.Sprintf("Working directory: %s", workingDirectory),
+			fmt.Sprintf("Working directory: `%s`", workingDirectory),
 			fmt.Sprintf("Input source: %s", inputSource),
-			fmt.Sprintf("Effective max subagents: %d", maxSubagents),
-			fmt.Sprintf("Default max concurrent lanes: %d", defaultDispatchMaxSubagents),
-			fmt.Sprintf("Hard ceiling: %d", hardDispatchMaxSubagents),
+			fmt.Sprintf("Max concurrent subagents: %d (hard ceiling %d)", maxSubagents, hardDispatchMaxSubagents),
 		)
 		if strings.TrimSpace(options.CommonReviewInstruction) != "" {
 			doc.Heading(2, "Common Review Instruction")
@@ -31,54 +29,20 @@ func buildDispatchPrompt(
 		}
 		doc.Heading(2, "Normalized Tasks")
 		doc.Raw(renderDispatchTasks(tasks))
-		doc.Heading(2, "Your Task")
-		doc.OrderedList(1,
-			"Act as the one accountable supervisor for scope, integration, validation, evidence, delivery gating, and final reporting",
-			"Stay in discovery and assignment-design workflow first",
-			"When present and relevant, load `docs/references/rules/agent-team-orchestration.md` before finalizing the team shape",
-			"Inspect the repository and anticipate which files are likely to change for each normalized task before assigning work",
-			"Build a predicted touched-file set for each task",
-			"Cluster tasks by predicted file overlap so tasks that touch the same files or overlapping files stay together",
-			"If file overlap is ambiguous, confidence is low, or the work requires continuous design judgment, merge those tasks into the same supervisor lane instead of parallelizing them",
-			"Use one supervisor lane only for trivial, tightly coupled, high-overlap, high-ambiguity, no-subagent-runtime, or explicitly single-agent work; record the exception when used",
-			"Assign one implementation subagent per low-overlap cluster only when the split improves correctness or throughput, and preserve original task order within each cluster queue",
-			fmt.Sprintf("Parallelize only disjoint clusters and never exceed %d concurrent subagents", maxSubagents),
-			"If the number of clusters exceeds the concurrency cap, queue the remaining clusters and state their execution order explicitly",
-			"Include at least one read-only verification lane by default after implementation unless the change is documentation-only, trivial, tightly coupled, the runtime cannot spawn subagents, or the user requested single-agent execution",
-			"Output an Agent Team Plan with the exact sections listed below before any subagent execution begins",
-			fmt.Sprintf("After recording the Agent Team Plan, self-direct execution by launching at most %d concurrent subagents and keeping queued clusters serialized behind them", maxSubagents),
-			"Keep all subagent work in the existing project directory; do not create or use git worktrees",
-			"If the current branch or dirty state is unsuitable for a subagent, stop and ask the user how to proceed instead of creating an alternate checkout",
-		)
-		doc.Heading(2, "Required Agent Team Plan Sections")
+		doc.Heading(2, "Routing Task")
 		doc.BulletList(
-			"supervisor responsibilities",
-			"normalized tasks",
-			"proposed lanes",
-			"subagents that will actually be spawned",
-			"logical-only lanes that will not be spawned",
-			"intentionally omitted implementation or verification lanes with reasons",
-			"predicted touched files per lane",
-			"overlap risks",
-			"max concurrency",
-			"serialized work",
-			"validation/review lanes",
-			"risks and unknowns",
+			"Act as the one accountable supervisor for scope, integration, validation, evidence, delivery gates, and reporting.",
+			"Inspect just enough repository structure to predict touched files/interfaces for each task. Cluster by file overlap; keep shared, ambiguous, or continuously coupled work in one serialized lane.",
+			fmt.Sprintf("Spawn only independent low-overlap clusters, at most %d concurrently. Queue excess clusters in original task order; use one supervisor lane when splitting would not improve correctness or throughput.", maxSubagents),
+			"Plan at least one read-only verification lane after nontrivial implementation unless the work is documentation-only, tightly coupled, explicitly single-agent, or the runtime cannot spawn agents.",
+			"Keep all work in this project directory; no worktrees. Subagents may not expand scope or mutate Git/GitHub delivery state unless explicitly assigned and authorized.",
 		)
-		doc.Heading(2, "Rules")
+		doc.Heading(2, "Agent Team Plan Output")
 		doc.BulletList(
-			"one accountable supervisor; do not parallelize accountability",
-			"discovery first, execution second",
-			"do not invent parallelism where file overlap is unclear",
-			"tasks with overlapping predicted file changes belong in the same implementation queue or a serial execution plan",
-			"preserve the original task order inside each cluster",
-			"do not describe a logical lane as a spawned agent unless a separate agent actually ran",
-			"subagents must not independently expand scope",
-			"subagents must not create branches, stage, commit, push, open PRs, resolve review threads, or mark the whole workflow complete unless explicitly assigned and allowed by the supervisor",
-			"verification agents are read-only by default and must not edit files, stage changes, commit, push, resolve threads, or close their own findings",
-			"do not create or use git worktrees for agent work",
-			"keep the Agent Team Plan reviewable and explicit before self-directed execution",
-			"final reporting must state actual subagents spawned, logical lanes not spawned, and any single-lane exception; if no separate agents ran, state exactly: `single supervisor lane; no specialist or verification agents spawned`",
+			"Supervisor responsibility and normalized task-to-lane mapping.",
+			"For each lane: actual or logical-only status, predicted files/interfaces, dependencies, overlap risk, and validation owner.",
+			"Max concurrency, serialized queue, omitted lanes with reasons, read-only verification plan, and remaining unknowns.",
+			"Publish the plan before spawning, then self-direct execution within it. Final reporting distinguishes actual agents from logical lanes; if none ran, state `single supervisor lane; no specialist or verification agents spawned`.",
 		)
 		if inputSource == dispatchInputSourcePR {
 			appendDispatchPRReflectionCycle(doc, options)

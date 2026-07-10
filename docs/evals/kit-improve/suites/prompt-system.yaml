@@ -1,0 +1,17 @@
+schema_version: 1
+id: prompt-system
+title: Generated prompt-system regression suite
+held_in:
+  include_tags:
+    - prompt-system
+held_out:
+  include_tags:
+    - prompt-system-held-out
+  hidden_from_proposer: true
+repeat: 3
+minimum_tasks: 15
+selection_rules:
+  - render every representative prompt surface with the selected Kit binary
+  - repeat every deterministic task three times
+  - treat output assertions as required-output contracts and size as a separate metric
+  - do not interpret deterministic prompt checks as live model quality, latency, cost, or routing evidence

@@ -219,6 +219,40 @@ func TestExecuteLoopRunsConfiguredAgentUntilComplete(t *testing.T) {
 	if state := resolveStrictLoopStage(projectRoot, feat); state.Stage != loopStageComplete {
 		t.Fatalf("final stage = %#v, want complete", state)
 	}
+
+	stageContracts := map[loopStage]string{
+		loopStageClarify:   "Research repository-discoverable facts",
+		loopStageReady:     "Audit readiness",
+		loopStageImplement: "Execute the in-scope task checklist",
+		loopStageValidate:  "Run the validation map",
+		loopStageReflect:   "Review the integrated diff",
+		loopStageDeliver:   "Read the repo-local delivery rules",
+	}
+	for stage, contract := range stageContracts {
+		prompt := readFile(t, filepath.Join(projectRoot, ".kit", "captured-prompts", string(stage)+".md"))
+		for _, required := range []string{
+			"Advance feature `alpha` through the `" + string(stage) + "` phase only.",
+			"## Phase Contract",
+			contract,
+			"## Kit Loop Contract",
+			"KIT_LOOP_RESULT:",
+		} {
+			if !strings.Contains(prompt, required) {
+				t.Fatalf("%s prompt missing %q:\n%s", stage, required, prompt)
+			}
+		}
+		if strings.Contains(prompt, "## Phase Outcomes") {
+			t.Fatalf("%s prompt reinjected the full lifecycle contract:\n%s", stage, prompt)
+		}
+		for otherStage, otherContract := range stageContracts {
+			if otherStage != stage && strings.Contains(prompt, otherContract) {
+				t.Fatalf("%s prompt contains unrelated %s contract %q", stage, otherStage, otherContract)
+			}
+		}
+		if stage != loopStageClarify && strings.Contains(prompt, "Open Questions") {
+			t.Fatalf("%s prompt contains clarify-only questions contract", stage)
+		}
+	}
 }
 
 func TestExecuteLoopStopsOnLowConfidence(t *testing.T) {
@@ -405,7 +439,8 @@ esac
 	}
 	return `#!/bin/sh
 set -eu
-cat >/dev/null
+mkdir -p .kit/captured-prompts
+cat > ".kit/captured-prompts/$KIT_LOOP_STAGE.md"
 ` + mutations + result + `
 `
 }

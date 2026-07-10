@@ -161,127 +161,57 @@ func outputImplementationPrompt(feat *feature.Feature, brainstormPath, specPath,
 
 	return nil
 }
-
 func buildImplementationPrompt(feat *feature.Feature, brainstormPath, specPath, planPath, tasksPath, summary, projectRoot string) string {
 	constitutionPath := filepath.Join(projectRoot, "docs", "CONSTITUTION.md")
+	agentDocsPath := filepath.Join(projectRoot, "docs", "agents", "README.md")
+	referencesPath := filepath.Join(projectRoot, "docs", "references", "README.md")
 	hasBrainstorm := document.Exists(brainstormPath)
-	cfg, _ := loadRepoInstructionContext(projectRoot)
-	repoAgentsPath := repoKnowledgeEntrypointPath(projectRoot, cfg)
-	repoReferencesPath := repoReferencesEntrypointPath(projectRoot, cfg)
-
-	steps := []string{}
-	if repoAgentsPath != "" {
-		steps = append(steps, "**If present, read `docs/agents/README.md` only enough to route this implementation task**")
-	}
-	if repoReferencesPath != "" {
-		steps = append(steps, "**If a repo-wide reference matters, read `docs/references/README.md` and only the linked reference docs relevant to the selected task**")
-	}
-	steps = append(steps,
-		"**Open `TASKS.md` first** and select the next incomplete unblocked task marked `- [ ]`",
-		"**Read only the selected task details**: GOAL, SCOPE, ACCEPTANCE, VERIFY, EXPECTED FILES, RISK, ROLLBACK, DEPENDENCIES, and NOTES",
-		"**Load only the relevant `PLAN.md` section** referenced by the selected task's `[PLAN-XX]` links",
-		"**Load only the relevant `SPEC.md` requirement** referenced by that plan section's `[SPEC-XX]` links",
-		"**Load `CONSTITUTION.md` only when required** to resolve an invariant, conflict, permission, or project-wide constraint",
-		"**Use `BRAINSTORM.md` only for unresolved rationale**; it is non-binding research context",
-		relatedFeatureContextStepText(projectRoot, specPath),
-		"**Inspect the relevant code before editing**\n- Open the files, APIs, and tests that the selected task will touch\n- Prefer existing repo patterns over new abstractions\n- Do not guess file contents, APIs, or behavior",
-		"**Run the implementation readiness gate before writing code**\n- Treat this as an adversarial preflight over the selected task and the minimal linked docs\n- Challenge the docs for contradictions, ambiguous requirements, hidden assumptions, missing edge cases or failure modes, task gaps, and scope creep\n- Verify each planned implementation step still traces back to the binding docs\n- Produce an explicit go/no-go decision before coding",
-		"**If the readiness gate fails, stop and repair the docs first**\n- Do NOT write production code yet\n- Update SPEC.md, PLAN.md, and/or TASKS.md to resolve the exact issue\n- Update PROJECT_PROGRESS_SUMMARY.md when the feature summary or state changes\n- Re-run the implementation readiness gate after the docs are fixed",
-		"**Supplement with your context**: If you have internal plans or prior conversation context related to this feature, use that knowledge to inform your implementation — but always defer to the authority order when there's a conflict",
-		"**Only after the readiness gate passes, execute tasks from TASKS.md**",
-		"**Continue the task loop until every non-blocked task in TASKS.md is complete:**\n- Select the next incomplete unblocked task in dependency order\n- Read that task's GOAL, SCOPE, ACCEPTANCE, VERIFY, EXPECTED FILES, RISK, ROLLBACK, DEPENDENCIES, and NOTES\n- Load only the linked context needed for that task\n- Run the readiness gate for that task\n- Implement only what's specified (no gold-plating)\n- Run declared VERIFY commands with `kit legacy verify <feature> --task <task-id>` when available\n- Verify acceptance criteria are met before marking complete\n- Update TASKS.md: change '- [ ]' to '- [x]' when done\n- Update PROJECT_PROGRESS_SUMMARY.md if progress changed\n- Repeat with the next incomplete task",
-		"**Do not stop after one task** unless blocked, validation fails, clarification is required, or the user explicitly asks you to stop",
-		githubDeliveryHardGateStep(),
-		"**Run relevant validation before completion**\n- Run the smallest build, lint, or test command that proves the touched behavior\n- Never claim tests passed unless they ran\n- If validation cannot run, state why",
-	)
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph(fmt.Sprintf("You are implementing the feature: %s", feat.Slug))
-		doc.Heading(2, "Overview")
-		if summary != "" {
+		doc.Paragraph(fmt.Sprintf("Implement every remaining non-blocked task for legacy feature `%s`.", feat.Slug))
+		if strings.TrimSpace(summary) != "" {
 			doc.Paragraph(summary)
-		} else {
-			doc.Paragraph("(Read SPEC.md for feature description)")
 		}
-		doc.Heading(2, "Runtime Context")
-		rows := [][]string{}
-		if repoAgentsPath != "" {
-			rows = append(rows, []string{
-				"docs/agents/README.md",
-				"Repo-local runtime routing index",
-				"Classifying the work or choosing the next linked doc",
-			})
+
+		doc.Heading(2, "Context")
+		rows := [][]string{
+			{"TASKS.md", tasksPath, "Executable task order and status"},
+			{"PLAN.md", planPath, "Implementation decisions linked by the selected task"},
+			{"SPEC.md", specPath, "Binding scope and acceptance"},
+			{"Agent routing", agentDocsPath, "Load only when present and relevant"},
+			{"Repository references", referencesPath, "Load linked durable context only when relevant"},
+			{"Constitution", constitutionPath, "Load only for project-wide invariants"},
 		}
-		if repoReferencesPath != "" {
-			rows = append(rows, []string{
-				"docs/references/README.md",
-				"Repo-wide references index for durable background context",
-				"A repo-wide reference materially shapes the selected task",
-			})
-		}
-		rows = append(rows, []string{
-			"TASKS.md",
-			"Executable task list and progress state",
-			"Always read first; controls next action",
-		})
-		rows = append(rows,
-			[]string{"PLAN.md", "Implementation approach and design decisions", "Load only the linked section for the selected task"},
-			[]string{"SPEC.md", "Requirements, scope, and acceptance criteria", "Load only the linked requirement for the selected task"},
-			[]string{"CONSTITUTION.md", "Project-wide invariants", "Load only when an invariant or conflict must be resolved"},
-		)
 		if hasBrainstorm {
-			rows = append(rows, []string{
-				"BRAINSTORM.md",
-				"Upstream research findings, relevant files, strategy options",
-				"Only for unresolved rationale; non-binding context",
-			})
+			rows = append(rows, []string{"BRAINSTORM.md", brainstormPath, "Non-binding rationale only"})
 		}
-		doc.Table([]string{"Document", "Contains", "Use When"}, rows)
-		doc.Heading(2, "Your Instructions")
-		doc.OrderedList(1, steps...)
-		doc.Heading(2, "Key Files")
-		keyFiles := []string{}
-		if repoAgentsPath != "" {
-			keyFiles = append(keyFiles, fmt.Sprintf("AGENTS DOCS: %s", repoAgentsPath))
-		}
-		if repoReferencesPath != "" {
-			keyFiles = append(keyFiles, fmt.Sprintf("REFERENCES: %s", repoReferencesPath))
-		}
-		keyFiles = append(keyFiles, fmt.Sprintf("CONSTITUTION: %s", constitutionPath))
-		if hasBrainstorm {
-			keyFiles = append(keyFiles, fmt.Sprintf("BRAINSTORM: %s", brainstormPath))
-		}
-		keyFiles = append(keyFiles,
-			fmt.Sprintf("SPEC: %s", specPath),
-			fmt.Sprintf("PLAN: %s", planPath),
-			fmt.Sprintf("TASKS: %s", tasksPath),
-			fmt.Sprintf("Project root: %s", projectRoot),
+		doc.Table([]string{"Input", "Path", "Use"}, rows)
+
+		doc.Heading(2, "Execution Contract")
+		doc.OrderedList(1,
+			"Inspect `git status --short`; preserve unrelated and user-owned work.",
+			"Open `TASKS.md`, select the next incomplete unblocked task, and load only its linked PLAN/SPEC context plus the code/tests it will touch.",
+			"Run a concise implementation readiness gate: the task is unambiguous, in scope, mapped to acceptance/evidence, and compatible with current repository state. Repair discoverable doc drift first.",
+			"Implement the smallest production-ready change using existing patterns. Ask only when a material choice remains non-discoverable; do not request routine approval for safe in-scope work.",
+			fmt.Sprintf("Run declared checks, including `kit legacy verify %s --task <task-id>` when applicable, and record exact validation evidence.", feat.Slug),
+			"Update tests, affected documentation, `TASKS.md`, and the project progress summary to match reality; mark a task done only after its acceptance and checks pass.",
+			"Repeat in dependency order until every non-blocked task is complete. Do not stop after one task while safe in-scope work remains.",
 		)
-		doc.BulletList(keyFiles...)
-		doc.Heading(2, "Rules")
+
+		doc.Heading(2, "Constraints")
 		doc.BulletList(
-			"Authority order: safety and permission constraints, current user request, CONSTITUTION.md, SPEC.md, PLAN.md, TASKS.md, BRAINSTORM.md, repo conventions",
-			"Execution order: TASKS.md, relevant PLAN.md section, relevant SPEC.md requirement, CONSTITUTION.md only when needed",
-			"Use BRAINSTORM.md as context only; it is non-binding research context",
-			"Do not begin coding until the implementation readiness gate passes",
-			"If the readiness gate fails, report the exact contradiction, ambiguity, missing coverage, or scope issue before editing docs",
-			"Re-run the readiness gate every time implementation restarts after a doc repair",
-			"Stay within scope defined in SPEC.md",
-			"Follow architecture decisions in PLAN.md",
-			"Complete every non-blocked task in dependency order from TASKS.md before reporting implementation complete",
-			"Quality gate: target zero known defects; do not mark implementation complete until all gates pass with evidence: unresolved assumptions = 0, acceptance criteria mapped 1:1 to outputs, build/compile succeeds, lint/typecheck/test failures = 0, and unrelated diff scope = 0",
-			"If any gate fails, stop, report the exact failure, and propose the next fix",
-			"Ask for clarification rather than making assumptions",
-			"If a task is blocked, explain what's blocking and suggest resolution",
-			"After completing each task, briefly confirm what was done",
-			fmt.Sprintf("**Always** update %s/docs/PROJECT_PROGRESS_SUMMARY.md as progress is made and at implementation completion", projectRoot),
-			"Keep TASKS.md updated with accurate status and ensure that it reflects reality upon completion",
+			"Authority: safety/user constraints, Constitution, SPEC, PLAN, TASKS, then non-binding brainstorm and repo conventions.",
+			"Do not invent scope, gold-plate, or add abstractions/public surfaces not required by the binding docs.",
+			"Any failed or unrun validation remains explicit with reason, risk, and next action; never claim evidence that was not observed.",
+			"Before issue, branch, stage, commit, push, PR, or review-thread mutation, load repo-local delivery rules and establish the exact Delivery Contract. Stop on an unknown field.",
 		)
-		doc.Heading(2, "Begin")
-		doc.Paragraph("Start by opening TASKS.md and selecting the first incomplete unblocked task marked with '- [ ]'.")
-		doc.Paragraph("Load only the linked PLAN and SPEC sections needed for that task, then run the readiness gate.")
-		doc.Paragraph("Do not write code until the gate passes and the relevant code has been inspected.")
-		doc.Paragraph("After a task is complete, repeat the same loop for the next incomplete unblocked task until every non-blocked task in TASKS.md is complete.")
+
+		doc.Heading(2, "Success And Output")
+		doc.BulletList(
+			"All non-blocked TASKS.md items and mapped acceptance criteria are complete with validation and documentation evidence.",
+			"The final diff contains no known relevant defect or unrelated scope, and durable task/progress state matches it.",
+			"Report outcome, files, exact checks/results, how to exercise the change, delivery state, and only genuine blockers or residual risk.",
+		)
 		addFinalResponseContract(doc, implementFinalResponseContract()...)
 	})
 }

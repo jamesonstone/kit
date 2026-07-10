@@ -29,7 +29,7 @@ func outputCompiledPrompt(
 	if !outputOnly {
 		printNumberedNextSteps([]string{
 			"Paste the copied v2 supervisor prompt into your coding agent",
-			"Answer clarification questions until SPEC.md has binary acceptance criteria and mapped validation",
+			"Resolve only remaining material non-discoverable questions, then require binary acceptance criteria and mapped validation",
 			"Let the supervisor route implementation, reflection, validation/verification, evidence, and delivery gating inside SPEC.md",
 		})
 	}

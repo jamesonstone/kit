@@ -3,5 +3,56 @@
   "title": "Kit Improve Task",
   "type": "object",
   "required": ["schema_version", "id", "title", "category", "fixture", "expected_behavior", "oracle", "mutation_policy", "allowed_surfaces", "assertions", "regression_tags", "held_out_eligible"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "category": {"type": "string", "minLength": 1},
+    "fixture": {"type": "string", "minLength": 1},
+    "persona": {"type": "string"},
+    "timeout_seconds": {"type": "integer", "minimum": 0},
+    "input_prompt": {"type": "string"},
+    "expected_behavior": {"type": "string", "minLength": 1},
+    "oracle": {"type": "string", "minLength": 1},
+    "mutation_policy": {"type": "string", "minLength": 1},
+    "allowed_surfaces": {"type": "array", "items": {"type": "string"}},
+    "commands": {"type": "array", "items": {"type": "string"}},
+    "assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/assertion"}
+    },
+    "regression_tags": {"type": "array", "items": {"type": "string"}},
+    "held_out_eligible": {"type": "boolean"},
+    "known_failure_modes": {"type": "array", "items": {"type": "string"}}
+  },
+  "anyOf": [
+    {"required": ["commands"]},
+    {"required": ["input_prompt"]}
+  ],
+  "$defs": {
+    "assertion": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": [
+            "command_succeeds",
+            "git_diff_empty",
+            "stdout_contains",
+            "stdout_not_contains",
+            "stdout_nonempty",
+            "stdout_lines_max",
+            "stdout_words_max",
+            "stdout_estimated_tokens_max"
+          ]
+        },
+        "command_index": {"type": "integer", "minimum": 0},
+        "value": {"type": "string"},
+        "max": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    }
+  },
   "additionalProperties": false
 }

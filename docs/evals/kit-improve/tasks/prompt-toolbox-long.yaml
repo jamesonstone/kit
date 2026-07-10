@@ -1,0 +1,37 @@
+schema_version: 1
+id: prompt-toolbox-long
+title: Detailed clarification toolbox prompt has a bounded output contract
+category: prompt-toolbox
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: planner
+timeout_seconds: 30
+input_prompt: Render the detailed explicit clarification prompt.
+expected_behavior: The prompt discovers material ambiguity and returns decisions or questions without implementing.
+oracle: deterministic-prompt
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} prompt coding-agent long --output-only"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_nonempty
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: clarification
+  - type: stdout_contains
+    command_index: 0
+    value: Do not implement
+  - type: stdout_not_contains
+    command_index: 0
+    value: text.verbosity
+  - type: stdout_words_max
+    command_index: 0
+    max: 300
+  - type: git_diff_empty
+regression_tags:
+  - prompt-system
+held_out_eligible: false
+known_failure_modes:
+  - prompt-toolbox:missing-clarification-boundary

@@ -11,7 +11,7 @@
 - Use `BRAINSTORM.md` only for unresolved historical rationale
 - Use `PLAN.md` and `TASKS.md` only for legacy staged flows or historical comparison
 - Use prior feature docs only through explicit dependency or relationship links
-- Ask numbered clarification questions with recommended defaults until `clarification.status` is `ready`, confidence meets the configured goal, and unresolved questions are zero
+- Resolve repository-discoverable ambiguity directly; ask numbered questions with recommended defaults only for material non-discoverable choices, and continue once `clarification.status` is `ready`, confidence meets the configured goal, and unresolved questions are zero
 - Run the v2 readiness gates before writing code: clarification state ready, acceptance criteria binary-verifiable, task checklist mapped to criteria, validation mapped 1:1, delivery intent known
 - Update docs first when the implementation changes behavior, requirements, or approach
 

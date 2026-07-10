@@ -17,10 +17,10 @@ func TestPrepareAgentPromptWithoutSubagents(t *testing.T) {
 	checks := []string{
 		"Please review the plan.",
 		"## Skills",
-		"use the repository instruction entrypoints as a map, not the full manual",
+		"repository instruction entrypoints as routing maps",
 		"docs/agents/README.md",
-		"read that feature's canonical front matter `skills` first",
-		"open each referenced `SKILL.md` and use those skills during execution",
+		"canonical front matter `skills`",
+		"open every selected or explicitly provided `SKILL.md`",
 	}
 
 	for _, check := range checks {
@@ -46,21 +46,16 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 		"Please review the plan.",
 		"## Skills",
 		"## Subagent Orchestration",
-		"drive to understanding first",
-		"do RLM-style discovery first",
 		"agent-team-orchestration.md",
-		"one accountable supervisor",
+		"The supervisor owns scope",
 		"Agent Team Plan",
-		"use subagents only when low-overlap lanes improve correctness or throughput",
-		"default maximum concurrent lanes is 3",
-		"hard ceiling is 4",
-		"do not turn broad discovery into parallel execution",
-		"predict likely touched files or interfaces",
-		"apply the same discovery-first discipline as kit dispatch",
-		"read-only verification subagent by default",
+		"low-overlap areas",
+		"In normal operation, run at most 3 independent lanes",
+		"fourth lane requires explicit exceptional authorization from the supervisor",
+		"never exceed 4 lanes",
+		"read-only verification agent",
 		"single supervisor lane; no specialist or verification agents spawned",
-		"keep all subagent work in the existing project directory",
-		"do not create or use git worktrees",
+		"use worktrees",
 	}
 
 	for _, check := range checks {
@@ -71,6 +66,9 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 
 	if strings.Count(got, "## Subagent Orchestration") != 1 {
 		t.Fatalf("expected one subagent section, got %q", got)
+	}
+	if strings.Contains(got, "at most 3 independent lanes (hard ceiling 4)") {
+		t.Fatalf("normal concurrency guidance should not imply an automatic fourth lane, got %q", got)
 	}
 }
 

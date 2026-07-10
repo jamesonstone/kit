@@ -142,78 +142,11 @@ func selectFeatureForReflect(specsDir string) (*feature.Feature, error) {
 
 // buildReflectPrompt builds the unified reflection prompt.
 func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPath, specPath, planPath, tasksPath, featureSlug string) string {
+	featureSlug = strings.TrimSpace(featureSlug)
 	featureScoped := featureSlug != ""
-	hasBrainstorm := brainstormPath != "" && document.Exists(brainstormPath)
+	hasBrainstorm := featureScoped && document.Exists(brainstormPath)
 	cfg, _ := loadRepoInstructionContext(projectRoot)
-	repoAgentsPath := repoKnowledgeEntrypointPath(projectRoot, cfg)
-	repoReferencesPath := repoReferencesEntrypointPath(projectRoot, cfg)
 	refreshStatus, _ := calculateProjectRefreshStatus(projectRoot, cfg, time.Now().UTC())
-
-	goal := "ensure changes are correct, minimal, and consistent"
-	if featureScoped {
-		goal = "ensure changes match SPEC/PLAN/TASKS and are correct, minimal, and consistent"
-	}
-
-	contextDocs := []string{fmt.Sprintf("CONSTITUTION: %s", constitutionPath)}
-	if repoAgentsPath != "" {
-		contextDocs = append(contextDocs, fmt.Sprintf("AGENTS DOCS: %s", repoAgentsPath))
-	}
-	if repoReferencesPath != "" {
-		contextDocs = append(contextDocs, fmt.Sprintf("REFERENCES: %s", repoReferencesPath))
-	}
-	contextDocs = append(contextDocs, fmt.Sprintf("PROJECT SUMMARY: %s", summaryPath))
-	if featureScoped {
-		if hasBrainstorm {
-			contextDocs = append(contextDocs, fmt.Sprintf("BRAINSTORM: %s", brainstormPath))
-		}
-		contextDocs = append(contextDocs,
-			fmt.Sprintf("SPEC: %s", specPath),
-			fmt.Sprintf("PLAN: %s", planPath),
-			fmt.Sprintf("TASKS: %s", tasksPath),
-		)
-	}
-
-	steps := []string{
-		"Snapshot the change set (do not skip)\n- git status\n- git diff\n- git diff --staged\n- git log -n 20 --oneline --decorate",
-		latestVerificationEvidenceStep(projectRoot, tasksPath, featureSlug),
-		"Build a review map\n- list changed files\n- for each file, state the intent in one line\n- identify risk areas (parsing, IO, error handling, concurrency, CLI UX)",
-	}
-	if featureScoped {
-		verifyStep := "Verify correctness against docs\n"
-		if hasBrainstorm {
-			verifyStep += "- BRAINSTORM: ensure the implementation still aligns with the researched problem framing and identified constraints\n"
-		}
-		verifyStep += "- SPEC: ensure requirements + acceptance are fully satisfied\n" +
-			"- PLAN: ensure decisions were followed\n" +
-			"- TASKS: ensure every task marked done is actually done\n" +
-			"- ensure no scope creep"
-		steps = append(steps, verifyStep)
-	} else {
-		steps = append(steps, "Verify correctness against docs\n- ensure decisions in code respect CONSTITUTION.md\n- ensure no scope creep")
-	}
-	steps = append(steps,
-		"Quality gates (hard checks)\n- zero-known-defects gate: do not mark reflection complete until all gates pass with evidence\n- required evidence gates: unresolved assumptions = 0; acceptance criteria mapped 1:1 to outputs; build/compile succeeds; lint/typecheck/test failures = 0; unrelated diff scope = 0\n- lint + tests are absolute gates: fix ALL failures before completion, including pre-existing and out-of-scope failures\n- if any gate fails: stop, report the exact failure, and propose the next fix\n- correctness: no panics, no silent failures\n- errors: wrapped/propagated with context, no swallowed errors\n- IO: paths resolved safely, no surprising writes\n- determinism: stable ordering in outputs\n- regression tests: add comprehensive tests for all completed work to prevent future bugs\n  - test happy path, error cases, edge cases, boundary conditions\n  - ensure tests fail without the implementation (tests validate the test itself)\n- docs: update only if behavior changed\n- agent-readability: code optimized for agent understanding and future iteration",
-	)
-	if featureScoped {
-		steps = append(steps, "Correctness checklist\n- [ ] Code compiles without errors\n- [ ] Changes implement the intended task(s)\n- [ ] Implementation matches PLAN.md approach\n- [ ] Requirements from SPEC.md are satisfied\n- [ ] Changes respect CONSTITUTION.md constraints\n- [ ] No syntax errors or typos\n- [ ] Variable and function names are consistent\n- [ ] Imports are correct and used\n- [ ] Error handling is complete\n- [ ] Edge cases from SPEC.md are handled\n- [ ] No debug code or TODOs left behind\n- [ ] Style matches project conventions\n- [ ] Tests added/updated for all completed work\n- [ ] Tests cover happy path, error cases, and edge cases\n- [ ] Tests validate the implementation, not just pass trivially\n- [ ] Test names clearly describe what is being tested\n- [ ] All lint and test failures are fixed, including failures outside the feature scope\n- [ ] Code is written for agent readability and future iteration")
-	} else {
-		steps = append(steps, "Correctness checklist\n- [ ] Code compiles without errors\n- [ ] No syntax errors or typos\n- [ ] Variable and function names are consistent\n- [ ] Imports are correct and used\n- [ ] Error handling is complete\n- [ ] Edge cases are handled\n- [ ] Changes match stated intent\n- [ ] Changes respect CONSTITUTION.md constraints\n- [ ] No debug code or TODOs left behind\n- [ ] Style matches project conventions\n- [ ] Tests added/updated for all completed work\n- [ ] Tests cover happy path, error cases, and edge cases\n- [ ] All lint and test failures are fixed, including failures outside the immediate scope\n- [ ] Code is written for agent readability")
-	}
-	steps = append(steps,
-		"Agent-optimized code structure\nCode should be built for agent readability and understanding, enabling both current and future agents to:\n- understand intent quickly: clear names, single responsibility, minimal nesting\n- modify safely: explicit error handling, testable design, clear contracts\n- extend effectively: composable pieces, discoverable patterns, good examples\nChecks:\n- [ ] Function/method names clearly describe what they do\n- [ ] Functions have single, well-defined responsibility\n- [ ] Complex logic is broken into named helper functions\n- [ ] Type names and fields describe their purpose\n- [ ] Public interfaces are documented with clear examples\n- [ ] Error paths are explicit, not silent\n- [ ] Dependencies are injected, not hidden in closures\n- [ ] Code avoids clever tricks; readability wins over cleverness\n- [ ] Configuration and magic numbers are named constants\n- [ ] Similar patterns use consistent approaches across codebase",
-		"Cleanliness\n- remove dead code\n- remove unused exports and any public surface that is not strictly necessary\n- if an exported symbol is only used locally, reduce its visibility instead of keeping it exported\n- remove debug prints\n- remove unused flags/options\n- keep public surfaces small\n- ensure code is written for agent and human understanding",
-	)
-	if featureScoped {
-		steps = append(steps, "Documentation generation\n- if exists, use the repositories documentation generation tools to update any affected documentation\n- always update affected documentation and ensure all touched documents are current and properly formatted\n- ensure documentation is agent-readable: clear structure, explicit examples, complete contracts\n- document public APIs with examples showing both normal usage and error handling")
-	}
-	steps = append(steps, projectRefreshAdvisoryStepForStatus(refreshStatus))
-	steps = append(steps, githubDeliveryHardGateStep())
-	steps = append(steps, "Final pass\n- rerun:\n  - git status\n  - git diff\n  - git diff --staged\n- summarize remaining issues, if any\n- propose next steps")
-	if featureScoped {
-		steps = append(steps, "Mark reflection complete\n- once all issues are resolved and confidence is 100%\n- append the following marker to the end of TASKS.md:\n  <!-- REFLECTION_COMPLETE -->\n- this marker signals that the feature has completed the full development cycle")
-	} else {
-		steps = append(steps, "Mark reflection complete (feature-scoped only)\n- if this is a feature-scoped reflection with a TASKS.md file\n- and all issues are resolved with 100% confidence\n- append to TASKS.md: <!-- REFLECTION_COMPLETE -->")
-	}
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		if featureScoped {
@@ -221,25 +154,59 @@ func buildReflectPrompt(projectRoot, constitutionPath, summaryPath, brainstormPa
 		} else {
 			doc.Heading(2, "Reflection")
 		}
-		doc.Paragraph(fmt.Sprintf("You are in the REFLECT phase for this repo at %s.", projectRoot))
-		doc.Paragraph("Goal:")
-		doc.BulletList(
-			"perform a strict code review of the current change set",
-			goal,
+		doc.Paragraph("Audit the integrated change, fix valid in-scope findings, and prove the result before declaring reflection complete.")
+
+		doc.Heading(2, "Context")
+		rows := [][]string{
+			{"Project root", projectRoot},
+			{"Constitution", constitutionPath},
+			{"Project summary", summaryPath},
+		}
+		if featureScoped {
+			if hasBrainstorm {
+				rows = append(rows, []string{"BRAINSTORM.md", brainstormPath})
+			}
+			rows = append(rows,
+				[]string{"SPEC.md", specPath},
+				[]string{"PLAN.md", planPath},
+				[]string{"TASKS.md", tasksPath},
+			)
+		}
+		doc.Table([]string{"Input", "Path"}, rows)
+
+		doc.Heading(2, "Verification evidence")
+		doc.Raw(latestVerificationEvidenceStep(projectRoot, tasksPath, featureSlug))
+
+		doc.Heading(2, "Reflection Contract")
+		doc.OrderedList(1,
+			"Inspect `git status --short --branch`, unstaged and staged diffs, and recent branch history. Map each changed file to its intended requirement or task.",
+			"Compare the change against the binding docs and repository invariants. Confirm task/acceptance status, scope, interfaces, migration behavior, and documentation match reality.",
+			"Review changed code and tests for correctness, edge cases, errors, security, concurrency, resource use, compatibility, unnecessary public surface, dead/debug code, and repository-pattern drift.",
+			"Verify test quality and required evidence. Run the relevant build, lint/typecheck, tests, runtime/manual checks, generated-doc checks, and regressions; never treat an unrun check as passed.",
+			"Fix every valid in-scope finding, update affected tests/docs/task state, and rerun the checks that prove the fix. Route a material requirement conflict back to planning rather than guessing.",
+			"Review the final diff again and record exact checks/results, findings fixed, remaining risk, and any skipped validation with reason and impact.",
 		)
-		doc.Paragraph("Context docs (read first):")
-		doc.BulletList(contextDocs...)
-		doc.Paragraph("Steps:")
-		doc.OrderedList(1, steps...)
+
+		doc.Heading(2, "Completion And Delivery Boundaries")
+		rules := []string{
+			"Reflection completes only when no known relevant defect, unproven acceptance criterion, stale in-scope documentation, scope contamination introduced by this feature, or unresolved verifier finding remains.",
+			"Preserve unrelated and user-owned work. Do not broaden reflection into cleanup unrelated to the changed scope.",
+			"Before Git/GitHub delivery mutation, load repo-local delivery rules and establish the exact Delivery Contract; reflection evidence does not authorize mutation by itself.",
+			projectRefreshAdvisoryStepForStatus(refreshStatus),
+		}
+		if featureScoped {
+			rules = append(rules, "When every gate passes, append `<!-- REFLECTION_COMPLETE -->` to TASKS.md and keep the project progress summary current.")
+		}
+		doc.BulletList(rules...)
+
+		doc.Heading(2, "Output")
+		doc.BulletList(
+			"Outcome and reflection-complete state.",
+			"Changed files and findings fixed.",
+			"Exact validation commands/results and verification artifact IDs.",
+			"Documentation/task trace, delivery readiness, and only genuine residual risk or follow-up.",
+		)
 		addFinalResponseContract(doc, reflectFinalResponseContract()...)
-		doc.Heading(2, "Rules")
-		doc.BulletList(
-			"be strict",
-			"no fluff",
-			`fix issues before reporting them as "known"`,
-			"keep diffs minimal",
-			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
-		)
 	})
 }
 

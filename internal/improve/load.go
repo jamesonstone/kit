@@ -115,6 +115,44 @@ func validateTask(task Task) error {
 	if len(task.Assertions) == 0 {
 		return fmt.Errorf("task %q requires assertions", task.ID)
 	}
+	for index, assertion := range task.Assertions {
+		if err := validateAssertion(assertion, len(task.Commands)); err != nil {
+			return fmt.Errorf("task %q assertion %d: %w", task.ID, index, err)
+		}
+	}
+	return nil
+}
+
+func validateAssertion(assertion Assertion, commandCount int) error {
+	supported := map[string]bool{
+		"command_succeeds":            true,
+		"git_diff_empty":              true,
+		"stdout_contains":             true,
+		"stdout_not_contains":         true,
+		"stdout_nonempty":             true,
+		"stdout_lines_max":            true,
+		"stdout_words_max":            true,
+		"stdout_estimated_tokens_max": true,
+	}
+	if !supported[assertion.Type] {
+		return fmt.Errorf("unsupported assertion type %q", assertion.Type)
+	}
+	if assertion.Type == "git_diff_empty" {
+		return nil
+	}
+	if assertion.CommandIndex < 0 || assertion.CommandIndex >= commandCount {
+		return fmt.Errorf("command_index %d is outside %d commands", assertion.CommandIndex, commandCount)
+	}
+	switch assertion.Type {
+	case "stdout_contains", "stdout_not_contains":
+		if assertion.Value == "" {
+			return fmt.Errorf("value is required for %s", assertion.Type)
+		}
+	case "stdout_lines_max", "stdout_words_max", "stdout_estimated_tokens_max":
+		if assertion.Max <= 0 {
+			return fmt.Errorf("max must be positive for %s", assertion.Type)
+		}
+	}
 	return nil
 }
 

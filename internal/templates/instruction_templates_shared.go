@@ -90,14 +90,13 @@ If ad hoc work touches a feature with existing specs:
 
 ## Communication Style
 
-- Answer first; no preamble
-- Short sentences, zero fluff, no exclamations
-- Use numbered lists for questions or clarification
-- Include only highest-signal facts; omit obvious context
-- Use tight bullets when listing
+- Lead with the outcome and make detail proportional to the task
+- Include the evidence, caveats, risks, and next action needed to evaluate the result
+- Use numbered lists for actual questions or clarification
+- Use compact sections or bullets only when they improve scanning
 - Code: production-ready, minimal comments, no extra text
 - Numbers > simple claims: quantify, compare, give thresholds
-- End with a concise TL;DR when appropriate
+- Avoid repetition, but never trade correctness or required context for brevity
 
 ---
 
@@ -109,27 +108,11 @@ If ad hoc work touches a feature with existing specs:
 - Read ` + "`SPEC.md`" + ` first for v2 feature work
 - Use ` + "`BRAINSTORM.md`" + `, ` + "`PLAN.md`" + `, and ` + "`TASKS.md`" + ` only as legacy staged context when they materially affect the current decision
 
-- Ask clarifying questions until you reach ≥95% confidence that you understand the problem and desired solution
-- Use numbered lists
-- Ask questions in batches of up to 10
-- For every question, include your current best recommended default, proposed solution, or assumption
-- State uncertainties
-- Accept lean approvals for the current batch:
-  - ` + "`yes`" + ` / ` + "`y`" + ` approves all recommended defaults in the batch
-  - ` + "`yes 3, 4, 5`" + ` / ` + "`y 3, 4, 5`" + ` approves only those numbered defaults in the batch
-  - ` + "`no 2: <answer>`" + ` / ` + "`n 2: <answer>`" + ` rejects a numbered default and provides the override
-  - ` + "`no`" + ` / ` + "`n`" + ` rejects all recommended defaults in the batch and requires explicit replacements before proceeding
-- Treat all unapproved questions in a batch as unresolved
-- After each batch of up to 10 questions, output your current percentage understanding so the user can see progress
-- After each batch, reassess and continue with additional batches of up to 10 questions until the specification is precise enough to produce a correct, production-quality solution
-
-- Identify ambiguities, missing context, edge cases, and failure modes
-- Reference existing codebase structure and patterns
-- Design solution approaches aligned with existing conventions
-- Consider dependencies, impacts, backward compatibility, and integration points
-- Include measurable constraints when relevant:
-  - latency, throughput, memory, query count, cost, limits
-- Present strategy for approval before proceeding
+- Resolve repository-discoverable facts before asking the user
+- Ask concise numbered questions only for material choices that change scope, behavior, risk, validation, or delivery and cannot be inferred safely
+- Include a recommended default and impact for each question; stop after the questions while input is required
+- When no material question remains, proceed with the current user request and canonical docs without requesting routine approval
+- Record constraints, edge cases, dependencies, compatibility, measurable limits, and durable decisions in ` + "`SPEC.md`" + `
 
 ### Phase 2: ACT
 

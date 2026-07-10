@@ -1,0 +1,28 @@
+goal_percentage: 95
+specs_dir: docs/specs
+skills_dir: .agents/skills
+constitution_path: docs/CONSTITUTION.md
+allow_out_of_order: false
+loop:
+  min_confidence: 95
+  max_iterations: 20
+  agent:
+    command: codex
+    args:
+      - --ask-for-approval
+      - never
+      - exec
+      - --model
+      - gpt-5.6
+      - --sandbox
+      - workspace-write
+      - --ignore-user-config
+      - --color
+      - never
+      - '-'
+agents:
+  - AGENTS.md
+instruction_scaffold_version: 2
+feature_naming:
+  numeric_width: 4
+  separator: '-'

@@ -60,20 +60,10 @@ func TestOutputCompiledPrompt_IncludesSkillsDiscoveryInputs(t *testing.T) {
 		filepath.Join(projectRoot, "CLAUDE.md"),
 		filepath.Join(projectRoot, ".github", "copilot-instructions.md"),
 		filepath.Join(projectRoot, ".agents", "skills", "*", "SKILL.md"),
-		filepath.Join(homeDir, ".claude", "CLAUDE.md"),
-		filepath.Join(codexDir, "AGENTS.md"),
-		filepath.Join(codexDir, "instructions.md"),
-		filepath.Join(codexDir, "skills", "*", "SKILL.md"),
 		"`SPEC.md` is the single durable feature artifact",
-		"Keep front matter `references`",
-		"Keep front matter `skills` focused on execution-time skills",
-		"Use an RLM-style just-in-time prior-work pass over",
+		"Load only sources relevant to the current decision",
+		"feature identity, relationships, references, skills, and delivery intent",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
-		"conditional reads only",
-		"shared interface or contract",
-		"inspect at most 5 prior feature directories",
-		"do not paraphrase entire prior docs into chat",
-		"Do not use `.claude/skills` as canonical discovery input",
 	}
 
 	for _, check := range checks {
@@ -113,14 +103,9 @@ func TestRunSpecTemplate_IncludesSkillsSectionGuidance(t *testing.T) {
 
 	checks := []string{
 		"`SPEC.md` is the single durable feature artifact",
-		"Keep front matter `references`",
-		"Keep front matter `skills` focused on execution-time skills",
-		"Use an RLM-style just-in-time prior-work pass over",
+		"Load only sources relevant to the current decision",
+		"feature identity, relationships, references, skills, and delivery intent",
 		filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
-		"conditional reads only",
-		"shared interface or contract",
-		"inspect at most 5 prior feature directories",
-		"do not paraphrase entire prior docs into chat",
 	}
 
 	for _, check := range checks {
@@ -162,10 +147,9 @@ func TestRunSpecTemplate_IncludesRLMGuidanceWhenBrainstormHintsLargeRepo(t *test
 	})
 
 	checks := []string{
-		"# Use RLM Pattern",
-		"parallelization_mode: \"rlm\"",
-		"immediate decision → smallest artifact → required facts → act or recurse",
-		"add `rlm` to canonical front matter `skills`",
+		"## Context Routing",
+		"use the repository RLM pattern",
+		"load the smallest source that resolves the current decision",
 	}
 
 	for _, check := range checks {
@@ -499,10 +483,9 @@ func TestOutputCompiledPrompt_IncludesRLMGuidanceWhenContextRequiresIt(t *testin
 	})
 
 	checks := []string{
-		"# Use RLM Pattern",
-		"parallelization_mode: \"rlm\"",
-		"immediate decision → smallest artifact → required facts → act or recurse",
-		"add `rlm` to canonical front matter `skills`",
+		"## Context Routing",
+		"use the repository RLM pattern",
+		"load the smallest source that resolves the current decision",
 	}
 
 	for _, check := range checks {
@@ -511,112 +494,67 @@ func TestOutputCompiledPrompt_IncludesRLMGuidanceWhenContextRequiresIt(t *testin
 		}
 	}
 }
-
 func assertV2SpecPromptContract(t *testing.T, output string) {
 	t.Helper()
 
 	checks := []string{
-		"## Durable Repository Facts",
-		"## Instruction Entrypoints",
-		"## Supporting Inputs",
-		"## Source Of Truth Precedence",
-		"Safety, permission, and system constraints",
-		"## SPEC.md Contract",
+		"## Goal",
+		"## User Context",
+		"## Repository Context",
+		"## Source And State Contract",
 		"`SPEC.md` is the single durable feature artifact",
-		"CONSTITUTION",
-		"PROJECT PROGRESS",
-		"durable repository facts",
-		"RLM",
-		"Kit's just-in-time context-routing pattern",
-		"KIT MANAGED RULESETS",
-		"pointer-loaded durable repo-local rulesets managed by Kit",
-		"Use this fixed section order: Thesis, Context, Clarifications, Requirements, Assumptions, Acceptance Criteria, Implementation Plan, Task Checklist, Validation Map, Reflection Notes, Documentation Updates, Delivery Decision, Evidence.",
-		"Valid phases are `clarify`, `ready`, `implement`, `validate`, `reflect`, `deliver`, `complete`, and `blocked`.",
-		"## Supervisor Responsibilities",
-		"## Prompt-Only And V1 Compatibility",
-		"## Clarification-First Operating Model",
-		"Start in Clarification Mode unless `SPEC.md` front matter already has `clarification.status: ready`",
-		"Execution Mode begins only after clarification state is ready",
-		"Keep the current conversation as live context after clarification completes.",
-		"do not guess user intent in the clarify stage",
-		"## First-Action Checklist",
+		"Context `### Source Map`",
+		"`SRC-###`, `REQ-###`, `AC-###`",
+		"clarification state",
+		"## Clarification And Autonomy",
+		"research repository-discoverable facts first",
+		"Ask only about material choices that remain non-discoverable",
+		"Keep `clarification.status: open` only while one or more such questions remain",
+		"Record residual uncertainty that does not require a user decision as an assumption or named risk",
+		"Confidence is a reporting signal and does not determine `clarification.status`",
+		"Outside `clarify`, do not re-ask settled questions or request routine permission",
+		"## Constraints And Approval Boundaries",
+		"Safe repository reads and reversible in-scope edits need no extra approval",
 		"git status --short",
-		"## Dirty Worktree And Ownership Gate",
-		"Classify existing changes as user-owned, in-scope, unrelated, or unknown",
-		"## Pre-Instruction Report",
-		"confidence percentage, unresolved question count, and whether any readiness gate blocks implementation",
-		"`clarification.status`, `clarification.confidence`, and `clarification.unresolved_questions`",
-		"## Clarification Loop",
-		"Maintain front matter `clarification.status` as `open` while questions remain",
-		"repo evidence before implementation begins",
-		"record the exact accepted defaults in `SPEC.md`",
-		"When the gate becomes ready, set `clarification.status: ready`",
-		"## Source Map Mechanics",
-		"Required columns: ID, Source, Selector, Claim / Fact, Used For, Maps To, Status.",
-		"Source Map gate",
-		"## Objective Readiness Gates",
-		"every acceptance criterion has a stable `AC-###` ID",
-		"## Acceptance Criteria Discipline",
-		"stable acceptance criterion IDs such as `AC-001`",
-		"## Phase Transition Rules",
-		"Do not skip phases.",
-		"## Agent Team Model",
-		"The supervisor agent owns `SPEC.md`, clarification, scope, acceptance criteria, lane assignment, integration, validation synthesis, delivery gating, and final response.",
+		"Before Git/GitHub delivery mutation",
+		"Delivery Contract",
+		"## Phase Outcomes",
+		"Do not skip a phase gate",
+		"validates phase state in code",
+		"## Agent Routing",
 		"docs/references/rules/agent-team-orchestration.md",
-		"Default to a subagent team for implementation and verification.",
-		"Use a single supervisor lane only when the work is trivial, tightly coupled, the active runtime cannot spawn subagents, or `--single-agent` is explicitly active.",
-		"do not keep work single-lane merely because subagents were not explicitly re-requested.",
-		"Treat planned lanes as logical work routing until separate agents are actually spawned.",
+		"read-only verifier",
 		"single supervisor lane; no specialist or verification agents spawned",
-		"Do not describe logical lanes as agents, spawned lanes, or verification agents unless separate agents actually ran.",
-		"Default max concurrent lanes: 3.",
-		"Hard ceiling: 4, only when predicted file overlap is clearly low.",
-		"Do not use \"as many agents as possible.\"",
-		"Verification lanes are read-only by default.",
-		"## Agent Team Plan",
-		"implementation lanes that will actually be spawned as subagents",
-		"read-only verification lanes that will actually be spawned as subagents",
-		"logical-only lanes that will not be spawned",
-		"reason for each omitted implementation or verification subagent",
-		"predicted touched files per lane",
-		"## Implementation Rules",
-		"## Acceptance Coverage Audit",
-		"Each acceptance criterion row must include criterion id, implementation evidence, validation command or review evidence, documentation impact, verifier result, and gap status.",
-		"## Validation And Verification Phase",
-		"Map validation 1:1 to Acceptance Criteria in `SPEC.md`",
-		"Use at least one read-only verification subagent by default after implementation",
-		"Read-only verification lanes must not edit files",
-		"For each verifier gap, record `gap id -> acceptance criterion id -> Source Map id -> fix diff area -> rerun evidence -> verifier closure`",
-		"If validation is impossible, record reason, risk, substitute evidence, user-visible impact, owner or next action, and whether delivery is blocked.",
-		"## Reflection Phase",
-		"## Zero-Error Completion Gate",
-		"No known errors remain",
-		"## Documentation Update Rules",
-		"## Delivery Intent And Hard Gate",
-		"## SPEC.md Update Requirements",
-		"Update Context `### Source Map` whenever a material claim is added",
-		"## Response Scope",
-		"Clarification-loop replies must include a clearly labeled `Open Questions` section",
-		"Open Questions: none",
-		"No more input required from the user",
+		"## Success Criteria",
+		"implementation evidence",
+		"exact validation evidence",
+		"Never claim a check ran when it did not",
+		"## Output Contract",
+		"Open Questions",
 		"## Final Response Contract",
-		"state the exception that justified single-lane execution",
-		"do not present logical planning lanes as spawned agents",
 	}
-
 	for _, check := range checks {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected v2 spec prompt to contain %q", check)
 		}
 	}
+	for _, forbidden := range []string{
+		"Programmatic Tool Calling",
+		"persisted reasoning",
+		"Pro mode",
+		"text.verbosity",
+		"Ask clarification questions until",
+		"confidence is at least",
+	} {
+		if strings.Contains(output, forbidden) {
+			t.Fatalf("v2 spec prompt unexpectedly contains %q", forbidden)
+		}
+	}
 	assertFinalResponseContractHeadings(t, output,
-		"Summary",
-		"SPEC.md State",
-		"Acceptance Coverage",
-		"Validation Evidence",
-		"Zero-Error Gate",
+		"Outcome",
+		"Evidence",
+		"Artifacts And State",
 		"Agent Team",
-		"Delivery",
 		"Open Items",
 	)
 }

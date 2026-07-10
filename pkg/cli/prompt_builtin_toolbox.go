@@ -28,86 +28,45 @@ func builtInToolboxPromptSource() promptlib.Source {
 	}
 }
 
-const codingAgentShortPrompt = "Clarify before implementing. Do not edit files or make production changes yet. Ask numbered questions with defaults, assumptions, and uncertainty until >=95% confidence and 0 unresolved. Accept y/n shorthand. Report confidence each batch."
+const codingAgentShortPrompt = "Clarify only material choices that repository or task evidence cannot resolve. Do not implement yet. Ask concise numbered questions with recommended defaults and impact; otherwise state that no input is needed."
 
-const codingAgentLongPrompt = `Stay in clarification and information-gathering workflow. Do not implement code or make production changes yet.
+const codingAgentLongPrompt = `Stay in explicit clarification workflow. Do not implement or make production changes.
 
-Ask clarifying questions until you have >=95% confidence in the problem, requirements, constraints, edge cases, and solution approach. Do not assume missing details.
+First inspect the available task and repository evidence. Resolve discoverable facts yourself. Ask only about a remaining choice that materially changes scope, behavior, risk, validation, or delivery.
 
-Ask questions in numbered batches of up to 10. For each question, include: the question, recommended default answer, current assumption or proposed solution, and remaining uncertainty.
+For each numbered question include:
+- the decision needed;
+- a recommended default;
+- why the answer changes the result;
+- a compact answer format.
 
-After each batch, output:
-Current confidence: X%
-Unresolved assumptions: N
-Waiting for approval, overrides, or corrections.
+If no material question remains, output "Open Questions: none" and a concise implementation-ready summary of goal, constraints, success criteria, and known risks. Record durable decisions in the active spec or planning artifact when authorized.
 
-Accept shorthand: y approves all defaults; y 1,2 approves only those defaults; n rejects all defaults and requires replacements; n 3: <answer> rejects question 3 with replacement; mixed forms like y: 1,2; n: 3 - <reason> are allowed.
+Stop after the questions when user input is required; do not append implementation instructions.`
 
-If only specific question numbers are approved, treat all others as unresolved. Continue asking batches until confidence is >=95%, unresolved assumptions are 0, durable decisions are captured in the active spec/brainstorm artifact, and the next implementation step is clear.`
+const codingAgentInstructionsPrompt = `Output implementation-ready coding-agent instructions in one markdown code block and no surrounding commentary.
 
-const codingAgentInstructionsPrompt = `Output a concise, comprehensive set of coding agent instructions.
+Use only sections that materially apply, while covering:
 
-Formatting:
-- Output MUST be a single markdown code block.
-- Do NOT include any text outside the code block.
-- Use clear section headers.
+## Goal
+- The user outcome and why it matters.
 
-Goal:
-- Produce implementation-ready instructions that allow a coding agent to build the feature end to end without additional clarification.
+## Context
+- Relevant repository state, existing patterns, and source-of-truth paths.
 
-Required Sections:
-1. Objective
-   - What is being built and why.
+## Scope And Constraints
+- In-scope and out-of-scope behavior, approval boundaries, compatibility, security, performance, and reliability constraints.
 
-2. Scope
-   - In-scope vs out-of-scope.
+## Requirements And Design
+- Functional behavior, interfaces/data contracts, failure modes, and the simplest viable approach.
 
-3. Assumptions
-   - Environment, dependencies, constraints.
+## Implementation
+- Ordered coherent steps and exact likely files when known; use repository discovery instead of invented paths.
 
-4. Requirements
-   - Functional requirements.
-   - Non-functional requirements (performance, security, reliability).
+## Validation
+- Focused tests, integration/runtime/manual checks, documentation evidence, and what each proves.
 
-5. Architecture / Design
-   - High-level approach.
-   - Key components and interactions.
+## Acceptance Criteria
+- Binary definition of done, including edge cases and required output.
 
-6. Data Models / Schemas
-   - Structures, types, contracts.
-
-7. APIs / Interfaces
-   - Endpoints, inputs, outputs, error cases.
-
-8. Files to Create / Modify
-   - Exact file paths.
-   - Purpose of each file.
-
-9. Implementation Steps
-   - Ordered, atomic steps.
-   - No gaps between steps.
-
-10. Edge Cases
-   - Failure modes and handling.
-
-11. Validation
-   - How to verify correctness manually.
-
-12. Tests
-   - Unit tests.
-   - Integration tests.
-   - Include key test cases.
-
-13. Acceptance Criteria
-   - Clear, testable definition of “done”.
-
-Constraints:
-- Be specific. Avoid vague language.
-- Prefer explicit examples over abstract descriptions.
-- Minimize assumptions; state them if required.
-- Optimize for correctness and completeness over brevity.
-
-Output Rules:
-- No commentary.
-- No explanations outside instructions.
-- No placeholders like “TODO” unless explicitly required.`
+Do not manufacture missing facts. Direct the agent to discover safe repository facts, and reserve questions for material non-discoverable choices. State each instruction once.`
