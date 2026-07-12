@@ -89,6 +89,17 @@ Do not create:
 
 unless the repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
 
+## AWS Context Hard Gate
+
+When .kit.yaml defines an enabled aws context, agents must:
+
+1. Run kit aws verify before the first AWS-dependent command in the task.
+2. Run kit aws verify again immediately before any command that can mutate AWS resources or deploy through AWS-backed tooling.
+3. Treat the returned account ID and ARN as authoritative. A profile name alone is not proof of identity because environment credentials can change resolution.
+4. Use the verified configured profile explicitly for AWS CLI, SDK, Terraform, CDK, deployment, and project scripts where supported.
+5. Stop on missing AWS CLI, expired or unavailable credentials, incomplete .kit.yaml AWS fields, or an account mismatch. Read .kit.yaml and ask the user when the intended context remains ambiguous.
+6. Never fall back to default, another discovered profile, or ambient credentials after verification fails.
+
 ## Completion Bar
 
 - For v2 feature work, populate all required `SPEC.md` sections and keep front matter `workflow_version`, `phase`, references, relationships, and skills current

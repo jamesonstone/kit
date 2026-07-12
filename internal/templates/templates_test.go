@@ -361,6 +361,24 @@ func TestDefaultInstructionTemplatesUseTOCModel(t *testing.T) {
 	}
 }
 
+func TestInstructionTemplatesIncludeAWSContextHardGate(t *testing.T) {
+	for _, path := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
+		content := InstructionFileForVersion(path, config.InstructionScaffoldVersionTOC)
+		for _, want := range []string{"## AWS Context Hard Gate", "kit aws verify", "before the first AWS-dependent command", "before any AWS mutation"} {
+			if !strings.Contains(content, want) {
+				t.Fatalf("%s missing %q", path, want)
+			}
+		}
+	}
+
+	guardrails := fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/agents/GUARDRAILS.md")
+	for _, want := range []string{"## AWS Context Hard Gate", "account ID and ARN as authoritative", "Never fall back to default"} {
+		if !strings.Contains(guardrails, want) {
+			t.Fatalf("GUARDRAILS.md missing %q", want)
+		}
+	}
+}
+
 func TestSpecTemplateUsesV2SingleArtifactSections(t *testing.T) {
 	checks := []string{
 		"## THESIS",

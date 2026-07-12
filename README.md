@@ -76,6 +76,12 @@ kit resume my-feature
 
 # inspect command behavior before choosing a command
 kit capabilities --search spec
+
+# validate or repair project configuration
+kit config check
+
+# verify a configured AWS identity before AWS work
+kit aws verify
 ```
 
 The default feature workflow is:
@@ -100,6 +106,8 @@ artifacts and are available only through `kit legacy` workflows.
 | `kit status --all` | Show project-wide feature state |
 | `kit map --all` | Show the project document map |
 | `kit capabilities --search <term>` | Inspect command behavior and mutation boundaries |
+| `kit config check` | Validate schema-versioned `.kit.yaml` and offer safe interactive repairs |
+| `kit aws verify` | Verify the configured AWS profile, account, and ARN against `.kit.yaml` |
 | `kit improve run --suite prompt-system` | Run deterministic prompt regression and size checks |
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |

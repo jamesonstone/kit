@@ -110,9 +110,10 @@ func runInit(cmd *cobra.Command, args []string) error {
 			fmt.Println("  ✓ .kit.yaml exists, merging...")
 		}
 		existing, err := config.Load(cwd)
-		if err == nil {
-			cfg = existing
+		if err != nil {
+			return err
 		}
+		cfg = existing
 		if !config.IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
 			cfg.InstructionScaffoldVersion = detectInstructionScaffoldVersion(cwd, cfg)
 			if cfg.InstructionScaffoldVersion == instructionScaffoldVersionUnknown {
@@ -128,6 +129,26 @@ func runInit(cmd *cobra.Command, args []string) error {
 		}
 		if !initOutputOnly {
 			fmt.Println("  ✓ Created .kit.yaml")
+		}
+	}
+	if !initOutputOnly && streamsHaveInteractiveTerminal(os.Stdin, os.Stdout) {
+		inspectionCfg, inspection, err := config.LoadWithInspection(cwd)
+		if err != nil {
+			return err
+		}
+		changed, err := remediateProjectConfig(cwd, inspectionCfg, inspection, configRemediationOptions{
+			Interactive: true,
+			Input:       os.Stdin,
+			Output:      os.Stdout,
+		})
+		if err != nil {
+			return err
+		}
+		if changed {
+			cfg, err = config.Load(cwd)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

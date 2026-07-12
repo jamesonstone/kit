@@ -64,6 +64,8 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"project",
 		"status",
 		"capabilities",
+		"\n  config ",
+		"\n  aws ",
 		"ci",
 		"pr",
 		"improve",

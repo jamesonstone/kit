@@ -39,6 +39,8 @@ kit status --all
 kit resume my-feature
 kit map --all
 kit capabilities --search verify
+kit config check
+kit aws verify
 kit pause my-feature
 kit complete --all
 kit rm my-feature --yes
@@ -80,6 +82,8 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit status --all` | Show the project-wide lifecycle matrix plus local Kit-managed refresh state. |
 | `kit map [feature]` | Select or show a feature map; supports `--all` for the full project document map. |
 | `kit capabilities` | List command capabilities, mutation behavior, network use, and important flags. |
+| `kit config check` | Validate schema-versioned `.kit.yaml`; interactive terminals can add safe missing fields, while `--json` is read-only. |
+| `kit aws verify` | Call STS and verify that the configured AWS profile resolves to the account configured in `.kit.yaml`. |
 | `kit check <feature>` | Validate feature documents and required populated sections. |
 | `kit check --project` | Validate repo-level docs, init scaffold, and instruction contract. |
 | `kit pr fix` | Select or target an open PR and prepare a dispatch prompt from review feedback. |
@@ -95,6 +99,25 @@ Inside the Kit source repository, every new command, subcommand, flag, alias,
 or command behavior extension must update `kit capabilities` in the same
 change. Downstream Kit-managed projects should use `kit capabilities` for
 discovery, not maintain Kit's internal command catalog.
+
+### Project Configuration And AWS Context
+
+Project `.kit.yaml` files carry a top-level integer `schema_version`. Kit performs a local schema and semantic inspection before project-aware commands. The current, complete fast path reads only `.kit.yaml`; it does not run AWS, Git, GitHub, or network subprocesses and does not write files.
+
+When an interactive command finds a compatible missing or older schema, it offers to update the file inline. `kit config check` exposes the same validation explicitly, and `kit config check --json` reports state without prompting or writing.
+
+AWS context is optional:
+
+```yaml
+schema_version: 1
+aws:
+  profile: acme-development
+  account_id: "123456789012"
+```
+
+If AWS context is absent and AWS CLI profiles are available, interactive remediation offers to associate one with the project. A single profile uses a default-yes `Y/n` prompt; multiple profiles require an explicit numbered selection. Kit verifies the selected profile with STS before writing the profile and account ID together. Choosing not to use the only profile records `aws.enabled: false`, preventing repeated discovery prompts for projects that do not use AWS.
+
+Run `kit aws verify` before the first AWS-dependent command in a task and immediately before AWS mutations. It uses the configured project profile, rejects a conflicting `AWS_PROFILE`, and fails when the resolved account differs from `aws.account_id`. Kit never runs `aws sso login` or chooses among multiple profiles automatically.
 
 ## Prompt Utilities
 

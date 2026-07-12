@@ -1,3 +1,4 @@
+schema_version: 1
 goal_percentage: 95
 specs_dir: docs/specs
 skills_dir: .agents/skills
