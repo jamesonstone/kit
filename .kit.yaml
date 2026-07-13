@@ -84,3 +84,5 @@ project_refresh:
     constitution:
         feature_interval: 5
         max_age_days: 30
+aws:
+    enabled: false
