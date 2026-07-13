@@ -362,11 +362,21 @@ func TestDefaultInstructionTemplatesUseTOCModel(t *testing.T) {
 }
 
 func TestInstructionTemplatesIncludeAWSContextHardGate(t *testing.T) {
-	for _, path := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
-		content := InstructionFileForVersion(path, config.InstructionScaffoldVersionTOC)
-		for _, want := range []string{"## AWS Context Hard Gate", "kit aws verify", "before the first AWS-dependent command", "before any AWS mutation"} {
-			if !strings.Contains(content, want) {
-				t.Fatalf("%s missing %q", path, want)
+	for _, version := range []int{config.InstructionScaffoldVersionVerbose, config.InstructionScaffoldVersionTOC} {
+		for _, path := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
+			content := InstructionFileForVersion(path, version)
+			for _, want := range []string{
+				"## AWS Context Hard Gate",
+				"kit aws verify",
+				"before the first AWS-dependent command",
+				"before any AWS mutation",
+				"verified configured profile explicitly for every AWS-dependent command",
+				"including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts",
+				"After verification, never use default, another discovered profile, or ambient credentials",
+			} {
+				if !strings.Contains(content, want) {
+					t.Fatalf("instruction scaffold version %d %s missing %q", version, path, want)
+				}
 			}
 		}
 	}

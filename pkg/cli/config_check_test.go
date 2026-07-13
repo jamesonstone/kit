@@ -1,9 +1,11 @@
 package cli
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -132,16 +134,19 @@ func TestAWSConfigRemediationNoProfilesNoOps(t *testing.T) {
 }
 
 func TestAWSConfigRemediationMismatchDoesNotWrite(t *testing.T) {
-	root, cfg, inspection := setupConfigCheckProject(t)
+	root, cfg, _ := setupConfigCheckProject(t)
 	cfg.AWS = &config.AWSConfig{AccountID: "999900001111"}
 	if err := config.UpdateProjectSchemaAndAWS(root, cfg); err != nil {
 		t.Fatalf("UpdateProjectSchemaAndAWS() error = %v", err)
 	}
-	cfg, inspection, _ = config.LoadWithInspection(root)
+	cfg, inspection, err := config.LoadWithInspection(root)
+	if err != nil {
+		t.Fatalf("LoadWithInspection() error = %v", err)
+	}
 	stubAWSContext(t, "dev\n", `{"Account":"012345678901","Arn":"arn:aws:sts::012345678901:assumed-role/Developer/test"}`)
 	before, _ := os.ReadFile(filepath.Join(root, config.ConfigFileName))
 
-	_, err := remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
+	_, err = remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
 		Interactive: true,
 		Input:       strings.NewReader("\n"),
 		Output:      &bytes.Buffer{},
@@ -288,6 +293,104 @@ func TestAWSConfigRemediationAuthenticationFailureDoesNotWrite(t *testing.T) {
 	}
 	if !bytes.Equal(before, after) {
 		t.Fatal("config changed after authentication failure")
+	}
+}
+
+func TestAWSConfigRemediationPersistsSchemaWhenQuoteDeclined(t *testing.T) {
+	root, _, _ := setupConfigCheckProject(t)
+	path := filepath.Join(root, config.ConfigFileName)
+	content := "aws:\n  profile: dev\n  account_id: 012345678901\n"
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	cfg, inspection, err := config.LoadWithInspection(root)
+	if err != nil {
+		t.Fatalf("LoadWithInspection() error = %v", err)
+	}
+
+	changed, err := remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
+		Interactive: true,
+		Input:       strings.NewReader("\nn\n"),
+		Output:      &bytes.Buffer{},
+	})
+	if err != nil {
+		t.Fatalf("remediateProjectConfig() error = %v", err)
+	}
+	if !changed {
+		t.Fatal("changed = false, want accepted schema migration persisted")
+	}
+	updated, _, err := config.LoadWithInspection(root)
+	if err != nil {
+		t.Fatalf("LoadWithInspection() error = %v", err)
+	}
+	if updated.SchemaVersion != config.CurrentSchemaVersion {
+		t.Fatalf("schema_version = %d, want %d", updated.SchemaVersion, config.CurrentSchemaVersion)
+	}
+	updatedContent, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	if !strings.Contains(string(updatedContent), "account_id: 012345678901") {
+		t.Fatalf("declined account ID quote was applied:\n%s", updatedContent)
+	}
+}
+
+func TestAWSConfigRemediationPersistsSchemaBeforeAWSError(t *testing.T) {
+	root, _, _ := setupConfigCheckProject(t)
+	path := filepath.Join(root, config.ConfigFileName)
+	if err := os.WriteFile(path, []byte("goal_percentage: 80\n"), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	cfg, inspection, err := config.LoadWithInspection(root)
+	if err != nil {
+		t.Fatalf("LoadWithInspection() error = %v", err)
+	}
+	stubAWSContext(t, "dev\n", "")
+
+	changed, err := remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
+		Interactive: true,
+		Input:       strings.NewReader("\n\n"),
+		Output:      &bytes.Buffer{},
+	})
+	if err == nil || !strings.Contains(err.Error(), "verify AWS profile") {
+		t.Fatalf("error = %v, want authentication failure", err)
+	}
+	if !changed {
+		t.Fatal("changed = false, want accepted schema migration persisted")
+	}
+	updated, _, loadErr := config.LoadWithInspection(root)
+	if loadErr != nil {
+		t.Fatalf("LoadWithInspection() error = %v", loadErr)
+	}
+	if updated.SchemaVersion != config.CurrentSchemaVersion {
+		t.Fatalf("schema_version = %d, want %d", updated.SchemaVersion, config.CurrentSchemaVersion)
+	}
+}
+
+func TestReadDefaultYesRejectsEmptyEOF(t *testing.T) {
+	_, err := readDefaultYes(bufio.NewReader(strings.NewReader("")), &bytes.Buffer{}, "Continue? [Y/n]: ")
+	if !errors.Is(err, io.EOF) {
+		t.Fatalf("error = %v, want EOF", err)
+	}
+}
+
+func TestReadDefaultYesAcceptsFinalResponseAtEOF(t *testing.T) {
+	for _, tt := range []struct {
+		input string
+		want  bool
+	}{
+		{input: "yes", want: true},
+		{input: "no", want: false},
+	} {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := readDefaultYes(bufio.NewReader(strings.NewReader(tt.input)), &bytes.Buffer{}, "Continue? [Y/n]: ")
+			if err != nil {
+				t.Fatalf("readDefaultYes() error = %v", err)
+			}
+			if got != tt.want {
+				t.Fatalf("readDefaultYes() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 

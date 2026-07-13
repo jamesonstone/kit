@@ -22,44 +22,58 @@ func remediateProjectConfig(
 	}
 	reader := bufio.NewReader(opts.Input)
 	changed := false
+	persistAWS := false
+	continueRemediation := true
+	var remediationErr error
 	if inspection.NeedsSchemaMigration() {
 		ok, err := readDefaultYes(reader, opts.Output, fmt.Sprintf(
 			"Update .kit.yaml to schema_version %d? [Y/n]: ",
 			config.CurrentSchemaVersion,
 		))
 		if err != nil {
-			return false, err
-		}
-		if !ok {
+			remediationErr = err
+		} else if ok {
+			cfg.SchemaVersion = config.CurrentSchemaVersion
+			changed = true
+		} else {
 			return false, nil
 		}
-		cfg.SchemaVersion = config.CurrentSchemaVersion
-		changed = true
 	}
-	if awsAccountIDNeedsQuoting(cfg, inspection) {
+	if remediationErr == nil && awsAccountIDNeedsQuoting(cfg, inspection) {
 		ok, err := readDefaultYes(reader, opts.Output, "Quote aws.account_id as a YAML string? [Y/n]: ")
 		if err != nil {
-			return false, err
-		}
-		if !ok {
+			remediationErr = err
+		} else if ok {
+			changed = true
+			persistAWS = true
+		} else if !changed {
 			return false, nil
+		} else {
+			continueRemediation = false
 		}
-		changed = true
 	}
 
-	awsChanged, err := remediateAWSConfig(reader, opts.Output, cfg)
-	if err != nil {
-		return false, err
+	if remediationErr == nil && continueRemediation {
+		awsChanged, err := remediateAWSConfig(reader, opts.Output, cfg)
+		changed = awsChanged || changed
+		persistAWS = awsChanged || persistAWS
+		remediationErr = err
 	}
-	changed = awsChanged || changed
 	if !changed {
-		return false, nil
+		return false, remediationErr
 	}
-	if err := config.UpdateProjectSchemaAndAWS(projectRoot, cfg); err != nil {
+	persistedConfig := *cfg
+	if !persistAWS {
+		persistedConfig.AWS = nil
+	}
+	if err := config.UpdateProjectSchemaAndAWS(projectRoot, &persistedConfig); err != nil {
+		if remediationErr != nil {
+			return false, errors.Join(remediationErr, err)
+		}
 		return false, err
 	}
-	fmt.Fprintln(opts.Output, "  ✓ Updated .kit.yaml")
-	return true, nil
+	_, _ = fmt.Fprintln(opts.Output, "  ✓ Updated .kit.yaml")
+	return true, remediationErr
 }
 
 func awsAccountIDNeedsQuoting(cfg *config.Config, inspection config.Inspection) bool {
@@ -153,8 +167,10 @@ func readDefaultYes(reader *bufio.Reader, out io.Writer, prompt string) (bool, e
 		return false, err
 	}
 	line, err := reader.ReadString('\n')
-	if err != nil && !errors.Is(err, io.EOF) {
-		return false, err
+	if err != nil {
+		if !errors.Is(err, io.EOF) || line == "" {
+			return false, err
+		}
 	}
 	switch strings.ToLower(strings.TrimSpace(line)) {
 	case "", "y", "yes":
@@ -167,12 +183,12 @@ func readDefaultYes(reader *bufio.Reader, out io.Writer, prompt string) (bool, e
 }
 
 func selectAWSProfile(reader *bufio.Reader, out io.Writer, profiles []string) (string, error) {
-	fmt.Fprintln(out, "Select an AWS profile for this project:")
-	fmt.Fprintln(out, "  0. Do not use AWS for this project")
+	_, _ = fmt.Fprintln(out, "Select an AWS profile for this project:")
+	_, _ = fmt.Fprintln(out, "  0. Do not use AWS for this project")
 	for i, profile := range profiles {
-		fmt.Fprintf(out, "  %d. %s\n", i+1, profile)
+		_, _ = fmt.Fprintf(out, "  %d. %s\n", i+1, profile)
 	}
-	fmt.Fprintf(out, "Enter number [0-%d]: ", len(profiles))
+	_, _ = fmt.Fprintf(out, "Enter number [0-%d]: ", len(profiles))
 	line, err := reader.ReadString('\n')
 	if err != nil && !errors.Is(err, io.EOF) {
 		return "", err

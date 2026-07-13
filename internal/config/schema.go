@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -228,16 +229,19 @@ func setTypedScalar(parent *yaml.Node, key, value, tag string, style yaml.Style)
 	parent.Content = append(parent.Content, &yaml.Node{Kind: yaml.ScalarNode, Value: key}, node)
 }
 
-func writeProjectYAMLDocument(configPath string, doc *yaml.Node) error {
+func writeProjectYAMLDocument(configPath string, doc *yaml.Node) (resultErr error) {
 	var output bytes.Buffer
 	encoder := yaml.NewEncoder(&output)
 	encoder.SetIndent(4)
 	if err := encoder.Encode(doc); err != nil {
-		encoder.Close()
-		return fmt.Errorf("failed to encode %s: %w", configPath, err)
+		encodeErr := fmt.Errorf("failed to encode %s: %w", configPath, err)
+		if closeErr := encoder.Close(); closeErr != nil {
+			return errors.Join(encodeErr, fmt.Errorf("failed to close YAML encoder for %s: %w", configPath, closeErr))
+		}
+		return encodeErr
 	}
 	if err := encoder.Close(); err != nil {
-		return fmt.Errorf("failed to encode %s: %w", configPath, err)
+		return fmt.Errorf("failed to close YAML encoder for %s: %w", configPath, err)
 	}
 
 	temp, err := os.CreateTemp(filepath.Dir(configPath), ".kit-config-*.tmp")
@@ -245,18 +249,28 @@ func writeProjectYAMLDocument(configPath string, doc *yaml.Node) error {
 		return fmt.Errorf("failed to create temporary config file: %w", err)
 	}
 	tempPath := temp.Name()
-	defer os.Remove(tempPath)
+	tempClosed := false
+	defer func() {
+		if !tempClosed {
+			if err := temp.Close(); err != nil {
+				resultErr = errors.Join(resultErr, fmt.Errorf("failed to close temporary config: %w", err))
+			}
+		}
+		if err := os.Remove(tempPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			resultErr = errors.Join(resultErr, fmt.Errorf("failed to remove temporary config %s: %w", tempPath, err))
+		}
+	}()
 	if err := temp.Chmod(0644); err != nil {
-		temp.Close()
 		return fmt.Errorf("failed to set temporary config permissions: %w", err)
 	}
 	if _, err := temp.Write(output.Bytes()); err != nil {
-		temp.Close()
 		return fmt.Errorf("failed to write temporary config: %w", err)
 	}
 	if err := temp.Close(); err != nil {
+		tempClosed = true
 		return fmt.Errorf("failed to close temporary config: %w", err)
 	}
+	tempClosed = true
 	if err := os.Rename(tempPath, configPath); err != nil {
 		return fmt.Errorf("failed to replace %s: %w", configPath, err)
 	}

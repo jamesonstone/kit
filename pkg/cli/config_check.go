@@ -122,21 +122,21 @@ func buildConfigCheckReport(cfg *config.Config, inspection config.Inspection) co
 }
 
 func printConfigCheckReport(out io.Writer, report configCheckReport) {
-	fmt.Fprintln(out, "🔎 Checking .kit.yaml...")
-	fmt.Fprintf(out, "  Schema: %s (configured=%d current=%d)\n", report.SchemaState, report.SchemaVersion, report.CurrentSchemaVersion)
+	_, _ = fmt.Fprintln(out, "🔎 Checking .kit.yaml...")
+	_, _ = fmt.Fprintf(out, "  Schema: %s (configured=%d current=%d)\n", report.SchemaState, report.SchemaVersion, report.CurrentSchemaVersion)
 	switch {
 	case !report.AWS.Configured:
-		fmt.Fprintln(out, "  AWS: not configured")
+		_, _ = fmt.Fprintln(out, "  AWS: not configured")
 	case !report.AWS.Enabled:
-		fmt.Fprintln(out, "  AWS: disabled")
+		_, _ = fmt.Fprintln(out, "  AWS: disabled")
 	default:
-		fmt.Fprintf(out, "  AWS: profile=%s account=%s\n", report.AWS.Profile, report.AWS.AccountID)
+		_, _ = fmt.Fprintf(out, "  AWS: profile=%s account=%s\n", report.AWS.Profile, report.AWS.AccountID)
 	}
 	for _, finding := range report.Findings {
-		fmt.Fprintf(out, "  - [%s] %s: %s\n", finding.Severity, finding.Field, finding.Message)
+		_, _ = fmt.Fprintf(out, "  - [%s] %s: %s\n", finding.Severity, finding.Field, finding.Message)
 	}
 	if report.Valid {
-		fmt.Fprintln(out, "  ✅ Configuration is current and valid.")
+		_, _ = fmt.Fprintln(out, "  ✅ Configuration is current and valid.")
 	}
 }
 
