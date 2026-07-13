@@ -363,17 +363,28 @@ func TestDefaultInstructionTemplatesUseTOCModel(t *testing.T) {
 
 func TestInstructionTemplatesIncludeAWSContextHardGate(t *testing.T) {
 	for _, version := range []int{config.InstructionScaffoldVersionVerbose, config.InstructionScaffoldVersionTOC} {
+		wants := []string{
+			"## AWS Context Hard Gate",
+			"kit aws verify",
+			"before the first AWS-dependent command",
+			"before any AWS mutation",
+			"verified configured profile explicitly for every AWS-dependent command",
+			"including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts",
+			"After verification, never use default, another discovered profile, or ambient credentials",
+		}
+		if version == config.InstructionScaffoldVersionVerbose {
+			wants = append(wants,
+				"Treat the verified account and ARN as authoritative, not the profile name alone",
+				"If verification fails, config is incomplete, credentials are unavailable, or the account mismatches, stop and ask",
+			)
+		} else {
+			wants = append(wants,
+				"Treat the verified account and ARN as authoritative; on missing credentials, incomplete config, or mismatch, stop",
+			)
+		}
 		for _, path := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
 			content := InstructionFileForVersion(path, version)
-			for _, want := range []string{
-				"## AWS Context Hard Gate",
-				"kit aws verify",
-				"before the first AWS-dependent command",
-				"before any AWS mutation",
-				"verified configured profile explicitly for every AWS-dependent command",
-				"including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts",
-				"After verification, never use default, another discovered profile, or ambient credentials",
-			} {
+			for _, want := range wants {
 				if !strings.Contains(content, want) {
 					t.Fatalf("instruction scaffold version %d %s missing %q", version, path, want)
 				}
