@@ -11,10 +11,11 @@ import (
 var Version = "dev"
 
 var rootCmd = &cobra.Command{
-	Use:     "kit",
-	Short:   "🧰 Kit v2 is a general-purpose harness for thought work",
-	Long:    rootLong(humanOutputStyle{}),
-	Version: Version,
+	Use:               "kit",
+	Short:             "🧰 Kit v2 is a general-purpose harness for thought work",
+	Long:              rootLong(humanOutputStyle{}),
+	Version:           Version,
+	PersistentPreRunE: runAutomaticConfigCheck,
 }
 
 func init() {

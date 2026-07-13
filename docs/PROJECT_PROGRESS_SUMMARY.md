@@ -42,6 +42,7 @@
 | 0036 | kit-dream | `docs/specs/0036-kit-dream` | removed | no | 2026-06-21 | Removed by kit rm on 2026-06-21. |
 | 0038 | auto-improvement-v1 | `docs/specs/0038-auto-improvement-v1` | deliver | no | 2026-07-07 | (no description) |
 | 0040 | prompt-system-migration | `docs/specs/0040-prompt-system-migration` | deliver | no | 2026-07-10 | Modernize every generated prompt for GPT-5.6, prove the migration with a truthful deterministic benchmark, and preserve Kit's code-enforced workflow gates. |
+| 0041 | aws-config-schema | `docs/specs/0041-aws-config-schema` | deliver | no | 2026-07-12 | Version Kit project configuration and bind each AWS-enabled project to one STS-verified CLI profile and account with fast automatic checks and interactive repair. |
 
 ## PROJECT INTENT
 
@@ -396,6 +397,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0040-prompt-system-migration/SPEC.md`, `docs/specs/0040-prompt-system-migration/PLAN.md`, `docs/specs/0040-prompt-system-migration/TASKS.md`
 
+### aws-config-schema
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Version Kit project configuration and bind each AWS-enabled project to one STS-verified CLI profile and account with fast automatic checks and interactive repair.
+- **APPROACH**: (see PLAN.md)
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0041-aws-config-schema/SPEC.md`, `docs/specs/0041-aws-config-schema/PLAN.md`, `docs/specs/0041-aws-config-schema/TASKS.md`
+
 ## LAST UPDATED
 
-2026-07-10 09:25:28 EDT
+2026-07-12 15:03:04 EDT

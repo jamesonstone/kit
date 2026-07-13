@@ -33,6 +33,18 @@ When the user asks to create or mutate an issue, branch, staging, commit, push, 
 
 ---
 
+## AWS Context Hard Gate
+
+When .kit.yaml defines an enabled aws context:
+
+- Run kit aws verify before the first AWS-dependent command in each task and again immediately before any AWS mutation
+- Treat the verified account and ARN as authoritative, not the profile name alone
+- Use the verified configured profile explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
+- After verification, never use default, another discovered profile, or ambient credentials
+- If verification fails, config is incomplete, credentials are unavailable, or the account mismatches, stop and ask; never fall back to another profile or default
+
+---
+
 ## Change Classification (Required First Step)
 
 Classify each request before implementation.

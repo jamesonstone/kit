@@ -13,6 +13,7 @@ import (
 const ConfigFileName = ".kit.yaml"
 
 const (
+	CurrentSchemaVersion                 = 1
 	InstructionScaffoldVersionVerbose    = 1
 	InstructionScaffoldVersionTOC        = 2
 	DefaultInstructionScaffoldVersion    = InstructionScaffoldVersionTOC
@@ -23,6 +24,7 @@ const (
 
 // Config represents the .kit.yaml configuration file.
 type Config struct {
+	SchemaVersion              int                              `yaml:"schema_version"`
 	GoalPercentage             int                              `yaml:"goal_percentage"`
 	SpecsDir                   string                           `yaml:"specs_dir"`
 	SkillsDir                  string                           `yaml:"skills_dir"`
@@ -37,7 +39,26 @@ type Config struct {
 	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
 	Registry                   RegistryConfig                   `yaml:"registry,omitempty"`
 	GitHub                     GitHubConfig                     `yaml:"github,omitempty"`
+	AWS                        *AWSConfig                       `yaml:"aws,omitempty"`
 	ProjectRefresh             ProjectRefreshConfig             `yaml:"project_refresh,omitempty"`
+}
+
+type AWSConfig struct {
+	Enabled   *bool  `yaml:"enabled,omitempty"`
+	Profile   string `yaml:"profile,omitempty"`
+	AccountID string `yaml:"account_id,omitempty"`
+}
+
+func (c *AWSConfig) IsEnabled() bool {
+	if c == nil {
+		return false
+	}
+	return c.Enabled == nil || *c.Enabled
+}
+
+func DisabledAWSConfig() *AWSConfig {
+	enabled := false
+	return &AWSConfig{Enabled: &enabled}
 }
 
 type ProjectRefreshConfig struct {
@@ -131,6 +152,7 @@ type FeatureNaming struct {
 // Default returns a Config with default values per the spec.
 func Default() *Config {
 	return &Config{
+		SchemaVersion:    CurrentSchemaVersion,
 		GoalPercentage:   95,
 		SpecsDir:         "docs/specs",
 		SkillsDir:        ".agents/skills",
@@ -289,19 +311,11 @@ func FindProjectRoot() (string, error) {
 
 // Load reads and parses the .kit.yaml from the given project root.
 func Load(projectRoot string) (*Config, error) {
-	configPath := filepath.Join(projectRoot, ConfigFileName)
-
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read %s: %w", ConfigFileName, err)
+	cfg, inspection, err := LoadWithInspection(projectRoot)
+	if err == nil && inspection.SchemaState == SchemaStateNewer {
+		return nil, fmt.Errorf("%s", inspection.Findings[0].Message)
 	}
-
-	cfg := Default()
-	if err := yaml.Unmarshal(data, cfg); err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %w", ConfigFileName, err)
-	}
-
-	return cfg, nil
+	return cfg, err
 }
 
 // LoadOrDefault attempts to load config from project root, returns default if not found.
