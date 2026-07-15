@@ -1,252 +1,128 @@
 # Kit Workflows
 
-Kit v2 centers feature work on one durable artifact: `SPEC.md`.
+Kit connects native agent planning to implementation and curated repository
+memory. It does not replace the host agent's planning capability.
 
-## V2 Single-SPEC Workflow
-
-The v2 single-`SPEC.md` workflow is Kit's most structured operating engine. It
-is the clearest path when a problem needs deliberate clarification, planning,
-implementation, validation, reflection, documentation sync, delivery gating,
-and evidence.
+## Native Plan To Repository Memory
 
 ```text
-Idea / input
-  ↓
-kit spec <feature>
-  ↓
-SPEC.md seeded with clarification.status=open
-  ↓
-clarify → ready → implement → validate → reflect → deliver/complete
+request
+  → native agent research, clarification, design, and accepted plan
+  → semantic repository-memory decision
+  → create or adopt SPEC.md before code when material rationale exists
+  → implementation with live decisions and discoveries
+  → validation
+  → curate actual outcome into canonical repository memory
 ```
 
-`kit spec <feature>` remains prompt-producing by default. The generated
-supervisor prompt instructs a coding agent to keep all durable workflow state in
-`SPEC.md`, including the Agent Team Plan when implementation, validation, or
-review benefits from specialist lanes. In `clarify`, it resolves repository
-facts before asking only for material non-discoverable choices. A ready feature
-continues with safe in-scope work without routine clarification or approval
-pauses.
+For Codex, use `/plan`. Other capable agents may expose an equivalent planning
+surface. Kit does not ingest transcripts or automatically copy a
+`<proposed_plan>` response. The same-thread implementation agent semantically
+translates the accepted plan into repository language.
 
-## Project Initialization
+## Repository Memory Gate
 
-Run once, then refine as the project matures:
+Before implementation:
+
+1. Inspect relevant code and existing repository documentation.
+2. Decide whether the work contains consequential rationale that code and tests
+   cannot preserve.
+3. If yes, run `kit spec <feature>` and capture the accepted plan in the living
+   spec before editing implementation files.
+4. If no, continue without a documentation change and explain `not required`
+   in the final Repository Memory report.
+
+After implementation and validation, curate durable knowledge by scope:
+
+| Knowledge | Canonical home |
+| --- | --- |
+| Feature rationale, choices, discoveries, and actual outcome | `docs/specs/<feature>/SPEC.md` |
+| Project invariants | `docs/CONSTITUTION.md` |
+| Reusable practices and rules | `docs/references/` or `docs/references/rules/` |
+| Domain behavior and interfaces | Existing canonical domain documentation |
+| Transient research input | `docs/notes/<feature>/` until promoted or discarded |
+
+Keep material superseded decisions with rationale. Remove transient planning
+chatter and details that are fully recoverable from code.
+
+## `kit spec`
+
+Plain `kit spec <feature>` is non-interactive. It allocates or adopts the
+feature, ensures its notes scaffold, updates the project index, preserves an
+existing spec, and prints concise native-planning orientation.
+
+New specs use `workflow_version: 3` and these sections:
+
+- `PURPOSE`
+- `CONTEXT`
+- `REQUIREMENTS` including non-goals and observable acceptance
+- `ACCEPTED PLAN`
+- `DECISIONS`
+- `DISCOVERIES`
+- `VALIDATION`
+- `OUTCOME`
+- `REPOSITORY MEMORY`
+
+The V3 gate is phase-aware. Before implementation, purpose, context,
+requirements, and accepted plan must be populated. Completion additionally
+requires resolved decisions and discoveries, exact validation, actual outcome,
+repository-memory assessment, and no pending TODO placeholders.
+
+## Final Response Contract
+
+Every implementation final response in a V3-instructed repository includes:
+
+```text
+Repository Memory
+Decision: created | updated | refactored | deleted | not required
+Rationale: <why this is the correct persistence decision>
+Artifacts: <paths or none>
+```
+
+## Compatibility
+
+- V1 and V2 specs remain readable and valid.
+- `kit complete` preserves the document's workflow version and applies its
+  version-specific completion gate.
+- V2 specs are never deterministically migrated to V3.
+- `kit spec <feature> --legacy-supervisor` retains the V2 supervisor during the
+  compatibility period. Former supervisor-only flags imply that mode and warn.
+- Bare `kit loop` and `kit loop workflow` are deprecated V2 compatibility
+  paths. They warn on V2 and reject V3 with native-planning guidance.
+- `kit loop review`, validation, evidence, repair, status, and delivery
+  utilities remain supported.
+- `kit dispatch` is post-plan execution-topology support, not feature design.
+
+## Instruction Migration
+
+New projects default to `instruction_scaffold_version: 3`. On full refresh,
+Kit atomically upgrades V2 instruction artifacts only when every managed file
+exactly matches the generated V2 templates. Customized V2 instructions remain
+untouched and on V2; review `kit reconcile --include-files` or explicitly run:
 
 ```bash
-kit init
-kit project refresh
-kit reconcile
+kit scaffold agents --version 3 --force
 ```
 
-```text
-┌──────────────┐
-│ Constitution │  ← global constraints, principles, priors
-└──────────────┘
-```
-
-Use `kit project refresh` when early feature work reveals durable
-project-level rules, vocabulary, or constraints that should update
-`CONSTITUTION.md`.
-
-## Optional Research Material
-
-```text
-┌──────────────┐
-│ Notes/Inputs │  ← reference materials, screenshots, research, constraints
-└──────────────┘
-```
-
-Feature notes and design materials live under `docs/notes/<feature>/` when
-needed. They are supporting inputs, not replacements for `SPEC.md`.
-
-## V2 Artifact Details
-
-1. 📜 **Constitution** - strategy, constraints, long-term project rules, and priors.
-2. 📐 **SPEC.md** - front matter phase and clarification state plus thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence.
-3. 🧠 **Legacy staged artifacts** - historical `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files retained for upgraded projects or explicit legacy flows.
-
-When a core workflow command runs without a feature argument, its selector only
-shows features eligible for that command's next stage. Completed stages are
-omitted from earlier-stage selectors.
-
-If `kit spec` has no eligible existing feature candidates to list, it prompts
-for a new feature name and starts the v2 single-SPEC intake.
-
-## `kit spec` Intake
-
-For a new `SPEC.md`, `kit spec <feature>` asks for:
-
-1. one thesis/goal editor entry
-2. one delivery-intent answer
-
-Delivery intent options:
-
-- `1` / Enter / `yes` - create a Kit-managed issue, branch, and pull request later
-- `2` / `no` - capture the idea only; no issue/branch/PR intent yet
-- `3` / `continue` - coding agent should continue on the current branch/current issue/current PR if one exists
-
-Existing `SPEC.md` files are preserved by default. Use `--revise-thesis` to
-append a dated thesis note and refresh delivery intent.
-
-New specs default to `clarification.status: open`,
-`clarification.confidence: 0`, and `clarification.unresolved_questions: 1`.
-Normal adoption backfills missing clarification metadata without disturbing the
-body; `--prompt-only` remains read-only and does not write adoption metadata.
-
-`kit spec` does not create issues, branches, commits, pushes, or PRs during
-intake. Delivery mutations remain behind the repo-local delivery hard gate.
-
-## Typical Flow
-
-```bash
-kit spec my-feature
-kit status
-kit map
-kit resume my-feature
-```
-
-```text
-You / team idea
-  ↓
-kit spec my-feature
-  ↓
-SPEC.md + v2 supervisor prompt
-  ↓
-evidence-first clarification when needed → ready gate → same-thread implementation
-  ↓
-validate → reflect → deliver/complete
-```
-
-## Autonomous Loop
-
-`kit loop workflow [feature]` is the execution wrapper for prompt-level
-workflow automation. The durable state remains `SPEC.md`; direct execution
-stays behind explicit loop/run behavior.
-
-Each child run receives the durable feature context plus only its current phase
-contract. Kit does not reinject the complete lifecycle supervisor prompt on
-every fresh subprocess, and code still validates phase transitions.
-
-During `clarify`, loop automation researches repository facts and updates
-`SPEC.md` without guessing user intent. If a material non-discoverable choice
-remains, it stops with numbered `Open Questions`, recommended defaults, and the
-impact of each answer. It advances only when
-`clarification.status` is `ready`, confidence meets the configured threshold,
-and unresolved questions are `0`.
-
-```yaml
-loop:
-  min_confidence: 95
-  max_iterations: 20
-  agent:
-    command: codex
-    args: ["--ask-for-approval", "never", "exec", "--model", "gpt-5.6", "--sandbox", "workspace-write", "--ignore-user-config", "--color", "never", "-"]
-```
-
-```bash
-kit loop workflow my-feature --dry-run
-kit loop workflow my-feature
-kit loop workflow my-feature --until validate
-kit loop review
-kit loop review --pr 14
-```
-
-Loop evidence is written under `.kit/loops/<run-id>/`.
-
-## Prompt-System Benchmarks
-
-`kit improve run --suite default` is a deterministic command-capability smoke
-test. It does not render prompts or measure model quality.
-
-`kit improve run --suite prompt-system --kit-binary <path>` renders the
-representative prompt surfaces three times and records command/assertion
-success, normalized output hashes, output size, local duration, and exact
-runner/binary/suite provenance. A failed command or assertion makes the CLI
-exit nonzero. Compare binaries only when the suite-definition SHA-256 matches.
-Provider cost, model latency, conversational turns, and actual tool/subagent
-routing remain unobservable unless a benchmark explicitly invokes and
-instruments a model.
-
-## V2 Readiness And Completion
-
-The v2 supervisor prompt performs readiness gates inside `SPEC.md` before
-implementation begins. It requires:
-
-- clarified assumptions
-- `clarification.status: ready`
-- confidence at or above the configured goal
-- `clarification.unresolved_questions: 0`
-- binary-verifiable acceptance criteria
-- a task checklist
-- a validation map
-- an Agent Team Plan or recorded single-lane exception
-- documentation sync
-- reflection notes
-- evidence before delivery
-
-## Legacy V1 Foundations
-
-Kit v2 was built from the original staged workflow:
-
-```text
-brainstorm → specification → plan → tasks → implement → reflection
-```
-
-```text
-┌─────────────┐   ┌───────────────┐   ┌─────────────┐   ┌─────────────┐   ┌──────────────┐
-│ BRAINSTORM  │ → │ SPECIFICATION │ → │    PLAN     │ → │    TASKS    │ → │  REFLECTION  │
-└─────────────┘   └───────────────┘   └─────────────┘   └─────────────┘   └──────────────┘
-      idea             clarified           approach          checklist          review
-```
-
-That foundation still matters: v1 made ambiguity explicit, forced planning
-before execution, kept task progress durable, and closed the loop with review.
-Kit v2 keeps those semantics but removes the user-facing command sequence.
-
-Historical `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files remain readable and
-non-disruptive in upgraded projects. Their commands live under `kit legacy` for
-finishing old staged work.
-
-## Legacy Staged Commands
-
-Use `kit legacy <command>` only when finishing existing v1 staged work or
-capturing backlog research that intentionally lives outside the active v2 lane.
-
-```bash
-kit legacy --help
-kit legacy brainstorm my-feature --prepare
-kit legacy brainstorm --backlog shared-refactor
-```
+V1 and V2 instruction scaffolds remain supported legacy inputs, with migration
+advisories reported as warnings.
 
 ## Project Structure
 
 ```text
-.kit.yaml                    # configuration and local prompt overrides
+.kit.yaml
 docs/
-  CONSTITUTION.md            # project-wide constraints
+  CONSTITUTION.md
   PROJECT_PROGRESS_SUMMARY.md
+  agents/
   notes/
     0001-my-feature/
-      .gitkeep
-      design/                # frontend materials when --profile=frontend is used
-        .gitkeep
-        screenshots/
-          .gitkeep
-        references/
-          .gitkeep
-  specs/
-    0001-my-feature/
-      SPEC.md                # v2 durable feature workflow artifact
-      BRAINSTORM.md          # optional legacy staged research artifact
-      PLAN.md                # optional legacy staged plan artifact
-      TASKS.md               # optional legacy staged task artifact
-      ANALYSIS.md            # optional
   references/
     rules/
-      frontend-ui.md         # optional durable pointer-loaded rulesets
+  specs/
+    0001-my-feature/
+      SPEC.md
 ```
 
-New v2 `SPEC.md` files include front matter with `workflow_version: 2`, a
-workflow `phase`, and structured clarification state. Legacy staged artifacts
-still include front matter when created, and Kit commands read front matter
-first before falling back to legacy
-body metadata.
+Local generated evidence under `.kit/runs/`, `.kit/loops/`, and `.kit/state.json`
+is inspectable but non-authoritative. Markdown remains the durable source.

@@ -45,7 +45,7 @@ func projectHandoffWithConfig(projectRoot string, cfg *config.Config) (string, e
 		"Review the most recent conversation context already available in this session before changing anything.",
 		"Summarize that recent context into high-signal facts covering decisions made, blockers, validation results, open questions, and next steps.",
 	}
-	if version == config.InstructionScaffoldVersionTOC {
+	if config.UsesInstructionSupportDocs(version) {
 		workSteps = append(workSteps, "Read the documentation inventory in order, starting with `CONSTITUTION.md`, then the thin instruction entrypoints and `docs/agents/*`, then `PROJECT_PROGRESS_SUMMARY.md`.")
 	} else {
 		workSteps = append(workSteps, "Read the documentation inventory in order, starting with `CONSTITUTION.md` and `PROJECT_PROGRESS_SUMMARY.md`.")
@@ -128,7 +128,7 @@ func featureHandoffWithPath(featureRef string) (string, string, error) {
 		"Review the most recent conversation context already available in this session before changing anything.",
 		"Summarize that recent context into high-signal facts covering decisions made, blockers, validation results, open questions, and next steps.",
 	}
-	if version == config.InstructionScaffoldVersionTOC {
+	if config.UsesInstructionSupportDocs(version) {
 		workSteps = append(workSteps, "Read the listed docs in order, starting with `CONSTITUTION.md`, then the thin instruction entrypoints and `docs/agents/*`, then the feature docs, then `PROJECT_PROGRESS_SUMMARY.md`.")
 	} else {
 		workSteps = append(workSteps, "Read the listed docs in order, starting with `CONSTITUTION.md`, then the feature docs, then `PROJECT_PROGRESS_SUMMARY.md`.")

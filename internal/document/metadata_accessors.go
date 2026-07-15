@@ -36,6 +36,11 @@ func (d *Document) SummaryText() string {
 	if section := d.GetSection("SUMMARY"); section != nil {
 		return ExtractFirstParagraph(section)
 	}
+	if d.Metadata != nil && d.Metadata.WorkflowVersion == WorkflowVersionV3 {
+		if section := d.GetSection("PURPOSE"); section != nil {
+			return ExtractFirstParagraph(section)
+		}
+	}
 	return ""
 }
 

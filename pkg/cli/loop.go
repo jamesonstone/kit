@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
@@ -40,13 +42,13 @@ var (
 
 var loopCmd = &cobra.Command{
 	Use:           "loop [feature]",
-	Short:         "Run workflow and review agent loops",
+	Short:         "Run review loops and deprecated V2 workflow loops",
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	Long: `Run Kit agent loops.
 
 Use kit loop prompt [feature] to create work-to-completion prompts, kit loop
-workflow [feature] to run the v2 single-SPEC workflow through a configured
+workflow [feature] to run the deprecated v2 single-SPEC workflow through a configured
 local agent, and kit loop review for changed-code correctness review.
 
 Configure the local agent in .kit.yaml:
@@ -72,7 +74,7 @@ func init() {
 func newLoopWorkflowCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "workflow [feature]",
-		Short:         "Run the feature workflow through a confidence-gated agent loop",
+		Short:         "Run the deprecated V2 workflow agent loop",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Long: `Run the Kit feature workflow as an autonomous, confidence-gated loop.
@@ -163,6 +165,13 @@ type loopAgentExecution struct {
 }
 
 func runLoop(cmd *cobra.Command, args []string) error {
+	invocation := "kit loop workflow"
+	if cmd.Name() == "loop" {
+		invocation = "bare kit loop"
+	}
+	if _, err := fmt.Fprintf(cmd.ErrOrStderr(), "Warning: %s is deprecated compatibility behavior for workflow_version 2; use native agent planning for feature design and implementation planning.\n", invocation); err != nil {
+		return err
+	}
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
 		return err
@@ -175,6 +184,9 @@ func runLoop(cmd *cobra.Command, args []string) error {
 	feat, err := resolveLoopFeature(specsDir, cfg, args)
 	if err != nil {
 		return err
+	}
+	if workflowVersionForFeature(feat) == document.WorkflowVersionV3 {
+		return fmt.Errorf("workflow_version 3 is not supported by the deprecated workflow loop; use native agent planning and keep %s current", filepath.Join(feat.Path, "SPEC.md"))
 	}
 	until, err := parseLoopStage(loopUntil)
 	if err != nil {

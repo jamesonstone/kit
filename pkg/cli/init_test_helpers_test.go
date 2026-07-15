@@ -8,7 +8,7 @@ import (
 )
 
 func initTestSupportFileContent(relativePath string) string {
-	for _, file := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
+	for _, file := range templates.InstructionSupportFiles(config.DefaultInstructionScaffoldVersion) {
 		if file.RelativePath == relativePath {
 			return file.Content
 		}

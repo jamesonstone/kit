@@ -217,12 +217,14 @@ func restoreSpecFlagState() func() {
 	previousOutputOnly := specOutputOnly
 	previousReviseThesis := specReviseThesis
 	previousUseVim := specUseVim
+	previousLegacySupervisor := specLegacySupervisor
 	specCopy = false
 	specEditor = ""
 	specInline = false
 	specOutputOnly = false
 	specReviseThesis = false
 	specUseVim = false
+	specLegacySupervisor = false
 	return func() {
 		specCopy = previousCopy
 		specEditor = previousEditor
@@ -230,6 +232,7 @@ func restoreSpecFlagState() func() {
 		specOutputOnly = previousOutputOnly
 		specReviseThesis = previousReviseThesis
 		specUseVim = previousUseVim
+		specLegacySupervisor = previousLegacySupervisor
 	}
 }
 

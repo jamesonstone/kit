@@ -351,12 +351,21 @@ func validateMetadata(metadata Metadata, docType DocumentType) []MetadataDiagnos
 		if strings.TrimSpace(reference.Target) == "" {
 			diagnostics = append(diagnostics, metadataError(field+".target", "reference target cannot be empty", "set reference target"))
 		}
-		if strings.TrimSpace(reference.Relation) == "" || !isValidReferenceRelation(reference.Relation) {
-			diagnostics = append(diagnostics, metadataError(
-				field+".relation",
-				fmt.Sprintf("invalid reference relation %q", reference.Relation),
-				"set reference relation to one of: constrains, supports, implements, verifies, guides, informs, supersedes, conflicts_with, uses",
-			))
+		relation := strings.TrimSpace(reference.Relation)
+		if relation == "" || !isValidReferenceRelation(relation) {
+			if metadata.WorkflowVersion == WorkflowVersionV2 && relation == "governs" {
+				diagnostics = append(diagnostics, metadataWarning(
+					field+".relation",
+					"legacy V2 reference relation \"governs\" is supported for compatibility",
+					"semantically curate the reference to `constrains` or `guides` when the V2 spec is next reviewed",
+				))
+			} else {
+				diagnostics = append(diagnostics, metadataError(
+					field+".relation",
+					fmt.Sprintf("invalid reference relation %q", reference.Relation),
+					"set reference relation to one of: constrains, supports, implements, verifies, guides, informs, supersedes, conflicts_with, uses",
+				))
+			}
 		}
 		if strings.TrimSpace(reference.ReadPolicy) == "" || !isValidReferenceReadPolicy(reference.ReadPolicy) {
 			diagnostics = append(diagnostics, metadataError(
@@ -365,12 +374,21 @@ func validateMetadata(metadata Metadata, docType DocumentType) []MetadataDiagnos
 				"set reference read_policy to one of: must, conditional, evidence, skip",
 			))
 		}
-		if strings.TrimSpace(reference.Status) == "" || !isValidReferenceStatus(reference.Status) {
-			diagnostics = append(diagnostics, metadataError(
-				field+".status",
-				fmt.Sprintf("invalid reference status %q", reference.Status),
-				"set reference status to one of: active, optional, stale",
-			))
+		status := strings.TrimSpace(reference.Status)
+		if status == "" || !isValidReferenceStatus(status) {
+			if metadata.WorkflowVersion == WorkflowVersionV2 && status == "loaded" {
+				diagnostics = append(diagnostics, metadataWarning(
+					field+".status",
+					"legacy V2 reference status \"loaded\" is supported for compatibility",
+					"semantically curate the status to `active`, `optional`, or `stale` when the V2 spec is next reviewed",
+				))
+			} else {
+				diagnostics = append(diagnostics, metadataError(
+					field+".status",
+					fmt.Sprintf("invalid reference status %q", reference.Status),
+					"set reference status to one of: active, optional, stale",
+				))
+			}
 		}
 		if strings.TrimSpace(reference.SelectorType) != "" && !isValidReferenceSelectorType(reference.SelectorType) {
 			diagnostics = append(diagnostics, metadataError(

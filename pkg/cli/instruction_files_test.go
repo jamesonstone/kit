@@ -266,7 +266,7 @@ func TestRunScaffoldAgentsForceYes_OverwritesWithoutPrompt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read %s: %v", agentsMDPath, err)
 	}
-	if string(content) != templates.InstructionFileForVersion(agentsMDPath, config.InstructionScaffoldVersionVerbose) {
+	if string(content) != templates.InstructionFileForVersion(agentsMDPath, config.DefaultInstructionScaffoldVersion) {
 		t.Fatalf("expected %s to be overwritten with the scaffold template", agentsMDPath)
 	}
 }
@@ -280,22 +280,7 @@ func TestRunScaffoldAgentsAppendOnly_MergesMissingSectionsWithoutOverwritingExis
 	}
 
 	agentsPath := filepath.Join(tempDir, agentsMDPath)
-	original := `# AGENTS
-
-intro
-
-## Source of truth
-
-custom source
-
-## Custom Notes
-
-keep this note
-
-## Communication Style
-
-custom style
-`
+	original := strings.Replace(templates.MemoryAgentsMD, "## Constraints", "## Custom Notes\n\nkeep this note\n\n## Constraints", 1)
 	writeFile(t, agentsPath, original)
 
 	withScaffoldAgentFlags(t, func() {
@@ -314,21 +299,17 @@ custom style
 	merged := string(content)
 
 	for _, check := range []string{
-		"custom source",
 		"keep this note",
-		"custom style",
-		"## Change Classification (Required First Step)",
-		"## Document Completeness",
+		"## Repository Memory Gate",
+		"## Final Response Contract",
 	} {
 		if !strings.Contains(merged, check) {
 			t.Fatalf("expected merged file to contain %q, got %q", check, merged)
 		}
 	}
 
-	if !(strings.Index(merged, "## Source of truth") < strings.Index(merged, "## Custom Notes") &&
-		strings.Index(merged, "## Custom Notes") < strings.Index(merged, "## Change Classification (Required First Step)") &&
-		strings.Index(merged, "## Change Classification (Required First Step)") < strings.Index(merged, "## Communication Style")) {
-		t.Fatalf("expected missing Kit sections to be inserted before the next recognized section, got %q", merged)
+	if strings.Count(merged, "keep this note") != 1 {
+		t.Fatalf("expected custom section to remain exactly once, got %q", merged)
 	}
 }
 

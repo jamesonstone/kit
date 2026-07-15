@@ -498,7 +498,7 @@ func TestRunInitRefreshForceCopiesDocumentationPrompt(t *testing.T) {
 	}
 }
 
-func TestRunInitRefresh_MigratesGeneratedVerboseInstructionsAndCreatesManagedFiles(t *testing.T) {
+func TestRunInitRefresh_PreservesGeneratedVerboseInstructionsAsLegacy(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
@@ -530,19 +530,19 @@ func TestRunInitRefresh_MigratesGeneratedVerboseInstructionsAndCreatesManagedFil
 	if err != nil {
 		t.Fatalf("config.Load() error = %v", err)
 	}
-	if updated.InstructionScaffoldVersion != config.InstructionScaffoldVersionTOC {
-		t.Fatalf("InstructionScaffoldVersion = %d, want %d", updated.InstructionScaffoldVersion, config.InstructionScaffoldVersionTOC)
+	if updated.InstructionScaffoldVersion != config.InstructionScaffoldVersionVerbose {
+		t.Fatalf("InstructionScaffoldVersion = %d, want %d", updated.InstructionScaffoldVersion, config.InstructionScaffoldVersionVerbose)
 	}
 
 	agentsContent, err := os.ReadFile(filepath.Join(tempDir, agentsMDPath))
 	if err != nil {
 		t.Fatalf("failed to read %s: %v", agentsMDPath, err)
 	}
-	if string(agentsContent) != templates.AgentsMD {
-		t.Fatalf("expected generated v1 %s to migrate to v2 template", agentsMDPath)
+	if string(agentsContent) != templates.LegacyAgentsMD {
+		t.Fatalf("expected generated v1 %s to remain supported legacy input", agentsMDPath)
 	}
-	assertFileExists(t, filepath.Join(tempDir, "docs", "agents", "README.md"))
-	assertFileExists(t, filepath.Join(tempDir, "docs", "references", "README.md"))
+	assertFileDoesNotExist(t, filepath.Join(tempDir, "docs", "agents", "README.md"))
+	assertFileDoesNotExist(t, filepath.Join(tempDir, "docs", "references", "README.md"))
 
 	envrcContent, err := os.ReadFile(filepath.Join(tempDir, envrcPath))
 	if err != nil {

@@ -13,12 +13,11 @@
 - Use `kit capabilities --search <term> --json` for compact filtered discovery, and `kit capabilities --full --json` only when hidden or deprecated compatibility commands matter.
 - Treat `kit capabilities` itself as read-only: it does not require a Kit project root and does not load project config, write files, call the network, run subprocesses, or mutate git.
 - In downstream Kit-managed projects, load `docs/references/rules/kit-capabilities-usage.md` when command discovery affects the task.
-- In the Kit source repository, when adding or extending any Kit command, subcommand, flag, alias, prompt surface, or command behavior, update `kit capabilities` in the same change.
-- In the Kit source repository, load `docs/references/rules/command-capabilities.md` before command-surface work so command metadata stays complete for future coding agents.
+- Downstream projects should use `kit capabilities` for command discovery; do not maintain Kit's internal command catalog from a downstream project.
 
 ## Dispatch
 
-- Use `kit dispatch` when broad work must be turned into a safe Agent Team Plan
+- Use `kit dispatch` after native planning when an accepted plan needs a safe multi-lane execution topology
 - Load `docs/references/rules/agent-team-orchestration.md` when dispatch, direct subagent execution, or read-only verification topology affects the task
 - Keep one accountable supervisor responsible for scope, integration, validation, evidence, delivery gating, and final reporting
 - Use subagents when the work cleanly separates into low-overlap lanes after discovery
@@ -41,9 +40,6 @@
 - Use `kit loop review --pr <target>` when current unresolved CodeRabbit PR feedback should be opportunistically folded into the repair loop while local review starts immediately.
 - Use `kit loop review --pr <target> --watch` or `--wait-for-coderabbit` only when finalization should block for CodeRabbit completion.
 - Review prompts use one agent by default; pass `--subagents` to let the parent review agent pre-analyze the diff and choose subagents only when the lanes are clearly independent under `agent-team-orchestration` limits.
-- Human-readable `kit loop review` runs stream emoji-marked runner progress and child-agent stdout/stderr to stderr; `--json` suppresses progress output and keeps stdout machine-readable.
-- In an interactive terminal, `kit loop review` asks before rerunning when prior review-loop evidence exists or the current run reaches max iterations.
-- Agent command setup failures stop immediately with stderr context instead of consuming the whole iteration budget.
 - Use `kit dispatch --loop --pr <target>` when current unresolved CodeRabbit PR review feedback should become a human-reviewed dispatch prompt instead of an agent repair loop.
 - Use `kit dispatch --pr <target> --coderabbit` only when you need raw unresolved CodeRabbit review-thread intake without review-loop watch, classification, or summary behavior.
 - Treat `kit loop review` as local repair only: it may edit files through the configured agent and write `.kit/loops` evidence, but it must not stage, commit, push, post PR comments, or resolve review threads.
@@ -53,11 +49,9 @@
 
 ## Project Directory
 
-- Work in the existing project directory by default.
-- Do not create or use git worktrees for agent work.
-- If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout.
-- New feature numbers should stay numeric and human-readable; do not renumber them to match dependency order
-- Dependency order should come from `builds on` and `depends on` relationships, not from rewriting directory prefixes
+- Work in the existing project directory by default
+- Do not create or use git worktrees for agent work
+- If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
 
 ## Secondary Global Inputs
 

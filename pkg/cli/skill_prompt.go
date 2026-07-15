@@ -126,7 +126,7 @@ func skillMineTaskSteps(
 			"Read `PROJECT_PROGRESS_SUMMARY.md` at `%s` to understand cross-feature themes, what has been consistently hard, and what has been consistently smooth",
 			summaryPath,
 		),
-		fmt.Sprintf("Read the feature's v2 workflow context in this order:\n%s", skillMineSpecPipelineList(brainstormPath, planPath, tasksPath)),
+		fmt.Sprintf("Read the feature's living-spec or legacy workflow context in this order:\n%s", skillMineSpecPipelineList(brainstormPath, planPath, tasksPath)),
 		"Run `git diff main` to capture what actually changed during implementation; if `main` does not exist, run `git diff master`",
 		fmt.Sprintf(
 			"Read all existing canonical skill bundles under `%s/*/SKILL.md` to avoid duplicating patterns that are already captured",

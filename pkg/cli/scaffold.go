@@ -127,12 +127,30 @@ func scaffoldSpecWorkflow(featureRef string) (scaffoldResult, error) {
 			return scaffoldResult{}, fmt.Errorf("failed to create SPEC.md: %w", err)
 		}
 	}
-	if _, err := ensureSpecV2Adoption(specPath, projectRoot, feat.DirName, cfg.GoalPercentage); err != nil {
-		return scaffoldResult{}, err
-	}
-	notesPath, _, err := ensureFeatureNotesDir(projectRoot, feat.DirName)
+	notesPath, notesRelPath, err := ensureFeatureNotesDir(projectRoot, feat.DirName)
 	if err != nil {
 		return scaffoldResult{}, err
+	}
+	doc, err := document.ParseFile(specPath, document.TypeSpec)
+	if err != nil {
+		return scaffoldResult{}, err
+	}
+	if doc.Metadata != nil && doc.Metadata.WorkflowVersion == document.WorkflowVersionV3 {
+		updated, changed, updateErr := document.UpsertMetadata(doc.Content, document.TypeSpec, document.MetadataUpsert{
+			Feature:         document.FeatureMetadataFromDir(feat.DirName),
+			WorkflowVersion: document.WorkflowVersionV3,
+			Phase:           doc.Metadata.Phase,
+			DeliveryIntent:  doc.Metadata.DeliveryIntent,
+			References:      referencesForMetadataUpsert(doc.Content, document.TypeSpec, []document.MetadataReference{featureNotesReference(notesRelPath)}),
+		})
+		if updateErr != nil {
+			return scaffoldResult{}, updateErr
+		}
+		if changed {
+			if err := document.Write(specPath, updated); err != nil {
+				return scaffoldResult{}, err
+			}
+		}
 	}
 	paths := []string{feat.Path, specPath, notesPath}
 	if effectivePromptProfile(feat.Path) == promptProfileFrontend {

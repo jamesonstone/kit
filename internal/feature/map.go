@@ -249,7 +249,7 @@ func projectGlobalDocuments(projectRoot string, cfg *config.Config) []MapDocumen
 
 	docs = appendMapDocuments(projectRoot, docs, instructions.InstructionDocs(cfg, version))
 
-	if version != config.InstructionScaffoldVersionTOC {
+	if !config.UsesInstructionSupportDocs(version) {
 		return docs
 	}
 

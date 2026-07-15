@@ -1,61 +1,31 @@
 # Workflows
 
-## Spec-Driven Work
+## Native Planning To Repository Memory
 
-- Use this path for new features, substantial behavioral changes, cross-component changes, or work that already has feature docs
-- Do not load every artifact up front
-- In v2 feature work, start from `SPEC.md`; it is the single durable feature artifact
-- Use `SPEC.md` sections for thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence
-- Track clarification in front matter with `clarification.status`, `clarification.confidence`, and `clarification.unresolved_questions`
-- Treat legacy `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` as historical context unless the user explicitly chooses a legacy staged command
-- Use `BRAINSTORM.md` only for unresolved historical rationale
-- Use `PLAN.md` and `TASKS.md` only for legacy staged flows or historical comparison
-- Use prior feature docs only through explicit dependency or relationship links
-- Resolve repository-discoverable ambiguity directly; ask numbered questions with recommended defaults only for material non-discoverable choices, and continue once `clarification.status` is `ready`, confidence meets the configured goal, and unresolved questions are zero
-- Run the v2 readiness gates before writing code: clarification state ready, acceptance criteria binary-verifiable, task checklist mapped to criteria, validation mapped 1:1, delivery intent known
-- Update docs first when the implementation changes behavior, requirements, or approach
+1. Inspect the request, relevant code, and existing repository memory.
+2. Use the host agent's native planning capability for research, clarification, design, and implementation planning.
+3. Before code, assess whether the work contains material rationale that code and tests cannot preserve.
+4. When it does, create or adopt `docs/specs/<feature>/SPEC.md` and translate the accepted native plan into it before implementation.
+5. Keep material decisions and discoveries current while implementing.
+6. Validate the implementation.
+7. Curate the spec and broader repository memory to match what was actually built.
 
-## Source Of Truth
+`kit spec [feature]` scaffolds or adopts the living spec and provides orientation. It does not replace native planning and does not ingest transcripts. The legacy V2 supervisor is compatibility-only.
 
-Authority order:
+## Memory Decision
 
-1. safety and permission constraints
-2. current user request
-3. `docs/CONSTITUTION.md`
-4. `SPEC.md`
-5. legacy `PLAN.md` / `TASKS.md` when the user explicitly chooses a staged flow
-6. legacy `BRAINSTORM.md`
-7. repo conventions
+- Create or update a spec for consequential product behavior, architecture, cross-component contracts, rejected alternatives, or historical decisions future agents need.
+- Do not create a spec for mechanical or code-sufficient work when code and tests communicate the complete durable truth.
+- Route feature rationale to `SPEC.md`, invariants to `CONSTITUTION.md`, reusable practices to references or rules, and domain knowledge to existing canonical domain docs.
 
-Execution order for feature work:
+## V3 Phase Gates
 
-1. `SPEC.md`
-2. relevant `SPEC.md` task checklist item, acceptance criterion, and validation map entry
-3. legacy staged artifacts only when explicitly operating in a legacy staged flow
-4. `docs/CONSTITUTION.md` only when needed
+- Before implementation: purpose, context, requirements including non-goals and observable acceptance, and accepted plan must be populated.
+- At completion: decisions and discoveries must be resolved, validation and actual outcome recorded, repository memory assessed, and pending placeholders removed.
 
-- `SPEC.md` controls requirements, plan, tasks, validation, reflection, delivery, and evidence
-- `CONSTITUTION.md` controls project invariants
-- `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` are non-binding historical context in v2 unless the user chooses a legacy staged flow
+## Compatibility
 
-## Ad Hoc Work
-
-- Use this path for contained bug fixes, reviews, dependency updates, config changes, or small refinements
-- Inspect relevant files before editing
-- Use existing repo patterns
-- Verify directly with the smallest relevant checks
-- Prefer declared `kit legacy verify` checks when legacy staged verification exists; otherwise run the smallest direct command that proves the change
-- Do not create feature docs unless scope requires it
-- Update only the practical docs that changed, unless existing feature docs must also change
-
-## Readiness Gate
-
-- Challenge `SPEC.md` for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, validation gaps, delivery ambiguity, and scope creep
-- If the gate fails, update the canonical docs first, then continue
-
-## Feature Docs
-
-- `docs/specs/<feature>/` remains the source of truth for feature-scoped work
-- v2 feature work keeps durable workflow state in `SPEC.md`
-- `SPEC.md` front matter should include `workflow_version: 2`, a current `phase`, and structured clarification state
-- Keep references, relationships, and skills metadata current when those docs are touched
+- V1 and V2 specs remain readable and valid.
+- Never mechanically rewrite a V2 spec into V3; migration requires semantic curation.
+- Bare `kit loop` and `kit loop workflow` are deprecated V2 compatibility paths. V3 work uses native planning.
+- `kit dispatch` supports post-plan execution topology; it does not design the feature.

@@ -25,12 +25,14 @@ var completeCmd = &cobra.Command{
 	Short: "Mark a feature as complete",
 	Long: `Mark a feature as complete.
 
-For v2 features, this sets SPEC.md front matter phase to complete. For explicit
+For versioned living specs, this preserves the workflow version and sets SPEC.md
+front matter phase to complete. For explicit
 legacy staged features, this appends the REFLECTION_COMPLETE marker to TASKS.md.
 
 If no feature is specified, shows an interactive selection of eligible features.
 
-By default, v2 features must be in deliver phase and legacy staged features
+By default, living specs must be in deliver phase and satisfy their version-specific
+completion gate; legacy staged features
 must have all TASKS.md checkboxes done. Use --force to override this check.
 
 Use --all to mark every currently eligible feature in the completion list
@@ -153,7 +155,7 @@ func eligibleFeaturesForCompletion(specsDir string, cfg *config.Config) ([]featu
 		if f.Paused {
 			continue
 		}
-		if isV2Feature(&f) {
+		if isLivingSpecFeature(&f) {
 			if f.Phase == feature.PhaseDeliver {
 				candidates = append(candidates, f)
 			}
@@ -173,12 +175,25 @@ func eligibleFeaturesForCompletion(specsDir string, cfg *config.Config) ([]featu
 }
 
 func validateFeatureCanComplete(feat *feature.Feature, force bool) (string, error) {
-	if isV2Feature(feat) {
+	if isLivingSpecFeature(feat) {
+		specPath := filepath.Join(feat.Path, "SPEC.md")
+		doc, err := document.ParseFile(specPath, document.TypeSpec)
+		if err != nil {
+			return "", fmt.Errorf("parse SPEC.md: %w", err)
+		}
+		if doc.Metadata != nil && doc.Metadata.WorkflowVersion == document.WorkflowVersionV3 {
+			if validationErrors := doc.Validate(); len(validationErrors) > 0 {
+				return "", fmt.Errorf("v3 completion gate failed: %s", validationErrors[0].Error())
+			}
+			if doc.HasUnresolvedPlaceholders() {
+				return "", fmt.Errorf("v3 completion gate failed: SPEC.md still contains pending TODO placeholders")
+			}
+		}
 		if force || feat.Phase == feature.PhaseDeliver {
-			return filepath.Join(feat.Path, "SPEC.md"), nil
+			return specPath, nil
 		}
 		return "", fmt.Errorf(
-			"SPEC.md phase is %q; v2 features must reach deliver before completion or use --force",
+			"SPEC.md phase is %q; living specs must reach deliver before completion or use --force",
 			feat.Phase,
 		)
 	}
@@ -243,7 +258,7 @@ func markFeaturesComplete(
 }
 
 func markFeatureComplete(feat *feature.Feature, path string) error {
-	if isV2Feature(feat) {
+	if isLivingSpecFeature(feat) {
 		return setSpecPhase(path, feat.DirName, string(feature.PhaseComplete))
 	}
 	return appendReflectionMarker(path)
@@ -254,9 +269,14 @@ func setSpecPhase(specPath, featureDirName, phase string) error {
 	if err != nil {
 		return err
 	}
+	doc := document.Parse(string(data), specPath, document.TypeSpec)
+	workflowVersion := document.WorkflowVersionV2
+	if doc.Metadata != nil && doc.Metadata.WorkflowVersion != 0 {
+		workflowVersion = doc.Metadata.WorkflowVersion
+	}
 	updated, changed, err := document.UpsertMetadata(string(data), document.TypeSpec, document.MetadataUpsert{
 		Feature:         document.FeatureMetadataFromDir(featureDirName),
-		WorkflowVersion: 2,
+		WorkflowVersion: workflowVersion,
 		Phase:           phase,
 	})
 	if err != nil {
@@ -269,12 +289,24 @@ func setSpecPhase(specPath, featureDirName, phase string) error {
 }
 
 func isV2Feature(feat *feature.Feature) bool {
+	return workflowVersionForFeature(feat) == document.WorkflowVersionV2
+}
+
+func isLivingSpecFeature(feat *feature.Feature) bool {
+	version := workflowVersionForFeature(feat)
+	return version == document.WorkflowVersionV2 || version == document.WorkflowVersionV3
+}
+
+func workflowVersionForFeature(feat *feature.Feature) int {
 	if feat == nil {
-		return false
+		return 0
 	}
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	doc, err := document.ParseFile(specPath, document.TypeSpec)
-	return err == nil && doc.Metadata != nil && doc.Metadata.WorkflowVersion == 2
+	if err != nil || doc.Metadata == nil {
+		return 0
+	}
+	return doc.Metadata.WorkflowVersion
 }
 
 // appendReflectionMarker appends the REFLECTION_COMPLETE marker to a TASKS.md file.

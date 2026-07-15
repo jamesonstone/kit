@@ -158,12 +158,28 @@ func planRefreshInitInstructionArtifacts(
 	opts initRefreshOptions,
 	cfg *config.Config,
 	targets map[string]bool,
-) ([]initRefreshFileChange, error) {
+) ([]initRefreshFileChange, []string, bool, error) {
+	currentVersion := cfg.EffectiveInstructionScaffoldVersion()
+	targetVersion := currentVersion
+	migrated := false
+	var notes []string
+	fullRefresh := len(targets) == 0
+	if fullRefresh && currentVersion == config.InstructionScaffoldVersionTOC {
+		if exactGeneratedInstructionScaffold(projectRoot, cfg, config.InstructionScaffoldVersionTOC) {
+			targetVersion = config.InstructionScaffoldVersionMemory
+			cfg.InstructionScaffoldVersion = targetVersion
+			migrated = true
+			notes = append(notes, "migrated exact generated V2 instruction artifacts to instruction_scaffold_version 3")
+		} else {
+			notes = append(notes, "customized V2 instruction artifacts were preserved; review `kit reconcile --include-files` or run `kit scaffold agents --version 3 --force`")
+		}
+	}
+
 	var changes []initRefreshFileChange
 	for _, relativePath := range instructionArtifactPaths(
 		cfg,
 		instructionFileSelection{},
-		config.InstructionScaffoldVersionTOC,
+		targetVersion,
 		true,
 	) {
 		relativePath = filepath.ToSlash(relativePath)
@@ -171,20 +187,35 @@ func planRefreshInitInstructionArtifacts(
 			continue
 		}
 		mode := instructionFileWriteModeAppendOnly
-		if opts.force || exactLegacyInstructionArtifact(projectRoot, relativePath) {
+		if opts.force || migrated || exactLegacyInstructionArtifact(projectRoot, relativePath) {
 			mode = instructionFileWriteModeOverwrite
 		}
-		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, config.InstructionScaffoldVersionTOC)
+		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, targetVersion)
 		if err != nil {
-			return nil, err
+			return nil, nil, false, err
 		}
 		change, err := initRefreshChangeFromInstructionPlan(projectRoot, plan)
 		if err != nil {
-			return nil, err
+			return nil, nil, false, err
 		}
 		changes = append(changes, change)
 	}
-	return changes, nil
+	return changes, notes, migrated, nil
+}
+
+func exactGeneratedInstructionScaffold(projectRoot string, cfg *config.Config, version int) bool {
+	for _, relativePath := range instructionArtifactPaths(cfg, instructionFileSelection{}, version, true) {
+		path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return false
+		}
+		expected, _, err := instructionArtifactContent(relativePath, version)
+		if err != nil || strings.TrimSpace(string(content)) != strings.TrimSpace(expected) {
+			return false
+		}
+	}
+	return true
 }
 
 func initRefreshChangeFromInstructionPlan(projectRoot string, plan instructionFileWritePlan) (initRefreshFileChange, error) {

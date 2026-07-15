@@ -88,10 +88,22 @@ func appendFrontendProfileDependencyRows(content string, docType document.Docume
 
 func referencesForMetadataUpsert(content string, docType document.DocumentType, newReferences []document.MetadataReference) []document.MetadataReference {
 	doc := document.Parse(content, "", docType)
-	if doc.FrontMatterPresent {
-		return newReferences
+	references := doc.References()
+	for _, incoming := range newReferences {
+		replaced := false
+		for i, existing := range references {
+			if (incoming.ID != "" && existing.ID == incoming.ID) ||
+				(incoming.ID == "" && existing.Target == incoming.Target) {
+				references[i] = incoming
+				replaced = true
+				break
+			}
+		}
+		if !replaced {
+			references = append(references, incoming)
+		}
 	}
-	return newReferences
+	return references
 }
 
 func hasActiveFrontendProfileReference(references []document.MetadataReference) bool {

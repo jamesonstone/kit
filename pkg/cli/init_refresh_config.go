@@ -41,9 +41,12 @@ func initRefreshConfig(
 
 	if configSelected && opts.force {
 		aws := cfg.AWS
+		instructionVersion := cfg.InstructionScaffoldVersion
 		cfg = defaultInitConfig()
 		cfg.SchemaVersion = config.CurrentSchemaVersion
-		cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+		if exists && config.IsInstructionScaffoldVersionSupported(instructionVersion) {
+			cfg.InstructionScaffoldVersion = instructionVersion
+		}
 		cfg.AWS = aws
 		after, err := marshalInitRefreshConfig(cfg)
 		if err != nil {
@@ -61,8 +64,8 @@ func initRefreshConfig(
 		cfg.SchemaVersion = config.CurrentSchemaVersion
 		configChanged = true
 	}
-	if cfg.InstructionScaffoldVersion != config.InstructionScaffoldVersionTOC {
-		cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	if !config.IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
+		cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
 		configChanged = true
 	}
 	if ensureInitLoopReviewConfig(cfg) {

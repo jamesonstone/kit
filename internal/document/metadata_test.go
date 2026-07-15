@@ -660,6 +660,45 @@ feature:
 	}
 }
 
+func TestMetadataAcceptsLegacyV2ReferenceVocabularyWithWarnings(t *testing.T) {
+	doc := Parse(`---
+kit_metadata_version: 1
+artifact: spec
+workflow_version: 2
+phase: deliver
+clarification:
+  status: ready
+  confidence: 100
+  unresolved_questions: 0
+feature:
+  id: "0001"
+  slug: alpha
+  dir: 0001-alpha
+references:
+  - name: Legacy guidance
+    type: doc
+    target: docs/agents/README.md
+    relation: governs
+    read_policy: must
+    used_for: compatibility
+    status: loaded
+---
+# SPEC
+`, "SPEC.md", TypeSpec)
+
+	var governsWarning, loadedWarning bool
+	for _, diagnostic := range doc.MetadataDiagnostics {
+		if diagnostic.Severity == MetadataDiagnosticError {
+			t.Fatalf("unexpected legacy compatibility error: %#v", diagnostic)
+		}
+		governsWarning = governsWarning || strings.Contains(diagnostic.Message, `relation "governs"`)
+		loadedWarning = loadedWarning || strings.Contains(diagnostic.Message, `status "loaded"`)
+	}
+	if !governsWarning || !loadedWarning {
+		t.Fatalf("legacy warnings governs=%v loaded=%v diagnostics=%#v", governsWarning, loadedWarning, doc.MetadataDiagnostics)
+	}
+}
+
 func TestUpsertMetadataRejectsUnclosedFrontMatter(t *testing.T) {
 	content := `---
 kit_metadata_version: 1

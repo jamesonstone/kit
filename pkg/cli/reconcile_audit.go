@@ -22,6 +22,7 @@ const (
 
 type reconcileFinding struct {
 	Severity          reconcileSeverity
+	NonBlocking       bool
 	FilePath          string
 	Issue             string
 	ContractSource    string
@@ -431,23 +432,23 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 		}
 	}
 
-	for _, support := range instructions.SupportDocs(config.InstructionScaffoldVersionTOC) {
+	for _, support := range instructions.SupportDocs(config.DefaultInstructionScaffoldVersion) {
 		absolutePath := filepath.Join(projectRoot, support.RelativePath)
 		exists := document.Exists(absolutePath)
 		switch version {
-		case config.InstructionScaffoldVersionTOC:
+		case config.InstructionScaffoldVersionTOC, config.InstructionScaffoldVersionMemory:
 			if exists {
 				continue
 			}
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
 				absolutePath,
-				"missing v2 repo-local instruction support document",
+				"missing repo-local instruction support document",
 				templateSource(projectRoot),
-				"restore the thin ToC docs tree, typically with `kit scaffold agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
+				fmt.Sprintf("restore the instruction docs tree, typically with `kit scaffold agents --version %d --append-only` or `--force` if a full refresh is acceptable", version),
 				[]string{
-					"kit scaffold agents --version 2 --append-only",
-					"kit scaffold agents --version 2 --force",
+					fmt.Sprintf("kit scaffold agents --version %d --append-only", version),
+					fmt.Sprintf("kit scaffold agents --version %d --force", version),
 				},
 			))
 		case config.InstructionScaffoldVersionVerbose:
@@ -468,11 +469,27 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 		}
 	}
 
-	if version == config.InstructionScaffoldVersionTOC {
-		findings = append(findings, auditV2InstructionEntrypoints(projectRoot, instructionFileSet(instructionFiles(cfg)))...)
-		findings = append(findings, auditV2SupportGuidance(projectRoot)...)
-		findings = append(findings, auditV2PromptEntrypoints(projectRoot, cfg)...)
+	if config.UsesInstructionSupportDocs(version) {
+		findings = append(findings, auditInstructionEntrypoints(projectRoot, instructionFileSet(instructionFiles(cfg)), version)...)
+		if version == config.InstructionScaffoldVersionMemory {
+			findings = append(findings, auditV3SupportGuidance(projectRoot)...)
+		} else {
+			findings = append(findings, auditV2SupportGuidance(projectRoot)...)
+		}
+		findings = append(findings, auditInstructionPromptEntrypoints(projectRoot, cfg, version)...)
 		findings = append(findings, auditAlwaysLoadedCoreDocs(projectRoot)...)
+	}
+	if version == config.InstructionScaffoldVersionTOC && !exactGeneratedInstructionScaffold(projectRoot, cfg, version) {
+		finding := newFinding(
+			reconcileSeverityWarning,
+			filepath.Join(projectRoot, config.ConfigFileName),
+			"customized V2 instruction artifacts are not eligible for automatic V3 migration",
+			templateSource(projectRoot),
+			"review reconciliation or explicitly run `kit scaffold agents --version 3 --force`; Kit will not overwrite customized V2 instructions automatically",
+			[]string{"kit reconcile --include-files --dry-run --diff", "kit scaffold agents --version 3 --force"},
+		)
+		finding.NonBlocking = true
+		findings = append(findings, finding)
 	}
 
 	return findings
@@ -509,8 +526,10 @@ var vendorToolRequirementSnippets = []string{
 	"only use codex",
 }
 
-func auditV2InstructionEntrypoints(projectRoot string, alreadyAudited map[string]bool) []reconcileFinding {
+func auditInstructionEntrypoints(projectRoot string, alreadyAudited map[string]bool, version int) []reconcileFinding {
 	var findings []reconcileFinding
+	model := fmt.Sprintf("version %d", version)
+	scaffoldCommand := fmt.Sprintf("kit scaffold agents --version %d --append-only", version)
 	for _, relativePath := range v2RequiredRootInstructionPaths {
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
 		content, err := os.ReadFile(absolutePath)
@@ -522,17 +541,17 @@ func auditV2InstructionEntrypoints(projectRoot string, alreadyAudited map[string
 				findings = append(findings, newFinding(
 					reconcileSeverityWarning,
 					absolutePath,
-					"missing v2 root instruction entrypoint",
+					fmt.Sprintf("missing %s root instruction entrypoint", model),
 					templateSource(projectRoot),
-					"restore the thin v2 root files with `kit scaffold agents --version 2 --append-only`",
-					[]string{"kit scaffold agents --version 2 --append-only"},
+					fmt.Sprintf("restore the thin root files with `%s`", scaffoldCommand),
+					[]string{scaffoldCommand},
 				))
 				continue
 			}
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
 				absolutePath,
-				"failed to read v2 root instruction entrypoint",
+				fmt.Sprintf("failed to read %s root instruction entrypoint", model),
 				templateSource(projectRoot),
 				"fix file readability before project validation can inspect instruction drift",
 				[]string{fmt.Sprintf("sed -n '1,160p' %s", absolutePath)},
@@ -545,11 +564,11 @@ func auditV2InstructionEntrypoints(projectRoot string, alreadyAudited map[string
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
 				absolutePath,
-				"v2 root instruction file does not route through `docs/agents/README.md`",
+				fmt.Sprintf("%s root instruction file does not route through `docs/agents/README.md`", model),
 				templateSource(projectRoot),
-				"restore the thin routing entrypoint with `kit scaffold agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
+				fmt.Sprintf("restore the thin routing entrypoint with `%s` or `--force` if a full refresh is acceptable", scaffoldCommand),
 				[]string{
-					"kit scaffold agents --version 2 --append-only",
+					scaffoldCommand,
 					fmt.Sprintf("rg -n \"docs/agents/README.md\" %s", absolutePath),
 				},
 			))
@@ -558,7 +577,7 @@ func auditV2InstructionEntrypoints(projectRoot string, alreadyAudited map[string
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
 				absolutePath,
-				"v2 root instruction file duplicates the full workflow manual instead of staying thin",
+				fmt.Sprintf("%s root instruction file duplicates the full workflow manual instead of staying thin", model),
 				templateSource(projectRoot),
 				"move durable workflow guidance to `docs/agents/*` and keep the root file as a routing table",
 				[]string{
@@ -571,7 +590,7 @@ func auditV2InstructionEntrypoints(projectRoot string, alreadyAudited map[string
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
 				absolutePath,
-				"v2 root instruction file requires a vendor-specific coding tool",
+				fmt.Sprintf("%s root instruction file requires a vendor-specific coding tool", model),
 				constitutionSource(projectRoot),
 				"rewrite the instruction as agent-agnostic guidance and keep vendor-specific files as optional entrypoints only",
 				[]string{fmt.Sprintf("sed -n '1,160p' %s", absolutePath)},
@@ -581,7 +600,7 @@ func auditV2InstructionEntrypoints(projectRoot string, alreadyAudited map[string
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
 				absolutePath,
-				"v2 root instruction file references an unsupported always-loaded `core.md`",
+				fmt.Sprintf("%s root instruction file references an unsupported always-loaded `core.md`", model),
 				templateSource(projectRoot),
 				"remove the monolithic core reference and route through `docs/agents/README.md` instead",
 				[]string{fmt.Sprintf("rg -n \"core\\.md|docs/agents/README\\.md\" %s", absolutePath)},
@@ -669,7 +688,76 @@ func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
 	return findings
 }
 
-func auditV2PromptEntrypoints(projectRoot string, cfg *config.Config) []reconcileFinding {
+func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
+	expectations := map[string][]string{
+		"docs/agents/README.md": {
+			"## Runtime Routing",
+			"Native agent planning owns research, clarification, design, and plan formation",
+			"V1 and V2 artifacts remain supported legacy inputs",
+		},
+		"docs/agents/WORKFLOWS.md": {
+			"## Native Planning To Repository Memory",
+			"Before code, assess whether the work contains material rationale",
+			"Never mechanically rewrite a V2 spec into V3",
+			"`kit dispatch` supports post-plan execution topology",
+		},
+		"docs/agents/RLM.md": {
+			"## Runtime Loop",
+			"identify the immediate decision",
+			"stop loading once the decision is supported",
+			"## Context Budget Rules",
+		},
+		"docs/agents/TOOLING.md": {
+			"Use `kit dispatch` after native planning",
+			"accepted plan needs a safe multi-lane execution topology",
+		},
+		"docs/agents/GUARDRAILS.md": {
+			"## Repository Memory Completion Gate",
+			"Create or adopt a spec before code when material rationale exists",
+			"Every implementation final response must include `Repository Memory`",
+		},
+	}
+
+	var findings []reconcileFinding
+	for relativePath, snippets := range expectations {
+		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+		content, err := os.ReadFile(absolutePath)
+		if err != nil {
+			continue
+		}
+		body := string(content)
+		for _, snippet := range snippets {
+			if strings.Contains(body, snippet) {
+				continue
+			}
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				fmt.Sprintf("V3 instruction support document is missing required guidance %q", snippet),
+				templateSource(projectRoot),
+				"refresh the V3 docs tree with `kit scaffold agents --version 3 --append-only` or `--force` if a full refresh is acceptable",
+				[]string{
+					"kit scaffold agents --version 3 --append-only",
+					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
+				},
+			))
+			break
+		}
+		if containsVendorToolRequirement(body) {
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				"V3 instruction support document requires a vendor-specific coding tool",
+				constitutionSource(projectRoot),
+				"rewrite the guidance as agent-agnostic instructions",
+				[]string{fmt.Sprintf("sed -n '1,180p' %s", absolutePath)},
+			))
+		}
+	}
+	return findings
+}
+
+func auditInstructionPromptEntrypoints(projectRoot string, cfg *config.Config, version int) []reconcileFinding {
 	if repoKnowledgeEntrypointPath(projectRoot, cfg) != "" {
 		return nil
 	}
@@ -678,10 +766,10 @@ func auditV2PromptEntrypoints(projectRoot string, cfg *config.Config) []reconcil
 	return []reconcileFinding{newFinding(
 		reconcileSeverityWarning,
 		path,
-		"generated prompt routing cannot find the v2 repo-local entrypoint",
+		fmt.Sprintf("generated prompt routing cannot find the version %d repo-local entrypoint", version),
 		templateSource(projectRoot),
 		"restore `docs/agents/README.md` so prompts can use just-in-time context loading",
-		[]string{"kit scaffold agents --version 2 --append-only"},
+		[]string{fmt.Sprintf("kit scaffold agents --version %d --append-only", version)},
 	)}
 }
 

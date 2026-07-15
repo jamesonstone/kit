@@ -20,7 +20,7 @@ var statusCmd = &cobra.Command{
 	Long: `Display the active feature's status, including:
   - Feature name and ID
   - Business summary from SPEC.md
-  - Current v2 SPEC.md phase and paused state
+  - Current living SPEC.md phase and paused state
   - Remaining workflow work
   - File existence (SPEC plus optional legacy artifacts)
   - Legacy task completion progress when TASKS.md is present
@@ -303,10 +303,32 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 	}
 
 	if !status.Files["spec"].Exists {
-		return fmt.Sprintf("Start v2 workflow with `kit spec %s`; use `kit legacy brainstorm %s` only for staged migration research", status.Name, status.Name)
+		return fmt.Sprintf("Use native planning, then scaffold durable feature memory with `kit spec %s` when material rationale exists", status.Name)
 	}
 
-	if statusUsesV2Workflow(status) {
+	workflowVersion := statusWorkflowVersion(status)
+	if workflowVersion == document.WorkflowVersionV3 {
+		switch status.Phase {
+		case feature.PhaseClarify:
+			return "Use native planning, then capture purpose, context, requirements, and the accepted plan in SPEC.md before implementation"
+		case feature.PhaseReady:
+			return "Begin implementation from the accepted native plan and keep material decisions and discoveries current"
+		case feature.PhaseImplement:
+			return "Continue implementation and update SPEC.md when consequential decisions or discoveries occur"
+		case feature.PhaseValidate:
+			return "Run relevant validation and record exact outcomes in SPEC.md"
+		case feature.PhaseReflect:
+			return "Curate the actual outcome and route durable knowledge into the correct repository memory"
+		case feature.PhaseDeliver:
+			return fmt.Sprintf("Repository memory is curated. Complete the feature with `kit complete %s` after any requested delivery mutation is resolved", status.Name)
+		case feature.PhaseBlocked:
+			return "Resolve the blocker recorded in SPEC.md or ask for the missing material decision"
+		case feature.PhaseComplete:
+			return "Feature is complete"
+		}
+	}
+
+	if workflowVersion == document.WorkflowVersionV2 {
 		switch status.Phase {
 		case feature.PhaseClarify:
 			return "Resolve remaining material non-discoverable ambiguity in SPEC.md until unresolved questions are 0 and acceptance criteria are binary-verifiable"
@@ -349,17 +371,24 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 	return fmt.Sprintf("Define tasks with markdown checkboxes in %s", status.Files["tasks"].Path)
 }
 
-func statusUsesV2Workflow(status *feature.FeatureStatus) bool {
+func statusWorkflowVersion(status *feature.FeatureStatus) int {
 	if status == nil || status.Files == nil {
-		return false
+		return 0
 	}
 	spec, ok := status.Files["spec"]
 	if !ok || !spec.Exists {
-		return false
+		return 0
 	}
 	doc, err := document.ParseFile(spec.Path, document.TypeSpec)
 	if err != nil {
-		return false
+		return 0
 	}
-	return doc.Metadata != nil && doc.Metadata.WorkflowVersion == 2
+	if doc.Metadata == nil {
+		return 0
+	}
+	return doc.Metadata.WorkflowVersion
+}
+
+func statusUsesV2Workflow(status *feature.FeatureStatus) bool {
+	return statusWorkflowVersion(status) == document.WorkflowVersionV2
 }

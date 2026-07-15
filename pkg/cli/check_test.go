@@ -83,6 +83,57 @@ func TestRunCheckProjectPassesWhenRepoIsCoherent(t *testing.T) {
 	}
 }
 
+func TestRunCheckProjectPassesWithV3InstructionContract(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	writeFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), validConstitution())
+	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
+	writeInitScaffoldArtifacts(t, projectRoot)
+	for _, relativePath := range instructionArtifactPaths(cfg, instructionFileSelection{}, config.InstructionScaffoldVersionMemory, true) {
+		content, _, err := instructionArtifactContent(relativePath, config.InstructionScaffoldVersionMemory)
+		if err != nil {
+			t.Fatalf("instructionArtifactContent(%q) error = %v", relativePath, err)
+		}
+		writeFile(t, filepath.Join(projectRoot, relativePath), content)
+	}
+	setWorkingDirectory(t, projectRoot)
+
+	checkProject = true
+	checkAll = false
+	t.Cleanup(func() {
+		checkProject = false
+		checkAll = false
+	})
+
+	cmd := &cobra.Command{}
+	if err := runCheck(cmd, nil); err != nil {
+		t.Fatalf("runCheck() error = %v", err)
+	}
+}
+
+func TestRunCheckProjectDoesNotFailForCustomizedV2MigrationAdvisory(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	agentsPath := filepath.Join(projectRoot, "AGENTS.md")
+	writeFile(t, agentsPath, readFile(t, agentsPath)+"\n## Local Policy\n\nPreserve this customization.\n")
+	setWorkingDirectory(t, projectRoot)
+
+	checkProject = true
+	checkAll = false
+	t.Cleanup(func() {
+		checkProject = false
+		checkAll = false
+	})
+
+	cmd := &cobra.Command{}
+	if err := runCheck(cmd, nil); err != nil {
+		t.Fatalf("runCheck() error = %v", err)
+	}
+}
+
 func TestRunCheckProjectWarnsForOverdueProjectRefreshWithoutFailing(t *testing.T) {
 	projectRoot := setupCoherentProjectForCheck(t)
 	cfg, err := config.Load(projectRoot)

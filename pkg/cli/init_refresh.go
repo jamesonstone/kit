@@ -18,6 +18,10 @@ const constitutionBaselineSection = `### ` + constitutionBaselineHeading + `
 - Treat ` + "`docs/CONSTITUTION.md`" + ` as the canonical project contract.
 - Keep ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, and ` + "`.github/copilot-instructions.md`" + ` aligned with the repo-local docs tree.
 - Treat ` + "`docs/notes/<feature>`" + ` as optional source material, not canonical truth; promote durable decisions into ` + "`SPEC.md`" + `, ` + "`docs/CONSTITUTION.md`" + `, or durable references.
+- Use native agent planning for research, clarification, design, and implementation planning.
+- Before implementation, inspect code and repository memory; create or adopt ` + "`SPEC.md`" + ` when material rationale exists.
+- After validation, curate feature rationale, project invariants, reusable practices, and domain knowledge into their scope-appropriate canonical documents.
+- Allow a justified ` + "`not required`" + ` repository-memory decision when code and tests preserve the complete durable truth.
 - Prefer implementation/source code files around 300 lines or less when splitting improves clarity and ownership.
 - Do not apply the code-file size guideline to documentation files, all ` + "`docs/**`" + `, all ` + "`.kit/**`" + `, or ` + "`.kit.yaml`" + `.
 - Do not split or rewrite docs, generated state, or Kit config artifacts solely because they exceed 300 lines.
@@ -76,10 +80,8 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 		return nil
 	}
 
-	for _, change := range plan.changes {
-		if err := applyInitRefreshFileChange(change); err != nil {
-			return err
-		}
+	if err := applyInitRefreshFileChangesAtomically(plan.changes); err != nil {
+		return err
 	}
 
 	if !opts.outputOnly {
@@ -160,18 +162,19 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	if constitutionChange != nil {
 		changes = append(changes, *constitutionChange)
 	}
-	instructionChanges, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
+	instructionChanges, instructionNotes, instructionMigrated, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
 	if err != nil {
 		return nil, err
 	}
 	changes = append(changes, instructionChanges...)
+	notes = append(notes, instructionNotes...)
 	rulesetChanges, rulesetNotes, registryChanged, err := planRefreshInitRulesets(ctx, projectRoot, opts, cfg, targets, registry)
 	if err != nil {
 		return nil, err
 	}
 	notes = append(notes, rulesetNotes...)
 	changes = append(changes, rulesetChanges...)
-	if configChange != nil || registryChanged {
+	if configChange != nil || registryChanged || instructionMigrated {
 		configChange, err = finalizeInitRefreshConfigChange(projectRoot, cfg, configChange)
 		if err != nil {
 			return nil, err
@@ -214,7 +217,7 @@ func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map
 	for _, relativePath := range instructionArtifactPaths(
 		cfg,
 		instructionFileSelection{},
-		config.InstructionScaffoldVersionTOC,
+		cfg.EffectiveInstructionScaffoldVersion(),
 		true,
 	) {
 		known[filepath.ToSlash(relativePath)] = true

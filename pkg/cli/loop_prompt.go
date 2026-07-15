@@ -98,7 +98,7 @@ func loopStageContract(stage loopStage, minConfidence int) []string {
 func ensureLoopStageArtifact(projectRoot string, cfg *config.Config, feat *feature.Feature, stage loopStage) error {
 	specPath := filepath.Join(feat.Path, "SPEC.md")
 	if !document.Exists(specPath) {
-		content := templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+		content := templates.BuildSpecV2ArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
 		if err := document.Write(specPath, content); err != nil {
 			return fmt.Errorf("failed to create SPEC.md: %w", err)
 		}

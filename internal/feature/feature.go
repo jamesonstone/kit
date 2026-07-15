@@ -157,7 +157,7 @@ func ListFeatures(specsDir string) ([]Feature, error) {
 }
 
 // DeterminePhase checks feature documents and returns the current phase.
-// v2 SPEC.md front matter is authoritative when present. Legacy staged artifact
+// Versioned SPEC.md front matter is authoritative when present. Legacy staged artifact
 // inference is retained only as fallback for historical v1 feature directories.
 func DeterminePhase(featurePath string) Phase {
 	tasksPath := filepath.Join(featurePath, "TASKS.md")
@@ -165,7 +165,7 @@ func DeterminePhase(featurePath string) Phase {
 	specPath := filepath.Join(featurePath, "SPEC.md")
 	brainstormPath := filepath.Join(featurePath, "BRAINSTORM.md")
 
-	if phase, ok := determineV2SpecPhase(specPath); ok {
+	if phase, ok := determineLivingSpecPhase(specPath); ok {
 		return phase
 	}
 
@@ -184,21 +184,21 @@ func DeterminePhase(featurePath string) Phase {
 	return PhaseBrainstorm
 }
 
-func determineV2SpecPhase(specPath string) (Phase, bool) {
+func determineLivingSpecPhase(specPath string) (Phase, bool) {
 	if _, err := os.Stat(specPath); err != nil {
 		return "", false
 	}
 	doc, err := document.ParseFile(specPath, document.TypeSpec)
-	if err != nil || doc.Metadata == nil || doc.Metadata.WorkflowVersion != 2 {
+	if err != nil || !doc.IsLivingSpec() {
 		return "", false
 	}
-	if phase, ok := V2PhaseFromString(doc.Metadata.Phase); ok {
+	if phase, ok := LivingSpecPhaseFromString(doc.Metadata.Phase); ok {
 		return phase, true
 	}
 	return PhaseClarify, true
 }
 
-func V2PhaseFromString(value string) (Phase, bool) {
+func LivingSpecPhaseFromString(value string) (Phase, bool) {
 	switch Phase(strings.TrimSpace(value)) {
 	case PhaseClarify:
 		return PhaseClarify, true
@@ -219,6 +219,11 @@ func V2PhaseFromString(value string) (Phase, bool) {
 	default:
 		return "", false
 	}
+}
+
+// V2PhaseFromString is retained for callers compiled against the V2 helper.
+func V2PhaseFromString(value string) (Phase, bool) {
+	return LivingSpecPhaseFromString(value)
 }
 
 // DeterminePhaseFromTasks determines phase based on task progress.

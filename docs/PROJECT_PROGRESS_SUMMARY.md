@@ -42,11 +42,12 @@
 | 0036 | kit-dream | `docs/specs/0036-kit-dream` | removed | no | 2026-06-21 | Removed by kit rm on 2026-06-21. |
 | 0038 | auto-improvement-v1 | `docs/specs/0038-auto-improvement-v1` | deliver | no | 2026-07-07 | (no description) |
 | 0040 | prompt-system-migration | `docs/specs/0040-prompt-system-migration` | deliver | no | 2026-07-10 | Modernize every generated prompt for GPT-5.6, prove the migration with a truthful deterministic benchmark, and preserve Kit's code-enforced workflow gates. |
-| 0041 | aws-config-schema | `docs/specs/0041-aws-config-schema` | deliver | no | 2026-07-12 | Version Kit project configuration and bind each AWS-enabled project to one STS-verified CLI profile and account with fast automatic checks and interactive repair. |
+| 0041 | aws-config-schema | `docs/specs/0041-aws-config-schema` | deliver | no | 2026-07-13 | Version Kit project configuration and bind each AWS-enabled project to one STS-verified CLI profile and account with fast automatic checks and interactive repair. |
+| 0042 | native-plan-repository-memory | `docs/specs/0042-native-plan-repository-memory` | complete | no | 2026-07-15 | Recenter Kit as a repository-memory and specification harness: native agent planning owns research, clarification, design, and implementation planning, while Kit ensures that consequential implementation rationale survives in canonical repository documents. |
 
 ## PROJECT INTENT
 
-Kit is a document-first workflow harness for disciplined thought work. It keeps durable project context in canonical markdown artifacts so humans and coding agents can move from research to specification, planning, tasks, implementation, reflection, and completion with explicit traceability.
+Kit is a repository-memory and specification harness. Native agent planning owns research and design; Kit preserves consequential rationale, accepted plans, decisions, validation, and outcomes in canonical repository documents when code and tests alone are insufficient.
 
 ## GLOBAL CONSTRAINTS
 
@@ -406,6 +407,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0041-aws-config-schema/SPEC.md`, `docs/specs/0041-aws-config-schema/PLAN.md`, `docs/specs/0041-aws-config-schema/TASKS.md`
 
+### native-plan-repository-memory
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Recenter Kit as a repository-memory and specification harness: native agent planning owns research, clarification, design, and implementation planning, while Kit ensures that consequential implementation rationale survives in canonical repository documents.
+- **APPROACH**: 1. Add a compact V3 spec template plus version-aware parsing, summaries, phase detection, checks, mapping, status, and completion gates while preserving V2 behavior. 2. Make plain `kit spec` a concise non-interactive scaffold/adopt/orient command and isolate the V2 supervisor behind deprecated compatibility routing. 3. Add V3 repository-instruction templates and atomic exact-template migration while protecting customized V2 files. 4. Deprecate V2 workflow-loop entry points, retain focused execution/review utilities, and position dispatch after native planning. 5. Reposition README, Constitution, workflow, command, capability, root-help, and generated-agent guidance around curated repository memory. 6. Add V3, V2 compatibility, migration, CLI, completion, loop, capability, and two-outcome workflow fixtures; run the full validation matrix and curate this spec to the actual result.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0042-native-plan-repository-memory/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-12 15:03:04 EDT
+2026-07-15 12:43:24 EDT

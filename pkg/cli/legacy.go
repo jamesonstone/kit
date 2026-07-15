@@ -9,9 +9,9 @@ var legacyCmd = &cobra.Command{
 	Short: "List deprecated v1 staged workflow commands",
 	Long: `List the deprecated v1 staged workflow command surface.
 
-The default v2 feature workflow is ` + "`kit spec <feature>`" + `. These commands remain
-available for finishing existing staged work, but they are no longer the
-primary feature workflow.
+The default workflow uses native agent planning and plain ` + "`kit spec <feature>`" + `
+only when material rationale needs durable repository memory. These commands
+remain available for finishing existing staged work.
 
 Deprecated v1 staged commands:
   kit legacy brainstorm [feature]  Create BRAINSTORM.md or capture backlog research

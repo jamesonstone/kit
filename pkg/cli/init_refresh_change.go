@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/jamesonstone/kit/internal/document"
@@ -13,6 +14,29 @@ type initRefreshFileChange struct {
 	before       string
 	after        string
 	result       instructionFileWriteResult
+}
+
+func applyInitRefreshFileChangesAtomically(changes []initRefreshFileChange) error {
+	applied := make([]initRefreshFileChange, 0, len(changes))
+	for _, change := range changes {
+		if err := applyInitRefreshFileChange(change); err != nil {
+			for i := len(applied) - 1; i >= 0; i-- {
+				_ = rollbackInitRefreshFileChange(applied[i])
+			}
+			return err
+		}
+		if change.result != instructionFileSkipped {
+			applied = append(applied, change)
+		}
+	}
+	return nil
+}
+
+func rollbackInitRefreshFileChange(change initRefreshFileChange) error {
+	if change.result == instructionFileCreated {
+		return os.Remove(change.absolutePath)
+	}
+	return document.Write(change.absolutePath, change.before)
 }
 
 func newInitRefreshFileChange(

@@ -59,11 +59,11 @@ kit rm my-feature --yes --notes
 | Command | Description |
 | --- | --- |
 | `kit backlog` | List deferred brainstorm items or use `--pickup` as the backlog-specific resume shortcut. |
-| `kit spec <feature>` | Start or resume the v2 `SPEC.md` workflow and output the supervisor prompt. |
+| `kit spec <feature>` | Non-interactively scaffold, adopt, or orient a living specification for native agent planning. |
 | `kit notes [feature]` | Select, create, or add source-material notes under `docs/notes/<feature>`, including gitignored private conversation notes. |
 | `kit legacy` | List deprecated legacy v1 staged workflow commands retained for migration. |
-| `kit loop [feature]` | Convenience alias for `kit loop workflow [feature]`. |
-| `kit loop workflow [feature]` | Run the remaining workflow through a configured confidence-gated local agent loop. |
+| `kit loop [feature]` | Deprecated bare V2 workflow-loop compatibility path. |
+| `kit loop workflow [feature]` | Deprecated V2 workflow loop; rejects V3 specs with native-planning guidance. |
 | `kit loop review [feature]` | Run a coding-agent correctness review loop over changed code. |
 | `kit resume [feature]` | Resume backlog or in-flight work through the canonical prompt flow. |
 | `kit pause [feature]` | Pause an in-flight feature without changing its underlying phase. |
@@ -129,7 +129,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor. |
 | `kit handoff [feature]` | Prompt the current agent session to sync docs and prepare a handoff. |
 | `kit summarize [feature]` | Output context summarization instructions. |
-| `kit dispatch` | Output a discovery-first Agent Team Plan prompt for clustering tasks and queueing subagents. |
+| `kit dispatch` | Turn an accepted plan into a post-plan execution topology for independent lanes. |
 | `kit code-review` | Output instructions for branch code review. |
 | `kit skill mine [feature]` | Output skill extraction prompt for the active coding agent. |
 
@@ -183,9 +183,9 @@ repo-local gates.
 
 ## Dispatch And Review Loops
 
-Use `kit dispatch` when you need formal overlap clustering and Agent Team Plan
-queue planning for a raw task set. Use the default prompt path when an agent
-should apply `agent-team-orchestration` opportunistically. Dispatch prompts use
+Use `kit dispatch` after native planning when an accepted plan needs formal
+overlap clustering and Agent Team Plan queueing. Dispatch supports execution
+topology; it does not own feature research or design. Dispatch prompts use
 `--max-subagents` to cap concurrent spawned agents; the default is 3 and the
 hard ceiling is 4.
 
@@ -270,21 +270,20 @@ prompts:
 ```
 
 Nouns and verbs normalize to lowercase kebab-case. Built-ins include
-`coding-agent short`, `coding-agent long`, `coding-agent instructions`, the v2
-`kit spec` / `workflow spec` supervisor prompt, support prompts, `skill mine`,
-and `project init`.
+`coding-agent short`, `coding-agent long`, `coding-agent instructions`, the
+legacy V2 `kit spec` / `workflow spec` supervisor prompt, support prompts,
+`skill mine`, and `project init`.
 
-Use `kit spec <feature>` when Kit should create or adopt `SPEC.md`. Use
-`kit prompt kit spec` to render the active feature's reusable prompt-library
-entry.
+Use plain `kit spec <feature>` when Kit should create or adopt durable feature
+memory around a native plan. Use `kit prompt kit spec` only to render the
+legacy active-feature supervisor prompt during compatibility.
 
 ## Scaffold And Refresh
 
 `kit scaffold agents` creates or refreshes repository instruction files.
-`kit scaffold spec <feature>` creates or additively adopts the v2 `SPEC.md`
-scaffold plus notes/reference-material directories without emitting an agent
-prompt. Legacy staged document scaffolds are available only through
-`kit legacy` commands.
+`kit scaffold spec <feature>` creates the current `SPEC.md` scaffold plus
+notes/reference-material directories without emitting an agent prompt. Legacy
+staged document scaffolds are available only through `kit legacy` commands.
 
 When instruction files already exist:
 
@@ -296,14 +295,17 @@ When instruction files already exist:
 Instruction scaffold versions:
 
 - `--version 1` keeps the legacy verbose `AGENTS.md` / `CLAUDE.md` model
-- `--version 2` uses thin entrypoints plus `docs/agents/` and `docs/references/`
-- new repos default to `v2`
-- existing repos keep their current model unless `--version` explicitly switches them
+- `--version 2` keeps the legacy thin ToC/RLM instruction model
+- `--version 3` uses native-plan repository-memory entrypoints plus `docs/agents/` and `docs/references/`
+- new repos default to instruction scaffold version 3
+- exact generated V2 instruction artifacts migrate atomically to V3 during a full refresh
+- customized V2 instructions stay on V2 until reviewed or explicitly replaced with `--version 3 --force`
 - switching models is repo-wide and requires `--force`
 
 `kit reconcile` is the consolidated reviewed refresh command for existing Kit
-projects. When files are included, it creates missing Kit-managed files, migrates known generated v1
-instruction files to the v2 thin docs model, refreshes generated support docs,
+projects. When files are included, it creates missing Kit-managed files,
+atomically migrates exact generated V2 instruction files to V3, preserves
+customized V2 instructions with an advisory, refreshes generated support docs,
 imports known registry rulesets, and records ruleset registry state in
 `.kit.yaml`. It also creates or refreshes the Kit-managed README badge block
 when a GitHub repository is configured or discoverable from `origin`. Default

@@ -18,10 +18,9 @@ const (
 
 func rootLong(style humanOutputStyle) string {
 	return rootBanner(style) + `
-Kit v2 is a general-purpose harness for disciplined thought work.
-Its strongest engine is a document-first, spec-driven workflow, but the
-harness also supports ad hoc execution, catch-up, handoff, summarization,
-review, and orchestration.
+Kit is a repository-memory and specification harness for agent-driven work.
+Native agent planning owns research and design; Kit preserves consequential
+rationale, validation, and outcomes in canonical repository documents.
 
 The current command surface is packaged around repository and software
 workflows, but the underlying harness patterns generalize to research,
@@ -54,19 +53,17 @@ func rootBanner(style humanOutputStyle) string {
 		result += "                                        " + rootColor(style, colors[i], line) + "\n"
 	}
 	result += "\n"
-	result += "                                      " + rootMuted(style, "Kit v2 Thought-Work Harness") + "\n"
+	result += "                                      " + rootMuted(style, "Kit Repository-Memory Harness") + "\n"
 	return result
 }
 
 func flowDiagram(style humanOutputStyle) string {
-	idea := rootColor(style, brainstorm, "Idea")
+	idea := rootColor(style, brainstorm, "Request")
+	nativePlan := rootColor(style, plan, "Native Agent Plan")
 	specCommand := rootColor(style, spec, "kit spec <feature>")
-	clarify := rootColor(style, brainstorm, "Clarifying Loop")
-	planLane := rootColor(style, plan, "Supervisor + Agent Team Plan")
-	implementLane := rootColor(style, implement, "Subagent Implementation")
-	reflectLane := rootColor(style, reflect, "Subagent Reflection")
-	validateLane := rootColor(style, tasks, "Subagent Validation / Verification")
-	evidence := rootColor(style, constitution, "Evidence + Delivery Gate")
+	implementLane := rootColor(style, implement, "Implementation")
+	validateLane := rootColor(style, tasks, "Validation")
+	evidence := rootColor(style, constitution, "Curated Repository Memory")
 
 	lines := []string{
 		rootHeading(style, "🧱 Project Initialization") + rootMuted(style, " (run once, update as needed):"),
@@ -74,27 +71,23 @@ func flowDiagram(style humanOutputStyle) string {
 		rootColor(style, gray, "│ ") + rootColor(style, constitution, "Constitution") + rootColor(style, gray, " │  ← ") + rootMuted(style, "global constraints, principles, priors"),
 		rootColor(style, gray, "└──────────────┘"),
 		"",
-		rootHeading(style, "🔁 V2 Feature Workflow") + rootMuted(style, " (default):"),
+		rootHeading(style, "🔁 Native Plan To Repository Memory") + rootMuted(style, " (default):"),
 		"  " + idea + rootMuted(style, " / input"),
 		"    " + rootArrow(style),
-		"  " + specCommand + rootMuted(style, " creates/updates one durable SPEC.md"),
+		"  " + nativePlan + rootMuted(style, " → research, clarification, design, accepted plan"),
 		"    " + rootArrow(style),
-		"  " + clarify + rootMuted(style, " → questions, source map, binary acceptance criteria"),
-		"    " + rootArrow(style),
-		"  " + planLane + rootMuted(style, " → supervisor owns scope, lanes, touched files"),
+		"  " + specCommand + rootMuted(style, " → create/adopt SPEC.md when material rationale exists"),
 		"    " + rootArrow(style),
 		"  " + implementLane,
 		"    " + rootArrow(style),
-		"  " + reflectLane,
+		"  " + validateLane + rootMuted(style, " → observable acceptance and exact evidence"),
 		"    " + rootArrow(style),
-		"  " + validateLane + rootMuted(style, " → each criterion proved or routed back"),
-		"    " + rootArrow(style),
-		"  " + evidence + rootMuted(style, " → SPEC.md evidence, docs sync, complete"),
+		"  " + evidence + rootMuted(style, " → spec, invariants, references, domain docs, or not required"),
 		"",
 		rootHeading(style, "🗂️ Durable Artifacts"),
 		"  1. " + rootColor(style, constitution, "CONSTITUTION.md") + rootMuted(style, " — project contract and invariants"),
-		"  2. " + rootColor(style, spec, "SPEC.md") + rootMuted(style, "         — v2 feature artifact and workflow state"),
-		"  3. " + rootColor(style, brainstorm, "BRAINSTORM/PLAN/TASKS") + rootMuted(style, " — legacy v1 artifacts, historical unless using kit legacy"),
+		"  2. " + rootColor(style, spec, "SPEC.md") + rootMuted(style, "         — material feature rationale and living history"),
+		"  3. " + rootColor(style, brainstorm, "REFERENCES / DOMAIN DOCS") + rootMuted(style, " — reusable and scope-specific knowledge"),
 	}
 
 	return strings.Join(lines, "\n")

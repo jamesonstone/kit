@@ -92,6 +92,7 @@ func TestRunSpecSetupGateCopiesInitPromptAndStops(t *testing.T) {
 	}
 
 	cmd := newSpecProfileTestCommand()
+	specLegacySupervisor = true
 	output := captureStdout(t, func() {
 		if err := runSpec(cmd, []string{"first-feature"}); err != nil {
 			t.Fatalf("runSpec() error = %v", err)

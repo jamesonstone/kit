@@ -102,12 +102,11 @@ When .kit.yaml defines an enabled aws context, agents must:
 
 ## Completion Bar
 
-- For v2 feature work, populate all required `SPEC.md` sections and keep front matter `workflow_version`, `phase`, references, relationships, and skills current
+- For V3 feature work, satisfy the phase-aware living-spec gates and keep front matter `workflow_version`, `phase`, references, relationships, and skills current; preserve version-specific requirements for legacy specs
 - For legacy staged workflows, populate all required sections in the staged artifact being used
 - Replace placeholder-only sections with `not applicable`, `not required`, or `no additional information required`
 - Always update affected documentation and ensure touched docs are current and properly formatted before calling work complete
 - Never claim tests passed unless they ran
-- Prefer citing `kit legacy verify` run IDs or exact command output when declared verification exists
 - Never claim files were inspected unless they were inspected
 - Never guess file contents, APIs, or behavior
 - If validation cannot run, state why
@@ -128,3 +127,12 @@ When .kit.yaml defines an enabled aws context, agents must:
 - Keep changes minimal and reversible
 - Do not run `git add` or `git commit` without explicit approval
 - Do not run `coderabbit --prompt-only` unless explicitly requested or approved
+
+
+## Repository Memory Completion Gate
+
+- Inspect existing repository memory before implementation.
+- Create or adopt a spec before code when material rationale exists.
+- After implementation and validation, curate durable rationale into the correct canonical documents.
+- A justified `not required` decision is valid when code and tests preserve the complete durable truth.
+- Every implementation final response must include `Repository Memory`, a valid decision, rationale, and artifact paths or `none`.

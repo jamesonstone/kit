@@ -1,4 +1,4 @@
-Supervise feature `alpha` through its current Kit v2 workflow phase.
+Supervise feature `alpha` through its deprecated V2 compatibility workflow phase.
 
 `SPEC.md` is the single durable feature artifact. Keep `/repo/docs/specs/0001-alpha/SPEC.md` current, complete the requested scope, and block only on a material decision that repository evidence cannot resolve safely.
 

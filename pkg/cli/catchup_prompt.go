@@ -76,7 +76,7 @@ func buildCatchupPrompt(
 		"Read `CONSTITUTION.md` first",
 		"Read `PROJECT_PROGRESS_SUMMARY.md` for cross-feature context",
 		"Read the feature docs in order:\n- "+strings.Join(featureDocs, "\n- "),
-		"Treat SPEC.md as the durable v2 workflow source; use legacy BRAINSTORM.md, PLAN.md, and TASKS.md only as historical context when present",
+		"Treat a versioned SPEC.md as durable feature memory; for V3, reconcile purpose, accepted plan, decisions, discoveries, validation, outcome, and repository-memory curation; use legacy staged artifacts only as historical context",
 		"Reconstruct the current v2 phase and state of the feature from repository artifacts before making any recommendations",
 		"Start by asking clarifying questions in a short numbered batch",
 		"For each question, include your current best recommendation, assumption, or default",

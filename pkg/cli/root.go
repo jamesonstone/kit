@@ -12,7 +12,7 @@ var Version = "dev"
 
 var rootCmd = &cobra.Command{
 	Use:               "kit",
-	Short:             "🧰 Kit v2 is a general-purpose harness for thought work",
+	Short:             "🧰 Kit preserves durable repository memory from agent work",
 	Long:              rootLong(humanOutputStyle{}),
 	Version:           Version,
 	PersistentPreRunE: runAutomaticConfigCheck,
