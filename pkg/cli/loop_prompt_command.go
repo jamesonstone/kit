@@ -103,12 +103,21 @@ func buildFeatureLoopPrompt(projectRoot string, cfg *config.Config, featureRef s
 		return "", nil, fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first", feat.Slug)
 	}
 
+	scope := "every remaining in-scope requirement, accepted-plan step, decision, discovery, validation obligation, repository-memory action, and delivery decision in SPEC.md"
+	validation := "the observable requirements and validation obligations in SPEC.md, focused checks for changed behavior, relevant regressions, and the full required suite before delivery"
+	docs := "the repository-memory assessment in SPEC.md plus any canonical documentation, API/OpenAPI, capability, README, ruleset, or project-reference update required by changed behavior"
+	if workflowVersionForFeature(feat) == document.WorkflowVersionV2 {
+		scope = "every remaining in-scope task, acceptance criterion, validation obligation, documentation update, reflection gap, and delivery decision in SPEC.md"
+		validation = "the validation map in SPEC.md, focused checks for changed behavior, relevant regressions, and the full required suite before delivery"
+		docs = "documentation, API/OpenAPI, capability, README, ruleset, and project-reference updates required by changed behavior"
+	}
+
 	input := loopPromptInput{
 		Title:        fmt.Sprintf("feature `%s`", feat.Slug),
 		Source:       fmt.Sprintf("`%s`", specPath),
-		Scope:        "every remaining in-scope task, acceptance criterion, validation obligation, documentation update, reflection gap, and delivery decision in SPEC.md",
-		Validation:   "the validation map in SPEC.md, focused checks for changed behavior, relevant regressions, and the full required suite before delivery",
-		Docs:         "documentation, API/OpenAPI, capability, README, ruleset, and project-reference updates required by changed behavior",
+		Scope:        scope,
+		Validation:   validation,
+		Docs:         docs,
 		Delivery:     "repo-local Kit/GitHub delivery rules after SPEC.md proves implementation, validation, reflection, and documentation are complete",
 		FeatureSlug:  feat.Slug,
 		FeatureDir:   feat.DirName,
@@ -193,7 +202,7 @@ func buildLoopEngineeringPrompt(input loopPromptInput) string {
 
 		doc.Heading(2, "Execution Contract")
 		doc.OrderedList(1,
-			"Read the current requirements, acceptance criteria, task/evidence state, and only the repository context needed for the next decision.",
+			"Read the current requirements, accepted plan, decision and evidence state, and only the repository context needed for the next decision.",
 			"Implement the smallest coherent slice using existing patterns; update focused tests and affected docs with the behavior.",
 			fmt.Sprintf("Validate each slice using %s; fix failures and relevant regressions before continuing.", validation),
 			"Review the integrated result for correctness, security, reliability, unnecessary scope, and stale contracts.",
@@ -211,9 +220,9 @@ func buildLoopEngineeringPrompt(input loopPromptInput) string {
 
 		doc.Heading(2, "Success And Output")
 		doc.BulletList(
-			"All in-scope acceptance criteria and tasks are complete or have a concrete blocker with owner and impact.",
-			"Relevant validation, regression review, docs, evidence, reflection, and authorized delivery state agree with the final diff.",
-			"Report outcome first, files changed, exact validation, evidence/delivery state, and only genuine blockers or residual risk.",
+			"All in-scope observable requirements and accepted-plan obligations are complete or have a concrete blocker with owner and impact.",
+			"Relevant validation, regression review, repository memory, evidence, and authorized delivery state agree with the final diff.",
+			"Report outcome first, files changed, exact validation, evidence/delivery state, the required Repository Memory decision, and only genuine blockers or residual risk.",
 		)
 	})
 }

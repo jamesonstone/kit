@@ -14,8 +14,8 @@ func builtInKitPromptSource() promptlib.Source {
 		Kind:     promptlib.SourceBuiltin,
 		Location: builtInPromptLocation,
 		Prompts: []promptlib.Prompt{
-			dynamicBuiltInPrompt("workflow", "spec", "Regenerate the v2 single-SPEC supervisor prompt for an existing feature.", []string{promptContextActiveFeature}, renderWorkflowSpecPrompt),
-			dynamicBuiltInPrompt("kit", "spec", "Render the v2 `kit spec` supervisor prompt for the active feature.", []string{promptContextActiveFeature}, renderWorkflowSpecPrompt),
+			dynamicBuiltInPrompt("workflow", "spec", "Compatibility: regenerate the deprecated V2 supervisor prompt for an existing feature.", []string{promptContextActiveFeature}, renderWorkflowSpecPrompt),
+			dynamicBuiltInPrompt("kit", "spec", "Compatibility: render the deprecated V2 `kit spec` supervisor prompt for the active feature.", []string{promptContextActiveFeature}, renderWorkflowSpecPrompt),
 			dynamicBuiltInPrompt("support", "resume", "Generate a catch-up prompt for resuming an active feature.", []string{promptContextActiveFeature}, renderSupportResumePrompt),
 			builtInPrompt("support", "handoff", "Generate documentation-sync handoff instructions.", renderSupportHandoffPrompt),
 			builtInPrompt("support", "summarize", "Generate context-window summarization instructions.", renderSupportSummarizePrompt),

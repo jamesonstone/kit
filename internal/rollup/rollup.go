@@ -15,21 +15,22 @@ import (
 
 // FeatureSummary contains extracted information about a feature for the rollup.
 type FeatureSummary struct {
-	ID            string
-	Name          string
-	Path          string
-	Phase         feature.Phase
-	Paused        bool
-	Removed       bool
-	Created       time.Time
-	RemovedAt     time.Time
-	HasNotes      bool
-	NotesPath     string
-	HasBrainstorm bool
-	Summary       string
-	Intent        string
-	Approach      string
-	OpenItems     string
+	ID              string
+	Name            string
+	Path            string
+	Phase           feature.Phase
+	Paused          bool
+	Removed         bool
+	Created         time.Time
+	RemovedAt       time.Time
+	HasNotes        bool
+	NotesPath       string
+	HasBrainstorm   bool
+	WorkflowVersion int
+	Summary         string
+	Intent          string
+	Approach        string
+	OpenItems       string
 }
 
 func removedFeatureNotesPath(dirName string) string {
@@ -88,6 +89,9 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 	// try to extract info from SPEC.md
 	specPath := filepath.Join(f.Path, "SPEC.md")
 	if doc, err := document.ParseFile(specPath, document.TypeSpec); err == nil {
+		if doc.Metadata != nil {
+			summary.WorkflowVersion = doc.Metadata.WorkflowVersion
+		}
 		summary.Summary = doc.SummaryText()
 
 		// extract problem section as intent
@@ -99,6 +103,15 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 		// extract open questions
 		if section := doc.GetSection("OPEN-QUESTIONS"); section != nil {
 			summary.OpenItems = document.ExtractFirstParagraph(section)
+		}
+		if summary.WorkflowVersion == document.WorkflowVersionV3 {
+			summary.Intent = summary.Summary
+			summary.Approach = document.ExtractFirstParagraph(doc.GetSection("ACCEPTED PLAN"))
+			if f.Phase == feature.PhaseComplete {
+				summary.OpenItems = "none"
+			} else {
+				summary.OpenItems = "see SPEC.md"
+			}
 		}
 	}
 
@@ -122,10 +135,12 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 		}
 	}
 
-	// try to extract approach from PLAN.md
-	planPath := filepath.Join(f.Path, "PLAN.md")
-	if doc, err := document.ParseFile(planPath, document.TypePlan); err == nil {
-		summary.Approach = doc.IntentText("APPROACH")
+	// V3 keeps its accepted plan inside SPEC.md. Legacy workflows may use PLAN.md.
+	if summary.WorkflowVersion != document.WorkflowVersionV3 {
+		planPath := filepath.Join(f.Path, "PLAN.md")
+		if doc, err := document.ParseFile(planPath, document.TypePlan); err == nil {
+			summary.Approach = doc.IntentText("APPROACH")
+		}
 	}
 
 	// set defaults for missing fields
@@ -136,7 +151,11 @@ func extractFeatureSummary(f feature.Feature, specsDir string) FeatureSummary {
 		summary.Intent = summary.Summary
 	}
 	if summary.Approach == "" {
-		summary.Approach = "(see PLAN.md)"
+		if summary.WorkflowVersion == document.WorkflowVersionV3 {
+			summary.Approach = "(accepted plan not captured yet)"
+		} else {
+			summary.Approach = "(see PLAN.md)"
+		}
 	}
 	if summary.OpenItems == "" {
 		summary.OpenItems = "none"
@@ -265,11 +284,13 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 		if s.HasBrainstorm {
 			pointers = append(pointers, fmt.Sprintf("`%s/BRAINSTORM.md`", s.Path))
 		}
-		pointers = append(pointers,
-			fmt.Sprintf("`%s/SPEC.md`", s.Path),
-			fmt.Sprintf("`%s/PLAN.md`", s.Path),
-			fmt.Sprintf("`%s/TASKS.md`", s.Path),
-		)
+		pointers = append(pointers, fmt.Sprintf("`%s/SPEC.md`", s.Path))
+		if s.WorkflowVersion != document.WorkflowVersionV3 {
+			pointers = append(pointers,
+				fmt.Sprintf("`%s/PLAN.md`", s.Path),
+				fmt.Sprintf("`%s/TASKS.md`", s.Path),
+			)
+		}
 		writef(&b, "- **POINTERS**: %s\n\n", strings.Join(pointers, ", "))
 	}
 
@@ -281,7 +302,7 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 }
 
 func projectIntentSummary() string {
-	return "Kit is a document-first workflow harness for disciplined thought work. It keeps durable project context in canonical markdown artifacts so humans and coding agents can move from research to specification, planning, tasks, implementation, reflection, and completion with explicit traceability."
+	return "Kit is a repository-memory and specification harness. Native agent planning owns research and design; Kit preserves consequential rationale, accepted plans, decisions, validation, and outcomes in canonical repository documents when code and tests alone are insufficient."
 }
 
 func writef(b *strings.Builder, format string, args ...any) {

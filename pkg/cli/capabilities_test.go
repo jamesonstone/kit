@@ -146,11 +146,11 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if err := json.Unmarshal([]byte(specOutput), &specPayload); err != nil {
 		t.Fatalf("json.Unmarshal(spec) error = %v", err)
 	}
-	if !strings.Contains(specPayload.Command.FileWrites.Summary, "setup readiness") {
-		t.Fatalf("expected spec file writes to document setup gate, got %#v", specPayload.Command.FileWrites)
+	if !strings.Contains(specPayload.Command.FileWrites.Summary, "workflow_version 3") {
+		t.Fatalf("expected spec file writes to document V3 scaffolding, got %#v", specPayload.Command.FileWrites)
 	}
-	if !strings.Contains(strings.Join(specPayload.Command.Caveats, " "), "bypass creates only the minimal baseline") {
-		t.Fatalf("expected spec caveats to document bypass behavior, got %#v", specPayload.Command.Caveats)
+	if !strings.Contains(strings.Join(specPayload.Command.Caveats, " "), "does not ingest agent transcripts") {
+		t.Fatalf("expected spec caveats to document semantic plan translation, got %#v", specPayload.Command.Caveats)
 	}
 
 	statusOutput, err := executeCapabilitiesCommand("--json", "status")
@@ -325,6 +325,21 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(loopPromptPayload.Command.WhenToUse, " "), "ad hoc") {
 		t.Fatalf("expected loop prompt guidance to document ad hoc usage, got %#v", loopPromptPayload.Command.WhenToUse)
+	}
+
+	loopWorkflowOutput, err := executeCapabilitiesCommand("--json", "loop", "workflow")
+	if err != nil {
+		t.Fatalf("kit capabilities loop workflow --json error = %v", err)
+	}
+	var loopWorkflowPayload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(loopWorkflowOutput), &loopWorkflowPayload); err != nil {
+		t.Fatalf("json.Unmarshal(loop workflow) error = %v", err)
+	}
+	if !loopWorkflowPayload.Command.Deprecated || !strings.Contains(loopWorkflowPayload.Command.DeprecationNote, "workflow_version 2") {
+		t.Fatalf("expected loop workflow compatibility deprecation, got %#v", loopWorkflowPayload.Command)
+	}
+	if !strings.Contains(strings.Join(loopWorkflowPayload.Command.Caveats, " "), "V3 specs are rejected") {
+		t.Fatalf("expected V3 rejection guidance, got %#v", loopWorkflowPayload.Command.Caveats)
 	}
 
 	loopReviewOutput, err := executeCapabilitiesCommand("--json", "loop", "review")

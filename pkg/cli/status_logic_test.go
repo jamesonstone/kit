@@ -44,7 +44,7 @@ func TestDetermineNextAction_RemovedFeatureMentionsRetainedNotes(t *testing.T) {
 	}
 }
 
-func TestDetermineNextAction_NoSpecSuggestsV2SpecAndLegacyBrainstorm(t *testing.T) {
+func TestDetermineNextAction_NoSpecSuggestsNativePlanningAndSpec(t *testing.T) {
 	status := &feature.FeatureStatus{
 		Name: "patient-import",
 		Files: map[string]feature.FileStatus{
@@ -59,8 +59,8 @@ func TestDetermineNextAction_NoSpecSuggestsV2SpecAndLegacyBrainstorm(t *testing.
 	if !strings.Contains(got, "kit spec patient-import") {
 		t.Fatalf("expected spec guidance, got %q", got)
 	}
-	if !strings.Contains(got, "kit legacy brainstorm patient-import") {
-		t.Fatalf("expected legacy brainstorm guidance, got %q", got)
+	if !strings.Contains(got, "native planning") || !strings.Contains(got, "material rationale") {
+		t.Fatalf("expected native planning and memory guidance, got %q", got)
 	}
 }
 

@@ -40,20 +40,17 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"Inspect & Repair",
 		"Prompt Utilities",
 		"Utilities",
-		"V2 Feature Workflow",
+		"Native Plan To Repository Memory",
 		"kit spec <feature>",
-		"Idea / input",
-		"Clarifying Loop",
-		"source map",
-		"binary acceptance criteria",
-		"Supervisor + Agent Team Plan",
-		"Subagent Implementation",
-		"Subagent Reflection",
-		"Subagent Validation / Verification",
-		"Evidence + Delivery Gate",
+		"Request / input",
+		"Native Agent Plan",
+		"research, clarification, design, accepted plan",
+		"Implementation",
+		"Validation",
+		"Curated Repository Memory",
 		"Durable Artifacts",
-		"v2 feature artifact",
-		"legacy v1 artifacts",
+		"material feature rationale",
+		"REFERENCES / DOMAIN DOCS",
 		"legacy",
 		"List deprecated v1 staged workflow commands",
 		"scaffold",
@@ -115,18 +112,17 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 	}
 }
 
-func TestRootNoCommandShowsV2WorkflowDiagram(t *testing.T) {
+func TestRootNoCommandShowsRepositoryMemoryWorkflowDiagram(t *testing.T) {
 	content := stripANSI(executeHelp(t, []string{}))
 
 	checks := []string{
-		"Kit v2 Thought-Work Harness",
-		"Idea / input",
-		"kit spec <feature> creates/updates one durable SPEC.md",
-		"Clarifying Loop",
-		"Subagent Implementation",
-		"Subagent Reflection",
-		"Subagent Validation / Verification",
-		"Evidence + Delivery Gate",
+		"Kit Repository-Memory Harness",
+		"Request / input",
+		"Native Agent Plan",
+		"kit spec <feature> → create/adopt SPEC.md when material rationale exists",
+		"Implementation",
+		"Validation",
+		"Curated Repository Memory",
 		"Usage",
 		"Available Commands",
 	}
@@ -137,11 +133,15 @@ func TestRootNoCommandShowsV2WorkflowDiagram(t *testing.T) {
 	}
 }
 
-func TestSpecHelpUsesReadableV2InstructionStructure(t *testing.T) {
+func TestSpecHelpExplainsNativePlanningAndLegacyCompatibility(t *testing.T) {
 	content := stripANSI(executeHelp(t, []string{"spec", "--help"}))
 
 	checks := []string{
-		"Start or resume Kit v2 feature work from one durable SPEC.md.",
+		"Scaffold, adopt, or orient repository-backed feature memory.",
+		"Native agent planning owns research, clarification, design, and implementation",
+		"capture the accepted plan in SPEC.md before code",
+		"Existing V1 and V2 specs are preserved",
+		"--legacy-supervisor",
 		"🧭 Human flow",
 		"Pick or provide a feature slug/name.",
 		"🧠 Agent workflow",
@@ -196,11 +196,11 @@ func TestRootHelpUsesColorForTerminalOutput(t *testing.T) {
 
 	content := stripANSI(output)
 	for _, check := range []string{
-		"Idea / input",
-		"Clarifying Loop",
-		"Subagent Implementation",
-		"Subagent Reflection",
-		"Subagent Validation / Verification",
+		"Request / input",
+		"Native Agent Plan",
+		"Implementation",
+		"Validation",
+		"Curated Repository Memory",
 	} {
 		if !strings.Contains(content, check) {
 			t.Fatalf("expected colored root help to contain %q, got %q", check, content)

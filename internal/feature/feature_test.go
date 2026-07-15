@@ -48,6 +48,13 @@ func TestDeterminePhase(t *testing.T) {
 			wantPhase: PhaseDeliver,
 		},
 		{
+			name: "v3 spec phase validate",
+			files: map[string]string{
+				"SPEC.md": validV3FeatureSpec("0001-alpha", "validate"),
+			},
+			wantPhase: PhaseValidate,
+		},
+		{
 			name: "v2 spec without phase defaults to clarify",
 			files: map[string]string{
 				"SPEC.md": validV2FeatureSpec("0001-alpha", ""),
@@ -116,6 +123,27 @@ func TestDeterminePhase(t *testing.T) {
 			}
 		})
 	}
+}
+
+func validV3FeatureSpec(dirName string, phase string) string {
+	return "---\n" +
+		"kit_metadata_version: 1\n" +
+		"artifact: spec\n" +
+		"workflow_version: 3\n" +
+		"phase: " + phase + "\n" +
+		"feature:\n" +
+		"  dir: " + dirName + "\n" +
+		"---\n" +
+		"# SPEC\n\n" +
+		"## PURPOSE\n\npurpose\n\n" +
+		"## CONTEXT\n\ncontext\n\n" +
+		"## REQUIREMENTS\n\nrequirements\n\n" +
+		"## ACCEPTED PLAN\n\nplan\n\n" +
+		"## DECISIONS\n\nnone\n\n" +
+		"## DISCOVERIES\n\nnone\n\n" +
+		"## VALIDATION\n\npending\n\n" +
+		"## OUTCOME\n\npending\n\n" +
+		"## REPOSITORY MEMORY\n\npending\n"
 }
 
 func validV2FeatureSpec(dirName string, phase string) string {

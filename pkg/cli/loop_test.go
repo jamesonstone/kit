@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -8,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
@@ -136,6 +139,39 @@ func TestLoopCommandSuppressesDuplicateErrorOutput(t *testing.T) {
 	}
 	if !loopCmd.SilenceErrors {
 		t.Fatal("loopCmd.SilenceErrors = false, want true")
+	}
+}
+
+func TestRunLoopWarnsAndRejectsV3Specs(t *testing.T) {
+	projectRoot := t.TempDir()
+	cfg := config.Default()
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-v3")
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir("0001-v3")))
+
+	restoreWD, err := ensureHandoffTestWorkingDirectory(projectRoot)
+	if err != nil {
+		t.Fatalf("ensureHandoffTestWorkingDirectory() error = %v", err)
+	}
+	defer restoreWD()
+
+	previousDryRun, previousUntil := loopDryRun, loopUntil
+	loopDryRun, loopUntil = true, "complete"
+	defer func() {
+		loopDryRun, loopUntil = previousDryRun, previousUntil
+	}()
+
+	cmd := &cobra.Command{Use: "workflow"}
+	errOut := &bytes.Buffer{}
+	cmd.SetErr(errOut)
+	err = runLoop(cmd, []string{"v3"})
+	if err == nil || !strings.Contains(err.Error(), "workflow_version 3 is not supported") {
+		t.Fatalf("runLoop() error = %v, want V3 rejection", err)
+	}
+	if !strings.Contains(errOut.String(), "deprecated compatibility behavior") {
+		t.Fatalf("expected deprecation warning, got %q", errOut.String())
 	}
 }
 

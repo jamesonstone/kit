@@ -54,7 +54,7 @@ func init() {
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsAgentsMD, "agentsmd", false, "scaffold only AGENTS.md")
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsClaude, "claude", false, "scaffold only CLAUDE.md")
 	scaffoldAgentsCmd.Flags().BoolVar(&scaffoldAgentsCopilot, "copilot", false, "scaffold only .github/copilot-instructions.md")
-	scaffoldAgentsCmd.Flags().IntVar(&scaffoldAgentsVersion, "version", 0, "instruction scaffold version: 1 = verbose legacy, 2 = thin ToC/RLM model (default)")
+	scaffoldAgentsCmd.Flags().IntVar(&scaffoldAgentsVersion, "version", 0, "instruction scaffold version: 1 = verbose legacy, 2 = legacy thin ToC/RLM, 3 = native-plan repository memory (default)")
 	scaffoldCmd.AddCommand(scaffoldAgentsCmd)
 }
 

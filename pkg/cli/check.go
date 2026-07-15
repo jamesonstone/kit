@@ -83,7 +83,7 @@ func checkFeature(projectRoot string, specsDir string, featureRef string) error 
 
 	var errors []string
 	var warnings []string
-	v2Feature := isV2Feature(feat)
+	livingSpecFeature := isLivingSpecFeature(feat)
 
 	// check BRAINSTORM.md when present
 	brainstormPath := filepath.Join(feat.Path, "BRAINSTORM.md")
@@ -130,7 +130,7 @@ func checkFeature(projectRoot string, specsDir string, featureRef string) error 
 	// check PLAN.md
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	if !document.Exists(planPath) {
-		if !v2Feature {
+		if !livingSpecFeature {
 			warnings = append(warnings, fmt.Sprintf("legacy PLAN.md not found. Run 'kit legacy plan %s' only when continuing staged v1 work", feat.Slug))
 		}
 	} else {
@@ -154,7 +154,7 @@ func checkFeature(projectRoot string, specsDir string, featureRef string) error 
 	// check TASKS.md
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 	if !document.Exists(tasksPath) {
-		if !v2Feature {
+		if !livingSpecFeature {
 			warnings = append(warnings, fmt.Sprintf("legacy TASKS.md not found. Run 'kit legacy tasks %s' only when continuing staged v1 work", feat.Slug))
 		}
 	} else {
@@ -277,12 +277,16 @@ func checkProjectContract(projectRoot string, cfg *config.Config) error {
 
 	var errors []reconcileFinding
 	var warnings []reconcileFinding
+	var blockingWarnings []reconcileFinding
 	for _, finding := range report.Findings {
 		if finding.Severity == reconcileSeverityError {
 			errors = append(errors, finding)
 			continue
 		}
 		warnings = append(warnings, finding)
+		if !finding.NonBlocking {
+			blockingWarnings = append(blockingWarnings, finding)
+		}
 	}
 
 	if len(warnings) > 0 {
@@ -304,7 +308,12 @@ func checkProjectContract(projectRoot string, cfg *config.Config) error {
 		}
 	}
 
-	return fmt.Errorf("project validation failed with %d finding(s)", len(report.Findings))
+	if len(errors) == 0 && len(blockingWarnings) == 0 {
+		fmt.Printf("  ℹ Compatibility advisories do not block project validation.\n")
+		return nil
+	}
+
+	return fmt.Errorf("project validation failed with %d blocking finding(s)", len(errors)+len(blockingWarnings))
 }
 
 func relativeCheckPath(projectRoot, path string) string {

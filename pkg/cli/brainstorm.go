@@ -30,9 +30,9 @@ var brainstormCmd = &cobra.Command{
 	Long: `Deprecated v1 staged workflow: create or update a feature's BRAINSTORM.md document and output a
 research and documentation prompt for a coding agent.
 
-The default v2 feature workflow starts with kit spec <feature>. Use brainstorm
-when intentionally working in the legacy staged artifact flow or capturing a
-deferred backlog research item.
+The default workflow uses native agent planning and a living SPEC.md only when
+material rationale needs repository memory. Use brainstorm when intentionally
+working in the legacy staged artifact flow or capturing deferred research.
 
 Creates:
 	- Feature directory (e.g., docs/specs/0001-my-feature/)

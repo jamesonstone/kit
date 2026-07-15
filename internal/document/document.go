@@ -22,6 +22,11 @@ const (
 	TypeProgressSummary DocumentType = "PROJECT_PROGRESS_SUMMARY"
 )
 
+const (
+	WorkflowVersionV2 = 2
+	WorkflowVersionV3 = 3
+)
+
 // RequiredSections returns the required sections for each document type.
 var RequiredSections = map[DocumentType][]string{
 	TypeConstitution:    {"PRINCIPLES", "CONSTRAINTS", "NON-GOALS", "DEFINITIONS"},
@@ -47,6 +52,18 @@ var SpecV2RequiredSections = []string{
 	"DOCUMENTATION UPDATES",
 	"DELIVERY DECISION",
 	"EVIDENCE",
+}
+
+var SpecV3RequiredSections = []string{
+	"PURPOSE",
+	"CONTEXT",
+	"REQUIREMENTS",
+	"ACCEPTED PLAN",
+	"DECISIONS",
+	"DISCOVERIES",
+	"VALIDATION",
+	"OUTCOME",
+	"REPOSITORY MEMORY",
 }
 
 var (
@@ -199,7 +216,7 @@ func (d *Document) Validate() []ValidationError {
 			})
 			continue
 		}
-		if documentTypeRequiresPopulatedSections(d.Type) &&
+		if d.requiresPopulatedSection(key) &&
 			!sectionHasVisibleContent(sections[key].Content) {
 			errors = append(errors, ValidationError{
 				Document: d.Path,
@@ -229,10 +246,49 @@ func (d *Document) Validate() []ValidationError {
 }
 
 func (d *Document) RequiredSections() []string {
-	if d.Type == TypeSpec && d.Metadata != nil && d.Metadata.WorkflowVersion == 2 {
-		return SpecV2RequiredSections
+	if d.Type == TypeSpec && d.Metadata != nil {
+		switch d.Metadata.WorkflowVersion {
+		case WorkflowVersionV2:
+			return SpecV2RequiredSections
+		case WorkflowVersionV3:
+			return SpecV3RequiredSections
+		}
 	}
 	return RequiredSections[d.Type]
+}
+
+func (d *Document) IsLivingSpec() bool {
+	return d != nil && d.Type == TypeSpec && d.Metadata != nil &&
+		(d.Metadata.WorkflowVersion == WorkflowVersionV2 || d.Metadata.WorkflowVersion == WorkflowVersionV3)
+}
+
+func (d *Document) requiresPopulatedSection(section string) bool {
+	if d.Type != TypeSpec || d.Metadata == nil || d.Metadata.WorkflowVersion != WorkflowVersionV3 {
+		return documentTypeRequiresPopulatedSections(d.Type)
+	}
+
+	section = strings.ToUpper(strings.TrimSpace(section))
+	switch strings.ToLower(strings.TrimSpace(d.Metadata.Phase)) {
+	case "ready", "implement", "validate", "reflect", "deliver", "complete", "blocked":
+		for _, required := range []string{"PURPOSE", "CONTEXT", "REQUIREMENTS", "ACCEPTED PLAN"} {
+			if section == required {
+				return true
+			}
+		}
+	}
+
+	switch strings.ToLower(strings.TrimSpace(d.Metadata.Phase)) {
+	case "deliver", "complete":
+		return true
+	default:
+		return false
+	}
+}
+
+// RequiresPopulatedSection reports whether the document's current workflow
+// phase requires visible content in section.
+func (d *Document) RequiresPopulatedSection(section string) bool {
+	return d.requiresPopulatedSection(strings.ToUpper(strings.TrimSpace(section)))
 }
 
 // HasUnresolvedPlaceholders checks if the document has TODO placeholders.

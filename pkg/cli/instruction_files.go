@@ -266,7 +266,7 @@ func instructionArtifactPaths(
 		relativePaths = instructionFiles(cfg)
 	}
 
-	if version != config.InstructionScaffoldVersionTOC {
+	if !config.UsesInstructionSupportDocs(version) {
 		return relativePaths
 	}
 

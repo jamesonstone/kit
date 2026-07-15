@@ -46,6 +46,10 @@ const Constitution = `# CONSTITUTION
 - Treat ` + "`docs/CONSTITUTION.md`" + ` as the canonical project contract.
 - Keep ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, and ` + "`.github/copilot-instructions.md`" + ` aligned with the repo-local docs tree.
 - Treat ` + "`docs/notes/<feature>`" + ` as optional source material, not canonical truth; promote durable decisions into ` + "`SPEC.md`" + `, ` + "`docs/CONSTITUTION.md`" + `, or durable references.
+- Use native agent planning for research, clarification, design, and implementation planning.
+- Before implementation, inspect code and repository memory; create or adopt ` + "`SPEC.md`" + ` when material rationale exists.
+- After validation, curate feature rationale, project invariants, reusable practices, and domain knowledge into their scope-appropriate canonical documents.
+- Allow a justified ` + "`not required`" + ` repository-memory decision when code and tests preserve the complete durable truth.
 - Prefer implementation/source code files around 300 lines or less when splitting improves clarity and ownership.
 - Do not apply the code-file size guideline to documentation files, all ` + "`docs/**`" + `, all ` + "`.kit/**`" + `, or ` + "`.kit.yaml`" + `.
 - Do not split or rewrite docs, generated state, or Kit config artifacts solely because they exceed 300 lines.
@@ -55,23 +59,23 @@ const Constitution = `# CONSTITUTION
 
 <!-- all work falls into one of two tracks — classify before acting -->
 
-### Spec-Driven (Formal)
+### Repository-Memory Work
 
-<!-- use when: new features, kit spec, substantial architectural or behavioral changes -->
-<!-- workflow: kit spec <feature> → SPEC.md phases: clarify → ready → implement → validate → reflect → deliver -->
+<!-- use when: consequential product rationale, architecture, cross-component behavior, or historical decisions must survive -->
+<!-- workflow: native plan → create/adopt SPEC.md before code → implement → validate → curate repository memory -->
 <!-- legacy staged documents: BRAINSTORM.md, legacy SPEC.md, PLAN.md, TASKS.md only when explicitly chosen -->
 
 ### Ad Hoc (Lightweight)
 
 <!-- use when: bug fixes, security reviews, refactors, dependency updates, config changes, small refinements -->
 <!-- workflow: understand → implement → verify -->
-<!-- docs: update only practical docs (READMEs, inline docs, API docs) -->
-<!-- do NOT create feature SPEC.md or legacy staged artifacts for ad hoc work -->
+<!-- docs: update practical canonical docs when behavior changes -->
+<!-- do not create feature SPEC.md solely for ceremony; report a justified not-required memory decision -->
 
 ### Ad Hoc with Existing Specs
 
-<!-- if change touches code with existing spec docs: default to updating them -->
-<!-- skip spec updates only for purely mechanical changes (formatting, typo, dep bump) -->
+<!-- if change touches code with existing spec docs: update them when rationale, behavior, requirements, or approach changes -->
+<!-- leave them unchanged when code and tests communicate the complete durable truth -->
 
 ## NON-GOALS
 
@@ -158,12 +162,23 @@ func BuildBrainstormArtifactForFeature(userThesis string, feature document.Featu
 }
 
 func BuildSpecArtifactForFeature(feature document.FeatureMetadata) string {
-	content := replaceTemplateSection(Spec, "SKILLS", "Skills are tracked in front matter.")
-	content = replaceTemplateSection(content, "RELATIONSHIPS", "Relationships are tracked in front matter.")
-	content = replaceTemplateSection(content, "DEPENDENCIES", "References are tracked in front matter.")
+	content := Spec
 	updated, _, err := document.UpsertMetadata(content, document.TypeSpec, document.MetadataUpsert{
 		Feature:         feature,
-		WorkflowVersion: 2,
+		WorkflowVersion: document.WorkflowVersionV3,
+		Phase:           "clarify",
+	})
+	if err != nil {
+		return content
+	}
+	return updated
+}
+
+func BuildSpecV2ArtifactForFeature(feature document.FeatureMetadata) string {
+	content := SpecV2
+	updated, _, err := document.UpsertMetadata(content, document.TypeSpec, document.MetadataUpsert{
+		Feature:         feature,
+		WorkflowVersion: document.WorkflowVersionV2,
 		Phase:           "clarify",
 		Clarification:   clarificationMetadata(document.ClarificationStatusOpen, 0, 1),
 	})
@@ -229,8 +244,8 @@ func replaceTemplateSection(content, sectionName, sectionBody string) string {
 	return strings.Join(updatedLines, "\n")
 }
 
-// Spec template for the v2 single-artifact workflow.
-const Spec = `# SPEC
+// SpecV2 is retained for the legacy lifecycle supervisor.
+const SpecV2 = `# SPEC
 
 ## THESIS
 
@@ -283,6 +298,46 @@ const Spec = `# SPEC
 ## EVIDENCE
 
 <!-- TODO: summarize validation evidence and link detailed logs or run artifacts such as .kit/runs entries -->
+`
+
+// Spec is the compact v3 living-spec template used with native agent planning.
+const Spec = `# SPEC
+
+## PURPOSE
+
+<!-- TODO: explain the user or product outcome and why this work matters -->
+
+## CONTEXT
+
+<!-- TODO: record repo-grounded findings, constraints, relationships, and existing memory that shape the work -->
+
+## REQUIREMENTS
+
+<!-- TODO: capture requirements, non-goals, and observable acceptance without requiring identifier bureaucracy -->
+
+## ACCEPTED PLAN
+
+<!-- TODO: semantically translate the accepted native agent plan before implementation begins -->
+
+## DECISIONS
+
+<!-- TODO: record material accepted, rejected, and superseded choices with rationale; use "not required" when there were none -->
+
+## DISCOVERIES
+
+<!-- TODO: record consequential implementation discoveries and their impact; use "not required" when there were none -->
+
+## VALIDATION
+
+<!-- TODO: record the checks run and their outcomes; use exact commands or evidence when useful -->
+
+## OUTCOME
+
+<!-- TODO: describe what was actually built, remaining risks, and any divergence from the accepted plan -->
+
+## REPOSITORY MEMORY
+
+<!-- TODO: list documents created, updated, refactored, promoted, deleted, or intentionally unchanged, with rationale -->
 `
 
 // Plan template per spec section 6.3

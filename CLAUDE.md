@@ -3,53 +3,57 @@
 ## Purpose
 
 - This file is a routing table, not the full manual
-- Start at `docs/agents/README.md`, then load only the docs needed for the current decision
-- Repo-local markdown under `docs/` is the system of record
+- Start at `docs/agents/README.md` and load only the guidance needed for the current decision
+- Use native agent planning for research, clarification, design, and implementation planning
+- Treat repo-local markdown under `docs/` as persistent repository memory
 
-## Pasted Text Attachments
+## Repository Memory Gate
 
-- If the user message includes an attached pasted-text file and the visible message is empty or minimal, treat the attachment as the active task instructions unless the user says otherwise
-- If the attachment appears Kit-generated, follow it directly without asking what the attachment is for
+- Before implementation, inspect relevant code and existing repository memory
+- Decide semantically whether the work contains material rationale that code and tests cannot preserve
+- When material rationale exists, create or adopt `docs/specs/<feature>/SPEC.md` before editing implementation files and capture the accepted native plan
+- When code and tests are sufficient, do not create documentation solely to satisfy a process; record `not required` in the final Repository Memory report
+- During implementation, keep material decisions and discoveries current in the spec
+- After implementation and validation, curate feature rationale into `SPEC.md`, project invariants into `docs/CONSTITUTION.md`, reusable practices into `docs/references/` or `docs/references/rules/`, and domain knowledge into its existing canonical documentation
+- Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
+
+## Final Response Contract
+
+- Every implementation final response must include:
+  - `Repository Memory`
+  - `Decision: created | updated | refactored | deleted | not required`
+  - `Rationale: <why this is the correct persistence decision>`
+  - `Artifacts: <paths or none>`
 
 ## Runtime Routing
 
-- `docs/agents/README.md` — classify the task and choose the next document
-- `docs/agents/WORKFLOWS.md` — spec-driven versus ad hoc flow
+- `docs/agents/README.md` — classify the work and choose the next document
+- `docs/agents/WORKFLOWS.md` — native planning, implementation, and repository-memory lifecycle
 - `docs/agents/GUARDRAILS.md` — completion, safety, and hard rules
-- `docs/agents/RLM.md` — just-in-time context loading when broad context would be noisy
-- `docs/agents/TOOLING.md` — skills, dispatch, project-directory workflow, and secondary inputs
+- `docs/agents/RLM.md` — just-in-time context loading
+- `docs/agents/TOOLING.md` — skills, post-plan dispatch, and secondary inputs
 
 ## GitHub Delivery Hard Gate
 
-- In Kit-managed projects, issue, branch, staging, commit, push, and PR actions are mutation boundaries
-- Before any GitHub delivery mutation, load `docs/agents/GUARDRAILS.md` and the relevant `docs/references/rules/*` delivery rules
-- Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
+- Issue, branch, staging, commit, push, and PR actions are mutation boundaries
+- Before a delivery mutation, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*` delivery rules
+- Repo-local Kit rules outrank generic GitHub or plugin defaults
 
 ## AWS Context Hard Gate
 
-- If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
-- Use the verified configured profile explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
-- After verification, never use default, another discovered profile, or ambient credentials
-- Treat the verified account and ARN as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
+- If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation
+- Use only the verified configured profile; stop on missing credentials, incomplete configuration, or identity mismatch
 
-## Conditional Context
+## Knowledge Map
 
-- `docs/specs/<feature>/` — active feature artifacts only
-- `docs/references/README.md` — durable repo references only when relevant
-- `docs/CONSTITUTION.md` — project invariants when a decision depends on them
-
-## Repo Knowledge Map
-
-- `docs/agents/README.md` — runtime routing index
-- `docs/agents/WORKFLOWS.md` — work classification and source-of-truth semantics
-- `docs/agents/RLM.md` — progressive disclosure and context budget rules
-- `docs/agents/TOOLING.md` — skills, dispatch, project-directory workflow, and secondary global inputs
-- `docs/agents/GUARDRAILS.md` — completion bar, safety rules, and validation expectations
-- `docs/references/README.md` — durable repo-local references that are broader than one feature
-- `docs/specs/<feature>/SPEC.md` — v2 feature source of truth for requirements, plan, tasks, validation, reflection, delivery, and evidence
+- `docs/specs/<feature>/SPEC.md` — material feature rationale and living implementation history
+- `docs/CONSTITUTION.md` — project invariants
+- `docs/references/` — reusable repo-wide knowledge and practices
+- domain documentation — canonical domain behavior and interfaces
+- `docs/notes/<feature>/` — optional source material, never canonical truth by itself
 
 ## Constraints
 
-- Keep CLAUDE short and stable so it fits easily into injected context
-- Put durable workflow guidance in `docs/agents/*` rather than expanding this file
-- Do not add an always-loaded monolithic instruction file
+- Keep CLAUDE short and stable
+- Put durable workflow guidance in `docs/agents/*` instead of expanding always-loaded files
+- Do not ingest or depend on agent transcripts as repository memory

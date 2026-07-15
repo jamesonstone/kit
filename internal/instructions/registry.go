@@ -42,8 +42,11 @@ func DetectVersion(projectRoot string, cfg *config.Config) int {
 		return cfg.InstructionScaffoldVersion
 	}
 
-	for _, doc := range SupportDocs(config.InstructionScaffoldVersionTOC) {
+	for _, doc := range SupportDocs(config.DefaultInstructionScaffoldVersion) {
 		if document.Exists(filepath.Join(projectRoot, filepath.FromSlash(doc.RelativePath))) {
+			// Support docs alone cannot distinguish v2 from v3. Treat an
+			// unconfigured repository as the legacy TOC version so migration is
+			// reviewed rather than assumed.
 			return config.InstructionScaffoldVersionTOC
 		}
 	}
@@ -59,7 +62,7 @@ func DetectVersion(projectRoot string, cfg *config.Config) int {
 
 func InstructionDocs(cfg *config.Config, version int) []Doc {
 	use := "repository instruction contract; keep aligned with canonical docs"
-	if version == config.InstructionScaffoldVersionTOC {
+	if config.UsesInstructionSupportDocs(version) {
 		use = "thin instruction entrypoint; keep aligned with the repo-local docs tree"
 	}
 
@@ -78,7 +81,7 @@ func InstructionDocs(cfg *config.Config, version int) []Doc {
 }
 
 func SupportDocs(version int) []Doc {
-	if version != config.InstructionScaffoldVersionTOC {
+	if !config.UsesInstructionSupportDocs(version) {
 		return nil
 	}
 
@@ -159,11 +162,12 @@ func ExistingInstructionDocs(projectRoot string, cfg *config.Config) []Doc {
 }
 
 func ExistingSupportDocs(projectRoot string, cfg *config.Config) []Doc {
-	if DetectVersion(projectRoot, cfg) != config.InstructionScaffoldVersionTOC {
+	version := DetectVersion(projectRoot, cfg)
+	if !config.UsesInstructionSupportDocs(version) {
 		return nil
 	}
 
-	return existingDocs(projectRoot, SupportDocs(config.InstructionScaffoldVersionTOC))
+	return existingDocs(projectRoot, SupportDocs(version))
 }
 
 func KnowledgeEntrypointPath(projectRoot string, cfg *config.Config) string {

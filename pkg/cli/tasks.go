@@ -26,9 +26,9 @@ var tasksCmd = &cobra.Command{
 	Short: "Deprecated v1 staged workflow: create TASKS.md",
 	Long: `Deprecated v1 staged workflow: create a new task list for a feature.
 
-The default v2 feature workflow keeps the durable task checklist inside
-SPEC.md through the kit spec supervisor prompt. Use this command only when
-intentionally working in the legacy staged artifact flow.
+The default workflow executes from an accepted native plan without requiring a
+durable task checklist. Use this command only for the legacy staged artifact
+flow.
 
 Creates:
   - TASKS.md with required sections, task table, and placeholder comments
@@ -107,7 +107,7 @@ func runTasks(cmd *cobra.Command, args []string) error {
 		if tasksForce || cfg.AllowOutOfOrder {
 			// create SPEC.md if missing
 			if !document.Exists(specPath) {
-				content := templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+				content := templates.BuildSpecV2ArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
 				if err := document.Write(specPath, content); err != nil {
 					return fmt.Errorf("failed to create SPEC.md: %w", err)
 				}

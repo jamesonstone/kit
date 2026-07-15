@@ -54,7 +54,7 @@ func outputNoActiveFeatureWithManagedStatus(
 	} else {
 		if _, err := fmt.Fprintln(
 			w,
-			style.muted("Run `kit spec <feature-name>` to start a Kit v2 feature."),
+			style.muted("Use native planning, then run `kit spec <feature-name>` when material rationale needs durable memory."),
 		); err != nil {
 			return err
 		}
@@ -256,7 +256,7 @@ func outputAllFeaturesStatusText(
 		if _, err := fmt.Fprintln(w); err != nil {
 			return err
 		}
-		if _, err := fmt.Fprintln(w, style.muted("No features found. Run `kit spec <feature-name>` to start a Kit v2 feature.")); err != nil {
+		if _, err := fmt.Fprintln(w, style.muted("No features found. Use native planning, then run `kit spec <feature-name>` when material rationale needs durable memory.")); err != nil {
 			return err
 		}
 		if _, err := fmt.Fprintln(w); err != nil {

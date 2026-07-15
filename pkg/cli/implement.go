@@ -25,9 +25,9 @@ var implementCmd = &cobra.Command{
 	Long: `Deprecated v1 staged workflow: run the implementation readiness gate and output a comprehensive
 summary for coding agents to begin implementation.
 
-The default v2 feature workflow runs implementation lanes from SPEC.md through
-the kit spec supervisor prompt. Use this command only when intentionally
-working in the legacy staged artifact flow.
+The default workflow implements from an accepted native plan and keeps material
+repository memory current. Use this command only for the legacy staged artifact
+flow.
 
 Provides:
   - Implementation-readiness gate instructions

@@ -1,12 +1,36 @@
 package templates
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/document"
 )
+
+func TestRepositoryMemoryWorkflowFixturesCoverMaterialAndCodeSufficientOutcomes(t *testing.T) {
+	materialPath := filepath.Join("testdata", "repository-memory", "material-why", "SPEC.md")
+	material, err := os.ReadFile(materialPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc := document.Parse(string(material), materialPath, document.TypeSpec)
+	if errors := doc.Validate(); len(errors) != 0 {
+		t.Fatalf("material-memory fixture validation errors = %#v", errors)
+	}
+
+	codeSufficient, err := os.ReadFile(filepath.Join("testdata", "repository-memory", "code-sufficient", "EXPECTED_FINAL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"## Repository Memory", "Decision: not required", "Artifacts: none"} {
+		if !strings.Contains(string(codeSufficient), want) {
+			t.Fatalf("code-sufficient fixture missing %q", want)
+		}
+	}
+}
 
 func TestFeatureArtifactBuildersIncludeCanonicalFrontMatter(t *testing.T) {
 	featureMeta := document.FeatureMetadataFromDir("0001-sample-feature")
@@ -400,21 +424,17 @@ func TestInstructionTemplatesIncludeAWSContextHardGate(t *testing.T) {
 	}
 }
 
-func TestSpecTemplateUsesV2SingleArtifactSections(t *testing.T) {
+func TestSpecTemplateUsesV3LivingSpecSections(t *testing.T) {
 	checks := []string{
-		"## THESIS",
+		"## PURPOSE",
 		"## CONTEXT",
-		"## CLARIFICATIONS",
 		"## REQUIREMENTS",
-		"## ASSUMPTIONS",
-		"## ACCEPTANCE CRITERIA",
-		"## IMPLEMENTATION PLAN",
-		"## TASK CHECKLIST",
-		"## VALIDATION MAP",
-		"## REFLECTION NOTES",
-		"## DOCUMENTATION UPDATES",
-		"## DELIVERY DECISION",
-		"## EVIDENCE",
+		"## ACCEPTED PLAN",
+		"## DECISIONS",
+		"## DISCOVERIES",
+		"## VALIDATION",
+		"## OUTCOME",
+		"## REPOSITORY MEMORY",
 	}
 
 	for _, check := range checks {
@@ -424,18 +444,26 @@ func TestSpecTemplateUsesV2SingleArtifactSections(t *testing.T) {
 	}
 
 	doc := document.Parse(BuildSpecArtifactForFeature(document.FeatureMetadataFromDir("0001-sample")), "SPEC.md", document.TypeSpec)
+	if doc.Metadata == nil || doc.Metadata.WorkflowVersion != 3 || doc.Metadata.Phase != "clarify" {
+		t.Fatalf("expected generated spec metadata to mark v3 clarify workflow, got %#v", doc.Metadata)
+	}
+	if _, ok := doc.ClarificationState(); ok {
+		t.Fatal("v3 generated spec must not include clarification confidence metadata")
+	}
+	for _, removed := range []string{"## CLARIFICATIONS", "## TASK CHECKLIST", "## VALIDATION MAP"} {
+		if strings.Contains(Spec, removed) {
+			t.Fatalf("v3 Spec unexpectedly contains legacy section %q", removed)
+		}
+	}
+}
+
+func TestBuildSpecV2ArtifactRemainsCompatible(t *testing.T) {
+	doc := document.Parse(BuildSpecV2ArtifactForFeature(document.FeatureMetadataFromDir("0001-sample")), "SPEC.md", document.TypeSpec)
 	if doc.Metadata == nil || doc.Metadata.WorkflowVersion != 2 || doc.Metadata.Phase != "clarify" {
-		t.Fatalf("expected generated spec metadata to mark v2 clarify workflow, got %#v", doc.Metadata)
+		t.Fatalf("expected V2 compatibility metadata, got %#v", doc.Metadata)
 	}
-	clarification, ok := doc.ClarificationState()
-	if !ok || clarification.Status != document.ClarificationStatusOpen {
-		t.Fatalf("expected generated spec metadata to include open clarification state, got %#v ok=%v", clarification, ok)
-	}
-	if confidence, ok := clarification.ConfidenceValue(); !ok || confidence != 0 {
-		t.Fatalf("clarification confidence = %d, %v; want 0, true", confidence, ok)
-	}
-	if unresolved, ok := clarification.UnresolvedQuestionsValue(); !ok || unresolved != 1 {
-		t.Fatalf("clarification unresolved = %d, %v; want 1, true", unresolved, ok)
+	if !doc.HasSection("THESIS") || !doc.HasSection("VALIDATION MAP") {
+		t.Fatalf("expected V2 compatibility sections, got %#v", doc.RequiredSections())
 	}
 }
 

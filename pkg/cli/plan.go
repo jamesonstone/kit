@@ -26,9 +26,9 @@ var planCmd = &cobra.Command{
 	Short: "Deprecated v1 staged workflow: create PLAN.md",
 	Long: `Deprecated v1 staged workflow: create a new implementation plan for a feature.
 
-The default v2 feature workflow keeps the implementation plan inside SPEC.md
-through the kit spec supervisor prompt. Use this command only when intentionally
-working in the legacy staged artifact flow.
+The default workflow uses the host agent's native planning capability and
+captures an accepted plan in SPEC.md only when durable rationale is required.
+Use this command only for the legacy staged artifact flow.
 
 Creates:
   - PLAN.md with required sections and placeholder comments
@@ -106,7 +106,7 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	if !document.Exists(specPath) {
 		if planForce || cfg.AllowOutOfOrder {
 			// create empty SPEC.md
-			content := templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
+			content := templates.BuildSpecV2ArtifactForFeature(document.FeatureMetadataFromDir(feat.DirName))
 			if err := document.Write(specPath, content); err != nil {
 				return fmt.Errorf("failed to create SPEC.md: %w", err)
 			}

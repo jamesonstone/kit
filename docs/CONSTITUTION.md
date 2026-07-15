@@ -1,11 +1,11 @@
 # CONSTITUTION
 
-Kit v2 is a general-purpose harness for disciplined thought work.
-Its strongest engine is a document-first, spec-driven workflow, but the
-harness also supports ad hoc execution, catch-up, handoff, summarization,
-review, and orchestration. The current command surface is packaged around
-repository and software workflows, but the underlying concepts generalize to
-research, strategy, operations, writing, policy, and other structured fields.
+Kit is a repository-memory and specification harness for agent-driven work.
+Native agent planning owns research, clarification, design, and implementation
+planning. Kit ensures consequential rationale, accepted plans, discoveries,
+validation, and outcomes survive in canonical repository documents when code
+and tests alone are insufficient. The harness also supports ad hoc execution,
+catch-up, handoff, summarization, review, and post-plan orchestration.
 This constitution defines the invariant rules, patterns, and vision that guide
 all decisions.
 
@@ -13,20 +13,21 @@ all decisions.
 
 ## PRINCIPLES
 
-### 1. Harness First, Workflow Second
+### 1. Native Planning, Durable Memory
 
 - Kit is a harness, not a single rigid workflow.
-- Spec-driven planning is a first-class engine, not the only operating mode.
+- Host-agent planning is the primary design surface; Kit does not duplicate it.
+- Specifications are durable byproducts of accepted plans when material rationale exists.
 - Ad hoc work, recovery flows, and orchestration flows are part of the product surface, not side utilities.
 - The harness should help teams choose the right level of structure for the work.
 - Software is a current packaging default, not the conceptual boundary of the product.
 
-### 2. Documents Are the Source of Truth
+### 2. Repositories Own Durable Truth
 
-- Specifications drive code. Code serves specifications.
-- All decisions must be traceable to a document.
-- If reality diverges from documentation, update documentation first, then code.
-- The repository should be understandable by reading docs alone.
+- Consequential decisions must be traceable to canonical repository documentation.
+- Feature rationale belongs in `SPEC.md`; invariants, reusable practices, and domain knowledge belong in their scope-appropriate canonical documents.
+- Code and tests may be the complete durable truth for code-sufficient work; do not create documentation solely for ceremony.
+- If reality diverges from durable repository memory, curate the memory to match what was actually built.
 
 ### 3. Portable and Agent-Agnostic
 
@@ -53,7 +54,7 @@ all decisions.
 
 ### 6. Tooling Should Disappear
 
-- Kit's job is done once documents are complete and correct.
+- Kit's job is done once implementation and repository memory agree.
 - Application implementation remains outside Kit's product scope.
 - Kit may run declared local verification commands or configured agent loops only when an explicit command contract says so.
 - The CLI becomes unnecessary once understanding is achieved.
@@ -77,19 +78,23 @@ all decisions.
 - Treat `docs/CONSTITUTION.md` as the canonical project contract.
 - Keep `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` aligned with the repo-local docs tree.
 - Treat `docs/notes/<feature>` as optional source material, not canonical truth; promote durable decisions into `SPEC.md`, `docs/CONSTITUTION.md`, or durable references.
+- Use native agent planning for research, clarification, design, and implementation planning.
+- Before implementation, inspect code and repository memory; create or adopt `SPEC.md` when material rationale exists.
+- After validation, curate feature rationale, project invariants, reusable practices, and domain knowledge into their scope-appropriate canonical documents.
+- Allow a justified `not required` repository-memory decision when code and tests preserve the complete durable truth.
 - Prefer implementation/source code files around 300 lines or less when splitting improves clarity and ownership.
 - Do not apply the code-file size guideline to documentation files, all `docs/**`, all `.kit/**`, or `.kit.yaml`.
 - Do not split or rewrite docs, generated state, or Kit config artifacts solely because they exceed 300 lines.
 <!-- END KIT-MANAGED BASELINE RULES -->
 ### Non-Negotiable Rules
 
-1. **V2 Single-SPEC Workflow**
-   - Constitution → `kit spec <feature>` → `SPEC.md` phases: clarify → ready → implement → validate → reflect → deliver → complete
-   - `SPEC.md` is the single durable feature artifact for v2 feature work
-   - The v2 readiness gates happen inside `SPEC.md`: clarification complete, assumptions resolved, acceptance criteria binary-verifiable, task checklist mapped to criteria, validation mapped 1:1, delivery intent known
-   - The readiness gate adversarially challenges `CONSTITUTION.md` and `SPEC.md` for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, validation gaps, delivery ambiguity, and scope creep before code begins
-   - If a readiness gate fails, update `SPEC.md` first, then restart the relevant phase
-   - Legacy staged artifacts (`BRAINSTORM.md`, `PLAN.md`, `TASKS.md`) are preserved as historical context or when a legacy staged command is explicitly used
+1. **Native-Plan Repository-Memory Workflow**
+   - Native plan → semantic memory decision → pre-implementation `SPEC.md` when required → implementation → validation → curated repository memory
+   - Before code, inspect relevant code and existing memory; capture purpose, context, requirements, and the accepted plan when material rationale exists
+   - During implementation, keep consequential decisions and discoveries current
+   - At completion, record validation, actual outcome, and repository-memory disposition with no pending placeholders
+   - A justified `not required` decision is valid when code and tests communicate the complete durable truth
+   - Legacy V1/V2 artifacts remain readable and valid but are never mechanically rewritten into V3
 
 2. **Document Structure**
    - All canonical markdown files use FULL CAPITALIZATION (e.g., `CONSTITUTION.md`, `SPEC.md`)
@@ -99,12 +104,13 @@ all decisions.
 
 3. **Section Requirements**
    - Each document type has required sections that must be present
-   - Required sections in v2 `SPEC.md` must be populated
+   - Required V3 sections must exist; visible-content requirements are phase-aware
    - Required sections in legacy staged artifacts must be populated when those artifacts are actively used
    - Do not leave HTML TODO comments as the only content in a required section
    - If a required section has no feature-specific detail, replace the placeholder comment with `not applicable`, `not required`, or `no additional information required`
    - `CONSTITUTION.md`: PRINCIPLES, CONSTRAINTS, NON-GOALS, DEFINITIONS
-   - v2 `SPEC.md`: THESIS, CONTEXT, CLARIFICATIONS, REQUIREMENTS, ASSUMPTIONS, ACCEPTANCE CRITERIA, IMPLEMENTATION PLAN, TASK CHECKLIST, VALIDATION MAP, REFLECTION NOTES, DOCUMENTATION UPDATES, DELIVERY DECISION, EVIDENCE
+   - V3 `SPEC.md`: PURPOSE, CONTEXT, REQUIREMENTS, ACCEPTED PLAN, DECISIONS, DISCOVERIES, VALIDATION, OUTCOME, REPOSITORY MEMORY
+   - V2 compatibility `SPEC.md`: THESIS, CONTEXT, CLARIFICATIONS, REQUIREMENTS, ASSUMPTIONS, ACCEPTANCE CRITERIA, IMPLEMENTATION PLAN, TASK CHECKLIST, VALIDATION MAP, REFLECTION NOTES, DOCUMENTATION UPDATES, DELIVERY DECISION, EVIDENCE
    - legacy `BRAINSTORM.md`: SUMMARY, USER THESIS, RELATIONSHIPS, CODEBASE FINDINGS, AFFECTED FILES, DEPENDENCIES, QUESTIONS, OPTIONS, RECOMMENDED STRATEGY, NEXT STEP
    - legacy `SPEC.md`: SUMMARY, PROBLEM, GOALS, NON-GOALS, USERS, SKILLS, RELATIONSHIPS, DEPENDENCIES, REQUIREMENTS, ACCEPTANCE, EDGE-CASES, OPEN-QUESTIONS
    - legacy `PLAN.md`: SUMMARY, APPROACH, COMPONENTS, DATA, INTERFACES, RISKS, TESTING
@@ -117,14 +123,14 @@ all decisions.
    - If work spans features, update each feature's docs separately
    - Feature directories are immutable once created
 
-5. **No Premature Implementation Details in Specs**
-   - v2 `SPEC.md` captures implementation plan and task checklist only after clarification and readiness gates pass
-   - Before the ready phase, `SPEC.md` defines WHAT and WHY before HOW
+5. **Accepted Plan Before Material Implementation**
+   - Use the host agent's native planning capability before implementation
+   - When material rationale exists, semantically capture the accepted plan in `SPEC.md` before code
    - No code in specifications
    - No technology choices unless accepted requirements or repo-grounded constraints require them
 
-6. **Traceability**
-   - v2 task checklist items map to acceptance criteria and validation evidence inside `SPEC.md`
+6. **Traceability Without Bureaucracy**
+   - V3 requirements include observable acceptance but do not require identifiers, task checklists, or a 1:1 validation map
    - Legacy staged tasks link to plan items using `[PLAN-XX]` syntax, and plan items link to spec items using `[SPEC-XX]` syntax
    - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
    - Validation evidence belongs in `SPEC.md` Evidence and Validation Map sections; legacy executable verification may still use task-level `VERIFY` fields where available
@@ -181,33 +187,33 @@ All work falls into one of two tracks. Classify before acting.
 
 Use when ANY of these apply:
 
-- Initiated via `kit spec` or explicit legacy staged commands under `kit legacy`
+- Contains material feature rationale, product decisions, architecture, or cross-component contracts that future agents must understand
 - New feature or capability
 - Substantial architectural or behavioral change
 - Work that has existing spec docs in `docs/specs/<feature>/`
 - Change affects multiple components or public interfaces
 
-**Workflow**: v2 single-SPEC workflow — `kit spec <feature>` creates or adopts `SPEC.md`, then the supervisor prompt drives clarify → ready → implement → validate → reflect → deliver → complete inside that artifact
+**Workflow**: native agent planning → create/adopt `SPEC.md` before code when rationale is material → implement and validate → curate repository memory
 
-**Clarification protocol for formal planning phases**:
+**Clarification protocol for native planning**:
 
 - Resolve repository-discoverable facts before asking the user
 - Ask concise numbered questions only for material non-discoverable choices
 - Include a recommended default and explain how the answer changes scope, behavior, risk, validation, or delivery
 - Outside explicit clarification, continue safe in-scope work without routine approval pauses
-- Record durable answers in `SPEC.md`; block rather than guess when a required choice remains
+- Record accepted durable answers in `SPEC.md` when the memory gate requires a spec; block rather than guess when a required choice remains
 
 ### Ad Hoc (Lightweight)
 
 Use when ALL of these apply:
 
-- Not initiated via `kit spec` or explicit legacy staged commands under `kit legacy`
+- Does not contain material rationale beyond what code and tests preserve
 - Bug fix, security review, refactor, dependency update, config change, or small refinement
 - Scope is contained and well-understood without formal specification
 
 **Workflow**: Understand → implement → verify
 
-**Documentation**: Update only practical docs (READMEs, inline docs, API docs). Do NOT create feature `SPEC.md` or legacy staged artifacts for ad hoc work.
+**Documentation**: Update practical canonical docs when behavior changes. Do not create a feature `SPEC.md` solely to satisfy process; report the justified `not required` decision.
 
 ### Ad Hoc with Existing Specs
 
@@ -266,19 +272,19 @@ Kit explicitly does NOT:
 
 ## DEFINITIONS
 
-### V2 Single-SPEC Workflow
+### Native-Plan Repository-Memory Workflow
 
-The default feature workflow that keeps durable state in one feature artifact:
+The default feature workflow that pairs native planning with durable repository rationale:
 
 1. **Constitution** — Project-wide constraints, principles, long-term vision. Kept updated with priors. Single per repository.
 
-2. **Specification (SPEC.md)** — Single durable v2 feature artifact. Captures thesis, context, clarifications, requirements, assumptions, acceptance criteria, implementation plan, task checklist, validation map, reflection notes, documentation updates, delivery decision, and evidence.
+2. **Specification (SPEC.md)** — Living feature memory when required. Captures purpose, context, requirements, accepted plan, decisions, discoveries, validation, outcome, and repository-memory curation.
 
 3. **Feature Notes** — Optional source material under `docs/notes/<feature>`. Notes may hold raw context, screenshots, research, Slack/customer excerpts, draft responses, and local-only private context, but they do not replace `SPEC.md`, `docs/CONSTITUTION.md`, or durable references.
 
-4. **Implementation** — Code execution after the `SPEC.md` readiness gates pass. The supervisor keeps task status, lane decisions, validation still needed, and rollback notes current in `SPEC.md`.
+4. **Implementation** — Code execution after the native plan is accepted and, when required, captured in the spec. Material decisions and discoveries stay current.
 
-5. **Validation and Reflection** — Verification against every acceptance criterion, reflection on correctness and drift, documentation sync, delivery decision, and evidence recorded in `SPEC.md`.
+5. **Validation and Curation** — Verification of observable acceptance followed by curation of the actual outcome and broader repository memory.
 
 Legacy staged artifacts (`BRAINSTORM.md`, `PLAN.md`, `TASKS.md`) may exist in upgraded projects and remain readable historical context. They are binding only when a legacy staged command is explicitly used.
 
@@ -302,10 +308,10 @@ Agents should load note files only when they materially affect the current decis
 
 ### Phase
 
-The current lifecycle state of a feature. V2 `SPEC.md` also records its own workflow phase in front matter.
+The current lifecycle state of a feature. Versioned living specs record their workflow phase in front matter.
 
 - `brainstorm` — Legacy staged research exists without `SPEC.md`
-- `spec` — `SPEC.md` exists and is the v2 workflow artifact, optionally with historical staged context
+- `spec` — A legacy unversioned `SPEC.md` exists; V2/V3 specs use explicit living-workflow phases
 - `plan` — Legacy staged `PLAN.md` exists
 - `tasks` — Legacy staged `TASKS.md` exists
 - `implement` — Implementation work is in progress beyond Kit's prompt-generation scope
@@ -313,7 +319,7 @@ The current lifecycle state of a feature. V2 `SPEC.md` also records its own work
 - `complete` — Marked complete after reflection and lifecycle completion
 - `removed` — Removed from `docs/specs/` but retained as history through `.kit.yaml`
 
-### Understanding Percentage
+### Understanding Percentage (V2 Compatibility)
 
 A single integer (0–100) reported by the coding agent indicating:
 
@@ -365,7 +371,8 @@ The structural refresh flow for updating Kit-managed project files to the curren
 - Adopts existing registry rulesets into `.kit.yaml` registry state and syncs safe upstream ruleset updates from the Kit GitHub `main` branch
 - Preserves local ruleset `status` while comparing registry content, because activation and silencing are project-local choices
 - Skips and reports local-custom or conflicted rulesets instead of writing conflict markers or silently overwriting project guidance
-- Migrates old verbose repository instruction files to the v2 thin ToC/RLM model when they still match known generated templates
+- Atomically migrates exact generated V2 instruction artifacts to V3 native-plan repository-memory guidance
+- Preserves customized V2 instructions and reports reviewed reconciliation or explicit `kit scaffold agents --version 3 --force` guidance
 - Uses `kit reconcile --include-files --dry-run --diff` to preview managed-file changes without writing them
 - Uses `kit reconcile --include-files --force` for generated documentation overwrites and for accepting latest registry ruleset content while preserving local ruleset status
 - Uses `kit reconcile --include-files --file=<path> --force` for targeted overwrites such as `.envrc` or `docs/references/rules/<slug>.md`
@@ -575,7 +582,7 @@ loop:
       - never
       - "-"
 # Repository instruction scaffold model
-instruction_scaffold_version: 2
+instruction_scaffold_version: 3
 
 # Agent pointer files to scaffold on kit init
 agents:

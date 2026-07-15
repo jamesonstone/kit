@@ -199,6 +199,14 @@ func hiddenDeprecated(note string) capabilityOption {
 	}
 }
 
+func deprecated(note string) capabilityOption {
+	return func(record *capabilityRecord) {
+		record.Deprecated = true
+		record.DeprecationNote = note
+		record.IncludeInCompact = false
+	}
+}
+
 func flag(name, summary string, safety ...string) capabilityFlag {
 	result := capabilityFlag{Name: name, Summary: summary}
 	if len(safety) > 0 {

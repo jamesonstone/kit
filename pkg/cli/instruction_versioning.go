@@ -25,7 +25,7 @@ func resolveInstructionScaffoldVersionFlag(raw int) (int, bool, error) {
 		return 0, false, nil
 	}
 	if !config.IsInstructionScaffoldVersionSupported(raw) {
-		return 0, false, fmt.Errorf("--version must be 1 or 2")
+		return 0, false, fmt.Errorf("--version must be 1, 2, or 3")
 	}
 
 	return raw, true, nil
@@ -43,13 +43,13 @@ func planInstructionVersionCleanup(
 	projectRoot string,
 	currentVersion, targetVersion int,
 ) ([]instructionRemovalPlan, error) {
-	if currentVersion != config.InstructionScaffoldVersionTOC ||
+	if !config.UsesInstructionSupportDocs(currentVersion) ||
 		targetVersion != config.InstructionScaffoldVersionVerbose {
 		return nil, nil
 	}
 
 	managed := make(map[string]bool)
-	for _, support := range instructions.SupportDocs(config.InstructionScaffoldVersionTOC) {
+	for _, support := range instructions.SupportDocs(currentVersion) {
 		managed[support.RelativePath] = true
 	}
 
@@ -91,7 +91,7 @@ func planInstructionVersionCleanup(
 	}
 
 	var plans []instructionRemovalPlan
-	for _, support := range instructions.SupportDocs(config.InstructionScaffoldVersionTOC) {
+	for _, support := range instructions.SupportDocs(currentVersion) {
 		absolutePath := filepath.Join(projectRoot, support.RelativePath)
 		if document.Exists(absolutePath) {
 			plans = append(plans, instructionRemovalPlan{

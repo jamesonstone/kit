@@ -27,10 +27,9 @@ var reflectCmd = &cobra.Command{
 	Long: `Deprecated v1 staged workflow: output instructions for reflecting on recent changes to ensure
 implementation correctness.
 
-The default v2 feature workflow records validation, reflection notes,
-documentation updates, delivery state, and evidence inside SPEC.md through the
-kit spec supervisor prompt. Use this command only when intentionally working in
-the legacy staged artifact flow.
+The default workflow validates implementation and curates the actual outcome
+into scope-appropriate repository memory. Use this command only for the legacy
+staged artifact flow.
 
 When a feature is specified, instructions are scoped to that feature's context.
 Without a feature argument, shows an interactive selection of legacy

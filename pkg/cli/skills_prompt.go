@@ -23,7 +23,7 @@ func skillPromptSuffix() string {
 
 	var sb strings.Builder
 	sb.WriteString("## Skills\n")
-	if version == config.InstructionScaffoldVersionTOC {
+	if config.UsesInstructionSupportDocs(version) {
 		sb.WriteString("- Treat repository instruction entrypoints as routing maps; start at `docs/agents/README.md` when present.\n")
 	} else {
 		sb.WriteString("- Read the repository instruction entrypoints before acting.\n")

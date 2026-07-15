@@ -28,7 +28,7 @@ agents:
 github:
     default_assignees:
         - jamesonstone
-instruction_scaffold_version: 2
+instruction_scaffold_version: 3
 feature_naming:
     numeric_width: 4
     separator: '-'

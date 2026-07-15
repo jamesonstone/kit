@@ -48,7 +48,7 @@ func buildSpecV2SupervisorPrompt(input specV2PromptInput) string {
 	}
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph(fmt.Sprintf("Supervise feature `%s` through its current Kit v2 workflow phase.", input.FeatureSlug))
+		doc.Paragraph(fmt.Sprintf("Supervise feature `%s` through its deprecated V2 compatibility workflow phase.", input.FeatureSlug))
 		doc.Paragraph(fmt.Sprintf("`SPEC.md` is the single durable feature artifact. Keep `%s` current, complete the requested scope, and block only on a material decision that repository evidence cannot resolve safely.", input.SpecPath))
 
 		doc.Heading(2, "Goal")

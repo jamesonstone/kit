@@ -52,7 +52,7 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 			))
 			continue
 		}
-		if !meaningfulSectionContent(entry.Content) {
+		if doc.RequiresPopulatedSection(section) && !meaningfulSectionContent(entry.Content) {
 			findings = append(findings, newFinding(
 				reconcileSeverityError,
 				path,
@@ -98,14 +98,18 @@ func auditMetadataDiagnostics(path string, doc *document.Document, projectRoot s
 		if diagnostic.Severity == document.MetadataDiagnosticError {
 			severity = reconcileSeverityError
 		}
-		findings = append(findings, newFinding(
+		finding := newFinding(
 			severity,
 			path,
 			fmt.Sprintf("front matter metadata issue: %s", diagnostic.Message),
 			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
 			diagnostic.Fix,
 			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
-		))
+		)
+		if doc.Type == document.TypeSpec && doc.Metadata != nil && doc.Metadata.WorkflowVersion == document.WorkflowVersionV2 && severity == reconcileSeverityWarning {
+			finding.NonBlocking = true
+		}
+		findings = append(findings, finding)
 	}
 	for _, conflict := range doc.MetadataConflictWarnings {
 		findings = append(findings, newFinding(

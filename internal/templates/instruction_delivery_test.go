@@ -1,11 +1,33 @@
 package templates
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/jamesonstone/kit/internal/config"
 )
+
+func TestMemoryCopilotInstructionsPreserveMutationRouting(t *testing.T) {
+	for _, want := range []string{
+		"Start with `docs/agents/README.md`",
+		"Before Git, GitHub, or AWS mutations, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*`",
+		"Repo-local Kit rules outrank generic defaults",
+	} {
+		if !strings.Contains(MemoryCopilotInstructionsMD, want) {
+			t.Fatalf("expected V3 Copilot instructions to contain %q", want)
+		}
+	}
+
+	checkedIn, err := os.ReadFile(filepath.Join("..", "..", ".github", "copilot-instructions.md"))
+	if err != nil {
+		t.Fatalf("read checked-in Copilot instructions: %v", err)
+	}
+	if string(checkedIn) != MemoryCopilotInstructionsMD {
+		t.Fatal("checked-in Copilot instructions are not aligned with the V3 generator")
+	}
+}
 
 func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 	defaultChecks := []string{

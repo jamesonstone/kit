@@ -10,7 +10,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/document"
 	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/internal/templates"
 )
 
 func TestEligibleFeaturesForCompletion(t *testing.T) {
@@ -223,6 +225,99 @@ func TestRunComplete_RemovesCompletedFeatureFromActiveStatus(t *testing.T) {
 	if strings.Contains(content, "ACTIVE") {
 		t.Fatalf("expected completed feature row to avoid ACTIVE state, got %q", content)
 	}
+}
+
+func TestV3CompletionPreservesWorkflowVersion(t *testing.T) {
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	featurePath := filepath.Join(specsDir, "0001-v3")
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), validV3CompletionSpec("0001-v3", "deliver"))
+
+	feat, err := feature.Resolve(specsDir, "v3")
+	if err != nil {
+		t.Fatalf("feature.Resolve() error = %v", err)
+	}
+	specPath, err := validateFeatureCanComplete(feat, false)
+	if err != nil {
+		t.Fatalf("validateFeatureCanComplete() error = %v", err)
+	}
+	if err := markFeatureComplete(feat, specPath); err != nil {
+		t.Fatalf("markFeatureComplete() error = %v", err)
+	}
+
+	doc, err := document.ParseFile(specPath, document.TypeSpec)
+	if err != nil {
+		t.Fatalf("document.ParseFile() error = %v", err)
+	}
+	if doc.Metadata == nil || doc.Metadata.WorkflowVersion != document.WorkflowVersionV3 || doc.Metadata.Phase != "complete" {
+		t.Fatalf("metadata = %#v, want workflow_version 3 phase complete", doc.Metadata)
+	}
+}
+
+func TestV3CompletionRejectsPendingPlaceholdersEvenWithForce(t *testing.T) {
+	projectRoot := t.TempDir()
+	specsDir := filepath.Join(projectRoot, "docs", "specs")
+	featurePath := filepath.Join(specsDir, "0001-v3")
+	writeFile(t, filepath.Join(featurePath, "SPEC.md"), templates.BuildSpecArtifactForFeature(document.FeatureMetadataFromDir("0001-v3")))
+	feat, err := feature.Resolve(specsDir, "v3")
+	if err != nil {
+		t.Fatalf("feature.Resolve() error = %v", err)
+	}
+	if _, err := validateFeatureCanComplete(feat, true); err == nil || !strings.Contains(err.Error(), "pending TODO placeholders") {
+		t.Fatalf("validateFeatureCanComplete() error = %v, want pending-placeholder gate", err)
+	}
+}
+
+func validV3CompletionSpec(dirName, phase string) string {
+	return `---
+kit_metadata_version: 1
+artifact: spec
+feature:
+  id: 1
+  slug: v3
+  dir: ` + dirName + `
+workflow_version: 3
+phase: ` + phase + `
+---
+# SPEC
+
+## PURPOSE
+
+Preserve consequential implementation rationale.
+
+## CONTEXT
+
+Native planning owns research and design.
+
+## REQUIREMENTS
+
+- The observable behavior remains correct.
+- Non-goal: transcript ingestion.
+
+## ACCEPTED PLAN
+
+Implement the smallest coherent change and validate it.
+
+## DECISIONS
+
+- Accepted: keep semantic curation agent-owned because significance is contextual.
+
+## DISCOVERIES
+
+- Existing code and tests are the implementation evidence.
+
+## VALIDATION
+
+- ` + "`go test ./...`" + ` passed.
+
+## OUTCOME
+
+The requested behavior was implemented.
+
+## REPOSITORY MEMORY
+
+- Updated this specification with the final rationale and evidence.
+`
 }
 
 func createFeatureTasks(t *testing.T, specsDir, dirName, tasks string) feature.Feature {

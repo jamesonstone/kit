@@ -119,10 +119,58 @@ Body problem.
 	}
 }
 
+func TestExtractFeatureSummaryUsesV3PurposeAndAcceptedPlan(t *testing.T) {
+	featureDir := filepath.Join(t.TempDir(), "0001-memory")
+	if err := os.MkdirAll(featureDir, 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+	spec := `---
+kit_metadata_version: 1
+artifact: spec
+workflow_version: 3
+phase: complete
+feature:
+  id: "0001"
+  slug: memory
+  dir: 0001-memory
+---
+# SPEC
+
+## PURPOSE
+
+Preserve consequential rationale.
+
+## ACCEPTED PLAN
+
+Use native planning, implement, validate, and curate repository memory.
+`
+	if err := os.WriteFile(filepath.Join(featureDir, "SPEC.md"), []byte(spec), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	got := extractFeatureSummary(feature.Feature{
+		Number:  1,
+		Slug:    "memory",
+		DirName: "0001-memory",
+		Path:    featureDir,
+		Phase:   feature.PhaseComplete,
+	}, filepath.Dir(featureDir))
+	if got.WorkflowVersion != 3 || got.Summary != "Preserve consequential rationale." || got.Intent != got.Summary {
+		t.Fatalf("V3 summary = %#v", got)
+	}
+	if got.Approach != "Use native planning, implement, validate, and curate repository memory." || got.OpenItems != "none" {
+		t.Fatalf("V3 approach/open items = %#v", got)
+	}
+	content := generateContent([]FeatureSummary{got}, config.Default())
+	if strings.Contains(content, "PLAN.md") || strings.Contains(content, "TASKS.md") {
+		t.Fatalf("V3 rollup contains legacy pointers:\n%s", content)
+	}
+}
+
 func TestGenerateContentWritesConcreteProjectIntent(t *testing.T) {
 	content := generateContent(nil, config.Default())
 
-	if !strings.Contains(content, "## PROJECT INTENT\n\nKit is a document-first workflow harness") {
+	if !strings.Contains(content, "## PROJECT INTENT\n\nKit is a repository-memory and specification harness") {
 		t.Fatalf("expected concrete project intent, got:\n%s", content)
 	}
 	if strings.Contains(content, "TODO") {

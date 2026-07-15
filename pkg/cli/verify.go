@@ -29,9 +29,9 @@ var verifyCmd = &cobra.Command{
 	SilenceUsage: true,
 	Long: `Run verification commands declared in legacy TASKS.md.
 
-In the default v2 feature workflow, validation is orchestrated by the kit spec
-supervisor prompt and recorded in SPEC.md. This command remains available for
-legacy v1 staged artifacts and reusable local evidence runs.
+In the default workflow, the implementation agent validates the accepted native
+plan and records exact evidence in repository memory when required. This
+command remains available for legacy staged artifacts and reusable local runs.
 
 By default commands are parsed as argv and executed without shell evaluation.
 Use --dry-run to inspect selected commands without running them.`,

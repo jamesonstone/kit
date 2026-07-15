@@ -2,31 +2,31 @@
 ╭──────────────────────────────────────────────────────────────────────╮
 │                                                                      │
 │   K                                                                  │
-│      keep one durable SPEC.md as the source of truth                 │
+│      keep consequential product memory in the repository            │
 │                                                                      │
 │   I                                                                  │
-│      interrogate ambiguity before implementation                     │
+│      implement from the agent's accepted native plan                │
 │                                                                      │
 │   T                                                                  │
-│      turn agent work into validation evidence                        │
+│      translate durable why into specifications and references       │
 │                                                                      │
 ├──────────────────────────────────────────────────────────────────────┤
-│                    Kit v2 Thought-Work Harness                       │
-│             idea → clarity → agent teams → evidence                  │
+│                    Kit Repository-Memory Harness                     │
+│           native plan → implementation → curated memory             │
 ╰──────────────────────────────────────────────────────────────────────╯
 ```
 
-🎒 **Kit v2 Thought-Work Harness** is a portable, agent-agnostic harness for
-disciplined thought work.
+🎒 **Kit** is a portable, agent-agnostic harness that turns consequential agent
+work into durable repository memory.
 
 <!-- BEGIN KIT-MANAGED README BADGES -->
 [![Last commit](https://img.shields.io/github/last-commit/jamesonstone/kit)](https://github.com/jamesonstone/kit/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/kit)](https://github.com/jamesonstone/kit/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/kit)](https://github.com/jamesonstone/kit/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/kit)](https://github.com/jamesonstone/kit/releases)
 <!-- END KIT-MANAGED README BADGES -->
 
-Its strongest engine is a document-first, spec-driven workflow for software
-projects, but the same structure works for research, operations, writing,
-policy, strategy, and other work where constraints, evidence, reflection, and
-handoff matter.
+The host agent's native planning capability owns research, clarification,
+design, and implementation planning. Kit ensures the accepted plan, material
+decisions, discoveries, validation, and actual outcome survive in the
+repository when code and tests alone cannot preserve the important why.
 
 ## Start Here
 
@@ -34,7 +34,7 @@ handoff matter.
 | --- | --- |
 | 🧭 Understand what Kit is | [docs/overview.md](docs/overview.md) |
 | ⚙️ Install and use commands | [docs/commands.md](docs/commands.md) |
-| 🔁 Understand the v2 workflow | [docs/workflows.md](docs/workflows.md) |
+| 🔁 Understand the memory workflow | [docs/workflows.md](docs/workflows.md) |
 | 📚 Browse all documentation | [docs/README.md](docs/README.md) |
 | 🧱 Read project invariants | [docs/CONSTITUTION.md](docs/CONSTITUTION.md) |
 | 🤖 Read agent routing docs | [docs/agents/README.md](docs/agents/README.md) |
@@ -65,7 +65,7 @@ make install-git-hooks
 # initialize Kit in a repository
 kit init
 
-# start the v2 single-SPEC workflow
+# scaffold durable feature memory after native planning
 kit spec my-feature
 
 # inspect progress
@@ -87,20 +87,23 @@ kit aws verify
 The default feature workflow is:
 
 ```text
-idea → kit spec <feature> → SPEC.md evidence and readiness gates → same-thread implementation → validation → reflection → delivery
+native agent plan → semantic memory decision → SPEC.md when required → implementation → validation → curated repository memory
 ```
 
-In v2, `SPEC.md` is the single durable feature artifact. Legacy
-`BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files remain readable historical
-artifacts and are available only through `kit legacy` workflows.
+`SPEC.md` is the durable home for material feature rationale. Project
+invariants belong in `CONSTITUTION.md`, reusable practices in references or
+rules, and domain knowledge in its existing canonical documentation. A
+justified `not required` memory decision is valid when code and tests preserve
+the complete durable truth.
 
 ## Common Commands
 
 | Command | Purpose |
 | --- | --- |
 | `kit init` | Initialize or refresh Kit-managed project scaffolding |
-| `kit spec <feature>` | Start or resume the evidence-first v2 `SPEC.md` workflow |
-| `kit loop workflow <feature>` | Execute workflow phases through a configured local agent loop |
+| `kit spec <feature>` | Non-interactively scaffold, adopt, or orient a living specification |
+| `kit spec <feature> --legacy-supervisor` | Temporarily run the deprecated V2 lifecycle supervisor |
+| `kit loop workflow <feature>` | Deprecated V2 compatibility loop; V3 specs use native planning |
 | `kit loop review` | Review changed code until local correctness converges |
 | `kit pr fix` | Select or target a PR and prepare a review-feedback dispatch prompt |
 | `kit status --all` | Show project-wide feature state |
@@ -118,7 +121,7 @@ See [docs/commands.md](docs/commands.md) for the full command guide.
 
 - 🧭 [Overview](docs/overview.md) - product model, principles, positioning, and cross-domain concepts.
 - ⚙️ [Commands](docs/commands.md) - installation, command groups, prompt behavior, scaffold refresh, and prompt libraries.
-- 🔁 [Workflows](docs/workflows.md) - v2 single-`SPEC.md` workflow, v1 foundations, autonomous loops, usage examples, and project structure.
+- 🔁 [Workflows](docs/workflows.md) - native planning, semantic memory decisions, living specs, compatibility, and curation.
 - 🧱 [Constitution](docs/CONSTITUTION.md) - project contract, invariants, and repository rules.
 - 🤖 [Agent Docs](docs/agents/README.md) - repo-local agent routing and RLM guidance.
 - 📌 [References](docs/references/README.md) - durable project references and rulesets.

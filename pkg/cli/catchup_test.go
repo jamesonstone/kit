@@ -52,6 +52,7 @@ func TestBuildCatchupPrompt(t *testing.T) {
 		"PLAN.md",
 		"TASKS.md",
 		"Stay in repository catch-up and clarification workflow",
+		"Reconstruct the current living-spec phase and state of the feature from repository artifacts before making any recommendations",
 		"Start by asking clarifying questions",
 		"Do NOT switch from catch-up or clarification into implementation until the user explicitly approves that move",
 		"`kit summarize catchup-command`",
@@ -70,6 +71,9 @@ func TestBuildCatchupPrompt(t *testing.T) {
 	}
 	if strings.Contains(prompt, "/plan") || strings.Contains(prompt, "plan mode") {
 		t.Fatalf("expected prompt to avoid native plan-mode triggers, got %q", prompt)
+	}
+	if strings.Contains(prompt, "current v2 phase") {
+		t.Fatalf("expected prompt to use version-neutral living-spec language, got %q", prompt)
 	}
 }
 

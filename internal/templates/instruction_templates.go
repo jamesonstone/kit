@@ -54,6 +54,12 @@ func tocInstructionDocument(title string) string {
 ` + tocRepositoryInstructions(title)
 }
 
+func memoryInstructionDocument(title string) string {
+	return `# ` + title + `
+
+` + memoryRepositoryInstructions(title)
+}
+
 // LegacyAgentPointer returns the comprehensive legacy instruction template for agent files.
 func LegacyAgentPointer(agentName string) string {
 	return repositoryInstructionDocument(agentName)
@@ -85,6 +91,15 @@ var ClaudeMD = tocInstructionDocument("CLAUDE")
 // CopilotInstructionsMD is the default Copilot instructions scaffold content.
 var CopilotInstructionsMD = tocCopilotInstructions
 
+// MemoryAgentsMD is the v3 native-plan repository-memory scaffold.
+var MemoryAgentsMD = memoryInstructionDocument("AGENTS")
+
+// MemoryClaudeMD is the v3 native-plan repository-memory scaffold.
+var MemoryClaudeMD = memoryInstructionDocument("CLAUDE")
+
+// MemoryCopilotInstructionsMD is the v3 repository-wide Copilot scaffold.
+var MemoryCopilotInstructionsMD = memoryCopilotInstructions
+
 // InstructionFile returns default scaffold content for supported instruction file paths.
 func InstructionFile(path string) string {
 	return InstructionFileForVersion(path, config.DefaultInstructionScaffoldVersion)
@@ -94,21 +109,31 @@ func InstructionFile(path string) string {
 func InstructionFileForVersion(path string, version int) string {
 	cleanPath := strings.ReplaceAll(path, "\\", "/")
 	useLegacy := version == config.InstructionScaffoldVersionVerbose
+	useMemory := version == config.InstructionScaffoldVersionMemory
 
 	switch {
 	case strings.HasSuffix(cleanPath, "/AGENTS.md") || cleanPath == "AGENTS.md":
 		if useLegacy {
 			return LegacyAgentsMD
 		}
+		if useMemory {
+			return MemoryAgentsMD
+		}
 		return AgentsMD
 	case strings.HasSuffix(cleanPath, "/CLAUDE.md") || cleanPath == "CLAUDE.md":
 		if useLegacy {
 			return LegacyClaudeMD
 		}
+		if useMemory {
+			return MemoryClaudeMD
+		}
 		return ClaudeMD
 	case strings.HasSuffix(cleanPath, "/copilot-instructions.md") || cleanPath == "copilot-instructions.md":
 		if useLegacy {
 			return LegacyCopilotInstructionsMD
+		}
+		if useMemory {
+			return MemoryCopilotInstructionsMD
 		}
 		return CopilotInstructionsMD
 	default:
@@ -119,6 +144,9 @@ func InstructionFileForVersion(path string, version int) string {
 		if useLegacy {
 			return LegacyAgentPointer(strings.TrimSuffix(base, ".md"))
 		}
+		if useMemory {
+			return memoryInstructionDocument(strings.TrimSuffix(base, ".md"))
+		}
 		return AgentPointer(strings.TrimSuffix(base, ".md"))
 	}
 }
@@ -128,14 +156,19 @@ func InstructionSupportFiles(version int) []ScaffoldFile {
 	for _, doc := range instructions.SupportDocs(version) {
 		files = append(files, ScaffoldFile{
 			RelativePath: doc.RelativePath,
-			Content:      instructionSupportContent(doc.RelativePath),
+			Content:      instructionSupportContent(doc.RelativePath, version),
 		})
 	}
 
 	return files
 }
 
-func instructionSupportContent(relativePath string) string {
+func instructionSupportContent(relativePath string, version int) string {
+	if version == config.InstructionScaffoldVersionMemory {
+		if content := memoryInstructionSupportContent(relativePath); content != "" {
+			return content
+		}
+	}
 	switch relativePath {
 	case "docs/agents/README.md":
 		return agentsREADME

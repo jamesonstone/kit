@@ -16,7 +16,8 @@ const (
 	CurrentSchemaVersion                 = 1
 	InstructionScaffoldVersionVerbose    = 1
 	InstructionScaffoldVersionTOC        = 2
-	DefaultInstructionScaffoldVersion    = InstructionScaffoldVersionTOC
+	InstructionScaffoldVersionMemory     = 3
+	DefaultInstructionScaffoldVersion    = InstructionScaffoldVersionMemory
 	DefaultLoopMaxIterations             = 20
 	DefaultProjectRefreshFeatureInterval = 5
 	DefaultProjectRefreshMaxAgeDays      = 30
@@ -168,7 +169,8 @@ func Default() *Config {
 				MaxAgeDays:      DefaultProjectRefreshMaxAgeDays,
 			},
 		},
-		Agents: []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
+		Agents:                     []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
+		InstructionScaffoldVersion: DefaultInstructionScaffoldVersion,
 		FeatureNaming: FeatureNaming{
 			NumericWidth: 4,
 			Separator:    "-",
@@ -177,7 +179,13 @@ func Default() *Config {
 }
 
 func IsInstructionScaffoldVersionSupported(version int) bool {
-	return version == InstructionScaffoldVersionVerbose || version == InstructionScaffoldVersionTOC
+	return version == InstructionScaffoldVersionVerbose ||
+		version == InstructionScaffoldVersionTOC ||
+		version == InstructionScaffoldVersionMemory
+}
+
+func UsesInstructionSupportDocs(version int) bool {
+	return version == InstructionScaffoldVersionTOC || version == InstructionScaffoldVersionMemory
 }
 
 func (c *Config) EffectiveInstructionScaffoldVersion() int {
