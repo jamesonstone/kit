@@ -76,6 +76,9 @@ Recenter Kit as a repository-memory and specification harness: native agent plan
 - Legacy scaffold, plan, task, and workflow-loop helpers had to call the retained V2 builder explicitly; otherwise changing the default template would silently create V3 artifacts inside V2-only flows.
 - The first prompt-system run found that the deprecated bare-loop capability had lost its documented generated `gpt-5.6` default. Restoring that compatibility caveat fixed all three repeated failures.
 - The project rollup always advertised legacy `PLAN.md` and `TASKS.md` pointers. V3 summaries now read PURPOSE and ACCEPTED PLAN from the living spec and publish only the V3 artifacts that actually exist.
+- PR review found that the atomic refresh path discarded rollback failures. Refresh now attempts every rollback in reverse order and reports each path that could not be restored or removed alongside the original apply error.
+- PR review also found that a V2-configured project containing exact legacy V1 instruction files received a customized-V2 advisory even though those files were refreshed. Exact V1 refreshes and genuine customized V2 preservation now have distinct notes.
+- Generated Copilot guidance and catch-up prompts retained two incomplete compatibility phrases: mutation routing omitted relevant repository delivery rules, and catch-up still named a V2 phase. The generator, checked-in guidance, prompts, and regression tests now use the repository-local rule precedence and living-spec terminology.
 
 ## VALIDATION
 
@@ -88,7 +91,8 @@ Recenter Kit as a repository-memory and specification harness: native agent plan
 - `./bin/kit complete native-plan-repository-memory` — passed the V3 completion gate, preserved `workflow_version: 3`, set `phase: complete`, and refreshed the project rollup. It also reported that the separate five-feature Constitution refresh threshold is now due.
 - Final `./bin/kit check --project` — exited successfully; reported 15 non-blocking compatibility advisories from historical V2 specs, the due project-refresh advisory, and no blocking findings.
 - Initial `./bin/kit improve run --suite prompt-system --kit-binary ./bin/kit` run `20260715T163628.210723000Z-b7f2de` — failed three repeated model-capability assertions and exposed the missing `gpt-5.6` caveat.
-- Final corrected rerun `20260715T164401.327451000Z-2e581a` — passed all 45 traces and all 345 assertions with 100% task success, output completeness, and repeated-task determinism against the final binary.
+- Pre-review corrected rerun `20260715T164401.327451000Z-2e581a` — passed all 45 traces and all 345 assertions with 100% task success, output completeness, and repeated-task determinism.
+- Post-review repair rerun `20260715T181108.912339000Z-5f306e` — passed 45/45 traces, 345/345 assertions, and 15/15 repeated-task determinism checks against rebuilt binary SHA-256 `f21b6984540122904d532b9f72cc4c3bda4abbc1fb0861a52f29800840b2c4d8`.
 
 ## OUTCOME
 
@@ -99,6 +103,7 @@ Recenter Kit as a repository-memory and specification harness: native agent plan
 - Deprecated supervisor and workflow-loop behavior remains callable for V2 work with warnings, while V3 receives native-planning guidance.
 - Generated instructions, product docs, command help, capabilities, fixtures, and tests consistently route feature rationale, invariants, reusable practices, domain knowledge, and justified no-update outcomes.
 - Project rollups summarize V3 purpose and accepted plans without pointing at nonexistent legacy plan/task files.
+- Atomic instruction refreshes now surface incomplete rollback operations, and migration notes distinguish exact legacy V1 refreshes from customized V2 preservation.
 - GitHub delivery was opened as issue `#58` on branch `GH-58`; the pull request URL and live CI state remain authoritative on GitHub rather than being duplicated as feature rationale.
 
 ## REPOSITORY MEMORY

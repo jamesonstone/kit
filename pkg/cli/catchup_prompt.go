@@ -77,7 +77,7 @@ func buildCatchupPrompt(
 		"Read `PROJECT_PROGRESS_SUMMARY.md` for cross-feature context",
 		"Read the feature docs in order:\n- "+strings.Join(featureDocs, "\n- "),
 		"Treat a versioned SPEC.md as durable feature memory; for V3, reconcile purpose, accepted plan, decisions, discoveries, validation, outcome, and repository-memory curation; use legacy staged artifacts only as historical context",
-		"Reconstruct the current v2 phase and state of the feature from repository artifacts before making any recommendations",
+		"Reconstruct the current living-spec phase and state of the feature from repository artifacts before making any recommendations",
 		"Start by asking clarifying questions in a short numbered batch",
 		"For each question, include your current best recommendation, assumption, or default",
 		fmt.Sprintf("Use the standard batch-approval syntax for clarification questions: %s", approvalSyntaxSummary),

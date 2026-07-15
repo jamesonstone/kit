@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jamesonstone/kit/internal/document"
 )
@@ -17,11 +18,24 @@ type initRefreshFileChange struct {
 }
 
 func applyInitRefreshFileChangesAtomically(changes []initRefreshFileChange) error {
+	return applyInitRefreshFileChangesAtomicallyWithRollback(changes, rollbackInitRefreshFileChange)
+}
+
+func applyInitRefreshFileChangesAtomicallyWithRollback(
+	changes []initRefreshFileChange,
+	rollback func(initRefreshFileChange) error,
+) error {
 	applied := make([]initRefreshFileChange, 0, len(changes))
 	for _, change := range changes {
 		if err := applyInitRefreshFileChange(change); err != nil {
+			var rollbackErrors []string
 			for i := len(applied) - 1; i >= 0; i-- {
-				_ = rollbackInitRefreshFileChange(applied[i])
+				if rollbackErr := rollback(applied[i]); rollbackErr != nil {
+					rollbackErrors = append(rollbackErrors, fmt.Sprintf("failed to roll back %s: %v", applied[i].relativePath, rollbackErr))
+				}
+			}
+			if len(rollbackErrors) > 0 {
+				return fmt.Errorf("%w; rollback failed: %s", err, strings.Join(rollbackErrors, "; "))
 			}
 			return err
 		}
