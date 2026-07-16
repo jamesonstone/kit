@@ -100,7 +100,7 @@ the complete durable truth.
 
 | Command | Purpose |
 | --- | --- |
-| `kit init` | Initialize or refresh Kit-managed project scaffolding |
+| `kit init` | Initialize or refresh project scaffolding, including a project-owned Makefile starter |
 | `kit spec <feature>` | Non-interactively scaffold, adopt, or orient a living specification |
 | `kit spec <feature> --legacy-supervisor` | Temporarily run the deprecated V2 lifecycle supervisor |
 | `kit loop workflow <feature>` | Deprecated V2 compatibility loop; V3 specs use native planning |

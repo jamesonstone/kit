@@ -207,6 +207,7 @@ func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map
 		gitignorePath:                          true,
 		envPath:                                true,
 		envrcPath:                              true,
+		makefilePath:                           true,
 		codeRabbitConfigPath:                   true,
 		pullRequestTemplatePath:                true,
 		autoAssignWorkflowPath:                 true,

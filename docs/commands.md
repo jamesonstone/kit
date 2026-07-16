@@ -51,7 +51,7 @@ kit rm my-feature --yes --notes
 
 | Command | Description |
 | --- | --- |
-| `kit init` | Initialize project, user config, local env files, `.gitignore`, review config, GitHub PR template, managed README badges and Maintainers section, and optional auto-assignment workflow. |
+| `kit init` | Initialize project, user config, local env files, `.gitignore`, a project-owned Makefile starter, review config, GitHub PR template, managed README badges and Maintainers section, and optional auto-assignment workflow. |
 | `kit scaffold` | Create empty workflow document structures, support directories, and agent files. |
 
 ## Workflow
@@ -224,8 +224,11 @@ to wait up to the timeout.
 
 ## Output Behavior
 
-Prompt-producing commands, including the constitution prompt emitted by
-`kit init`, copy generated output to the clipboard by default.
+Prompt-producing commands, including the Constitution and Makefile setup prompt
+emitted by `kit init`, copy generated output to the clipboard by default. The
+init prompt maps applicable targets such as `make dev`, `make test`, and
+`make check` to verified repository-native commands; it does not leave guessed
+or placeholder recipes in the project-owned Makefile.
 
 Use:
 

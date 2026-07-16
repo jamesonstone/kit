@@ -44,6 +44,7 @@
 | 0040 | prompt-system-migration | `docs/specs/0040-prompt-system-migration` | deliver | no | 2026-07-10 | Modernize every generated prompt for GPT-5.6, prove the migration with a truthful deterministic benchmark, and preserve Kit's code-enforced workflow gates. |
 | 0041 | aws-config-schema | `docs/specs/0041-aws-config-schema` | deliver | no | 2026-07-13 | Version Kit project configuration and bind each AWS-enabled project to one STS-verified CLI profile and account with fast automatic checks and interactive repair. |
 | 0042 | native-plan-repository-memory | `docs/specs/0042-native-plan-repository-memory` | complete | no | 2026-07-15 | Recenter Kit as a repository-memory and specification harness: native agent planning owns research, clarification, design, and implementation planning, while Kit ensures that consequential implementation rationale survives in canonical repository documents. |
+| 0043 | init-makefile-scaffold | `docs/specs/0043-init-makefile-scaffold` | complete | no | 2026-07-16 | Make `kit init` establish a safe, canonical Make entrypoint for each project and guide the initialization agent to wire targets such as `make dev` to the repository's real development commands. |
 
 ## PROJECT INTENT
 
@@ -416,6 +417,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0042-native-plan-repository-memory/SPEC.md`
 
+### init-makefile-scaffold
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Make `kit init` establish a safe, canonical Make entrypoint for each project and guide the initialization agent to wire targets such as `make dev` to the repository's real development commands.
+- **APPROACH**: 1. Add a minimal Makefile template with a default `help` target and no unverified project command recipes. 2. Add `Makefile` to fresh init and missing-file refresh scaffolding, with an explicit project-owned preservation rule that wins over targeted force refresh. 3. Expand the generated initialization prompt and visible next steps so an agent maps applicable canonical targets to verified repository-native commands and validates the resulting entrypoints. 4. Add focused template, init, refresh, preservation, and prompt regression tests. 5. Update the core initialization contract and project rollup, then run focused tests, formatting, full Go checks, lint, Kit document validation, and diff review.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0043-init-makefile-scaffold/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-15 12:43:24 EDT
+2026-07-16 16:09:19 EDT

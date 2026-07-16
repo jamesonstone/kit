@@ -58,6 +58,59 @@ func TestRunInit_CreatesPullRequestTemplate(t *testing.T) {
 	})
 }
 
+func TestRunInit_CreatesMakefileStarter(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+
+		content, err := os.ReadFile(filepath.Join(tempDir, makefilePath))
+		if err != nil {
+			t.Fatalf("expected %s to be created: %v", makefilePath, err)
+		}
+		if string(content) != templates.Makefile {
+			t.Fatalf("%s content = %q, want %q", makefilePath, content, templates.Makefile)
+		}
+	})
+}
+
+func TestRunInit_PreservesExistingMakefile(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	existing := ".PHONY: dev\n\ndev:\n\tnpm run dev\n"
+	if err := os.WriteFile(filepath.Join(tempDir, makefilePath), []byte(existing), 0644); err != nil {
+		t.Fatalf("failed to seed %s: %v", makefilePath, err)
+	}
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+
+		content, err := os.ReadFile(filepath.Join(tempDir, makefilePath))
+		if err != nil {
+			t.Fatalf("failed to read %s: %v", makefilePath, err)
+		}
+		if string(content) != existing {
+			t.Fatalf("%s content = %q, want %q", makefilePath, content, existing)
+		}
+	})
+}
+
 func TestRunInit_CreatesGitignoreWithKitLocalArtifacts(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
