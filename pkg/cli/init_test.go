@@ -40,13 +40,23 @@ func TestRunInit_DefaultCopiesConstitutionPromptAndShowsPasteStep(t *testing.T) 
 		if !strings.Contains(copied, "Please update "+filepath.Join(cwd, constitutionPath)+" with all patterns") {
 			t.Fatalf("expected copied prompt to target %s, got %q", filepath.Join(cwd, constitutionPath), copied)
 		}
+		for _, check := range []string{
+			"Populate " + filepath.Join(cwd, makefilePath) + " with a canonical project command interface",
+			"Expose `make dev` when the repository has a verified local development or run workflow",
+			"Do not leave TODO recipes, echo-only placeholders, guessed commands, or duplicated build logic",
+			"Run `make help` and each added target that is safe to execute",
+		} {
+			if !strings.Contains(copied, check) {
+				t.Fatalf("expected copied prompt to contain %q, got %q", check, copied)
+			}
+		}
 		if strings.Contains(copied, "Copy this section to the Agent:") {
 			t.Fatalf("expected clipboard payload to contain only the prompt body, got %q", copied)
 		}
 		if !strings.Contains(output, "Copied the prepared text to the clipboard.") {
 			t.Fatalf("expected stdout to acknowledge clipboard copy, got %q", output)
 		}
-		if !strings.Contains(output, "1. Paste the copied prompt into your agent to draft docs/CONSTITUTION.md") {
+		if !strings.Contains(output, "1. Paste the copied prompt into your agent to populate Makefile and draft docs/CONSTITUTION.md") {
 			t.Fatalf("expected stdout to include the paste guidance, got %q", output)
 		}
 		if strings.Contains(output, "Please update "+filepath.Join(cwd, constitutionPath)) {

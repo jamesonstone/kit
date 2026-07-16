@@ -19,13 +19,15 @@ func planRefreshInitScaffoldFiles(
 	targets map[string]bool,
 ) ([]initRefreshFileChange, error) {
 	files := []struct {
-		relativePath string
-		content      string
-		merge        bool
+		relativePath     string
+		content          string
+		merge            bool
+		preserveExisting bool
 	}{
 		{relativePath: gitignorePath, content: templates.Gitignore, merge: true},
 		{relativePath: envPath, content: ""},
 		{relativePath: envrcPath, content: templates.Envrc},
+		{relativePath: makefilePath, content: templates.Makefile, preserveExisting: true},
 		{relativePath: codeRabbitConfigPath, content: templates.CodeRabbitConfig},
 		{relativePath: pullRequestTemplatePath, content: templates.PullRequestTemplate},
 	}
@@ -35,7 +37,15 @@ func planRefreshInitScaffoldFiles(
 		if !initRefreshTargetMatches(targets, file.relativePath) {
 			continue
 		}
-		change, err := planRefreshInitScaffoldFile(projectRoot, opts, targets, file.relativePath, file.content, file.merge)
+		change, err := planRefreshInitScaffoldFile(
+			projectRoot,
+			opts,
+			targets,
+			file.relativePath,
+			file.content,
+			file.merge,
+			file.preserveExisting,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -58,6 +68,7 @@ func planRefreshInitScaffoldFile(
 	relativePath string,
 	content string,
 	merge bool,
+	preserveExisting bool,
 ) (initRefreshFileChange, error) {
 	path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
 	exists := document.Exists(path)
@@ -72,6 +83,9 @@ func planRefreshInitScaffoldFile(
 		before = string(data)
 	}
 
+	if exists && preserveExisting {
+		return *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped), nil
+	}
 	if exists && opts.force && explicit {
 		if before == content {
 			return *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped), nil

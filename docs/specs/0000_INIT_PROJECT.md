@@ -495,6 +495,8 @@ CLI flags always override `.kit.yaml`.
 - create or populate `~/.config/kit/.kit.yaml` with missing default fields
 - create blank `.env` and default `.envrc` if missing
 - include `.env` and `.envrc` in `.gitignore`
+- create a safe starter `Makefile` if missing, with a default help entrypoint and
+  no guessed project commands
 - create `.coderabbit.yaml` if missing
 - create `.github/pull_request_template.md` if missing
 - create `.github/workflows/auto-assign.yml` if missing, using project-local
@@ -511,9 +513,13 @@ CLI flags always override `.kit.yaml`.
 - create `docs/CONSTITUTION.md` if missing
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, preserve them; Kit-managed markdown documents may merge missing required sections
-- output a prepared prompt for drafting `docs/CONSTITUTION.md`
+- treat a populated `Makefile` as project-owned and preserve it during normal,
+  full-force, and targeted-force refreshes
+- output a prepared prompt for drafting `docs/CONSTITUTION.md` and populating the
+  starter `Makefile` with thin wrappers over verified repository-native commands
 - by default, copy that prompt to the clipboard instead of printing the prompt body
-- make the first visible next step: paste the copied prompt into the agent to draft `docs/CONSTITUTION.md`
+- make the first visible next step: paste the copied prompt into the agent to
+  populate `Makefile` and draft `docs/CONSTITUTION.md`
 - support `--output-only` to print the raw prompt to stdout instead of copying it
 - support `--copy` to also copy the prompt when `--output-only` is set
 - support `--refresh` as the existing-project structural refresh mode for Kit-managed files
@@ -526,6 +532,8 @@ CLI flags always override `.kit.yaml`.
   clipboard so an agent can update `docs/CONSTITUTION.md`, agent docs,
   references, command docs, and directly affected feature specs semantically
 - support `--refresh --file=<path> --force` for targeted per-file scaffold overwrites
+- support `--refresh --file=Makefile` for missing-file backfill while preserving
+  existing project-owned content even when `--force` is present
 
 ---
 
@@ -1198,7 +1206,7 @@ Findings:
 
 - missing `.gitignore` or missing current Kit-managed `.gitignore` entries
 - missing local init scaffold artifacts such as `.env` or `.envrc`
-- missing tracked init scaffold artifacts such as `.coderabbit.yaml`, `.github/pull_request_template.md`, or `.github/workflows/auto-assign.yml`
+- missing tracked init scaffold artifacts such as `Makefile`, `.coderabbit.yaml`, `.github/pull_request_template.md`, or `.github/workflows/auto-assign.yml`
 - missing required docs or sections
 - placeholder-only required sections
 - malformed `SKILLS`, `DEPENDENCIES`, or `PROGRESS TABLE` tables

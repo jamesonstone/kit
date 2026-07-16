@@ -14,6 +14,7 @@ import (
 const codeRabbitConfigPath = ".coderabbit.yaml"
 const envPath = ".env"
 const envrcPath = ".envrc"
+const makefilePath = "Makefile"
 const autoAssignWorkflowPath = ".github/workflows/auto-assign.yml"
 const pullRequestTemplatePath = ".github/pull_request_template.md"
 const gitignorePath = ".gitignore"
@@ -98,13 +99,17 @@ func appendGitignorePatterns(content string, patterns []string) string {
 }
 
 func scaffoldEnvFiles(projectRoot string, outputOnly bool) error {
-	if err := scaffoldEnvFile(projectRoot, envPath, "", outputOnly); err != nil {
+	if err := scaffoldFileIfMissing(projectRoot, envPath, "", outputOnly); err != nil {
 		return err
 	}
-	return scaffoldEnvFile(projectRoot, envrcPath, templates.Envrc, outputOnly)
+	return scaffoldFileIfMissing(projectRoot, envrcPath, templates.Envrc, outputOnly)
 }
 
-func scaffoldEnvFile(projectRoot, relativePath, content string, outputOnly bool) error {
+func scaffoldMakefile(projectRoot string, outputOnly bool) error {
+	return scaffoldFileIfMissing(projectRoot, makefilePath, templates.Makefile, outputOnly)
+}
+
+func scaffoldFileIfMissing(projectRoot, relativePath, content string, outputOnly bool) error {
 	path := filepath.Join(projectRoot, relativePath)
 	if document.Exists(path) {
 		if !outputOnly {

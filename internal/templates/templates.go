@@ -29,6 +29,19 @@ set -eu
 dotenv_if_exists
 `
 
+// Makefile is the safe starter command surface for repositories initialized
+// with Kit. Project-specific targets are added by the initialization prompt
+// only after their underlying commands have been verified.
+const Makefile = `.DEFAULT_GOAL := help
+
+.PHONY: help
+
+help:
+	@printf '%s\n' 'Project developer workflow'
+	@printf '%s\n' ''
+	@printf '%s\n' 'Run the Kit initialization prompt to add project-specific targets.'
+`
+
 // Constitution template per spec section 6.1
 const Constitution = `# CONSTITUTION
 

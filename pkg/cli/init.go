@@ -30,6 +30,7 @@ Creates:
   - .kit.yaml configuration file
   - .gitignore entries for Kit-local environment and generated artifacts
   - .env and .envrc local environment files
+  - Makefile starter for canonical project commands
   - .coderabbit.yaml review configuration file
   - .github/pull_request_template.md pull request template
   - .github/workflows/auto-assign.yml issue and pull request assignment workflow
@@ -43,7 +44,7 @@ If files already exist, Kit preserves them. Kit-managed markdown documents may
 be merged by adding missing required sections.
 
 Modes:
-  Default:        Copy the prepared CONSTITUTION.md prompt to the clipboard and show next steps
+  Default:        Copy the prepared project initialization prompt to the clipboard and show next steps
   --refresh:      Refresh Kit-managed project files for an existing Kit project
 
 Flags:
@@ -158,6 +159,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if err := scaffoldGitignore(cwd, initOutputOnly); err != nil {
 		return err
 	}
+	if err := scaffoldMakefile(cwd, initOutputOnly); err != nil {
+		return err
+	}
 	if err := scaffoldEnvFiles(cwd, initOutputOnly); err != nil {
 		return err
 	}
@@ -252,8 +256,8 @@ func runInit(cmd *cobra.Command, args []string) error {
 
 	if !initOutputOnly {
 		printNumberedNextSteps([]string{
-			"Paste the copied prompt into your agent to draft docs/CONSTITUTION.md",
-			"Review and refine docs/CONSTITUTION.md to define project constraints",
+			"Paste the copied prompt into your agent to populate Makefile and draft docs/CONSTITUTION.md",
+			"Review the project commands and docs/CONSTITUTION.md, then run the applicable Make targets",
 			"Run `kit spec <feature-name>` to create your first feature",
 		})
 	}
@@ -286,6 +290,7 @@ func populateGlobalConfig(outputOnly bool) error {
 }
 
 func buildProjectInitPrompt(projectRoot, constitutionFullPath string) string {
+	makefileFullPath := filepath.Join(projectRoot, makefilePath)
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Paragraph(fmt.Sprintf(
 			"Please update %s with all patterns, strategy, implementation details, process, and long-term vision for this project.\nThis document will drive the \"rules for development\" going forward.",
@@ -298,6 +303,19 @@ func buildProjectInitPrompt(projectRoot, constitutionFullPath string) string {
 			"Dependencies and their purposes",
 			"Non-negotiable constraints",
 			"Project goals and non-goals",
+		)
+		doc.Paragraph(fmt.Sprintf(
+			"Populate %s with a canonical project command interface backed by this repository's real commands.",
+			makefileFullPath,
+		))
+		doc.BulletList(
+			"Inspect package scripts, toolchain configuration, development documentation, and existing automation before choosing recipe commands",
+			"Expose `make dev` when the repository has a verified local development or run workflow",
+			"Add only applicable canonical targets such as `build`, `test`, `check`, `lint`, `fmt`, and `clean`, plus useful project-specific targets",
+			"Keep recipes as thin wrappers around repository-native commands; let composite targets reuse atomic targets instead of duplicating their commands",
+			"Declare non-file targets with `.PHONY` and use overridable tool variables when they improve portability",
+			"Do not leave TODO recipes, echo-only placeholders, guessed commands, or duplicated build logic",
+			"Run `make help` and each added target that is safe to execute, and report any target that could not be validated",
 		)
 		doc.Paragraph("Rules:")
 		doc.BulletList("PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times")

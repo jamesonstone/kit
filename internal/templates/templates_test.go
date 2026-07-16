@@ -111,6 +111,25 @@ func TestBuildAutoAssignWorkflowNoOpsWithoutAssignees(t *testing.T) {
 	}
 }
 
+func TestMakefileTemplateProvidesSafeStarter(t *testing.T) {
+	for _, check := range []string{
+		".DEFAULT_GOAL := help",
+		".PHONY: help",
+		"help:",
+		"Run the Kit initialization prompt to add project-specific targets.",
+	} {
+		if !strings.Contains(Makefile, check) {
+			t.Fatalf("expected Makefile template to contain %q, got:\n%s", check, Makefile)
+		}
+	}
+
+	for _, unverified := range []string{"TODO", "dev:", "npm ", "go run ", "docker compose"} {
+		if strings.Contains(Makefile, unverified) {
+			t.Fatalf("Makefile template must not contain unverified command %q:\n%s", unverified, Makefile)
+		}
+	}
+}
+
 func TestFeatureArtifactBuildersDoNotDuplicateCanonicalBodyTables(t *testing.T) {
 	featureMeta := document.FeatureMetadataFromDir("0001-sample-feature")
 	for name, content := range map[string]string{

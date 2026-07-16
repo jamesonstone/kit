@@ -49,6 +49,56 @@ func TestRunInitRefresh_FileForceOverwritesOnlySelectedExistingFile(t *testing.T
 	assertFileDoesNotExist(t, filepath.Join(tempDir, agentsMDPath))
 }
 
+func TestRunInitRefresh_CreatesMissingMakefile(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+		initRefreshFiles = []string{makefilePath}
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	content := readFile(t, filepath.Join(tempDir, makefilePath))
+	if content != templates.Makefile {
+		t.Fatalf("%s content = %q, want %q", makefilePath, content, templates.Makefile)
+	}
+}
+
+func TestRunInitRefresh_FileForcePreservesExistingMakefile(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+
+	existing := ".PHONY: dev\n\ndev:\n\tgo run ./cmd/server\n"
+	writeFile(t, filepath.Join(tempDir, makefilePath), existing)
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initForce = true
+		initOutputOnly = true
+		initRefreshFiles = []string{makefilePath}
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	content := readFile(t, filepath.Join(tempDir, makefilePath))
+	if content != existing {
+		t.Fatalf("%s content = %q, want custom content %q", makefilePath, content, existing)
+	}
+}
+
 func TestRunInitRefresh_ForceDoesNotOverwriteExistingScaffoldFilesWithoutFileTarget(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
