@@ -112,6 +112,7 @@ the complete durable truth.
 | `kit config check` | Validate schema-versioned `.kit.yaml` and offer safe interactive repairs |
 | `kit aws verify` | Verify the configured AWS profile, account, and ARN against `.kit.yaml` |
 | `kit improve run --suite prompt-system` | Run deterministic prompt regression and size checks |
+| `kit instructions` | Print the current provider-neutral coding-agent instructions as raw Markdown |
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
 

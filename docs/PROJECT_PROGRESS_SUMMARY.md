@@ -45,6 +45,7 @@
 | 0041 | aws-config-schema | `docs/specs/0041-aws-config-schema` | deliver | no | 2026-07-13 | Version Kit project configuration and bind each AWS-enabled project to one STS-verified CLI profile and account with fast automatic checks and interactive repair. |
 | 0042 | native-plan-repository-memory | `docs/specs/0042-native-plan-repository-memory` | complete | no | 2026-07-15 | Recenter Kit as a repository-memory and specification harness: native agent planning owns research, clarification, design, and implementation planning, while Kit ensures that consequential implementation rationale survives in canonical repository documents. |
 | 0043 | init-makefile-scaffold | `docs/specs/0043-init-makefile-scaffold` | complete | no | 2026-07-16 | Make `kit init` establish a safe, canonical Make entrypoint for each project and guide the initialization agent to wire targets such as `make dev` to the repository's real development commands. |
+| 0044 | versioned-agent-instructions | `docs/specs/0044-versioned-agent-instructions` | complete | no | 2026-07-17 | Provide one stable Kit command that emits the provider-neutral coding-agent instructions used directly by Codex, Claude, and GitHub Copilot, while preserving earlier instruction revisions for reproducible use. |
 
 ## PROJECT INTENT
 
@@ -426,6 +427,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0043-init-makefile-scaffold/SPEC.md`
 
+### versioned-agent-instructions
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Provide one stable Kit command that emits the provider-neutral coding-agent instructions used directly by Codex, Claude, and GitHub Copilot, while preserving earlier instruction revisions for reproducible use.
+- **APPROACH**: 1. Add a versioned embedded instruction payload under `internal/instructions`, plus a small registry with explicit current-version resolution, exact lookup, and deterministic available-version reporting. 2. Add `kit instructions` as a project-independent Cobra command that writes the selected payload directly to command stdout and accepts `--version=vN`. 3. Register the command in root help, automatic-config preflight exemptions, and complete `kit capabilities` metadata. 4. Add exact-output and error-path tests at the registry and CLI layers, then document the command and version contract. 5. Run focused tests, formatting, vet, full Go tests, build and binary smoke tests, Kit document checks, whitespace checks, and diff self-review before explicit staging and PR delivery.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0044-versioned-agent-instructions/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-16 16:09:19 EDT
+2026-07-17 14:26:01 EDT

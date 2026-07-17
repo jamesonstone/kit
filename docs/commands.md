@@ -38,6 +38,8 @@ kit spec dashboard-redesign --profile=frontend
 kit status --all
 kit resume my-feature
 kit map --all
+kit instructions
+kit instructions --version=v1
 kit capabilities --search verify
 kit config check
 kit aws verify
@@ -123,6 +125,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 
 | Command | Description |
 | --- | --- |
+| `kit instructions` | Print the current provider-neutral coding-agent instructions as raw Markdown; use `--version=vN` to select an earlier immutable version. |
 | `kit prompt [noun] [verb]` | Resolve and copy a reusable prompt from local, global, or built-in prompt libraries. |
 | `kit prompt list` | List effective merged prompts with origin and override metadata. |
 | `kit prompt project refresh` | Render the reusable prompt-library version of the project refresh prompt. |
@@ -240,6 +243,11 @@ Use:
 Human-readable terminal output uses semantic emoji markers, spacing, and ANSI
 color when appropriate. Raw `--output-only` payloads and `--json` output avoid
 human-readable wrappers.
+
+`kit instructions` always writes raw Markdown to stdout without a banner or
+clipboard side effect. It defaults to the explicitly configured current embedded
+version; use an exact selector such as `kit instructions --version=v1` when a
+reproducible historical payload is required.
 
 ## Prompt Library
 

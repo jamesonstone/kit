@@ -427,7 +427,7 @@ kit/
 │   ├── config/              # .kit.yaml loading, project root discovery, prompt config
 │   ├── document/            # Markdown parsing, metadata, relationships, validation
 │   ├── feature/             # feature identity, allocator, lifecycle, map, status
-│   ├── instructions/        # versioned repository instruction registry
+│   ├── instructions/        # repository scaffold and versioned agent instruction registries
 │   ├── promptdoc/           # typed prompt document rendering
 │   ├── promptlib/           # prompt library merge, normalize, resolve, suggest
 │   ├── rollup/              # PROJECT_PROGRESS_SUMMARY.md generation

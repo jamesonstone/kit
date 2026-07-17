@@ -54,6 +54,7 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"legacy",
 		"List deprecated v1 staged workflow commands",
 		"scaffold",
+		"instructions",
 		"prompt",
 		"set",
 		"resume",

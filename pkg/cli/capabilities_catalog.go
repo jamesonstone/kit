@@ -222,6 +222,30 @@ func capabilityCatalog() []capabilityRecord {
 			),
 			withExamples("kit reconcile", "kit reconcile --all --include-files", "kit reconcile --include-files --dry-run --diff", "kit reconcile --include-files", "kit reconcile --include-files --force", "kit reconcile --output-only"),
 		),
+		capability(
+			"instructions",
+			"Prompt Utilities",
+			"Print versioned provider-neutral coding-agent instructions as raw Markdown.",
+			mutationNone,
+			withFlags(flag("--version", "select an exact immutable vN version; defaults to the current version", "read-only")),
+			withRelated(
+				related("prompt", "renders reusable task-specific and compatibility prompts"),
+				related("scaffold agents", "writes repository-specific agent instruction files"),
+			),
+			withWhenToUse(
+				"Use when adding Kit's shared system-level coding-agent policy directly to Codex, Claude, or GitHub Copilot.",
+				"Omit --version for the current policy or pass --version=vN to reproduce an earlier release.",
+			),
+			withWhenNotToUse(
+				"Do not use to create or refresh repository-specific AGENTS.md, CLAUDE.md, or Copilot files; use `kit scaffold agents`.",
+				"Do not use for a task-specific reusable prompt; use `kit prompt`.",
+			),
+			withExamples("kit instructions", "kit instructions --version=v1"),
+			withCaveats(
+				"The command writes only raw Markdown to stdout and never copies to the clipboard.",
+				"All versions are embedded in the installed binary; selection performs no network or project configuration access.",
+			),
+		),
 		capability("prompt", "Prompt Utilities", "Work with Kit prompt templates.", mutationNone, withFlags(flag("--output-only", "print prompt text instead of copying it with metadata"), flag("--copy", "copy prompt even with --output-only")), withRelated(related("prompt list", "lists available prompts, including the legacy V2 supervisor entry"), related("spec", "scaffolds or adopts living repository memory"), related("set prompt", "sets prompt preferences")), withWhenToUse("Use to render reusable support and compatibility prompts.", "Use this catalog entry when looking for the former kit spec prompt behavior."), withExamples("kit prompt list", "kit prompt kit spec", "kit prompt workflow spec --output-only"), withCaveats("`kit prompt kit spec` is legacy V2 compatibility; plain `kit spec <feature>` uses native-planning orientation.")),
 		capability("prompt list", "Prompt Utilities", "List available Kit prompt templates, including the legacy V2 supervisor entry.", mutationNone, withRelated(related("prompt", "renders prompt templates"), related("spec", "creates or adopts SPEC.md when durable memory is needed")), withExamples("kit prompt list")),
 		capability("set", "Prompt Utilities", "Update Kit configuration values.", mutationWritesFiles, withFileWrites("writes Kit local or global configuration"), withRelated(related("set prompt", "sets prompt-related configuration"))),
