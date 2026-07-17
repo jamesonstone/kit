@@ -138,6 +138,12 @@ func TestMarkFeaturesCompleteAllTargets(t *testing.T) {
 	if !strings.Contains(out.String(), "Project refresh not due") {
 		t.Fatalf("expected completion output to report project refresh due state, got %q", out.String())
 	}
+	if got := strings.Count(out.String(), "run `kit status`"); got != 1 {
+		t.Fatalf("expected one managed-guidance advisory, got %d in %q", got, out.String())
+	}
+	if !strings.Contains(out.String(), "before final delivery") {
+		t.Fatalf("expected managed-guidance advisory before final delivery, got %q", out.String())
+	}
 	if _, statErr := os.Stat(filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md")); statErr != nil {
 		t.Fatalf("expected PROJECT_PROGRESS_SUMMARY.md to be written, got %v", statErr)
 	}

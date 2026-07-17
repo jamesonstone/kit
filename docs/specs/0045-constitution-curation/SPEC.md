@@ -95,6 +95,9 @@ Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as impl
 - Treat the exact generated Constitution template as ready bootstrap state in spec setup and project reconciliation.
 - Continue reporting incomplete setup for missing Constitutions and for partially customized Constitutions whose required sections remain empty or placeholder-only.
 - Keep the immutable `kit instructions` `v1` payload unchanged.
+- Make native `kit spec` output remind coding agents to run `kit status` and follow any Kit-managed refresh action before implementation.
+- Make successful `kit complete` output remind coding agents to run `kit status` and follow any Kit-managed refresh action before final delivery.
+- Keep both reminders non-blocking and advisory-only: do not run status automatically, add a managed-guidance version field, introduce a separate upgrade framework, or mutate managed files.
 - Update generated templates, checked-in repository instruction files, core init documentation, durable Constitution guidance, focused tests, project rollup, issue scope, and PR description.
 - Observable acceptance: fresh init output teaches evidence-based bootstrap behavior without the former exhaustive-drafting request; exact starter Constitutions pass setup and project reconciliation; partially customized incomplete Constitutions still fail the relevant gate; every checked-in V3 provider entrypoint routes to the new valid ruleset; full repository validation passes.
 - Non-goals: background Constitution edits, mandatory interactive initialization, capturing a complete initial product vision, making the Constitution a changelog, removing periodic project refresh, modifying immutable instruction payloads, or automatically migrating local-custom downstream rules.
@@ -107,6 +110,7 @@ Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as impl
 4. Share an exact-template bootstrap predicate between spec setup and project reconciliation so the generated starter is valid while partial placeholder documents remain actionable.
 5. Add focused prompt, setup, reconciliation, instruction-template, and ruleset tests; update canonical docs and the project rollup.
 6. Run formatting, focused tests, full Go validation, build, Kit checks, prompt-system checks, and diff review before explicit staging, commit, push, and existing-PR update.
+7. Add concise `kit status` advisories to the native spec and completion lifecycle outputs, document the behavior, and verify it without changing managed-guidance versioning or refresh semantics.
 
 ## DECISIONS
 
@@ -115,6 +119,7 @@ Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as impl
 - Accepted a short always-loaded pointer because a registry rule cannot guarantee its own just-in-time loading.
 - Rejected a long `kit init` interview and rejected treating initial intent as constitutional truth.
 - Rejected automatic Constitution mutation because semantic promotion, correction, and removal require reviewed agent judgment.
+- Accepted lifecycle advisories that route coding agents to the existing `kit status` freshness check; rejected a new version field or parallel update/upgrade framework as unnecessary.
 
 ## DISCOVERIES
 
@@ -122,6 +127,8 @@ Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as impl
 - Spec setup already had stronger Constitution population checks than project reconciliation. The exact-template bootstrap exemption exposed that reconciliation checked required section presence but not meaningful Constitution content, so the audit now requires populated customized sections while bypassing only the untouched generated starter.
 - Keeping the generated Constitution template byte-identical avoids turning existing bootstrap files into false customized documents and preserves deterministic exact-template detection.
 - The periodic project-refresh machinery already records cadence without rewriting documentation. Its prompt and reflection advisory needed only to distinguish that broader audit from continuous per-change curation.
+- `kit status` already owns the bounded registry freshness check, reports Kit-managed drift, and recommends the applicable refresh action. Routing lifecycle output to that command is sufficient and avoids duplicating network or upgrade behavior in `kit spec` and `kit complete`.
+- The status reminder belongs only in native `kit spec` orientation; changing legacy prompt output would expand the compatibility surface without improving the current coding-agent path.
 
 ## VALIDATION
 
@@ -137,6 +144,10 @@ Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as impl
 - `./bin/kit complete 0045-constitution-curation` passed after the explicit deliver transition, set the phase to `complete`, and refreshed `docs/PROJECT_PROGRESS_SUMMARY.md`.
 - Final `./bin/kit check 0045-constitution-curation` passed.
 - Final `./bin/kit check --project` exited successfully with 15 historical V2 compatibility advisories and a due project-refresh cadence warning; no blocking finding was introduced by this feature.
+- Follow-up focused tests for native spec orientation, completion advisories, and the capability catalog passed in `pkg/cli`.
+- Follow-up `make fmt`, `go vet ./...`, `go test ./... -count=1`, focused race tests, `make build`, and `golangci-lint run --new-from-rev=origin/main ./...` passed.
+- Follow-up `./bin/kit capabilities spec` and `./bin/kit capabilities complete` confirmed that both lifecycle commands remain network-free and describe the advisory-only status handoff.
+- Follow-up `./bin/kit check 0045-constitution-curation`, `./bin/kit check --project`, and `git diff --check` passed; project validation retained only the same 15 historical V2 compatibility advisories and due project-refresh warning.
 
 ## OUTCOME
 
@@ -145,6 +156,7 @@ Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as impl
 - The active downstream `constitution-curation` ruleset defines evidence order, promotion boundaries, stale-rule correction, no-op reporting, and cadence semantics.
 - Generated and checked-in V3 Codex, Claude, and Copilot entrypoints load the rule after validation, making continuous curation part of normal coding-agent usage.
 - Project refresh remains a reviewed periodic audit for missed, stale, or cross-feature truth; it does not edit the Constitution automatically or replace per-change curation.
+- Native `kit spec` now reminds coding agents to run `kit status` before implementation, and successful `kit complete` repeats that reminder before final delivery. Neither command runs the network check or refreshes managed files itself.
 - The immutable `kit instructions` `v1` payload remains unchanged.
 
 ## REPOSITORY MEMORY

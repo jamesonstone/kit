@@ -50,6 +50,8 @@ chatter and details that are fully recoverable from code.
 Plain `kit spec <feature>` is non-interactive. It allocates or adopts the
 feature, ensures its notes scaffold, updates the project index, preserves an
 existing spec, and prints concise native-planning orientation.
+The orientation includes a non-blocking reminder to run `kit status` and follow
+any Kit-managed refresh action before implementation.
 
 New specs use `workflow_version: 3` and these sections:
 
@@ -83,7 +85,9 @@ Artifacts: <paths or none>
 
 - V1 and V2 specs remain readable and valid.
 - `kit complete` preserves the document's workflow version and applies its
-  version-specific completion gate.
+  version-specific completion gate. After success, it prints a non-blocking
+  reminder to run `kit status` and follow any Kit-managed refresh action before
+  final delivery.
 - V2 specs are never deterministically migrated to V3.
 - `kit spec <feature> --legacy-supervisor` retains the V2 supervisor during the
   compatibility period. Former supervisor-only flags imply that mode and warn.

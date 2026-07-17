@@ -1286,6 +1286,7 @@ Reflection Process:
 Completion advisory:
 
 - after `kit complete` succeeds, Kit prints a non-blocking reminder to run `kit project refresh` if the completed work changed durable project-level truth
+- native `kit spec` and successful `kit complete` also print non-blocking reminders to run `kit status` and follow any Kit-managed refresh action before implementation or final delivery, respectively
 
 ---
 

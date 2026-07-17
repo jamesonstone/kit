@@ -61,7 +61,7 @@ kit rm my-feature --yes --notes
 | Command | Description |
 | --- | --- |
 | `kit backlog` | List deferred brainstorm items or use `--pickup` as the backlog-specific resume shortcut. |
-| `kit spec <feature>` | Non-interactively scaffold, adopt, or orient a living specification for native agent planning. |
+| `kit spec <feature>` | Non-interactively scaffold, adopt, or orient a living specification for native agent planning, then remind the agent to check Kit-managed updates with `kit status`. |
 | `kit notes [feature]` | Select, create, or add source-material notes under `docs/notes/<feature>`, including gitignored private conversation notes. |
 | `kit legacy` | List deprecated legacy v1 staged workflow commands retained for migration. |
 | `kit loop [feature]` | Deprecated bare V2 workflow-loop compatibility path. |
@@ -69,7 +69,7 @@ kit rm my-feature --yes --notes
 | `kit loop review [feature]` | Run a coding-agent correctness review loop over changed code. |
 | `kit resume [feature]` | Resume backlog or in-flight work through the canonical prompt flow. |
 | `kit pause [feature]` | Pause an in-flight feature without changing its underlying phase. |
-| `kit complete [feature]` | Mark a feature complete; supports `--all`. |
+| `kit complete [feature]` | Mark a feature complete and remind the agent to check Kit-managed updates with `kit status` before final delivery; supports `--all`. |
 | `kit project refresh` | Generate or record a semantic refresh of durable project-level docs and Constitution cadence state. |
 | `kit rm [feature]` | Remove feature docs, retain notes by default, and show removed state in history/status. `kit remove` also works. |
 
