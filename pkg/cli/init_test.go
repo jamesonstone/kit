@@ -10,7 +10,7 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
-func TestRunInit_DefaultCopiesConstitutionPromptAndShowsPasteStep(t *testing.T) {
+func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
@@ -37,11 +37,15 @@ func TestRunInit_DefaultCopiesConstitutionPromptAndShowsPasteStep(t *testing.T) 
 		})
 
 		const constitutionPath = "docs/CONSTITUTION.md"
-		if !strings.Contains(copied, "Please update "+filepath.Join(cwd, constitutionPath)+" with all patterns") {
+		if !strings.Contains(copied, "Treat the exact generated starter at "+filepath.Join(cwd, constitutionPath)+" as a valid bootstrap Constitution") {
 			t.Fatalf("expected copied prompt to target %s, got %q", filepath.Join(cwd, constitutionPath), copied)
 		}
 		for _, check := range []string{
+			"Do not ask the user to explain the entire project",
+			"When evidence is insufficient, leave the project-specific starter sections unchanged",
+			"Follow docs/references/rules/constitution-curation.md",
 			"Populate " + filepath.Join(cwd, makefilePath) + " with a canonical project command interface",
+			"Leave the safe starter Makefile unchanged when the repository has no verified",
 			"Expose `make dev` when the repository has a verified local development or run workflow",
 			"Do not leave TODO recipes, echo-only placeholders, guessed commands, or duplicated build logic",
 			"Run `make help` and each added target that is safe to execute",
@@ -56,10 +60,13 @@ func TestRunInit_DefaultCopiesConstitutionPromptAndShowsPasteStep(t *testing.T) 
 		if !strings.Contains(output, "Copied the prepared text to the clipboard.") {
 			t.Fatalf("expected stdout to acknowledge clipboard copy, got %q", output)
 		}
-		if !strings.Contains(output, "1. Paste the copied prompt into your agent to populate Makefile and draft docs/CONSTITUTION.md") {
+		if !strings.Contains(output, "1. Paste the copied prompt into your agent to review repository evidence and populate only verified Makefile targets") {
 			t.Fatalf("expected stdout to include the paste guidance, got %q", output)
 		}
-		if strings.Contains(output, "Please update "+filepath.Join(cwd, constitutionPath)) {
+		if strings.Contains(copied, "Please update "+filepath.Join(cwd, constitutionPath)+" with all patterns") {
+			t.Fatalf("expected prompt not to demand exhaustive Constitution drafting, got %q", copied)
+		}
+		if strings.Contains(output, "Initialize project memory and verified command entrypoints") {
 			t.Fatalf("expected default output to avoid printing the raw prompt, got %q", output)
 		}
 	})
@@ -96,7 +103,7 @@ func TestRunInit_OutputOnlyPrintsRawPromptAndSkipsDefaultCopy(t *testing.T) {
 		if copied {
 			t.Fatalf("expected --output-only to skip default clipboard copy")
 		}
-		if !strings.HasPrefix(output, "Please update "+filepath.Join(cwd, "docs/CONSTITUTION.md")) {
+		if !strings.HasPrefix(output, "Initialize project memory and verified command entrypoints for the repository at "+cwd+".") {
 			t.Fatalf("expected raw prompt output, got %q", output)
 		}
 		if strings.Contains(output, "Initializing Kit project") {

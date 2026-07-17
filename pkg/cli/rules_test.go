@@ -54,6 +54,32 @@ func TestRunRulesAddCreatesRuleset(t *testing.T) {
 	}
 }
 
+func TestConstitutionCurationRegistryRulesetIsValid(t *testing.T) {
+	path := filepath.Join("..", "..", "docs", "references", "rules", "constitution-curation.md")
+	ruleset, err := parseRulesetFile(path)
+	if err != nil {
+		t.Fatalf("parseRulesetFile() error = %v", err)
+	}
+	if issues := validateRulesetDocument(ruleset, "constitution-curation"); len(issues) > 0 {
+		t.Fatalf("constitution-curation ruleset issues = %#v", issues)
+	}
+	if ruleset.Metadata.RegistryScope != rulesetRegistryScopeDownstream {
+		t.Fatalf("registry_scope = %q, want downstream", ruleset.Metadata.RegistryScope)
+	}
+	if ruleset.Metadata.ReadPolicyDefault != document.ReferenceReadPolicyMust {
+		t.Fatalf("read_policy_default = %q, want must", ruleset.Metadata.ReadPolicyDefault)
+	}
+	for _, check := range []string{
+		"Treat the exact generated Constitution starter as a valid bootstrap state",
+		"When no project-wide truth changed, leave the Constitution unchanged",
+		"Treat project-refresh cadence as a trigger for reviewed semantic analysis",
+	} {
+		if !strings.Contains(ruleset.Body, check) {
+			t.Fatalf("expected constitution-curation ruleset to contain %q", check)
+		}
+	}
+}
+
 func TestRunRulesAddSupportsPolicyFlags(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)

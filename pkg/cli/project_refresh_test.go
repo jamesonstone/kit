@@ -79,6 +79,9 @@ func TestRunProjectRefreshOutputOnlyEmitsPromptWithoutWritingConstitution(t *tes
 
 	for _, check := range []string{
 		"## Project Refresh",
+		"Normal post-validation work performs continuous Constitution curation",
+		"follow `docs/references/rules/constitution-curation.md`",
+		"treat cadence as a review trigger",
 		"docs/CONSTITUTION.md",
 		"docs/PROJECT_PROGRESS_SUMMARY.md",
 		"Feature docs:",

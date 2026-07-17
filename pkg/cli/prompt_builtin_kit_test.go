@@ -74,7 +74,7 @@ func TestBuiltInKitStaticRenderAdapters(t *testing.T) {
 	tests := map[string]string{
 		"support summarize":   "## Context Summarization Instructions",
 		"support code-review": "## Code Review",
-		"project init":        "This document will drive the \"rules for development\" going forward.",
+		"project init":        "Treat the exact generated starter",
 	}
 
 	for _, prompt := range builtInKitPromptSource().Prompts {

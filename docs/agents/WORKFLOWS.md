@@ -8,7 +8,7 @@
 4. When it does, create or adopt `docs/specs/<feature>/SPEC.md` and translate the accepted native plan into it before implementation.
 5. Keep material decisions and discoveries current while implementing.
 6. Validate the implementation.
-7. Curate the spec and broader repository memory to match what was actually built.
+7. Load `docs/references/rules/constitution-curation.md` and curate the spec and broader repository memory to match what was actually built.
 
 `kit spec [feature]` scaffolds or adopts the living spec and provides orientation. It does not replace native planning and does not ingest transcripts. The legacy V2 supervisor is compatibility-only.
 
@@ -17,6 +17,7 @@
 - Create or update a spec for consequential product behavior, architecture, cross-component contracts, rejected alternatives, or historical decisions future agents need.
 - Do not create a spec for mechanical or code-sufficient work when code and tests communicate the complete durable truth.
 - Route feature rationale to `SPEC.md`, invariants to `CONSTITUTION.md`, reusable practices to references or rules, and domain knowledge to existing canonical domain docs.
+- Treat the exact generated Constitution starter as a valid bootstrap state; promote only demonstrated project-wide truth through the Constitution curation rule.
 
 ## V3 Phase Gates
 

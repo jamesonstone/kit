@@ -35,10 +35,10 @@ Verification evidence
 - Before Git/GitHub delivery mutation, load repo-local delivery rules and establish the exact Delivery Contract; reflection evidence does not authorize mutation by itself.
 - Project refresh advisory gate
   - current due state: not due: 0/5 completed feature(s) since last review; max age 30 day(s)
-  - decide whether this work revealed durable project-wide rules, constraints, vocabulary, conventions, or workflow changes
-  - if the project refresh is due, or if durable project-level truth changed, run `kit project refresh` and refresh project-level docs before final handoff
+  - load `docs/references/rules/constitution-curation.md` and curate any demonstrated project-wide truth before final handoff
+  - if the project refresh is due, run `kit project refresh` as a broader audit for missed, stale, or cross-feature truth
   - after completing a reviewed semantic Constitution refresh, run `kit project refresh --now` to record the cadence state
-  - if no, state `no project refresh needed` in the reflection notes
+  - if no Constitution update is warranted, record the repository-memory result as `not required`
 - When every gate passes, append `<!-- REFLECTION_COMPLETE -->` to TASKS.md and keep the project progress summary current.
 
 ## Output

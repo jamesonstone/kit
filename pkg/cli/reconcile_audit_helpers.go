@@ -52,7 +52,7 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 			))
 			continue
 		}
-		if doc.RequiresPopulatedSection(section) && !meaningfulSectionContent(entry.Content) {
+		if (docType == document.TypeConstitution || doc.RequiresPopulatedSection(section)) && !meaningfulSectionContent(entry.Content) {
 			findings = append(findings, newFinding(
 				reconcileSeverityError,
 				path,

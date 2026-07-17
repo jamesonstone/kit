@@ -510,16 +510,24 @@ CLI flags always override `.kit.yaml`.
   conventional workflow exists; no default License badge is added
 - create or refresh `## Maintainers` as the last README H2 with the managed
   Jameson / `jamesonstone` attribution
-- create `docs/CONSTITUTION.md` if missing
+- create `docs/CONSTITUTION.md` if missing; the exact generated starter is a
+  valid bootstrap state
 - scaffold configured agent instruction files and `.github/copilot-instructions.md`
 - if files exist, preserve them; Kit-managed markdown documents may merge missing required sections
 - treat a populated `Makefile` as project-owned and preserve it during normal,
   full-force, and targeted-force refreshes
-- output a prepared prompt for drafting `docs/CONSTITUTION.md` and populating the
-  starter `Makefile` with thin wrappers over verified repository-native commands
+- output a prepared prompt that updates `docs/CONSTITUTION.md` only when
+  repository evidence supports durable project-wide truth and populates the
+  starter `Makefile` only with thin wrappers over verified repository-native
+  commands
+- leave the generated Constitution and Makefile starters unchanged when an empty
+  or sparse repository does not yet provide that evidence
+- do not turn initialization into an exhaustive project interview or promote
+  initial aspirations into project invariants; keep intent in the native plan and
+  feature `SPEC.md` until implementation demonstrates it
 - by default, copy that prompt to the clipboard instead of printing the prompt body
 - make the first visible next step: paste the copied prompt into the agent to
-  populate `Makefile` and draft `docs/CONSTITUTION.md`
+  review repository evidence and populate only verified `Makefile` targets
 - support `--output-only` to print the raw prompt to stdout instead of copying it
 - support `--copy` to also copy the prompt when `--output-only` is set
 - support `--refresh` as the existing-project structural refresh mode for Kit-managed files

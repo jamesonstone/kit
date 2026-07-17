@@ -44,6 +44,7 @@ func capabilityCatalog() []capabilityRecord {
 				"Do not use `--force` until local generated-doc or workflow changes have been reviewed.",
 				"Prefer `kit reconcile` when a human should choose whether to include files, force changes, or output the follow-up coding-agent prompt.",
 			),
+			withCaveats("The generated Constitution starter is a valid bootstrap state; the init prompt leaves project-specific sections unchanged until repository evidence demonstrates durable project-wide truth."),
 			withExamples("kit init", "kit reconcile", "kit reconcile --include-files --dry-run --diff", "kit init --refresh", "kit init --refresh --file=README.md", "kit init --refresh --file=.github/workflows/auto-assign.yml"),
 		),
 		capability("scaffold", "Setup", "Generate workflow artifacts for Kit features.", mutationWritesFiles, withFileWrites("writes generated docs under selected project paths"), withRelated(related("scaffold agents", "writes repo agent instructions"))),

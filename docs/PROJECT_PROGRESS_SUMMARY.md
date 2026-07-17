@@ -46,6 +46,7 @@
 | 0042 | native-plan-repository-memory | `docs/specs/0042-native-plan-repository-memory` | complete | no | 2026-07-15 | Recenter Kit as a repository-memory and specification harness: native agent planning owns research, clarification, design, and implementation planning, while Kit ensures that consequential implementation rationale survives in canonical repository documents. |
 | 0043 | init-makefile-scaffold | `docs/specs/0043-init-makefile-scaffold` | complete | no | 2026-07-16 | Make `kit init` establish a safe, canonical Make entrypoint for each project and guide the initialization agent to wire targets such as `make dev` to the repository's real development commands. |
 | 0044 | versioned-agent-instructions | `docs/specs/0044-versioned-agent-instructions` | complete | no | 2026-07-17 | Provide one stable Kit command that emits the provider-neutral coding-agent instructions used directly by Codex, Claude, and GitHub Copilot, while preserving earlier instruction revisions for reproducible use. |
+| 0045 | constitution-curation | `docs/specs/0045-constitution-curation` | complete | no | 2026-07-17 | Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as implementation evolves, without forcing a new project to predict its complete identity or turning `kit init` into a long interview. |
 
 ## PROJECT INTENT
 
@@ -436,6 +437,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0044-versioned-agent-instructions/SPEC.md`
 
+### constitution-curation
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as implementation evolves, without forcing a new project to predict its complete identity or turning `kit init` into a long interview.
+- **APPROACH**: 1. Add a canonical downstream `constitution-curation` ruleset covering bootstrap, evidence, promotion, correction, no-op, refresh, and verification behavior. 2. Add a concise pointer to that rule in generated V3 provider instructions and align the checked-in instruction files. 3. Rewrite the shared init prompt and next steps around evidence-based curation and verified Makefile commands, leaving empty-project starters intact. 4. Share an exact-template bootstrap predicate between spec setup and project reconciliation so the generated starter is valid while partial placeholder documents remain actionable. 5. Add focused prompt, setup, reconciliation, instruction-template, and ruleset tests; update canonical docs and the project rollup. 6. Run formatting, focused tests, full Go validation, build, Kit checks, prompt-system checks, and diff review before explicit staging, commit, push, and existing-PR update.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0045-constitution-curation/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-17 14:26:01 EDT
+2026-07-17 15:59:17 EDT

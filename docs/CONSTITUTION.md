@@ -28,6 +28,8 @@ all decisions.
 - Feature rationale belongs in `SPEC.md`; invariants, reusable practices, and domain knowledge belong in their scope-appropriate canonical documents.
 - Code and tests may be the complete durable truth for code-sufficient work; do not create documentation solely for ceremony.
 - If reality diverges from durable repository memory, curate the memory to match what was actually built.
+- The exact generated Constitution starter is a valid bootstrap state; initial aspiration remains in native plans and feature specs until implementation demonstrates durable project-wide truth.
+- After validation, normal coding-agent work applies `docs/references/rules/constitution-curation.md`; periodic project refresh audits for missed, stale, or cross-feature rules.
 
 ### 3. Portable and Agent-Agnostic
 
@@ -353,12 +355,14 @@ The process of scanning all features and generating `PROJECT_PROGRESS_SUMMARY.md
 
 ### Project Refresh
 
-The semantic refresh flow for updating durable project-level truth after a repository matures:
+The periodic semantic audit that complements continuous post-validation Constitution curation:
 
-- Invoked with `kit prompt project refresh`
-- Updates `docs/CONSTITUTION.md` only when durable project-wide rules, vocabulary, constraints, or conventions changed
-- Uses `kit reconcile --all` for structural contract drift instead of duplicating reconciliation
-- Remains advisory and docs-only; it does not rerun `kit init` or block lifecycle commands
+- Normal implementation work applies `docs/references/rules/constitution-curation.md` before final handoff.
+- Invoke `kit project refresh` when the configured cadence is due or a broader project-memory review is needed.
+- Update `docs/CONSTITUTION.md` only when durable project-wide rules, vocabulary, constraints, or conventions changed.
+- Treat the cadence as a review trigger, not permission for a blind rewrite.
+- Use `kit reconcile --all` for structural contract drift instead of duplicating reconciliation.
+- Keep the audit advisory and docs-only; it does not rerun `kit init` or block lifecycle commands.
 
 ### Reconcile Refresh
 

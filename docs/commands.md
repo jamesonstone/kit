@@ -231,7 +231,11 @@ Prompt-producing commands, including the Constitution and Makefile setup prompt
 emitted by `kit init`, copy generated output to the clipboard by default. The
 init prompt maps applicable targets such as `make dev`, `make test`, and
 `make check` to verified repository-native commands; it does not leave guessed
-or placeholder recipes in the project-owned Makefile.
+or placeholder recipes in the project-owned Makefile. The exact generated
+Constitution starter is a valid bootstrap state, so initialization leaves its
+sections unchanged until implemented repository evidence supports durable
+project-wide truth. Normal coding-agent work then applies the Constitution
+curation rule after validation to keep that truth current as the project evolves.
 
 Use:
 

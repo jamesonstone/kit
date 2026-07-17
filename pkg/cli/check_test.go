@@ -165,6 +165,57 @@ func TestRunCheckProjectWarnsForOverdueProjectRefreshWithoutFailing(t *testing.T
 	}
 }
 
+func TestBuildReconcileReportAcceptsBootstrapConstitution(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	writeFile(t, filepath.Join(projectRoot, cfg.ConstitutionPath), templates.Constitution)
+
+	report, err := buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+	for _, finding := range report.Findings {
+		if filepath.Base(finding.FilePath) == "CONSTITUTION.md" {
+			t.Fatalf("expected generated starter Constitution to be valid bootstrap state, got %#v", finding)
+		}
+	}
+}
+
+func TestBuildReconcileReportRejectsPartiallyCustomizedEmptyConstitution(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	writeFile(t, filepath.Join(projectRoot, cfg.ConstitutionPath), `# CONSTITUTION
+
+## PRINCIPLES
+
+## CONSTRAINTS
+
+Project constraints are defined.
+
+## NON-GOALS
+
+No test non-goals.
+
+## DEFINITIONS
+
+Test definition.
+`)
+
+	report, err := buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+	if issues := findingsIssues(report.Findings); !strings.Contains(issues, "required section `## PRINCIPLES` is empty or placeholder-only") {
+		t.Fatalf("expected partially customized Constitution to remain actionable, got:\n%s", issues)
+	}
+}
+
 func TestRunCheckProjectFailsWhenV2RootIsVerboseManual(t *testing.T) {
 	projectRoot := setupCoherentProjectForCheck(t)
 	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.LegacyAgentsMD)
