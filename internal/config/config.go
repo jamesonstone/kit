@@ -39,6 +39,7 @@ type Config struct {
 	RemovedFeatures            []RemovedFeature                 `yaml:"removed_features,omitempty"`
 	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
 	Registry                   RegistryConfig                   `yaml:"registry,omitempty"`
+	Health                     *HealthConfig                    `yaml:"health,omitempty"`
 	GitHub                     GitHubConfig                     `yaml:"github,omitempty"`
 	AWS                        *AWSConfig                       `yaml:"aws,omitempty"`
 	ProjectRefresh             ProjectRefreshConfig             `yaml:"project_refresh,omitempty"`
@@ -77,6 +78,16 @@ type RegistryConfig struct {
 	SchemaVersion int                `yaml:"schema_version,omitempty"`
 	Source        RegistrySource     `yaml:"source,omitempty"`
 	Artifacts     []RegistryArtifact `yaml:"artifacts,omitempty"`
+}
+
+// HealthConfig controls scheduled Kit health maintenance for a project.
+// Omitted or null values are managed by default; only explicit false opts out.
+type HealthConfig struct {
+	Managed *bool `yaml:"managed,omitempty"`
+}
+
+func (c *Config) IsHealthManaged() bool {
+	return c == nil || c.Health == nil || c.Health.Managed == nil || *c.Health.Managed
 }
 
 type GitHubConfig struct {

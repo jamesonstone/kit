@@ -20,6 +20,51 @@ func TestDefaultIncludesAllRepositoryInstructionFiles(t *testing.T) {
 	}
 }
 
+func TestHealthManagedDefaultsToTrueUnlessExplicitlyDisabled(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		want    bool
+	}{
+		{name: "omitted", content: "schema_version: 1\n", want: true},
+		{name: "null health", content: "schema_version: 1\nhealth:\n", want: true},
+		{name: "empty health", content: "schema_version: 1\nhealth: {}\n", want: true},
+		{name: "null managed", content: "schema_version: 1\nhealth:\n  managed:\n", want: true},
+		{name: "explicit true", content: "schema_version: 1\nhealth:\n  managed: true\n", want: true},
+		{name: "explicit false", content: "schema_version: 1\nhealth:\n  managed: false\n", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			if err := os.WriteFile(filepath.Join(root, ConfigFileName), []byte(tt.content), 0644); err != nil {
+				t.Fatalf("WriteFile() error = %v", err)
+			}
+			cfg, err := Load(root)
+			if err != nil {
+				t.Fatalf("Load() error = %v", err)
+			}
+			if got := cfg.IsHealthManaged(); got != tt.want {
+				t.Fatalf("IsHealthManaged() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSaveOmitsDefaultHealthConfig(t *testing.T) {
+	root := t.TempDir()
+	if err := Save(root, Default()); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+	data, err := os.ReadFile(filepath.Join(root, ConfigFileName))
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	if strings.Contains(string(data), "health:") {
+		t.Fatalf("default config materialized health opt-in:\n%s", data)
+	}
+}
+
 func TestLoadWithInspectionDistinguishesSchemaStates(t *testing.T) {
 	tests := []struct {
 		name    string

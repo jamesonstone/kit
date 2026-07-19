@@ -36,6 +36,8 @@ kit spec my-feature
 kit notes my-feature --add --source slack
 kit spec dashboard-redesign --profile=frontend
 kit status --all
+kit registry status
+kit health --dry-run --diff
 kit resume my-feature
 kit map --all
 kit instructions
@@ -82,6 +84,8 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | --- | --- |
 | `kit status` | Show active feature status, local Kit-managed refresh state, and project refresh status; supports `--json`. |
 | `kit status --all` | Show the project-wide lifecycle matrix plus local Kit-managed refresh state. |
+| `kit registry status` | Show compact registry and Kit-managed file freshness for scheduled maintenance; supports `--json` and does not write files. |
+| `kit health` | Apply all conflict-free Kit-managed rules, instructions, configuration, README, workflow, and scaffold updates, then run the project contract check. Use `--dry-run --diff` for a read-only preview or `--json` for automation. |
 | `kit map [feature]` | Select or show a feature map; supports `--all` for the full project document map. |
 | `kit capabilities` | List command capabilities, mutation behavior, network use, and important flags. |
 | `kit config check` | Validate schema-versioned `.kit.yaml`; interactive terminals can add safe missing fields, while `--json` is read-only. |
@@ -105,6 +109,21 @@ discovery, not maintain Kit's internal command catalog.
 ### Project Configuration And AWS Context
 
 Project `.kit.yaml` files carry a top-level integer `schema_version`. Kit performs a local schema and semantic inspection before project-aware commands. The current, complete fast path reads only `.kit.yaml`; it does not run AWS, Git, GitHub, or network subprocesses and does not write files.
+
+Scheduled Kit health maintenance is enabled by default. Omitted, null, or empty
+health configuration remains managed; only an explicit `false` opts a project
+out:
+
+```yaml
+health:
+  managed: false
+```
+
+`kit registry status` and `kit health` return a successful `disabled` result
+without registry access or file writes for an opted-out project. Otherwise,
+`kit health` applies safe non-force refreshes and reports local customizations or
+conflicts for semantic curation and pull-request review. The command never
+stages, commits, pushes, opens a pull request, or changes arbitrary product code.
 
 When an interactive command finds a compatible missing or older schema, it offers to update the file inline. `kit config check` exposes the same validation explicitly, and `kit config check --json` reports state without prompting or writing.
 

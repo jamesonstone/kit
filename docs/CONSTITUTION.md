@@ -137,6 +137,7 @@ all decisions.
    - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
    - Validation evidence belongs in `SPEC.md` Evidence and Validation Map sections; legacy executable verification may still use task-level `VERIFY` fields where available
    - Generated JSON state and run artifacts must point back to source documents instead of replacing them
+   - When the user explicitly continues unrelated or tangential scope on an existing pull request, the added scope has its own GitHub issue and issue-scoped commits, while the pull request body closes every fully resolved issue
 
 7. **Execution Boundaries**
    - Prompt-only and inspection commands must not mutate files, git, GitHub, or external services
@@ -144,13 +145,15 @@ all decisions.
    - Verification, replay, eval, and loop commands may run local commands or configured agent commands only within their documented command contracts
    - Local run evidence under `.kit/runs/` and loop evidence under `.kit/loops/` is generated, inspectable, and non-authoritative
    - Kit must not become a general-purpose task runner, CI replacement, daemon, or hidden supervisor
+   - `kit health` may refresh only Kit-managed project files and validate the project contract; Git, GitHub, semantic curation, and arbitrary product-code changes remain outside the command
 
 8. **External Review Tools**
    - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 
 9. **Project Directory Git Workflow**
    - Work in the existing project directory by default
-   - Do not create or use git worktrees for agent work
+   - Do not create or use git worktrees for ordinary agent work
+   - An explicitly user-authorized maintenance automation may use isolated temporary worktrees from a freshly fetched remote base to protect in-flight primary checkouts; it must not stash, reset, clean, or otherwise mutate those primary checkouts
    - If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
 
 ### Code Quality Constraints

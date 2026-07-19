@@ -71,6 +71,7 @@ func TestCapabilityCatalogNestedCommandsAreRegistered(t *testing.T) {
 		{"rules", "list"},
 		{"rules", "view"},
 		{"rules", "link"},
+		{"registry", "status"},
 	} {
 		commandName := strings.Join(commandPath, " ")
 		cmd, _, err := rootCmd.Find(commandPath)

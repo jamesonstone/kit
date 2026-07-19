@@ -363,12 +363,21 @@ func upsertConstitutionBaseline(content string) (string, bool) {
 
 	baselineLines := strings.Split(constitutionBaselineSection, "\n")
 	if start >= 0 {
-		end := len(lines)
-		for i := start + 1; i < len(lines); i++ {
-			trimmed := strings.TrimSpace(lines[i])
-			if strings.HasPrefix(trimmed, "### ") || strings.HasPrefix(trimmed, "## ") {
-				end = i
+		end := -1
+		for i := start; i < len(lines); i++ {
+			if strings.TrimSpace(lines[i]) == "<!-- END KIT-MANAGED BASELINE RULES -->" {
+				end = i + 1
 				break
+			}
+		}
+		if end == -1 {
+			end = len(lines)
+			for i := start + 1; i < len(lines); i++ {
+				trimmed := strings.TrimSpace(lines[i])
+				if strings.HasPrefix(trimmed, "### ") || strings.HasPrefix(trimmed, "## ") {
+					end = i
+					break
+				}
 			}
 		}
 		updatedLines := append([]string{}, lines[:start]...)
@@ -395,7 +404,7 @@ func upsertConstitutionBaseline(content string) (string, bool) {
 		insertAt++
 	}
 
-	updatedLines := append([]string{}, lines[:insertAt]...)
+	updatedLines := append([]string{}, lines[:constraints+1]...)
 	updatedLines = append(updatedLines, "")
 	updatedLines = append(updatedLines, baselineLines...)
 	updatedLines = append(updatedLines, "")

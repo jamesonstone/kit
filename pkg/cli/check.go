@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -253,7 +255,13 @@ func metadataDiagnosticWarnings(doc *document.Document) []string {
 }
 
 func checkProjectContract(projectRoot string, cfg *config.Config) error {
-	fmt.Printf("🔎 Checking project contract...\n")
+	return checkProjectContractTo(os.Stdout, projectRoot, cfg)
+}
+
+func checkProjectContractTo(out io.Writer, projectRoot string, cfg *config.Config) error {
+	if _, err := fmt.Fprintln(out, "🔎 Checking project contract..."); err != nil {
+		return err
+	}
 
 	report, err := buildReconcileReport(projectRoot, cfg, nil)
 	if err != nil {
@@ -262,16 +270,24 @@ func checkProjectContract(projectRoot string, cfg *config.Config) error {
 	refreshStatus, refreshErr := calculateProjectRefreshStatus(projectRoot, cfg, time.Now().UTC())
 
 	if len(report.Findings) == 0 {
-		fmt.Printf("  ✅ Project contract is coherent!\n")
+		if _, err := fmt.Fprintln(out, "  ✅ Project contract is coherent!"); err != nil {
+			return err
+		}
 		if refreshErr == nil {
 			if refreshStatus.Due {
-				fmt.Printf("  ⚠ Project refresh due: %s. Run `kit project refresh`.\n", strings.Join(refreshStatus.Reasons, "; "))
+				if _, err := fmt.Fprintf(out, "  ⚠ Project refresh due: %s. Run `kit project refresh`.\n", strings.Join(refreshStatus.Reasons, "; ")); err != nil {
+					return err
+				}
 			} else {
-				fmt.Printf("  ℹ Project refresh %s.\n", formatProjectRefreshDueSummary(refreshStatus))
+				if _, err := fmt.Fprintf(out, "  ℹ Project refresh %s.\n", formatProjectRefreshDueSummary(refreshStatus)); err != nil {
+					return err
+				}
 			}
 			return nil
 		}
-		fmt.Printf("  ⚠ Project refresh due status unavailable: %v\n", refreshErr)
+		if _, err := fmt.Fprintf(out, "  ⚠ Project refresh due status unavailable: %v\n", refreshErr); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -290,26 +306,40 @@ func checkProjectContract(projectRoot string, cfg *config.Config) error {
 	}
 
 	if len(warnings) > 0 {
-		fmt.Printf("\n⚠️ Warnings (%d):\n", len(warnings))
+		if _, err := fmt.Fprintf(out, "\n⚠️ Warnings (%d):\n", len(warnings)); err != nil {
+			return err
+		}
 		for _, finding := range warnings {
-			fmt.Printf("  - [%s] %s\n", relativeCheckPath(projectRoot, finding.FilePath), finding.Issue)
+			if _, err := fmt.Fprintf(out, "  - [%s] %s\n", relativeCheckPath(projectRoot, finding.FilePath), finding.Issue); err != nil {
+				return err
+			}
 		}
 	}
 	if refreshErr != nil {
-		fmt.Printf("\n⚠️ Project refresh due status unavailable: %v\n", refreshErr)
+		if _, err := fmt.Fprintf(out, "\n⚠️ Project refresh due status unavailable: %v\n", refreshErr); err != nil {
+			return err
+		}
 	} else if refreshStatus.Due {
-		fmt.Printf("\n⚠️ Project refresh due: %s\n", formatProjectRefreshDueSummary(refreshStatus))
+		if _, err := fmt.Fprintf(out, "\n⚠️ Project refresh due: %s\n", formatProjectRefreshDueSummary(refreshStatus)); err != nil {
+			return err
+		}
 	}
 
 	if len(errors) > 0 {
-		fmt.Printf("\n❌ Errors (%d):\n", len(errors))
+		if _, err := fmt.Fprintf(out, "\n❌ Errors (%d):\n", len(errors)); err != nil {
+			return err
+		}
 		for _, finding := range errors {
-			fmt.Printf("  - [%s] %s\n", relativeCheckPath(projectRoot, finding.FilePath), finding.Issue)
+			if _, err := fmt.Fprintf(out, "  - [%s] %s\n", relativeCheckPath(projectRoot, finding.FilePath), finding.Issue); err != nil {
+				return err
+			}
 		}
 	}
 
 	if len(errors) == 0 && len(blockingWarnings) == 0 {
-		fmt.Printf("  ℹ Compatibility advisories do not block project validation.\n")
+		if _, err := fmt.Fprintln(out, "  ℹ Compatibility advisories do not block project validation."); err != nil {
+			return err
+		}
 		return nil
 	}
 
