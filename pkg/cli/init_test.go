@@ -37,10 +37,12 @@ func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 		})
 
 		const constitutionPath = "docs/CONSTITUTION.md"
+		const agentsEntrypointGuidance = "Read docs/agents/README.md before inspecting repository evidence or modifying project memory"
 		if !strings.Contains(copied, "Treat the exact generated starter at "+filepath.Join(cwd, constitutionPath)+" as a valid bootstrap Constitution") {
 			t.Fatalf("expected copied prompt to target %s, got %q", filepath.Join(cwd, constitutionPath), copied)
 		}
 		for _, check := range []string{
+			agentsEntrypointGuidance,
 			"Do not ask the user to explain the entire project",
 			"When evidence is insufficient, leave the project-specific starter sections unchanged",
 			"Follow docs/references/rules/constitution-curation.md",
@@ -53,6 +55,12 @@ func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 			if !strings.Contains(copied, check) {
 				t.Fatalf("expected copied prompt to contain %q, got %q", check, copied)
 			}
+		}
+		entrypointIndex := strings.Index(copied, agentsEntrypointGuidance)
+		bootstrapIndex := strings.Index(copied, "Treat the exact generated starter")
+		evidenceIndex := strings.Index(copied, "Inspect implemented behavior")
+		if entrypointIndex < 0 || bootstrapIndex < 0 || evidenceIndex < 0 || entrypointIndex >= bootstrapIndex || entrypointIndex >= evidenceIndex {
+			t.Fatalf("expected repository entrypoint guidance before Constitution inspection, got %q", copied)
 		}
 		if strings.Contains(copied, "Copy this section to the Agent:") {
 			t.Fatalf("expected clipboard payload to contain only the prompt body, got %q", copied)
