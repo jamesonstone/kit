@@ -1,32 +1,22 @@
 ```text
-╭──────────────────────────────────────────────────────────────────────╮
-│                                                                      │
-│   K                                                                  │
-│      keep consequential product memory in the repository            │
-│                                                                      │
-│   I                                                                  │
-│      implement from the agent's accepted native plan                │
-│                                                                      │
-│   T                                                                  │
-│      translate durable why into specifications and references       │
-│                                                                      │
-├──────────────────────────────────────────────────────────────────────┤
-│                    Kit Repository-Memory Harness                     │
-│           native plan → implementation → curated memory             │
-╰──────────────────────────────────────────────────────────────────────╯
+██╗  ██╗██╗████████╗
+██║ ██╔╝██║╚══██╔══╝
+█████╔╝ ██║   ██║
+██╔═██╗ ██║   ██║
+██║  ██╗██║   ██║
+╚═╝  ╚═╝╚═╝   ╚═╝
+
+                    repository memory for coding agents
 ```
 
-🎒 **Kit** is a portable, agent-agnostic harness that turns consequential agent
-work into durable repository memory.
+Kit is a portable, agent-agnostic repository-memory harness for coding agents.
+It keeps accepted plans, material decisions, discoveries, validation, and
+outcomes in the repository when code and tests cannot preserve the important
+why.
 
 <!-- BEGIN KIT-MANAGED README BADGES -->
 [![Last commit](https://img.shields.io/github/last-commit/jamesonstone/kit)](https://github.com/jamesonstone/kit/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/kit)](https://github.com/jamesonstone/kit/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/kit)](https://github.com/jamesonstone/kit/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/kit)](https://github.com/jamesonstone/kit/releases)
 <!-- END KIT-MANAGED README BADGES -->
-
-The host agent's native planning capability owns research, clarification,
-design, and implementation planning. Kit ensures the accepted plan, material
-decisions, discoveries, validation, and actual outcome survive in the
-repository when code and tests alone cannot preserve the important why.
 
 ## Start Here
 
