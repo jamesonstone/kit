@@ -47,7 +47,7 @@
 | 0043 | init-makefile-scaffold | `docs/specs/0043-init-makefile-scaffold` | complete | no | 2026-07-16 | Make `kit init` establish a safe, canonical Make entrypoint for each project and guide the initialization agent to wire targets such as `make dev` to the repository's real development commands. |
 | 0044 | versioned-agent-instructions | `docs/specs/0044-versioned-agent-instructions` | complete | no | 2026-07-17 | Provide one stable Kit command that emits the provider-neutral coding-agent instructions used directly by Codex, Claude, and GitHub Copilot, while preserving earlier instruction revisions for reproducible use. |
 | 0045 | constitution-curation | `docs/specs/0045-constitution-curation` | complete | no | 2026-07-17 | Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as implementation evolves, without forcing a new project to predict its complete identity or turning `kit init` into a long interview. |
-| 0047 | kit-health-maintenance | `docs/specs/0047-kit-health-maintenance` | implement | no | 2026-07-19 | Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work. |
+| 0047 | kit-health-maintenance | `docs/specs/0047-kit-health-maintenance` | complete | no | 2026-07-19 | Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work. |
 
 ## PROJECT INTENT
 
@@ -449,11 +449,11 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 
 ### kit-health-maintenance
 
-- **STATUS**: implement
+- **STATUS**: complete
 - **PAUSED**: no
 - **INTENT**: Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work.
 - **APPROACH**: Add default-on nullable health management configuration, compact registry freshness, safe managed-file health orchestration, same-PR issue traceability, and a user-authorized weekly worktree automation; validate command safety and convergence before updating PR #63 under issue #66.
-- **OPEN ITEMS**: Deliver the validated implementation to PR #63.
+- **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0047-kit-health-maintenance/SPEC.md`
 
 ## LAST UPDATED

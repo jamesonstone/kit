@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: spec
 workflow_version: 3
-phase: implement
+phase: complete
 feature:
   id: 0047
   slug: kit-health-maintenance
@@ -151,7 +151,7 @@ Keep Kit-managed rules, instructions, configuration, scaffold files, and project
 - Added nullable default-on health management configuration, explicit opt-out behavior, command discovery, documentation, and regression coverage.
 - Corrected Constitution baseline refresh idempotency and custom-content preservation because recurring health depends on convergence.
 - Curated same-PR additional-issue traceability and the explicitly authorized scheduled-health worktree exception into the delivery rules and project Constitution.
-- Activated recurring automation `weekly-kit-health`; repository delivery to PR #63 remains the final external delivery gate.
+- Activated recurring automation `weekly-kit-health` and prepared the validated issue-scoped implementation for delivery on existing PR #63; no merge is part of this feature.
 
 ## REPOSITORY MEMORY
 
