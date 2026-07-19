@@ -208,7 +208,10 @@ func runNativePlanSpec(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	_, err = fmt.Fprintf(out, "Next: use native agent planning (for example `/plan` in Codex). If material rationale exists, capture the accepted plan in SPEC.md before implementation, keep consequential decisions current, and curate repository memory after validation.\nNotes: %s\n", notesRelPath)
+	if _, err = fmt.Fprintf(out, "Next: use native agent planning (for example `/plan` in Codex). If material rationale exists, capture the accepted plan in SPEC.md before implementation, keep consequential decisions current, and curate repository memory after validation.\nNotes: %s\n", notesRelPath); err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(out, "Managed guidance: run `kit status` and follow any Kit-managed refresh action before implementation.")
 	return err
 }
 

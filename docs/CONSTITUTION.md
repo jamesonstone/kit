@@ -28,6 +28,8 @@ all decisions.
 - Feature rationale belongs in `SPEC.md`; invariants, reusable practices, and domain knowledge belong in their scope-appropriate canonical documents.
 - Code and tests may be the complete durable truth for code-sufficient work; do not create documentation solely for ceremony.
 - If reality diverges from durable repository memory, curate the memory to match what was actually built.
+- The exact generated Constitution starter is a valid bootstrap state; initial aspiration remains in native plans and feature specs until implementation demonstrates durable project-wide truth.
+- After validation, normal coding-agent work applies `docs/references/rules/constitution-curation.md`; periodic project refresh audits for missed, stale, or cross-feature rules.
 
 ### 3. Portable and Agent-Agnostic
 
@@ -135,6 +137,7 @@ all decisions.
    - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
    - Validation evidence belongs in `SPEC.md` Evidence and Validation Map sections; legacy executable verification may still use task-level `VERIFY` fields where available
    - Generated JSON state and run artifacts must point back to source documents instead of replacing them
+   - When the user explicitly continues unrelated or tangential scope on an existing pull request, the added scope has its own GitHub issue and issue-scoped commits, while the pull request body closes every fully resolved issue
 
 7. **Execution Boundaries**
    - Prompt-only and inspection commands must not mutate files, git, GitHub, or external services
@@ -142,13 +145,15 @@ all decisions.
    - Verification, replay, eval, and loop commands may run local commands or configured agent commands only within their documented command contracts
    - Local run evidence under `.kit/runs/` and loop evidence under `.kit/loops/` is generated, inspectable, and non-authoritative
    - Kit must not become a general-purpose task runner, CI replacement, daemon, or hidden supervisor
+   - `kit health` may refresh only Kit-managed project files and validate the project contract; Git, GitHub, semantic curation, and arbitrary product-code changes remain outside the command
 
 8. **External Review Tools**
    - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 
 9. **Project Directory Git Workflow**
    - Work in the existing project directory by default
-   - Do not create or use git worktrees for agent work
+   - Do not create or use git worktrees for ordinary agent work
+   - An explicitly user-authorized maintenance automation may use isolated temporary worktrees from a freshly fetched remote base to protect in-flight primary checkouts; it must not stash, reset, clean, or otherwise mutate those primary checkouts
    - If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
 
 ### Code Quality Constraints
@@ -353,12 +358,14 @@ The process of scanning all features and generating `PROJECT_PROGRESS_SUMMARY.md
 
 ### Project Refresh
 
-The semantic refresh flow for updating durable project-level truth after a repository matures:
+The periodic semantic audit that complements continuous post-validation Constitution curation:
 
-- Invoked with `kit prompt project refresh`
-- Updates `docs/CONSTITUTION.md` only when durable project-wide rules, vocabulary, constraints, or conventions changed
-- Uses `kit reconcile --all` for structural contract drift instead of duplicating reconciliation
-- Remains advisory and docs-only; it does not rerun `kit init` or block lifecycle commands
+- Normal implementation work applies `docs/references/rules/constitution-curation.md` before final handoff.
+- Invoke `kit project refresh` when the configured cadence is due or a broader project-memory review is needed.
+- Update `docs/CONSTITUTION.md` only when durable project-wide rules, vocabulary, constraints, or conventions changed.
+- Treat the cadence as a review trigger, not permission for a blind rewrite.
+- Use `kit reconcile --all` for structural contract drift instead of duplicating reconciliation.
+- Keep the audit advisory and docs-only; it does not rerun `kit init` or block lifecycle commands.
 
 ### Reconcile Refresh
 
@@ -427,7 +434,7 @@ kit/
 │   ├── config/              # .kit.yaml loading, project root discovery, prompt config
 │   ├── document/            # Markdown parsing, metadata, relationships, validation
 │   ├── feature/             # feature identity, allocator, lifecycle, map, status
-│   ├── instructions/        # versioned repository instruction registry
+│   ├── instructions/        # repository scaffold and versioned agent instruction registries
 │   ├── promptdoc/           # typed prompt document rendering
 │   ├── promptlib/           # prompt library merge, normalize, resolve, suggest
 │   ├── rollup/              # PROJECT_PROGRESS_SUMMARY.md generation

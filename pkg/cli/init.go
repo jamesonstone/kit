@@ -43,6 +43,10 @@ Creates:
 If files already exist, Kit preserves them. Kit-managed markdown documents may
 be merged by adding missing required sections.
 
+The generated Constitution starter is a valid bootstrap state. The prepared
+prompt promotes only durable project-wide truth supported by repository evidence
+and leaves empty-project Constitution sections unchanged.
+
 Modes:
   Default:        Copy the prepared project initialization prompt to the clipboard and show next steps
   --refresh:      Refresh Kit-managed project files for an existing Kit project
@@ -256,8 +260,8 @@ func runInit(cmd *cobra.Command, args []string) error {
 
 	if !initOutputOnly {
 		printNumberedNextSteps([]string{
-			"Paste the copied prompt into your agent to populate Makefile and draft docs/CONSTITUTION.md",
-			"Review the project commands and docs/CONSTITUTION.md, then run the applicable Make targets",
+			"Paste the copied prompt into your agent to review repository evidence and populate only verified Makefile targets",
+			"Keep the starter Constitution unchanged until implemented evidence supports durable project-wide rules",
 			"Run `kit spec <feature-name>` to create your first feature",
 		})
 	}
@@ -292,24 +296,24 @@ func populateGlobalConfig(outputOnly bool) error {
 func buildProjectInitPrompt(projectRoot, constitutionFullPath string) string {
 	makefileFullPath := filepath.Join(projectRoot, makefilePath)
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph(fmt.Sprintf(
-			"Please update %s with all patterns, strategy, implementation details, process, and long-term vision for this project.\nThis document will drive the \"rules for development\" going forward.",
-			constitutionFullPath,
-		))
-		doc.Paragraph(fmt.Sprintf("Analyze the codebase at %s to extract:", projectRoot))
+		doc.Paragraph(fmt.Sprintf("Initialize project memory and verified command entrypoints for the repository at %s.", projectRoot))
+		doc.Paragraph("Constitution guidance:")
 		doc.BulletList(
-			"Architectural patterns and conventions",
-			"Code style and naming conventions",
-			"Dependencies and their purposes",
-			"Non-negotiable constraints",
-			"Project goals and non-goals",
+			"Read docs/agents/README.md before inspecting repository evidence or modifying project memory",
+			fmt.Sprintf("Treat the exact generated starter at %s as a valid bootstrap Constitution", constitutionFullPath),
+			"Inspect implemented behavior, validated outcomes, current canonical documentation, and recurring repository conventions as evidence",
+			"Do not ask the user to explain the entire project, infer permanent rules from initial aspiration, or derive project truth from Kit-generated scaffolding",
+			"Update the Constitution only when repository evidence already demonstrates a durable project-wide principle, constraint, non-goal, definition, vocabulary term, or workflow boundary",
+			"When evidence is insufficient, leave the project-specific starter sections unchanged; normal post-validation curation will evolve them as the project matures",
+			"Follow docs/references/rules/constitution-curation.md when that registry ruleset is present",
 		)
 		doc.Paragraph(fmt.Sprintf(
-			"Populate %s with a canonical project command interface backed by this repository's real commands.",
+			"Populate %s with a canonical project command interface only when it can be backed by this repository's real commands.",
 			makefileFullPath,
 		))
 		doc.BulletList(
 			"Inspect package scripts, toolchain configuration, development documentation, and existing automation before choosing recipe commands",
+			"Leave the safe starter Makefile unchanged when the repository has no verified development, build, test, lint, formatting, or validation commands",
 			"Expose `make dev` when the repository has a verified local development or run workflow",
 			"Add only applicable canonical targets such as `build`, `test`, `check`, `lint`, `fmt`, and `clean`, plus useful project-specific targets",
 			"Keep recipes as thin wrappers around repository-native commands; let composite targets reuse atomic targets instead of duplicating their commands",
@@ -318,6 +322,9 @@ func buildProjectInitPrompt(projectRoot, constitutionFullPath string) string {
 			"Run `make help` and each added target that is safe to execute, and report any target that could not be validated",
 		)
 		doc.Paragraph("Rules:")
-		doc.BulletList("PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times")
+		doc.BulletList(
+			"Initial product ideas and feature intent belong in the accepted native plan and relevant SPEC.md, not in the Constitution until implementation demonstrates project-wide truth",
+			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
+		)
 	})
 }

@@ -72,16 +72,14 @@ func assessSpecSetup(projectRoot string, cfg *config.Config, missingConfig bool)
 	} else {
 		text := string(content)
 		doc := document.Parse(text, constitutionPath, document.TypeConstitution)
-		templateEquivalent := strings.TrimSpace(text) == strings.TrimSpace(templates.Constitution)
-		if templateEquivalent {
-			status.Reasons = append(status.Reasons, constitutionRel+" is still the generated starter template")
-		} else if doc.HasUnresolvedPlaceholders() {
+		bootstrap := isBootstrapConstitution(text)
+		if !bootstrap && doc.HasUnresolvedPlaceholders() {
 			status.Reasons = append(status.Reasons, constitutionRel+" still contains TODO placeholders")
 		}
-		if !templateEquivalent {
+		if !bootstrap {
 			status.Reasons = append(status.Reasons, constitutionPopulationReasons(constitutionRel, doc)...)
+			status.Reasons = append(status.Reasons, constitutionValidationReasons(doc)...)
 		}
-		status.Reasons = append(status.Reasons, constitutionValidationReasons(doc)...)
 	}
 
 	if missingConfig {

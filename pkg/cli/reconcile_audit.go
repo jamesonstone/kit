@@ -119,6 +119,9 @@ func auditConstitution(projectRoot string) []reconcileFinding {
 			},
 		)}
 	}
+	if content, err := os.ReadFile(path); err == nil && isBootstrapConstitution(string(content)) {
+		return nil
+	}
 
 	return auditStructuredDocument(path, document.TypeConstitution, projectRoot, nil)
 }

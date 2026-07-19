@@ -249,12 +249,20 @@ func markFeaturesComplete(
 
 	if err := rollup.Update(projectRoot, cfg); err != nil {
 		_, _ = fmt.Fprintf(errOut, "  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
-		return printProjectRefreshAdvisory(out, projectRoot, cfg)
+		return printCompletionAdvisories(out, projectRoot, cfg)
 	}
 	if _, err := fmt.Fprintln(out, "  ✓ Updated PROJECT_PROGRESS_SUMMARY.md"); err != nil {
 		return err
 	}
-	return printProjectRefreshAdvisory(out, projectRoot, cfg)
+	return printCompletionAdvisories(out, projectRoot, cfg)
+}
+
+func printCompletionAdvisories(out io.Writer, projectRoot string, cfg *config.Config) error {
+	if err := printProjectRefreshAdvisory(out, projectRoot, cfg); err != nil {
+		return err
+	}
+	_, err := fmt.Fprintln(out, "  ℹ Managed guidance: run `kit status` and follow any Kit-managed refresh action before final delivery.")
+	return err
 }
 
 func markFeatureComplete(feat *feature.Feature, path string) error {
