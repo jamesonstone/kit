@@ -29,6 +29,34 @@ func TestMemoryCopilotInstructionsPreserveMutationRouting(t *testing.T) {
 	}
 }
 
+func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
+	generated := fileContentByPath(
+		InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
+		"docs/agents/GUARDRAILS.md",
+	)
+	for _, want := range []string{
+		"Resolve all in-scope issues autonomously and continue until the goal is fully complete",
+		"including authenticated `gh`",
+		"Ask permission only before large-scale deletion or deleting sensitive files",
+		"not as routine retry-permission requests",
+	} {
+		if !strings.Contains(generated, want) {
+			t.Fatalf("expected V3 guardrails to contain %q", want)
+		}
+	}
+	if strings.Contains(generated, "Do not run `git add` or `git commit` without explicit approval") {
+		t.Fatal("expected V3 guardrails to omit routine git approval requirement")
+	}
+
+	checkedIn, err := os.ReadFile(filepath.Join("..", "..", "docs", "agents", "GUARDRAILS.md"))
+	if err != nil {
+		t.Fatalf("read checked-in guardrails: %v", err)
+	}
+	if string(checkedIn) != generated {
+		t.Fatal("checked-in guardrails are not aligned with the V3 generator")
+	}
+}
+
 func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 	defaultChecks := []string{
 		"## GitHub Delivery Hard Gate",

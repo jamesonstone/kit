@@ -45,6 +45,7 @@
 | 0041 | aws-config-schema | `docs/specs/0041-aws-config-schema` | deliver | no | 2026-07-13 | Version Kit project configuration and bind each AWS-enabled project to one STS-verified CLI profile and account with fast automatic checks and interactive repair. |
 | 0042 | native-plan-repository-memory | `docs/specs/0042-native-plan-repository-memory` | complete | no | 2026-07-15 | Recenter Kit as a repository-memory and specification harness: native agent planning owns research, clarification, design, and implementation planning, while Kit ensures that consequential implementation rationale survives in canonical repository documents. |
 | 0043 | init-makefile-scaffold | `docs/specs/0043-init-makefile-scaffold` | complete | no | 2026-07-16 | Make `kit init` establish a safe, canonical Make entrypoint for each project and guide the initialization agent to wire targets such as `make dev` to the repository's real development commands. |
+| 0046 | autonomous-mutation-recovery | `docs/specs/0046-autonomous-mutation-recovery` | complete | no | 2026-07-19 | Make Kit coding agents own routine failure recovery through completion instead of stopping after a failed in-scope mutation and asking the user to authorize a compatible retry such as authenticated `gh`. |
 
 ## PROJECT INTENT
 
@@ -426,6 +427,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0043-init-makefile-scaffold/SPEC.md`
 
+### autonomous-mutation-recovery
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Make Kit coding agents own routine failure recovery through completion instead of stopping after a failed in-scope mutation and asking the user to authorize a compatible retry such as authenticated `gh`.
+- **APPROACH**: 1. Replace blanket stop-on-failure language in `safety-guardrails` with a diagnose, reconcile, retry, and verify workflow bounded by the original authorization. 2. Align GitHub delivery and work-lane failure references so recoverable lane, fetch, validation, push, and PR-tool failures continue autonomously without allowing stale-base branching, force operations, or duplicate delivery state. 3. Update the generated and checked-in agent guardrails to remove routine approval prompts, state the deletion permission boundary, and distinguish genuine blockers from retry authorization. 4. Add focused ruleset and template assertions, run the complete validation surface, and curate the spec and project-wide contract to the validated outcome.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0046-autonomous-mutation-recovery/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-16 16:09:19 EDT
+2026-07-19 08:19:49 EDT

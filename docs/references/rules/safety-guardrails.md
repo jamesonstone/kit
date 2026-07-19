@@ -17,7 +17,7 @@ read_policy_default: must
 
 - Define always-on safety checks for all GitHub and git operations.
 - Run before work-lane decisions or PR delivery workflow.
-- Prevent unsafe writes, identity mistakes, protected-branch mutations, and destructive retries.
+- Prevent unsafe writes, identity mistakes, protected-branch mutations, blind retries, and unauthorized deletion.
 
 ## Applies When
 
@@ -64,14 +64,14 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Identify active pull requests for the current branch before editing, committing, pushing, or mutating any PR.
 - Confirm the active directory, branch, remote, and PR head branch match the intended work lane.
 - Repeat this recon after thread resumes, user redirects, branch changes, or any sign that another thread may have moved the work forward.
-- If the active branch, remote, or PR state does not match the expected issue branch or repository, stop and summarize the mismatch before editing or pushing.
+- If the active branch, remote, or PR state does not match the expected issue branch or repository, resolve the mismatch autonomously when the intended lane can be proven safely; otherwise report the ambiguity and request the smallest input needed before mutating.
 - If `gh` is unavailable, use an approved GitHub connector for the active PR lookup; if neither is available, report that the active PR check could not run before mutating.
 - Do not overwrite, revert, or mix unrelated user changes.
 - If unrelated dirty files exist, leave them alone.
-- If dirty files overlap the requested work, stop and explain the conflict before editing.
+- If dirty files overlap the requested work, preserve them and resolve the overlap autonomously when ownership and intent are evident; otherwise complete unblocked work and request the smallest clarification needed without discarding changes.
 - Work in the existing project directory.
 - Do not create or use git worktrees for agent work.
-- If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout.
+- If the current branch or dirty state is unsuitable, recover safely in the existing project directory when the intended lane and file ownership are provable; otherwise report the blocker. Do not create an alternate checkout or worktree.
 
 ### Protected-Branch Detection
 
@@ -123,15 +123,27 @@ git var GIT_COMMITTER_IDENT
 - Do not change global git config unless the user explicitly asks.
 - Prefer per-commit or repo-local config when a config change is needed.
 
-### Failure Handling
+### Autonomous Failure Recovery
 
-On any failure, including lint, test, push rejection, template error, auth error, or state mismatch:
+Agents own the requested outcome. On a lint, test, template, tool, authentication, state, push, or other workflow failure:
 
-- Stop.
-- Report the exact error and current state.
-- Do not retry with mutation.
-- Do not use `--force`, `--force-with-lease`, `git rebase`, `git reset --hard`, `git add -A`, `git add .`, an amend to an already-pushed commit, or branch/issue/PR recreation as a fix.
-- Surface the failure to the user and await instruction.
+1. Capture the exact error and current state.
+2. Diagnose the cause with read-only inspection before another mutation.
+3. Preserve the authorized repository, target, scope, intended effect, and human identity.
+4. Choose a safe compatible recovery path, retry autonomously, and verify the resulting state.
+5. Continue until the goal is complete or a genuine external blocker remains.
+
+- A failed tool or connector does not revoke authorization for the same intended mutation. Use another supported authenticated path, including `gh`, without asking the user to reply with retry permission when repository, target, scope, intended effect, and human identity are unchanged.
+- Do not blindly repeat the same failed command. Retry only after diagnosis or a material change in evidence, state, parameters, or tool path.
+- Do not use `--force`, `--force-with-lease`, `git rebase`, `git reset --hard`, `git add -A`, `git add .`, an amend to an already-pushed commit, or branch/issue/PR recreation as a recovery shortcut.
+- Missing credentials, ambiguous identity or target, conflicting user-owned changes, unavailable external dependencies, or required external authorization are genuine blockers. Complete unblocked work, report the evidence, and request only the smallest missing input; do not frame this as permission for a routine retry.
+
+### Permission Boundary
+
+- Resolve all in-scope implementation, validation, and delivery issues autonomously and continue until the requested goal is fully complete or a genuine external blocker remains.
+- Ask permission only before large-scale deletion or deleting sensitive files.
+- Before requesting deletion permission, resolve the exact targets, scope, sensitivity, and recoverability with read-only inspection; prefer recoverable deletion where practical.
+- This permission boundary does not authorize actions prohibited above. Never ask for permission to bypass protected branches, review, identity, secret, force-push, merge, or repository-setting safeguards.
 
 ## Anti-Patterns
 
@@ -142,6 +154,9 @@ On any failure, including lint, test, push rejection, template error, auth error
 - Do not stage secrets, `.env` files, tokens, private keys, or machine-local config.
 - Do not proceed to lane gating before branch and repository recon is complete.
 - Do not commit when author or committer identity is missing, ambiguous, or not the human user's.
+- Do not ask the user to authorize a compatible `gh` or connector retry that preserves the already-authorized mutation.
+- Do not blindly repeat a failed mutation without new evidence or a revised recovery path.
+- Do not perform large-scale deletion or delete sensitive files without explicit permission.
 
 ## Verification
 
@@ -150,10 +165,12 @@ On any failure, including lint, test, push rejection, template error, auth error
 - Confirm active PRs for the current branch were checked, or that an unavailable PR lookup was explicitly reported before mutation.
 - Confirm the active directory, branch, remote, and PR state matched the intended work lane before editing, committing, pushing, or mutating a PR.
 - Confirm protected or assumed-protected branches were not written to.
-- Confirm overlapping dirty files caused a stop before editing.
+- Confirm overlapping dirty files were preserved and either resolved safely from evidence or reported as a genuine blocker without destructive cleanup.
 - Confirm author and committer identity were inspected before any commit.
 - Confirm secret scanning happened before staging.
-- Confirm failures stopped mutation and were reported to the user.
+- Confirm routine failures were diagnosed, recovered autonomously, and verified, or that a genuine blocker was reported with the smallest required user input.
+- Confirm compatible authenticated tool-path changes did not trigger routine permission requests.
+- Confirm large-scale deletion and sensitive-file deletion did not occur without explicit permission.
 
 ## Examples
 
@@ -175,4 +192,11 @@ git config user.name
 git config user.email
 git var GIT_AUTHOR_IDENT
 git var GIT_COMMITTER_IDENT
+```
+
+Compatible GitHub recovery:
+
+```text
+The connector PR mutation failed, but repository, branch, PR intent, and human identity are unchanged.
+Re-run read-only PR and authentication checks, use authenticated gh for the same mutation, and verify the resulting PR state without asking the user to authorize the retry.
 ```

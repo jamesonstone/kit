@@ -77,7 +77,7 @@ When implementation work in a new lane is detected, stop before writing code and
   - Stop immediately.
   - Report the violation.
   - Do not commit or push the ungated work.
-  - Follow `safety-guardrails` failure handling: do not mutate to clean up, leave changes in the working tree, and await instruction.
+  - Preserve the working tree and use `safety-guardrails` autonomous failure recovery to establish the correct lane when it can be proven safely; otherwise request only the missing lane decision. Do not discard, commit, or push the ungated work.
 
 ### Detection Heuristics
 

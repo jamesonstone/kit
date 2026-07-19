@@ -156,7 +156,7 @@ Include:
 - Do not reuse an existing branch if it contains unrelated work.
 - If a PR already exists for `GH-123`, update it instead of duplicating.
 - Before updating an existing PR, check active PRs for the current branch and confirm the active directory, branch, remote, PR head, and PR base match the intended issue branch and repository.
-- If issue, branch, and PR state disagree, stop and summarize the mismatch.
+- If issue, branch, and PR state disagree, reconcile them autonomously when the intended lane can be proven without destructive changes; otherwise report the ambiguity and request the smallest missing input.
 
 ### Branch Workflow
 
@@ -182,9 +182,9 @@ gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName
 ```
 
 - Never commit directly to the base branch, which is protected under `safety-guardrails`.
-- If `git fetch` fails due to offline state, auth, remote errors, or any other reason, stop per `safety-guardrails` failure handling. Do not branch off a base that could not be refreshed.
+- If `git fetch` fails, diagnose and recover autonomously under `safety-guardrails`. Do not branch off a base that could not be refreshed; report a genuine connectivity or authentication blocker only after safe recovery paths are exhausted.
 - Before editing after any thread resume or user redirect, repeat branch and PR recon for the active directory because another thread may have moved the work forward.
-- If the active branch or PR lookup does not match the intended `GH-123` branch and repository, stop and ask before editing.
+- If the active branch or PR lookup does not match the intended `GH-123` branch and repository, recover the intended lane autonomously when it can be proven safely; otherwise report the ambiguity before editing.
 
 ### Implementation Workflow
 
@@ -192,7 +192,7 @@ gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName
 - Prefer explicit idiomatic code over clever code.
 - Avoid unnecessary abstractions and premature generalization.
 - Run formatting, linting, and tests appropriate to changed files.
-- On failure, follow `safety-guardrails` failure handling: stop and do not mutate to retry.
+- On failure, follow `safety-guardrails`: diagnose the cause, choose a safe in-scope recovery path, retry autonomously, verify the result, and continue.
 
 ### Review And Staging Workflow
 
@@ -276,6 +276,7 @@ git log -1 --format='%an <%ae> | %cn <%ce>'
 - Verify remote-side author and committer are the human user.
 - On push rejection, such as a stale base, follow `safety-guardrails` failure handling.
 - Do not force-push or rebase to resolve a push rejection.
+- If a GitHub connector or PR mutation path fails while repository, branch, target, intended effect, and human identity remain unchanged, re-run read-only recon and use another supported authenticated path such as `gh` without requesting routine retry permission. Verify that no duplicate issue or PR was created.
 - Create the PR using `.github/pull_request_template.md` when present.
 - Preserve PR template headings.
 - Author the PR body in the user's name; do not add agent self-attribution.

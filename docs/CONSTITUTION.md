@@ -149,7 +149,10 @@ all decisions.
 9. **Project Directory Git Workflow**
    - Work in the existing project directory by default
    - Do not create or use git worktrees for agent work
-   - If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
+   - Resolve all in-scope implementation, validation, and delivery failures autonomously after diagnosis and continue until the requested goal is complete or a genuine external blocker remains
+   - A supported tool-path change does not require routine permission when repository, target, scope, intended effect, and human identity remain unchanged
+   - Ask permission only before large-scale deletion or deleting sensitive files; existing protected-branch, force-push, merge, review, identity, secret, and repository-setting prohibitions remain hard boundaries
+   - Preserve user-owned dirty work; when branch, target, identity, or ownership remains ambiguous after read-only inspection, request only the smallest missing input instead of guessing, discarding changes, or creating an alternate checkout
 
 ### Code Quality Constraints
 

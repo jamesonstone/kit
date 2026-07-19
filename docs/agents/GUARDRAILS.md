@@ -125,7 +125,10 @@ When .kit.yaml defines an enabled aws context, agents must:
 
 - Prefer explicit error handling over silent failure
 - Keep changes minimal and reversible
-- Do not run `git add` or `git commit` without explicit approval
+- Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
+- Do not ask for routine approval to switch supported tools, including authenticated `gh`, when the authorized mutation is unchanged
+- Ask permission only before large-scale deletion or deleting sensitive files
+- Treat missing credentials, ambiguous identity or target, conflicting user-owned changes, and required external authorization as blockers requiring the smallest missing input, not as routine retry-permission requests
 - Do not run `coderabbit --prompt-only` unless explicitly requested or approved
 
 
