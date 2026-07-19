@@ -54,6 +54,38 @@ func TestRunRulesAddCreatesRuleset(t *testing.T) {
 	}
 }
 
+func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T) {
+	path := filepath.Join("..", "..", "docs", "references", "rules", "safety-guardrails.md")
+	ruleset, err := parseRulesetFile(path)
+	if err != nil {
+		t.Fatalf("parseRulesetFile() error = %v", err)
+	}
+	if issues := validateRulesetDocument(ruleset, "safety-guardrails"); len(issues) > 0 {
+		t.Fatalf("safety-guardrails ruleset issues = %#v", issues)
+	}
+	if ruleset.Metadata.ReadPolicyDefault != document.ReferenceReadPolicyMust {
+		t.Fatalf("read_policy_default = %q, want must", ruleset.Metadata.ReadPolicyDefault)
+	}
+	for _, check := range []string{
+		"retry autonomously",
+		"including `gh`",
+		"Ask permission only before large-scale deletion or deleting sensitive files",
+		"do not frame this as permission for a routine retry",
+	} {
+		if !strings.Contains(ruleset.Body, check) {
+			t.Fatalf("expected safety-guardrails ruleset to contain %q", check)
+		}
+	}
+	for _, forbidden := range []string{
+		"Do not retry with mutation",
+		"Surface the failure to the user and await instruction",
+	} {
+		if strings.Contains(ruleset.Body, forbidden) {
+			t.Fatalf("expected safety-guardrails ruleset to omit blanket stop behavior %q", forbidden)
+		}
+	}
+}
+
 func TestConstitutionCurationRegistryRulesetIsValid(t *testing.T) {
 	path := filepath.Join("..", "..", "docs", "references", "rules", "constitution-curation.md")
 	ruleset, err := parseRulesetFile(path)
@@ -77,6 +109,53 @@ func TestConstitutionCurationRegistryRulesetIsValid(t *testing.T) {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected constitution-curation ruleset to contain %q", check)
 		}
+	}
+}
+
+func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
+	path := filepath.Join("..", "..", "docs", "references", "rules", "github-pr-delivery.md")
+	ruleset, err := parseRulesetFile(path)
+	if err != nil {
+		t.Fatalf("parseRulesetFile() error = %v", err)
+	}
+	if issues := validateRulesetDocument(ruleset, "github-pr-delivery"); len(issues) > 0 {
+		t.Fatalf("github-pr-delivery ruleset issues = %#v", issues)
+	}
+	for _, check := range []string{
+		"retry autonomously",
+		"another supported authenticated path such as `gh`",
+		"without requesting routine retry permission",
+		"Verify that no duplicate issue or PR was created",
+	} {
+		if !strings.Contains(ruleset.Body, check) {
+			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)
+		}
+	}
+	if strings.Contains(ruleset.Body, "stop and do not mutate to retry") {
+		t.Fatal("expected github-pr-delivery ruleset to omit blanket mutation retry prohibition")
+	}
+}
+
+func TestWorkLaneGatingRulesetUsesAutonomousRecovery(t *testing.T) {
+	path := filepath.Join("..", "..", "docs", "references", "rules", "work-lane-gating.md")
+	ruleset, err := parseRulesetFile(path)
+	if err != nil {
+		t.Fatalf("parseRulesetFile() error = %v", err)
+	}
+	if issues := validateRulesetDocument(ruleset, "work-lane-gating"); len(issues) > 0 {
+		t.Fatalf("work-lane-gating ruleset issues = %#v", issues)
+	}
+	for _, check := range []string{
+		"autonomous failure recovery",
+		"when it can be proven safely",
+		"request only the missing lane decision",
+	} {
+		if !strings.Contains(ruleset.Body, check) {
+			t.Fatalf("expected work-lane-gating ruleset to contain %q", check)
+		}
+	}
+	if strings.Contains(ruleset.Body, "leave changes in the working tree, and await instruction") {
+		t.Fatal("expected work-lane-gating ruleset to omit blanket await-instruction behavior")
 	}
 }
 

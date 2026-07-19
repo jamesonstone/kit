@@ -47,6 +47,7 @@
 | 0043 | init-makefile-scaffold | `docs/specs/0043-init-makefile-scaffold` | complete | no | 2026-07-16 | Make `kit init` establish a safe, canonical Make entrypoint for each project and guide the initialization agent to wire targets such as `make dev` to the repository's real development commands. |
 | 0044 | versioned-agent-instructions | `docs/specs/0044-versioned-agent-instructions` | complete | no | 2026-07-17 | Provide one stable Kit command that emits the provider-neutral coding-agent instructions used directly by Codex, Claude, and GitHub Copilot, while preserving earlier instruction revisions for reproducible use. |
 | 0045 | constitution-curation | `docs/specs/0045-constitution-curation` | complete | no | 2026-07-17 | Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as implementation evolves, without forcing a new project to predict its complete identity or turning `kit init` into a long interview. |
+| 0046 | autonomous-mutation-recovery | `docs/specs/0046-autonomous-mutation-recovery` | complete | no | 2026-07-19 | Make Kit coding agents own routine failure recovery through completion instead of stopping after a failed in-scope mutation and asking the user to authorize a compatible retry such as authenticated `gh`. |
 | 0047 | kit-health-maintenance | `docs/specs/0047-kit-health-maintenance` | complete | no | 2026-07-19 | Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work. |
 
 ## PROJECT INTENT
@@ -446,6 +447,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **APPROACH**: 1. Add a canonical downstream `constitution-curation` ruleset covering bootstrap, evidence, promotion, correction, no-op, refresh, and verification behavior. 2. Add a concise pointer to that rule in generated V3 provider instructions and align the checked-in instruction files. 3. Rewrite the shared init prompt and next steps around evidence-based curation and verified Makefile commands, leaving empty-project starters intact. 4. Share an exact-template bootstrap predicate between spec setup and project reconciliation so the generated starter is valid while partial placeholder documents remain actionable. 5. Add focused prompt, setup, reconciliation, instruction-template, and ruleset tests; update canonical docs and the project rollup. 6. Run formatting, focused tests, full Go validation, build, Kit checks, prompt-system checks, and diff review before explicit staging, commit, push, and existing-PR update.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0045-constitution-curation/SPEC.md`
+
+### autonomous-mutation-recovery
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Make Kit coding agents own routine failure recovery through completion instead of stopping after a failed in-scope mutation and asking the user to authorize a compatible retry such as authenticated `gh`.
+- **APPROACH**: 1. Replace blanket stop-on-failure language in `safety-guardrails` with a diagnose, reconcile, retry, and verify workflow bounded by the original authorization. 2. Align GitHub delivery and work-lane failure references so recoverable lane, fetch, validation, push, and PR-tool failures continue autonomously without allowing stale-base branching, force operations, or duplicate delivery state. 3. Update the generated and checked-in agent guardrails to remove routine approval prompts, state the deletion permission boundary, and distinguish genuine blockers from retry authorization. 4. Add focused ruleset and template assertions, run the complete validation surface, and curate the spec and project-wide contract to the validated outcome.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0046-autonomous-mutation-recovery/SPEC.md`
 
 ### kit-health-maintenance
 
