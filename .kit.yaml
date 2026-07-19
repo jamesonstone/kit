@@ -4,6 +4,8 @@ specs_dir: docs/specs
 skills_dir: .agents/skills
 constitution_path: docs/CONSTITUTION.md
 allow_out_of_order: false
+health:
+    managed: true
 loop:
     min_confidence: 95
     max_iterations: 20

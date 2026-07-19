@@ -61,6 +61,10 @@ kit spec my-feature
 # inspect progress
 kit status --all
 
+# check compact registry freshness, then apply safe Kit maintenance
+kit registry status
+kit health --dry-run --diff
+
 # reorient before continuing
 kit resume my-feature
 
@@ -97,11 +101,14 @@ the complete durable truth.
 | `kit loop review` | Review changed code until local correctness converges |
 | `kit pr fix` | Select or target a PR and prepare a review-feedback dispatch prompt |
 | `kit status --all` | Show project-wide feature state |
+| `kit registry status` | Show compact registry and Kit-managed file freshness; supports `--json` |
+| `kit health` | Apply safe Kit-managed updates and validate project health; preview with `--dry-run --diff` |
 | `kit map --all` | Show the project document map |
 | `kit capabilities --search <term>` | Inspect command behavior and mutation boundaries |
 | `kit config check` | Validate schema-versioned `.kit.yaml` and offer safe interactive repairs |
 | `kit aws verify` | Verify the configured AWS profile, account, and ARN against `.kit.yaml` |
 | `kit improve run --suite prompt-system` | Run deterministic prompt regression and size checks |
+| `kit instructions [--version=vN]` | Print current provider-neutral coding-agent instructions as raw Markdown; use `--version=vN` to retrieve an immutable historical version for reproducible use |
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
 

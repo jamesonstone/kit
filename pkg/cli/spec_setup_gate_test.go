@@ -99,8 +99,8 @@ func TestRunSpecSetupGateCopiesInitPromptAndStops(t *testing.T) {
 		}
 	})
 
-	if !strings.Contains(copied, "Please update ") ||
-		!strings.Contains(copied, "docs/CONSTITUTION.md with all patterns") {
+	if !strings.Contains(copied, "Treat the exact generated starter at ") ||
+		!strings.Contains(copied, "docs/CONSTITUTION.md as a valid bootstrap Constitution") {
 		t.Fatalf("expected copied init prompt to target Constitution, got:\n%s", copied)
 	}
 	if !strings.Contains(output, "Paste the copied prompt into your agent") {
@@ -116,7 +116,7 @@ func TestRunSpecSetupGateCopiesInitPromptAndStops(t *testing.T) {
 	}
 }
 
-func TestRunSpecSetupGateDetectsStarterConstitution(t *testing.T) {
+func TestRunSpecSetupGateAcceptsStarterConstitution(t *testing.T) {
 	t.Setenv("EDITOR", "")
 	projectRoot := t.TempDir()
 	cfg := defaultInitConfig()
@@ -131,11 +131,10 @@ func TestRunSpecSetupGateDetectsStarterConstitution(t *testing.T) {
 	restoreSpecFlags := restoreSpecFlagState()
 	defer restoreSpecFlags()
 
-	var reasons []string
 	restoreSpecSetupTestHooks(t)
-	promptSpecSetupGate = func(got []string) (specSetupGateDecision, error) {
-		reasons = append([]string{}, got...)
-		return specSetupGateContinue, nil
+	promptSpecSetupGate = func(_ []string) (specSetupGateDecision, error) {
+		t.Fatal("promptSpecSetupGate called for valid bootstrap Constitution")
+		return "", nil
 	}
 	awaitEditorLaunchConfirmation = func(_ *os.File, _ io.Writer) error {
 		return nil
@@ -155,11 +154,8 @@ func TestRunSpecSetupGateDetectsStarterConstitution(t *testing.T) {
 	if err := runSpec(cmd, []string{"starter-constitution"}); err != nil {
 		t.Fatalf("runSpec() error = %v", err)
 	}
-	if !containsString(reasons, "docs/CONSTITUTION.md is still the generated starter template") {
-		t.Fatalf("expected starter-template setup reason, got %#v", reasons)
-	}
 	if got := readFile(t, filepath.Join(projectRoot, cfg.ConstitutionPath)); got != templates.Constitution {
-		t.Fatalf("expected bypass not to overwrite starter Constitution, got:\n%s", got)
+		t.Fatalf("expected spec creation not to overwrite starter Constitution, got:\n%s", got)
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 func TestMemoryCopilotInstructionsPreserveMutationRouting(t *testing.T) {
 	for _, want := range []string{
 		"Start with `docs/agents/README.md`",
+		"load `docs/references/rules/constitution-curation.md`",
 		"Before Git, GitHub, or AWS mutations, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*`",
 		"Repo-local Kit rules outrank generic defaults",
 	} {
@@ -54,6 +55,24 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 	}
 	if string(checkedIn) != generated {
 		t.Fatal("checked-in guardrails are not aligned with the V3 generator")
+	}
+}
+
+func TestMemoryRepositoryInstructionsRouteConstitutionCuration(t *testing.T) {
+	for relativePath, generated := range map[string]string{
+		"AGENTS.md": MemoryAgentsMD,
+		"CLAUDE.md": MemoryClaudeMD,
+	} {
+		if !strings.Contains(generated, "load `docs/references/rules/constitution-curation.md`") {
+			t.Fatalf("expected V3 %s to route Constitution curation", relativePath)
+		}
+		checkedIn, err := os.ReadFile(filepath.Join("..", "..", relativePath))
+		if err != nil {
+			t.Fatalf("read checked-in %s: %v", relativePath, err)
+		}
+		if string(checkedIn) != generated {
+			t.Fatalf("checked-in %s is not aligned with the V3 generator", relativePath)
+		}
 	}
 }
 

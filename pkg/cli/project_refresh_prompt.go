@@ -44,12 +44,14 @@ func buildProjectRefreshPromptWithOptions(projectRoot string, cfg *config.Config
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Heading(2, "Project Refresh")
-		doc.Paragraph(fmt.Sprintf("Refresh durable project-level documentation for the Kit project at %s.", projectRoot))
+		doc.Paragraph(fmt.Sprintf("Audit durable project-level documentation for the Kit project at %s. Normal post-validation work performs continuous Constitution curation; this periodic refresh is the safety net for missed, stale, or cross-feature truth.", projectRoot))
 		doc.Paragraph("Rules:")
 		doc.BulletList(
 			docsOnlyWorkflowRule("project-level documentation"),
+			"follow `docs/references/rules/constitution-curation.md` when that registry ruleset is present",
 			"this is semantic project refresh, not re-initialization; do not rerun `kit init` as the fix",
 			"use `kit reconcile --all --include-files` for structural Kit contract drift instead of duplicating that audit manually",
+			"treat cadence as a review trigger, never as permission for an automatic or blind rewrite",
 			"preserve existing project wording when it remains accurate",
 			"update `docs/CONSTITUTION.md` only for durable project-wide rules, constraints, vocabulary, conventions, or long-term direction",
 			"do not use this command for structural scaffold updates; use `kit reconcile --all --include-files` for that work",
@@ -122,10 +124,10 @@ func projectRefreshAdvisoryStepForStatus(status projectRefreshStatus) string {
 	}
 	return "Project refresh advisory gate\n" +
 		statusLine + "\n" +
-		"- decide whether this work revealed durable project-wide rules, constraints, vocabulary, conventions, or workflow changes\n" +
-		"- if the project refresh is due, or if durable project-level truth changed, run `" + projectRefreshCommand + "` and refresh project-level docs before final handoff\n" +
+		"- load `docs/references/rules/constitution-curation.md` and curate any demonstrated project-wide truth before final handoff\n" +
+		"- if the project refresh is due, run `" + projectRefreshCommand + "` as a broader audit for missed, stale, or cross-feature truth\n" +
 		"- after completing a reviewed semantic Constitution refresh, run `kit project refresh --now` to record the cadence state\n" +
-		"- if no, state `no project refresh needed` in the reflection notes"
+		"- if no Constitution update is warranted, record the repository-memory result as `not required`"
 }
 
 func printProjectRefreshAdvisory(out io.Writer, projectRoot string, cfg *config.Config) error {

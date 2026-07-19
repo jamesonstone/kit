@@ -46,7 +46,7 @@ func TestRunSpecCreatesV3LivingSpecAndConciseOrientation(t *testing.T) {
 	if strings.Contains(out.String(), "lifecycle supervisor") || strings.Contains(out.String(), "clarification.status") {
 		t.Fatalf("primary spec output contains legacy supervisor contract:\n%s", out.String())
 	}
-	for _, want := range []string{"native agent planning", "accepted plan", "curate repository memory"} {
+	for _, want := range []string{"native agent planning", "accepted plan", "curate repository memory", "run `kit status`", "before implementation"} {
 		if !strings.Contains(out.String(), want) {
 			t.Fatalf("orientation missing %q:\n%s", want, out.String())
 		}

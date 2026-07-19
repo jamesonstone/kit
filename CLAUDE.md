@@ -14,7 +14,7 @@
 - When material rationale exists, create or adopt `docs/specs/<feature>/SPEC.md` before editing implementation files and capture the accepted native plan
 - When code and tests are sufficient, do not create documentation solely to satisfy a process; record `not required` in the final Repository Memory report
 - During implementation, keep material decisions and discoveries current in the spec
-- After implementation and validation, curate feature rationale into `SPEC.md`, project invariants into `docs/CONSTITUTION.md`, reusable practices into `docs/references/` or `docs/references/rules/`, and domain knowledge into its existing canonical documentation
+- After implementation and validation, load `docs/references/rules/constitution-curation.md`; curate feature rationale into `SPEC.md`, demonstrated project invariants into `docs/CONSTITUTION.md`, reusable practices into `docs/references/` or `docs/references/rules/`, and domain knowledge into its existing canonical documentation
 - Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
 
 ## Final Response Contract

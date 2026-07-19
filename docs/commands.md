@@ -36,8 +36,12 @@ kit spec my-feature
 kit notes my-feature --add --source slack
 kit spec dashboard-redesign --profile=frontend
 kit status --all
+kit registry status
+kit health --dry-run --diff
 kit resume my-feature
 kit map --all
+kit instructions
+kit instructions --version=v1
 kit capabilities --search verify
 kit config check
 kit aws verify
@@ -59,7 +63,7 @@ kit rm my-feature --yes --notes
 | Command | Description |
 | --- | --- |
 | `kit backlog` | List deferred brainstorm items or use `--pickup` as the backlog-specific resume shortcut. |
-| `kit spec <feature>` | Non-interactively scaffold, adopt, or orient a living specification for native agent planning. |
+| `kit spec <feature>` | Non-interactively scaffold, adopt, or orient a living specification for native agent planning, then remind the agent to check Kit-managed updates with `kit status`. |
 | `kit notes [feature]` | Select, create, or add source-material notes under `docs/notes/<feature>`, including gitignored private conversation notes. |
 | `kit legacy` | List deprecated legacy v1 staged workflow commands retained for migration. |
 | `kit loop [feature]` | Deprecated bare V2 workflow-loop compatibility path. |
@@ -67,7 +71,7 @@ kit rm my-feature --yes --notes
 | `kit loop review [feature]` | Run a coding-agent correctness review loop over changed code. |
 | `kit resume [feature]` | Resume backlog or in-flight work through the canonical prompt flow. |
 | `kit pause [feature]` | Pause an in-flight feature without changing its underlying phase. |
-| `kit complete [feature]` | Mark a feature complete; supports `--all`. |
+| `kit complete [feature]` | Mark a feature complete and remind the agent to check Kit-managed updates with `kit status` before final delivery; supports `--all`. |
 | `kit project refresh` | Generate or record a semantic refresh of durable project-level docs and Constitution cadence state. |
 | `kit rm [feature]` | Remove feature docs, retain notes by default, and show removed state in history/status. `kit remove` also works. |
 
@@ -80,6 +84,8 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | --- | --- |
 | `kit status` | Show active feature status, local Kit-managed refresh state, and project refresh status; supports `--json`. |
 | `kit status --all` | Show the project-wide lifecycle matrix plus local Kit-managed refresh state. |
+| `kit registry status` | Show compact registry and Kit-managed file freshness for scheduled maintenance; supports `--json` and does not write files. |
+| `kit health` | Apply all conflict-free Kit-managed rules, instructions, configuration, README, workflow, and scaffold updates, then run the project contract check. Use `--dry-run --diff` for a read-only preview or `--json` for automation. |
 | `kit map [feature]` | Select or show a feature map; supports `--all` for the full project document map. |
 | `kit capabilities` | List command capabilities, mutation behavior, network use, and important flags. |
 | `kit config check` | Validate schema-versioned `.kit.yaml`; interactive terminals can add safe missing fields, while `--json` is read-only. |
@@ -104,6 +110,21 @@ discovery, not maintain Kit's internal command catalog.
 
 Project `.kit.yaml` files carry a top-level integer `schema_version`. Kit performs a local schema and semantic inspection before project-aware commands. The current, complete fast path reads only `.kit.yaml`; it does not run AWS, Git, GitHub, or network subprocesses and does not write files.
 
+Scheduled Kit health maintenance is enabled by default. Omitted, null, or empty
+health configuration remains managed; only an explicit `false` opts a project
+out:
+
+```yaml
+health:
+  managed: false
+```
+
+`kit registry status` and `kit health` return a successful `disabled` result
+without registry access or file writes for an opted-out project. Otherwise,
+`kit health` applies safe non-force refreshes and reports local customizations or
+conflicts for semantic curation and pull-request review. The command never
+stages, commits, pushes, opens a pull request, or changes arbitrary product code.
+
 When an interactive command finds a compatible missing or older schema, it offers to update the file inline. `kit config check` exposes the same validation explicitly, and `kit config check --json` reports state without prompting or writing.
 
 AWS context is optional:
@@ -123,6 +144,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 
 | Command | Description |
 | --- | --- |
+| `kit instructions` | Print the current provider-neutral coding-agent instructions as raw Markdown; use `--version=vN` to select an earlier immutable version. |
 | `kit prompt [noun] [verb]` | Resolve and copy a reusable prompt from local, global, or built-in prompt libraries. |
 | `kit prompt list` | List effective merged prompts with origin and override metadata. |
 | `kit prompt project refresh` | Render the reusable prompt-library version of the project refresh prompt. |
@@ -228,7 +250,11 @@ Prompt-producing commands, including the Constitution and Makefile setup prompt
 emitted by `kit init`, copy generated output to the clipboard by default. The
 init prompt maps applicable targets such as `make dev`, `make test`, and
 `make check` to verified repository-native commands; it does not leave guessed
-or placeholder recipes in the project-owned Makefile.
+or placeholder recipes in the project-owned Makefile. The exact generated
+Constitution starter is a valid bootstrap state, so initialization leaves its
+sections unchanged until implemented repository evidence supports durable
+project-wide truth. Normal coding-agent work then applies the Constitution
+curation rule after validation to keep that truth current as the project evolves.
 
 Use:
 
@@ -240,6 +266,11 @@ Use:
 Human-readable terminal output uses semantic emoji markers, spacing, and ANSI
 color when appropriate. Raw `--output-only` payloads and `--json` output avoid
 human-readable wrappers.
+
+`kit instructions` always writes raw Markdown to stdout without a banner or
+clipboard side effect. It defaults to the explicitly configured current embedded
+version; use an exact selector such as `kit instructions --version=v1` when a
+reproducible historical payload is required.
 
 ## Prompt Library
 

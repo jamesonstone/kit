@@ -17,7 +17,7 @@ func memoryRepositoryInstructions(title string) string {
 - When material rationale exists, create or adopt ` + "`docs/specs/<feature>/SPEC.md`" + ` before editing implementation files and capture the accepted native plan
 - When code and tests are sufficient, do not create documentation solely to satisfy a process; record ` + "`not required`" + ` in the final Repository Memory report
 - During implementation, keep material decisions and discoveries current in the spec
-- After implementation and validation, curate feature rationale into ` + "`SPEC.md`" + `, project invariants into ` + "`docs/CONSTITUTION.md`" + `, reusable practices into ` + "`docs/references/`" + ` or ` + "`docs/references/rules/`" + `, and domain knowledge into its existing canonical documentation
+- After implementation and validation, load ` + "`docs/references/rules/constitution-curation.md`" + `; curate feature rationale into ` + "`SPEC.md`" + `, demonstrated project invariants into ` + "`docs/CONSTITUTION.md`" + `, reusable practices into ` + "`docs/references/`" + ` or ` + "`docs/references/rules/`" + `, and domain knowledge into its existing canonical documentation
 - Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
 
 ## Final Response Contract
@@ -67,7 +67,7 @@ const memoryCopilotInstructions = `# GitHub Copilot Repository Instructions
 
 ## Native Planning
 
-` + `Use native planning for research and design. Before implementation, inspect code and repository documentation, then decide whether material rationale requires a living ` + "`SPEC.md`" + `. Capture the accepted plan before code when it does. After validation, curate durable decisions into the correct repository document; code-and-test-sufficient work may report that no documentation update was required.
+` + `Use native planning for research and design. Before implementation, inspect code and repository documentation, then decide whether material rationale requires a living ` + "`SPEC.md`" + `. Capture the accepted plan before code when it does. After validation, load ` + "`docs/references/rules/constitution-curation.md`" + ` and curate durable decisions into the correct repository document; code-and-test-sufficient work may report that no documentation update was required.
 
 Start with ` + "`docs/agents/README.md`" + `. Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults.
 
@@ -118,7 +118,7 @@ func memoryInstructionSupportContent(relativePath string) string {
 4. When it does, create or adopt ` + "`docs/specs/<feature>/SPEC.md`" + ` and translate the accepted native plan into it before implementation.
 5. Keep material decisions and discoveries current while implementing.
 6. Validate the implementation.
-7. Curate the spec and broader repository memory to match what was actually built.
+7. Load ` + "`docs/references/rules/constitution-curation.md`" + ` and curate the spec and broader repository memory to match what was actually built.
 
 ` + "`kit spec [feature]`" + ` scaffolds or adopts the living spec and provides orientation. It does not replace native planning and does not ingest transcripts. The legacy V2 supervisor is compatibility-only.
 
@@ -127,6 +127,7 @@ func memoryInstructionSupportContent(relativePath string) string {
 - Create or update a spec for consequential product behavior, architecture, cross-component contracts, rejected alternatives, or historical decisions future agents need.
 - Do not create a spec for mechanical or code-sufficient work when code and tests communicate the complete durable truth.
 - Route feature rationale to ` + "`SPEC.md`" + `, invariants to ` + "`CONSTITUTION.md`" + `, reusable practices to references or rules, and domain knowledge to existing canonical domain docs.
+- Treat the exact generated Constitution starter as a valid bootstrap state; promote only demonstrated project-wide truth through the Constitution curation rule.
 
 ## V3 Phase Gates
 

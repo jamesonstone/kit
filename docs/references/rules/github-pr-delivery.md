@@ -158,12 +158,33 @@ Include:
 - Before updating an existing PR, check active PRs for the current branch and confirm the active directory, branch, remote, PR head, and PR base match the intended issue branch and repository.
 - If issue, branch, and PR state disagree, reconcile them autonomously when the intended lane can be proven without destructive changes; otherwise report the ambiguity and request the smallest missing input.
 
+### Additional Scope On An Existing Pull Request
+
+- The normal contract is one issue, exact issue-number branch, and one pull request. Use this exception only when the user explicitly requests that unrelated or tangential new scope continue on an existing pull request.
+- Create or reuse a separate GitHub issue for the additional scope before implementation and assign it to the human user.
+- Keep the existing pull request head branch. Do not create a second branch or pull request solely for the additional issue.
+- Scope every new commit for the additional work to its own issue number, such as `feat(GH-123): :sparkles: add maintenance workflow`, even though the branch retains the original issue number.
+- Preserve the original issue-closing line and append a separate `Closes #123` line in the pull request `Ticket` section when the combined pull request fully resolves the additional issue. Use `Refs #123` when it does not.
+- Refresh the pull request description and `How to Test` section so they accurately describe and validate the complete combined diff. Preserve the existing primary issue scope in the pull request title unless the user explicitly requests a different title.
+- Before push and after updating the pull request, verify its repository, base branch, head branch, head commit, issue assignments, and complete set of closing references.
+- This exception changes traceability mapping only. It does not waive explicit staging, human identity, validation, safety, or ready-for-review requirements.
+
+### Automated Kit Health Worktree Exception
+
+- Ordinary PR delivery stays in the existing project directory. A recurring Kit health automation may use one isolated temporary worktree per repository only when the user explicitly authorized that automation to protect in-flight primary checkouts.
+- Fetch `origin/main` without switching, pulling, merging, stashing, resetting, cleaning, or writing in the primary checkout. Create the temporary worktree from the freshly fetched `origin/main` commit.
+- Run read-only status and health preview in the temporary worktree before GitHub mutation. If no change is required, create no issue, branch, commit, or pull request.
+- When maintenance is required, create or reuse the human-assigned issue first, then create or reuse exact branch `GH-<issue-number>` at the previewed `origin/main` commit inside that worktree.
+- Apply and curate only the Kit health scope, validate the complete diff, stage explicit paths, commit, push, and create or update the ready pull request under the normal delivery gates.
+- Remove the temporary worktree only after successful delivery and only when it is clean. Leave and report a dirty or blocked worktree so evidence is not destroyed.
+- This exception does not authorize worktrees for ordinary feature work, arbitrary recovery, parallel product implementation, or any workflow without explicit user authorization.
+
 ### Branch Workflow
 
 - Branch name is the GitHub issue number only, exact form: `GH-123`.
 - Do not add a slug, suffix, or description.
-- Create or switch branches in the existing project directory.
-- Do not create or use git worktrees for PR delivery.
+- Create or switch branches in the existing project directory unless the explicit automated Kit health worktree exception applies.
+- Do not create or use git worktrees for ordinary PR delivery.
 - Before creating or switching to an issue branch, automatically re-run branch/status/staleness recon for the active directory and current branch.
 - Before branching, refresh the base from the remote. Fetch only. Never pull, merge, or checkout the base:
 
@@ -335,7 +356,7 @@ Include:
 - Do not omit the repository PR template.
 - Do not create descriptive branch names when an issue number is available.
 - Do not commit to the protected base branch.
-- Do not create or use git worktrees for PR delivery.
+- Do not create or use git worktrees for ordinary PR delivery or outside the explicit automated Kit health exception.
 - Do not reuse a branch that contains unrelated work.
 - Do not stage files in bulk.
 - Do not commit with mixed type and gitmoji values.
