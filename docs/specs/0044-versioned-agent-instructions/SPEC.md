@@ -136,6 +136,7 @@ Provide one stable Kit command that emits the provider-neutral coding-agent inst
 - Pre-curation `./bin/kit check 0044-versioned-agent-instructions` and `./bin/kit check --project` passed; the project check reported only the 15 existing legacy compatibility advisories and the existing Constitution-refresh cadence warning.
 - Post-curation `./bin/kit complete 0044-versioned-agent-instructions` passed from the supported `deliver` phase, restored the feature to `complete`, and refreshed `docs/PROJECT_PROGRESS_SUMMARY.md`.
 - The due semantic project-refresh review found no additional stale project-wide truth beyond the clean-preflight invariant curated in this change. `./bin/kit project refresh --now` recorded the completed review in `.kit.yaml` without rewriting the Constitution automatically.
+- Post-PR thread-aware review identified two valid `v2` consistency gaps: continuation could duplicate an already-suitable separate issue, and the final pull-request step could duplicate an existing continuation PR. Both were corrected to create-or-reuse/update semantics, and focused tests, vet, full Go tests, build/output comparisons, lint, and race tests passed again.
 
 ## OUTCOME
 

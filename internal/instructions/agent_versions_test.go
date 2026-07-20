@@ -28,7 +28,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 		sha256  string
 	}{
 		{version: "v1", sha256: "50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5"},
-		{version: "v2", sha256: "1050ce514a49f9bef9446c9a9166bae168e79ed9bf454a8a09ff94f4c2feb59a"},
+		{version: "v2", sha256: "811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc"},
 	}
 
 	for _, test := range tests {
@@ -57,8 +57,9 @@ func TestAgentInstructionsV2EncodesLaneAllocationPolicy(t *testing.T) {
 	for _, want := range []string{
 		"Do not ask whether to create a new issue, branch, and pull request or continue existing work.",
 		"Create a branch named `GH-<issue-number>` from the refreshed remote default branch.",
-		"create a new GitHub Issue for the additional work, keep the existing branch and pull request",
-		"scope the new commits to the new issue",
+		"create or reuse a separate GitHub Issue for the additional work, keep the existing branch and pull request",
+		"scope the new commits to that issue",
+		"open a pull request for review when none exists; otherwise update the existing pull request",
 	} {
 		if !strings.Contains(content, want) {
 			t.Fatalf("v2 instructions do not contain %q", want)
