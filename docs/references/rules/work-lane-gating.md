@@ -52,6 +52,7 @@ If non-implementation work later turns into actual code changes, re-evaluate at 
 
 - Before beginning implementation, determine whether the requested work is implementation work according to this ruleset's definitions.
 - If the user already explicitly asked for a PR end state, treat that as consent and proceed to `github-pr-delivery`.
+- If clean-default-branch preflight satisfies the automatic new-lane conditions below, treat that as consent to allocate the required issue-number lane and proceed to `github-pr-delivery` without asking the gate question.
 - If the user explicitly asks to create an issue, branch, or PR for docs or any other non-code work, honor that. The non-implementation exclusions govern agent initiative, not explicit user instruction.
 
 ### New-Lane Definition
@@ -63,16 +64,33 @@ Among implementation work, a new lane is any work that is either:
 
 ### Gate
 
-When implementation work in a new lane is detected, stop before writing code and ask exactly:
+Before asking the gate question, check for an automatic clean new lane. All of these conditions must be proven:
+
+- The request is implementation work in a new lane.
+- The current branch is the repository's default branch.
+- The working tree is clean.
+- The local default branch matches the freshly fetched remote default branch.
+- No existing issue, branch, or pull request covers the requested work.
+- Repository, GitHub identity, issue assignment, base branch, and delivery rules are unambiguous.
+
+When every condition is satisfied:
+
+- Record the automatic clean-preflight decision in-thread.
+- Do not ask whether to create a new issue, branch, and pull request or continue existing work; there is no existing work to continue.
+- Proceed directly to `github-pr-delivery`, which searches once more for a matching issue, creates the human-assigned issue when none exists, and creates the exact issue-number branch from the refreshed remote default branch.
+
+When implementation work in a new lane is detected and the automatic clean-preflight conditions are not all satisfied, stop before writing code and ask exactly:
 
 > It appears you are doing implementation work. Would you like to create a new issue, branch, and PR for this work, or continue on the existing branch with the existing work?
 
 - Wait for an explicit answer.
 - Do not proceed until the user chooses.
+- If the user chooses a new lane, proceed to the normal one-issue, exact issue-number branch, and pull-request workflow.
+- If the user chooses to continue work already in progress, create or reuse a separate human-assigned issue for the additional scope, keep the existing branch and pull request, scope the new commits to the additional issue, and update the pull request's issue references and validation description under `github-pr-delivery`.
 
 ### Gate Tripwire
 
-- A gate decision must be recorded in-thread as the user's explicit choice before the first source-code edit.
+- A gate decision must be recorded in-thread as either a proven automatic clean-preflight decision or the user's explicit choice before the first source-code edit.
 - If code has been edited or staged without a recorded gate decision for that lane, treat it as a violation:
   - Stop immediately.
   - Report the violation.
@@ -94,6 +112,7 @@ Any one of these triggers the gate for implementation work only:
 Do not gate when:
 
 - The work is non-implementation work according to this ruleset's exclusions.
+- The automatic clean-preflight conditions are all satisfied; proceed directly to `github-pr-delivery` instead.
 - The work is a direct sub-task of the active branch's purpose.
 - The work is a fix or refactor required to complete the current task.
 - The work falls within the existing issue or PR description's scope.
@@ -101,6 +120,7 @@ Do not gate when:
 ## Anti-Patterns
 
 - Do not ask the gate question for `kit` pipeline phases, reflection, retrospectives, standalone docs edits, read-only work, planning-only work, review-only work, exploratory work, or ad-hoc work the user is driving manually.
+- Do not ask the gate question on a proven clean, current default branch with no existing issue, branch, or pull request covering the implementation work.
 - Do not auto-create an issue, branch, commit, push, or PR for non-implementation work.
 - Do not force docs or specs into a `GH-123` branch or PR workflow on agent initiative.
 - Do not hide tangential implementation work in the current branch.
@@ -111,13 +131,21 @@ Do not gate when:
 - Confirm `safety-guardrails` recon ran first.
 - Confirm the requested work was classified as implementation or non-implementation using this ruleset's definitions.
 - Confirm non-implementation work did not trigger the gate and did not auto-create issue, branch, commit, push, or PR state.
-- Confirm any new-lane decision for implementation work was recorded in-thread before source-code edits.
-- Confirm PR delivery only ran after explicit consent or an explicit PR request.
+- Confirm clean-default-branch autonomy was used only when every automatic condition was proven.
+- Confirm any new-lane decision for implementation work was recorded in-thread before source-code edits, either as the automatic clean-preflight result or the user's explicit choice.
+- Confirm PR delivery only ran after explicit consent, an explicit PR request, or a proven automatic clean-preflight decision.
+- Confirm a continue-existing-work choice created or reused a separate issue for additional commits without replacing the existing branch or pull request.
 - Confirm documentation and spec artifacts were not forced into a branch or PR workflow on agent initiative.
 
 ## Examples
 
-Required gate question for a new implementation lane:
+Automatic delivery for a clean new implementation lane:
+
+```text
+Preflight is clean: the default branch matches its refreshed remote, the working tree is clean, and no issue, branch, or pull request covers this work. Proceed directly to issue and exact issue-number branch creation without asking for a lane choice.
+```
+
+Required gate question when implementation work is already in progress or the lane is otherwise ambiguous:
 
 ```text
 It appears you are doing implementation work. Would you like to create a new issue, branch, and PR for this work, or continue on the existing branch with the existing work?

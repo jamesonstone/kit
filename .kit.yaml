@@ -86,5 +86,7 @@ project_refresh:
     constitution:
         feature_interval: 5
         max_age_days: 30
+        last_reviewed_at: "2026-07-20T12:15:49Z"
+        last_completed_feature_count: 10
 aws:
     enabled: false

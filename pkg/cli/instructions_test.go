@@ -24,17 +24,21 @@ func TestInstructionsCommandPrintsCurrentVersionByDefault(t *testing.T) {
 }
 
 func TestInstructionsCommandPrintsExplicitVersion(t *testing.T) {
-	want, err := instructions.AgentInstructions("v1")
-	if err != nil {
-		t.Fatalf("AgentInstructions(\"v1\") error = %v", err)
-	}
+	for _, version := range instructions.AgentInstructionVersions() {
+		t.Run(version, func(t *testing.T) {
+			want, err := instructions.AgentInstructions(version)
+			if err != nil {
+				t.Fatalf("AgentInstructions(%q) error = %v", version, err)
+			}
 
-	got, err := executeInstructionsCommand("--version=v1")
-	if err != nil {
-		t.Fatalf("kit instructions --version=v1 error = %v", err)
-	}
-	if got != want {
-		t.Fatal("kit instructions --version=v1 output does not match embedded v1")
+			got, err := executeInstructionsCommand("--version=" + version)
+			if err != nil {
+				t.Fatalf("kit instructions --version=%s error = %v", version, err)
+			}
+			if got != want {
+				t.Fatalf("kit instructions --version=%s output does not match embedded %s", version, version)
+			}
+		})
 	}
 }
 
@@ -44,9 +48,9 @@ func TestInstructionsCommandRejectsInvalidVersions(t *testing.T) {
 		arg  string
 		want string
 	}{
-		{name: "empty", arg: "--version=", want: "--version cannot be empty; available versions: v1"},
+		{name: "empty", arg: "--version=", want: "--version cannot be empty; available versions: v1, v2"},
 		{name: "malformed", arg: "--version=1", want: `unsupported instructions version "1"`},
-		{name: "unavailable", arg: "--version=v2", want: `unsupported instructions version "v2"`},
+		{name: "unavailable", arg: "--version=v3", want: `unsupported instructions version "v3"`},
 	}
 
 	for _, test := range tests {
