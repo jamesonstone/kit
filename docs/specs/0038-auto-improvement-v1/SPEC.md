@@ -3,6 +3,10 @@ kit_metadata_version: 1
 artifact: spec
 workflow_version: 2
 phase: deliver
+clarification:
+  status: ready
+  confidence: 99
+  unresolved_questions: 0
 feature:
   id: 0038
   slug: auto-improvement-v1
@@ -23,55 +27,55 @@ references:
     relation: informs
     read_policy: must
     used_for: source strategy material migrated from root AUTO_IMPROVEMENT.md
-    status: loaded
+    status: active
   - id: agents-readme
     name: Agent routing entrypoint
     type: doc
     target: docs/agents/README.md
-    relation: governs
+    relation: guides
     read_policy: must
     used_for: repo-local workflow routing
-    status: loaded
+    status: active
   - id: workflows
     name: Workflow rules
     type: doc
     target: docs/agents/WORKFLOWS.md
-    relation: governs
+    relation: constrains
     read_policy: must
     used_for: v2 SPEC workflow and readiness gates
-    status: loaded
+    status: active
   - id: guardrails
     name: Guardrails
     type: doc
     target: docs/agents/GUARDRAILS.md
-    relation: governs
+    relation: constrains
     read_policy: must
     used_for: completion bar, safety, and delivery hard gate
-    status: loaded
+    status: active
   - id: tooling
     name: Tooling guidance
     type: doc
     target: docs/agents/TOOLING.md
-    relation: governs
+    relation: guides
     read_policy: must
     used_for: capabilities and project-directory workflow
-    status: loaded
+    status: active
   - id: command-capabilities-rule
     name: Command capabilities rule
     type: ruleset
     target: docs/references/rules/command-capabilities.md
-    relation: governs
+    relation: constrains
     read_policy: must
     used_for: command-surface metadata requirements
-    status: loaded
+    status: active
   - id: agent-team-orchestration-rule
     name: Agent team orchestration rule
     type: ruleset
     target: docs/references/rules/agent-team-orchestration.md
-    relation: governs
+    relation: guides
     read_policy: conditional
     used_for: Agent Team Plan and verification topology
-    status: loaded
+    status: active
 delivery_intent: issue_branch_pr_in_progress
 ---
 # SPEC

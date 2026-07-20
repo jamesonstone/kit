@@ -3,6 +3,10 @@ kit_metadata_version: 1
 artifact: spec
 workflow_version: 2
 phase: clarify
+clarification:
+  status: open
+  confidence: 65
+  unresolved_questions: 6
 feature:
   id: 0032
   slug: v1-skills-layer
