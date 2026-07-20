@@ -137,6 +137,7 @@ all decisions.
    - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
    - Validation evidence belongs in `SPEC.md` Evidence and Validation Map sections; legacy executable verification may still use task-level `VERIFY` fields where available
    - Generated JSON state and run artifacts must point back to source documents instead of replacing them
+   - When preflight proves that implementation starts from a clean, current default branch with no issue, branch, or pull request covering the work, allocate the human-assigned issue and exact issue-number branch without asking for a lane choice; retain explicit choice when work is already in progress or the lane is ambiguous
    - When the user explicitly continues unrelated or tangential scope on an existing pull request, the added scope has its own GitHub issue and issue-scoped commits, while the pull request body closes every fully resolved issue
 
 7. **Execution Boundaries**

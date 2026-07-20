@@ -41,6 +41,7 @@ kit health --dry-run --diff
 kit resume my-feature
 kit map --all
 kit instructions
+kit instructions --version=v2
 kit instructions --version=v1
 kit capabilities --search verify
 kit config check
@@ -269,7 +270,8 @@ human-readable wrappers.
 
 `kit instructions` always writes raw Markdown to stdout without a banner or
 clipboard side effect. It defaults to the explicitly configured current embedded
-version; use an exact selector such as `kit instructions --version=v1` when a
+version, currently `v2`; use `kit instructions --version=v2` for an exact current
+selection or an earlier selector such as `kit instructions --version=v1` when a
 reproducible historical payload is required.
 
 ## Prompt Library

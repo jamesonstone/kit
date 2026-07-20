@@ -136,7 +136,28 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 	}
 }
 
-func TestWorkLaneGatingRulesetUsesAutonomousRecovery(t *testing.T) {
+func TestGitHubPRDeliveryRulesetPreservesAdditionalScopeLane(t *testing.T) {
+	path := filepath.Join("..", "..", "docs", "references", "rules", "github-pr-delivery.md")
+	ruleset, err := parseRulesetFile(path)
+	if err != nil {
+		t.Fatalf("parseRulesetFile() error = %v", err)
+	}
+	if issues := validateRulesetDocument(ruleset, "github-pr-delivery"); len(issues) > 0 {
+		t.Fatalf("github-pr-delivery ruleset issues = %#v", issues)
+	}
+	for _, check := range []string{
+		"Create or reuse a separate GitHub issue for the additional scope",
+		"Keep the existing pull request head branch. Do not create a second branch or pull request",
+		"Scope every new commit for the additional work to its own issue number",
+		"append a separate `Closes #123` line",
+	} {
+		if !strings.Contains(ruleset.Body, check) {
+			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)
+		}
+	}
+}
+
+func TestWorkLaneGatingRulesetUsesAutonomousRecoveryAndCleanPreflight(t *testing.T) {
 	path := filepath.Join("..", "..", "docs", "references", "rules", "work-lane-gating.md")
 	ruleset, err := parseRulesetFile(path)
 	if err != nil {
@@ -149,6 +170,11 @@ func TestWorkLaneGatingRulesetUsesAutonomousRecovery(t *testing.T) {
 		"autonomous failure recovery",
 		"when it can be proven safely",
 		"request only the missing lane decision",
+		"automatic clean-preflight decision",
+		"Do not ask whether to create a new issue, branch, and pull request or continue existing work",
+		"No existing issue, branch, or pull request covers the requested work",
+		"create or reuse a separate human-assigned issue for the additional scope",
+		"keep the existing branch and pull request",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected work-lane-gating ruleset to contain %q", check)

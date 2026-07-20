@@ -246,7 +246,7 @@ func capabilityCatalog() []capabilityRecord {
 				"Do not use to create or refresh repository-specific AGENTS.md, CLAUDE.md, or Copilot files; use `kit scaffold agents`.",
 				"Do not use for a task-specific reusable prompt; use `kit prompt`.",
 			),
-			withExamples("kit instructions", "kit instructions --version=v1"),
+			withExamples("kit instructions", "kit instructions --version=v2", "kit instructions --version=v1"),
 			withCaveats(
 				"The command writes only raw Markdown to stdout and never copies to the clipboard.",
 				"All versions are embedded in the installed binary; selection performs no network or project configuration access.",
