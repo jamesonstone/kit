@@ -46,7 +46,7 @@ registry:
           path: docs/references/rules/agent-team-orchestration.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/agent-team-orchestration.md
           installed_hash: sha256:1ddad317c3cd1fd48caae3cb9122e29f876f672df8c600e5e1fb743afa6559c8
           state: managed
@@ -55,7 +55,7 @@ registry:
           path: docs/references/rules/constitution-curation.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/constitution-curation.md
           installed_hash: sha256:e462fa2563a35bfbb300e54f1e9ecc60f17f983c00d89731a0efa255edb28895
           state: managed
@@ -64,7 +64,7 @@ registry:
           path: docs/references/rules/feature-notes.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/feature-notes.md
           installed_hash: sha256:7545870fd2f8dc484ff60f551c6c20f055856cdf4bc6a399195b1af259427450
           state: managed
@@ -73,7 +73,7 @@ registry:
           path: docs/references/rules/github-pr-delivery.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/github-pr-delivery.md
           installed_hash: sha256:d22acd73236b645a59f663f40f02de369ba4486cb038b8658289244596a64781
           state: managed
@@ -82,7 +82,7 @@ registry:
           path: docs/references/rules/kit-capabilities-usage.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/kit-capabilities-usage.md
           installed_hash: sha256:b48b8687f4dac7b59b7c0492739e8a0e97b1769226f15cfb7f997b78fef17207
           state: managed
@@ -91,7 +91,7 @@ registry:
           path: docs/references/rules/llms-txt.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/llms-txt.md
           installed_hash: sha256:4aaa326493395e357b1cd28ed2dda4c2c454e0fe7fa31fffdeea753bd6fb5884
           state: managed
@@ -100,7 +100,7 @@ registry:
           path: docs/references/rules/readme-header-tagline.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/readme-header-tagline.md
           installed_hash: sha256:062443de22fe7f99f17aeec03c8db15739cdbad64800716daeedb8b47aa63761
           state: managed
@@ -109,7 +109,7 @@ registry:
           path: docs/references/rules/safety-guardrails.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/safety-guardrails.md
           installed_hash: sha256:eb2c6d9d9a3ee2a3816e9168fa3a73cc99d4b62c7a904f05e67491126210b602
           state: managed
@@ -118,7 +118,7 @@ registry:
           path: docs/references/rules/work-lane-gating.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 765ffbc91c5691f722695b2276cf2f29d6efe6fc
+          source_commit: 07e94fc50b48a0840cd0a85bd4ab61fcd4526cf4
           source_path: docs/references/rules/work-lane-gating.md
           installed_hash: sha256:34f8dd58c9b3190a83d3440788c96f2e82fba7812d51b41115074961e1c9429e
           state: managed
