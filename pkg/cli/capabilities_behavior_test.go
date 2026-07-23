@@ -99,6 +99,7 @@ func TestCapabilitiesNestedCommandPaths(t *testing.T) {
 		{"legacy", "implement"},
 		{"legacy", "reflect"},
 		{"legacy", "verify"},
+		{"plan", "challenge"},
 		{"scaffold", "agents"},
 		{"prompt", "list"},
 		{"set", "prompt"},
@@ -124,6 +125,33 @@ func TestCapabilitiesNestedCommandPaths(t *testing.T) {
 	}
 }
 
+func TestCapabilitiesPlanChallengeDocumentsClipboardAndModelBoundaries(t *testing.T) {
+	output, err := executeCapabilitiesCommand("--json", "plan", "challenge")
+	if err != nil {
+		t.Fatalf("kit capabilities plan challenge --json error = %v", err)
+	}
+
+	var payload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(output), &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v\noutput: %s", err, output)
+	}
+	combined := strings.Join(append(
+		append(payload.Command.WhenToUse, payload.Command.WhenNotToUse...),
+		payload.Command.Caveats...,
+	), "\n")
+	for _, want := range []string{
+		"reads and replaces the macOS clipboard",
+		"does not watch the clipboard",
+		"does not persist the copied plan",
+		"does not",
+		"launch a model",
+	} {
+		if !strings.Contains(combined, want) {
+			t.Fatalf("expected plan challenge capabilities to contain %q, got:\n%s", want, combined)
+		}
+	}
+}
+
 func TestCapabilitiesFullAndHiddenPolicy(t *testing.T) {
 	fullOutput, err := executeCapabilitiesCommand("--full", "--json")
 	if err != nil {
@@ -133,7 +161,7 @@ func TestCapabilitiesFullAndHiddenPolicy(t *testing.T) {
 	if err := json.Unmarshal([]byte(fullOutput), &fullPayload); err != nil {
 		t.Fatalf("json.Unmarshal(full) error = %v", err)
 	}
-	for _, command := range []string{"update", "skills", "skills mine", "catchup", "rollup", "review-loop", "brainstorm", "plan", "tasks", "implement", "reflect", "verify"} {
+	for _, command := range []string{"update", "skills", "skills mine", "catchup", "rollup", "review-loop", "brainstorm", "tasks", "implement", "reflect", "verify"} {
 		if found := findDetailCapability(fullPayload.Commands, command); found != nil {
 			t.Fatalf("expected full capabilities to omit removed command %q, got %#v", command, found)
 		}
