@@ -150,6 +150,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit prompt list` | List effective merged prompts with origin and override metadata. |
 | `kit prompt project refresh` | Render the reusable prompt-library version of the project refresh prompt. |
 | `kit set prompt [noun] [verb]` | Create or update a local or global prompt through the editor. |
+| `kit plan challenge` | Read a copied Codex for Mac `/plan`, supplement it with a material adversarial-review contract, and copy the paste-ready prompt back without launching or calling a model. Use `--output-only` to inspect the raw prompt without replacing the clipboard. |
 | `kit handoff [feature]` | Prompt the current agent session to sync docs and prepare a handoff. |
 | `kit summarize [feature]` | Output context summarization instructions. |
 | `kit dispatch` | Turn an accepted plan into a post-plan execution topology for independent lanes. |

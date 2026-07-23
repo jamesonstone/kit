@@ -58,6 +58,52 @@ func capabilityCatalog() []capabilityRecord {
 		capability("legacy reflect", "Legacy", "Legacy staged workflow: generate or print a reflection prompt for completed feature work.", mutationNone, withRelated(related("spec", "curates validation and actual outcome"), related("complete", "marks finished work after validation")), withWhenNotToUse("Do not use instead of current post-validation repository-memory curation.")),
 		capability("legacy verify", "Legacy", "Run local implementation verification for legacy staged or internal evidence workflows.", mutationExecutesCommands, withFileWrites("writes verification run artifacts by default", "--dry-run and --no-write avoid run artifact writes"), withFlags(flag("--task", "limit verification to one task"), flag("--dry-run", "plan verification without executing commands", "read-only"), flag("--no-write", "avoid writing verification artifacts", "read-only"), flag("--allow-shell", "allow shell checks to execute", "executes local commands")), withRelated(related("spec", "records validation evidence when repository memory is required"), related("check", "validates docs before implementation verification"), related("complete", "uses validation as a completion gate")), withWhenNotToUse("Do not use as a mandatory standalone step; run validation appropriate to the implementation.")),
 		capability(
+			"plan",
+			"Prompt Utilities",
+			"Work with plans produced by native coding agents.",
+			mutationNone,
+			withFileWrites("none; plan utilities may read and replace the macOS clipboard when explicitly invoked"),
+			withRelated(
+				related("plan challenge", "supplements a copied Codex plan for independent adversarial review"),
+				related("legacy plan", "retains the deprecated staged PLAN.md generator"),
+				related("spec", "persists accepted plan rationale only when repository memory is required"),
+			),
+			withWhenToUse("Use after a host agent such as Codex for Mac has produced a native plan."),
+			withWhenNotToUse("Do not use as a plan generator; native coding agents own plan creation."),
+			withExamples("kit plan challenge"),
+			withCaveats("Kit never launches or calls a model through this command group."),
+		),
+		capability(
+			"plan challenge",
+			"Prompt Utilities",
+			"Supplement a copied Codex plan with a paste-ready adversarial review prompt.",
+			mutationNone,
+			withFileWrites("none; reads the current macOS clipboard and replaces it with the generated prompt by default"),
+			withFlags(
+				flag("--output-only", "print the raw challenge prompt without replacing the clipboard", "read-only"),
+				flag("--copy", "copy the challenge prompt even with --output-only"),
+			),
+			withRelated(
+				related("plan", "lists native-plan utilities"),
+				related("spec", "captures accepted material rationale after native planning"),
+				related("legacy plan", "creates a deprecated staged PLAN.md artifact"),
+			),
+			withWhenToUse(
+				"Use after copying the complete plan produced by Codex for Mac `/plan`.",
+				"Paste the generated challenge prompt into a human-selected secondary model such as Claude.",
+			),
+			withWhenNotToUse(
+				"Do not use when the clipboard does not contain the complete candidate plan.",
+				"Do not use as model execution, desktop automation, or automatic review-result ingestion.",
+			),
+			withExamples("kit plan challenge", "kit plan challenge --output-only"),
+			withCaveats(
+				"Default execution explicitly reads and replaces the macOS clipboard; it does not watch the clipboard.",
+				"The reviewer is instructed to return either IMPLEMENT THIS PLAN or paste-ready instructions for Codex's tell-what-to-do-different field.",
+				"Kit does not persist the copied plan, access chat history, call the network, or launch a model.",
+			),
+		),
+		capability(
 			"spec",
 			"Workflow",
 			"Scaffold or orient a living specification for native agent planning.",

@@ -83,7 +83,7 @@ var rootCommandSections = []commandSection{
 		},
 	},
 	{title: "Inspect & Repair", commands: []string{"status", "registry", "health", "map", "capabilities", "config", "aws", "check", "ci", "pr", "trace", "replay", "state", "eval", "improve", "rules", "reconcile"}},
-	{title: "Prompt Utilities", commands: []string{"instructions", "prompt", "set", "handoff", "summarize", "dispatch", "code-review", "skill"}},
+	{title: "Prompt Utilities", commands: []string{"plan", "instructions", "prompt", "set", "handoff", "summarize", "dispatch", "code-review", "skill"}},
 	{title: "Utilities", commands: []string{"upgrade", "version", "completion", "help"}},
 }
 

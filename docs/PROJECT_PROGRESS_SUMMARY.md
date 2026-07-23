@@ -45,10 +45,11 @@
 | 0041 | aws-config-schema | `docs/specs/0041-aws-config-schema` | deliver | no | 2026-07-13 | Version Kit project configuration and bind each AWS-enabled project to one STS-verified CLI profile and account with fast automatic checks and interactive repair. |
 | 0042 | native-plan-repository-memory | `docs/specs/0042-native-plan-repository-memory` | complete | no | 2026-07-15 | Recenter Kit as a repository-memory and specification harness: native agent planning owns research, clarification, design, and implementation planning, while Kit ensures that consequential implementation rationale survives in canonical repository documents. |
 | 0043 | init-makefile-scaffold | `docs/specs/0043-init-makefile-scaffold` | complete | no | 2026-07-16 | Make `kit init` establish a safe, canonical Make entrypoint for each project and guide the initialization agent to wire targets such as `make dev` to the repository's real development commands. |
-| 0044 | versioned-agent-instructions | `docs/specs/0044-versioned-agent-instructions` | complete | no | 2026-07-19 | Provide one stable Kit command that emits the provider-neutral coding-agent instructions used directly by Codex, Claude, and GitHub Copilot, while preserving earlier instruction revisions for reproducible use. |
+| 0044 | versioned-agent-instructions | `docs/specs/0044-versioned-agent-instructions` | complete | no | 2026-07-20 | Provide one stable Kit command that emits the provider-neutral coding-agent instructions used directly by Codex, Claude, and GitHub Copilot, while preserving earlier instruction revisions for reproducible use. |
 | 0045 | constitution-curation | `docs/specs/0045-constitution-curation` | complete | no | 2026-07-19 | Keep `docs/CONSTITUTION.md` aligned with demonstrated project-wide truth as implementation evolves, without forcing a new project to predict its complete identity or turning `kit init` into a long interview. |
 | 0046 | autonomous-mutation-recovery | `docs/specs/0046-autonomous-mutation-recovery` | complete | no | 2026-07-19 | Make Kit coding agents own routine failure recovery through completion instead of stopping after a failed in-scope mutation and asking the user to authorize a compatible retry such as authenticated `gh`. |
 | 0047 | kit-health-maintenance | `docs/specs/0047-kit-health-maintenance` | complete | no | 2026-07-19 | Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work. |
+| 0048 | native-plan-challenge | `docs/specs/0048-native-plan-challenge` | complete | no | 2026-07-23 | Make the proven cross-model plan-review workflow fast and explicit for Codex for Mac users: copy a plan produced by `/plan`, run `kit plan challenge`, and paste a supplemented adversarial-review prompt into a secondary model without Kit launching or calling any model. |
 
 ## PROJECT INTENT
 
@@ -466,6 +467,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0047-kit-health-maintenance/SPEC.md`
 
+### native-plan-challenge
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Make the proven cross-model plan-review workflow fast and explicit for Codex for Mac users: copy a plan produced by `/plan`, run `kit plan challenge`, and paste a supplemented adversarial-review prompt into a secondary model without Kit launching or calling any model.
+- **APPROACH**: 1. Add a small clipboard-read helper using `pbpaste`, with an injectable function seam matching the existing clipboard-copy test seam. 2. Add a top-level native-plan command group and a `challenge` subcommand that reads the clipboard, validates the candidate, builds a fixed provider-neutral adversarial prompt, and routes output through the shared clipboard-first helper. 3. Keep the challenge prompt in a focused command file and delimit the copied plan as quoted review input while making the Codex for Mac return format exact. 4. Register `plan` and `plan challenge` in root help and capability metadata without changing the deprecated `kit legacy plan` command. 5. Add focused command, prompt, clipboard-error, output-mode, help, and capability tests; update README and command documentation. 6. Run formatting, vet, focused and full tests, build, changed-lines lint, V3 feature/project checks, prompt-system evaluation when affected, and diff/secret review before explicit staging and delivery.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0048-native-plan-challenge/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-20 08:14:28 EDT
+2026-07-23 13:20:52 EDT

@@ -54,6 +54,8 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"legacy",
 		"List deprecated v1 staged workflow commands",
 		"scaffold",
+		"\n  plan ",
+		"Work with plans produced by native coding agents",
 		"instructions",
 		"prompt",
 		"set",
@@ -89,7 +91,6 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 		"\n  scaffold-agents ",
 		"\n  rollup ",
 		"\n  brainstorm ",
-		"\n  plan ",
 		"\n  tasks ",
 		"\n  implement ",
 		"\n  reflect ",
@@ -111,6 +112,24 @@ func TestRootHelpGroupsCanonicalCommands(t *testing.T) {
 	for _, check := range staleWorkflowChecks {
 		if strings.Contains(content, check) {
 			t.Fatalf("expected root help to omit stale v1 workflow text %q, got %q", check, content)
+		}
+	}
+}
+
+func TestPlanHelpExplainsNativePlanChallengeBoundary(t *testing.T) {
+	content := stripANSI(executeHelp(t, []string{"plan", "challenge", "--help"}))
+
+	for _, check := range []string{
+		"material adversarial-review prompt",
+		"current macOS clipboard",
+		"IMPLEMENT THIS PLAN",
+		"tell Codex what to do different",
+		"Kit does not launch, call, or select a model",
+		"--output-only",
+		"--copy",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected plan challenge help to contain %q, got %q", check, content)
 		}
 	}
 }
@@ -220,7 +239,6 @@ func TestRemovedCompatibilityCommandsAreNotRegistered(t *testing.T) {
 		{"rollup"},
 		{"review-loop"},
 		{"brainstorm"},
-		{"plan"},
 		{"tasks"},
 		{"implement"},
 		{"reflect"},
