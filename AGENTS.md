@@ -33,6 +33,12 @@
 - `docs/agents/RLM.md` — just-in-time context loading
 - `docs/agents/TOOLING.md` — skills, post-plan dispatch, and secondary inputs
 
+## Application Architecture Gate
+
+- Before implementing API or backend routes, controllers or handlers, services, repositories, persistence adapters, or gateways, load `docs/references/rules/backend-service-architecture.md`
+- Before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components, load `docs/references/rules/frontend-application-architecture.md`
+- Treat both rules as responsibility boundaries rather than mandatory directory names, and preserve stronger repo-local architecture
+
 ## GitHub Delivery Hard Gate
 
 - Issue, branch, staging, commit, push, and PR actions are mutation boundaries
