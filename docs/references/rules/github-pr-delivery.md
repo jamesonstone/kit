@@ -1,12 +1,14 @@
 ---
 kind: ruleset
 slug: github-pr-delivery
-description: Sequences issue, branch, commit, push, ready PR, and post-PR checks after PR workflow consent.
+description: Sequences issue, branch, commit, push, ready PR, documentation-only CI skips, and post-PR checks after PR workflow consent.
 status: active
 applies_to:
   - git
   - github
   - pull-request
+  - github-actions
+  - documentation
   - coding-agent
 read_policy_default: conditional
 ---
@@ -255,7 +257,7 @@ Commit title structure is mandatory:
 
 - `<issue_number>` is the `GH-123` form.
 - Example: `feat(GH-123): :sparkles: added a new feature`.
-- The structure must not change. Only `type`, `issue_number`, `gitmoji`, and `short title message` change.
+- The structure must not change except for the conditional documentation-only `[skip ci]` suffix defined below. Otherwise only `type`, `issue_number`, `gitmoji`, and `short title message` change.
 
 Type to gitmoji mapping is deterministic:
 
@@ -271,6 +273,26 @@ Type to gitmoji mapping is deterministic:
 
 - The gitmoji is determined by the type.
 - Do not mix types and gitmoji values, such as pairing `feat` with `:bug:`.
+
+### Documentation-Only CI Skip
+
+- Classify a change as documentation-only from the complete branch and pull request diff against the base branch, including staged and unstaged work, not from the latest commit or command name alone.
+- A qualifying diff may contain prose documentation, agent instruction files, registry rulesets, and non-executable scaffold or registry metadata that cannot change product runtime, build, test, release, deployment, or CI behavior.
+- Product code, tests, dependency manifests or locks, executable scripts, generated runtime artifacts, GitHub workflow files, and runtime, build, test, release, deployment, or CI configuration disqualify the entire pull request.
+- `kit reconcile` is a candidate signal, not proof of eligibility. Inspect its actual diff; qualify it only when every changed path and hunk remains within the documentation-only boundary.
+- A documentation-only follow-up on a mixed pull request is not eligible because GitHub evaluates the pull request HEAD commit. If an eligible pull request becomes mixed, remove `[skip ci]` from the pull request title and push a new commit without a skip directive so CI runs on the complete diff.
+- Before using a skip directive, inspect branch protection, repository rulesets, and other required-check policy. If a skipped workflow would remain pending, block the merge, or the requirement cannot be established confidently, omit `[skip ci]` and run CI.
+- Append the literal suffix `[skip ci]` to every qualifying commit title:
+
+```text
+docs(GH-123): :memo: reconcile Kit-managed documentation [skip ci]
+```
+
+- Append the same literal `[skip ci]` suffix to the pull request title. This preserves the directive when GitHub creates a squash commit from the pull request title instead of a source commit title.
+- The conditional suffix extends the mandatory Conventional Commit title shape; it does not change the required type, issue scope, gitmoji, or short description.
+- GitHub commit-message skip instructions apply only to workflows triggered by `push` and `pull_request`. They do not suppress `pull_request_target` or other events.
+- A skipped workflow is not a passing workflow. Report the exact no-run, skipped, pending, or unaffected-event state and never describe it as green CI.
+- Follow GitHub's documented [workflow-skip behavior](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs) and [squash-merge message behavior](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/configuring-commit-squashing-for-pull-requests).
 
 Commit body must include:
 
@@ -303,6 +325,7 @@ git log -1 --format='%an <%ae> | %cn <%ce>'
 - Author the PR body in the user's name; do not add agent self-attribution.
 - The PR title must follow the Conventional Commits 1.0.0 title shape with the issue number as the required scope:
   `<type>(<issue_number>): <gitmoji> <short title message>`.
+- For a qualifying documentation-only pull request, append the conditional `[skip ci]` suffix required by `Documentation-Only CI Skip`.
 - Example: `feat(GH-123): :sparkles: add invitation workflow`.
 - Use the same allowed `type` values and deterministic type-to-gitmoji mapping as commit titles.
 - Keep the gitmoji immediately after the colon and space as part of the Conventional Commit description.
@@ -316,17 +339,41 @@ git log -1 --format='%an <%ae> | %cn <%ce>'
 - Use `Refs #123` when the PR only partially addresses the issue.
 - Create the PR ready for review, not as a draft, unless the user explicitly asks for a draft PR.
 
+### Squash-And-Merge Preservation
+
+- GitHub synthesizes a new commit when a pull request is squash-merged. Its default title and body depend on repository settings and the number of source commits, so a qualifying pull request must carry `[skip ci]` in both its pull request title and source commit titles.
+- Before selecting `Confirm squash and merge`, inspect the generated squash commit title and body and confirm that at least one contains the literal `[skip ci]`.
+- If the generated message does not contain `[skip ci]`, add the literal suffix before confirming the squash merge without otherwise weakening the repository's commit-message contract.
+- If the complete pull request diff is no longer documentation-only, or skipping would conflict with required checks, remove the directive instead and allow CI to run.
+- After the squash merge, resolve the exact synthesized commit and inspect its message and workflow runs:
+
+```bash
+PR_NUMBER="$(gh pr view --json number -q .number)"
+REPOSITORY="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+SQUASH_SHA="$(gh pr view "$PR_NUMBER" --json mergeCommit -q .mergeCommit.oid)"
+gh api "repos/$REPOSITORY/commits/$SQUASH_SHA" --jq .commit.message
+gh run list --commit "$SQUASH_SHA" \
+  --json databaseId,event,workflowName,status,conclusion,url,headSha
+```
+
+- Confirm the squash commit message contains `[skip ci]` and that no `push` CI workflow was created for that exact SHA. Report workflows from unaffected events separately.
+
 ### Post-PR Verification
 
 ```bash
-gh pr view --json number,url,author,state,isDraft,assignees
+HEAD_SHA="$(git rev-parse HEAD)"
+gh pr view --json number,url,author,state,isDraft,assignees,title
 gh pr checks
+gh run list --commit "$HEAD_SHA" \
+  --json databaseId,event,workflowName,status,conclusion,url,headSha
 ```
 
 - Confirm GitHub shows the human user as commit author and committer.
 - Confirm the GitHub issue is assigned to the human user.
 - Confirm the PR is assigned to the human user.
 - Confirm the PR is ready for review and not draft, unless the user explicitly asked for a draft PR.
+- For an eligible documentation-only pull request, confirm the pull request title and HEAD commit message contain `[skip ci]` and no `push` or `pull_request` CI workflow was created for the exact HEAD SHA.
+- Treat `pull_request_target` and other unaffected event runs separately; their presence does not mean the skip directive failed.
 - Do not claim CI passed unless checks were observed passing.
 - If checks are pending, failing, unavailable, or not run, report that exact state.
 
@@ -360,6 +407,9 @@ Include:
 - Do not reuse a branch that contains unrelated work.
 - Do not stage files in bulk.
 - Do not commit with mixed type and gitmoji values.
+- Do not infer documentation-only eligibility from `kit reconcile`, a docs-only latest commit, or file extensions without reviewing the complete pull request diff.
+- Do not put `[skip ci]` on a mixed pull request or when required checks would remain pending.
+- Do not remove `[skip ci]` from the generated commit message while squash-merging a qualifying documentation-only pull request.
 - Do not add agent or tool attribution to commits or PR bodies.
 - Do not force-push, rebase, or amend already-pushed commits to recover from failure.
 
@@ -384,6 +434,7 @@ Include:
 - Confirm author and committer identity were inspected before commit and are the human user.
 - Confirm staged diff was reviewed before commit.
 - Confirm commit title and body follow the required format.
+- For a documentation-only CI skip, confirm the complete pull request diff qualifies, required-check policy permits the skip, and every commit title plus the pull request title contains `[skip ci]`.
 - Confirm branch was pushed only after commit.
 - Confirm active directory, branch, remote, and PR state were rechecked immediately before pushing.
 - Confirm PR was created with the repository template when present.
@@ -391,6 +442,7 @@ Include:
 - Confirm PR assignee is the human user.
 - Confirm PR is ready for review and not draft unless explicitly requested otherwise.
 - Confirm PR and CI state were observed before final reporting.
+- When squash-merging an eligible documentation-only pull request, confirm the generated message retained `[skip ci]`, then verify the exact squash commit message and absence of a `push` CI run.
 
 ## Examples
 

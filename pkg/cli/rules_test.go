@@ -157,6 +157,35 @@ func TestGitHubPRDeliveryRulesetPreservesAdditionalScopeLane(t *testing.T) {
 	}
 }
 
+func TestGitHubPRDeliveryRulesetSkipsCIForDocumentationOnlySquashMerges(t *testing.T) {
+	path := filepath.Join("..", "..", "docs", "references", "rules", "github-pr-delivery.md")
+	ruleset, err := parseRulesetFile(path)
+	if err != nil {
+		t.Fatalf("parseRulesetFile() error = %v", err)
+	}
+	if issues := validateRulesetDocument(ruleset, "github-pr-delivery"); len(issues) > 0 {
+		t.Fatalf("github-pr-delivery ruleset issues = %#v", issues)
+	}
+	for _, check := range []string{
+		"complete branch and pull request diff",
+		"`kit reconcile` is a candidate signal, not proof of eligibility",
+		"documentation-only follow-up on a mixed pull request is not eligible",
+		"inspect branch protection, repository rulesets, and other required-check policy",
+		"Append the literal suffix `[skip ci]` to every qualifying commit title",
+		"Append the same literal `[skip ci]` suffix to the pull request title",
+		"apply only to workflows triggered by `push` and `pull_request`",
+		"They do not suppress `pull_request_target` or other events",
+		"Before selecting `Confirm squash and merge`",
+		"generated squash commit title and body",
+		"confirm the pull request title and HEAD commit message contain `[skip ci]`",
+		"gh run list --commit \"$SQUASH_SHA\"",
+	} {
+		if !strings.Contains(ruleset.Body, check) {
+			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)
+		}
+	}
+}
+
 func TestWorkLaneGatingRulesetUsesAutonomousRecoveryAndCleanPreflight(t *testing.T) {
 	path := filepath.Join("..", "..", "docs", "references", "rules", "work-lane-gating.md")
 	ruleset, err := parseRulesetFile(path)
