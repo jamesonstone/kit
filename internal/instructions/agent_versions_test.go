@@ -29,6 +29,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 	}{
 		{version: "v1", sha256: "50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5"},
 		{version: "v2", sha256: "811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc"},
+		{version: "v3", sha256: "74712b8d3ac266bd2ca4014a347d62a3f755c909a7a5cf1c8f2e1c4b1a504ded"},
 	}
 
 	for _, test := range tests {
@@ -48,10 +49,10 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 	}
 }
 
-func TestAgentInstructionsV2EncodesLaneAllocationPolicy(t *testing.T) {
-	content, err := AgentInstructions("v2")
+func TestAgentInstructionsV3EncodesLaneAllocationPolicy(t *testing.T) {
+	content, err := AgentInstructions("v3")
 	if err != nil {
-		t.Fatalf("AgentInstructions(\"v2\") error = %v", err)
+		t.Fatalf("AgentInstructions(\"v3\") error = %v", err)
 	}
 
 	for _, want := range []string{
@@ -60,29 +61,32 @@ func TestAgentInstructionsV2EncodesLaneAllocationPolicy(t *testing.T) {
 		"create or reuse a separate GitHub Issue for the additional work, keep the existing branch and pull request",
 		"scope the new commits to that issue",
 		"open a pull request for review when none exists; otherwise update the existing pull request",
+		"`~/worktrees/<owner>/<repository>/<lane>`",
+		"uppercase detached `PR-<number>`",
+		"Never stash, reset, clean, force-remove, delete a branch, or share `.env` files",
 	} {
 		if !strings.Contains(content, want) {
-			t.Fatalf("v2 instructions do not contain %q", want)
+			t.Fatalf("v3 instructions do not contain %q", want)
 		}
 	}
 }
 
 func TestAgentInstructionsRejectsUnavailableVersion(t *testing.T) {
-	_, err := AgentInstructions("v3")
+	_, err := AgentInstructions("v4")
 	if err == nil {
-		t.Fatal("AgentInstructions(\"v3\") expected an error")
+		t.Fatal("AgentInstructions(\"v4\") expected an error")
 	}
-	for _, want := range []string{`unsupported instructions version "v3"`, "available versions: v1, v2"} {
+	for _, want := range []string{`unsupported instructions version "v4"`, "available versions: v1, v2, v3"} {
 		if !strings.Contains(err.Error(), want) {
-			t.Fatalf("AgentInstructions(\"v3\") error = %q, want %q", err, want)
+			t.Fatalf("AgentInstructions(\"v4\") error = %q, want %q", err, want)
 		}
 	}
 }
 
 func TestAgentInstructionVersionsReturnsCopy(t *testing.T) {
 	versions := AgentInstructionVersions()
-	if len(versions) != 2 || versions[0] != "v1" || versions[1] != "v2" {
-		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2]", versions)
+	if len(versions) != 3 || versions[0] != "v1" || versions[1] != "v2" || versions[2] != "v3" {
+		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2 v3]", versions)
 	}
 	if versions[len(versions)-1] != CurrentAgentVersion {
 		t.Fatalf("last available version = %q, want current %q", versions[len(versions)-1], CurrentAgentVersion)

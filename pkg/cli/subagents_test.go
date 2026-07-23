@@ -55,7 +55,8 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 		"never exceed 4 lanes",
 		"read-only verification agent",
 		"single supervisor lane; no specialist or verification agents spawned",
-		"use worktrees",
+		"supervisor-prepared, explicitly assigned worktree",
+		"may not create, switch, move, or remove worktrees",
 	}
 
 	for _, check := range checks {

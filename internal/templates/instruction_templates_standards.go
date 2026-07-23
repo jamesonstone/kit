@@ -199,9 +199,9 @@ A change is done when all applicable conditions are met for its track.
 
 - **NEVER** run ` + "`git add`" + ` or ` + "`git commit`" + ` without user approval
 - Use conventional commit messages with "gitmojis" in the title to improve commit message readability
-- Work in the existing project directory
-- Do not create or use git worktrees for agent work
-- If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
+- Work in the checkout that owns the requested lane
+- Put separate lanes only under ` + "`~/worktrees/<owner>/<repository>/<lane>`" + `, never inside a repository
+- Preserve dirty and unpushed worktree state; never stash, reset, clean, force-remove, delete a branch, or share ` + "`.env`" + ` files to make room
 
 ---
 

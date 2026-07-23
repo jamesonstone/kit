@@ -29,7 +29,7 @@ const copilotQuickRules = `## Fast rules for chat and code review
   - keep ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, and ` + "`.github/copilot-instructions.md`" + ` aligned with canonical docs
   - populate every required section in v2 ` + "`SPEC.md`" + `; for legacy staged workflows, populate every required section in the active staged artifact
   - replace placeholder-only sections with ` + "`not applicable`" + `, ` + "`not required`" + `, or ` + "`no additional information required`" + ` instead of leaving HTML TODO comments
-  - work in the existing project directory; do not create or use git worktrees for agent work
+  - keep each lane in its existing checkout or a canonical ` + "`~/worktrees/<owner>/<repository>/<lane>`" + ` worktree; never nest worktrees inside repositories or discard state to create one
   - prefer readable, maintainable code with explicit error handling and focused functions
   - fix all lint and test failures before completion and wait for the user's output before triaging findings they report
   - do NOT run ` + "`coderabbit --prompt-only`" + `, ` + "`git add`" + `, or ` + "`git commit`" + ` without explicit approval

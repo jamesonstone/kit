@@ -171,22 +171,25 @@ Include:
 - Before push and after updating the pull request, verify its repository, base branch, head branch, head commit, issue assignments, and complete set of closing references.
 - This exception changes traceability mapping only. It does not waive explicit staging, human identity, validation, safety, or ready-for-review requirements.
 
-### Automated Kit Health Worktree Exception
+### Project-Oriented Worktree Delivery
 
-- Ordinary PR delivery stays in the existing project directory. A recurring Kit health automation may use one isolated temporary worktree per repository only when the user explicitly authorized that automation to protect in-flight primary checkouts.
-- Fetch `origin/main` without switching, pulling, merging, stashing, resetting, cleaning, or writing in the primary checkout. Create the temporary worktree from the freshly fetched `origin/main` commit.
-- Run read-only status and health preview in the temporary worktree before GitHub mutation. If no change is required, create no issue, branch, commit, or pull request.
-- When maintenance is required, create or reuse the human-assigned issue first, then create or reuse exact branch `GH-<issue-number>` at the previewed `origin/main` commit inside that worktree.
-- Apply and curate only the Kit health scope, validate the complete diff, stage explicit paths, commit, push, and create or update the ready pull request under the normal delivery gates.
-- Remove the temporary worktree only after successful delivery and only when it is clean. Leave and report a dirty or blocked worktree so evidence is not destroyed.
-- This exception does not authorize worktrees for ordinary feature work, arbitrary recovery, parallel product implementation, or any workflow without explicit user authorization.
+- Work in the existing checkout when it already owns the requested issue branch and does not contain unrelated user work.
+- For a separate issue or pull-request lane, preserve every existing checkout and use only `~/worktrees/<owner>/<repository>/<lane>`.
+- Before creating a linked worktree, inspect the registered worktrees and reuse the exact branch path when one exists.
+- Create or reuse the human-assigned issue first. Then use exact uppercase `GH-<issue-number>` as both the branch and durable worktree lane.
+- Use exact uppercase `PR-<number>` only for detached inspection. Writable review repair must use the pull request's same-repository head branch, normally its durable `GH-<issue-number>` lane.
+- Fetch the remote base without switching, pulling, merging, stashing, resetting, cleaning, or writing in another checkout. Create a new issue branch from the freshly fetched remote base.
+- `git wt issue <number>`, `git wt add <branch>`, `git wt pr <number>`, and `git wt repair <number>` implement the canonical hierarchy when the Kit-owned command is installed. Equivalent raw `git worktree` commands must preserve the same paths and safety contract.
+- Apply, validate, stage, commit, push, and create or update the ready pull request only within the selected writable issue branch worktree under the normal delivery gates.
+- Never nest worktrees inside a repository, share `.env` files automatically, or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
+- Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. Leave and report a dirty or blocked worktree so evidence is not destroyed.
 
 ### Branch Workflow
 
 - Branch name is the GitHub issue number only, exact form: `GH-123`.
 - Do not add a slug, suffix, or description.
-- Create or switch branches in the existing project directory unless the explicit automated Kit health worktree exception applies.
-- Do not create or use git worktrees for ordinary PR delivery.
+- Create or reuse the issue branch in the checkout or canonical worktree selected during recon.
+- Never switch an unrelated or dirty checkout merely to enter another issue lane.
 - Before creating or switching to an issue branch, automatically re-run branch/status/staleness recon for the active directory and current branch.
 - Before branching, refresh the base from the remote. Fetch only. Never pull, merge, or checkout the base:
 
@@ -198,9 +201,10 @@ git rev-list --left-right --count "$BASE_BRANCH...origin/$BASE_BRANCH" 2>/dev/nu
 - Create the new branch from the freshly fetched remote base, never from a local copy:
 
 ```bash
-git checkout -b GH-123 origin/$BASE_BRANCH
-test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
-test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BASE_BRANCH)" || { echo "ABORT: branch base not at remote head"; exit 1; }
+git wt issue 123
+WORKTREE_PATH="$(git wt root)/GH-123"
+test "$(git -C "$WORKTREE_PATH" rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+test "$(git -C "$WORKTREE_PATH" rev-parse HEAD)" = "$(git -C "$WORKTREE_PATH" rev-parse "origin/$BASE_BRANCH")" || { echo "ABORT: branch base not at remote head"; exit 1; }
 gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 ```
 
@@ -403,7 +407,7 @@ Include:
 - Do not omit the repository PR template.
 - Do not create descriptive branch names when an issue number is available.
 - Do not commit to the protected base branch.
-- Do not create or use git worktrees for ordinary PR delivery or outside the explicit automated Kit health exception.
+- Do not create worktrees inside repositories, use flat ad hoc paths, edit detached `PR-<number>` views, or discard state to make room for a lane.
 - Do not reuse a branch that contains unrelated work.
 - Do not stage files in bulk.
 - Do not commit with mixed type and gitmoji values.

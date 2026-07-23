@@ -7,6 +7,7 @@ libraries, scaffold refresh, and common command paths.
 
 ```bash
 go install github.com/jamesonstone/kit/cmd/kit@latest
+GOBIN="$HOME/.local/bin" go install github.com/jamesonstone/kit/cmd/git-wt@latest
 ```
 
 Or build from source:
@@ -26,6 +27,12 @@ make install-git-hooks
 This configures `core.hooksPath` to use `.githooks/`, including a `pre-commit`
 hook that runs `make build` before every commit.
 
+The separately installed `git-wt` executable is discovered by Git as
+`git wt`. It manages safe project-oriented worktrees beneath `~/worktrees`;
+see [references/worktrees.md](references/worktrees.md) for its command and
+safety contract. Use `git wt help` for command discovery; Git reserves
+`git <command> --help` for installed manual pages.
+
 ## Quick Start
 
 ```bash
@@ -41,6 +48,7 @@ kit health --dry-run --diff
 kit resume my-feature
 kit map --all
 kit instructions
+kit instructions --version=v3
 kit instructions --version=v2
 kit instructions --version=v1
 kit capabilities --search verify
@@ -164,6 +172,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
+| `git wt` | Manage durable issue lanes, detached PR views, repair lanes, safe removal, pruning, and legacy migration beneath `~/worktrees`. |
 
 ## Prompt Profiles And Subagents
 
@@ -271,7 +280,7 @@ human-readable wrappers.
 
 `kit instructions` always writes raw Markdown to stdout without a banner or
 clipboard side effect. It defaults to the explicitly configured current embedded
-version, currently `v2`; use `kit instructions --version=v2` for an exact current
+version, currently `v3`; use `kit instructions --version=v3` for an exact current
 selection or an earlier selector such as `kit instructions --version=v1` when a
 reproducible historical payload is required.
 

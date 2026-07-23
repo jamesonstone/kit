@@ -50,6 +50,7 @@
 | 0046 | autonomous-mutation-recovery | `docs/specs/0046-autonomous-mutation-recovery` | complete | no | 2026-07-19 | Make Kit coding agents own routine failure recovery through completion instead of stopping after a failed in-scope mutation and asking the user to authorize a compatible retry such as authenticated `gh`. |
 | 0047 | kit-health-maintenance | `docs/specs/0047-kit-health-maintenance` | complete | no | 2026-07-19 | Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work. |
 | 0048 | native-plan-challenge | `docs/specs/0048-native-plan-challenge` | complete | no | 2026-07-23 | Make the proven cross-model plan-review workflow fast and explicit for Codex for Mac users: copy a plan produced by `/plan`, run `kit plan challenge`, and paste a supplemented adversarial-review prompt into a secondary model without Kit launching or calling any model. |
+| 0050 | safe-worktree-workflow | `docs/specs/0050-safe-worktree-workflow` | complete | no | 2026-07-23 | Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-request work while preserving in-flight primary checkouts and making the repository hierarchy predictable. |
 
 ## PROJECT INTENT
 
@@ -476,6 +477,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0048-native-plan-challenge/SPEC.md`
 
+### safe-worktree-workflow
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-request work while preserving in-flight primary checkouts and making the repository hierarchy predictable.
+- **APPROACH**: 1. Implement a small standalone Go command with explicit Git subprocesses, deterministic path derivation, strict target validation, and integration tests against temporary repositories. 2. Add a concise canonical worktree guide and align Kit's active V3 guidance, legacy instruction versions, prompt surfaces, registry rules, Constitution, and focused regression tests. 3. Build and install `git-wt` into `~/.local/bin`, then remove the obsolete global `git wa` alias only after the replacement passes end-to-end validation. 4. Preview and apply legacy migration, verify every registered worktree path, branch, and dirty count, and preserve every worktree on any failure. 5. Reconcile the policy into LabCore in a separate issue branch and ready pull request without reconciling the rest of the managed-project fleet.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0050-safe-worktree-workflow/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-23 13:20:52 EDT
+2026-07-23 16:59:52 EDT

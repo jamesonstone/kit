@@ -27,6 +27,7 @@ Use this directory as the durable documentation map for Kit. The root
 | 🔁 [agents/WORKFLOWS.md](agents/WORKFLOWS.md) | Spec-driven versus ad hoc flow semantics. |
 | 🧠 [agents/RLM.md](agents/RLM.md) | Just-in-time context loading and progressive disclosure. |
 | 🧰 [agents/TOOLING.md](agents/TOOLING.md) | Command capability discovery, dispatch, and tool routing. |
+| 🌳 [references/worktrees.md](references/worktrees.md) | Safe worktree mental model, hierarchy, naming, commands, and lifecycle. |
 
 ## References
 

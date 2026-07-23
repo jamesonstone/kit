@@ -315,11 +315,15 @@ const agentsTooling = `# Tooling
 - Resolve only feedback verified as fixed or intentionally no-op; do not resolve unfixed, uncertain, stale, or unrelated feedback.
 - ` + "`kit dispatch --pr <target> --resolve --yes`" + ` is an explicit GitHub mutation and must not be run speculatively.
 
-## Project Directory
+## Project Worktrees
 
-- Work in the existing project directory by default
-- Do not create or use git worktrees for agent work
-- If the current branch or dirty state is unsuitable, stop and ask the user how to proceed instead of creating an alternate checkout
+- Work in the existing checkout when it already owns the requested lane
+- For a separate lane, reuse or create ` + "`~/worktrees/<owner>/<repository>/<lane>`" + `; never put a worktree inside a repository
+- Use exact ` + "`GH-<number>`" + ` for durable issue lanes and uppercase detached ` + "`PR-<number>`" + ` only for temporary pull-request inspection
+- Reuse the pull request head branch for writable repair; never edit the detached ` + "`PR-<number>`" + ` view
+- Do not stash, reset, clean, force-remove, delete a branch, or share ` + "`.env`" + ` files to create or clear a worktree
+- Remember that refs, remotes, objects, configuration, and stash state are shared across worktrees even though checkout, index, and ` + "`HEAD`" + ` are separate
+- Load ` + "`docs/references/worktrees.md`" + ` when present and worktree creation, repair, migration, or removal affects the task
 
 ## Secondary Global Inputs
 

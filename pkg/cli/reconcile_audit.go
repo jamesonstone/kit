@@ -129,6 +129,7 @@ func auditConstitution(projectRoot string) []reconcileFinding {
 func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 	var findings []reconcileFinding
 	findings = append(findings, auditGitignoreScaffold(projectRoot)...)
+	linkedCheckout := usesGitFileCheckout(projectRoot)
 
 	for _, artifact := range []struct {
 		relativePath string
@@ -141,6 +142,9 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 		{relativePath: pullRequestTemplatePath, description: "GitHub pull request template"},
 		{relativePath: autoAssignWorkflowPath, description: "GitHub issue and pull request auto-assignment workflow"},
 	} {
+		if artifact.localOnly && linkedCheckout {
+			continue
+		}
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(artifact.relativePath))
 		if document.Exists(absolutePath) {
 			continue
@@ -163,6 +167,11 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 	}
 
 	return findings
+}
+
+func usesGitFileCheckout(projectRoot string) bool {
+	info, err := os.Stat(filepath.Join(projectRoot, ".git"))
+	return err == nil && !info.IsDir()
 }
 
 func auditGitignoreScaffold(projectRoot string) []reconcileFinding {

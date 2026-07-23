@@ -35,7 +35,7 @@ func buildDispatchPrompt(
 			"Inspect just enough repository structure to predict touched files/interfaces for each task. Cluster by file overlap; keep shared, ambiguous, or continuously coupled work in one serialized lane.",
 			fmt.Sprintf("Spawn only independent low-overlap clusters, at most %d concurrently. Queue excess clusters in original task order; use one supervisor lane when splitting would not improve correctness or throughput.", maxSubagents),
 			"Plan at least one read-only verification lane after nontrivial implementation unless the work is documentation-only, tightly coupled, explicitly single-agent, or the runtime cannot spawn agents.",
-			"Keep all work in this project directory; no worktrees. Subagents may not expand scope or mutate Git/GitHub delivery state unless explicitly assigned and authorized.",
+			"Keep each task in its assigned checkout or prepared worktree. Subagents may not independently create, switch, move, or remove worktrees, expand scope, or mutate Git/GitHub delivery state unless explicitly assigned and authorized.",
 		)
 		doc.Heading(2, "Agent Team Plan Output")
 		doc.BulletList(

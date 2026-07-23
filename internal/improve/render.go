@@ -49,6 +49,6 @@ func candidatePrompt(candidate Candidate, cluster WeaknessCluster) string {
 	builder.WriteString("## Boundaries\n\n")
 	builder.WriteString("- Edit only allowed Kit harness surfaces.\n")
 	builder.WriteString("- Do not weaken held-out tasks or delivery rules.\n")
-	builder.WriteString("- Do not use worktrees.\n")
+	builder.WriteString("- Keep the assigned checkout or worktree; do not create, switch, move, or remove worktrees during an evaluation.\n")
 	return builder.String()
 }

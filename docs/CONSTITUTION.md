@@ -151,14 +151,16 @@ all decisions.
 8. **External Review Tools**
    - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
 
-9. **Project Directory Git Workflow**
-   - Work in the existing project directory by default
-   - Do not create or use git worktrees for ordinary agent work
-   - An explicitly user-authorized maintenance automation may use isolated temporary worktrees from a freshly fetched remote base to protect in-flight primary checkouts; it must not stash, reset, clean, or otherwise mutate those primary checkouts
+9. **Project-Oriented Git Worktrees**
+   - Work in the existing checkout when it already owns the requested lane
+   - Put separate lanes only beneath `~/worktrees/<owner>/<repository>/<lane>` and never inside a repository
+   - Use exact `GH-<number>` for durable issue lanes; reserve uppercase detached `PR-<number>` for temporary pull-request inspection and reuse the pull request head branch for writable repair
+   - Preserve primary and linked checkout state; never stash, reset, clean, force-remove, delete a branch, or share `.env` files to create or clear a worktree
+   - Treat checkout, index, and `HEAD` as worktree-local while remembering that refs, remotes, objects, configuration, and stash state are shared across the clone
    - Resolve all in-scope implementation, validation, and delivery failures autonomously after diagnosis and continue until the requested goal is complete or a genuine external blocker remains
    - A supported tool-path change does not require routine permission when repository, target, scope, intended effect, and human identity remain unchanged
    - Ask permission only before large-scale deletion or deleting sensitive files; existing protected-branch, force-push, merge, review, identity, secret, and repository-setting prohibitions remain hard boundaries
-   - Preserve user-owned dirty work; when branch, target, identity, or ownership remains ambiguous after read-only inspection, request only the smallest missing input instead of guessing, discarding changes, or creating an alternate checkout
+   - Preserve user-owned dirty work; when branch, target, identity, or ownership remains ambiguous after read-only inspection, request only the smallest missing input instead of guessing or discarding changes
 
 ### Code Quality Constraints
 

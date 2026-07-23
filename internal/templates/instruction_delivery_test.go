@@ -58,6 +58,31 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 	}
 }
 
+func TestMemoryInstructionsPreserveProjectOrientedWorktrees(t *testing.T) {
+	tooling := fileContentByPath(
+		InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
+		"docs/agents/TOOLING.md",
+	)
+	for _, want := range []string{
+		"`~/worktrees/<owner>/<repository>/<lane>`",
+		"uppercase detached `PR-<number>`",
+		"never edit the detached `PR-<number>` view",
+		"refs, remotes, objects, configuration, and stash state are shared",
+	} {
+		if !strings.Contains(tooling, want) {
+			t.Fatalf("expected V3 tooling to contain %q", want)
+		}
+	}
+
+	checkedIn, err := os.ReadFile(filepath.Join("..", "..", "docs", "agents", "TOOLING.md"))
+	if err != nil {
+		t.Fatalf("read checked-in tooling: %v", err)
+	}
+	if string(checkedIn) != tooling {
+		t.Fatal("checked-in tooling is not aligned with the V3 generator")
+	}
+}
+
 func TestMemoryRepositoryInstructionsRouteConstitutionCuration(t *testing.T) {
 	for relativePath, generated := range map[string]string{
 		"AGENTS.md": MemoryAgentsMD,

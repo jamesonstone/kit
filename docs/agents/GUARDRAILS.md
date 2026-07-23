@@ -58,6 +58,7 @@ Delivery Contract:
 - Issue number/link:
 - Branch name:
 - Branch base:
+- Worktree path:
 - Branch/status/staleness check:
 - Staging method:
 - Commit format:
@@ -125,6 +126,8 @@ When .kit.yaml defines an enabled aws context, agents must:
 
 - Prefer explicit error handling over silent failure
 - Keep changes minimal and reversible
+- Preserve the checkout that owns each lane; put separate lanes only beneath `~/worktrees/<owner>/<repository>/<lane>` and never inside a repository
+- Never stash, reset, clean, force-remove, delete a branch, or share `.env` files to create or clear a worktree
 - Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
 - Do not ask for routine approval to switch supported tools, including authenticated `gh`, when the authorized mutation is unchanged
 - Ask permission only before large-scale deletion or deleting sensitive files

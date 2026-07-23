@@ -71,6 +71,11 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 		"including `gh`",
 		"Ask permission only before large-scale deletion or deleting sensitive files",
 		"do not frame this as permission for a routine retry",
+		"`~/worktrees/<owner>/<repository>/<lane>`",
+		"exact uppercase `GH-<number>`",
+		"exact uppercase `PR-<number>`",
+		"Never automatically symlink or copy `.env` files",
+		"Remove only an exact registered path",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected safety-guardrails ruleset to contain %q", check)
@@ -79,6 +84,7 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 	for _, forbidden := range []string{
 		"Do not retry with mutation",
 		"Surface the failure to the user and await instruction",
+		"Do not create or use git worktrees for agent work",
 	} {
 		if strings.Contains(ruleset.Body, forbidden) {
 			t.Fatalf("expected safety-guardrails ruleset to omit blanket stop behavior %q", forbidden)
@@ -126,6 +132,10 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"another supported authenticated path such as `gh`",
 		"without requesting routine retry permission",
 		"Verify that no duplicate issue or PR was created",
+		"Project-Oriented Worktree Delivery",
+		"`~/worktrees/<owner>/<repository>/<lane>`",
+		"`git wt repair <number>`",
+		"Writable review repair must use the pull request's same-repository head branch",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)
