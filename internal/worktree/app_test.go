@@ -30,6 +30,23 @@ func TestParseRemoteIdentity(t *testing.T) {
 	}
 }
 
+func TestParseRemoteIdentityRejectsDotSegments(t *testing.T) {
+	t.Parallel()
+	for _, remote := range []string{
+		"git@github.com:../project.git",
+		"git@github.com:example/...git",
+	} {
+		if _, _, err := parseRemoteIdentity(remote); err == nil {
+			t.Fatalf("parse %q expected an error", remote)
+		}
+	}
+	for _, value := range []string{".", ".."} {
+		if isSafeProjectPart(value) {
+			t.Fatalf("project identity segment %q must be rejected", value)
+		}
+	}
+}
+
 func TestValidateLaneRejectsTraversal(t *testing.T) {
 	t.Parallel()
 	for _, lane := range []string{"", "/tmp/GH-1", "../GH-1", "topic/../GH-1", "topic//GH-1", `topic\GH-1`} {
@@ -51,6 +68,9 @@ func TestIssueAddPRRepairAndSafeRemove(t *testing.T) {
 	runWT(t, fixture.app, fixture.primary, "issue", "76")
 	issuePath := filepath.Join(fixture.worktreeRoot, "example", "project", "GH-76")
 	assertBranch(t, issuePath, "GH-76")
+	runGit(t, fixture.primary, "remote", "set-url", "origin", filepath.Join(fixture.worktreeRoot, "missing.git"))
+	runWT(t, fixture.app, fixture.primary, "issue", "76")
+	runGit(t, fixture.primary, "remote", "set-url", "origin", fixture.remote)
 	if err := os.WriteFile(filepath.Join(issuePath, "issue.txt"), []byte("local\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +78,10 @@ func TestIssueAddPRRepairAndSafeRemove(t *testing.T) {
 	runGit(t, issuePath, "commit", "-m", "local issue work")
 
 	runGit(t, fixture.primary, "branch", "--track", "topic/existing", "origin/main")
+	offlineRemote := filepath.Join(fixture.worktreeRoot, "offline", "example", "project.git")
+	runGit(t, fixture.primary, "remote", "set-url", "origin", offlineRemote)
 	runWT(t, fixture.app, fixture.primary, "add", "topic/existing")
+	runGit(t, fixture.primary, "remote", "set-url", "origin", fixture.remote)
 	topicPath := filepath.Join(fixture.worktreeRoot, "example", "project", "topic", "existing")
 	assertBranch(t, topicPath, "topic/existing")
 

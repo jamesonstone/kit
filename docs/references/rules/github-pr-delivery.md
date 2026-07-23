@@ -181,7 +181,7 @@ Include:
 - Fetch the remote base without switching, pulling, merging, stashing, resetting, cleaning, or writing in another checkout. Create a new issue branch from the freshly fetched remote base.
 - `git wt issue <number>`, `git wt add <branch>`, `git wt pr <number>`, and `git wt repair <number>` implement the canonical hierarchy when the Kit-owned command is installed. Equivalent raw `git worktree` commands must preserve the same paths and safety contract.
 - Apply, validate, stage, commit, push, and create or update the ready pull request only within the selected writable issue branch worktree under the normal delivery gates.
-- Never nest worktrees inside a repository, share `.env` files automatically, or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
+- Never nest worktrees inside a repository, share `.env` or `.envrc` files automatically, or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
 - Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. Leave and report a dirty or blocked worktree so evidence is not destroyed.
 
 ### Branch Workflow

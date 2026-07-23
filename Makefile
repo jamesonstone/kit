@@ -1,4 +1,4 @@
-.PHONY: build test lint fmt vet clean install install-git-hooks install-git-wt
+.PHONY: all build build-windows test lint fmt vet clean install install-git-hooks install-git-wt
 
 BINARY_NAME=kit
 WORKTREE_BINARY_NAME=git-wt
@@ -11,6 +11,7 @@ build:
 
 build-windows:
 	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(BINARY_NAME).exe ./cmd/kit
+	GOOS=windows GOARCH=amd64 go build -o bin/$(WORKTREE_BINARY_NAME).exe ./cmd/git-wt
 
 install: install-git-wt
 	go install $(LDFLAGS) ./cmd/kit

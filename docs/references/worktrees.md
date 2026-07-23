@@ -139,8 +139,8 @@ destination collisions or unsupported detached identities.
   before a mutation.
 - Do not use stash as cross-worktree scratch space; stash entries are shared and
   easy to apply in the wrong lane.
-- Never automatically link or copy `.env` files, credentials, tokens, or
-  machine-local configuration into a new worktree.
+- Never automatically link or copy `.env`, `.envrc`, credentials, tokens, or
+  other machine-local configuration into a new worktree.
 - Never use reset, clean, force removal, or branch deletion to make a worktree
   operation succeed.
 - Do not remove a worktree until its contents are clean and its branch state is

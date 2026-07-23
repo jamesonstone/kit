@@ -129,7 +129,7 @@ func auditConstitution(projectRoot string) []reconcileFinding {
 func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 	var findings []reconcileFinding
 	findings = append(findings, auditGitignoreScaffold(projectRoot)...)
-	linkedCheckout := usesGitFileCheckout(projectRoot)
+	linkedCheckout := usesLinkedWorktreeCheckout(projectRoot)
 
 	for _, artifact := range []struct {
 		relativePath string
@@ -169,9 +169,36 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 	return findings
 }
 
-func usesGitFileCheckout(projectRoot string) bool {
-	info, err := os.Stat(filepath.Join(projectRoot, ".git"))
-	return err == nil && !info.IsDir()
+func usesLinkedWorktreeCheckout(projectRoot string) bool {
+	data, err := os.ReadFile(filepath.Join(projectRoot, ".git"))
+	if err != nil {
+		return false
+	}
+	const gitDirPrefix = "gitdir:"
+	line := strings.TrimSpace(string(data))
+	if !strings.HasPrefix(line, gitDirPrefix) {
+		return false
+	}
+	gitDir := strings.TrimSpace(strings.TrimPrefix(line, gitDirPrefix))
+	if gitDir == "" {
+		return false
+	}
+	if !filepath.IsAbs(gitDir) {
+		gitDir = filepath.Join(projectRoot, gitDir)
+	}
+	commonData, err := os.ReadFile(filepath.Join(gitDir, "commondir"))
+	if err != nil {
+		return false
+	}
+	commonDir := strings.TrimSpace(string(commonData))
+	if commonDir == "" {
+		return false
+	}
+	if !filepath.IsAbs(commonDir) {
+		commonDir = filepath.Join(gitDir, commonDir)
+	}
+	info, err := os.Stat(filepath.Clean(commonDir))
+	return err == nil && info.IsDir()
 }
 
 func auditGitignoreScaffold(projectRoot string) []reconcileFinding {

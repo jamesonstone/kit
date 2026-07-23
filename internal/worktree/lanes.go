@@ -19,10 +19,13 @@ func (a *App) issue(ctx context.Context, cwd, value string) error {
 	if err != nil {
 		return err
 	}
+	if a.refExists(ctx, repo.top, "refs/heads/"+branch) {
+		return a.addBranch(ctx, repo, branch)
+	}
 	if err := a.fetchOrigin(ctx, repo.top); err != nil {
 		return err
 	}
-	if a.refExists(ctx, repo.top, "refs/heads/"+branch) || a.refExists(ctx, repo.top, "refs/remotes/origin/"+branch) {
+	if a.refExists(ctx, repo.top, "refs/remotes/origin/"+branch) {
 		return a.addBranch(ctx, repo, branch)
 	}
 	base, err := a.remoteDefaultBranch(ctx, repo.top)
@@ -55,6 +58,9 @@ func (a *App) add(ctx context.Context, cwd, branch string) error {
 	}
 	if _, err := a.git(ctx, repo.top, "check-ref-format", "--branch", branch); err != nil {
 		return fmt.Errorf("invalid branch %q: %w", branch, err)
+	}
+	if a.refExists(ctx, repo.top, "refs/heads/"+branch) {
+		return a.addBranch(ctx, repo, branch)
 	}
 	if err := a.fetchOrigin(ctx, repo.top); err != nil {
 		return err

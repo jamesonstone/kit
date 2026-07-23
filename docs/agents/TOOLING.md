@@ -53,7 +53,8 @@
 - For a separate lane, reuse or create `~/worktrees/<owner>/<repository>/<lane>`; never put a worktree inside a repository
 - Use exact `GH-<number>` for durable issue lanes and uppercase detached `PR-<number>` only for temporary pull-request inspection
 - Reuse the pull request head branch for writable repair; never edit the detached `PR-<number>` view
-- Do not stash, reset, clean, force-remove, delete a branch, or share `.env` files to create or clear a worktree
+- Use the Kit-owned `git wt` workflow when it is installed; equivalent raw commands must preserve the same path and safety contract
+- Do not stash, reset, clean, force-remove, delete a branch, or share `.env` or `.envrc` files to create or clear a worktree
 - Remember that refs, remotes, objects, configuration, and stash state are shared across worktrees even though checkout, index, and `HEAD` are separate
 - Load `docs/references/worktrees.md` when present and worktree creation, repair, migration, or removal affects the task
 

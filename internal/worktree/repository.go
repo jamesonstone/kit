@@ -59,7 +59,7 @@ func (a *App) projectIdentity(ctx context.Context, cwd string) (string, string, 
 		if configuredOwner == "" || configuredRepo == "" {
 			return "", "", fmt.Errorf("both wt.owner and wt.repository must be configured together")
 		}
-		if !safeProjectPart.MatchString(configuredOwner) || !safeProjectPart.MatchString(configuredRepo) {
+		if !isSafeProjectPart(configuredOwner) || !isSafeProjectPart(configuredRepo) {
 			return "", "", fmt.Errorf("wt.owner and wt.repository may contain only letters, digits, dot, underscore, and hyphen")
 		}
 		return configuredOwner, configuredRepo, nil
@@ -95,7 +95,7 @@ func parseRemoteIdentity(remote string) (string, string, error) {
 		return "", "", fmt.Errorf("expected an origin path ending in owner/repository")
 	}
 	owner, repo := parts[len(parts)-2], parts[len(parts)-1]
-	if !safeProjectPart.MatchString(owner) || !safeProjectPart.MatchString(repo) {
+	if !isSafeProjectPart(owner) || !isSafeProjectPart(repo) {
 		return "", "", fmt.Errorf("unsafe owner or repository path segment")
 	}
 	return owner, repo, nil

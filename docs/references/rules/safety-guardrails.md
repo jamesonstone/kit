@@ -81,7 +81,7 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Keep one active branch in one worktree. Do not bypass Git's branch ownership check.
 - Treat working files, the index, and `HEAD` as worktree-local. Treat objects, refs, remotes, most configuration, and stash entries as shared clone state.
 - Never create linked worktrees inside a project directory, including `.worktrees/`.
-- Never automatically symlink or copy `.env` files, credentials, tokens, private keys, or other machine-local configuration into a worktree.
+- Never automatically symlink or copy `.env` or `.envrc` files, credentials, tokens, private keys, or other machine-local configuration into a worktree.
 - Never use stash, reset, clean, force removal, branch deletion, or substring-based target selection to make a worktree operation succeed.
 - List worktrees without pruning. Prune only through an explicit prune action after reviewing stale metadata.
 - Remove only an exact registered path after proving it is not the current checkout, contains no tracked, untracked, or ignored material, and has no unpushed commits. Never force removal.
@@ -183,7 +183,7 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Confirm overlapping dirty files were preserved and either resolved safely from evidence or reported as a genuine blocker without destructive cleanup.
 - Confirm every separate lane reused or created the exact `~/worktrees/<owner>/<repository>/<lane>` path, and that no nested worktree or duplicate branch checkout was created.
 - Confirm detached `PR-<number>` views remained inspection-only and writable repairs used the pull request head branch.
-- Confirm no worktree action stashed, reset, cleaned, force-removed, deleted a branch, shared `.env` files, or discarded tracked, untracked, ignored, or unpushed state.
+- Confirm no worktree action stashed, reset, cleaned, force-removed, deleted a branch, shared `.env` or `.envrc` files, or discarded tracked, untracked, ignored, or unpushed state.
 - Confirm author and committer identity were inspected before any commit.
 - Confirm secret scanning happened before staging.
 - Confirm routine failures were diagnosed, recovered autonomously, and verified, or that a genuine blocker was reported with the smallest required user input.

@@ -201,7 +201,7 @@ A change is done when all applicable conditions are met for its track.
 - Use conventional commit messages with "gitmojis" in the title to improve commit message readability
 - Work in the checkout that owns the requested lane
 - Put separate lanes only under ` + "`~/worktrees/<owner>/<repository>/<lane>`" + `, never inside a repository
-- Preserve dirty and unpushed worktree state; never stash, reset, clean, force-remove, delete a branch, or share ` + "`.env`" + ` files to make room
+- Preserve dirty and unpushed worktree state; never stash, reset, clean, force-remove, delete a branch, or share ` + "`.env`" + ` or ` + "`.envrc`" + ` files to make room
 
 ---
 

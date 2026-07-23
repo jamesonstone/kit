@@ -74,7 +74,7 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 		"`~/worktrees/<owner>/<repository>/<lane>`",
 		"exact uppercase `GH-<number>`",
 		"exact uppercase `PR-<number>`",
-		"Never automatically symlink or copy `.env` files",
+		"Never automatically symlink or copy `.env` or `.envrc` files",
 		"Remove only an exact registered path",
 	} {
 		if !strings.Contains(ruleset.Body, check) {

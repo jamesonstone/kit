@@ -19,6 +19,10 @@ var (
 	safeProjectPart  = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
 )
 
+func isSafeProjectPart(value string) bool {
+	return value != "." && value != ".." && safeProjectPart.MatchString(value)
+}
+
 const usage = `Usage: git wt <command> [arguments]
 
 Safe worktrees live at ~/worktrees/<owner>/<repository>/<lane>.
@@ -42,7 +46,7 @@ Safety:
   PR-<number> is detached and inspection-only; use repair for edits.
   remove never forces, deletes a branch, or discards dirty/unpushed state.
   migrate previews by default and uses git worktree move when applied.
-  No command stashes, resets, cleans, or shares .env files.`
+  No command stashes, resets, cleans, or shares .env or .envrc files.`
 
 type commandFunc func(context.Context, string, string, ...string) ([]byte, error)
 

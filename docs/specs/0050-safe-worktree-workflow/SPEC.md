@@ -101,12 +101,13 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - `go test -race ./internal/worktree ./internal/templates ./pkg/cli -count=1` passed.
 - `golangci-lint run --new-from-rev=origin/main ./...` reported `0 issues`.
 - `goreleaser check` validated the two-binary release configuration.
-- `make build` produced both `bin/kit` and `bin/git-wt`.
-- `./bin/kit improve run --suite prompt-system --kit-binary ./bin/kit --json` run `20260723T205854.492172000Z-448e15` passed all 45 task runs and all 345 assertions with deterministic output across 15 repeated tasks.
+- `make build` produced both `bin/kit` and `bin/git-wt`; `make build-windows` produced both Windows executables.
+- `./bin/kit improve run --suite prompt-system --kit-binary ./bin/kit --json` final run `20260723T212544.763147000Z-d1a63f` passed all 45 task runs and all 345 assertions with deterministic output across 15 repeated tasks.
 - `./bin/kit check safe-worktree-workflow` passed.
 - Focused reconcile tests proved primary checkouts still report missing local environment scaffold while linked checkouts do not require ignored `.env` or `.envrc` files.
 - Pre-completion `./bin/kit check --project` first exposed the linked-checkout environment-file mismatch; after the validator fix and progress-summary refresh, the final project check passed coherently.
 - `make install-git-wt`, `git wt help`, and `git wt root` passed; the installed binary and build artifact had identical SHA-256 values.
+- Post-PR review regression coverage passed for dot-segment project identity rejection, offline local-lane reuse, linked-worktree versus submodule detection, narrow local-only scaffold filtering, `.envrc` policy, and V3 repository-memory completion guidance.
 - `git wt migrate` previewed 29 collision-free moves. `git wt migrate --apply` moved all 29 with `git worktree move`; post-move verification matched every branch, `HEAD`, status count, and complete status hash, preserving all 25 dirty and 4 clean worktrees. A second preview reported no legacy flat linked worktrees.
 - LabCore downstream validation ran `make check` successfully and passed explicit worktree-policy assertions. Its `kit check --project` remains blocked by pre-existing invalid reference relations in feature `0012` and `0013` plus pre-existing scaffold/progress warnings; no unrelated feature artifacts were changed.
 - `git diff --check` passed in both repositories.
@@ -118,6 +119,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Migrated the live worktree root to lowercase owner/repository hierarchy while preserving each branch and dirty checkout exactly.
 - Added immutable current agent instructions `v3`, generated/legacy template alignment, prompt boundaries, active registry policy, release/build/install support, and a practical worktree reference guide.
 - Updated project validation to recognize Git-file linked checkouts and avoid pressuring them to recreate or share ignored environment files.
+- Hardened project identity containment, preserved offline reuse of existing local lanes, and distinguished linked-worktree metadata from submodule `.git` files after review.
 - Updated LabCore's active rules and guidance on issue `#80` and branch `GH-80` without changing its existing `GH-78` lane or reconciling any other managed project.
 - Kit delivery uses issue `#78` and branch `GH-78`; both repositories remain ready for their normal commit, push, and ready-pull-request gates.
 
