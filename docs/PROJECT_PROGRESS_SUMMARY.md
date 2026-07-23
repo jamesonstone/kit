@@ -50,6 +50,7 @@
 | 0046 | autonomous-mutation-recovery | `docs/specs/0046-autonomous-mutation-recovery` | complete | no | 2026-07-19 | Make Kit coding agents own routine failure recovery through completion instead of stopping after a failed in-scope mutation and asking the user to authorize a compatible retry such as authenticated `gh`. |
 | 0047 | kit-health-maintenance | `docs/specs/0047-kit-health-maintenance` | complete | no | 2026-07-19 | Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work. |
 | 0048 | native-plan-challenge | `docs/specs/0048-native-plan-challenge` | complete | no | 2026-07-23 | Make the proven cross-model plan-review workflow fast and explicit for Codex for Mac users: copy a plan produced by `/plan`, run `kit plan challenge`, and paste a supplemented adversarial-review prompt into a secondary model without Kit launching or calling any model. |
+| 0049 | application-architecture-rules | `docs/specs/0049-application-architecture-rules` | complete | no | 2026-07-23 | Provide reusable, framework-aware backend and frontend architecture rules that keep responsibilities and dependency direction explicit across Kit-managed application projects. |
 | 0050 | safe-worktree-workflow | `docs/specs/0050-safe-worktree-workflow` | complete | no | 2026-07-23 | Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-request work while preserving in-flight primary checkouts and making the repository hierarchy predictable. |
 
 ## PROJECT INTENT
@@ -476,6 +477,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **APPROACH**: 1. Add a small clipboard-read helper using `pbpaste`, with an injectable function seam matching the existing clipboard-copy test seam. 2. Add a top-level native-plan command group and a `challenge` subcommand that reads the clipboard, validates the candidate, builds a fixed provider-neutral adversarial prompt, and routes output through the shared clipboard-first helper. 3. Keep the challenge prompt in a focused command file and delimit the copied plan as quoted review input while making the Codex for Mac return format exact. 4. Register `plan` and `plan challenge` in root help and capability metadata without changing the deprecated `kit legacy plan` command. 5. Add focused command, prompt, clipboard-error, output-mode, help, and capability tests; update README and command documentation. 6. Run formatting, vet, focused and full tests, build, changed-lines lint, V3 feature/project checks, prompt-system evaluation when affected, and diff/secret review before explicit staging and delivery.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0048-native-plan-challenge/SPEC.md`
+
+### application-architecture-rules
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Provide reusable, framework-aware backend and frontend architecture rules that keep responsibilities and dependency direction explicit across Kit-managed application projects.
+- **APPROACH**: 1. Add mandatory downstream backend and frontend architecture rules with explicit responsibilities, dependency direction, anti-patterns, framework-aware exceptions, and verification. 2. Route API, backend, and frontend architecture work to the applicable rule through generated provider and RLM instructions without inlining full rule content. 3. Add focused ruleset, downstream refresh-adoption, and generated instruction-alignment tests. 4. Run formatting, vet, focused and full tests, race tests, build, Kit checks, changed-lines lint, and diff review before issue-first PR delivery.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0049-application-architecture-rules/SPEC.md`, `docs/references/rules/backend-service-architecture.md`, `docs/references/rules/frontend-application-architecture.md`
 
 ### safe-worktree-workflow
 
