@@ -36,6 +36,12 @@ func memoryRepositoryInstructions(title string) string {
 - ` + "`docs/agents/RLM.md`" + ` — just-in-time context loading
 - ` + "`docs/agents/TOOLING.md`" + ` — skills, post-plan dispatch, and secondary inputs
 
+## Application Architecture Gate
+
+- Before implementing API or backend routes, controllers or handlers, services, repositories, persistence adapters, or gateways, load ` + "`docs/references/rules/backend-service-architecture.md`" + `
+- Before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components, load ` + "`docs/references/rules/frontend-application-architecture.md`" + `
+- Treat both rules as responsibility boundaries rather than mandatory directory names, and preserve stronger repo-local architecture
+
 ## GitHub Delivery Hard Gate
 
 - Issue, branch, staging, commit, push, and PR actions are mutation boundaries
@@ -69,7 +75,9 @@ const memoryCopilotInstructions = `# GitHub Copilot Repository Instructions
 
 ` + `Use native planning for research and design. Before implementation, inspect code and repository documentation, then decide whether material rationale requires a living ` + "`SPEC.md`" + `. Capture the accepted plan before code when it does. After validation, load ` + "`docs/references/rules/constitution-curation.md`" + ` and curate durable decisions into the correct repository document; code-and-test-sufficient work may report that no documentation update was required.
 
-Start with ` + "`docs/agents/README.md`" + `. Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults.
+Start with ` + "`docs/agents/README.md`" + `. Before implementing API or backend routes, handlers, services, repositories, persistence adapters, or gateways, load ` + "`docs/references/rules/backend-service-architecture.md`" + `. Before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components, load ` + "`docs/references/rules/frontend-application-architecture.md`" + `. Treat both rules as responsibility boundaries rather than mandatory directory names, and preserve stronger repo-local architecture.
+
+Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults.
 
 ## Final Response
 

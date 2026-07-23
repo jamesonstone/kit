@@ -114,6 +114,68 @@ func TestRunInitRefresh_InstallsDownstreamCapabilitiesUsageRuleNotMaintainerRule
 	}
 }
 
+func TestRunInitRefresh_InstallsApplicationArchitectureRules(t *testing.T) {
+	slugs := []string{
+		"backend-service-architecture",
+		"frontend-application-architecture",
+	}
+	registry := make([]registryRuleset, 0, len(slugs))
+	for _, slug := range slugs {
+		content, err := os.ReadFile(filepath.Join("..", "..", rulesetTarget(slug)))
+		if err != nil {
+			t.Fatalf("read registry ruleset %s: %v", slug, err)
+		}
+		registry = append(registry, registryRulesetWithContentForTest(slug, string(content), "test-"+slug+"-commit"))
+	}
+
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	stubRulesetRegistry(t, registry...)
+	if err := config.Save(tempDir, config.Default()); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	updated, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	for _, slug := range slugs {
+		content, err := os.ReadFile(filepath.Join(tempDir, rulesetTarget(slug)))
+		if err != nil {
+			t.Fatalf("expected downstream ruleset %s to be installed: %v", slug, err)
+		}
+		for _, check := range []string{
+			"slug: " + slug,
+			"registry_scope: downstream",
+			"read_policy_default: must",
+		} {
+			if !strings.Contains(string(content), check) {
+				t.Errorf("expected installed %s ruleset to contain %q", slug, check)
+			}
+		}
+		artifact, ok := updated.RegistryArtifact(rulesetKind, slug)
+		if !ok {
+			t.Errorf("expected registry state for %s", slug)
+			continue
+		}
+		if artifact.State != registryArtifactStateManaged {
+			t.Errorf("registry state for %s = %q, want managed", slug, artifact.State)
+		}
+	}
+}
+
 func TestRunInitRefresh_DryRunDiffReportsDownstreamCapabilitiesUsageRuleAdoption(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)

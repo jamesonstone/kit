@@ -76,6 +76,45 @@ func TestMemoryRepositoryInstructionsRouteConstitutionCuration(t *testing.T) {
 	}
 }
 
+func TestMemoryRepositoryInstructionsRouteApplicationArchitecture(t *testing.T) {
+	routes := []string{
+		"load `docs/references/rules/backend-service-architecture.md`",
+		"load `docs/references/rules/frontend-application-architecture.md`",
+		"responsibility boundaries rather than mandatory directory names",
+	}
+	for name, content := range map[string]string{
+		"AGENTS.md":                       MemoryAgentsMD,
+		"CLAUDE.md":                       MemoryClaudeMD,
+		".github/copilot-instructions.md": MemoryCopilotInstructionsMD,
+	} {
+		for _, route := range routes {
+			if !strings.Contains(content, route) {
+				t.Errorf("expected V3 %s to contain architecture route %q", name, route)
+			}
+		}
+	}
+
+	generatedRLM := fileContentByPath(
+		InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
+		"docs/agents/RLM.md",
+	)
+	for _, rulePath := range []string{
+		"`docs/references/rules/backend-service-architecture.md`",
+		"`docs/references/rules/frontend-application-architecture.md`",
+	} {
+		if !strings.Contains(generatedRLM, rulePath) {
+			t.Errorf("expected generated RLM guidance to contain %q", rulePath)
+		}
+	}
+	checkedInRLM, err := os.ReadFile(filepath.Join("..", "..", "docs", "agents", "RLM.md"))
+	if err != nil {
+		t.Fatalf("read checked-in RLM guidance: %v", err)
+	}
+	if string(checkedInRLM) != generatedRLM {
+		t.Fatal("checked-in RLM guidance is not aligned with the V3 generator")
+	}
+}
+
 func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 	defaultChecks := []string{
 		"## GitHub Delivery Hard Gate",

@@ -50,6 +50,7 @@
 | 0046 | autonomous-mutation-recovery | `docs/specs/0046-autonomous-mutation-recovery` | complete | no | 2026-07-19 | Make Kit coding agents own routine failure recovery through completion instead of stopping after a failed in-scope mutation and asking the user to authorize a compatible retry such as authenticated `gh`. |
 | 0047 | kit-health-maintenance | `docs/specs/0047-kit-health-maintenance` | complete | no | 2026-07-19 | Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work. |
 | 0048 | native-plan-challenge | `docs/specs/0048-native-plan-challenge` | complete | no | 2026-07-23 | Make the proven cross-model plan-review workflow fast and explicit for Codex for Mac users: copy a plan produced by `/plan`, run `kit plan challenge`, and paste a supplemented adversarial-review prompt into a secondary model without Kit launching or calling any model. |
+| 0049 | application-architecture-rules | `docs/specs/0049-application-architecture-rules` | complete | no | 2026-07-23 | Provide reusable, framework-aware backend and frontend architecture rules that keep responsibilities and dependency direction explicit across Kit-managed application projects. |
 
 ## PROJECT INTENT
 
@@ -476,6 +477,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0048-native-plan-challenge/SPEC.md`
 
+### application-architecture-rules
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Provide reusable, framework-aware backend and frontend architecture rules that keep responsibilities and dependency direction explicit across Kit-managed application projects.
+- **APPROACH**: 1. Add mandatory downstream backend and frontend architecture rules with explicit responsibilities, dependency direction, anti-patterns, framework-aware exceptions, and verification. 2. Route API, backend, and frontend architecture work to the applicable rule through generated provider and RLM instructions without inlining full rule content. 3. Add focused ruleset, downstream refresh-adoption, and generated instruction-alignment tests. 4. Run formatting, vet, focused and full tests, race tests, build, Kit checks, changed-lines lint, and diff review before issue-first PR delivery.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0049-application-architecture-rules/SPEC.md`, `docs/references/rules/backend-service-architecture.md`, `docs/references/rules/frontend-application-architecture.md`
+
 ## LAST UPDATED
 
-2026-07-23 13:20:52 EDT
+2026-07-23 15:59:23 EDT
