@@ -71,6 +71,19 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 		"including `gh`",
 		"Ask permission only before large-scale deletion or deleting sensitive files",
 		"do not frame this as permission for a routine retry",
+		"`~/worktrees/<owner>/<repository>/<lane>`",
+		"exact uppercase `GH-<number>`",
+		"exact uppercase `PR-<number>`",
+		"native `git worktree` commands and ordinary filesystem operations",
+		"must not require `git-wt`",
+		"link the clone's primary checkout repository-root `.env`",
+		"accept an already-matching symlink during reuse",
+		"omit the link when isolation is required",
+		"Never copy `.env` contents",
+		"automatically share `.envrc`",
+		"restore it if removal fails",
+		"runtime services, databases, ports, Temporal state",
+		"Remove only an exact registered path",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected safety-guardrails ruleset to contain %q", check)
@@ -79,6 +92,9 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 	for _, forbidden := range []string{
 		"Do not retry with mutation",
 		"Surface the failure to the user and await instruction",
+		"Do not create or use git worktrees for agent work",
+		"`--no-link-env`",
+		"Let GitWT",
 	} {
 		if strings.Contains(ruleset.Body, forbidden) {
 			t.Fatalf("expected safety-guardrails ruleset to omit blanket stop behavior %q", forbidden)
@@ -184,6 +200,16 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"another supported authenticated path such as `gh`",
 		"without requesting routine retry permission",
 		"Verify that no duplicate issue or PR was created",
+		"Project-Oriented Worktree Delivery",
+		"`~/worktrees/<owner>/<repository>/<lane>`",
+		"native `git worktree` commands as the portable authority",
+		"rules and reconciled guidance must not depend on them",
+		"git worktree add -b",
+		"Writable review repair must use the pull request's same-repository head branch",
+		"symlink the clone's primary checkout repository-root `.env` by default",
+		"never automatically share `.envrc`",
+		"restore it if removal fails",
+		"application startup, databases, port allocation, Temporal state",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)
@@ -191,6 +217,11 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 	}
 	if strings.Contains(ruleset.Body, "stop and do not mutate to retry") {
 		t.Fatal("expected github-pr-delivery ruleset to omit blanket mutation retry prohibition")
+	}
+	for _, forbidden := range []string{"`--no-link-env`", "`git wt repair", "`git wt path", "GitWT"} {
+		if strings.Contains(ruleset.Body, forbidden) {
+			t.Fatalf("github-pr-delivery must not depend on wrapper-specific policy %q", forbidden)
+		}
 	}
 }
 

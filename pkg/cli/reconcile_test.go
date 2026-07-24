@@ -565,6 +565,54 @@ func TestBuildReconcileReportProjectScopeFindsMissingInitScaffoldArtifacts(t *te
 	}
 }
 
+func TestBuildReconcileReportAllowsMissingLocalEnvironmentFilesInLinkedCheckout(t *testing.T) {
+	projectRoot := setupCoherentProjectForCheck(t)
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	for _, relativePath := range []string{envPath, envrcPath, codeRabbitConfigPath} {
+		if err := os.Remove(filepath.Join(projectRoot, relativePath)); err != nil {
+			t.Fatalf("os.Remove(%s) error = %v", relativePath, err)
+		}
+	}
+	commonDir := filepath.Join(t.TempDir(), "common")
+	worktreeGitDir := filepath.Join(commonDir, "worktrees", "linked")
+	writeFile(t, filepath.Join(worktreeGitDir, "commondir"), "../..\n")
+	writeFile(t, filepath.Join(projectRoot, ".git"), "gitdir: "+worktreeGitDir+"\n")
+
+	report, err := buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		t.Fatalf("buildReconcileReport() error = %v", err)
+	}
+
+	issues := findingsIssues(report.Findings)
+	for _, unexpected := range []string{
+		"missing Kit init scaffold artifact `.env`",
+		"missing Kit init scaffold artifact `.envrc`",
+	} {
+		if strings.Contains(issues, unexpected) {
+			t.Fatalf("linked checkout should not require local-only scaffold %q, got %q", unexpected, issues)
+		}
+	}
+	if !strings.Contains(issues, "missing Kit init scaffold artifact `.coderabbit.yaml`") {
+		t.Fatalf("linked checkout must still require non-local scaffold artifacts, got %q", issues)
+	}
+}
+
+func TestUsesLinkedWorktreeCheckoutRejectsSubmoduleGitFile(t *testing.T) {
+	projectRoot := t.TempDir()
+	moduleGitDir := filepath.Join(t.TempDir(), "modules", "example")
+	if err := os.MkdirAll(moduleGitDir, 0o755); err != nil {
+		t.Fatalf("os.MkdirAll() error = %v", err)
+	}
+	writeFile(t, filepath.Join(projectRoot, ".git"), "gitdir: "+moduleGitDir+"\n")
+
+	if usesLinkedWorktreeCheckout(projectRoot) {
+		t.Fatal("submodule-style .git file must not be treated as linked-worktree metadata")
+	}
+}
+
 func TestRunReconcileRejectsAllWithFeatureArg(t *testing.T) {
 	reconcileAll = true
 	t.Cleanup(func() { reconcileAll = false })

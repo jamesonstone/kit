@@ -17,11 +17,26 @@ builds:
       - arm64
     ldflags:
       - -s -w -X github.com/jamesonstone/kit/pkg/cli.Version={{ .Version }}
+  - id: git-wt
+    main: ./cmd/git-wt
+    binary: git-wt
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
 
 archives:
   - id: kit
     ids:
       - kit
+      - git-wt
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows

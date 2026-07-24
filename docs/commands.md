@@ -7,6 +7,7 @@ libraries, scaffold refresh, and common command paths.
 
 ```bash
 go install github.com/jamesonstone/kit/cmd/kit@latest
+GOBIN="$HOME/.local/bin" go install github.com/jamesonstone/kit/cmd/git-wt@latest
 ```
 
 Or build from source:
@@ -17,6 +18,9 @@ cd kit
 make build
 ```
 
+`make build` builds `bin/kit` and `bin/git-wt`, then installs or updates
+`~/.local/bin/git-wt`.
+
 To enable repository-managed Git hooks:
 
 ```bash
@@ -25,6 +29,18 @@ make install-git-hooks
 
 This configures `core.hooksPath` to use `.githooks/`, including a `pre-commit`
 hook that runs `make build` before every commit.
+
+The separately installed `git-wt` executable is an optional manual convenience
+discovered by Git as `git wt`. Kit-managed rules and reconciled guidance use
+native `git worktree` commands and do not depend on this wrapper. For the
+portable workflow and optional command cheat sheet, see
+[references/worktrees.md](references/worktrees.md). Use `git wt help` for
+command discovery; Git reserves
+`git <command> --help` for installed manual pages. Writable `issue`, `add`, and
+`repair` lanes link the clone's primary checkout `.env` by default; append
+`--no-link-env` when isolation is required. Detached `pr` lanes and migration do
+not create environment links. Navigate to an exact registered lane with
+`cd "$(git wt path GH-123)"`.
 
 ## Quick Start
 
@@ -41,6 +57,7 @@ kit health --dry-run --diff
 kit resume my-feature
 kit map --all
 kit instructions
+kit instructions --version=v3
 kit instructions --version=v2
 kit instructions --version=v1
 kit capabilities --search verify
@@ -164,6 +181,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
+| `git wt` | Optional manual wrapper for durable issue lanes, exact path lookup, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
 
 ## Prompt Profiles And Subagents
 
@@ -272,7 +290,7 @@ human-readable wrappers.
 
 `kit instructions` always writes raw Markdown to stdout without a banner or
 clipboard side effect. It defaults to the explicitly configured current embedded
-version, currently `v2`; use `kit instructions --version=v2` for an exact current
+version, currently `v3`; use `kit instructions --version=v3` for an exact current
 selection or an earlier selector such as `kit instructions --version=v1` when a
 reproducible historical payload is required.
 

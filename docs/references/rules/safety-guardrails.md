@@ -69,9 +69,29 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Do not overwrite, revert, or mix unrelated user changes.
 - If unrelated dirty files exist, leave them alone.
 - If dirty files overlap the requested work, preserve them and resolve the overlap autonomously when ownership and intent are evident; otherwise complete unblocked work and request the smallest clarification needed without discarding changes.
-- Work in the existing project directory.
-- Do not create or use git worktrees for agent work.
-- If the current branch or dirty state is unsuitable, recover safely in the existing project directory when the intended lane and file ownership are provable; otherwise report the blocker. Do not create an alternate checkout or worktree.
+- Work in the existing checkout when it already owns the requested lane.
+- When the current checkout contains unrelated work or another active lane, preserve it and use a separate canonical worktree rather than switching, stashing, resetting, cleaning, or mixing branches.
+
+### Worktree Lane Selection
+
+- Canonical linked worktrees live only at `~/worktrees/<owner>/<repository>/<lane>`, outside every repository checkout.
+- Before creating a worktree, inspect `git worktree list --porcelain` and reuse the exact registered branch worktree when one exists.
+- Use exact uppercase `GH-<number>` for a durable issue branch lane.
+- Use exact uppercase `PR-<number>` only for a temporary detached pull-request view. Never implement or repair in that detached view; reuse the pull request's writable head branch worktree.
+- Keep one active branch in one worktree. Do not bypass Git's branch ownership check.
+- Treat working files, the index, and `HEAD` as worktree-local. Treat objects, refs, remotes, most configuration, and stash entries as shared clone state.
+- Never create linked worktrees inside a project directory, including `.worktrees/`.
+- Keep the root checkout on the protected default branch and perform issue work directly in the assigned durable worktree.
+- Use native `git worktree` commands and ordinary filesystem operations as the portable authority. Rules and reconciled guidance must not require `git-wt`, an alias, plugin, or other wrapper.
+- For a writable lane, link the clone's primary checkout repository-root `.env` by default when the source exists. Create only an exact symlink after proving the destination does not exist, or accept an already-matching symlink during reuse; omit the link when isolation is required.
+- Never copy `.env` contents, overwrite an existing destination `.env`, or automatically share `.envrc`, credentials outside the explicit `.env` link, tokens, private keys, or other machine-local configuration.
+- Keep detached `PR-<number>` views environment-isolated, and preserve existing files and links during migration without creating new ones.
+- Never use stash, reset, clean, force removal, branch deletion, or substring-based target selection to make a worktree operation succeed.
+- List worktrees without pruning. Prune only through an explicit prune action after reviewing stale metadata.
+- Remove only an exact registered path after proving it is not the current checkout, contains no tracked, untracked, or ignored material other than a verified expected `.env` symlink, and has no unpushed commits. Verify that the link targets the primary checkout's repository-root `.env`, unlink only that symlink before ordinary non-force `git worktree remove`, and restore it if removal fails.
+- Keep runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration outside the worktree workflow.
+- Subagents may use only a worktree explicitly prepared and assigned by the supervisor. They may not independently create, switch, move, or remove worktrees.
+- Load `docs/references/worktrees.md` for command usage and the complete mental model.
 
 ### Protected-Branch Detection
 
@@ -150,7 +170,7 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Do not commit directly to a protected or assumed-protected branch.
 - Do not clean up a failure with destructive git commands.
 - Do not hide unrelated dirty work inside the requested change.
-- Do not create or use git worktrees for agent work.
+- Do not put worktrees inside repositories, improvise flat paths outside the project hierarchy, edit detached `PR-<number>` views, or force worktree cleanup.
 - Do not stage secrets, `.env` files, tokens, private keys, or machine-local config.
 - Do not proceed to lane gating before branch and repository recon is complete.
 - Do not commit when author or committer identity is missing, ambiguous, or not the human user's.
@@ -166,6 +186,9 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Confirm the active directory, branch, remote, and PR state matched the intended work lane before editing, committing, pushing, or mutating a PR.
 - Confirm protected or assumed-protected branches were not written to.
 - Confirm overlapping dirty files were preserved and either resolved safely from evidence or reported as a genuine blocker without destructive cleanup.
+- Confirm every separate lane reused or created the exact `~/worktrees/<owner>/<repository>/<lane>` path, and that no nested worktree or duplicate branch checkout was created.
+- Confirm detached `PR-<number>` views remained inspection-only and writable repairs used the pull request head branch.
+- Confirm writable lanes linked only the expected `.env` by default or intentionally omitted the link for isolation, and that no worktree action copied environment contents, shared `.envrc`, stashed, reset, cleaned, force-removed, deleted a branch, or discarded tracked, untracked, ignored, or unpushed state.
 - Confirm author and committer identity were inspected before any commit.
 - Confirm secret scanning happened before staging.
 - Confirm routine failures were diagnosed, recovered autonomously, and verified, or that a genuine blocker was reported with the smallest required user input.

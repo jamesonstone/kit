@@ -40,6 +40,9 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 		"including authenticated `gh`",
 		"Ask permission only before large-scale deletion or deleting sensitive files",
 		"not as routine retry-permission requests",
+		"Use native `git worktree` commands and ordinary filesystem operations as the portable authority",
+		"do not require a wrapper, alias, or plugin",
+		"omit the link when isolation is required",
 	} {
 		if !strings.Contains(generated, want) {
 			t.Fatalf("expected V3 guardrails to contain %q", want)
@@ -48,6 +51,11 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 	if strings.Contains(generated, "Do not run `git add` or `git commit` without explicit approval") {
 		t.Fatal("expected V3 guardrails to omit routine git approval requirement")
 	}
+	for _, forbidden := range []string{"`--no-link-env`", "Let GitWT"} {
+		if strings.Contains(generated, forbidden) {
+			t.Fatalf("V3 guardrails must not depend on wrapper-specific policy %q", forbidden)
+		}
+	}
 
 	checkedIn, err := os.ReadFile(filepath.Join("..", "..", "docs", "agents", "GUARDRAILS.md"))
 	if err != nil {
@@ -55,6 +63,74 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 	}
 	if string(checkedIn) != generated {
 		t.Fatal("checked-in guardrails are not aligned with the V3 generator")
+	}
+}
+
+func TestMemoryInstructionsPreserveProjectOrientedWorktrees(t *testing.T) {
+	tooling := fileContentByPath(
+		InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
+		"docs/agents/TOOLING.md",
+	)
+	for _, want := range []string{
+		"`~/worktrees/<owner>/<repository>/<lane>`",
+		"uppercase detached `PR-<number>`",
+		"never edit the detached `PR-<number>` view",
+		"Use native `git worktree` commands as the portable authority",
+		"do not require `git-wt`, an alias, or another wrapper",
+		"Optional wrappers are manual conveniences only",
+		"Keep the root checkout on the protected default branch",
+		"Link the primary checkout's `.env` into writable lanes by default when it exists",
+		"omit the link when isolation is required",
+		"Never copy `.env` contents or automatically share `.envrc`",
+		"worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
+		"refs, remotes, objects, configuration, and stash state are shared",
+	} {
+		if !strings.Contains(tooling, want) {
+			t.Fatalf("expected V3 tooling to contain %q", want)
+		}
+	}
+	for _, forbidden := range []string{"Use the Kit-owned `git wt`", "`--no-link-env`", "Let GitWT"} {
+		if strings.Contains(tooling, forbidden) {
+			t.Fatalf("V3 tooling must not depend on wrapper-specific policy %q", forbidden)
+		}
+	}
+
+	checkedIn, err := os.ReadFile(filepath.Join("..", "..", "docs", "agents", "TOOLING.md"))
+	if err != nil {
+		t.Fatalf("read checked-in tooling: %v", err)
+	}
+	if string(checkedIn) != tooling {
+		t.Fatal("checked-in tooling is not aligned with the V3 generator")
+	}
+}
+
+func TestMemoryWorktreeReferenceIsManagedAndNative(t *testing.T) {
+	generated := fileContentByPath(
+		InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
+		"docs/references/worktrees.md",
+	)
+	for _, want := range []string{
+		"Native `git worktree` commands and ordinary filesystem operations define this",
+		"The clone's primary checkout owns the shared repository-root `.env`",
+		"`git worktree remove",
+		"Runtime services, databases, ports",
+	} {
+		if !strings.Contains(generated, want) {
+			t.Fatalf("expected V3 worktree reference to contain %q", want)
+		}
+	}
+	for _, forbidden := range []string{"git wt issue", "--no-link-env"} {
+		if strings.Contains(generated, forbidden) {
+			t.Fatalf("V3 worktree reference must not require optional wrapper syntax %q", forbidden)
+		}
+	}
+
+	checkedIn, err := os.ReadFile(filepath.Join("..", "..", "docs", "references", "worktrees.md"))
+	if err != nil {
+		t.Fatalf("read checked-in worktree reference: %v", err)
+	}
+	if string(checkedIn) != generated {
+		t.Fatal("checked-in worktree reference is not aligned with the V3 generator")
 	}
 }
 

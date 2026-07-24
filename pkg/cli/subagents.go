@@ -58,7 +58,7 @@ func subagentPromptSuffix() string {
 		"- Use one lane for trivial, tightly coupled, ambiguous, or high-overlap work. In normal operation, run at most 3 independent lanes and serialize shared files or interfaces.",
 		"- A fourth lane requires explicit exceptional authorization from the supervisor, clearly low file overlap, and an independent validation surface; never exceed 4 lanes.",
 		"- After nontrivial implementation, use a read-only verification agent unless the task is documentation-only, tightly coupled, explicitly single-agent, or the runtime cannot spawn agents.",
-		"- Subagents may not expand scope, use worktrees, or mutate Git/GitHub delivery state unless the supervisor explicitly assigns and authorizes it.",
+		"- Subagents may use only a supervisor-prepared, explicitly assigned worktree; they may not create, switch, move, or remove worktrees, expand scope, or mutate Git/GitHub delivery state without explicit supervisor authorization.",
 		"- Report actual agents used and omitted lanes. If none ran, state: `single supervisor lane; no specialist or verification agents spawned`.",
 	}, "\n")
 }

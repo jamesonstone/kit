@@ -85,7 +85,7 @@ func SupportDocs(version int) []Doc {
 		return nil
 	}
 
-	return []Doc{
+	docs := []Doc{
 		{
 			Label:        "AGENTS DOCS",
 			RelativePath: "docs/agents/README.md",
@@ -150,6 +150,16 @@ func SupportDocs(version int) []Doc {
 			ManagedBy:    "kit scaffold agents",
 		},
 	}
+	if version == config.InstructionScaffoldVersionMemory {
+		docs = append(docs, Doc{
+			Label:        "WORKTREES",
+			RelativePath: "docs/references/worktrees.md",
+			Use:          "portable native Git worktree workflow and safety model",
+			Required:     true,
+			ManagedBy:    "kit scaffold agents",
+		})
+	}
+	return docs
 }
 
 func ExistingInstructionDocs(projectRoot string, cfg *config.Config) []Doc {

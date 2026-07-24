@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "config", "config check", "aws", "aws verify", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine"} {
+	for _, command := range []string{"capabilities", "config", "config check", "aws", "aws verify", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine", "git wt path"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
@@ -55,6 +55,29 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 	}
 	if ci.NetworkUse.Summary == "none" {
 		t.Fatalf("expected ci network behavior to be documented, got %#v", ci.NetworkUse)
+	}
+}
+
+func TestCapabilitiesDescribeGitWTPath(t *testing.T) {
+	output, err := executeCapabilitiesCommand("--json", "git", "wt", "path")
+	if err != nil {
+		t.Fatalf("kit capabilities git wt path --json error = %v", err)
+	}
+	var payload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(output), &payload); err != nil {
+		t.Fatalf("json.Unmarshal(git wt path) error = %v", err)
+	}
+	if payload.Command.Command != "git wt path" {
+		t.Fatalf("command = %q, want git wt path", payload.Command.Command)
+	}
+	if payload.Command.MutationLevel != mutationNone {
+		t.Fatalf("mutation level = %q, want %q", payload.Command.MutationLevel, mutationNone)
+	}
+	if !strings.Contains(strings.Join(payload.Command.Examples, " "), `cd "$(git wt path GH-101)"`) {
+		t.Fatalf("expected navigation example, got %#v", payload.Command.Examples)
+	}
+	if !strings.Contains(strings.Join(payload.Command.Caveats, " "), "optional manual convenience") {
+		t.Fatalf("expected optional-wrapper caveat, got %#v", payload.Command.Caveats)
 	}
 }
 

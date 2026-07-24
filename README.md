@@ -33,6 +33,7 @@ why.
 
 ```bash
 go install github.com/jamesonstone/kit/cmd/kit@latest
+GOBIN="$HOME/.local/bin" go install github.com/jamesonstone/kit/cmd/git-wt@latest
 ```
 
 Or build from source:
@@ -42,6 +43,11 @@ git clone https://github.com/jamesonstone/kit.git
 cd kit
 make build
 ```
+
+`make build` builds both Kit executables and installs or updates the optional
+`~/.local/bin/git-wt` manual convenience so Git can discover it as `git wt`.
+Kit-managed rules and reconciled guidance use native `git worktree` commands
+and do not require this wrapper.
 
 Enable repository-managed hooks for this clone:
 
@@ -109,11 +115,14 @@ the complete durable truth.
 | `kit config check` | Validate schema-versioned `.kit.yaml` and offer safe interactive repairs |
 | `kit aws verify` | Verify the configured AWS profile, account, and ARN against `.kit.yaml` |
 | `kit improve run --suite prompt-system` | Run deterministic prompt regression and size checks |
-| `kit instructions [--version=vN]` | Print current (`v2`) provider-neutral coding-agent instructions as raw Markdown; use `--version=vN` to retrieve an immutable version for reproducible use |
+| `kit instructions [--version=vN]` | Print current (`v3`) provider-neutral coding-agent instructions as raw Markdown; use `--version=vN` to retrieve an immutable version for reproducible use |
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
+| `git wt help` | Optionally manage and locate project-oriented worktrees for manual use, with default writable-lane `.env` links beneath `~/worktrees` |
 
-See [docs/commands.md](docs/commands.md) for the full command guide.
+See [docs/commands.md](docs/commands.md) for the full Kit command guide and
+[docs/references/worktrees.md](docs/references/worktrees.md) for the portable
+native Git workflow and optional `git wt` cheat sheet.
 
 ## Documentation Map
 
@@ -123,6 +132,7 @@ See [docs/commands.md](docs/commands.md) for the full command guide.
 - 🧱 [Constitution](docs/CONSTITUTION.md) - project contract, invariants, and repository rules.
 - 🤖 [Agent Docs](docs/agents/README.md) - repo-local agent routing and RLM guidance.
 - 📌 [References](docs/references/README.md) - durable project references and rulesets.
+- 🌳 [Git Worktrees](docs/references/worktrees.md) - safe hierarchy, naming, commands, and lifecycle.
 - 🧪 [Testing Reference](docs/references/testing.md) - testing guidance.
 - 🛠️ [Tooling Reference](docs/references/tooling.md) - durable tooling notes.
 
