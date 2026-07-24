@@ -113,7 +113,7 @@ the complete durable truth.
 | `kit instructions [--version=vN]` | Print current (`v3`) provider-neutral coding-agent instructions as raw Markdown; use `--version=vN` to retrieve an immutable version for reproducible use |
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
-| `git wt help` | Manage safe project-oriented worktrees and default writable-lane `.env` links beneath `~/worktrees` |
+| `git wt help` | Manage and locate project-oriented worktrees with default writable-lane `.env` links beneath `~/worktrees` |
 
 See [docs/commands.md](docs/commands.md) for the full Kit command guide and
 [docs/references/worktrees.md](docs/references/worktrees.md) for the `git wt`

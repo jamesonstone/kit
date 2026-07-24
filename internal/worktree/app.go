@@ -31,6 +31,7 @@ Commands:
   repair <number> [--no-link-env]  Open a same-repository PR's writable head branch
   list                             List this clone's worktrees without pruning
   root                             Print this repository's canonical worktree directory
+  path <lane>                      Print an exact registered lane path for shell navigation
   remove <lane|path>               Remove one exact clean, fully-pushed worktree
   prune [--dry-run]                Explicitly prune stale worktree metadata
   migrate [--apply]                Preview or apply legacy flat-directory migration
@@ -119,6 +120,11 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 			return err
 		}
 		return a.writef("%s\n", repo.projectRoot)
+	case "path":
+		if len(args) != 2 {
+			return fmt.Errorf("usage: git wt path <lane>")
+		}
+		return a.lanePath(ctx, cwd, args[1])
 	case "list":
 		if len(args) != 1 {
 			return fmt.Errorf("list accepts no arguments")
@@ -202,6 +208,22 @@ func (a *App) list(ctx context.Context, cwd string) error {
 		}
 	}
 	return nil
+}
+
+func (a *App) lanePath(ctx context.Context, cwd, lane string) error {
+	repo, err := a.repository(ctx, cwd)
+	if err != nil {
+		return err
+	}
+	path, err := canonicalLanePath(repo, lane)
+	if err != nil {
+		return err
+	}
+	selected, err := a.registeredWorktree(ctx, repo.top, path)
+	if err != nil {
+		return err
+	}
+	return a.writef("%s\n", selected.path)
 }
 
 func (a *App) prune(ctx context.Context, cwd string, args []string) error {

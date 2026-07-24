@@ -71,6 +71,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Provide `PR-<number>` as a detached inspection lane fetched from the pull request head.
 - Provide a repair command that resolves a same-repository pull request head and opens its durable branch worktree instead of editing the detached `PR-<number>` view.
 - Provide read-only listing, exact safe removal, explicit pruning, root discovery, and dry-run-first migration of legacy flat linked worktrees.
+- Provide a read-only `path <lane>` command that prints only the exact registered worktree path so callers can navigate with `cd "$(git wt path <lane>)"` without fuzzy matching or filesystem mutation.
 - Removal must never use force, must refuse the current checkout, dirty state, ignored material, and local branch commits that are not present on the configured upstream.
 - Migration must preflight every candidate and destination before applying, use `git worktree move`, preserve dirty contents, skip already hierarchical directories, and stop rather than overwrite or force through a conflict.
 - Link the invoking checkout's repository-root `.env` into writable `issue`, `add`, and `repair` lanes by default, using a symlink only and allowing explicit `--no-link-env` isolation.
@@ -96,6 +97,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 4. Add focused real-Git integration coverage plus command-help assertions for creation, reuse, opt-out, collisions, safe removal, and no-copy semantics.
 5. Align the canonical guide, README, command docs, Constitution, active registry rules, generated V3 support files, and current V3 instruction payload while preserving immutable V1 and V2 payloads.
 6. Validate Kit fully, then update only LabCore's dedicated worktree-policy PR if its managed rules and V3 guidance require the new contract.
+7. Add exact registered-lane path lookup for shell command substitution, document the parent-shell limitation, and register the command in Kit capabilities.
 
 ## DECISIONS
 
@@ -107,6 +109,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Make `.env` symlinking the one opinionated writable-lane convenience. It shares configuration without copying credentials and remains explicitly disableable with `--no-link-env`.
 - Recognize a removable environment link by exact destination name, symlink type, and target match only; do not add a broad `.env` deletion or dirty-state exception.
 - Keep application processes, databases, ports, Temporal state, and sibling repository coordination outside GitWT so the command remains a thin Git worktree wrapper.
+- Print an exact registered path instead of adding a misleading `cd` command: an external Git subcommand cannot change its parent shell's working directory, while `cd "$(git wt path GH-101)"` is portable and composable.
 
 ## DISCOVERIES
 
@@ -120,6 +123,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Git reports an ignored or untracked managed link as an exact `.env` porcelain entry. Filtering only that entry after verifying the symlink target preserves every existing dirty, ignored, and unpublished removal protection.
 - GitWT must restore the original symlink text rather than recreate a normalized target when native worktree removal fails, so relative and absolute matching links retain their original representation.
 - LabCore's live `GH-78` / PR `#79` is unrelated order-to-hold product work. Its dedicated worktree-policy lane is issue `#80`, branch `GH-80`, and PR `#81`; only that lane may receive downstream policy updates.
+- Navigation must be implemented as path resolution because a child process cannot change its invoking shell's current directory.
 
 ## VALIDATION
 
@@ -148,6 +152,12 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Immutable V1 and V2 instruction payloads retained SHA-256 values `50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5` and `811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc`.
 - Follow-up `./bin/kit check safe-worktree-workflow`, `./bin/kit check --all`, and `./bin/kit check --project` passed; all 47 features and the project contract were coherent.
 - Follow-up prompt-system run `20260724T143503.212928000Z-6e1a13` passed all 45 task runs and all 345 assertions with deterministic output across 15 repeated tasks.
+- Exact-path integration coverage passed for durable issue lanes, nested branch lanes, unknown-lane refusal, invalid usage, and path-only output across filesystem-equivalent macOS path aliases.
+- `make fmt`, `go vet ./...`, `go test ./... -count=1`, `go test -race ./internal/worktree ./pkg/cli -count=1`, and `golangci-lint run --new-from-rev=origin/main ./...` passed; lint reported `0 issues`.
+- `make build`, `make build-windows`, and `goreleaser check` passed for both binaries and target platforms.
+- The built command completed a real shell navigation check with `resolved_lane="$(./bin/git-wt path GH-78)"`, matched the active worktree, and confirmed branch `GH-78` after changing into the result.
+- `./bin/kit capabilities --json git wt path`, `./bin/kit check safe-worktree-workflow`, and `./bin/kit check --project` passed.
+- Prompt-system run `20260724T145815.411364000Z-d99cf1` passed all 45 task runs, all 345 assertions, and all 15 repeated-task determinism checks.
 
 ## OUTCOME
 
@@ -161,13 +171,15 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Updated project validation to recognize Git-file linked checkouts and avoid pressuring them to recreate or share ignored environment files.
 - Hardened project identity containment, preserved offline reuse of existing local lanes, and distinguished linked-worktree metadata from submodule `.git` files after review.
 - Updated LabCore's active rules and guidance on issue `#80` and branch `GH-80` without changing its existing `GH-78` lane or reconciling any other managed project.
+- Added read-only `git wt path <lane>` lookup for exact registered lanes, enabling portable navigation with `cd "$(git wt path GH-101)"` while rejecting unknown lanes, fuzzy matches, and traversal.
+- Registered `git wt path` in Kit capabilities and updated help, command docs, the canonical worktree guide, and delivery guidance with path-based navigation.
 - Kit delivery uses issue `#78` and branch `GH-78`; both repositories remain ready for their normal commit, push, and ready-pull-request gates.
 
 ## REPOSITORY MEMORY
 
-Decision: created
+Decision: updated
 
-Rationale: This changes cross-repository execution policy and establishes a durable local workflow whose safety model is not fully expressed by code alone.
+Rationale: Exact path lookup adds a durable command contract and records why GitWT prints a path instead of pretending a child process can change its parent shell. The Constitution required no change because the established thin-wrapper and exact-target invariants remain unchanged.
 
 Artifacts:
 

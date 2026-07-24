@@ -243,6 +243,7 @@ func TestHelpDocumentsWritableEnvironmentOptOut(t *testing.T) {
 		"issue <number> [--no-link-env]",
 		"add <branch> [--no-link-env]",
 		"repair <number> [--no-link-env]",
+		"path <lane>",
 		".envrc is never linked automatically",
 		"No command starts applications or manages databases, ports, or runtime services",
 	} {

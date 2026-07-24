@@ -69,7 +69,7 @@ Create or reuse a durable issue lane after its GitHub issue exists:
 
 ```bash
 git wt issue 76
-cd "$(git wt root)/GH-76"
+cd "$(git wt path GH-76)"
 ```
 
 Open an existing local or remote branch:
@@ -83,7 +83,7 @@ Inspect a pull request without checking its branch out for editing:
 
 ```bash
 git wt pr 77
-cd "$(git wt root)/PR-77"
+cd "$(git wt path PR-77)"
 ```
 
 `PR-77` is detached and inspection-only. To address review feedback, resolve
@@ -96,6 +96,18 @@ git wt repair 77
 This is the recommended entrypoint before running `kit pr fix --pr 77`: inspect
 with `git wt pr 77` when useful, then perform edits and validation in the path
 reported by `git wt repair 77`.
+
+`git wt path <lane>` prints only the exact registered worktree path, so it is
+safe to use in shell command substitution:
+
+```bash
+cd "$(git wt path GH-76)"
+cd "$(git wt path topic/existing)"
+```
+
+An external Git subcommand cannot change its parent shell's working directory,
+so GitWT exposes path resolution instead of a misleading `cd` command.
+Unregistered lanes and fuzzy matches are rejected.
 
 Writable `issue`, `add`, and `repair` lanes link the invoking checkout's
 repository-root `.env` by default:

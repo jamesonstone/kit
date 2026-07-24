@@ -84,23 +84,6 @@ func (a *App) remove(ctx context.Context, cwd, target string) error {
 	return a.writef("Removed worktree %s; branch and shared Git state were preserved.\n", selected.path)
 }
 
-func (a *App) registeredWorktree(
-	ctx context.Context,
-	repositoryRoot string,
-	path string,
-) (*worktreeEntry, error) {
-	entries, err := a.worktrees(ctx, repositoryRoot)
-	if err != nil {
-		return nil, err
-	}
-	for i := range entries {
-		if samePath(entries[i].path, path) {
-			return &entries[i], nil
-		}
-	}
-	return nil, fmt.Errorf("%s is not an exact registered worktree for this clone", path)
-}
-
 func (a *App) ensurePublished(ctx context.Context, selected worktreeEntry) error {
 	if selected.branch == "" {
 		return nil

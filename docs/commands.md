@@ -34,7 +34,8 @@ safety contract. Use `git wt help` for command discovery; Git reserves
 `git <command> --help` for installed manual pages. Writable `issue`, `add`, and
 `repair` lanes link the invoking checkout's `.env` by default; append
 `--no-link-env` when isolation is required. Detached `pr` lanes and migration do
-not create environment links.
+not create environment links. Navigate to an exact registered lane with
+`cd "$(git wt path GH-123)"`.
 
 ## Quick Start
 
@@ -175,7 +176,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
-| `git wt` | Manage durable issue lanes, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`. |
+| `git wt` | Manage durable issue lanes, exact path lookup, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`. |
 
 ## Prompt Profiles And Subagents
 

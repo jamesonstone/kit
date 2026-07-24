@@ -311,6 +311,23 @@ func capabilityCatalog() []capabilityRecord {
 		capability("upgrade", "Utilities", "Upgrade the Kit CLI installation.", mutationNetwork, withNetwork("downloads release metadata or binaries"), withFileWrites("writes the installed Kit binary or related install files"), withFlags(flag("--check", "check for an upgrade without installing when supported", "prefer for read-only inspection")), withRelated(related("version", "shows current installed version"))),
 		capability("version", "Utilities", "Print the Kit CLI version.", mutationNone, withRelated(related("upgrade", "updates the installed version"))),
 		capability("completion", "Utilities", "Generate shell completion scripts.", mutationNone, withFileWrites("none by default", "the shell may redirect output to a completion file outside Kit"), withRelated(related("help", "shows command syntax"))),
+		capability(
+			"git wt path",
+			"Utilities",
+			"Print the exact registered worktree path for a lane.",
+			mutationNone,
+			withGitMutation("none; reads registered worktree metadata only"),
+			withWhenToUse(
+				"Use in shell command substitution to navigate to an existing lane.",
+				"Use when scripts need the canonical path of an exact registered lane.",
+			),
+			withWhenNotToUse(
+				"Do not expect an external command to change the parent shell's directory.",
+				"Do not use for fuzzy lane discovery; use `git wt list` to inspect registered worktrees.",
+			),
+			withExamples(`cd "$(git wt path GH-101)"`, `git -C "$(git wt path GH-101)" status`),
+			withCaveats("The command is read-only and rejects unregistered lanes or traversal instead of guessing."),
+		),
 		capability("help", "Utilities", "Show command help and flag syntax.", mutationNone, withRelated(related("capabilities", "adds behavior and safety metadata"))),
 	}
 

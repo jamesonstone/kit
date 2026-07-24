@@ -114,6 +114,23 @@ func canonicalLanePath(repo repository, lane string) (string, error) {
 	return path, nil
 }
 
+func (a *App) registeredWorktree(
+	ctx context.Context,
+	repositoryRoot string,
+	path string,
+) (*worktreeEntry, error) {
+	entries, err := a.worktrees(ctx, repositoryRoot)
+	if err != nil {
+		return nil, err
+	}
+	for i := range entries {
+		if samePath(entries[i].path, path) {
+			return &entries[i], nil
+		}
+	}
+	return nil, fmt.Errorf("%s is not an exact registered worktree for this clone", path)
+}
+
 func validateLane(lane string) (string, error) {
 	if lane == "" || filepath.IsAbs(lane) || strings.ContainsRune(lane, '\x00') || strings.Contains(lane, "\\") {
 		return "", fmt.Errorf("invalid lane %q", lane)

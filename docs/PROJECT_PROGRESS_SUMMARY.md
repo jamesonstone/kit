@@ -51,7 +51,7 @@
 | 0047 | kit-health-maintenance | `docs/specs/0047-kit-health-maintenance` | complete | no | 2026-07-19 | Keep Kit-managed rules, instructions, configuration, scaffold files, and project health current through a focused maintenance workflow without making ordinary implementation agents track registry churn throughout product work. |
 | 0048 | native-plan-challenge | `docs/specs/0048-native-plan-challenge` | complete | no | 2026-07-23 | Make the proven cross-model plan-review workflow fast and explicit for Codex for Mac users: copy a plan produced by `/plan`, run `kit plan challenge`, and paste a supplemented adversarial-review prompt into a secondary model without Kit launching or calling any model. |
 | 0049 | application-architecture-rules | `docs/specs/0049-application-architecture-rules` | complete | no | 2026-07-23 | Provide reusable, framework-aware backend and frontend architecture rules that keep responsibilities and dependency direction explicit across Kit-managed application projects. |
-| 0050 | safe-worktree-workflow | `docs/specs/0050-safe-worktree-workflow` | complete | no | 2026-07-24 | Provide a thin, safe `git wt` workflow for isolated Git lanes, with default writable-lane `.env` symlinks, explicit isolation, and conservative removal. |
+| 0050 | safe-worktree-workflow | `docs/specs/0050-safe-worktree-workflow` | complete | no | 2026-07-24 | Provide a thin, safe `git wt` workflow for isolated Git lanes, with exact navigation, default writable-lane `.env` symlinks, explicit isolation, and conservative removal. |
 
 ## PROJECT INTENT
 
@@ -491,11 +491,11 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 
 - **STATUS**: complete
 - **PAUSED**: no
-- **INTENT**: Provide a thin, safe `git wt` workflow for isolated Git lanes, with default writable-lane `.env` symlinks, explicit isolation, and conservative removal.
-- **APPROACH**: 1. Pass a default-enabled environment-link option through the shared writable-lane path while leaving detached PR, migration, and root behavior unchanged. 2. Link only the invoking checkout's `.env`, refuse collisions, and support `--no-link-env`. 3. Recognize only a verified managed `.env` symlink during safe removal and restore it if native removal fails. 4. Cover the complete behavior with real-Git integration tests and command-help assertions. 5. Align the canonical guide, Constitution, active rules, generated V3 guidance, and LabCore's dedicated worktree-policy lane while preserving immutable V1/V2 payloads.
+- **INTENT**: Provide a thin, safe `git wt` workflow for isolated Git lanes, with exact navigation, default writable-lane `.env` symlinks, explicit isolation, and conservative removal.
+- **APPROACH**: 1. Pass a default-enabled environment-link option through the shared writable-lane path while leaving detached PR, migration, and root behavior unchanged. 2. Link only the invoking checkout's `.env`, refuse collisions, and support `--no-link-env`. 3. Recognize only a verified managed `.env` symlink during safe removal and restore it if native removal fails. 4. Print exact registered lane paths for safe shell navigation without fuzzy matching. 5. Cover the complete behavior with real-Git integration tests and command-help assertions. 6. Align the canonical guide, Constitution, active rules, generated V3 guidance, and LabCore's dedicated worktree-policy lane while preserving immutable V1/V2 payloads.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0050-safe-worktree-workflow/SPEC.md`
 
 ## LAST UPDATED
 
-2026-07-24 10:33:34 EDT
+2026-07-24 10:58:27 EDT

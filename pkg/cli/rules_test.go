@@ -198,6 +198,7 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"Project-Oriented Worktree Delivery",
 		"`~/worktrees/<owner>/<repository>/<lane>`",
 		"`git wt repair <number> [--no-link-env]`",
+		"`git wt path <lane>`",
 		"Writable review repair must use the pull request's same-repository head branch",
 		"symlink the invoking checkout's repository-root `.env` by default",
 		"never automatically share `.envrc`",
