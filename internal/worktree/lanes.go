@@ -45,7 +45,7 @@ func (a *App) issue(ctx context.Context, cwd, value string, linkEnv bool) error 
 	if _, err := a.git(ctx, repo.top, "worktree", "add", "-b", branch, destination, "refs/remotes/origin/"+base); err != nil {
 		return err
 	}
-	if err := a.ensureEnvironmentLink(repo.top, destination, linkEnv); err != nil {
+	if err := a.ensureEnvironmentLink(repo.primary, destination, linkEnv); err != nil {
 		return err
 	}
 	return a.writef("Created %s from origin/%s\n", destination, base)
@@ -78,7 +78,7 @@ func (a *App) addBranch(ctx context.Context, repo repository, branch string, lin
 	}
 	for _, entry := range entries {
 		if entry.branch == branch {
-			if err := a.ensureEnvironmentLink(repo.top, entry.path, linkEnv); err != nil {
+			if err := a.ensureEnvironmentLink(repo.primary, entry.path, linkEnv); err != nil {
 				return err
 			}
 			return a.writef("Reusing %s for %s\n", entry.path, branch)
@@ -109,7 +109,7 @@ func (a *App) addBranch(ctx context.Context, repo repository, branch string, lin
 			return err
 		}
 	}
-	if err := a.ensureEnvironmentLink(repo.top, destination, linkEnv); err != nil {
+	if err := a.ensureEnvironmentLink(repo.primary, destination, linkEnv); err != nil {
 		return err
 	}
 	return a.writef("Created %s for %s\n", destination, branch)

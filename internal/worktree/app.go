@@ -42,7 +42,7 @@ Environment:
 
 Safety:
   PR-<number> is detached and inspection-only; use repair for edits.
-  Writable lanes link the invoking checkout's .env by default; use --no-link-env for isolation.
+  Writable lanes link the primary checkout's .env by default; use --no-link-env for isolation.
   .envrc is never linked automatically.
   remove never forces, deletes a branch, or discards dirty/unpushed state.
   migrate previews by default and uses git worktree move when applied.

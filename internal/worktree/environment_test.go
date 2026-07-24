@@ -235,6 +235,52 @@ func TestExistingLaneReuseEnsuresEnvironmentLink(t *testing.T) {
 	}
 }
 
+func TestWritableLaneCreatedFromLinkedLaneUsesPrimaryEnvironment(t *testing.T) {
+	fixture := newGitFixture(t)
+	source := writeEnvironmentSource(t, fixture, "TOKEN=primary\n")
+	runGit(t, fixture.primary, "branch", "--track", "topic/source-lane", "origin/main")
+	runGit(t, fixture.primary, "branch", "--track", "topic/target-lane", "origin/main")
+	runWT(t, fixture.app, fixture.primary, "add", "topic/source-lane")
+
+	sourceLane := filepath.Join(
+		fixture.worktreeRoot,
+		"example",
+		"project",
+		"topic",
+		"source-lane",
+	)
+	runWT(t, fixture.app, sourceLane, "add", "topic/target-lane")
+	targetEnvironment := filepath.Join(
+		fixture.worktreeRoot,
+		"example",
+		"project",
+		"topic",
+		"target-lane",
+		environmentFileName,
+	)
+
+	target, err := os.Readlink(targetEnvironment)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedSource, err := resolvedPath(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if target != expectedSource {
+		t.Fatalf("target environment link = %q, want primary source %q", target, expectedSource)
+	}
+
+	runWT(t, fixture.app, fixture.primary, "remove", "topic/source-lane")
+	data, err := os.ReadFile(targetEnvironment)
+	if err != nil {
+		t.Fatalf("target environment broke after removing invoking lane: %v", err)
+	}
+	if string(data) != "TOKEN=primary\n" {
+		t.Fatalf("target environment contents = %q", data)
+	}
+}
+
 func TestHelpDocumentsWritableEnvironmentOptOut(t *testing.T) {
 	fixture := newGitFixture(t)
 	runWT(t, fixture.app, fixture.primary, "help")
@@ -244,6 +290,7 @@ func TestHelpDocumentsWritableEnvironmentOptOut(t *testing.T) {
 		"add <branch> [--no-link-env]",
 		"repair <number> [--no-link-env]",
 		"path <lane>",
+		"primary checkout's .env",
 		".envrc is never linked automatically",
 		"No command starts applications or manages databases, ports, or runtime services",
 	} {

@@ -37,7 +37,7 @@ portable workflow and optional command cheat sheet, see
 [references/worktrees.md](references/worktrees.md). Use `git wt help` for
 command discovery; Git reserves
 `git <command> --help` for installed manual pages. Writable `issue`, `add`, and
-`repair` lanes link the invoking checkout's `.env` by default; append
+`repair` lanes link the clone's primary checkout `.env` by default; append
 `--no-link-env` when isolation is required. Detached `pr` lanes and migration do
 not create environment links. Navigate to an exact registered lane with
 `cd "$(git wt path GH-123)"`.

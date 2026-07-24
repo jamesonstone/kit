@@ -83,15 +83,15 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Never create linked worktrees inside a project directory, including `.worktrees/`.
 - Keep the root checkout on the protected default branch and perform issue work directly in the assigned durable worktree.
 - Use native `git worktree` commands and ordinary filesystem operations as the portable authority. Rules and reconciled guidance must not require `git-wt`, an alias, plugin, or other wrapper.
-- For a writable lane, link the invoking checkout's repository-root `.env` by default when the source exists. Create only an exact symlink after proving the destination does not exist, or accept an already-matching symlink during reuse; omit the link when isolation is required.
+- For a writable lane, link the clone's primary checkout repository-root `.env` by default when the source exists. Create only an exact symlink after proving the destination does not exist, or accept an already-matching symlink during reuse; omit the link when isolation is required.
 - Never copy `.env` contents, overwrite an existing destination `.env`, or automatically share `.envrc`, credentials outside the explicit `.env` link, tokens, private keys, or other machine-local configuration.
 - Keep detached `PR-<number>` views environment-isolated, and preserve existing files and links during migration without creating new ones.
 - Never use stash, reset, clean, force removal, branch deletion, or substring-based target selection to make a worktree operation succeed.
 - List worktrees without pruning. Prune only through an explicit prune action after reviewing stale metadata.
-- Remove only an exact registered path after proving it is not the current checkout, contains no tracked, untracked, or ignored material other than a verified expected `.env` symlink, and has no unpushed commits. Verify that the link targets the invoking checkout's repository-root `.env`, unlink only that symlink before ordinary non-force `git worktree remove`, and restore it if removal fails.
+- Remove only an exact registered path after proving it is not the current checkout, contains no tracked, untracked, or ignored material other than a verified expected `.env` symlink, and has no unpushed commits. Verify that the link targets the primary checkout's repository-root `.env`, unlink only that symlink before ordinary non-force `git worktree remove`, and restore it if removal fails.
 - Keep runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration outside the worktree workflow.
 - Subagents may use only a worktree explicitly prepared and assigned by the supervisor. They may not independently create, switch, move, or remove worktrees.
-- Load `docs/references/worktrees.md` when present for command usage and the complete mental model.
+- Load `docs/references/worktrees.md` for command usage and the complete mental model.
 
 ### Protected-Branch Detection
 

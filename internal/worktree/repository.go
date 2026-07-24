@@ -12,6 +12,7 @@ import (
 
 type repository struct {
 	top         string
+	primary     string
 	owner       string
 	name        string
 	projectRoot string
@@ -22,6 +23,16 @@ func (a *App) repository(ctx context.Context, cwd string) (repository, error) {
 	if err != nil {
 		return repository{}, fmt.Errorf("not inside a Git worktree: %w", err)
 	}
+	worktrees, err := a.worktrees(ctx, top)
+	if err != nil {
+		return repository{}, fmt.Errorf("list repository worktrees: %w", err)
+	}
+	if len(worktrees) == 0 {
+		return repository{}, fmt.Errorf("repository has no primary worktree")
+	}
+	// Git lists the primary worktree first in porcelain output. Use that stable
+	// clone-owned checkout for shared environment links, regardless of which
+	// linked worktree invoked the command.
 	owner, name, err := a.projectIdentity(ctx, top)
 	if err != nil {
 		return repository{}, err
@@ -32,6 +43,7 @@ func (a *App) repository(ctx context.Context, cwd string) (repository, error) {
 	}
 	return repository{
 		top:         top,
+		primary:     filepath.Clean(worktrees[0].path),
 		owner:       strings.ToLower(owner),
 		name:        strings.ToLower(name),
 		projectRoot: filepath.Join(root, strings.ToLower(owner), strings.ToLower(name)),

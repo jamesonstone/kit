@@ -157,6 +157,14 @@ func memoryInstructionSupportContent(relativePath string) string {
 		return memoryTooling()
 	case "docs/references/testing.md":
 		return strings.ReplaceAll(referencesTesting, "Validation Map and Evidence sections", "VALIDATION and OUTCOME sections")
+	case "docs/references/README.md":
+		return strings.ReplaceAll(
+			referencesREADME,
+			"Use `worktrees.md` when present for the canonical native Git worktree hierarchy, naming, shared-state model, safety contract, and optional manual convenience commands",
+			"Use `worktrees.md` for the canonical native Git worktree hierarchy, naming, shared-state model, environment ownership, and safety contract",
+		)
+	case "docs/references/worktrees.md":
+		return referencesWorktrees
 	default:
 		return ""
 	}
@@ -164,6 +172,7 @@ func memoryInstructionSupportContent(relativePath string) string {
 
 func memoryGuardrails() string {
 	content := strings.ReplaceAll(agentsGuardrails, "For v2 feature work, populate all required `SPEC.md` sections and keep front matter `workflow_version`, `phase`, references, relationships, and skills current", "For V3 feature work, satisfy the phase-aware living-spec gates and keep front matter `workflow_version`, `phase`, references, relationships, and skills current; preserve version-specific requirements for legacy specs")
+	content = strings.ReplaceAll(content, "Link the invoking checkout's `.env`", "Link the primary checkout's `.env`")
 	return content + `
 
 ## Repository Memory Completion Gate
@@ -177,9 +186,15 @@ func memoryGuardrails() string {
 }
 
 func memoryTooling() string {
-	return strings.ReplaceAll(
+	content := strings.ReplaceAll(
 		agentsTooling,
 		"Use `kit dispatch` when broad work must be turned into a safe Agent Team Plan",
 		"Use `kit dispatch` after native planning when an accepted plan needs a safe multi-lane execution topology",
+	)
+	content = strings.ReplaceAll(content, "Link the invoking checkout's `.env`", "Link the primary checkout's `.env`")
+	return strings.ReplaceAll(
+		content,
+		"Load `docs/references/worktrees.md` when present and worktree creation",
+		"Load `docs/references/worktrees.md` when worktree creation",
 	)
 }

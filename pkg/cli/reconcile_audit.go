@@ -471,7 +471,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 		}
 	}
 
-	for _, support := range instructions.SupportDocs(config.DefaultInstructionScaffoldVersion) {
+	for _, support := range instructions.SupportDocs(version) {
 		absolutePath := filepath.Join(projectRoot, support.RelativePath)
 		exists := document.Exists(absolutePath)
 		switch version {

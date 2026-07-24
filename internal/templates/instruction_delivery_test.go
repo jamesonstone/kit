@@ -79,7 +79,7 @@ func TestMemoryInstructionsPreserveProjectOrientedWorktrees(t *testing.T) {
 		"do not require `git-wt`, an alias, or another wrapper",
 		"Optional wrappers are manual conveniences only",
 		"Keep the root checkout on the protected default branch",
-		"Link the invoking checkout's `.env` into writable lanes by default when it exists",
+		"Link the primary checkout's `.env` into writable lanes by default when it exists",
 		"omit the link when isolation is required",
 		"Never copy `.env` contents or automatically share `.envrc`",
 		"worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
@@ -101,6 +101,36 @@ func TestMemoryInstructionsPreserveProjectOrientedWorktrees(t *testing.T) {
 	}
 	if string(checkedIn) != tooling {
 		t.Fatal("checked-in tooling is not aligned with the V3 generator")
+	}
+}
+
+func TestMemoryWorktreeReferenceIsManagedAndNative(t *testing.T) {
+	generated := fileContentByPath(
+		InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
+		"docs/references/worktrees.md",
+	)
+	for _, want := range []string{
+		"Native `git worktree` commands and ordinary filesystem operations define this",
+		"The clone's primary checkout owns the shared repository-root `.env`",
+		"`git worktree remove",
+		"Runtime services, databases, ports",
+	} {
+		if !strings.Contains(generated, want) {
+			t.Fatalf("expected V3 worktree reference to contain %q", want)
+		}
+	}
+	for _, forbidden := range []string{"git wt issue", "--no-link-env"} {
+		if strings.Contains(generated, forbidden) {
+			t.Fatalf("V3 worktree reference must not require optional wrapper syntax %q", forbidden)
+		}
+	}
+
+	checkedIn, err := os.ReadFile(filepath.Join("..", "..", "docs", "references", "worktrees.md"))
+	if err != nil {
+		t.Fatalf("read checked-in worktree reference: %v", err)
+	}
+	if string(checkedIn) != generated {
+		t.Fatal("checked-in worktree reference is not aligned with the V3 generator")
 	}
 }
 

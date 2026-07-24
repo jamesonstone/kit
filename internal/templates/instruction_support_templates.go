@@ -1,5 +1,10 @@
 package templates
 
+import _ "embed"
+
+//go:embed worktrees_reference.md
+var referencesWorktrees string
+
 const agentsGuardrails = `# Guardrails
 
 ## Hard Rules

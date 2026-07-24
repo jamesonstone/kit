@@ -157,7 +157,7 @@ all decisions.
    - Use exact `GH-<number>` for durable issue lanes; reserve uppercase detached `PR-<number>` for temporary pull-request inspection and reuse the pull request head branch for writable repair
    - Preserve primary and linked checkout state; never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
    - Use native `git worktree` and ordinary filesystem semantics as the portable policy authority; optional manual wrappers must never be a rule or reconciliation dependency
-   - Link the invoking checkout's `.env` into writable lanes by default when it exists, omit the link for isolation, never copy environment contents, and never automatically share `.envrc`
+   - Link the primary checkout's `.env` into writable lanes by default when it exists, omit the link for isolation, never copy environment contents, and never automatically share `.envrc`
    - Treat checkout, index, and `HEAD` as worktree-local while remembering that refs, remotes, objects, configuration, and stash state are shared across the clone
    - Keep worktree tooling limited to native worktree and lane management; runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration remain outside its scope
    - Resolve all in-scope implementation, validation, and delivery failures autonomously after diagnosis and continue until the requested goal is complete or a genuine external blocker remains

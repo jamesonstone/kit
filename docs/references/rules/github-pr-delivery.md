@@ -182,10 +182,10 @@ Include:
 - Use native `git worktree` commands as the portable authority for lane creation, reuse, detached inspection, repair, exact-path validation, movement, pruning, and removal. Optional wrappers may simplify manual use, but rules and reconciled guidance must not depend on them.
 - Apply, validate, stage, commit, push, and create or update the ready pull request only within the selected writable issue branch worktree under the normal delivery gates.
 - Keep the root checkout on the protected default branch; do not automatically check the issue branch out there.
-- Writable lanes symlink the invoking checkout's repository-root `.env` by default when it exists. Omit the link for isolation, never copy environment contents, never overwrite an existing destination `.env`, and never automatically share `.envrc`.
+- Writable lanes symlink the clone's primary checkout repository-root `.env` by default when it exists. Omit the link for isolation, never copy environment contents, never overwrite an existing destination `.env`, and never automatically share `.envrc`.
 - Detached `PR-<number>` inspection lanes do not link `.env`; migration preserves existing files and links without creating new ones.
 - Never nest worktrees inside a repository or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
-- Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. A verified expected `.env` symlink targeting the invoking checkout's repository-root `.env` is the sole narrow exception: remove only that link before ordinary non-force `git worktree remove` and restore it if removal fails.
+- Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. A verified expected `.env` symlink targeting the primary checkout's repository-root `.env` is the sole narrow exception: remove only that link before ordinary non-force `git worktree remove` and restore it if removal fails.
 - Keep application startup, databases, port allocation, Temporal state, process supervision, and multi-repository runtime orchestration outside the worktree workflow.
 
 ### Branch Workflow

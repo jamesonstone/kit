@@ -72,6 +72,32 @@ func TestRunInitRefresh_CreatesMissingMakefile(t *testing.T) {
 	}
 }
 
+func TestRunInitRefresh_CreatesV3WorktreeReference(t *testing.T) {
+	tempDir := t.TempDir()
+	relativePath := "docs/references/worktrees.md"
+
+	if err := runInitRefresh(tempDir, initRefreshOptions{
+		files:      []string{relativePath},
+		outputOnly: true,
+	}); err != nil {
+		t.Fatalf("runInitRefresh() error = %v", err)
+	}
+
+	var expected string
+	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionMemory) {
+		if support.RelativePath == relativePath {
+			expected = support.Content
+			break
+		}
+	}
+	if expected == "" {
+		t.Fatal("V3 instruction support files do not include the worktree reference")
+	}
+	if content := readFile(t, filepath.Join(tempDir, relativePath)); content != expected {
+		t.Fatalf("%s content did not match V3 support template", relativePath)
+	}
+}
+
 func TestRunInitRefresh_FileForcePreservesExistingMakefile(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)

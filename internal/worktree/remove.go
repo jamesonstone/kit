@@ -41,7 +41,7 @@ func (a *App) remove(ctx context.Context, cwd, target string) error {
 	if err != nil {
 		return err
 	}
-	environmentLink, err := inspectManagedEnvironmentLink(repo.top, selected.path)
+	environmentLink, err := inspectManagedEnvironmentLink(repo.primary, selected.path)
 	if err != nil {
 		return err
 	}

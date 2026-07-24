@@ -76,3 +76,21 @@ func TestExistingSupportDocsFiltersMissingFiles(t *testing.T) {
 		t.Fatalf("ExistingSupportDocs()[1].Label = %q, want %q", docs[1].Label, "REFERENCES")
 	}
 }
+
+func TestSupportDocsAddsWorktreeGuideOnlyForV3(t *testing.T) {
+	v2 := SupportDocs(config.InstructionScaffoldVersionTOC)
+	v3 := SupportDocs(config.InstructionScaffoldVersionMemory)
+
+	for _, doc := range v2 {
+		if doc.RelativePath == "docs/references/worktrees.md" {
+			t.Fatal("V2 support documents unexpectedly include the V3 worktree guide")
+		}
+	}
+	if len(v3) != len(v2)+1 {
+		t.Fatalf("V3 support document count = %d, want %d", len(v3), len(v2)+1)
+	}
+	worktrees := v3[len(v3)-1]
+	if worktrees.RelativePath != "docs/references/worktrees.md" || !worktrees.Required {
+		t.Fatalf("V3 worktree support document = %#v", worktrees)
+	}
+}
