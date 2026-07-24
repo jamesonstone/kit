@@ -13,14 +13,17 @@ import (
 )
 
 var (
-	prFixDispatchRunner = runPRFixDispatchPrompt
-	prFixOpenPRLister   = listPRFixOpenPullRequests
+	prFixDispatchInputLoader = loadDispatchPRInput
+	prFixDispatchRunner      = runPRFixDispatchPrompt
+	prFixDispatchTasksLoader = loadDispatchPRTasks
+	prFixOpenPRLister        = listPRFixOpenPullRequests
 )
 
 type prFixOptions struct {
 	PRRef          string
 	CodeRabbitOnly bool
 	Copy           bool
+	Edit           bool
 	Editor         string
 	MaxSubagents   int
 	OutputOnly     bool
@@ -31,6 +34,7 @@ type prFixDispatchOptions struct {
 	PRRef          string
 	CodeRabbitOnly bool
 	Copy           bool
+	Edit           bool
 	Editor         string
 	MaxSubagents   int
 	OutputOnly     bool
@@ -60,11 +64,12 @@ func newPRCommand() *cobra.Command {
 		Long: `Run pull-request repair workflows.
 
 Use kit pr fix to select or target a pull request, ingest current PR review
-feedback, open the dispatch editor for review, and copy the resulting agent
-prompt. Kit itself does not edit files, stage, commit, push, post PR comments,
-or resolve review threads from this path. After fixes or no-op decisions are
-complete, pushed, and reflected against the PR head, resolve handled review
-threads explicitly with kit dispatch --pr <target> --resolve --yes.`,
+feedback, and copy the resulting agent prompt. Editing the review tasks is
+opt-in with --edit, --vim, or --editor. Kit itself does not edit files, stage,
+commit, push, post PR comments, or resolve review threads from this path. After
+fixes or no-op decisions are complete, pushed, and reflected against the PR
+head, resolve handled review threads explicitly with
+kit dispatch --pr <target> --resolve --yes.`,
 	}
 	cmd.AddCommand(newPRFixCommand())
 	return cmd
@@ -85,20 +90,23 @@ owner/repo#number, or a pull request number in the current repository.
 Without --pr, Kit lists open pull requests in the current repository and asks
 which one to repair. The selected PR uses the same prompt-producing flow as
 kit dispatch --pr: only active (unresolved, non-outdated) review threads
-pre-populate the editor, the saved task list becomes a dispatch prompt, and the
-prompt is copied for pasting to a coding agent. GitHub delivery remains a
-separate, explicit step. The generated prompt requires post-push reflection
-before resolving verified addressed review conversations.`,
+become a dispatch prompt, and the prompt is copied for pasting to a coding
+agent. Pass --edit to review and change the task list in the default editor
+before it is copied; --vim and --editor also opt into editing. GitHub delivery
+remains a separate, explicit step. The generated prompt requires post-push
+reflection before resolving verified addressed review conversations.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runPRFixCommand(cmd, args, opts)
 		},
 	}
-	addFreeTextInputFlags(cmd, &opts.UseVim, &opts.Editor)
 	cmd.Flags().StringVar(&opts.PRRef, "pr", "", "pull request URL, Markdown link, owner/repo#number, or current-repo number")
 	cmd.Flags().BoolVar(&opts.CodeRabbitOnly, "coderabbit", false, "include only CodeRabbit-authored review comments")
 	cmd.Flags().BoolVar(&opts.Copy, "copy", false, "copy prompt to clipboard even with --output-only")
+	cmd.Flags().BoolVar(&opts.Edit, "edit", false, "open review tasks in the default editor before generating the prompt")
+	cmd.Flags().StringVar(&opts.Editor, "editor", "", "open review tasks in a specific editor command before generating the prompt")
 	cmd.Flags().BoolVar(&opts.OutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	cmd.Flags().BoolVar(&opts.UseVim, "vim", false, "open review tasks in a vim-compatible editor before generating the prompt")
 	cmd.Flags().IntVar(&opts.MaxSubagents, "max-subagents", defaultDispatchMaxSubagents, "maximum concurrent subagents allowed in the generated prompt; default 3, hard ceiling 4")
 	return cmd
 }
@@ -117,6 +125,7 @@ func runPRFixCommand(cmd *cobra.Command, _ []string, opts prFixOptions) error {
 		PRRef:          prRef,
 		CodeRabbitOnly: opts.CodeRabbitOnly,
 		Copy:           opts.Copy,
+		Edit:           opts.Edit,
 		Editor:         opts.Editor,
 		MaxSubagents:   opts.MaxSubagents,
 		OutputOnly:     opts.OutputOnly,
@@ -129,8 +138,7 @@ func runPRFixDispatchPrompt(cmd *cobra.Command, opts prFixDispatchOptions) error
 		return err
 	}
 
-	inputCfg := newFreeTextInputConfig(opts.UseVim, opts.Editor, false, true)
-	prInput, found, err := loadDispatchPRInput(opts.PRRef, opts.CodeRabbitOnly, inputCfg)
+	prInput, found, err := loadPRFixDispatchInput(opts)
 	if err != nil {
 		return err
 	}
@@ -173,6 +181,19 @@ func runPRFixDispatchPrompt(cmd *cobra.Command, opts prFixDispatchOptions) error
 	}
 
 	return nil
+}
+
+func loadPRFixDispatchInput(opts prFixDispatchOptions) (dispatchPRInput, bool, error) {
+	if !shouldEditPRFixTasks(opts) {
+		return prFixDispatchTasksLoader(opts.PRRef, opts.CodeRabbitOnly)
+	}
+
+	inputCfg := newFreeTextInputConfig(opts.UseVim, opts.Editor, false, opts.Edit)
+	return prFixDispatchInputLoader(opts.PRRef, opts.CodeRabbitOnly, inputCfg)
+}
+
+func shouldEditPRFixTasks(opts prFixDispatchOptions) bool {
+	return opts.Edit || opts.UseVim || strings.TrimSpace(opts.Editor) != ""
 }
 
 func listPRFixOpenPullRequests() ([]prFixOpenPullRequest, error) {

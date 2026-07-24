@@ -413,6 +413,12 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--output-only") == nil {
 		t.Fatalf("expected pr fix to document --output-only")
 	}
+	if findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--edit") == nil {
+		t.Fatalf("expected pr fix to document opt-in --edit")
+	}
+	if !strings.Contains(prFixPayload.Command.FileWrites.FlagDependent, "only with --edit") {
+		t.Fatalf("expected pr fix to document opt-in editor writes, got %#v", prFixPayload.Command.FileWrites)
+	}
 	prFixMaxFlag := findDetailedFlag(prFixPayload.Command.DetailedFlagBehavior, "--max-subagents")
 	if prFixMaxFlag == nil || !strings.Contains(prFixMaxFlag.Summary, "default 3") || !strings.Contains(prFixMaxFlag.Summary, "hard ceiling 4") {
 		t.Fatalf("expected pr fix --max-subagents to document default and ceiling, got %#v", prFixMaxFlag)

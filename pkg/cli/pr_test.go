@@ -26,6 +26,9 @@ func TestPRFixCommandIsRegistered(t *testing.T) {
 	if flag := cmd.Flags().Lookup("output-only"); flag == nil {
 		t.Fatal("expected pr fix to expose --output-only")
 	}
+	if flag := cmd.Flags().Lookup("edit"); flag == nil {
+		t.Fatal("expected pr fix to expose --edit")
+	}
 	if flag := cmd.Flags().Lookup("max-subagents"); flag == nil {
 		t.Fatal("expected pr fix to expose --max-subagents")
 	} else if flag.DefValue != "3" || !strings.Contains(flag.Usage, "hard ceiling 4") {
@@ -34,8 +37,11 @@ func TestPRFixCommandIsRegistered(t *testing.T) {
 	if !strings.Contains(cmd.Long, "only active (unresolved, non-outdated) review threads") {
 		t.Fatalf("expected pr fix help to document active review-thread filtering, got:\n%s", cmd.Long)
 	}
-	if !strings.Contains(cmd.Long, "post-push reflection") {
+	if !strings.Contains(strings.ReplaceAll(cmd.Long, "\n", " "), "post-push reflection") {
 		t.Fatalf("expected pr fix help to document post-push reflection, got:\n%s", cmd.Long)
+	}
+	if !strings.Contains(cmd.Long, "Pass --edit") {
+		t.Fatalf("expected pr fix help to document opt-in editing, got:\n%s", cmd.Long)
 	}
 }
 
@@ -59,6 +65,7 @@ func TestRunPRFixCommandRoutesExplicitPRToDispatchPrompt(t *testing.T) {
 		"--coderabbit",
 		"--output-only",
 		"--copy",
+		"--edit",
 		"--max-subagents", "3",
 		"--editor", "vim",
 	})
@@ -69,11 +76,105 @@ func TestRunPRFixCommandRoutesExplicitPRToDispatchPrompt(t *testing.T) {
 	if gotOpts.PRRef != "Patient-Driven-Care/cortex#67" {
 		t.Fatalf("PRRef = %q", gotOpts.PRRef)
 	}
-	if !gotOpts.CodeRabbitOnly || !gotOpts.OutputOnly || !gotOpts.Copy {
+	if !gotOpts.CodeRabbitOnly || !gotOpts.OutputOnly || !gotOpts.Copy || !gotOpts.Edit {
 		t.Fatalf("expected dispatch prompt flags to be forwarded: %#v", gotOpts)
 	}
 	if gotOpts.MaxSubagents != 3 || gotOpts.Editor != "vim" {
 		t.Fatalf("dispatch prompt options not forwarded: %#v", gotOpts)
+	}
+}
+
+func TestRunPRFixDispatchPromptCopiesWithoutEditingByDefault(t *testing.T) {
+	restore := installPRFixInputFakes(t,
+		func(prRef string, coderabbitOnly bool) (dispatchPRInput, bool, error) {
+			if prRef != "67" || coderabbitOnly {
+				t.Fatalf("unexpected task loader input: prRef=%q coderabbitOnly=%t", prRef, coderabbitOnly)
+			}
+			return dispatchPRInput{RawTasks: "- Fix the current review finding."}, true, nil
+		},
+		func(string, bool, freeTextInputConfig) (dispatchPRInput, bool, error) {
+			t.Fatal("default pr fix must not open the editor")
+			return dispatchPRInput{}, false, nil
+		},
+	)
+	defer restore()
+
+	var copied string
+	previousClipboard := clipboardCopyFunc
+	clipboardCopyFunc = func(text string) error {
+		copied = text
+		return nil
+	}
+	defer func() { clipboardCopyFunc = previousClipboard }()
+
+	cmd := newPRFixCommand()
+	if err := runPRFixDispatchPrompt(cmd, prFixDispatchOptions{
+		PRRef:        "67",
+		MaxSubagents: defaultDispatchMaxSubagents,
+	}); err != nil {
+		t.Fatalf("runPRFixDispatchPrompt() error = %v", err)
+	}
+	if !strings.Contains(copied, "Fix the current review finding.") {
+		t.Fatalf("clipboard prompt missing review task:\n%s", copied)
+	}
+}
+
+func TestRunPRFixDispatchPromptEditsWhenRequested(t *testing.T) {
+	restore := installPRFixInputFakes(t,
+		func(string, bool) (dispatchPRInput, bool, error) {
+			t.Fatal("explicit edit must use the editor-backed loader")
+			return dispatchPRInput{}, false, nil
+		},
+		func(prRef string, coderabbitOnly bool, inputCfg freeTextInputConfig) (dispatchPRInput, bool, error) {
+			if prRef != "67" || coderabbitOnly {
+				t.Fatalf("unexpected editor loader input: prRef=%q coderabbitOnly=%t", prRef, coderabbitOnly)
+			}
+			if !inputCfg.defaultEditor {
+				t.Fatal("--edit must select the default editor")
+			}
+			return dispatchPRInput{RawTasks: "- Keep the edited review task."}, true, nil
+		},
+	)
+	defer restore()
+
+	var copied string
+	previousClipboard := clipboardCopyFunc
+	clipboardCopyFunc = func(text string) error {
+		copied = text
+		return nil
+	}
+	defer func() { clipboardCopyFunc = previousClipboard }()
+
+	cmd := newPRFixCommand()
+	if err := runPRFixDispatchPrompt(cmd, prFixDispatchOptions{
+		PRRef:        "67",
+		Edit:         true,
+		MaxSubagents: defaultDispatchMaxSubagents,
+	}); err != nil {
+		t.Fatalf("runPRFixDispatchPrompt() error = %v", err)
+	}
+	if !strings.Contains(copied, "Keep the edited review task.") {
+		t.Fatalf("clipboard prompt missing edited review task:\n%s", copied)
+	}
+}
+
+func TestShouldEditPRFixTasks(t *testing.T) {
+	tests := []struct {
+		name string
+		opts prFixDispatchOptions
+		want bool
+	}{
+		{name: "default", opts: prFixDispatchOptions{}, want: false},
+		{name: "edit", opts: prFixDispatchOptions{Edit: true}, want: true},
+		{name: "vim", opts: prFixDispatchOptions{UseVim: true}, want: true},
+		{name: "editor", opts: prFixDispatchOptions{Editor: "nvim"}, want: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := shouldEditPRFixTasks(test.opts); got != test.want {
+				t.Fatalf("shouldEditPRFixTasks() = %t, want %t", got, test.want)
+			}
+		})
 	}
 }
 
@@ -200,5 +301,21 @@ func installPRFixFakes(
 	return func() {
 		prFixDispatchRunner = previousRunner
 		prFixOpenPRLister = previousLister
+	}
+}
+
+func installPRFixInputFakes(
+	t *testing.T,
+	taskLoader func(string, bool) (dispatchPRInput, bool, error),
+	editorLoader func(string, bool, freeTextInputConfig) (dispatchPRInput, bool, error),
+) func() {
+	t.Helper()
+	previousTaskLoader := prFixDispatchTasksLoader
+	previousEditorLoader := prFixDispatchInputLoader
+	prFixDispatchTasksLoader = taskLoader
+	prFixDispatchInputLoader = editorLoader
+	return func() {
+		prFixDispatchTasksLoader = previousTaskLoader
+		prFixDispatchInputLoader = previousEditorLoader
 	}
 }
