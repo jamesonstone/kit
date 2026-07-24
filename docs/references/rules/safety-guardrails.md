@@ -82,13 +82,14 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Treat working files, the index, and `HEAD` as worktree-local. Treat objects, refs, remotes, most configuration, and stash entries as shared clone state.
 - Never create linked worktrees inside a project directory, including `.worktrees/`.
 - Keep the root checkout on the protected default branch and perform issue work directly in the assigned durable worktree.
-- Let GitWT symlink the invoking checkout's repository-root `.env` into writable `issue`, `add`, and `repair` lanes by default. Use `--no-link-env` when isolation is required.
+- Use native `git worktree` commands and ordinary filesystem operations as the portable authority. Rules and reconciled guidance must not require `git-wt`, an alias, plugin, or other wrapper.
+- For a writable lane, link the invoking checkout's repository-root `.env` by default when the source exists. Create only an exact symlink after proving the destination does not exist, or accept an already-matching symlink during reuse; omit the link when isolation is required.
 - Never copy `.env` contents, overwrite an existing destination `.env`, or automatically share `.envrc`, credentials outside the explicit `.env` link, tokens, private keys, or other machine-local configuration.
-- Keep detached `PR-<number>` views environment-isolated, and let migration preserve existing files and links without creating new ones.
+- Keep detached `PR-<number>` views environment-isolated, and preserve existing files and links during migration without creating new ones.
 - Never use stash, reset, clean, force removal, branch deletion, or substring-based target selection to make a worktree operation succeed.
 - List worktrees without pruning. Prune only through an explicit prune action after reviewing stale metadata.
-- Remove only an exact registered path after proving it is not the current checkout, contains no tracked, untracked, or ignored material other than a verified expected GitWT `.env` symlink, and has no unpushed commits. Unlink only that verified symlink before ordinary non-force removal and restore it if removal fails.
-- Keep runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration outside GitWT.
+- Remove only an exact registered path after proving it is not the current checkout, contains no tracked, untracked, or ignored material other than a verified expected `.env` symlink, and has no unpushed commits. Verify that the link targets the invoking checkout's repository-root `.env`, unlink only that symlink before ordinary non-force `git worktree remove`, and restore it if removal fails.
+- Keep runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration outside the worktree workflow.
 - Subagents may use only a worktree explicitly prepared and assigned by the supervisor. They may not independently create, switch, move, or remove worktrees.
 - Load `docs/references/worktrees.md` when present for command usage and the complete mental model.
 
@@ -187,7 +188,7 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Confirm overlapping dirty files were preserved and either resolved safely from evidence or reported as a genuine blocker without destructive cleanup.
 - Confirm every separate lane reused or created the exact `~/worktrees/<owner>/<repository>/<lane>` path, and that no nested worktree or duplicate branch checkout was created.
 - Confirm detached `PR-<number>` views remained inspection-only and writable repairs used the pull request head branch.
-- Confirm writable lanes linked only the expected `.env` by default or explicitly opted out, and that no worktree action copied environment contents, shared `.envrc`, stashed, reset, cleaned, force-removed, deleted a branch, or discarded tracked, untracked, ignored, or unpushed state.
+- Confirm writable lanes linked only the expected `.env` by default or intentionally omitted the link for isolation, and that no worktree action copied environment contents, shared `.envrc`, stashed, reset, cleaned, force-removed, deleted a branch, or discarded tracked, untracked, ignored, or unpushed state.
 - Confirm author and committer identity were inspected before any commit.
 - Confirm secret scanning happened before staging.
 - Confirm routine failures were diagnosed, recovered autonomously, and verified, or that a genuine blocker was reported with the smallest required user input.

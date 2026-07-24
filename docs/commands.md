@@ -30,10 +30,12 @@ make install-git-hooks
 This configures `core.hooksPath` to use `.githooks/`, including a `pre-commit`
 hook that runs `make build` before every commit.
 
-The separately installed `git-wt` executable is discovered by Git as
-`git wt`. It manages safe project-oriented worktrees beneath `~/worktrees`;
-see [references/worktrees.md](references/worktrees.md) for its command and
-safety contract. Use `git wt help` for command discovery; Git reserves
+The separately installed `git-wt` executable is an optional manual convenience
+discovered by Git as `git wt`. Kit-managed rules and reconciled guidance use
+native `git worktree` commands and do not depend on this wrapper. For the
+portable workflow and optional command cheat sheet, see
+[references/worktrees.md](references/worktrees.md). Use `git wt help` for
+command discovery; Git reserves
 `git <command> --help` for installed manual pages. Writable `issue`, `add`, and
 `repair` lanes link the invoking checkout's `.env` by default; append
 `--no-link-env` when isolation is required. Detached `pr` lanes and migration do
@@ -179,7 +181,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
-| `git wt` | Manage durable issue lanes, exact path lookup, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`. |
+| `git wt` | Optional manual wrapper for durable issue lanes, exact path lookup, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
 
 ## Prompt Profiles And Subagents
 

@@ -40,6 +40,9 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 		"including authenticated `gh`",
 		"Ask permission only before large-scale deletion or deleting sensitive files",
 		"not as routine retry-permission requests",
+		"Use native `git worktree` commands and ordinary filesystem operations as the portable authority",
+		"do not require a wrapper, alias, or plugin",
+		"omit the link when isolation is required",
 	} {
 		if !strings.Contains(generated, want) {
 			t.Fatalf("expected V3 guardrails to contain %q", want)
@@ -47,6 +50,11 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 	}
 	if strings.Contains(generated, "Do not run `git add` or `git commit` without explicit approval") {
 		t.Fatal("expected V3 guardrails to omit routine git approval requirement")
+	}
+	for _, forbidden := range []string{"`--no-link-env`", "Let GitWT"} {
+		if strings.Contains(generated, forbidden) {
+			t.Fatalf("V3 guardrails must not depend on wrapper-specific policy %q", forbidden)
+		}
 	}
 
 	checkedIn, err := os.ReadFile(filepath.Join("..", "..", "docs", "agents", "GUARDRAILS.md"))
@@ -67,15 +75,23 @@ func TestMemoryInstructionsPreserveProjectOrientedWorktrees(t *testing.T) {
 		"`~/worktrees/<owner>/<repository>/<lane>`",
 		"uppercase detached `PR-<number>`",
 		"never edit the detached `PR-<number>` view",
+		"Use native `git worktree` commands as the portable authority",
+		"do not require `git-wt`, an alias, or another wrapper",
+		"Optional wrappers are manual conveniences only",
 		"Keep the root checkout on the protected default branch",
-		"symlink the invoking checkout's `.env` into writable lanes by default",
-		"use `--no-link-env` when isolation is required",
+		"Link the invoking checkout's `.env` into writable lanes by default when it exists",
+		"omit the link when isolation is required",
 		"Never copy `.env` contents or automatically share `.envrc`",
-		"does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
+		"worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
 		"refs, remotes, objects, configuration, and stash state are shared",
 	} {
 		if !strings.Contains(tooling, want) {
 			t.Fatalf("expected V3 tooling to contain %q", want)
+		}
+	}
+	for _, forbidden := range []string{"Use the Kit-owned `git wt`", "`--no-link-env`", "Let GitWT"} {
+		if strings.Contains(tooling, forbidden) {
+			t.Fatalf("V3 tooling must not depend on wrapper-specific policy %q", forbidden)
 		}
 	}
 

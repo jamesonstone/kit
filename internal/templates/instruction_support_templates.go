@@ -129,7 +129,10 @@ When .kit.yaml defines an enabled aws context, agents must:
 - Prefer explicit error handling over silent failure
 - Keep changes minimal and reversible
 - Preserve the checkout that owns each lane; put separate lanes only beneath ` + "`~/worktrees/<owner>/<repository>/<lane>`" + ` and never inside a repository
-- Never stash, reset, clean, force-remove, delete a branch, or share ` + "`.env`" + ` or ` + "`.envrc`" + ` files to create or clear a worktree
+- Use native ` + "`git worktree`" + ` commands and ordinary filesystem operations as the portable authority; do not require a wrapper, alias, or plugin
+- Never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
+- Link the invoking checkout's ` + "`.env`" + ` into writable lanes by default when it exists, using only an exact verified symlink; omit the link when isolation is required
+- Never copy ` + "`.env`" + ` contents or automatically share ` + "`.envrc`" + `; keep runtime services, databases, ports, Temporal state, process supervision, and sibling repositories outside the worktree workflow
 - Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
 - Do not ask for routine approval to switch supported tools, including authenticated ` + "`gh`" + `, when the authorized mutation is unchanged
 - Ask permission only before large-scale deletion or deleting sensitive files
@@ -148,7 +151,7 @@ const referencesREADME = `# References
 - Use ` + "`rules/kit-capabilities-usage.md`" + ` in downstream projects for Kit command discovery guidance
 - Use ` + "`rules/feature-notes.md`" + ` when deciding how to load, reference, promote, or ignore source material under ` + "`docs/notes/<feature>`" + `
 - Use ` + "`rules/constitution-curation.md`" + ` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
-- Use ` + "`worktrees.md`" + ` when present for the canonical ` + "`git wt`" + ` hierarchy, naming, shared-state model, and safety contract
+- Use ` + "`worktrees.md`" + ` when present for the canonical native Git worktree hierarchy, naming, shared-state model, safety contract, and optional manual convenience commands
 - Use ` + "`kit rules add`" + ` to import or activate available registry rulesets from the Kit GitHub ` + "`main`" + ` branch
 - Use ` + "`kit rules view <slug>`" + ` to preview a local or registry ruleset before importing it
 - Use ` + "`kit init --refresh`" + ` to adopt existing registry rules into ` + "`.kit.yaml`" + ` registry state and pick up safe upstream ruleset updates

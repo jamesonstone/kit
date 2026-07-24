@@ -326,7 +326,10 @@ func capabilityCatalog() []capabilityRecord {
 				"Do not use for fuzzy lane discovery; use `git wt list` to inspect registered worktrees.",
 			),
 			withExamples(`cd "$(git wt path GH-101)"`, `git -C "$(git wt path GH-101)" status`),
-			withCaveats("The command is read-only and rejects unregistered lanes or traversal instead of guessing."),
+			withCaveats(
+				"The command is read-only and rejects unregistered lanes or traversal instead of guessing.",
+				"`git wt` is an optional manual convenience; Kit-managed rules and reconciled guidance use native `git worktree` commands.",
+			),
 		),
 		capability("help", "Utilities", "Show command help and flag syntax.", mutationNone, withRelated(related("capabilities", "adds behavior and safety metadata"))),
 	}

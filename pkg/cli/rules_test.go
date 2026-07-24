@@ -74,8 +74,11 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 		"`~/worktrees/<owner>/<repository>/<lane>`",
 		"exact uppercase `GH-<number>`",
 		"exact uppercase `PR-<number>`",
-		"symlink the invoking checkout's repository-root `.env`",
-		"`--no-link-env`",
+		"native `git worktree` commands and ordinary filesystem operations",
+		"must not require `git-wt`",
+		"link the invoking checkout's repository-root `.env`",
+		"accept an already-matching symlink during reuse",
+		"omit the link when isolation is required",
 		"Never copy `.env` contents",
 		"automatically share `.envrc`",
 		"restore it if removal fails",
@@ -90,6 +93,8 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 		"Do not retry with mutation",
 		"Surface the failure to the user and await instruction",
 		"Do not create or use git worktrees for agent work",
+		"`--no-link-env`",
+		"Let GitWT",
 	} {
 		if strings.Contains(ruleset.Body, forbidden) {
 			t.Fatalf("expected safety-guardrails ruleset to omit blanket stop behavior %q", forbidden)
@@ -197,8 +202,9 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"Verify that no duplicate issue or PR was created",
 		"Project-Oriented Worktree Delivery",
 		"`~/worktrees/<owner>/<repository>/<lane>`",
-		"`git wt repair <number> [--no-link-env]`",
-		"`git wt path <lane>`",
+		"native `git worktree` commands as the portable authority",
+		"rules and reconciled guidance must not depend on them",
+		"git worktree add -b",
 		"Writable review repair must use the pull request's same-repository head branch",
 		"symlink the invoking checkout's repository-root `.env` by default",
 		"never automatically share `.envrc`",
@@ -211,6 +217,11 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 	}
 	if strings.Contains(ruleset.Body, "stop and do not mutate to retry") {
 		t.Fatal("expected github-pr-delivery ruleset to omit blanket mutation retry prohibition")
+	}
+	for _, forbidden := range []string{"`--no-link-env`", "`git wt repair", "`git wt path", "GitWT"} {
+		if strings.Contains(ruleset.Body, forbidden) {
+			t.Fatalf("github-pr-delivery must not depend on wrapper-specific policy %q", forbidden)
+		}
 	}
 }
 

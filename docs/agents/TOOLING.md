@@ -53,11 +53,12 @@
 - For a separate lane, reuse or create `~/worktrees/<owner>/<repository>/<lane>`; never put a worktree inside a repository
 - Use exact `GH-<number>` for durable issue lanes and uppercase detached `PR-<number>` only for temporary pull-request inspection
 - Reuse the pull request head branch for writable repair; never edit the detached `PR-<number>` view
-- Use the Kit-owned `git wt` workflow when it is installed; equivalent raw commands must preserve the same path and safety contract
+- Use native `git worktree` commands as the portable authority for creation, reuse, detached inspection, repair, removal, pruning, and migration; do not require `git-wt`, an alias, or another wrapper
+- Optional wrappers are manual conveniences only and must preserve the same path and safety contract
 - Keep the root checkout on the protected default branch and work directly in the assigned durable lane
 - Do not stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
-- Let GitWT symlink the invoking checkout's `.env` into writable lanes by default; use `--no-link-env` when isolation is required
-- Never copy `.env` contents or automatically share `.envrc`; GitWT does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories
+- Link the invoking checkout's `.env` into writable lanes by default when it exists, using only an exact verified symlink; omit the link when isolation is required
+- Never copy `.env` contents or automatically share `.envrc`; worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories
 - Remember that refs, remotes, objects, configuration, and stash state are shared across worktrees even though checkout, index, and `HEAD` are separate
 - Load `docs/references/worktrees.md` when present and worktree creation, repair, migration, or removal affects the task
 

@@ -164,13 +164,6 @@ func memoryInstructionSupportContent(relativePath string) string {
 
 func memoryGuardrails() string {
 	content := strings.ReplaceAll(agentsGuardrails, "For v2 feature work, populate all required `SPEC.md` sections and keep front matter `workflow_version`, `phase`, references, relationships, and skills current", "For V3 feature work, satisfy the phase-aware living-spec gates and keep front matter `workflow_version`, `phase`, references, relationships, and skills current; preserve version-specific requirements for legacy specs")
-	content = strings.ReplaceAll(
-		content,
-		"- Never stash, reset, clean, force-remove, delete a branch, or share `.env` or `.envrc` files to create or clear a worktree",
-		"- Never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree\n"+
-			"- Let GitWT symlink the invoking checkout's `.env` into writable lanes by default; use `--no-link-env` when isolation is required\n"+
-			"- Never copy `.env` contents or automatically share `.envrc`; keep runtime services, databases, ports, Temporal state, process supervision, and sibling repositories outside GitWT",
-	)
 	return content + `
 
 ## Repository Memory Completion Gate
@@ -184,17 +177,9 @@ func memoryGuardrails() string {
 }
 
 func memoryTooling() string {
-	content := strings.ReplaceAll(
+	return strings.ReplaceAll(
 		agentsTooling,
 		"Use `kit dispatch` when broad work must be turned into a safe Agent Team Plan",
 		"Use `kit dispatch` after native planning when an accepted plan needs a safe multi-lane execution topology",
-	)
-	return strings.ReplaceAll(
-		content,
-		"- Do not stash, reset, clean, force-remove, delete a branch, or share `.env` or `.envrc` files to create or clear a worktree",
-		"- Keep the root checkout on the protected default branch and work directly in the assigned durable lane\n"+
-			"- Do not stash, reset, clean, force-remove, or delete a branch to create or clear a worktree\n"+
-			"- Let GitWT symlink the invoking checkout's `.env` into writable lanes by default; use `--no-link-env` when isolation is required\n"+
-			"- Never copy `.env` contents or automatically share `.envrc`; GitWT does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
 	)
 }

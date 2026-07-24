@@ -179,14 +179,14 @@ Include:
 - Create or reuse the human-assigned issue first. Then use exact uppercase `GH-<issue-number>` as both the branch and durable worktree lane.
 - Use exact uppercase `PR-<number>` only for detached inspection. Writable review repair must use the pull request's same-repository head branch, normally its durable `GH-<issue-number>` lane.
 - Fetch the remote base without switching, pulling, merging, stashing, resetting, cleaning, or writing in another checkout. Create a new issue branch from the freshly fetched remote base.
-- `git wt issue <number> [--no-link-env]`, `git wt add <branch> [--no-link-env]`, `git wt pr <number>`, `git wt repair <number> [--no-link-env]`, and read-only `git wt path <lane>` implement the canonical hierarchy when the Kit-owned command is installed. Equivalent raw `git worktree` commands must preserve the same paths and safety contract.
+- Use native `git worktree` commands as the portable authority for lane creation, reuse, detached inspection, repair, exact-path validation, movement, pruning, and removal. Optional wrappers may simplify manual use, but rules and reconciled guidance must not depend on them.
 - Apply, validate, stage, commit, push, and create or update the ready pull request only within the selected writable issue branch worktree under the normal delivery gates.
 - Keep the root checkout on the protected default branch; do not automatically check the issue branch out there.
-- Writable lanes symlink the invoking checkout's repository-root `.env` by default. Use `--no-link-env` for isolation, never copy environment contents, never overwrite an existing destination `.env`, and never automatically share `.envrc`.
+- Writable lanes symlink the invoking checkout's repository-root `.env` by default when it exists. Omit the link for isolation, never copy environment contents, never overwrite an existing destination `.env`, and never automatically share `.envrc`.
 - Detached `PR-<number>` inspection lanes do not link `.env`; migration preserves existing files and links without creating new ones.
 - Never nest worktrees inside a repository or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
-- Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. A verified expected GitWT `.env` symlink is the sole narrow exception: remove only that link before ordinary non-force worktree removal and restore it if removal fails.
-- Keep application startup, databases, port allocation, Temporal state, process supervision, and multi-repository runtime orchestration outside GitWT.
+- Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. A verified expected `.env` symlink targeting the invoking checkout's repository-root `.env` is the sole narrow exception: remove only that link before ordinary non-force `git worktree remove` and restore it if removal fails.
+- Keep application startup, databases, port allocation, Temporal state, process supervision, and multi-repository runtime orchestration outside the worktree workflow.
 
 ### Branch Workflow
 
@@ -205,8 +205,10 @@ git rev-list --left-right --count "$BASE_BRANCH...origin/$BASE_BRANCH" 2>/dev/nu
 - Create the new branch from the freshly fetched remote base, never from a local copy:
 
 ```bash
-git wt issue 123
-WORKTREE_PATH="$(git wt path GH-123)"
+git fetch origin "$BASE_BRANCH"
+WORKTREE_PATH="$HOME/worktrees/<owner>/<repository>/GH-123"
+mkdir -p "$(dirname "$WORKTREE_PATH")"
+git worktree add -b GH-123 "$WORKTREE_PATH" "origin/$BASE_BRANCH"
 test "$(git -C "$WORKTREE_PATH" rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
 test "$(git -C "$WORKTREE_PATH" rev-parse HEAD)" = "$(git -C "$WORKTREE_PATH" rev-parse "origin/$BASE_BRANCH")" || { echo "ABORT: branch base not at remote head"; exit 1; }
 gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees

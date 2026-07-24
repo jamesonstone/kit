@@ -76,6 +76,9 @@ func TestCapabilitiesDescribeGitWTPath(t *testing.T) {
 	if !strings.Contains(strings.Join(payload.Command.Examples, " "), `cd "$(git wt path GH-101)"`) {
 		t.Fatalf("expected navigation example, got %#v", payload.Command.Examples)
 	}
+	if !strings.Contains(strings.Join(payload.Command.Caveats, " "), "optional manual convenience") {
+		t.Fatalf("expected optional-wrapper caveat, got %#v", payload.Command.Caveats)
+	}
 }
 
 func TestCapabilitiesTargetedJSON(t *testing.T) {

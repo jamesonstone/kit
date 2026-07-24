@@ -73,6 +73,8 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Provide a repair command that resolves a same-repository pull request head and opens its durable branch worktree instead of editing the detached `PR-<number>` view.
 - Provide read-only listing, exact safe removal, explicit pruning, root discovery, and dry-run-first migration of legacy flat linked worktrees.
 - Provide a read-only `path <lane>` command that prints only the exact registered worktree path so callers can navigate with `cd "$(git wt path <lane>)"` without fuzzy matching or filesystem mutation.
+- Keep Kit-distributed rules and generated agent instructions portable: native `git worktree` and ordinary filesystem operations define the normative workflow, and no rule may require `git-wt`, `git wt`, `--no-link-env`, or another wrapper-specific command.
+- Document `git wt` only as an optional convenience for manual users. The wrapper may mirror the portable contract but must not define, direct, or become an execution dependency of Kit-managed rules.
 - Removal must never use force, must refuse the current checkout, dirty state, ignored material, and local branch commits that are not present on the configured upstream.
 - Migration must preflight every candidate and destination before applying, use `git worktree move`, preserve dirty contents, skip already hierarchical directories, and stop rather than overwrite or force through a conflict.
 - Link the invoking checkout's repository-root `.env` into writable `issue`, `add`, and `repair` lanes by default, using a symlink only and allowing explicit `--no-link-env` isolation.
@@ -99,6 +101,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 5. Align the canonical guide, README, command docs, Constitution, active registry rules, generated V3 support files, and current V3 instruction payload while preserving immutable V1 and V2 payloads.
 6. Validate Kit fully, then update only LabCore's dedicated worktree-policy PR if its managed rules and V3 guidance require the new contract.
 7. Add exact registered-lane path lookup for shell command substitution, document the parent-shell limitation, and register the command in Kit capabilities.
+8. Refactor Kit-managed rules, generated instructions, and downstream LabCore guidance to express lane creation, reuse, environment linking, exact path validation, and removal with native Git and generic filesystem semantics; retain GitWT only in manual command documentation.
 
 ## DECISIONS
 
@@ -112,6 +115,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Keep application processes, databases, ports, Temporal state, and sibling repository coordination outside GitWT so the command remains a thin Git worktree wrapper.
 - Print an exact registered path instead of adding a misleading `cd` command: an external Git subcommand cannot change its parent shell's working directory, while `cd "$(git wt path GH-101)"` is portable and composable.
 - Build `git-wt` once into `bin/` and install that artifact from the shared Make target so `make build`, `make install-git-wt`, and `make install` cannot diverge.
+- Make native `git worktree` the policy authority. GitWT is a manually invoked convenience implementation of that policy, never a prerequisite for agents, reconciliation, or teammates using other tooling.
 
 ## DISCOVERIES
 
@@ -126,6 +130,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - GitWT must restore the original symlink text rather than recreate a normalized target when native worktree removal fails, so relative and absolute matching links retain their original representation.
 - LabCore's live `GH-78` / PR `#79` is unrelated order-to-hold product work. Its dedicated worktree-policy lane is issue `#80`, branch `GH-80`, and PR `#81`; only that lane may receive downstream policy updates.
 - Navigation must be implemented as path resolution because a child process cannot change its invoking shell's current directory.
+- Kit registry rules and generated instruction sources had made the optional wrapper authoritative by naming `git wt`, GitWT, and `--no-link-env`. Expressing the same behavior with `git worktree list --porcelain`, `git worktree add`, `git worktree move`, non-force `git worktree remove`, and exact `ln -s` validation keeps reconciliation portable without weakening the contract.
 
 ## VALIDATION
 
@@ -161,6 +166,13 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - `make build` rebuilt both executables, installed `~/.local/bin/git-wt`, and produced identical SHA-256 values for `bin/git-wt` and the installed command.
 - `./bin/kit capabilities --json git wt path`, `./bin/kit check safe-worktree-workflow`, and `./bin/kit check --project` passed.
 - Prompt-system run `20260724T145815.411364000Z-d99cf1` passed all 45 task runs, all 345 assertions, and all 15 repeated-task determinism checks.
+- Native-first follow-up tests passed for `internal/instructions`, `internal/templates`, and focused registry/capability assertions in `pkg/cli`; they require native `git worktree` authority and reject wrapper-specific policy in generated V3 guidance and active rules.
+- `make fmt`, `make vet`, `go test ./... -count=1`, and `go test -race ./internal/instructions ./internal/templates ./pkg/cli -count=1` passed after the native-first policy refactor.
+- `golangci-lint run --new-from-rev=origin/main ./...` reported `0 issues`, and `make build` rebuilt Kit and installed the optional `git-wt` manual wrapper from the validated artifact.
+- LabCore branch `GH-80` passed `make check` after its guardrails, delivery rule, agent guidance, references index, and worktree guide were aligned to the native Git contract.
+- Exact policy scans found no `GitWT`, `git wt`, or `--no-link-env` dependency in Kit or LabCore agent guidance, active registry rules, or reference indexes; those names remain only in manual wrapper documentation and Kit's command capability surface.
+- `./bin/kit check safe-worktree-workflow`, `./bin/kit check --all`, and `./bin/kit check --project` passed; all 47 features and the project contract remained coherent after Constitution curation.
+- Prompt-system run `20260724T152424.240242000Z-9863de` passed all 45 task runs, all 345 assertions, and all 15 repeated-task determinism checks.
 
 ## OUTCOME
 
@@ -177,19 +189,24 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Added read-only `git wt path <lane>` lookup for exact registered lanes, enabling portable navigation with `cd "$(git wt path GH-101)"` while rejecting unknown lanes, fuzzy matches, and traversal.
 - Registered `git wt path` in Kit capabilities and updated help, command docs, the canonical worktree guide, and delivery guidance with path-based navigation.
 - `make build` now installs or updates `~/.local/bin/git-wt` from the same `bin/git-wt` artifact used for validation.
+- Kit rules, generated V3 instructions, and LabCore policy now use native `git worktree` plus ordinary filesystem operations as the portable authority. Reconciled guidance does not require the optional wrapper, its command names, or its flags.
+- The canonical guides map creation, reuse, detached inspection, repair, exact path validation, environment linking, migration, pruning, and conservative removal to native Git. Separate manual sections retain `git wt` as a convenience cheat sheet only.
 - Kit delivery uses issue `#78` and branch `GH-78`; both repositories remain ready for their normal commit, push, and ready-pull-request gates.
 
 ## REPOSITORY MEMORY
 
 Decision: updated
 
-Rationale: Exact path lookup adds a durable command contract and records why GitWT prints a path instead of pretending a child process can change its parent shell. The Constitution required no change because the established thin-wrapper and exact-target invariants remain unchanged.
+Rationale: The native-Git authority boundary is durable project policy that code and wrapper tests alone cannot preserve. The spec records why the convenience layer is non-authoritative, the Constitution now makes portability a project invariant, registry rules carry the generic safety contract to managed projects, and the worktree guide separates the portable workflow from manual convenience commands.
 
 Artifacts:
 
 - `cmd/git-wt`
 - `internal/worktree`
 - `docs/references/worktrees.md`
+- `docs/CONSTITUTION.md`
+- `docs/references/rules/safety-guardrails.md`
+- `docs/references/rules/github-pr-delivery.md`
 - Kit-managed instruction and registry policy sources
 - `internal/instructions/versions/v3.md`
 - LabCore `docs/agents/*` and `docs/references/*` worktree guidance
