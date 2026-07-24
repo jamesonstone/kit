@@ -7,10 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"regexp"
-	"strconv"
-	"strings"
 )
 
 var (
@@ -28,25 +25,28 @@ const usage = `Usage: git wt <command> [arguments]
 Safe worktrees live at ~/worktrees/<owner>/<repository>/<lane>.
 
 Commands:
-  issue <number>       Create or reuse durable issue lane GH-<number>
-  add <branch>         Open an existing local or origin branch
-  pr <number>          Create or refresh detached inspection lane PR-<number>
-  repair <number>      Open a same-repository PR's writable head branch
-  list                 List this clone's worktrees without pruning
-  root                 Print this repository's canonical worktree directory
-  remove <lane|path>   Remove one exact clean, fully-pushed worktree
-  prune [--dry-run]    Explicitly prune stale worktree metadata
-  migrate [--apply]    Preview or apply legacy flat-directory migration
-  help                 Show this help
+  issue <number> [--no-link-env]   Create or reuse durable issue lane GH-<number>
+  add <branch> [--no-link-env]     Open an existing local or origin branch
+  pr <number>                      Create or refresh detached inspection lane PR-<number>
+  repair <number> [--no-link-env]  Open a same-repository PR's writable head branch
+  list                             List this clone's worktrees without pruning
+  root                             Print this repository's canonical worktree directory
+  remove <lane|path>               Remove one exact clean, fully-pushed worktree
+  prune [--dry-run]                Explicitly prune stale worktree metadata
+  migrate [--apply]                Preview or apply legacy flat-directory migration
+  help                             Show this help
 
 Environment:
   GIT_WT_ROOT          Override ~/worktrees (primarily for testing)
 
 Safety:
   PR-<number> is detached and inspection-only; use repair for edits.
+  Writable lanes link the invoking checkout's .env by default; use --no-link-env for isolation.
+  .envrc is never linked automatically.
   remove never forces, deletes a branch, or discards dirty/unpushed state.
   migrate previews by default and uses git worktree move when applied.
-  No command stashes, resets, cleans, or shares .env or .envrc files.`
+  No command starts applications or manages databases, ports, or runtime services.
+  No command stashes, resets, cleans, or force-removes worktrees.`
 
 type commandFunc func(context.Context, string, string, ...string) ([]byte, error)
 
@@ -125,25 +125,28 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 		}
 		return a.list(ctx, cwd)
 	case "issue":
-		if len(args) != 2 {
-			return fmt.Errorf("usage: git wt issue <number>")
+		value, linkEnv, err := writableLaneArgs("issue", "number", args[1:])
+		if err != nil {
+			return err
 		}
-		return a.issue(ctx, cwd, args[1])
+		return a.issue(ctx, cwd, value, linkEnv)
 	case "add":
-		if len(args) != 2 {
-			return fmt.Errorf("usage: git wt add <branch>")
+		value, linkEnv, err := writableLaneArgs("add", "branch", args[1:])
+		if err != nil {
+			return err
 		}
-		return a.add(ctx, cwd, args[1])
+		return a.add(ctx, cwd, value, linkEnv)
 	case "pr":
 		if len(args) != 2 {
 			return fmt.Errorf("usage: git wt pr <number>")
 		}
 		return a.pr(ctx, cwd, args[1])
 	case "repair":
-		if len(args) != 2 {
-			return fmt.Errorf("usage: git wt repair <number>")
+		value, linkEnv, err := writableLaneArgs("repair", "number", args[1:])
+		if err != nil {
+			return err
 		}
-		return a.repair(ctx, cwd, args[1])
+		return a.repair(ctx, cwd, value, linkEnv)
 	case "remove":
 		if len(args) != 2 {
 			return fmt.Errorf("usage: git wt remove <lane|path>")
@@ -155,6 +158,18 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 		return a.migrate(ctx, cwd, args[1:])
 	default:
 		return fmt.Errorf("unknown command %q\n\n%s", args[0], usage)
+	}
+}
+
+func writableLaneArgs(command, placeholder string, args []string) (string, bool, error) {
+	commandUsage := fmt.Sprintf("usage: git wt %s <%s> [--no-link-env]", command, placeholder)
+	switch {
+	case len(args) == 1:
+		return args[0], true, nil
+	case len(args) == 2 && args[1] == "--no-link-env":
+		return args[0], false, nil
+	default:
+		return "", false, errors.New(commandUsage)
 	}
 }
 
@@ -187,71 +202,6 @@ func (a *App) list(ctx context.Context, cwd string) error {
 		}
 	}
 	return nil
-}
-
-func (a *App) remove(ctx context.Context, cwd, target string) error {
-	repo, err := a.repository(ctx, cwd)
-	if err != nil {
-		return err
-	}
-	path := target
-	if !filepath.IsAbs(path) {
-		path, err = canonicalLanePath(repo, target)
-		if err != nil {
-			return err
-		}
-	}
-	path = filepath.Clean(path)
-	relative, err := filepath.Rel(repo.projectRoot, path)
-	if err != nil || relative == "." || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return fmt.Errorf("target must be one exact worktree beneath %s", repo.projectRoot)
-	}
-	if samePath(path, repo.top) {
-		return fmt.Errorf("refusing to remove the current worktree")
-	}
-
-	entries, err := a.worktrees(ctx, repo.top)
-	if err != nil {
-		return err
-	}
-	var selected *worktreeEntry
-	for i := range entries {
-		if samePath(entries[i].path, path) {
-			selected = &entries[i]
-			break
-		}
-	}
-	if selected == nil {
-		return fmt.Errorf("%s is not an exact registered worktree for this clone", path)
-	}
-	dirty, err := a.status(ctx, selected.path, true)
-	if err != nil {
-		return err
-	}
-	if dirty != "" {
-		return fmt.Errorf("%s contains tracked, untracked, or ignored material; refusing removal:\n%s", selected.path, dirty)
-	}
-	if selected.branch != "" {
-		upstream, err := a.gitText(ctx, selected.path, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}")
-		if err != nil {
-			return fmt.Errorf("branch %s has no upstream; refusing removal because published state cannot be proven", selected.branch)
-		}
-		aheadText, err := a.gitText(ctx, selected.path, "rev-list", "--count", upstream+"..HEAD")
-		if err != nil {
-			return err
-		}
-		ahead, err := strconv.Atoi(aheadText)
-		if err != nil {
-			return fmt.Errorf("parse ahead count %q: %w", aheadText, err)
-		}
-		if ahead != 0 {
-			return fmt.Errorf("branch %s is %d commit(s) ahead of %s; refusing removal", selected.branch, ahead, upstream)
-		}
-	}
-	if _, err := a.git(ctx, repo.top, "worktree", "remove", selected.path); err != nil {
-		return err
-	}
-	return a.writef("Removed worktree %s; branch and shared Git state were preserved.\n", selected.path)
 }
 
 func (a *App) prune(ctx context.Context, cwd string, args []string) error {

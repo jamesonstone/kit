@@ -155,8 +155,10 @@ all decisions.
    - Work in the existing checkout when it already owns the requested lane
    - Put separate lanes only beneath `~/worktrees/<owner>/<repository>/<lane>` and never inside a repository
    - Use exact `GH-<number>` for durable issue lanes; reserve uppercase detached `PR-<number>` for temporary pull-request inspection and reuse the pull request head branch for writable repair
-   - Preserve primary and linked checkout state; never stash, reset, clean, force-remove, delete a branch, or share `.env` or `.envrc` files to create or clear a worktree
+   - Preserve primary and linked checkout state; never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
+   - Let GitWT symlink the invoking checkout's `.env` into writable lanes by default, support explicit `--no-link-env` isolation, never copy environment contents, and never automatically share `.envrc`
    - Treat checkout, index, and `HEAD` as worktree-local while remembering that refs, remotes, objects, configuration, and stash state are shared across the clone
+   - Keep GitWT limited to native worktree and lane management; runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration remain outside its scope
    - Resolve all in-scope implementation, validation, and delivery failures autonomously after diagnosis and continue until the requested goal is complete or a genuine external blocker remains
    - A supported tool-path change does not require routine permission when repository, target, scope, intended effect, and human identity remain unchanged
    - Ask permission only before large-scale deletion or deleting sensitive files; existing protected-branch, force-push, merge, review, identity, secret, and repository-setting prohibitions remain hard boundaries

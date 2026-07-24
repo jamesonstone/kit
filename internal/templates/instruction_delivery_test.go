@@ -67,6 +67,11 @@ func TestMemoryInstructionsPreserveProjectOrientedWorktrees(t *testing.T) {
 		"`~/worktrees/<owner>/<repository>/<lane>`",
 		"uppercase detached `PR-<number>`",
 		"never edit the detached `PR-<number>` view",
+		"Keep the root checkout on the protected default branch",
+		"symlink the invoking checkout's `.env` into writable lanes by default",
+		"use `--no-link-env` when isolation is required",
+		"Never copy `.env` contents or automatically share `.envrc`",
+		"does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
 		"refs, remotes, objects, configuration, and stash state are shared",
 	} {
 		if !strings.Contains(tooling, want) {

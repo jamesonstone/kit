@@ -29,7 +29,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 	}{
 		{version: "v1", sha256: "50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5"},
 		{version: "v2", sha256: "811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc"},
-		{version: "v3", sha256: "240e3c6f9a973459d36c1b3a059fbfabd0d4aee3a03dee9c1bae06574bc03584"},
+		{version: "v3", sha256: "1069329b3a6232c7e611875f7b329abb02e0c66fd6ef468ef5d3570d7e089f5d"},
 	}
 
 	for _, test := range tests {
@@ -64,7 +64,11 @@ func TestAgentInstructionsV3EncodesLaneAllocationPolicy(t *testing.T) {
 		"`~/worktrees/<owner>/<repository>/<lane>`",
 		"uppercase detached `PR-<number>`",
 		"Use the Kit-owned `git wt` workflow for lane creation, reuse, repair, removal, pruning, and migration",
-		"Never stash, reset, clean, force-remove, delete a branch, or share `.env` or `.envrc` files",
+		"Keep the root checkout on the protected default branch",
+		"symlink the invoking checkout's `.env` into writable lanes by default",
+		"use `--no-link-env` when isolation is required",
+		"Never copy `.env` contents or automatically share `.envrc`",
+		"does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
 		"load `docs/references/rules/constitution-curation.md` when present",
 		"`Repository Memory`, `Decision`, `Rationale`, and `Artifacts`",
 	} {

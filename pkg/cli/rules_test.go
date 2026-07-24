@@ -74,7 +74,12 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 		"`~/worktrees/<owner>/<repository>/<lane>`",
 		"exact uppercase `GH-<number>`",
 		"exact uppercase `PR-<number>`",
-		"Never automatically symlink or copy `.env` or `.envrc` files",
+		"symlink the invoking checkout's repository-root `.env`",
+		"`--no-link-env`",
+		"Never copy `.env` contents",
+		"automatically share `.envrc`",
+		"restore it if removal fails",
+		"runtime services, databases, ports, Temporal state",
 		"Remove only an exact registered path",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
@@ -192,8 +197,12 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"Verify that no duplicate issue or PR was created",
 		"Project-Oriented Worktree Delivery",
 		"`~/worktrees/<owner>/<repository>/<lane>`",
-		"`git wt repair <number>`",
+		"`git wt repair <number> [--no-link-env]`",
 		"Writable review repair must use the pull request's same-repository head branch",
+		"symlink the invoking checkout's repository-root `.env` by default",
+		"never automatically share `.envrc`",
+		"restore it if removal fails",
+		"application startup, databases, port allocation, Temporal state",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)

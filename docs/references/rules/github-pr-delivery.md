@@ -179,10 +179,14 @@ Include:
 - Create or reuse the human-assigned issue first. Then use exact uppercase `GH-<issue-number>` as both the branch and durable worktree lane.
 - Use exact uppercase `PR-<number>` only for detached inspection. Writable review repair must use the pull request's same-repository head branch, normally its durable `GH-<issue-number>` lane.
 - Fetch the remote base without switching, pulling, merging, stashing, resetting, cleaning, or writing in another checkout. Create a new issue branch from the freshly fetched remote base.
-- `git wt issue <number>`, `git wt add <branch>`, `git wt pr <number>`, and `git wt repair <number>` implement the canonical hierarchy when the Kit-owned command is installed. Equivalent raw `git worktree` commands must preserve the same paths and safety contract.
+- `git wt issue <number> [--no-link-env]`, `git wt add <branch> [--no-link-env]`, `git wt pr <number>`, and `git wt repair <number> [--no-link-env]` implement the canonical hierarchy when the Kit-owned command is installed. Equivalent raw `git worktree` commands must preserve the same paths and safety contract.
 - Apply, validate, stage, commit, push, and create or update the ready pull request only within the selected writable issue branch worktree under the normal delivery gates.
-- Never nest worktrees inside a repository, share `.env` or `.envrc` files automatically, or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
-- Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. Leave and report a dirty or blocked worktree so evidence is not destroyed.
+- Keep the root checkout on the protected default branch; do not automatically check the issue branch out there.
+- Writable lanes symlink the invoking checkout's repository-root `.env` by default. Use `--no-link-env` for isolation, never copy environment contents, never overwrite an existing destination `.env`, and never automatically share `.envrc`.
+- Detached `PR-<number>` inspection lanes do not link `.env`; migration preserves existing files and links without creating new ones.
+- Never nest worktrees inside a repository or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
+- Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. A verified expected GitWT `.env` symlink is the sole narrow exception: remove only that link before ordinary non-force worktree removal and restore it if removal fails.
+- Keep application startup, databases, port allocation, Temporal state, process supervision, and multi-repository runtime orchestration outside GitWT.
 
 ### Branch Workflow
 

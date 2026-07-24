@@ -142,6 +142,7 @@ func TestRemoveRefusesDirtyAndIgnoredMaterial(t *testing.T) {
 
 func TestMigratePreviewsThenMovesDirtyLegacyWorktree(t *testing.T) {
 	fixture := newGitFixture(t)
+	writeEnvironmentSource(t, fixture, "TOKEN=do-not-link\n")
 	legacy := filepath.Join(fixture.worktreeRoot, "project-topic-legacy")
 	runGit(t, fixture.primary, "branch", "topic/legacy", "origin/main")
 	runGit(t, fixture.primary, "worktree", "add", legacy, "topic/legacy")
@@ -166,6 +167,9 @@ func TestMigratePreviewsThenMovesDirtyLegacyWorktree(t *testing.T) {
 	}
 	if _, err := os.Stat(legacy); !os.IsNotExist(err) {
 		t.Fatalf("legacy path still exists or stat failed: %v", err)
+	}
+	if _, err := os.Lstat(filepath.Join(destination, environmentFileName)); !os.IsNotExist(err) {
+		t.Fatalf("migration created an environment link or lstat failed: %v", err)
 	}
 	assertBranch(t, destination, "topic/legacy")
 }

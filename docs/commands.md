@@ -31,7 +31,10 @@ The separately installed `git-wt` executable is discovered by Git as
 `git wt`. It manages safe project-oriented worktrees beneath `~/worktrees`;
 see [references/worktrees.md](references/worktrees.md) for its command and
 safety contract. Use `git wt help` for command discovery; Git reserves
-`git <command> --help` for installed manual pages.
+`git <command> --help` for installed manual pages. Writable `issue`, `add`, and
+`repair` lanes link the invoking checkout's `.env` by default; append
+`--no-link-env` when isolation is required. Detached `pr` lanes and migration do
+not create environment links.
 
 ## Quick Start
 
@@ -172,7 +175,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
-| `git wt` | Manage durable issue lanes, detached PR views, repair lanes, safe removal, pruning, and legacy migration beneath `~/worktrees`. |
+| `git wt` | Manage durable issue lanes, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`. |
 
 ## Prompt Profiles And Subagents
 

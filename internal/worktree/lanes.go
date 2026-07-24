@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func (a *App) issue(ctx context.Context, cwd, value string) error {
+func (a *App) issue(ctx context.Context, cwd, value string, linkEnv bool) error {
 	number, err := parseNumber(value, issueLanePattern, "GH")
 	if err != nil {
 		return err
@@ -20,13 +20,13 @@ func (a *App) issue(ctx context.Context, cwd, value string) error {
 		return err
 	}
 	if a.refExists(ctx, repo.top, "refs/heads/"+branch) {
-		return a.addBranch(ctx, repo, branch)
+		return a.addBranch(ctx, repo, branch, linkEnv)
 	}
 	if err := a.fetchOrigin(ctx, repo.top); err != nil {
 		return err
 	}
 	if a.refExists(ctx, repo.top, "refs/remotes/origin/"+branch) {
-		return a.addBranch(ctx, repo, branch)
+		return a.addBranch(ctx, repo, branch, linkEnv)
 	}
 	base, err := a.remoteDefaultBranch(ctx, repo.top)
 	if err != nil {
@@ -45,10 +45,13 @@ func (a *App) issue(ctx context.Context, cwd, value string) error {
 	if _, err := a.git(ctx, repo.top, "worktree", "add", "-b", branch, destination, "refs/remotes/origin/"+base); err != nil {
 		return err
 	}
+	if err := a.ensureEnvironmentLink(repo.top, destination, linkEnv); err != nil {
+		return err
+	}
 	return a.writef("Created %s from origin/%s\n", destination, base)
 }
 
-func (a *App) add(ctx context.Context, cwd, branch string) error {
+func (a *App) add(ctx context.Context, cwd, branch string, linkEnv bool) error {
 	repo, err := a.repository(ctx, cwd)
 	if err != nil {
 		return err
@@ -60,21 +63,24 @@ func (a *App) add(ctx context.Context, cwd, branch string) error {
 		return fmt.Errorf("invalid branch %q: %w", branch, err)
 	}
 	if a.refExists(ctx, repo.top, "refs/heads/"+branch) {
-		return a.addBranch(ctx, repo, branch)
+		return a.addBranch(ctx, repo, branch, linkEnv)
 	}
 	if err := a.fetchOrigin(ctx, repo.top); err != nil {
 		return err
 	}
-	return a.addBranch(ctx, repo, branch)
+	return a.addBranch(ctx, repo, branch, linkEnv)
 }
 
-func (a *App) addBranch(ctx context.Context, repo repository, branch string) error {
+func (a *App) addBranch(ctx context.Context, repo repository, branch string, linkEnv bool) error {
 	entries, err := a.worktrees(ctx, repo.top)
 	if err != nil {
 		return err
 	}
 	for _, entry := range entries {
 		if entry.branch == branch {
+			if err := a.ensureEnvironmentLink(repo.top, entry.path, linkEnv); err != nil {
+				return err
+			}
 			return a.writef("Reusing %s for %s\n", entry.path, branch)
 		}
 	}
@@ -102,6 +108,9 @@ func (a *App) addBranch(ctx context.Context, repo repository, branch string) err
 		if _, err := a.git(ctx, repo.top, "worktree", "add", "--track", "-b", branch, destination, "origin/"+branch); err != nil {
 			return err
 		}
+	}
+	if err := a.ensureEnvironmentLink(repo.top, destination, linkEnv); err != nil {
+		return err
 	}
 	return a.writef("Created %s for %s\n", destination, branch)
 }
@@ -163,7 +172,7 @@ func (a *App) pr(ctx context.Context, cwd, value string) error {
 	return a.writef("Use `git wt repair %d` for writable PR work.\n", number)
 }
 
-func (a *App) repair(ctx context.Context, cwd, value string) error {
+func (a *App) repair(ctx context.Context, cwd, value string, linkEnv bool) error {
 	number, err := parseNumber(value, prLanePattern, "PR")
 	if err != nil {
 		return err
@@ -194,7 +203,7 @@ func (a *App) repair(ctx context.Context, cwd, value string) error {
 	if err := a.writef("PR %d uses writable head branch %s\n", number, pr.HeadRefName); err != nil {
 		return err
 	}
-	return a.addBranch(ctx, repo, pr.HeadRefName)
+	return a.addBranch(ctx, repo, pr.HeadRefName, linkEnv)
 }
 
 func (a *App) resolvePullRequest(ctx context.Context, cwd, slug string, number int) (PR, error) {

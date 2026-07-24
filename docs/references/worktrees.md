@@ -97,6 +97,34 @@ This is the recommended entrypoint before running `kit pr fix --pr 77`: inspect
 with `git wt pr 77` when useful, then perform edits and validation in the path
 reported by `git wt repair 77`.
 
+Writable `issue`, `add`, and `repair` lanes link the invoking checkout's
+repository-root `.env` by default:
+
+```bash
+git wt issue 76
+git wt add GH-76
+git wt repair 77
+```
+
+Use explicit isolation when a lane must not share that environment:
+
+```bash
+git wt issue 76 --no-link-env
+git wt add GH-76 --no-link-env
+git wt repair 77 --no-link-env
+```
+
+GitWT creates a symlink; it never copies `.env` contents. If the invoking
+checkout has no `.env`, lane creation still succeeds and reports that no
+environment file was linked. Reusing a writable lane ensures the expected link
+exists when linking is enabled. GitWT never overwrites a destination `.env`:
+regular files and symlinks pointing anywhere unexpected are preserved and
+reported as errors.
+
+GitWT does not automatically link `.envrc`, because it is executable shell
+configuration. Detached `git wt pr` inspection lanes never link `.env`, and
+`git wt migrate` preserves existing files and links without creating new ones.
+
 Inspect and maintain worktree state:
 
 ```bash
@@ -108,7 +136,10 @@ git wt remove PR-77
 
 `list` is read-only and never prunes. `remove` targets one exact registered
 path, never forces, never deletes the branch, and refuses tracked, untracked,
-ignored, or unpushed state.
+ignored, or unpushed state. A matching GitWT-managed `.env` symlink is the only
+exception: GitWT verifies its target, removes only that link, invokes ordinary
+non-force `git worktree remove`, and restores the link if Git removal fails.
+Regular `.env` files and unexpected symlinks always block removal.
 
 ## Legacy Migration
 
@@ -139,11 +170,21 @@ destination collisions or unsupported detached identities.
   before a mutation.
 - Do not use stash as cross-worktree scratch space; stash entries are shared and
   easy to apply in the wrong lane.
-- Never automatically link or copy `.env`, `.envrc`, credentials, tokens, or
-  other machine-local configuration into a new worktree.
+- Let GitWT link `.env` for writable lanes by default, or use `--no-link-env`
+  when isolation is required. Do not manually copy credentials.
+- Never automatically share `.envrc`, credentials other than the explicit
+  `.env` symlink, tokens, private keys, or other machine-local configuration.
 - Never use reset, clean, force removal, or branch deletion to make a worktree
   operation succeed.
 - Do not remove a worktree until its contents are clean and its branch state is
   published or otherwise deliberately retained.
 - Subagents must not independently create, switch, move, or remove worktrees. A
   supervisor may assign an already prepared worktree and exact scope.
+
+## Scope Boundary
+
+GitWT is a thin wrapper around native Git worktree operations plus default
+`.env` linking for writable lanes. It manages lane paths and branches only. It
+does not start or stop applications, manage databases, allocate ports, manage
+Temporal state, supervise processes, orchestrate sibling repositories, or
+switch the root checkout away from `main`.
