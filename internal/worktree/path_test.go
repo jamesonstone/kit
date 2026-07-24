@@ -41,3 +41,37 @@ func TestPathPrintsOnlyExactRegisteredWorktree(t *testing.T) {
 		t.Fatalf("path usage error = %v", err)
 	}
 }
+
+func TestCDOpensShellInExactRegisteredWorktree(t *testing.T) {
+	fixture := newGitFixture(t)
+	runWT(t, fixture.app, fixture.primary, "issue", "76", "--no-link-env")
+	want := filepath.Join(fixture.worktreeRoot, "example", "project", "GH-76")
+	var got string
+	fixture.app.runShell = func(_ context.Context, path string) error {
+		got = path
+		return nil
+	}
+
+	runWT(t, fixture.app, fixture.primary, "cd", "GH-76")
+	if !samePath(got, want) {
+		t.Fatalf("cd shell path = %q, want filesystem-equivalent path %q", got, want)
+	}
+
+	got = ""
+	runWT(t, fixture.app, fixture.primary, "enter", "GH-76")
+	if !samePath(got, want) {
+		t.Fatalf("enter shell path = %q, want filesystem-equivalent path %q", got, want)
+	}
+}
+
+func TestCDRejectsUnregisteredLane(t *testing.T) {
+	fixture := newGitFixture(t)
+	fixture.app.runShell = func(_ context.Context, _ string) error {
+		t.Fatal("shell should not start for an unregistered lane")
+		return nil
+	}
+	err := fixture.app.Run(context.Background(), fixture.primary, []string{"cd", "GH-999"})
+	if err == nil || !strings.Contains(err.Error(), "not an exact registered worktree") {
+		t.Fatalf("unregistered lane error = %v", err)
+	}
+}

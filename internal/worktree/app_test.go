@@ -323,11 +323,13 @@ func (failingWriter) Write([]byte) (int, error) {
 
 func Example() {
 	fmt.Println("git wt issue 76")
+	fmt.Println("git wt cd GH-76")
 	fmt.Println(`cd "$(git wt path GH-76)"`)
 	fmt.Println("git wt pr 77")
 	fmt.Println("git wt repair 77")
 	// Output:
 	// git wt issue 76
+	// git wt cd GH-76
 	// cd "$(git wt path GH-76)"
 	// git wt pr 77
 	// git wt repair 77

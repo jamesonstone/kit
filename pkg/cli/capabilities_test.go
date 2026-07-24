@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "config", "config check", "aws", "aws verify", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine", "git wt path"} {
+	for _, command := range []string{"capabilities", "config", "config check", "aws", "aws verify", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine", "git wt cd", "git wt path"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
