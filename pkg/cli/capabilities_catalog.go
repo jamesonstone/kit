@@ -313,6 +313,17 @@ func capabilityCatalog() []capabilityRecord {
 		capability("version", "Utilities", "Print the Kit CLI version.", mutationNone, withRelated(related("upgrade", "updates the installed version"))),
 		capability("completion", "Utilities", "Generate shell completion scripts.", mutationNone, withFileWrites("none by default", "the shell may redirect output to a completion file outside Kit"), withRelated(related("help", "shows command syntax"))),
 		capability(
+			"git wt cd",
+			"Utilities",
+			"Open an interactive shell in an exact registered worktree lane.",
+			mutationNone,
+			withGitMutation("none; reads registered worktree metadata only"),
+			withWhenToUse("Use for manual testing when you want a shell rooted in an existing lane."),
+			withWhenNotToUse("Do not expect this child shell to change the parent shell's directory; use `git wt path` with `cd` for that."),
+			withExamples("git wt cd GH-101"),
+			withCaveats("The command starts the configured `$SHELL` (or `/bin/sh`) with the lane as its working directory and returns when that shell exits.", "The lane must already be an exact registered worktree."),
+		),
+		capability(
 			"git wt path",
 			"Utilities",
 			"Print the exact registered worktree path for a lane.",

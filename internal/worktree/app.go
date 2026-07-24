@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"regexp"
 )
 
@@ -32,6 +33,7 @@ Commands:
   list                             List this clone's worktrees without pruning
   root                             Print this repository's canonical worktree directory
   path <lane>                      Print an exact registered lane path for shell navigation
+  cd <lane>                        Open an interactive shell in an exact registered lane
   remove <lane|path>               Remove one exact clean, fully-pushed worktree
   prune [--dry-run]                Explicitly prune stale worktree metadata
   migrate [--apply]                Preview or apply legacy flat-directory migration
@@ -72,6 +74,7 @@ type App struct {
 	mkdirAll   func(string, os.FileMode) error
 	pathExists func(string) (bool, error)
 	resolvePR  resolvePRFunc
+	runShell   func(context.Context, string) error
 }
 
 // NewApp creates an App backed by the local Git and GitHub CLIs.
@@ -96,6 +99,7 @@ func NewApp(out, errOut io.Writer) *App {
 		},
 	}
 	app.resolvePR = app.resolvePullRequest
+	app.runShell = runInteractiveShell
 	return app
 }
 
@@ -125,6 +129,11 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 			return fmt.Errorf("usage: git wt path <lane>")
 		}
 		return a.lanePath(ctx, cwd, args[1])
+	case "cd", "enter":
+		if len(args) != 2 {
+			return fmt.Errorf("usage: git wt cd <lane>")
+		}
+		return a.enterLane(ctx, cwd, args[1])
 	case "list":
 		if len(args) != 1 {
 			return fmt.Errorf("list accepts no arguments")
@@ -165,6 +174,35 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 	default:
 		return fmt.Errorf("unknown command %q\n\n%s", args[0], usage)
 	}
+}
+
+func (a *App) enterLane(ctx context.Context, cwd, lane string) error {
+	repo, err := a.repository(ctx, cwd)
+	if err != nil {
+		return err
+	}
+	path, err := canonicalLanePath(repo, lane)
+	if err != nil {
+		return err
+	}
+	selected, err := a.registeredWorktree(ctx, repo.top, path)
+	if err != nil {
+		return err
+	}
+	return a.runShell(ctx, selected.path)
+}
+
+func runInteractiveShell(ctx context.Context, dir string) error {
+	shell := os.Getenv("SHELL")
+	if shell == "" {
+		shell = "/bin/sh"
+	}
+	command := exec.CommandContext(ctx, shell)
+	command.Dir = dir
+	command.Stdin = os.Stdin
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+	return command.Run()
 }
 
 func writableLaneArgs(command, placeholder string, args []string) (string, bool, error) {

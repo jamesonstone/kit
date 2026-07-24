@@ -39,8 +39,9 @@ command discovery; Git reserves
 `git <command> --help` for installed manual pages. Writable `issue`, `add`, and
 `repair` lanes link the clone's primary checkout `.env` by default; append
 `--no-link-env` when isolation is required. Detached `pr` lanes and migration do
-not create environment links. Navigate to an exact registered lane with
-`cd "$(git wt path GH-123)"`.
+not create environment links. `git wt cd GH-123` opens a child shell in an
+exact registered lane for manual testing. To change the current shell's
+directory, use `cd "$(git wt path GH-123)"`.
 
 ## Quick Start
 
