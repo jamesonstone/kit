@@ -100,7 +100,7 @@ the complete durable truth.
 | `kit spec <feature> --legacy-supervisor` | Temporarily run the deprecated V2 lifecycle supervisor |
 | `kit loop workflow <feature>` | Deprecated V2 compatibility loop; V3 specs use native planning |
 | `kit loop review` | Review changed code until local correctness converges |
-| `kit pr fix` | Select or target a PR and prepare a review-feedback dispatch prompt |
+| `kit pr fix` | Select or target a PR and copy a review-feedback dispatch prompt; editing is opt-in |
 | `kit status --all` | Show project-wide feature state |
 | `kit registry status` | Show compact registry and Kit-managed file freshness; supports `--json` |
 | `kit health` | Apply safe Kit-managed updates and validate project health; preview with `--dry-run --diff` |

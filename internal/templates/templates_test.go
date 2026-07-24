@@ -234,6 +234,8 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"Keep broad or noisy discovery in RLM first",
 			"Use `kit pr fix` as the default PR review feedback entrypoint",
 			"uses the prompt-producing `kit dispatch --pr` path",
+			"copies the resulting dispatch prompt directly",
+			"Pass `--edit` to review and change the task list",
 			"does not run the loop agent",
 			"post-push reflection cycle before review-thread resolution",
 			"resolve matching current unresolved review threads",

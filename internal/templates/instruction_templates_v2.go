@@ -299,10 +299,11 @@ const agentsTooling = `# Tooling
 
 ## PR Review Feedback
 
-- Use ` + "`kit pr fix`" + ` as the default PR review feedback entrypoint when current PR review feedback should become an editable dispatch prompt.
+- Use ` + "`kit pr fix`" + ` as the default PR review feedback entrypoint when current PR review feedback should become a copied dispatch prompt.
 - With no ` + "`--pr`" + `, ` + "`kit pr fix`" + ` lists open pull requests in the current repository and asks which one to repair.
 - Use ` + "`kit pr fix --pr <target>`" + ` when the PR is known; accepted targets match dispatch PR intake: URL, Markdown link, ` + "`owner/repo#number`" + `, or current-repo number.
-- ` + "`kit pr fix`" + ` uses the prompt-producing ` + "`kit dispatch --pr`" + ` path: it pre-populates the editor with unresolved review feedback, lets the user edit the task list, and copies the resulting dispatch prompt for a coding agent.
+- ` + "`kit pr fix`" + ` uses the prompt-producing ` + "`kit dispatch --pr`" + ` path and copies the resulting dispatch prompt directly for a coding agent.
+- Pass ` + "`--edit`" + ` to review and change the task list in the default editor before copying; ` + "`--vim`" + ` and ` + "`--editor <cmd>`" + ` also opt into editing.
 - The generated PR-fix prompt requires a post-push reflection cycle before review-thread resolution: the coding agent must review the pushed diff in context, confirm the PR head still matches the commit it pushed, and only then resolve verified addressed conversations.
 - ` + "`kit pr fix`" + ` does not run the loop agent, edit files, write ` + "`.kit/loops`" + ` evidence, stage, commit, push, post PR comments, or resolve review threads.
 - Use ` + "`kit loop review`" + ` when changed code should be locally reviewed and repaired by the configured loop agent until the final response reports at least 95% correctness and ends with ` + "`done`" + `.

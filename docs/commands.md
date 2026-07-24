@@ -93,7 +93,7 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit aws verify` | Call STS and verify that the configured AWS profile resolves to the account configured in `.kit.yaml`. |
 | `kit check <feature>` | Validate feature documents and required populated sections. |
 | `kit check --project` | Validate repo-level docs, init scaffold, and instruction contract. |
-| `kit pr fix` | Select or target an open PR and prepare a dispatch prompt from review feedback. |
+| `kit pr fix` | Select or target an open PR and copy a dispatch prompt from review feedback; editing is opt-in. |
 | `kit trace <target>` | List feature verification runs or inspect one run ID. |
 | `kit replay <run-id>` | Rerun commands from a prior verification run and compare outcomes. |
 | `kit state [refresh]` | Show or refresh generated pointer-only `.kit/state.json`. |
@@ -217,13 +217,14 @@ Use `kit pr fix` as the default PR review feedback entrypoint. With no flags it
 lists open pull requests in the current repository and asks which one to repair.
 Use `kit pr fix --pr <url|owner/repo#number|number>` to target a specific PR.
 The command uses the same prompt-producing path as `kit dispatch --pr`: it
-prefills the editor from unresolved, non-outdated review threads, lets you edit
-the task list, and copies the resulting dispatch prompt for a coding agent. It
-does not run the loop agent, edit files, write `.kit/loops` evidence, stage,
-commit, push, post PR comments, resolve review threads, or perform GitHub
-delivery. The generated prompt tells the coding agent to run a post-push
-reflection cycle, confirm the PR head still matches its pushed commit, and only
-then resolve verified addressed conversations.
+copies a dispatch prompt built from unresolved, non-outdated review threads
+directly to the clipboard for a coding agent. Pass `--edit` to review and change
+the task list in the default editor first; `--vim` and `--editor <cmd>` also opt
+into editing. It does not run the loop agent, edit files, write `.kit/loops`
+evidence, stage, commit, push, post PR comments, resolve review threads, or
+perform GitHub delivery. The generated prompt tells the coding agent to run a
+post-push reflection cycle, confirm the PR head still matches its pushed
+commit, and only then resolve verified addressed conversations.
 
 Use `kit dispatch --pr <url|number>` to prefill the dispatch editor from
 unresolved, non-outdated GitHub PR review threads. Add `--coderabbit` to keep

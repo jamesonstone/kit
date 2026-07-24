@@ -788,9 +788,11 @@ Flags:
 - with `--pr <target>`, accept the same PR target forms as dispatch PR intake:
   full GitHub PR URL, Markdown PR link, `owner/repo#123`, or current-repo PR
   number
-- route the selected PR through the prompt-producing `kit dispatch --pr` path:
-  prepopulate the editor from unresolved review feedback, let the user edit the
-  task list, and copy the resulting dispatch prompt for a coding agent
+- route the selected PR through the prompt-producing `kit dispatch --pr` path
+  and copy the resulting dispatch prompt directly for a coding agent
+- make review-task editing opt-in: `--edit` opens the default editor, while
+  `--vim` or `--editor <cmd>` selects a specific editor path before the prompt
+  is copied
 - preserve the delivery boundary: do not run the loop agent, edit files, write
   `.kit/loops` evidence, stage, commit, push, post PR comments, resolve review
   threads, or perform GitHub delivery
@@ -808,8 +810,9 @@ Flags:
 
 - `--pr <target>` — target a PR without using the selector
 - `--coderabbit` — include only CodeRabbit-authored review comments
-- `--editor <cmd>` — open review tasks in a specific editor command
-- `--vim` — open review tasks in a vim-compatible editor
+- `--edit` — open review tasks in the default editor before prompt generation
+- `--editor <cmd>` — opt into editing with a specific editor command
+- `--vim` — opt into editing with a vim-compatible editor
 - `--copy` — copy generated prompt output even with `--output-only`
 - `--output-only` — print prompt text instead of copying it
 - `--max-subagents <n>` — maximum concurrent subagents allowed in the
