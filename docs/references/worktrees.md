@@ -54,9 +54,12 @@ Kit owns the `git-wt` executable. Git discovers an executable named `git-wt` on
 From a Kit source checkout:
 
 ```bash
-go build -o ~/.local/bin/git-wt ./cmd/git-wt
+make build
 git wt help
 ```
+
+`make build` produces `bin/kit` and `bin/git-wt`, then installs or updates
+`~/.local/bin/git-wt`.
 
 `~/.local/bin` must be on `PATH`. Set `GIT_WT_ROOT` only when an explicit
 non-default root is needed; normal use requires no configuration and uses

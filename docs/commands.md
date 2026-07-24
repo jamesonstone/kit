@@ -18,6 +18,9 @@ cd kit
 make build
 ```
 
+`make build` builds `bin/kit` and `bin/git-wt`, then installs or updates
+`~/.local/bin/git-wt`.
+
 To enable repository-managed Git hooks:
 
 ```bash

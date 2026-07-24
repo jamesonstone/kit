@@ -44,6 +44,9 @@ cd kit
 make build
 ```
 
+`make build` builds both Kit executables and installs or updates
+`~/.local/bin/git-wt` so Git can discover it as `git wt`.
+
 Enable repository-managed hooks for this clone:
 
 ```bash

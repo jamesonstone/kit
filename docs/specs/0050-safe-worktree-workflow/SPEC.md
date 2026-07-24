@@ -64,6 +64,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 ## REQUIREMENTS
 
 - Add a Kit-owned `git-wt` executable so standard Git external-command discovery makes it available as `git wt`.
+- Make `make build` install or update `~/.local/bin/git-wt` from the same built artifact so source builds immediately refresh the Git subcommand on `PATH`.
 - Default the hierarchy root to `~/worktrees`; allow a testable explicit override without requiring machine-specific paths in repository policy.
 - Derive lowercase owner and repository segments from `origin`, preserve safe branch hierarchy below them, and reject absolute, empty, dot, or parent-traversal lane components.
 - Provide a durable issue-lane command that creates or reuses exact `GH-<number>` from the freshly fetched remote default branch.
@@ -110,6 +111,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Recognize a removable environment link by exact destination name, symlink type, and target match only; do not add a broad `.env` deletion or dirty-state exception.
 - Keep application processes, databases, ports, Temporal state, and sibling repository coordination outside GitWT so the command remains a thin Git worktree wrapper.
 - Print an exact registered path instead of adding a misleading `cd` command: an external Git subcommand cannot change its parent shell's working directory, while `cd "$(git wt path GH-101)"` is portable and composable.
+- Build `git-wt` once into `bin/` and install that artifact from the shared Make target so `make build`, `make install-git-wt`, and `make install` cannot diverge.
 
 ## DISCOVERIES
 
@@ -156,6 +158,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - `make fmt`, `go vet ./...`, `go test ./... -count=1`, `go test -race ./internal/worktree ./pkg/cli -count=1`, and `golangci-lint run --new-from-rev=origin/main ./...` passed; lint reported `0 issues`.
 - `make build`, `make build-windows`, and `goreleaser check` passed for both binaries and target platforms.
 - The built command completed a real shell navigation check with `resolved_lane="$(./bin/git-wt path GH-78)"`, matched the active worktree, and confirmed branch `GH-78` after changing into the result.
+- `make build` rebuilt both executables, installed `~/.local/bin/git-wt`, and produced identical SHA-256 values for `bin/git-wt` and the installed command.
 - `./bin/kit capabilities --json git wt path`, `./bin/kit check safe-worktree-workflow`, and `./bin/kit check --project` passed.
 - Prompt-system run `20260724T145815.411364000Z-d99cf1` passed all 45 task runs, all 345 assertions, and all 15 repeated-task determinism checks.
 
@@ -173,6 +176,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Updated LabCore's active rules and guidance on issue `#80` and branch `GH-80` without changing its existing `GH-78` lane or reconciling any other managed project.
 - Added read-only `git wt path <lane>` lookup for exact registered lanes, enabling portable navigation with `cd "$(git wt path GH-101)"` while rejecting unknown lanes, fuzzy matches, and traversal.
 - Registered `git wt path` in Kit capabilities and updated help, command docs, the canonical worktree guide, and delivery guidance with path-based navigation.
+- `make build` now installs or updates `~/.local/bin/git-wt` from the same `bin/git-wt` artifact used for validation.
 - Kit delivery uses issue `#78` and branch `GH-78`; both repositories remain ready for their normal commit, push, and ready-pull-request gates.
 
 ## REPOSITORY MEMORY

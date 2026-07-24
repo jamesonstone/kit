@@ -1,12 +1,14 @@
-.PHONY: all build build-windows test lint fmt vet clean install install-git-hooks install-git-wt
+.PHONY: all build build-git-wt build-windows test lint fmt vet clean install install-git-hooks install-git-wt
 
 BINARY_NAME=kit
 WORKTREE_BINARY_NAME=git-wt
 VERSION?=$(shell git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo dev)
 LDFLAGS=-ldflags "-X github.com/jamesonstone/kit/pkg/cli.Version=$(VERSION)"
 
-build:
+build: install-git-wt
 	go build $(LDFLAGS) -o bin/$(BINARY_NAME) ./cmd/kit
+
+build-git-wt:
 	go build -o bin/$(WORKTREE_BINARY_NAME) ./cmd/git-wt
 
 build-windows:
@@ -16,9 +18,9 @@ build-windows:
 install: install-git-wt
 	go install $(LDFLAGS) ./cmd/kit
 
-install-git-wt:
+install-git-wt: build-git-wt
 	mkdir -p $(HOME)/.local/bin
-	go build -o $(HOME)/.local/bin/$(WORKTREE_BINARY_NAME) ./cmd/git-wt
+	install -m 0755 bin/$(WORKTREE_BINARY_NAME) $(HOME)/.local/bin/$(WORKTREE_BINARY_NAME)
 
 install-git-hooks:
 	chmod +x .githooks/pre-commit
