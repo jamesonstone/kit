@@ -315,12 +315,12 @@ func capabilityCatalog() []capabilityRecord {
 		capability(
 			"git wt list",
 			"Utilities",
-			"Select or print registered worktrees ordered by their last update day.",
+			"Select or print registered worktrees, newest first by full commit timestamp.",
 			mutationNone,
 			withFileWrites("none"),
 			withGitMutation("none; reads registered worktree metadata, status, and commit dates only"),
 			withFlags(
-				flag("--sort", "sort by updated, state, head, or path"),
+				flag("--sort", "order by updated (default), state, head, or path"),
 				flag("--reverse", "reverse the selected sort order"),
 				flag("--plain", "print the table instead of opening the terminal selector"),
 			),
@@ -328,7 +328,7 @@ func capabilityCatalog() []capabilityRecord {
 			withWhenToUse("Use interactively to choose a registered worktree with arrow keys or Tab.", "Use with --plain or redirected output when a script or terminal needs the table."),
 			withWhenNotToUse("Do not expect the selected child shell to change the parent shell's directory.", "Do not use as a policy dependency; native git worktree commands remain authoritative."),
 			withExamples("git wt list", "git wt list --plain --sort path", "git wt list --sort state --reverse"),
-			withCaveats("Terminal selection uses color and opens the configured shell in the chosen worktree.", "Non-terminal input or output automatically uses the stable plain table.", "LAST UPDATED is displayed at day precision while sorting uses the full commit timestamp."),
+			withCaveats("Terminal selection uses color and opens the configured shell in the chosen worktree.", "Non-terminal input or output automatically uses the stable plain table.", "The default ordering is newest first by full commit timestamp; --sort state, --sort head, and --sort path select alternate orderings.", "LAST UPDATED is display-only and shown at day precision."),
 		),
 		capability(
 			"git wt cd",

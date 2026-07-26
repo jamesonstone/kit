@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"golang.org/x/term"
@@ -73,6 +74,20 @@ func selectWorktreeTerminal(ctx context.Context, input, output *os.File, entries
 		return worktreeEntry{}, false, err
 	}
 
+	selectorInput := io.Reader(input)
+	if ctx.Done() != nil {
+		var restoreInput func() error
+		selectorInput, restoreInput, err = newContextTerminalReader(ctx, input)
+		if err != nil {
+			return worktreeEntry{}, false, fmt.Errorf("enable cancellable terminal input: %w", err)
+		}
+		defer func() {
+			if restoreErr := restoreInput(); err == nil && restoreErr != nil {
+				err = fmt.Errorf("restore terminal input: %w", restoreErr)
+			}
+		}()
+	}
+
 	current := 0
 	for {
 		select {
@@ -81,8 +96,11 @@ func selectWorktreeTerminal(ctx context.Context, input, output *os.File, entries
 		default:
 		}
 
-		key, readErr := readSelectorKey(input)
+		key, readErr := readSelectorKey(selectorInput)
 		if readErr != nil {
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				return worktreeEntry{}, false, ctxErr
+			}
 			return worktreeEntry{}, false, fmt.Errorf("read worktree selection: %w", readErr)
 		}
 		switch key {
@@ -136,12 +154,16 @@ func renderWorktreeSelector(output *os.File, entries []worktreeEntry, selected i
 	for i := start; i < end; i++ {
 		entry := entries[i]
 		pointer := " "
-		color := selectorStateColor(entry.state)
+		state := sanitizeTerminalField(entry.state)
+		head := sanitizeTerminalField(displayHead(entry))
+		updated := sanitizeTerminalField(entry.updatedText)
+		path := sanitizeTerminalField(entry.path)
+		color := selectorStateColor(state)
 		if i == selected {
 			pointer = ">"
 			color = colorBrightCyan
 		}
-		line := fmt.Sprintf("%s %-8s %-24s %-13s %s", pointer, entry.state, displayHead(entry), entry.updatedText, entry.path)
+		line := fmt.Sprintf("%s %-8s %-24s %-13s %s", pointer, state, head, updated, path)
 		if _, err := fmt.Fprintf(output, "%s%s%s\r\n", color, truncateTerminalLine(line, width), colorReset); err != nil {
 			return 0, fmt.Errorf("render worktree selector entry: %w", err)
 		}
@@ -183,6 +205,28 @@ func clearWorktreeSelector(output *os.File, lineCount int) error {
 		return fmt.Errorf("position worktree selector: %w", err)
 	}
 	return nil
+}
+
+func sanitizeTerminalField(value string) string {
+	var sanitized strings.Builder
+	sanitized.Grow(len(value))
+	for len(value) > 0 {
+		char, size := utf8.DecodeRuneInString(value)
+		if char == utf8.RuneError && size == 1 {
+			if value[0] < 0x20 || value[0] >= 0x7f && value[0] <= 0x9f {
+				value = value[1:]
+				continue
+			}
+			sanitized.WriteRune(utf8.RuneError)
+			value = value[1:]
+			continue
+		}
+		if !unicode.IsControl(char) {
+			sanitized.WriteString(value[:size])
+		}
+		value = value[size:]
+	}
+	return sanitized.String()
 }
 
 func truncateTerminalLine(value string, width int) string {

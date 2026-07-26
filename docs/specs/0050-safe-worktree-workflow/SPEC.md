@@ -73,6 +73,8 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Provide a repair command that resolves a same-repository pull request head and opens its durable branch worktree instead of editing the detached `PR-<number>` view.
 - Provide read-only listing, exact safe removal, explicit pruning, root discovery, and dry-run-first migration of legacy flat linked worktrees.
 - Make `git wt list` interactive by default when both input and output are terminals: render a colorized selector, support arrow keys and Tab for navigation, Enter for selection, and open a child shell in the selected worktree.
+- Make terminal selection context cancellation interrupt idle input promptly, restore the original terminal mode and cursor state, and leave no background reader that can consume later input.
+- Sanitize every dynamic terminal-table field before alignment and truncation so filesystem or Git metadata cannot inject terminal control sequences.
 - Preserve script-safe listing when input or output is not a terminal and provide `--plain` to request the table explicitly from a terminal.
 - Show `LAST UPDATED` at day precision in a human-readable format while retaining newest-first default sorting.
 - Provide a read-only `path <lane>` command that prints only the exact registered worktree path so callers can navigate with `cd "$(git wt path <lane>)"` without fuzzy matching or filesystem mutation.
@@ -142,6 +144,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - GitWT previously selected the invoking worktree as the `.env` source. A lane created from another linked lane therefore depended on that intermediate lane's lifetime and could be left with a broken link after conservative removal of the intermediate lane.
 - V3 guidance routed agents to `docs/references/worktrees.md` only “when present,” but the file was absent from `instructions.SupportDocs`; `kit reconcile` therefore could not create or refresh the canonical workflow.
 - Interactive navigation must be gated on both terminal input and terminal output. Redirected and piped invocations need stable plain text, while terminal users can safely receive raw input handling and ANSI color.
+- Darwin pseudo-terminals do not support `os.File` read deadlines, and a goroutine-only cancellation wrapper can leave the underlying read blocked long enough to consume later terminal input. Context-aware readiness reads with exact descriptor-flag restoration avoid both failure modes.
 
 ## VALIDATION
 
@@ -197,6 +200,8 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - A real pseudo-terminal run moved from `GH-86` to `main` with the down arrow, opened a child shell, confirmed the selected worktree path with `pwd`, and returned cleanly after `exit`.
 - `make fmt`, `make vet`, `go test ./... -count=1`, `go test -race ./internal/worktree ./pkg/cli -count=1`, and `golangci-lint run --new-from-rev=origin/main ./...` passed after the selector follow-up; lint reported `0 issues`.
 - `go run ./cmd/kit capabilities git wt list --json`, `go run ./cmd/kit check safe-worktree-workflow`, `go run ./cmd/kit check --project`, `make build`, and `git diff --check` passed; the built and installed `git-wt` binaries had identical SHA-256 values.
+- Review-repair coverage passed three consecutive idle-PTY cancellation runs, proving prompt return, raw-mode and cursor restoration, descriptor-flag restoration, and preservation of a post-cancellation sentinel; dynamic-field coverage rejected ESC, C1 CSI, CR, and LF injection before layout.
+- Darwin package tests, race tests, and vet passed for `internal/worktree` and `pkg/cli`; the Windows worktree test binary compiled successfully, and the capability JSON now distinguishes full-timestamp default sorting from day-precision display.
 
 ## OUTCOME
 
@@ -213,6 +218,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Added read-only `git wt path <lane>` lookup for exact registered lanes, enabling portable navigation with `cd "$(git wt path GH-101)"` while rejecting unknown lanes, fuzzy matches, and traversal.
 - Registered `git wt path` in Kit capabilities and updated help, command docs, the canonical worktree guide, and delivery guidance with path-based navigation.
 - `git wt list` now opens a colorized terminal selector by default, supports arrow keys and Tab with Enter-to-open child-shell behavior, retains deterministic table output for pipelines and `--plain`, and displays last updates as human-readable calendar days while sorting by the full commit timestamp.
+- Idle selector reads are context-cancellable without leaving a competing terminal reader, and all dynamic selector fields are control-sanitized before alignment and truncation.
 - Registered `git wt list` in Kit capabilities and documented its terminal, child-shell, plain-output, sorting, and day-precision boundaries.
 - `make build` now installs or updates `~/.local/bin/git-wt` from the same `bin/git-wt` artifact used for validation.
 - Kit rules, generated V3 instructions, and LabCore policy now use native `git worktree` plus ordinary filesystem operations as the portable authority. Reconciled guidance does not require the optional wrapper, its command names, or its flags.

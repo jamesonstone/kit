@@ -73,12 +73,25 @@ func TestCapabilitiesDescribeGitWTList(t *testing.T) {
 	if payload.Command.MutationLevel != mutationNone {
 		t.Fatalf("mutation level = %q, want %q", payload.Command.MutationLevel, mutationNone)
 	}
+	if !strings.Contains(payload.Command.Summary, "newest first by full commit timestamp") {
+		t.Fatalf("expected list capability summary to document default ordering, got %q", payload.Command.Summary)
+	}
+	var sortSummary string
+	for _, flag := range payload.Command.ImportantFlags {
+		if flag.Name == "--sort" {
+			sortSummary = flag.Summary
+			break
+		}
+	}
+	if !strings.Contains(sortSummary, "updated (default), state, head, or path") {
+		t.Fatalf("expected --sort capability to document default and alternate orderings, got %q", sortSummary)
+	}
 	combinedParts := append([]string{}, payload.Command.Examples...)
 	combinedParts = append(combinedParts, payload.Command.Caveats...)
 	combinedParts = append(combinedParts, payload.Command.WhenToUse...)
 	combinedParts = append(combinedParts, payload.Command.WhenNotToUse...)
 	combined := strings.Join(combinedParts, " ")
-	for _, want := range []string{"--plain", "arrow keys", "child shell", "day precision"} {
+	for _, want := range []string{"--plain", "arrow keys", "child shell", "--sort state", "--sort head", "--sort path", "display-only", "day precision"} {
 		if !strings.Contains(combined, want) {
 			t.Fatalf("expected list capability to mention %q, got %#v", want, payload.Command)
 		}
