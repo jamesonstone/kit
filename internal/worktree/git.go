@@ -8,12 +8,16 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type worktreeEntry struct {
-	path   string
-	head   string
-	branch string
+	path        string
+	head        string
+	branch      string
+	lastUpdated time.Time
+	updatedText string
+	state       string
 }
 
 func (a *App) worktrees(ctx context.Context, cwd string) ([]worktreeEntry, error) {

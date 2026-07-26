@@ -49,6 +49,16 @@ worktrees before creating anything:
 git worktree list --porcelain
 ```
 
+The optional `git wt list` helper includes each worktree's `LAST UPDATED`
+commit timestamp and sorts newest first. Select another key with
+`--sort updated|state|head|path`; add `--reverse` to invert the order. For
+example:
+
+```bash
+git wt list --sort path
+git wt list --sort state --reverse
+```
+
 The first entry is Git's primary worktree. Capture its stable physical path for
 environment-link validation:
 
