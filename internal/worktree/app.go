@@ -32,7 +32,8 @@ Commands:
   repair <number> [--no-link-env]  Open a same-repository PR's writable head branch
   list [flags]                     List this clone's worktrees without pruning
   sync [--dry-run] [--json]       Reconcile origin and proven merged worktree lanes
-  root                             Print this repository's canonical worktree directory
+  home                             Open a shell in this clone's primary worktree
+  root                             Print the canonical linked-worktree directory
   path <lane>                      Print an exact registered lane path for shell navigation
   cd <lane>                        Open an interactive shell in an exact registered lane
   remove <lane|path>               Remove one exact clean, fully-pushed worktree
@@ -45,6 +46,7 @@ Environment:
 
 List flags:
   --sort <attribute>               Sort by updated, state, head, or path
+  --root-position <top|bottom>     Pin the primary worktree (default: top)
   --reverse                        Reverse the selected sort order
   --plain                          Print the table instead of opening the selector
 
@@ -154,6 +156,11 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 			return err
 		}
 		return a.writef("%s\n", repo.projectRoot)
+	case "home":
+		if len(args) != 1 {
+			return fmt.Errorf("home accepts no arguments")
+		}
+		return a.enterHome(ctx, cwd)
 	case "path":
 		if len(args) != 2 {
 			return fmt.Errorf("usage: git wt path <lane>")
@@ -219,6 +226,14 @@ func (a *App) enterLane(ctx context.Context, cwd, lane string) error {
 		return err
 	}
 	return a.runShell(ctx, selected.path)
+}
+
+func (a *App) enterHome(ctx context.Context, cwd string) error {
+	repo, err := a.repository(ctx, cwd)
+	if err != nil {
+		return err
+	}
+	return a.runShell(ctx, repo.primary)
 }
 
 func runInteractiveShell(ctx context.Context, dir string) error {

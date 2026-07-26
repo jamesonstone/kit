@@ -66,14 +66,16 @@ func TestReadSelectorKeySupportsArrowsAndTab(t *testing.T) {
 		input string
 		want  selectorKey
 	}{
-		"down":      {input: "\x1b[B", want: selectorNext},
-		"right":     {input: "\x1b[C", want: selectorNext},
-		"tab":       {input: "\t", want: selectorNext},
-		"up":        {input: "\x1b[A", want: selectorPrevious},
-		"left":      {input: "\x1b[D", want: selectorPrevious},
-		"shift-tab": {input: "\x1b[Z", want: selectorPrevious},
-		"enter":     {input: "\r", want: selectorChoose},
-		"cancel":    {input: "q", want: selectorCancel},
+		"down":       {input: "\x1b[B", want: selectorNext},
+		"right":      {input: "\x1b[C", want: selectorNext},
+		"tab":        {input: "\t", want: selectorNext},
+		"up":         {input: "\x1b[A", want: selectorPrevious},
+		"left":       {input: "\x1b[D", want: selectorPrevious},
+		"shift-tab":  {input: "\x1b[Z", want: selectorPrevious},
+		"enter":      {input: "\r", want: selectorChoose},
+		"home":       {input: "h", want: selectorHome},
+		"home-upper": {input: "H", want: selectorHome},
+		"cancel":     {input: "q", want: selectorCancel},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -95,10 +97,11 @@ func TestRenderWorktreeSelectorUsesColorAndReadableDate(t *testing.T) {
 		t.Fatal(err)
 	}
 	entries := []worktreeEntry{
+		{branch: "main", primary: true, state: "clean", updatedText: "Jul 26, 2026", path: "/tmp/root"},
 		{branch: "GH-86", state: "clean", updatedText: "Jul 26, 2026", path: "/tmp/GH-86"},
 		{branch: "topic/dirty", state: "dirty", updatedText: "Jul 25, 2026", path: "/tmp/topic"},
 	}
-	if _, err := renderWorktreeSelector(output, entries, 0); err != nil {
+	if _, err := renderWorktreeSelector(output, entries, 1); err != nil {
 		t.Fatal(err)
 	}
 	if err := output.Close(); err != nil {
@@ -108,13 +111,97 @@ func TestRenderWorktreeSelectorUsesColorAndReadableDate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Contains(data, []byte(colorBrightCyan)) || !bytes.Contains(data, []byte(colorYellow)) {
-		t.Fatalf("selector output is missing selection/state colors: %q", data)
+	for _, color := range []string{colorBrightGreen, colorBrightCyan, colorYellow} {
+		if !bytes.Contains(data, []byte(color)) {
+			t.Fatalf("selector output is missing %q: %q", color, data)
+		}
 	}
-	for _, want := range []string{"GH-86", "topic/dirty", "Jul 26, 2026"} {
+	for _, want := range []string{"main", "GH-86", "topic/dirty", "Jul 26, 2026", "h: home"} {
 		if !bytes.Contains(data, []byte(want)) {
 			t.Fatalf("selector output is missing %q: %q", want, data)
 		}
+	}
+}
+
+func TestRenderWorktreeSelectorKeepsSelectedHomeBrightGreen(t *testing.T) {
+	outputPath := filepath.Join(t.TempDir(), "selector.txt")
+	output, err := os.Create(outputPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	entry := worktreeEntry{
+		branch: "main", primary: true, state: "clean",
+		updatedText: "Jul 26, 2026", path: "/tmp/root",
+	}
+	if _, err := renderWorktreeSelector(output, []worktreeEntry{entry}, 0); err != nil {
+		t.Fatal(err)
+	}
+	if err := output.Close(); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedLine := colorBrightGreen + "> clean"
+	if !bytes.Contains(data, []byte(expectedLine)) {
+		t.Fatalf("selected primary row is not bright green: %q", data)
+	}
+	if bytes.Contains(data, []byte(colorBrightCyan+"> clean")) {
+		t.Fatalf("selected primary row used the generic selection color: %q", data)
+	}
+}
+
+func TestSelectorEntryColorKeepsMainBrightGreen(t *testing.T) {
+	t.Parallel()
+	if got := selectorEntryColor(worktreeEntry{branch: "main"}, "clean", true); got != colorBrightGreen {
+		t.Fatalf("selected main color = %q, want %q", got, colorBrightGreen)
+	}
+	if got := selectorEntryColor(worktreeEntry{primary: true, branch: "topic"}, "dirty", false); got != colorBrightGreen {
+		t.Fatalf("primary topic color = %q, want %q", got, colorBrightGreen)
+	}
+	if got := selectorEntryColor(worktreeEntry{branch: "GH-95"}, "clean", true); got != colorBrightCyan {
+		t.Fatalf("selected lane color = %q, want %q", got, colorBrightCyan)
+	}
+}
+
+func TestPrimaryListEntry(t *testing.T) {
+	t.Parallel()
+	want := worktreeEntry{path: "/tmp/root", primary: true}
+	got, ok := primaryListEntry([]worktreeEntry{{path: "/tmp/lane"}, want})
+	if !ok || got != want {
+		t.Fatalf("primaryListEntry() = %#v, %t, want %#v, true", got, ok, want)
+	}
+	if _, ok := primaryListEntry([]worktreeEntry{{path: "/tmp/lane"}}); ok {
+		t.Fatal("primaryListEntry() found a missing primary")
+	}
+}
+
+func TestPinPrimaryListEntry(t *testing.T) {
+	t.Parallel()
+	for _, test := range []struct {
+		name     string
+		position string
+		want     []string
+	}{
+		{name: "top", position: "top", want: []string{"root", "one", "two"}},
+		{name: "bottom", position: "bottom", want: []string{"one", "two", "root"}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			entries := []worktreeEntry{
+				{path: "one"},
+				{path: "root", primary: true},
+				{path: "two"},
+			}
+			pinPrimaryListEntry(entries, test.position)
+			got := make([]string, len(entries))
+			for i := range entries {
+				got[i] = entries[i].path
+			}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Fatalf("paths = %#v, want %#v", got, test.want)
+			}
+		})
 	}
 }
 
@@ -157,7 +244,7 @@ func TestRenderWorktreeSelectorSanitizesDynamicFields(t *testing.T) {
 	}
 
 	unstyled := string(data)
-	for _, sequence := range []string{colorReset, colorBold, colorBrightCyan, colorGreen, colorYellow, colorRed} {
+	for _, sequence := range []string{colorReset, colorBold, colorBrightCyan, colorBrightGreen, colorGreen, colorYellow, colorRed} {
 		unstyled = strings.ReplaceAll(unstyled, sequence, "")
 	}
 	for _, char := range unstyled {
@@ -307,11 +394,11 @@ func normalizedTerminalState(state *term.State) []uint64 {
 }
 
 func TestParseListOptionsRecognizesPlain(t *testing.T) {
-	options, err := parseListOptions([]string{"--sort", "head", "--reverse", "--plain"})
+	options, err := parseListOptions([]string{"--sort", "head", "--root-position", "bottom", "--reverse", "--plain"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if options.sortBy != "head" || !options.reverse || !options.plain {
+	if options.sortBy != "head" || options.rootPosition != "bottom" || !options.reverse || !options.plain {
 		t.Fatalf("options = %#v", options)
 	}
 }

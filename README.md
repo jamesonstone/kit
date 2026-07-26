@@ -119,6 +119,8 @@ the complete durable truth.
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
 | `git wt help` | Optionally manage and locate project-oriented worktrees for manual use, with default writable-lane `.env` links beneath `~/worktrees` |
+| `git wt list [--root-position top|bottom]` | Select a worktree with the primary checkout pinned and bright green; press `h` to open it immediately |
+| `git wt home` | Open a child shell in Git's primary worktree from any linked lane |
 | `git wt sync [--dry-run] [--json]` | Explicitly refresh origin/main and retire only exact clean lanes proven merged by GitHub; dry-run is strictly non-mutating |
 
 See [docs/commands.md](docs/commands.md) for the full Kit command guide and

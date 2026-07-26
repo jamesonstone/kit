@@ -14,14 +14,15 @@ import (
 )
 
 const (
-	colorReset      = "\x1b[0m"
-	colorBold       = "\x1b[1m"
-	colorBrightCyan = "\x1b[1;36m"
-	colorGreen      = "\x1b[32m"
-	colorYellow     = "\x1b[33m"
-	colorRed        = "\x1b[31m"
-	hideCursor      = "\x1b[?25l"
-	showCursor      = "\x1b[?25h"
+	colorReset       = "\x1b[0m"
+	colorBold        = "\x1b[1m"
+	colorBrightCyan  = "\x1b[1;36m"
+	colorBrightGreen = "\x1b[1;92m"
+	colorGreen       = "\x1b[32m"
+	colorYellow      = "\x1b[33m"
+	colorRed         = "\x1b[31m"
+	hideCursor       = "\x1b[?25l"
+	showCursor       = "\x1b[?25h"
 )
 
 func newListInteraction(out io.Writer) (func() bool, listSelectorFunc) {
@@ -110,6 +111,11 @@ func selectWorktreeTerminal(ctx context.Context, input, output *os.File, entries
 			current = (current - 1 + len(entries)) % len(entries)
 		case selectorChoose:
 			return entries[current], true, nil
+		case selectorHome:
+			if home, found := primaryListEntry(entries); found {
+				return home, true, nil
+			}
+			continue
 		case selectorCancel:
 			return worktreeEntry{}, false, nil
 		default:
@@ -142,7 +148,7 @@ func renderWorktreeSelector(output *os.File, entries []worktreeEntry, selected i
 	}
 	end := min(start+visibleCount, len(entries))
 
-	titleText := fmt.Sprintf("Select a worktree (%d/%d)  arrows/Tab: move  Enter: open  q: cancel", selected+1, len(entries))
+	titleText := fmt.Sprintf("Select a worktree (%d/%d)  arrows/Tab: move  Enter: open  h: home  q: cancel", selected+1, len(entries))
 	title := truncateTerminalLine(titleText, width)
 	header := truncateTerminalLine("  STATE    HEAD                     LAST UPDATED  PATH", width)
 	if _, err := fmt.Fprintf(output, "%s%s%s\r\n", colorBold, title, colorReset); err != nil {
@@ -158,10 +164,9 @@ func renderWorktreeSelector(output *os.File, entries []worktreeEntry, selected i
 		head := sanitizeTerminalField(displayHead(entry))
 		updated := sanitizeTerminalField(entry.updatedText)
 		path := sanitizeTerminalField(entry.path)
-		color := selectorStateColor(state)
+		color := selectorEntryColor(entry, state, i == selected)
 		if i == selected {
 			pointer = ">"
-			color = colorBrightCyan
 		}
 		line := fmt.Sprintf("%s %-8s %-24s %-13s %s", pointer, state, head, updated, path)
 		if _, err := fmt.Fprintf(output, "%s%s%s\r\n", color, truncateTerminalLine(line, width), colorReset); err != nil {
@@ -169,6 +174,25 @@ func renderWorktreeSelector(output *os.File, entries []worktreeEntry, selected i
 		}
 	}
 	return end - start + 2, nil
+}
+
+func primaryListEntry(entries []worktreeEntry) (worktreeEntry, bool) {
+	for _, entry := range entries {
+		if entry.primary {
+			return entry, true
+		}
+	}
+	return worktreeEntry{}, false
+}
+
+func selectorEntryColor(entry worktreeEntry, state string, selected bool) string {
+	if entry.primary || entry.branch == "main" {
+		return colorBrightGreen
+	}
+	if selected {
+		return colorBrightCyan
+	}
+	return selectorStateColor(state)
 }
 
 func selectorStateColor(state string) string {
@@ -247,6 +271,7 @@ const (
 	selectorNext
 	selectorPrevious
 	selectorChoose
+	selectorHome
 	selectorCancel
 )
 
@@ -262,6 +287,8 @@ func readSelectorKey(input io.Reader) (selectorKey, error) {
 		return selectorNext, nil
 	case 'k', 'K':
 		return selectorPrevious, nil
+	case 'h', 'H':
+		return selectorHome, nil
 	case 'q', 'Q', 3:
 		return selectorCancel, nil
 	case 0x1b:

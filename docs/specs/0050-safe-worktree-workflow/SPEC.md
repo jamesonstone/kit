@@ -73,6 +73,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Provide a repair command that resolves a same-repository pull request head and opens its durable branch worktree instead of editing the detached `PR-<number>` view.
 - Provide read-only listing, exact safe removal, explicit pruning, root discovery, and dry-run-first migration of legacy flat linked worktrees.
 - Make `git wt list` interactive by default when both input and output are terminals: render a colorized selector, support arrow keys and Tab for navigation, Enter for selection, and open a child shell in the selected worktree.
+- Keep Git's primary worktree selectable and pinned at the top of `git wt list` by default, allow an explicit bottom pin, and make `h` open that home checkout immediately.
+- Keep the primary worktree and every literal `main` branch row bright green even when selected, using one repository-independent identity color distinct from ordinary lane colors.
+- Provide `git wt home` as read-only primary-worktree resolution followed by the same child-shell navigation used by `git wt cd`.
 - Make terminal selection context cancellation interrupt idle input promptly, restore the original terminal mode and cursor state, and leave no background reader that can consume later input.
 - Sanitize every dynamic terminal-table field before alignment and truncation so filesystem or Git metadata cannot inject terminal control sequences.
 - Preserve script-safe listing when input or output is not a terminal and provide `--plain` to request the table explicitly from a terminal.
@@ -110,6 +113,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 9. Resolve environment ownership from the clone's primary worktree rather than the invoking linked checkout, then prove that lanes created from another lane remain valid after the invoking lane is removed.
 10. Promote the portable worktree guide into the V3 instruction support-document registry so `kit reconcile` creates and refreshes the workflow without changing immutable V1 or V2 payloads.
 11. Move list behavior into a focused component, keep non-terminal output deterministic, and add a raw-terminal selector with color, arrow/Tab navigation, explicit cancellation, and child-shell entry for the chosen worktree.
+12. Expose the primary worktree as `git wt home`, pin it independently of list sorting, add the `h` selector shortcut, and reserve bright green for primary/`main` identity.
 
 ## DECISIONS
 
@@ -126,6 +130,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Make native `git worktree` the policy authority. GitWT is a manually invoked convenience implementation of that policy, never a prerequisite for agents, reconciliation, or teammates using other tooling.
 - Treat the primary worktree as the stable owner of the shared `.env`. An invoking linked lane is an ephemeral consumer and must never become another lane's environment source.
 - Distribute the native worktree guide as a V3 support document rather than a ruleset: it is required operational reference material for current scaffolds, while the active safety and delivery rules remain the normative policy.
+- Resolve “home” from the first entry in Git's porcelain worktree list. That entry is available offline and identifies the primary checkout without guessing from branch names or paths.
+- Pin home after the requested list sort and reversal so it stays predictably selectable; `--root-position bottom` is the only option that moves the pinned row.
+- Reserve bright green for both the primary checkout and literal `main` rows, even while selected. The pointer still communicates selection without replacing stable home/default-branch identity.
 
 ## DISCOVERIES
 
@@ -145,6 +152,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - V3 guidance routed agents to `docs/references/worktrees.md` only “when present,” but the file was absent from `instructions.SupportDocs`; `kit reconcile` therefore could not create or refresh the canonical workflow.
 - Interactive navigation must be gated on both terminal input and terminal output. Redirected and piped invocations need stable plain text, while terminal users can safely receive raw input handling and ANSI color.
 - Darwin pseudo-terminals do not support `os.File` read deadlines, and a goroutine-only cancellation wrapper can leave the underlying read blocked long enough to consume later terminal input. Context-aware readiness reads with exact descriptor-flag restoration avoid both failure modes.
+- Git's porcelain worktree output lists the primary worktree first, so one parsed `primary` marker can drive `git wt home`, list pinning, the `h` shortcut, and identity coloring without network access.
 
 ## VALIDATION
 
@@ -202,6 +210,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - `go run ./cmd/kit capabilities git wt list --json`, `go run ./cmd/kit check safe-worktree-workflow`, `go run ./cmd/kit check --project`, `make build`, and `git diff --check` passed; the built and installed `git-wt` binaries had identical SHA-256 values.
 - Review-repair coverage passed three consecutive idle-PTY cancellation runs, proving prompt return, raw-mode and cursor restoration, descriptor-flag restoration, and preservation of a post-cancellation sentinel; dynamic-field coverage rejected ESC, C1 CSI, CR, and LF injection before layout.
 - Darwin package tests, race tests, and vet passed for `internal/worktree` and `pkg/cli`; the Windows worktree test binary compiled successfully, and the capability JSON now distinguishes full-timestamp default sorting from day-precision display.
+- Issue `#95` follow-up coverage passed for `home` resolution from a linked lane, default top and explicit bottom pinning after alternate sort/reverse choices, `h`/`H` key decoding, stable primary/`main` bright-green selection color, capabilities, help, and exact guide/template parity.
+- `make fmt`, `make vet`, `go test ./... -count=1`, `go test -race ./internal/worktree ./pkg/cli -count=1`, `make build-git-wt`, `git diff --check`, `kit check safe-worktree-workflow`, and `kit check --project` passed for the home-navigation follow-up.
+- Built-binary smoke checks from linked worktree `GH-93` proved `git wt list --plain --sort path` pins the exact Git primary path first, `--root-position bottom` pins it last, and capability JSON advertises read-only home resolution, the `h` shortcut, and repository-independent bright-green identity.
 
 ## OUTCOME
 
@@ -220,6 +231,8 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - `git wt list` now opens a colorized terminal selector by default, supports arrow keys and Tab with Enter-to-open child-shell behavior, retains deterministic table output for pipelines and `--plain`, and displays last updates as human-readable calendar days while sorting by the full commit timestamp.
 - Idle selector reads are context-cancellable without leaving a competing terminal reader, and all dynamic selector fields are control-sanitized before alignment and truncation.
 - Registered `git wt list` in Kit capabilities and documented its terminal, child-shell, plain-output, sorting, and day-precision boundaries.
+- Added `git wt home`; default top pinning with explicit `--root-position bottom`; immediate `h` navigation; and constant bright-green identity for primary and `main` rows.
+- Tracked the home-navigation follow-up as issue `#95` and kept its scoped commit on existing branch `GH-93` / pull request `#94`.
 - `make build` now installs or updates `~/.local/bin/git-wt` from the same `bin/git-wt` artifact used for validation.
 - Kit rules, generated V3 instructions, and LabCore policy now use native `git worktree` plus ordinary filesystem operations as the portable authority. Reconciled guidance does not require the optional wrapper, its command names, or its flags.
 - The canonical guides map creation, reuse, detached inspection, repair, exact path validation, environment linking, migration, pruning, and conservative removal to native Git. Kit's command docs and LabCore's optional manual section retain `git wt` as a convenience cheat sheet only.
@@ -231,13 +244,16 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 
 Decision: updated
 
-Rationale: The stable primary-checkout ownership model and V3 distribution boundary are durable workflow policy that code and wrapper tests alone cannot preserve. The spec records why linked lanes are consumers rather than owners, the Constitution and rules carry that invariant, and the managed worktree guide gives reconciled V3 projects the complete portable workflow without making the optional wrapper authoritative.
+Rationale: The stable primary-checkout ownership and navigation model and V3 distribution boundary are durable workflow policy that code and wrapper tests alone cannot preserve. The spec records why linked lanes are consumers rather than owners and why home identity survives sorting and selection; the managed worktree guide gives reconciled V3 projects the complete portable workflow without making the optional wrapper authoritative. No project-wide Constitution rule changed.
 
 Artifacts:
 
 - `cmd/git-wt`
 - `internal/worktree`
 - `internal/instructions`
+- `docs/specs/0050-safe-worktree-workflow/SPEC.md`
+- `docs/references/worktrees.md`
+- `internal/templates/worktrees_reference.md`
 - `internal/templates/worktrees_reference.md`
 - `docs/references/worktrees.md`
 - `docs/CONSTITUTION.md`

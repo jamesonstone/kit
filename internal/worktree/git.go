@@ -15,6 +15,7 @@ type worktreeEntry struct {
 	path        string
 	head        string
 	branch      string
+	primary     bool
 	prunable    bool
 	lastUpdated time.Time
 	updatedText string
@@ -56,6 +57,9 @@ func (a *App) worktrees(ctx context.Context, cwd string) ([]worktreeEntry, error
 		return nil, fmt.Errorf("parse worktree list: %w", err)
 	}
 	flush()
+	if len(entries) != 0 {
+		entries[0].primary = true
+	}
 	return entries, nil
 }
 

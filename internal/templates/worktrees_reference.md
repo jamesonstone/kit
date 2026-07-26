@@ -50,18 +50,28 @@ git worktree list --porcelain
 ```
 
 In a terminal, the optional `git wt list` helper opens a colorized selector
-ordered by the human-readable `LAST UPDATED` day. Use arrow keys or Tab to
-move, Enter to open a child shell in the selected worktree, and `q` to cancel.
-The child shell cannot change its parent shell's directory.
+with Git's primary worktree pinned at the top and the remaining lanes ordered
+by the human-readable `LAST UPDATED` day. The primary checkout and every
+`main` branch row stay bright green across repositories. Use arrow keys or Tab
+to move, Enter to open a child shell in the selected worktree, `h` to open the
+primary worktree immediately, and `q` to cancel. The child shell cannot change
+its parent shell's directory.
 
 Piped or redirected output remains a plain table. Use `--plain` to request the
 table from a terminal, `--sort updated|state|head|path` to choose another key,
-or `--reverse` to invert the order. For example:
+`--reverse` to invert that ordering, or `--root-position bottom` to pin the
+primary checkout below the sorted lanes. For example:
 
 ```bash
 git wt list --plain --sort path
 git wt list --plain --sort state --reverse
+git wt list --root-position bottom
+git wt home
 ```
+
+`git wt home` opens the same primary checkout in a child shell from any linked
+worktree. Use it when returning to the clone's stable home checkout without
+looking up a lane name.
 
 Listing never fetches, prunes, or consults GitHub. Use the separate maintenance
 command when live reconciliation is intended:
