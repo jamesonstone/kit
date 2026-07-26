@@ -63,6 +63,26 @@ git wt list --plain --sort path
 git wt list --plain --sort state --reverse
 ```
 
+Listing never fetches, prunes, or consults GitHub. Use the separate maintenance
+command when live reconciliation is intended:
+
+```bash
+git wt sync --dry-run
+git wt sync
+git wt sync --json
+```
+
+The dry run reads live origin and GitHub state but does not fetch or perform any
+local ref, worktree, branch, metadata, symlink, or filesystem mutation.
+Ordinary sync fetches and prunes only `origin`; fast-forwards the local default
+branch only when it is clean and strictly behind; removes only exact canonical
+lanes backed by one same-repository PR merged into that default branch whose
+head OID exactly equals local `HEAD`; and then uses ordinary `git branch -d`.
+Every dirty, ignored, fork-backed, open, closed-unmerged, wrong-base, missing,
+ambiguous, OID-mismatched, detached, legacy, primary, or current lane is
+preserved with a reason. The command never stashes, resets, cleans,
+force-removes, force-deletes, force-pushes, or deletes a remote branch.
+
 The first entry is Git's primary worktree. Capture its stable physical path for
 environment-link validation:
 
@@ -195,7 +215,7 @@ Never copy `.env`, overwrite a destination `.env`, or automatically share
 broken link, or unexpected symlink is a collision and must stop the operation.
 Detached PR inspection and migration do not create environment links.
 
-## Inspection, Migration, and Removal
+## Inspection, Synchronization, Migration, and Removal
 
 Listing is read-only:
 
@@ -209,6 +229,12 @@ Review stale administrative metadata before pruning:
 git worktree prune --dry-run --verbose
 git worktree prune --verbose
 ```
+
+`git wt sync` is the explicit higher-level maintenance path described above.
+GitHub and fetch failures fail closed. A failure for one candidate does not
+prevent an independently proven-safe candidate from being processed, but any
+operation failure makes the overall command exit nonzero after its complete
+human or JSON report.
 
 Move a registered legacy worktree only after validating its exact source,
 destination, and every collision:
@@ -233,8 +259,10 @@ checkout's exact source is the sole narrow exception:
 4. If Git removal fails, restore the same symlink.
 
 Refuse regular `.env` files, unexpected symlinks, and every other dirty,
-ignored, or unpublished item. Never use `--force`, reset, clean, stash, or
-branch deletion.
+ignored, or unpublished item. Manual `git wt remove` never uses `--force`,
+reset, clean, stash, or branch deletion. Sync uses its stricter merged-PR and
+exact-head proof instead of upstream/ahead proof, and only after successful
+worktree removal attempts ordinary local `git branch -d`.
 
 ## Scope Boundary
 

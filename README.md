@@ -119,6 +119,7 @@ the complete durable truth.
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
 | `git wt help` | Optionally manage and locate project-oriented worktrees for manual use, with default writable-lane `.env` links beneath `~/worktrees` |
+| `git wt sync [--dry-run] [--json]` | Explicitly refresh origin/main and retire only exact clean lanes proven merged by GitHub; dry-run is strictly non-mutating |
 
 See [docs/commands.md](docs/commands.md) for the full Kit command guide and
 [docs/references/worktrees.md](docs/references/worktrees.md) for the portable

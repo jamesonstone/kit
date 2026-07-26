@@ -31,6 +31,7 @@ Commands:
   pr <number>                      Create or refresh detached inspection lane PR-<number>
   repair <number> [--no-link-env]  Open a same-repository PR's writable head branch
   list [flags]                     List this clone's worktrees without pruning
+  sync [--dry-run] [--json]       Reconcile origin and proven merged worktree lanes
   root                             Print this repository's canonical worktree directory
   path <lane>                      Print an exact registered lane path for shell navigation
   cd <lane>                        Open an interactive shell in an exact registered lane
@@ -52,6 +53,8 @@ Safety:
   Writable lanes link the primary checkout's .env by default; use --no-link-env for isolation.
   .envrc is never linked automatically.
   remove never forces, deletes a branch, or discards dirty/unpushed state.
+  sync removes only exact clean lanes proven merged into origin's default branch.
+  sync --dry-run performs no fetch, ref update, removal, deletion, or pruning.
   migrate previews by default and uses git worktree move when applied.
   No command starts applications or manages databases, ports, or runtime services.
   No command stashes, resets, cleans, or force-removes worktrees.`
@@ -87,18 +90,19 @@ type resolvePRFunc func(context.Context, string, string, int) (PR, error)
 
 // App implements the git-wt command.
 type App struct {
-	out        io.Writer
-	errOut     io.Writer
-	run        commandFunc
-	homeDir    func() (string, error)
-	getenv     func(string) string
-	readDir    func(string) ([]os.DirEntry, error)
-	mkdirAll   func(string, os.FileMode) error
-	pathExists func(string) (bool, error)
-	resolvePR  resolvePRFunc
-	runShell   func(context.Context, string) error
-	isTerminal func() bool
-	selectList listSelectorFunc
+	out            io.Writer
+	errOut         io.Writer
+	run            commandFunc
+	homeDir        func() (string, error)
+	getenv         func(string) string
+	readDir        func(string) ([]os.DirEntry, error)
+	mkdirAll       func(string, os.FileMode) error
+	pathExists     func(string) (bool, error)
+	resolvePR      resolvePRFunc
+	resolveSyncPRs syncPRResolverFunc
+	runShell       func(context.Context, string) error
+	isTerminal     func() bool
+	selectList     listSelectorFunc
 }
 
 // NewApp creates an App backed by the local Git and GitHub CLIs.
@@ -123,6 +127,7 @@ func NewApp(out, errOut io.Writer) *App {
 		},
 	}
 	app.resolvePR = app.resolvePullRequest
+	app.resolveSyncPRs = app.resolveSyncPullRequests
 	app.runShell = runInteractiveShell
 	app.isTerminal, app.selectList = newListInteraction(out)
 	return app
@@ -161,6 +166,8 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 		return a.enterLane(ctx, cwd, args[1])
 	case "list":
 		return a.list(ctx, cwd, args[1:])
+	case "sync":
+		return a.sync(ctx, cwd, args[1:])
 	case "issue":
 		value, linkEnv, err := writableLaneArgs("issue", "number", args[1:])
 		if err != nil {

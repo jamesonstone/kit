@@ -41,7 +41,10 @@ command discovery; Git reserves
 `--no-link-env` when isolation is required. Detached `pr` lanes and migration do
 not create environment links. `git wt cd GH-123` opens a child shell in an
 exact registered lane for manual testing. To change the current shell's
-directory, use `cd "$(git wt path GH-123)"`.
+directory, use `cd "$(git wt path GH-123)"`. `git wt sync --dry-run` performs
+a strictly non-mutating live origin/GitHub preview; ordinary `git wt sync`
+fast-forwards only a clean, behind default branch and retires only canonical
+clean lanes with exact merged-PR evidence.
 
 ## Quick Start
 
@@ -182,7 +185,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
-| `git wt` | Optional manual wrapper for durable issue lanes, a colorized `list` selector with plain-output fallback, exact path lookup, `cd` subshell navigation, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
+| `git wt` | Optional manual wrapper for durable issue lanes, a colorized offline `list` selector, explicit safe `sync`, exact path lookup, `cd` subshell navigation, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
 
 ## Prompt Profiles And Subagents
 

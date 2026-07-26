@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "config", "config check", "aws", "aws verify", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine", "git wt list", "git wt cd", "git wt path"} {
+	for _, command := range []string{"capabilities", "config", "config check", "aws", "aws verify", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine", "git wt list", "git wt sync", "git wt cd", "git wt path"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
@@ -97,6 +97,51 @@ func TestCapabilitiesDescribeGitWTList(t *testing.T) {
 	for _, want := range []string{"--plain", "arrow keys", "child shell", "--sort state", "--sort head", "--sort path", "display-only", "day precision"} {
 		if !strings.Contains(combined, want) {
 			t.Fatalf("expected list capability to mention %q, got %#v", want, payload.Command)
+		}
+	}
+}
+
+func TestCapabilitiesDescribeGitWTSync(t *testing.T) {
+	output, err := executeCapabilitiesCommand("--json", "git", "wt", "sync")
+	if err != nil {
+		t.Fatalf("kit capabilities git wt sync --json error = %v", err)
+	}
+	var payload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(output), &payload); err != nil {
+		t.Fatalf("json.Unmarshal(git wt sync) error = %v", err)
+	}
+	command := payload.Command
+	if command.Command != "git wt sync" {
+		t.Fatalf("command = %q, want git wt sync", command.Command)
+	}
+	if command.MutationLevel != mutationGit {
+		t.Fatalf("mutation level = %q, want %q", command.MutationLevel, mutationGit)
+	}
+	combined := strings.Join(append(
+		append(
+			append([]string{}, command.Examples...),
+			command.Caveats...,
+		),
+		command.WhenToUse...,
+	), " ")
+	combined += " " + command.NetworkUse.Summary +
+		" " + command.NetworkUse.FlagDependent +
+		" " + command.FileWrites.Summary +
+		" " + command.FileWrites.FlagDependent +
+		" " + command.GitMutation.Summary +
+		" " + command.GitMutation.FlagDependent
+	for _, want := range []string{
+		"--dry-run",
+		"--json",
+		"GitHub",
+		"origin only",
+		"exact PR-head OID",
+		"git branch -d",
+		"nonzero",
+		"never stashes",
+	} {
+		if !strings.Contains(combined, want) {
+			t.Fatalf("expected sync capability to mention %q, got %#v", want, command)
 		}
 	}
 }

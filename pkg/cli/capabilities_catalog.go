@@ -333,6 +333,47 @@ func capabilityCatalog() []capabilityRecord {
 			withCaveats("Terminal selection uses color and opens the configured shell in the chosen worktree.", "Non-terminal input or output automatically uses the stable plain table.", "The default ordering is newest first by full commit timestamp; --sort state, --sort head, and --sort path select alternate orderings.", "LAST UPDATED is display-only and shown at day precision."),
 		),
 		capability(
+			"git wt sync",
+			"Utilities",
+			"Reconcile origin's default branch and remove only exact clean worktree lanes proven merged by GitHub.",
+			mutationGit,
+			withNetwork(
+				"reads origin's live default branch and GitHub pull-request metadata",
+				"ordinary sync fetches and prunes origin only; --dry-run does not fetch",
+			),
+			withFileWrites(
+				"ordinary sync may unlink a verified managed .env symlink and remove a proven-safe worktree directory",
+				"--dry-run performs no filesystem write",
+			),
+			withGitMutation(
+				"ordinary sync may fast-forward the clean local default branch, remove proven merged worktrees, delete their local branches with git branch -d, and prune stale metadata",
+				"--dry-run performs no fetch, ref update, removal, branch deletion, or metadata pruning",
+			),
+			withFlags(
+				flag("--dry-run", "read live origin/GitHub state and report exact decisions without local mutation"),
+				flag("--json", "emit the same typed report as deterministic indented JSON"),
+			),
+			withRelated(
+				related("git wt list", "selects or prints worktrees without network access or mutation"),
+				related("git wt path", "prints one exact registered lane path"),
+			),
+			withWhenToUse(
+				"Use explicitly when refreshing origin/main and retiring merged same-repository PR lanes.",
+				"Use --dry-run before applying when you want a strictly non-mutating preview.",
+			),
+			withWhenNotToUse(
+				"Do not use as proof that ancestry or a deleted remote branch means a PR merged.",
+				"Do not expect dirty, fork-backed, ambiguous, detached, legacy, primary, or current worktrees to be removed.",
+			),
+			withExamples("git wt sync --dry-run", "git wt sync", "git wt sync --json"),
+			withCaveats(
+				"Removal requires an exact canonical path, one merged same-repository PR into origin's default branch, exact PR-head OID equality, and no material except the verified managed .env symlink.",
+				"The command never stashes, resets, cleans, force-removes, force-deletes, force-pushes, or deletes remote branches.",
+				"Manual git wt remove retains its upstream/ahead proof and preserves the branch; sync uses merged-PR plus exact-head proof and then attempts ordinary git branch -d.",
+				"Failures preserve ambiguous lanes, independent candidates may continue, and any operation failure makes the overall command nonzero.",
+			),
+		),
+		capability(
 			"git wt cd",
 			"Utilities",
 			"Open an interactive shell in an exact registered worktree lane.",
