@@ -182,7 +182,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
-| `git wt` | Optional manual wrapper for durable issue lanes, exact path lookup, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
+| `git wt` | Optional manual wrapper for durable issue lanes, a colorized `list` selector with plain-output fallback, exact path lookup, `cd` subshell navigation, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
 
 ## Prompt Profiles And Subagents
 

@@ -30,7 +30,7 @@ Commands:
   add <branch> [--no-link-env]     Open an existing local or origin branch
   pr <number>                      Create or refresh detached inspection lane PR-<number>
   repair <number> [--no-link-env]  Open a same-repository PR's writable head branch
-  list                             List this clone's worktrees without pruning
+  list [flags]                     List this clone's worktrees without pruning
   root                             Print this repository's canonical worktree directory
   path <lane>                      Print an exact registered lane path for shell navigation
   cd <lane>                        Open an interactive shell in an exact registered lane
@@ -41,6 +41,11 @@ Commands:
 
 Environment:
   GIT_WT_ROOT          Override ~/worktrees (primarily for testing)
+
+List flags:
+  --sort <attribute>               Sort by updated, state, head, or path
+  --reverse                        Reverse the selected sort order
+  --plain                          Print the table instead of opening the selector
 
 Safety:
   PR-<number> is detached and inspection-only; use repair for edits.
@@ -75,6 +80,8 @@ type App struct {
 	pathExists func(string) (bool, error)
 	resolvePR  resolvePRFunc
 	runShell   func(context.Context, string) error
+	isTerminal func() bool
+	selectList listSelectorFunc
 }
 
 // NewApp creates an App backed by the local Git and GitHub CLIs.
@@ -100,6 +107,7 @@ func NewApp(out, errOut io.Writer) *App {
 	}
 	app.resolvePR = app.resolvePullRequest
 	app.runShell = runInteractiveShell
+	app.isTerminal, app.selectList = newListInteraction(out)
 	return app
 }
 
@@ -135,10 +143,7 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 		}
 		return a.enterLane(ctx, cwd, args[1])
 	case "list":
-		if len(args) != 1 {
-			return fmt.Errorf("list accepts no arguments")
-		}
-		return a.list(ctx, cwd)
+		return a.list(ctx, cwd, args[1:])
 	case "issue":
 		value, linkEnv, err := writableLaneArgs("issue", "number", args[1:])
 		if err != nil {
@@ -215,37 +220,6 @@ func writableLaneArgs(command, placeholder string, args []string) (string, bool,
 	default:
 		return "", false, errors.New(commandUsage)
 	}
-}
-
-func (a *App) list(ctx context.Context, cwd string) error {
-	repo, err := a.repository(ctx, cwd)
-	if err != nil {
-		return err
-	}
-	entries, err := a.worktrees(ctx, repo.top)
-	if err != nil {
-		return err
-	}
-	if err := a.writef("STATE\tHEAD\tPATH\n"); err != nil {
-		return err
-	}
-	for _, entry := range entries {
-		state := "clean"
-		dirty, statusErr := a.status(ctx, entry.path, false)
-		if statusErr != nil {
-			state = "unknown"
-		} else if dirty != "" {
-			state = "dirty"
-		}
-		head := entry.branch
-		if head == "" {
-			head = "detached@" + shortOID(entry.head)
-		}
-		if err := a.writef("%s\t%s\t%s\n", state, head, entry.path); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (a *App) lanePath(ctx context.Context, cwd, lane string) error {

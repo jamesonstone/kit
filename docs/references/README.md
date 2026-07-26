@@ -23,3 +23,27 @@
 - `external-systems.md` — durable notes about external systems, APIs, or integrations
 - `rules/` — pointer-loaded durable rulesets such as frontend UI rules, testing rules, API conventions, security constraints, or domain rules
 - `../notes/<feature>/` — optional feature source material; not canonical truth and private contents remain ignored
+
+## Ruleset Index
+
+Rulesets are loaded just in time according to their `read_policy` and
+`applies_to` metadata. The managed downstream rules currently available here
+are:
+
+| Ruleset | Scope | Purpose |
+| --- | --- | --- |
+| `agent-team-orchestration` | coding-agent, workflow, dispatch, subagent, verification | Accountable supervisor plans, bounded specialist lanes, overlap control, and read-only verification. |
+| `backend-service-architecture` | architecture, backend, API, service, repository, gateway | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |
+| `constitution-curation` | implementation, validation, repository-memory, constitution, project-refresh | Evidence-based promotion of durable rationale and project-wide invariants. |
+| `feature-notes` | notes, source-material, documentation | Optional feature source material and promotion boundaries for `docs/notes/<feature>`. |
+| `frontend-application-architecture` | architecture, frontend, route, page, component, state | Responsibility and dependency boundaries for frontend routes, features, data adapters, state, and UI. |
+| `github-pr-delivery` | git, GitHub, pull-request, documentation | Issue-to-PR delivery sequencing and post-PR verification. |
+| `kit-capabilities-usage` | Kit command discovery in downstream projects | Targeted, read-only capability lookup without maintaining Kit's internal catalog downstream. |
+| `llms-txt` | web, website, API, documentation | `/llms.txt` contract for applicable public web and API surfaces. |
+| `readme-header-tagline` | README and repository onboarding | Consistent top-level README identity and opening structure. |
+| `safety-guardrails` | git, GitHub, safety | Recon, identity, worktree, secret, protected-branch, and failure-recovery boundaries. |
+| `work-lane-gating` | git, GitHub, workflow | Separates non-implementation documentation work from implementation delivery lanes. |
+
+`command-capabilities` is a Kit-maintainer-only local ruleset. It requires
+changes to `kit capabilities` metadata when Kit command behavior changes and is
+not installed as a downstream project rule.

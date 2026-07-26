@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestParseRemoteIdentity(t *testing.T) {
@@ -177,7 +178,7 @@ func TestMigratePreviewsThenMovesDirtyLegacyWorktree(t *testing.T) {
 func TestListDoesNotPruneAndPruneIsExplicit(t *testing.T) {
 	fixture := newGitFixture(t)
 	runWT(t, fixture.app, fixture.primary, "list")
-	if !strings.Contains(fixture.out.String(), "STATE\tHEAD\tPATH") {
+	if !strings.Contains(fixture.out.String(), "STATE\tHEAD\tLAST UPDATED\tPATH") {
 		t.Fatalf("list output:\n%s", fixture.out.String())
 	}
 	fixture.out.Reset()
@@ -189,6 +190,55 @@ func TestListDoesNotPruneAndPruneIsExplicit(t *testing.T) {
 	runWT(t, fixture.app, fixture.primary, "prune")
 	if !strings.Contains(fixture.out.String(), "Pruned stale worktree metadata") {
 		t.Fatalf("prune output:\n%s", fixture.out.String())
+	}
+}
+
+func TestListSortsByLastUpdatedByDefaultAndSupportsOtherAttributes(t *testing.T) {
+	fixture := newGitFixture(t)
+	runGit(t, fixture.primary, "branch", "topic/old", "origin/main")
+	runGit(t, fixture.primary, "branch", "topic/new", "origin/main")
+	runWT(t, fixture.app, fixture.primary, "add", "topic/old")
+	runWT(t, fixture.app, fixture.primary, "add", "topic/new")
+	oldPath := filepath.Join(fixture.worktreeRoot, "example", "project", "topic", "old")
+	newPath := filepath.Join(fixture.worktreeRoot, "example", "project", "topic", "new")
+	time.Sleep(1100 * time.Millisecond)
+	runGit(t, newPath, "commit", "--allow-empty", "-m", "newer")
+
+	fixture.out.Reset()
+	runWT(t, fixture.app, fixture.primary, "list")
+	lines := strings.Split(strings.TrimSpace(fixture.out.String()), "\n")
+	if len(lines) < 4 || !strings.Contains(lines[1], newPath) {
+		t.Fatalf("default list should put newest worktree first:\n%s", fixture.out.String())
+	}
+	if !strings.Contains(fixture.out.String(), oldPath) || !strings.Contains(fixture.out.String(), "\nclean\tmain\t") {
+		t.Fatalf("default list should retain the older worktrees:\n%s", fixture.out.String())
+	}
+	columns := strings.Split(lines[1], "\t")
+	if len(columns) != 4 {
+		t.Fatalf("list row should have four columns: %q", lines[1])
+	}
+	if _, err := time.Parse("Jan 02, 2006", columns[2]); err != nil {
+		t.Fatalf("last updated value should show a human-readable day, got %q: %v", columns[2], err)
+	}
+
+	fixture.out.Reset()
+	runWT(t, fixture.app, fixture.primary, "list", "--sort", "path")
+	pathLines := strings.Split(strings.TrimSpace(fixture.out.String()), "\n")
+	if len(pathLines) < 4 || !strings.Contains(pathLines[1], fixture.primary) {
+		t.Fatalf("path sort should start with the primary path:\n%s", fixture.out.String())
+	}
+
+	fixture.out.Reset()
+	runWT(t, fixture.app, fixture.primary, "list", "--sort=path", "--reverse")
+	reverseLines := strings.Split(strings.TrimSpace(fixture.out.String()), "\n")
+	if len(reverseLines) < 4 || !strings.Contains(reverseLines[len(reverseLines)-1], fixture.primary) {
+		t.Fatalf("reverse path sort should end with the primary path:\n%s", fixture.out.String())
+	}
+}
+
+func TestParseListOptionsRejectsUnknownSort(t *testing.T) {
+	if _, err := parseListOptions([]string{"--sort", "branch"}); err == nil {
+		t.Fatal("unknown sort attribute should fail")
 	}
 }
 

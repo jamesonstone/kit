@@ -289,6 +289,8 @@ func TestHelpDocumentsWritableEnvironmentOptOut(t *testing.T) {
 		"issue <number> [--no-link-env]",
 		"add <branch> [--no-link-env]",
 		"repair <number> [--no-link-env]",
+		"list [flags]",
+		"--plain",
 		"path <lane>",
 		"primary checkout's .env",
 		".envrc is never linked automatically",
