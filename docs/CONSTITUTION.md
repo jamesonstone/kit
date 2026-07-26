@@ -413,6 +413,7 @@ The read-only structural view rendered by `kit map`:
 ```bash
 kit/
 ├── cmd/kit/main.go          # thin entry point
+├── cmd/git-wt/main.go       # optional native-Git worktree convenience entry point
 ├── pkg/cli/                 # public CLI commands, prompt builders, and human output
 │   ├── root*.go             # root command, banner, help, profiles
 │   ├── brainstorm*.go       # brainstorm, backlog capture, notes, prompts
@@ -443,11 +444,17 @@ kit/
 │   ├── config/              # .kit.yaml loading, project root discovery, prompt config
 │   ├── document/            # Markdown parsing, metadata, relationships, validation
 │   ├── feature/             # feature identity, allocator, lifecycle, map, status
+│   ├── eval/                # deterministic evaluation fixtures and runners
+│   ├── improve/             # improvement-suite execution and reporting
 │   ├── instructions/        # repository scaffold and versioned agent instruction registries
 │   ├── promptdoc/           # typed prompt document rendering
 │   ├── promptlib/           # prompt library merge, normalize, resolve, suggest
 │   ├── rollup/              # PROJECT_PROGRESS_SUMMARY.md generation
-│   └── templates/           # embedded project and instruction templates
+│   ├── runstore/            # local verification run evidence and trace lookup
+│   ├── state/               # generated project-state pointers
+│   ├── templates/            # embedded project and instruction templates
+│   ├── verify/               # project and feature validation orchestration
+│   └── worktree/             # optional Git worktree command implementation
 └── docs/
     ├── CONSTITUTION.md      # this file
     ├── PROJECT_PROGRESS_SUMMARY.md
