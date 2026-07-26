@@ -88,7 +88,7 @@ func appendDispatchRepairContext(doc *promptdoc.Document, repair repairContext) 
 		doc.CodeBlock("text", repair.DirtyStatus)
 	}
 
-	pathArg := strconv.Quote(repair.WorktreePath)
+	pathArg := shellQuoteArgument(repair.WorktreePath)
 	instructions := []string{
 		fmt.Sprintf("Run every filesystem and Git command in `%s`; use an explicit command working directory or `git -C %s ...` instead of the invoking checkout.", repair.WorktreePath, pathArg),
 		fmt.Sprintf("Before editing, verify `git -C %s symbolic-ref --quiet --short HEAD` is exactly `%s` and preserve any state that no longer matches this prompt.", pathArg, repair.HeadBranch),
@@ -112,6 +112,10 @@ func appendDispatchRepairContext(doc *promptdoc.Document, repair repairContext) 
 		fmt.Sprintf("Any authorized push must update `%s` only; never create a second repair branch or pull request for this target.", repair.PushTarget),
 	)
 	doc.BulletList(instructions...)
+}
+
+func shellQuoteArgument(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'"
 }
 
 func appendDispatchPRReflectionCycle(doc *promptdoc.Document, options dispatchPromptOptions) {

@@ -3,12 +3,14 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/jamesonstone/kit/internal/worktree"
 )
@@ -127,7 +129,7 @@ func TestPrepareCIRepairContextPrefersOpenPullRequest(t *testing.T) {
 		resolvePRRepairContext = previousResolver
 	})
 
-	repairContextCommandOutput = func(_ string, name string, args ...string) ([]byte, error) {
+	repairContextCommandOutput = func(_ context.Context, _ string, name string, args ...string) ([]byte, error) {
 		if name != "gh" || len(args) < 2 || args[0] != "pr" || args[1] != "list" {
 			t.Fatalf("unexpected command: %s %v", name, args)
 		}
@@ -168,7 +170,7 @@ func TestPrepareCIRepairContextPrefersOpenPullRequest(t *testing.T) {
 func TestPrepareCIRepairContextRefusesDefaultBranchWithoutPullRequest(t *testing.T) {
 	previousOutput := repairContextCommandOutput
 	t.Cleanup(func() { repairContextCommandOutput = previousOutput })
-	repairContextCommandOutput = func(_ string, name string, args ...string) ([]byte, error) {
+	repairContextCommandOutput = func(_ context.Context, _ string, name string, args ...string) ([]byte, error) {
 		switch {
 		case name == "gh" && len(args) >= 2 && args[0] == "pr" && args[1] == "list":
 			return []byte(`[]`), nil
@@ -217,6 +219,57 @@ func TestResolvePromptWorktreeRootNormalizesNestedDirectory(t *testing.T) {
 	if !os.SameFile(rootInfo, repoInfo) {
 		t.Fatalf("root = %q, want same directory as %q", root, repo)
 	}
+}
+
+func TestRunRepairContextCommandHonorsCanceledContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := runRepairContextCommand(
+		ctx,
+		t.TempDir(),
+		os.Args[0],
+		"-test.run=^$",
+	)
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("runRepairContextCommand() error = %v, want context canceled", err)
+	}
+}
+
+func TestRunRepairContextCommandTerminatesOnDeadline(t *testing.T) {
+	previousExec := execCommandContext
+	t.Cleanup(func() { execCommandContext = previousExec })
+	execCommandContext = func(ctx context.Context, name string, args ...string) *exec.Cmd {
+		cmd := exec.CommandContext(ctx, name, args...)
+		cmd.Env = append(os.Environ(), "KIT_REPAIR_CONTEXT_HELPER=1")
+		return cmd
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	started := time.Now()
+	_, err := runRepairContextCommand(
+		ctx,
+		t.TempDir(),
+		os.Args[0],
+		"-test.run=^TestRepairContextCommandDeadlineHelper$",
+	)
+	if err == nil {
+		t.Fatal("runRepairContextCommand() error = nil, want deadline termination")
+	}
+	if !errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		t.Fatalf("context error = %v, want deadline exceeded", ctx.Err())
+	}
+	if elapsed := time.Since(started); elapsed >= 2*time.Second {
+		t.Fatalf("deadline took %s to terminate the helper subprocess", elapsed)
+	}
+}
+
+func TestRepairContextCommandDeadlineHelper(t *testing.T) {
+	if os.Getenv("KIT_REPAIR_CONTEXT_HELPER") != "1" {
+		return
+	}
+	time.Sleep(10 * time.Second)
 }
 
 func newRepairContextRepository(t *testing.T, remote, branch string) string {

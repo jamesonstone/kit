@@ -162,6 +162,31 @@ func TestBuildDispatchPromptCarriesResolvedRepairLane(t *testing.T) {
 	}
 }
 
+func TestBuildDispatchPromptShellQuotesRepairWorktree(t *testing.T) {
+	worktreePath := "/tmp/kit/$(touch injected); lane's"
+	prompt := buildDispatchPrompt(
+		[]dispatchTask{{ID: "D001", Index: 1, Body: "Fix the review finding"}},
+		1,
+		worktreePath,
+		dispatchInputSourcePR,
+		dispatchPromptOptions{
+			RepairContext: &repairContext{
+				HeadBranch:   "GH-67",
+				WorktreePath: worktreePath,
+				PushTarget:   "origin/GH-67",
+			},
+		},
+	)
+
+	quotedPath := `'/tmp/kit/$(touch injected); lane'"'"'s'`
+	if got := strings.Count(prompt, "git -C "+quotedPath); got != 2 {
+		t.Fatalf("repair prompt contains shell-quoted worktree path %d times, want 2:\n%s", got, prompt)
+	}
+	if strings.Contains(prompt, `git -C "/tmp/kit/$(touch injected); lane's"`) {
+		t.Fatalf("repair prompt used command-substitution-capable double quotes:\n%s", prompt)
+	}
+}
+
 func TestBuildDispatchPromptScopesPRReflectionCycleToCodeRabbit(t *testing.T) {
 	tasks := []dispatchTask{
 		{ID: "D001", Index: 1, Body: "Source: internal/app.go:12\nReview task:\nFix the stale assertion"},

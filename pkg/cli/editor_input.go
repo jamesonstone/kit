@@ -15,6 +15,7 @@ var (
 	awaitEditorLaunchConfirmation = waitForEditorLaunchConfirmation
 	editorInputRunner             = runEditorInput
 	execCommand                   = exec.Command
+	execCommandContext            = exec.CommandContext
 	lookPath                      = exec.LookPath
 )
 

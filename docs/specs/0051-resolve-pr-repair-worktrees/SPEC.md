@@ -222,6 +222,19 @@ the wrong checkout.
 - A dirty worktree on a non-interactive EOF cannot be treated as a user
   exclusion. Repair prompt generation now stops until it receives an explicit
   yes, no, or accepted default-no newline response.
+- Review of the generated `git -C` instructions found that `strconv.Quote`
+  emitted double-quoted Go literals, which still permit shell expansion.
+  Repair worktree arguments now use POSIX single-argument quoting, including
+  safe embedded-apostrophe handling.
+- The original repair resolver passed caller context into worktree preparation
+  but not into its follow-up Git and GitHub subprocesses. The same caller
+  context now reaches repository validation, branch/status inspection, PR
+  inference, and default-branch discovery so cancellation and deadlines stop
+  stalled commands.
+- Dispatch review-loop preparation originally validated repository ownership
+  only after PR metadata, optional CodeRabbit waiting, and task loading. It now
+  resolves the repair lane first and preserves that context through the
+  existing no-actionable-feedback path.
 
 ## VALIDATION
 
@@ -247,6 +260,12 @@ the wrong checkout.
 - `git diff --check`: passed.
 - Gitleaks scan of the complete intended diff, including new untracked source
   and spec files: passed with no leaks.
+- PR review repair validation passed `go test ./...`,
+  `go test -race ./pkg/cli -count=1`, `go vet ./...`,
+  `golangci-lint run --new-from-rev=origin/main ./...`, formatting, and
+  whitespace checks. Focused tests cover shell metacharacters and apostrophes,
+  canceled and deadline-terminated subprocesses, fail-fast review-loop order,
+  and the preserved no-actionable-feedback result.
 
 ## OUTCOME
 
@@ -266,6 +285,9 @@ the wrong checkout.
 - Command help, capability metadata, generated and checked-in V3 guidance,
   canonical command docs, worktree policy, project Constitution, feature
   summary, and focused integration tests now describe the same behavior.
+- Review hardening makes generated repair commands shell-safe, keeps local
+  subprocesses cancellable, and fails on repository ownership before remote
+  review waits or task intake.
 - Delivery uses issue #89 and branch `GH-89`; the ready pull request targets
   `main` and remains unmerged for review.
 

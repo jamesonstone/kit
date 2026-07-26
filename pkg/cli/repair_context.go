@@ -73,7 +73,7 @@ func preparePRRepairContext(
 		return nil, err
 	}
 	repository := target.Owner + "/" + target.Repo
-	if err := requireRepairRepository(cwd, repository); err != nil {
+	if err := requireRepairRepository(ctx, cwd, repository); err != nil {
 		return nil, err
 	}
 
@@ -96,7 +96,7 @@ func preparePRRepairContext(
 	if prURL == "" {
 		prURL = fmt.Sprintf("https://github.com/%s/pull/%d", repository, target.Number)
 	}
-	return inspectRepairContext(in, out, repairContext{
+	return inspectRepairContext(ctx, in, out, repairContext{
 		Repository:        repository,
 		PRNumber:          target.Number,
 		PRURL:             prURL,
@@ -121,14 +121,14 @@ func prepareBranchRepairContext(
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	if err := requireRepairRepository(cwd, repository); err != nil {
+	if err := requireRepairRepository(ctx, cwd, repository); err != nil {
 		return nil, err
 	}
 	prepared, err := prepareBranchWorktree(ctx, cwd, branch)
 	if err != nil {
 		return nil, fmt.Errorf("prepare writable worktree for %s branch %s: %w", repository, branch, err)
 	}
-	return inspectRepairContext(in, out, repairContext{
+	return inspectRepairContext(ctx, in, out, repairContext{
 		Repository:        repository,
 		HeadBranch:        branch,
 		ExpectedHeadOID:   strings.TrimSpace(expectedHeadOID),
@@ -140,11 +140,12 @@ func prepareBranchRepairContext(
 }
 
 func inspectRepairContext(
+	ctx context.Context,
 	in io.Reader,
 	out io.Writer,
 	repair repairContext,
 ) (*repairContext, error) {
-	branch, err := repairGitText(repair.WorktreePath, "symbolic-ref", "--quiet", "--short", "HEAD")
+	branch, err := repairGitText(ctx, repair.WorktreePath, "symbolic-ref", "--quiet", "--short", "HEAD")
 	if err != nil {
 		return nil, fmt.Errorf("verify repair worktree branch: %w", err)
 	}
@@ -156,11 +157,12 @@ func inspectRepairContext(
 			repair.HeadBranch,
 		)
 	}
-	repair.LocalHeadOID, err = repairGitText(repair.WorktreePath, "rev-parse", "HEAD")
+	repair.LocalHeadOID, err = repairGitText(ctx, repair.WorktreePath, "rev-parse", "HEAD")
 	if err != nil {
 		return nil, fmt.Errorf("read repair worktree HEAD: %w", err)
 	}
 	repair.DirtyStatus, err = repairGitText(
+		ctx,
 		repair.WorktreePath,
 		"status",
 		"--porcelain=v1",
@@ -233,8 +235,8 @@ func confirmRepairChanges(in io.Reader, out io.Writer, repair repairContext) (bo
 	}
 }
 
-func requireRepairRepository(cwd string, expected string) error {
-	output, err := repairContextCommandOutput(cwd, "git", "remote", "get-url", "origin")
+func requireRepairRepository(ctx context.Context, cwd string, expected string) error {
+	output, err := repairContextCommandOutput(ctx, cwd, "git", "remote", "get-url", "origin")
 	if err != nil {
 		return fmt.Errorf("resolve repair repository from origin: %w", err)
 	}
@@ -261,7 +263,13 @@ func resolvePromptWorktreeRoot(start string) (string, error) {
 		}
 		start = cwd
 	}
-	output, err := repairContextCommandOutput(start, "git", "rev-parse", "--show-toplevel")
+	output, err := repairContextCommandOutput(
+		context.Background(),
+		start,
+		"git",
+		"rev-parse",
+		"--show-toplevel",
+	)
 	if err == nil {
 		if root := strings.TrimSpace(string(output)); root != "" {
 			return filepath.Clean(root), nil
@@ -274,16 +282,24 @@ func resolvePromptWorktreeRoot(start string) (string, error) {
 	return filepath.Clean(absolute), nil
 }
 
-func repairGitText(dir string, args ...string) (string, error) {
-	output, err := repairContextCommandOutput(dir, "git", args...)
+func repairGitText(ctx context.Context, dir string, args ...string) (string, error) {
+	output, err := repairContextCommandOutput(ctx, dir, "git", args...)
 	if err != nil {
 		return "", err
 	}
 	return strings.TrimSpace(string(output)), nil
 }
 
-func runRepairContextCommand(dir string, name string, args ...string) ([]byte, error) {
-	cmd := execCommand(name, args...)
+func runRepairContextCommand(
+	ctx context.Context,
+	dir string,
+	name string,
+	args ...string,
+) ([]byte, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	cmd := execCommandContext(ctx, name, args...)
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()
 	if err == nil {
@@ -297,11 +313,13 @@ func runRepairContextCommand(dir string, name string, args ...string) ([]byte, e
 }
 
 func inferOpenPRForBranch(
+	ctx context.Context,
 	cwd string,
 	repository string,
 	branch string,
 ) (string, bool, error) {
 	output, err := repairContextCommandOutput(
+		ctx,
 		cwd,
 		"gh",
 		"pr",
@@ -342,8 +360,13 @@ func inferOpenPRForBranch(
 	}
 }
 
-func resolveRepositoryDefaultBranch(cwd string, repository string) (string, error) {
+func resolveRepositoryDefaultBranch(
+	ctx context.Context,
+	cwd string,
+	repository string,
+) (string, error) {
 	output, err := repairContextCommandOutput(
+		ctx,
 		cwd,
 		"gh",
 		"repo",
@@ -385,12 +408,12 @@ func prepareCIRepairContext(
 	if branch == "" {
 		return nil, nil
 	}
-	if prRef, found, err := inferOpenPRForBranch(cwd, target.Repository, branch); err != nil {
+	if prRef, found, err := inferOpenPRForBranch(ctx, cwd, target.Repository, branch); err != nil {
 		return nil, err
 	} else if found {
 		return resolvePRRepairContext(ctx, in, out, cwd, prRef)
 	}
-	defaultBranch, err := resolveRepositoryDefaultBranch(cwd, target.Repository)
+	defaultBranch, err := resolveRepositoryDefaultBranch(ctx, cwd, target.Repository)
 	if err != nil {
 		return nil, err
 	}
