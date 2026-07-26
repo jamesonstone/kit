@@ -2,7 +2,9 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"errors"
+	"io"
 	"strings"
 	"testing"
 
@@ -116,6 +118,15 @@ func TestRunPRFixDispatchPromptCopiesWithoutEditingByDefault(t *testing.T) {
 	}
 	if !strings.Contains(copied, "Fix the current review finding.") {
 		t.Fatalf("clipboard prompt missing review task:\n%s", copied)
+	}
+	for _, want := range []string{
+		"Working directory: `/tmp/kit/GH-67`",
+		"https://github.com/jamesonstone/kit/pull/67",
+		"origin/GH-67",
+	} {
+		if !strings.Contains(copied, want) {
+			t.Fatalf("clipboard prompt missing resolved repair context %q:\n%s", want, copied)
+		}
 	}
 }
 
@@ -312,10 +323,31 @@ func installPRFixInputFakes(
 	t.Helper()
 	previousTaskLoader := prFixDispatchTasksLoader
 	previousEditorLoader := prFixDispatchInputLoader
+	previousRepairResolver := resolvePRRepairContext
 	prFixDispatchTasksLoader = taskLoader
 	prFixDispatchInputLoader = editorLoader
+	resolvePRRepairContext = func(
+		_ context.Context,
+		_ io.Reader,
+		_ io.Writer,
+		_ string,
+		_ string,
+	) (*repairContext, error) {
+		return &repairContext{
+			Repository:      "jamesonstone/kit",
+			PRNumber:        67,
+			PRURL:           "https://github.com/jamesonstone/kit/pull/67",
+			HeadBranch:      "GH-67",
+			ExpectedHeadOID: "remote-head",
+			LocalHeadOID:    "local-head",
+			WorktreePath:    "/tmp/kit/GH-67",
+			PushTarget:      "origin/GH-67",
+			ExistingChanges: repairChangesNone,
+		}, nil
+	}
 	return func() {
 		prFixDispatchTasksLoader = previousTaskLoader
 		prFixDispatchInputLoader = previousEditorLoader
+		resolvePRRepairContext = previousRepairResolver
 	}
 }

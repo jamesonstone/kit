@@ -105,8 +105,8 @@ the complete durable truth.
 | `kit plan challenge` | Supplement a copied Codex for Mac `/plan` with a paste-ready adversarial review prompt |
 | `kit spec <feature> --legacy-supervisor` | Temporarily run the deprecated V2 lifecycle supervisor |
 | `kit loop workflow <feature>` | Deprecated V2 compatibility loop; V3 specs use native planning |
-| `kit loop review` | Review changed code until local correctness converges |
-| `kit pr fix` | Select or target a PR and copy a review-feedback dispatch prompt; editing is opt-in |
+| `kit loop review` | Review changed code until local correctness converges; PR mode resolves the exact writable head worktree |
+| `kit pr fix` | Select or target a PR, resolve its writable head worktree, and copy a review-feedback dispatch prompt |
 | `kit status --all` | Show project-wide feature state |
 | `kit registry status` | Show compact registry and Kit-managed file freshness; supports `--json` |
 | `kit health` | Apply safe Kit-managed updates and validate project health; preview with `--dry-run --diff` |

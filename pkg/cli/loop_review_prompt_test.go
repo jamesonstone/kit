@@ -75,6 +75,43 @@ func TestBuildLoopReviewPromptIncludesResolutionGuidanceForPRFix(t *testing.T) {
 	}
 }
 
+func TestBuildLoopReviewPromptCarriesResolvedRepairWorktree(t *testing.T) {
+	prompt := buildLoopReviewPrompt(
+		loopReviewOptions{
+			MinConfidence: 95,
+			Repair: &repairContext{
+				WorktreePath:    "/tmp/kit/GH-27",
+				HeadBranch:      "GH-27",
+				ExpectedHeadOID: "remote-head",
+				LocalHeadOID:    "local-head",
+				ExistingChanges: repairChangesInclude,
+				DirtyStatus:     " M pkg/cli/pr.go",
+				PushTarget:      "origin/GH-27",
+			},
+		},
+		loopReviewTarget{BaseRef: "origin/main"},
+		nil,
+		"",
+	)
+	for _, want := range []string{
+		"Repair worktree: `/tmp/kit/GH-27`",
+		"PR head branch: `GH-27`",
+		"Expected remote head: `remote-head`",
+		"Local head when prepared: `local-head`",
+		"Existing worktree changes: `include`",
+		"Push target: `origin/GH-27`",
+		"## Pre-existing Worktree Status",
+		" M pkg/cli/pr.go",
+		"Operate only in `/tmp/kit/GH-27`",
+		"verify the current branch is exactly `GH-27`",
+		"user included the pre-existing worktree changes",
+	} {
+		if !strings.Contains(prompt, want) {
+			t.Fatalf("expected repair prompt to contain %q:\n%s", want, prompt)
+		}
+	}
+}
+
 func TestBuildLoopReviewPromptIncludesSubagentGuidanceWhenRequested(t *testing.T) {
 	oldSingleAgent := singleAgent
 	singleAgent = false

@@ -52,67 +52,101 @@ func (a *App) issue(ctx context.Context, cwd, value string, linkEnv bool) error 
 }
 
 func (a *App) add(ctx context.Context, cwd, branch string, linkEnv bool) error {
-	repo, err := a.repository(ctx, cwd)
+	prepared, err := a.PrepareBranch(ctx, cwd, branch, linkEnv)
 	if err != nil {
 		return err
 	}
+	return a.writePreparedBranch(prepared)
+}
+
+// PrepareBranch creates, attaches, or reuses the exact writable worktree for branch.
+func (a *App) PrepareBranch(
+	ctx context.Context,
+	cwd string,
+	branch string,
+	linkEnv bool,
+) (PreparedWorktree, error) {
+	repo, err := a.repository(ctx, cwd)
+	if err != nil {
+		return PreparedWorktree{}, err
+	}
 	if _, err := validateLane(branch); err != nil {
-		return err
+		return PreparedWorktree{}, err
 	}
 	if _, err := a.git(ctx, repo.top, "check-ref-format", "--branch", branch); err != nil {
-		return fmt.Errorf("invalid branch %q: %w", branch, err)
+		return PreparedWorktree{}, fmt.Errorf("invalid branch %q: %w", branch, err)
 	}
 	if a.refExists(ctx, repo.top, "refs/heads/"+branch) {
-		return a.addBranch(ctx, repo, branch, linkEnv)
+		return a.prepareBranch(ctx, repo, branch, linkEnv)
 	}
 	if err := a.fetchOrigin(ctx, repo.top); err != nil {
-		return err
+		return PreparedWorktree{}, err
 	}
-	return a.addBranch(ctx, repo, branch, linkEnv)
+	return a.prepareBranch(ctx, repo, branch, linkEnv)
 }
 
 func (a *App) addBranch(ctx context.Context, repo repository, branch string, linkEnv bool) error {
-	entries, err := a.worktrees(ctx, repo.top)
+	prepared, err := a.prepareBranch(ctx, repo, branch, linkEnv)
 	if err != nil {
 		return err
+	}
+	return a.writePreparedBranch(prepared)
+}
+
+func (a *App) prepareBranch(
+	ctx context.Context,
+	repo repository,
+	branch string,
+	linkEnv bool,
+) (PreparedWorktree, error) {
+	entries, err := a.worktrees(ctx, repo.top)
+	if err != nil {
+		return PreparedWorktree{}, err
 	}
 	for _, entry := range entries {
 		if entry.branch == branch {
 			if err := a.ensureEnvironmentLink(repo.primary, entry.path, linkEnv); err != nil {
-				return err
+				return PreparedWorktree{}, err
 			}
-			return a.writef("Reusing %s for %s\n", entry.path, branch)
+			return PreparedWorktree{Path: entry.path, Branch: branch}, nil
 		}
 	}
 
 	local := a.refExists(ctx, repo.top, "refs/heads/"+branch)
 	remote := a.refExists(ctx, repo.top, "refs/remotes/origin/"+branch)
 	if !local && !remote {
-		return fmt.Errorf("branch %q does not exist locally or on origin; use `git wt issue <number>` for a new GH lane", branch)
+		return PreparedWorktree{}, fmt.Errorf("branch %q does not exist locally or on origin; use `git wt issue <number>` for a new GH lane", branch)
 	}
 	destination, err := canonicalLanePath(repo, branch)
 	if err != nil {
-		return err
+		return PreparedWorktree{}, err
 	}
 	if err := a.ensureDestinationAvailable(destination); err != nil {
-		return err
+		return PreparedWorktree{}, err
 	}
 	if err := a.mkdirAll(filepath.Dir(destination), 0o755); err != nil {
-		return fmt.Errorf("create project worktree directory: %w", err)
+		return PreparedWorktree{}, fmt.Errorf("create project worktree directory: %w", err)
 	}
 	if local {
 		if _, err := a.git(ctx, repo.top, "worktree", "add", destination, branch); err != nil {
-			return err
+			return PreparedWorktree{}, err
 		}
 	} else {
 		if _, err := a.git(ctx, repo.top, "worktree", "add", "--track", "-b", branch, destination, "origin/"+branch); err != nil {
-			return err
+			return PreparedWorktree{}, err
 		}
 	}
 	if err := a.ensureEnvironmentLink(repo.primary, destination, linkEnv); err != nil {
-		return err
+		return PreparedWorktree{}, err
 	}
-	return a.writef("Created %s for %s\n", destination, branch)
+	return PreparedWorktree{Path: destination, Branch: branch, Created: true}, nil
+}
+
+func (a *App) writePreparedBranch(prepared PreparedWorktree) error {
+	if prepared.Created {
+		return a.writef("Created %s for %s\n", prepared.Path, prepared.Branch)
+	}
+	return a.writef("Reusing %s for %s\n", prepared.Path, prepared.Branch)
 }
 
 func (a *App) pr(ctx context.Context, cwd, value string) error {
@@ -177,37 +211,62 @@ func (a *App) repair(ctx context.Context, cwd, value string, linkEnv bool) error
 	if err != nil {
 		return err
 	}
+	repair, err := a.PreparePullRequestRepair(ctx, cwd, number, linkEnv)
+	if err != nil {
+		return err
+	}
+	if err := a.writef("PR %d uses writable head branch %s\n", number, repair.Branch); err != nil {
+		return err
+	}
+	return a.writePreparedBranch(repair.PreparedWorktree)
+}
+
+// PreparePullRequestRepair prepares the exact writable same-repository PR head.
+func (a *App) PreparePullRequestRepair(
+	ctx context.Context,
+	cwd string,
+	number int,
+	linkEnv bool,
+) (PullRequestRepair, error) {
 	repo, err := a.repository(ctx, cwd)
 	if err != nil {
-		return err
+		return PullRequestRepair{}, err
 	}
-	pr, err := a.resolvePR(ctx, repo.top, repo.owner+"/"+repo.name, number)
+	repository := repo.owner + "/" + repo.name
+	pr, err := a.resolvePR(ctx, repo.top, repository, number)
 	if err != nil {
-		return err
+		return PullRequestRepair{}, err
 	}
 	if pr.IsCrossRepository {
-		return fmt.Errorf("PR %d is from a fork; automatic repair supports same-repository head branches only", number)
+		return PullRequestRepair{}, fmt.Errorf("PR %d is from a fork; automatic repair supports same-repository head branches only", number)
 	}
 	if !strings.EqualFold(pr.State, "OPEN") {
-		return fmt.Errorf("PR %d is %s, not open", number, strings.ToLower(pr.State))
+		return PullRequestRepair{}, fmt.Errorf("PR %d is %s, not open", number, strings.ToLower(pr.State))
 	}
 	if pr.HeadRefName == "" {
-		return fmt.Errorf("PR %d has no head branch", number)
+		return PullRequestRepair{}, fmt.Errorf("PR %d has no head branch", number)
 	}
 	if strings.HasPrefix(strings.ToUpper(pr.HeadRefName), "PR-") {
-		return fmt.Errorf("PR %d head %q is not a durable branch", number, pr.HeadRefName)
+		return PullRequestRepair{}, fmt.Errorf("PR %d head %q is not a durable branch", number, pr.HeadRefName)
 	}
 	if err := a.fetchOrigin(ctx, repo.top); err != nil {
-		return err
+		return PullRequestRepair{}, err
 	}
-	if err := a.writef("PR %d uses writable head branch %s\n", number, pr.HeadRefName); err != nil {
-		return err
+	prepared, err := a.prepareBranch(ctx, repo, pr.HeadRefName, linkEnv)
+	if err != nil {
+		return PullRequestRepair{}, err
 	}
-	return a.addBranch(ctx, repo, pr.HeadRefName, linkEnv)
+	return PullRequestRepair{
+		PreparedWorktree: prepared,
+		Repository:       repository,
+		Number:           number,
+		URL:              pr.URL,
+		HeadRefOID:       pr.HeadRefOID,
+	}, nil
 }
 
 func (a *App) resolvePullRequest(ctx context.Context, cwd, slug string, number int) (PR, error) {
-	output, err := a.command(ctx, cwd, "gh", "pr", "view", strconv.Itoa(number), "--repo", slug, "--json", "headRefName,isCrossRepository,state,url")
+	output, err := a.command(ctx, cwd, "gh", "pr", "view", strconv.Itoa(number), "--repo", slug, "--json", "headRefName,headRefOid,isCrossRepository,state,url")
 	if err != nil {
 		return PR{}, err
 	}

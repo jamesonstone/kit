@@ -52,6 +52,7 @@
 | 0048 | native-plan-challenge | `docs/specs/0048-native-plan-challenge` | complete | no | 2026-07-23 | Make the proven cross-model plan-review workflow fast and explicit for Codex for Mac users: copy a plan produced by `/plan`, run `kit plan challenge`, and paste a supplemented adversarial-review prompt into a secondary model without Kit launching or calling any model. |
 | 0049 | application-architecture-rules | `docs/specs/0049-application-architecture-rules` | complete | no | 2026-07-23 | Provide reusable, framework-aware backend and frontend architecture rules that keep responsibilities and dependency direction explicit across Kit-managed application projects. |
 | 0050 | safe-worktree-workflow | `docs/specs/0050-safe-worktree-workflow` | complete | no | 2026-07-24 | Provide a portable native Git worktree policy plus an optional thin `git wt` convenience for exact navigation, default writable-lane `.env` symlinks, explicit isolation, and conservative removal. |
+| 0051 | resolve-pr-repair-worktrees | `docs/specs/0051-resolve-pr-repair-worktrees` | deliver | no | 2026-07-26 | Resolve target-bearing PR and CI repair commands to the exact writable branch worktree, create or attach the lane when needed, and carry dirty-state decisions into explicit agent instructions. |
 
 ## PROJECT INTENT
 
@@ -496,6 +497,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0050-safe-worktree-workflow/SPEC.md`, `docs/references/worktrees.md`, `docs/references/rules/safety-guardrails.md`, `docs/references/rules/github-pr-delivery.md`
 
+### resolve-pr-repair-worktrees
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Resolve target-bearing Kit commands to the exact writable worktree that owns the requested pull request or branch, so users do not need to navigate manually and generated repairs cannot confidently run or push from the wrong checkout.
+- **APPROACH**: 1. Expose output-free exact branch and PR-head preparation from the existing safe worktree package. 2. Add one shared CLI repair-context resolver that proves repository ownership, prepares the lane, records remote/local heads, inspects dirty status, and asks whether existing changes belong in the repair. 3. Carry the exact worktree, branch, canonical PR URL, dirty decision, and push target into dispatch and configured-agent prompts. 4. Apply the resolver to PR fix, PR dispatch, dispatch review-loop, PR-mode loop review, and CI dispatch while leaving generic prompt generation normalized and read-only. 5. Update capabilities, command guidance, durable worktree policy, tests, and delivery evidence.
+- **OPEN ITEMS**: review and merge the ready pull request for issue #89
+- **POINTERS**: `docs/specs/0051-resolve-pr-repair-worktrees/SPEC.md`, `docs/references/worktrees.md`, `docs/agents/TOOLING.md`, `docs/references/rules/command-capabilities.md`
+
 ## LAST UPDATED
 
-2026-07-24 11:59:12 EDT
+2026-07-26 11:04:20 EDT

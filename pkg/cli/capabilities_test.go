@@ -56,6 +56,9 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 	if ci.NetworkUse.Summary == "none" {
 		t.Fatalf("expected ci network behavior to be documented, got %#v", ci.NetworkUse)
 	}
+	if ci.MutationLevel != mutationGit {
+		t.Fatalf("ci mutation_level = %q, want conditional git mutation", ci.MutationLevel)
+	}
 }
 
 func TestCapabilitiesDescribeGitWTPath(t *testing.T) {
@@ -255,8 +258,8 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if dispatchPayload.Command.Command != "dispatch" {
 		t.Fatalf("command = %q, want dispatch", dispatchPayload.Command.Command)
 	}
-	if dispatchPayload.Command.MutationLevel != mutationNetwork {
-		t.Fatalf("expected dispatch mutation level to reflect optional network mutation, got %q", dispatchPayload.Command.MutationLevel)
+	if dispatchPayload.Command.MutationLevel != mutationGit {
+		t.Fatalf("expected dispatch mutation level to reflect optional worktree mutation, got %q", dispatchPayload.Command.MutationLevel)
 	}
 	if !strings.Contains(dispatchPayload.Command.Summary, "CodeRabbit prompt-prep intake") {
 		t.Fatalf("expected dispatch summary to describe CodeRabbit prompt-prep intake, got %q", dispatchPayload.Command.Summary)
@@ -418,14 +421,14 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if prFixPayload.Command.Command != "pr fix" {
 		t.Fatalf("command = %q, want pr fix", prFixPayload.Command.Command)
 	}
-	if prFixPayload.Command.MutationLevel != mutationNetwork {
-		t.Fatalf("expected pr fix to fetch PR feedback for prompt generation, got %#v", prFixPayload.Command)
+	if prFixPayload.Command.MutationLevel != mutationGit {
+		t.Fatalf("expected pr fix to disclose conditional worktree mutation, got %#v", prFixPayload.Command)
 	}
 	if !strings.Contains(prFixPayload.Command.NetworkUse.Summary, "gh pr list") {
 		t.Fatalf("expected pr fix to document open-PR selector network use, got %#v", prFixPayload.Command.NetworkUse)
 	}
-	if !strings.Contains(prFixPayload.Command.GitMutation.Summary, "none") {
-		t.Fatalf("expected pr fix to document no git mutation, got %#v", prFixPayload.Command.GitMutation)
+	if !strings.Contains(prFixPayload.Command.GitMutation.Summary, "add or attach") {
+		t.Fatalf("expected pr fix to document exact worktree preparation, got %#v", prFixPayload.Command.GitMutation)
 	}
 	if !strings.Contains(prFixPayload.Command.NetworkUse.FlagDependent, "human and CodeRabbit review threads") {
 		t.Fatalf("expected pr fix to document human and CodeRabbit review-thread intake, got %#v", prFixPayload.Command.NetworkUse)
@@ -448,6 +451,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "does not run the loop agent") {
 		t.Fatalf("expected pr fix caveats to document prompt-only dispatch behavior, got %#v", prFixPayload.Command.Caveats)
+	}
+	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "dirty") {
+		t.Fatalf("expected pr fix caveats to document dirty-lane confirmation, got %#v", prFixPayload.Command.Caveats)
 	}
 	if !strings.Contains(strings.Join(prFixPayload.Command.Caveats, " "), "Agent Team Plan") {
 		t.Fatalf("expected pr fix caveats to document Agent Team Plan, got %#v", prFixPayload.Command.Caveats)

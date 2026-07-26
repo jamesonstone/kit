@@ -61,6 +61,8 @@ func executeLoopReview(ctx context.Context, opts loopReviewOptions) (loopReviewR
 			loopReviewProgress(opts, "stopping during pull request lookup: %v", err)
 			return stopLoopReview(report, err)
 		}
+		ctx.LocalRoot = opts.ProjectRoot
+		ctx.Repair = opts.Repair
 		prCtx = &ctx
 		loopReviewProgress(opts, "pull request context ready: %s", reviewLoopTargetRef(prCtx.Target))
 	}

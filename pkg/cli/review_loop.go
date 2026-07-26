@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -39,6 +40,23 @@ func runReviewLoop(cmd *cobra.Command, opts reviewLoopOptions) error {
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), "No actionable current review feedback found.")
 		return err
 	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get working directory: %w", err)
+	}
+	repair, err := resolvePRRepairContext(
+		cmd.Context(),
+		cmd.InOrStdin(),
+		cmd.ErrOrStderr(),
+		cwd,
+		opts.PRRef,
+	)
+	if err != nil {
+		return err
+	}
+	ctx.LocalRoot = repair.WorktreePath
+	ctx.Repair = repair
 
 	classified := classifyReviewLoopFindings(ctx, tasks)
 	return runReviewLoopPrompt(cmd.OutOrStdout(), opts, ctx, classified, commonInstruction)

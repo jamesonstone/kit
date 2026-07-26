@@ -27,6 +27,7 @@ type loopReviewOptions struct {
 	JSON              bool
 	UseSubagents      bool
 	ResolvePRFeedback bool
+	Repair            *repairContext
 	Agent             config.LoopAgentConfig
 	Progress          io.Writer
 }

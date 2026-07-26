@@ -30,7 +30,9 @@ var ciCmd = &cobra.Command{
 By default, kit ci inspects the latest failed run on the discovered default
 branch. It can also target a pull request, workflow run, workflow file/name, or
 one job within a workflow run. The command is diagnostic: it does not edit
-source files, rerun CI, commit, push, or mutate GitHub state.`,
+source files, rerun CI, commit, push, or mutate GitHub state. With --dispatch,
+Kit may reuse, attach, or create the exact writable worktree for an inferred PR
+or non-default target branch before copying the generated repair prompt.`,
 	Args: cobra.NoArgs,
 	RunE: runCI,
 }
@@ -53,6 +55,7 @@ func init() {
 
 func runCI(cmd *cobra.Command, args []string) error {
 	opts := ciOptions{
+		Context:     cmd.Context(),
 		PRRef:       ciPRRef,
 		RunID:       ciRunID,
 		JobRef:      ciJobRef,
@@ -64,6 +67,8 @@ func runCI(cmd *cobra.Command, args []string) error {
 		NoCopilot:   ciNoCopilot,
 		LogLines:    ciLogLines,
 		InputConfig: newFreeTextInputConfig(ciUseVim, ciEditor, false, true),
+		Input:       cmd.InOrStdin(),
+		RepairOut:   cmd.ErrOrStderr(),
 	}
 	if ciUseCopilot && ciNoCopilot &&
 		cmd.Flags().Changed("copilot") &&

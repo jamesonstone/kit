@@ -65,10 +65,13 @@ func newPRCommand() *cobra.Command {
 
 Use kit pr fix to select or target a pull request, ingest current PR review
 feedback, and copy the resulting agent prompt. Editing the review tasks is
-opt-in with --edit, --vim, or --editor. Kit itself does not edit files, stage,
-commit, push, post PR comments, or resolve review threads from this path. After
-fixes or no-op decisions are complete, pushed, and reflected against the PR
-head, resolve handled review threads explicitly with
+opt-in with --edit, --vim, or --editor. Kit resolves the PR head branch and
+reuses or creates its writable worktree before generating the prompt. If that
+worktree is dirty, Kit asks whether those changes belong in the repair and
+records the answer explicitly in the prompt. Kit itself does not edit source
+files, stage, commit, push, post PR comments, or resolve review threads from
+this path. After fixes or no-op decisions are complete, pushed, and reflected
+against the PR head, resolve handled review threads explicitly with
 kit dispatch --pr <target> --resolve --yes.`,
 	}
 	cmd.AddCommand(newPRFixCommand())
@@ -91,7 +94,9 @@ Without --pr, Kit lists open pull requests in the current repository and asks
 which one to repair. The selected PR uses the same prompt-producing flow as
 kit dispatch --pr: only active (unresolved, non-outdated) review threads
 become a dispatch prompt, and the prompt is copied for pasting to a coding
-agent. Pass --edit to review and change the task list in the default editor
+agent. Kit resolves the exact writable PR-head worktree, creates or attaches it
+when missing, and asks whether any existing changes should be included in the
+repair. Pass --edit to review and change the task list in the default editor
 before it is copied; --vim and --editor also opt into editing. GitHub delivery
 remains a separate, explicit step. The generated prompt requires post-push
 reflection before resolving verified addressed review conversations.`,
@@ -152,20 +157,31 @@ func runPRFixDispatchPrompt(cmd *cobra.Command, opts prFixDispatchOptions) error
 		return err
 	}
 
-	workingDirectory, err := os.Getwd()
+	cwd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)
+	}
+	repair, err := resolvePRRepairContext(
+		cmd.Context(),
+		cmd.InOrStdin(),
+		cmd.ErrOrStderr(),
+		cwd,
+		opts.PRRef,
+	)
+	if err != nil {
+		return err
 	}
 
 	prompt := buildDispatchPrompt(
 		tasks,
 		opts.MaxSubagents,
-		workingDirectory,
+		repair.WorktreePath,
 		dispatchInputSourcePR,
 		dispatchPromptOptions{
 			CodeRabbitOnly:          opts.CodeRabbitOnly,
 			CommonReviewInstruction: prInput.CommonReviewInstruction,
-			PRTarget:                opts.PRRef,
+			PRTarget:                repair.PRURL,
+			RepairContext:           repair,
 		},
 	)
 	if err := outputPromptWithoutSubagentsWithClipboardDefault(prompt, opts.OutputOnly, opts.Copy); err != nil {

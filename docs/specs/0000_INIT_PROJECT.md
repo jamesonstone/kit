@@ -760,6 +760,11 @@ Flags:
 - never stage, commit, push, post PR comments, or resolve review threads
 - with `--pr <target>`, start local review immediately and opportunistically
   ingest current unresolved CodeRabbit feedback during later passes
+- before PR-mode config loading, diff calculation, or agent launch, resolve the
+  same-repository PR head and reuse or create its exact writable worktree
+- when that worktree is dirty, ask whether its changes belong in the repair and
+  carry the explicit answer, status, remote/local head SHAs, and push target
+  into the configured-agent prompt
 - when local review reaches `done`, perform one quick PR feedback check
 - if CodeRabbit is still pending in default PR mode, exit with a clear
   provisional result and rerun command instead of waiting
@@ -790,10 +795,16 @@ Flags:
   number
 - route the selected PR through the prompt-producing `kit dispatch --pr` path
   and copy the resulting dispatch prompt directly for a coding agent
+- resolve the same-repository PR head branch and reuse or create its exact
+  writable worktree before prompt generation; refuse fork heads
+- if the resolved worktree is dirty, show its porcelain status, ask whether
+  those changes belong in the repair, and record `include` or `exclude` plus
+  the remote/local head SHAs, exact worktree path, and push target in the prompt
 - make review-task editing opt-in: `--edit` opens the default editor, while
   `--vim` or `--editor <cmd>` selects a specific editor path before the prompt
   is copied
-- preserve the delivery boundary: do not run the loop agent, edit files, write
+- preserve the delivery boundary: except for preparing a missing worktree and
+  its exact `.env` link, do not run the loop agent, edit source files, write
   `.kit/loops` evidence, stage, commit, push, post PR comments, resolve review
   threads, or perform GitHub delivery
 - after fixes or no-op decisions are validated, resolve matching current
@@ -971,12 +982,15 @@ Flags:
   and extract `Prompt for AI Agents` blocks when present
 - support `--watch` to wait for CodeRabbit completion on the current PR head
   before collecting feedback
+- use the same exact PR-head worktree preparation and dirty-change confirmation
+  contract as `kit pr fix`
 - classify current findings as `FIX`, `VALID_OUT_OF_SCOPE`,
   `FALSE_POSITIVE`, `STALE`, or `NEEDS_HUMAN`
 - open the editor only when actionable `FIX` findings remain, and include
   non-fix classifications in the summary output
-- remain read-only by default: no project-file writes, no git mutation, no PR
-  comments, and no review-thread resolution
+- remain prompt-producing by default: PR-targeted prompt preparation may add or
+  attach the exact worktree, but does not edit source files, stage, commit,
+  push, post PR comments, or resolve review threads
 - `kit dispatch --loop --pr <target>` is the prompt-prep workflow for current
   unresolved PR review feedback
 - leave `kit dispatch --pr <target> --coderabbit` as the lower-level

@@ -17,6 +17,14 @@ func buildLoopReviewPrompt(
 	builder.WriteString("## Target\n\n")
 	builder.WriteString(fmt.Sprintf("- Base ref: `%s`\n", target.BaseRef))
 	builder.WriteString("- Scope: changes on the current branch relative to the remote mainline, plus staged and unstaged working-tree changes.\n")
+	if opts.Repair != nil {
+		fmt.Fprintf(&builder, "- Repair worktree: `%s`\n", opts.Repair.WorktreePath)
+		fmt.Fprintf(&builder, "- PR head branch: `%s`\n", opts.Repair.HeadBranch)
+		fmt.Fprintf(&builder, "- Expected remote head: `%s`\n", opts.Repair.ExpectedHeadOID)
+		fmt.Fprintf(&builder, "- Local head when prepared: `%s`\n", opts.Repair.LocalHeadOID)
+		fmt.Fprintf(&builder, "- Existing worktree changes: `%s`\n", opts.Repair.ExistingChanges)
+		fmt.Fprintf(&builder, "- Push target: `%s`\n", opts.Repair.PushTarget)
+	}
 	if opts.Feature != nil {
 		builder.WriteString(fmt.Sprintf("- Feature docs: `%s`\n", opts.Feature.DirName))
 	}
@@ -35,6 +43,11 @@ func buildLoopReviewPrompt(
 			builder.WriteString(fmt.Sprintf("  - `%s`\n", path))
 		}
 	}
+	if opts.Repair != nil && opts.Repair.DirtyStatus != "" {
+		builder.WriteString("\n## Pre-existing Worktree Status\n\n```text\n")
+		builder.WriteString(opts.Repair.DirtyStatus)
+		builder.WriteString("\n```\n")
+	}
 	builder.WriteString("\n## Diff Evidence\n\n")
 	appendStatBlock(&builder, "Branch diff", target.DiffStat)
 	appendStatBlock(&builder, "Unstaged diff", target.WorkingStat)
@@ -46,6 +59,16 @@ func buildLoopReviewPrompt(
 	}
 	builder.WriteString("\n## Instructions\n\n")
 	builder.WriteString("- Inspect the actual diff and surrounding code before changing anything.\n")
+	if opts.Repair != nil {
+		fmt.Fprintf(&builder, "- Operate only in `%s`; Kit resolved and prepared this exact writable PR-head worktree.\n", opts.Repair.WorktreePath)
+		fmt.Fprintf(&builder, "- Before editing, verify the current branch is exactly `%s`; if the branch, local head, or PR head no longer matches this prompt, preserve all state and reconcile conservatively without stash, reset, clean, rebase, or force operations.\n", opts.Repair.HeadBranch)
+		if opts.Repair.ExistingChanges == repairChangesInclude {
+			builder.WriteString("- The user included the pre-existing worktree changes in this PR repair; review and validate them as part of the full diff.\n")
+		}
+		if opts.Repair.ExistingChanges == repairChangesExclude {
+			builder.WriteString("- The user excluded the pre-existing worktree changes; preserve them, do not modify their paths, and stop if this repair overlaps them.\n")
+		}
+	}
 	builder.WriteString("- Use Kit RLM: load repo-local docs just in time, prefer the smallest relevant sections, and stop loading once the repair decision is supported.\n")
 	builder.WriteString("- When repository invariants, progress history, or workflow rules affect the fix, consult `docs/CONSTITUTION.md`, `docs/PROJECT_PROGRESS_SUMMARY.md`, active feature docs, and relevant `docs/references/rules/*` files.\n")
 	builder.WriteString("- Fix high, medium, and correctness-impacting issues; do not churn on low-risk style unless it affects correctness.\n")
