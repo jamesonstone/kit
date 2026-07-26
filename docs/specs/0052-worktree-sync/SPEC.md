@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: spec
 workflow_version: 3
-phase: reflect
+phase: deliver
 feature:
   id: 0052
   slug: worktree-sync
@@ -74,7 +74,7 @@ skills:
     path: github:yeet
     trigger: publish the validated issue branch as a ready pull request
     required: true
-delivery_intent: issue_branch_pr_in_progress
+delivery_intent: issue_branch_pr_ready
 ---
 # SPEC
 
@@ -295,7 +295,8 @@ Implementation and validation are complete on issue #93 and branch `GH-93`.
 `git wt sync` is explicit, default-applying only for fully proven safe merged
 lanes, branch-deleting only through ordinary `git branch -d`, deterministic in
 human and JSON modes, and strictly local-mutation-free under `--dry-run`.
-Ready pull-request delivery remains.
+The ready pull request is
+<https://github.com/jamesonstone/kit/pull/94>; review and merge remain.
 
 ## REPOSITORY MEMORY
 
