@@ -34,7 +34,7 @@ go.work.sum
 # .idea/
 # .vscode/
 
-bin/kit
+bin/
 
 # Kit local generated cache and scratch artifacts
 .kit/runs/
