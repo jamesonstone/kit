@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 )
 
@@ -52,15 +51,24 @@ func runReviewLoopPrompt(
 		return err
 	}
 
-	workingDirectory, err := os.Getwd()
+	workingDirectory, err := resolvePromptWorktreeRoot(ctx.LocalRoot)
 	if err != nil {
-		return fmt.Errorf("failed to get working directory: %w", err)
+		return err
 	}
 
+	target := opts.PRRef
+	if strings.TrimSpace(ctx.URL) != "" {
+		target = ctx.URL
+	}
+	if ctx.Repair != nil {
+		workingDirectory = ctx.Repair.WorktreePath
+		target = ctx.Repair.PRURL
+	}
 	prompt := buildDispatchPrompt(tasks, opts.MaxSubagents, workingDirectory, dispatchInputSourcePR, dispatchPromptOptions{
 		CodeRabbitOnly:          opts.CodeRabbitOnly,
 		CommonReviewInstruction: commonInstruction,
-		PRTarget:                opts.PRRef,
+		PRTarget:                target,
+		RepairContext:           ctx.Repair,
 	})
 	if err := outputPromptWithoutSubagentsWithClipboardDefault(prompt, opts.OutputOnly, opts.Copy); err != nil {
 		return err

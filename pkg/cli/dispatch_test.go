@@ -118,6 +118,75 @@ func TestBuildDispatchPromptIncludesPRReflectionCycle(t *testing.T) {
 	}
 }
 
+func TestBuildDispatchPromptCarriesResolvedRepairLane(t *testing.T) {
+	prompt := buildDispatchPrompt(
+		[]dispatchTask{{ID: "D001", Index: 1, Body: "Fix the review finding"}},
+		3,
+		"/tmp/kit/GH-67",
+		dispatchInputSourcePR,
+		dispatchPromptOptions{
+			PRTarget: "https://github.com/jamesonstone/kit/pull/67",
+			RepairContext: &repairContext{
+				Repository:      "jamesonstone/kit",
+				PRNumber:        67,
+				PRURL:           "https://github.com/jamesonstone/kit/pull/67",
+				HeadBranch:      "GH-67",
+				ExpectedHeadOID: "remote-head",
+				LocalHeadOID:    "local-head",
+				WorktreePath:    "/tmp/kit/GH-67",
+				WorktreeCreated: true,
+				ExistingChanges: repairChangesExclude,
+				DirtyStatus:     " M pkg/cli/pr.go",
+				PushTarget:      "origin/GH-67",
+			},
+		},
+	)
+
+	for _, check := range []string{
+		"## Repair Lane",
+		"https://github.com/jamesonstone/kit/pull/67",
+		"GH-67",
+		"remote-head",
+		"local-head",
+		"/tmp/kit/GH-67",
+		"created",
+		"exclude",
+		" M pkg/cli/pr.go",
+		"Preserve them, do not stage or modify their paths",
+		"origin/GH-67",
+		"never create a second repair branch or pull request",
+	} {
+		if !strings.Contains(prompt, check) {
+			t.Fatalf("expected repair prompt to contain %q, got:\n%s", check, prompt)
+		}
+	}
+}
+
+func TestBuildDispatchPromptShellQuotesRepairWorktree(t *testing.T) {
+	worktreePath := "/tmp/kit/$(touch injected); lane's"
+	prompt := buildDispatchPrompt(
+		[]dispatchTask{{ID: "D001", Index: 1, Body: "Fix the review finding"}},
+		1,
+		worktreePath,
+		dispatchInputSourcePR,
+		dispatchPromptOptions{
+			RepairContext: &repairContext{
+				HeadBranch:   "GH-67",
+				WorktreePath: worktreePath,
+				PushTarget:   "origin/GH-67",
+			},
+		},
+	)
+
+	quotedPath := `'/tmp/kit/$(touch injected); lane'"'"'s'`
+	if got := strings.Count(prompt, "git -C "+quotedPath); got != 2 {
+		t.Fatalf("repair prompt contains shell-quoted worktree path %d times, want 2:\n%s", got, prompt)
+	}
+	if strings.Contains(prompt, `git -C "/tmp/kit/$(touch injected); lane's"`) {
+		t.Fatalf("repair prompt used command-substitution-capable double quotes:\n%s", prompt)
+	}
+}
+
 func TestBuildDispatchPromptScopesPRReflectionCycleToCodeRabbit(t *testing.T) {
 	tasks := []dispatchTask{
 		{ID: "D001", Index: 1, Body: "Source: internal/app.go:12\nReview task:\nFix the stale assertion"},

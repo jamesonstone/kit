@@ -23,6 +23,9 @@ func buildDispatchPrompt(
 			fmt.Sprintf("Input source: %s", inputSource),
 			fmt.Sprintf("Max concurrent subagents: %d (hard ceiling %d)", maxSubagents, hardDispatchMaxSubagents),
 		)
+		if options.RepairContext != nil {
+			appendDispatchRepairContext(doc, *options.RepairContext)
+		}
 		if strings.TrimSpace(options.CommonReviewInstruction) != "" {
 			doc.Heading(2, "Common Review Instruction")
 			doc.CodeBlock("text", options.CommonReviewInstruction)
@@ -54,6 +57,65 @@ type dispatchPromptOptions struct {
 	CommonReviewInstruction string
 	CodeRabbitOnly          bool
 	PRTarget                string
+	RepairContext           *repairContext
+}
+
+func appendDispatchRepairContext(doc *promptdoc.Document, repair repairContext) {
+	preparation := "reused"
+	if repair.WorktreeCreated {
+		preparation = "created"
+	}
+	rows := [][]string{
+		{"Repository", repair.Repository},
+		{"Head branch", repair.HeadBranch},
+		{"Expected remote head", firstNonEmpty(repair.ExpectedHeadOID, "not supplied")},
+		{"Local head", repair.LocalHeadOID},
+		{"Repair worktree", repair.WorktreePath},
+		{"Worktree preparation", preparation},
+		{"Existing changes", string(repair.ExistingChanges)},
+		{"Push target", repair.PushTarget},
+	}
+	if repair.PRURL != "" {
+		rows = append([][]string{
+			{"Pull request", repair.PRURL},
+		}, rows...)
+	}
+
+	doc.Heading(2, "Repair Lane")
+	doc.Table([]string{"Field", "Resolved Value"}, rows)
+	if repair.DirtyStatus != "" {
+		doc.Paragraph("Existing worktree status recorded when this prompt was generated:")
+		doc.CodeBlock("text", repair.DirtyStatus)
+	}
+
+	pathArg := shellQuoteArgument(repair.WorktreePath)
+	instructions := []string{
+		fmt.Sprintf("Run every filesystem and Git command in `%s`; use an explicit command working directory or `git -C %s ...` instead of the invoking checkout.", repair.WorktreePath, pathArg),
+		fmt.Sprintf("Before editing, verify `git -C %s symbolic-ref --quiet --short HEAD` is exactly `%s` and preserve any state that no longer matches this prompt.", pathArg, repair.HeadBranch),
+	}
+	if repair.ExpectedHeadOID != "" {
+		instructions = append(instructions,
+			fmt.Sprintf("The prompt was prepared for remote head `%s`. If local `HEAD` or the current PR head differs, fetch and reconcile conservatively without stash, reset, clean, rebase, force operations, or discarding user work.", repair.ExpectedHeadOID),
+		)
+	}
+	switch repair.ExistingChanges {
+	case repairChangesInclude:
+		instructions = append(instructions,
+			"The user explicitly included the recorded existing changes in this repair. Review them as part of the full PR diff, keep only work that belongs to the target, and validate it before delivery.",
+		)
+	case repairChangesExclude:
+		instructions = append(instructions,
+			"The user explicitly excluded the recorded existing changes. Preserve them, do not stage or modify their paths, and stop for user direction if the repair overlaps them.",
+		)
+	}
+	instructions = append(instructions,
+		fmt.Sprintf("Any authorized push must update `%s` only; never create a second repair branch or pull request for this target.", repair.PushTarget),
+	)
+	doc.BulletList(instructions...)
+}
+
+func shellQuoteArgument(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'"
 }
 
 func appendDispatchPRReflectionCycle(doc *promptdoc.Document, options dispatchPromptOptions) {

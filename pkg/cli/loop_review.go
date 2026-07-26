@@ -21,7 +21,9 @@ agent reports at least 95% correctness and ends its final response with done.
 
 With --pr, CodeRabbit feedback is checked opportunistically while local review
 continues. Use --watch or --wait-for-coderabbit to wait for CodeRabbit before
-finalizing.
+finalizing. Kit resolves the PR head branch and runs the review agent from its
+exact writable worktree, creating or attaching that lane when needed. If the
+lane is dirty, Kit asks whether those changes belong in the repair.
 
 Review prompts use one agent by default. Pass --subagents to allow the parent
 agent to run pre-analysis and decide whether subagents are useful. Interactive
@@ -50,6 +52,20 @@ func runLoopReviewCommand(cmd *cobra.Command, args []string, opts loopReviewOpti
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
 		return err
+	}
+	if opts.PRRef != "" {
+		repair, err := resolvePRRepairContext(
+			cmd.Context(),
+			cmd.InOrStdin(),
+			cmd.ErrOrStderr(),
+			projectRoot,
+			opts.PRRef,
+		)
+		if err != nil {
+			return err
+		}
+		projectRoot = repair.WorktreePath
+		opts.Repair = repair
 	}
 	cfg, err := config.Load(projectRoot)
 	if err != nil {

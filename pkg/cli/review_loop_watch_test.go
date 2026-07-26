@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -77,6 +78,18 @@ func TestReviewLoopWatchRejectsHeadChange(t *testing.T) {
 }
 
 func TestRunReviewLoopDoesNotCallMutatingGitHubCommands(t *testing.T) {
+	previousResolver := resolvePRRepairContext
+	t.Cleanup(func() { resolvePRRepairContext = previousResolver })
+	resolvePRRepairContext = func(
+		context.Context,
+		io.Reader,
+		io.Writer,
+		string,
+		string,
+	) (*repairContext, error) {
+		return &repairContext{WorktreePath: t.TempDir()}, nil
+	}
+
 	fakeRunner := fakeReviewLoopRunner{
 		output: func(_ string, name string, args ...string) ([]byte, error) {
 			if name == "git" || containsReviewLoopMutation(args) {

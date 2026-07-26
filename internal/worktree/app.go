@@ -61,9 +61,26 @@ type commandFunc func(context.Context, string, string, ...string) ([]byte, error
 // PR identifies the writable head of a pull request.
 type PR struct {
 	HeadRefName       string `json:"headRefName"`
+	HeadRefOID        string `json:"headRefOid"`
 	IsCrossRepository bool   `json:"isCrossRepository"`
 	State             string `json:"state"`
 	URL               string `json:"url"`
+}
+
+// PreparedWorktree describes an exact writable branch worktree.
+type PreparedWorktree struct {
+	Path    string
+	Branch  string
+	Created bool
+}
+
+// PullRequestRepair describes the writable same-repository head of a pull request.
+type PullRequestRepair struct {
+	PreparedWorktree
+	Repository string
+	Number     int
+	URL        string
+	HeadRefOID string
 }
 
 type resolvePRFunc func(context.Context, string, string, int) (PR, error)

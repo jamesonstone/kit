@@ -1,8 +1,13 @@
 package cli
 
-import "time"
+import (
+	"context"
+	"io"
+	"time"
+)
 
 type ciOptions struct {
+	Context     context.Context
 	PRRef       string
 	RunID       string
 	JobRef      string
@@ -14,6 +19,8 @@ type ciOptions struct {
 	NoCopilot   bool
 	LogLines    int
 	InputConfig freeTextInputConfig
+	Input       io.Reader
+	RepairOut   io.Writer
 }
 
 type ciRepoTarget struct {

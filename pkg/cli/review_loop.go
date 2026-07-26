@@ -2,14 +2,17 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	reviewLoopExecutor        = runReviewLoop
-	reviewLoopLoadReviewTasks = loadDispatchPRReviewTasks
+	reviewLoopExecutor          = runReviewLoop
+	reviewLoopFetchPRContext    = fetchReviewLoopPRContext
+	reviewLoopWaitForCodeRabbit = waitForReviewLoopCodeRabbit
+	reviewLoopLoadReviewTasks   = loadDispatchPRReviewTasks
 )
 
 func runReviewLoop(cmd *cobra.Command, opts reviewLoopOptions) error {
@@ -20,12 +23,29 @@ func runReviewLoop(cmd *cobra.Command, opts reviewLoopOptions) error {
 		return err
 	}
 
-	ctx, err := fetchReviewLoopPRContext(opts.PRRef)
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get working directory: %w", err)
+	}
+	repair, err := resolvePRRepairContext(
+		cmd.Context(),
+		cmd.InOrStdin(),
+		cmd.ErrOrStderr(),
+		cwd,
+		opts.PRRef,
+	)
 	if err != nil {
 		return err
 	}
+
+	ctx, err := reviewLoopFetchPRContext(opts.PRRef)
+	if err != nil {
+		return err
+	}
+	ctx.LocalRoot = repair.WorktreePath
+	ctx.Repair = repair
 	if opts.Watch {
-		if err := waitForReviewLoopCodeRabbit(ctx); err != nil {
+		if err := reviewLoopWaitForCodeRabbit(ctx); err != nil {
 			return err
 		}
 	}

@@ -115,6 +115,34 @@ Detached `PR-<number>` lanes are inspection-only. For repair, resolve the
 pull request's same-repository head branch and reuse or attach that durable
 branch instead.
 
+## Target-Aware Repair Commands
+
+When a Kit command already identifies a pull request or failed branch, use that
+target to resolve the writable lane automatically. The user does not need to
+navigate to a worktree before running `kit pr fix`, PR-backed dispatch or
+review-loop commands, `kit loop review --pr`, or `kit ci --dispatch`.
+
+Resolution must prove the current clone owns the requested repository, use the
+exact same-repository PR head or exact diagnosed branch, and consult
+`git worktree list --porcelain` for registered ownership. It may fetch `origin`
+and add or attach the canonical writable lane, but must not choose by recency,
+substring, fuzzy matching, or interactive selection.
+
+Before generating or running repair instructions, record the remote target
+head, local `HEAD`, exact worktree path, and push target. If the worktree is
+dirty, show `git status --porcelain` and ask whether the existing changes belong
+in the repair:
+
+- `include` makes the existing diff part of the full repair review and
+  validation scope.
+- `exclude` requires preserving those paths, avoiding staging or modification,
+  and stopping when the requested repair overlaps them.
+
+Neither choice authorizes stash, reset, clean, rebase, force operations, or
+discarding user work. Prompt-producing commands remain prompt-producing after
+lane preparation; staging, commits, pushes, comments, review-thread resolution,
+and PR delivery retain their explicit gates.
+
 ## Writable-Lane Environment Link
 
 The clone's primary checkout owns the shared repository-root `.env`. Link that

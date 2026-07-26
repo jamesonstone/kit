@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -213,6 +214,37 @@ func openCIDispatchPrompt(opts ciOptions, diagnosis ciDiagnosis) error {
 	} else if abs, err := filepath.Abs(workingDirectory); err == nil {
 		workingDirectory = abs
 	}
-	prompt := buildDispatchPrompt(tasks, defaultDispatchMaxSubagents, workingDirectory, dispatchInputSourceEditor, dispatchPromptOptions{})
+	workingDirectory, err = resolvePromptWorktreeRoot(workingDirectory)
+	if err != nil {
+		return err
+	}
+	repairIn := opts.Input
+	if repairIn == nil {
+		repairIn = strings.NewReader("")
+	}
+	repairOut := opts.RepairOut
+	if repairOut == nil {
+		repairOut = io.Discard
+	}
+	repairCtx := opts.Context
+	if repairCtx == nil {
+		repairCtx = context.Background()
+	}
+	repair, err := prepareCIRepairContext(
+		repairCtx,
+		repairIn,
+		repairOut,
+		workingDirectory,
+		diagnosis,
+	)
+	if err != nil {
+		return err
+	}
+	promptOptions := dispatchPromptOptions{}
+	if repair != nil {
+		workingDirectory = repair.WorktreePath
+		promptOptions.RepairContext = repair
+	}
+	prompt := buildDispatchPrompt(tasks, defaultDispatchMaxSubagents, workingDirectory, dispatchInputSourceEditor, promptOptions)
 	return outputPromptWithoutSubagentsWithClipboardDefault(prompt, false, false)
 }

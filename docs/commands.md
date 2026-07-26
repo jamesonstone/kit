@@ -237,17 +237,24 @@ lists open pull requests in the current repository and asks which one to repair.
 Use `kit pr fix --pr <url|owner/repo#number|number>` to target a specific PR.
 The command uses the same prompt-producing path as `kit dispatch --pr`: it
 copies a dispatch prompt built from unresolved, non-outdated review threads
-directly to the clipboard for a coding agent. Pass `--edit` to review and change
+directly to the clipboard for a coding agent. Kit first resolves the exact
+same-repository PR-head branch and reuses or creates its writable worktree. If
+that worktree is dirty, Kit shows its status and asks whether those changes
+belong in the repair; the prompt records the answer, the remote and local head
+SHAs, the exact path, and the push target. Pass `--edit` to review and change
 the task list in the default editor first; `--vim` and `--editor <cmd>` also opt
-into editing. It does not run the loop agent, edit files, write `.kit/loops`
-evidence, stage, commit, push, post PR comments, resolve review threads, or
-perform GitHub delivery. The generated prompt tells the coding agent to run a
-post-push reflection cycle, confirm the PR head still matches its pushed
-commit, and only then resolve verified addressed conversations.
+into editing. It does not run the loop agent, edit source files, stage, commit,
+push, post PR comments, resolve review threads, or perform GitHub delivery.
+Preparing a missing worktree and its exact `.env` link is the only conditional
+local mutation. The generated prompt tells the coding agent to run a post-push
+reflection cycle, confirm the PR head still matches its pushed commit, and only
+then resolve verified addressed conversations.
 
 Use `kit dispatch --pr <url|number>` to prefill the dispatch editor from
 unresolved, non-outdated GitHub PR review threads. Add `--coderabbit` to keep
-only CodeRabbit-authored review comments.
+only CodeRabbit-authored review comments. PR dispatch and
+`kit dispatch --loop --pr` use the same exact worktree and dirty-change
+resolution contract as `kit pr fix`.
 
 After fixes or no-op decisions are complete, use
 `kit dispatch --pr <target> --resolve --yes` to resolve matching unresolved
@@ -263,8 +270,15 @@ changes relative to `origin/main`, falling back to `main`, plus staged and
 unstaged changes.
 
 Use `kit loop review --pr <target>` to fold current CodeRabbit feedback into
-that repair loop. Add `--watch` or `--wait-for-coderabbit` only when you want
-to wait up to the timeout.
+that repair loop. Kit resolves the writable PR-head worktree before loading
+configuration, computing the diff, or launching the configured agent. Add
+`--watch` or `--wait-for-coderabbit` only when you want to wait up to the
+timeout.
+
+Use `kit ci --dispatch` to turn a diagnosis into a prompt in the exact writable
+target lane. Kit prefers an inferred open PR for the failed branch; otherwise
+it may attach a non-default branch worktree and refuses to invent a writable
+repair lane for the protected default branch.
 
 ## Output Behavior
 

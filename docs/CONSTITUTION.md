@@ -141,7 +141,7 @@ all decisions.
    - When the user explicitly continues unrelated or tangential scope on an existing pull request, the added scope has its own GitHub issue and issue-scoped commits, while the pull request body closes every fully resolved issue
 
 7. **Execution Boundaries**
-   - Prompt-only and inspection commands must not mutate files, git, GitHub, or external services
+   - Prompt-producing and inspection commands must not edit source files or perform delivery; target-aware repair prompts may conditionally fetch and add or attach only the exact writable worktree they already identify when that behavior is explicit in help and capabilities
    - Local execution surfaces must be explicit in command help and `kit capabilities`
    - Verification, replay, eval, and loop commands may run local commands or configured agent commands only within their documented command contracts
    - Local run evidence under `.kit/runs/` and loop evidence under `.kit/loops/` is generated, inspectable, and non-authoritative
@@ -155,6 +155,8 @@ all decisions.
    - Work in the existing checkout when it already owns the requested lane
    - Put separate lanes only beneath `~/worktrees/<owner>/<repository>/<lane>` and never inside a repository
    - Use exact `GH-<number>` for durable issue lanes; reserve uppercase detached `PR-<number>` for temporary pull-request inspection and reuse the pull request head branch for writable repair
+   - Target-bearing PR and CI repair commands resolve the exact writable branch worktree from command context; they must not require manual navigation or select by recency, fuzzy matching, substring, or an interactive worktree list
+   - When the resolved repair worktree is dirty, ask whether its existing changes belong in the repair and carry the explicit include-or-exclude decision into the generated instructions without stashing, resetting, cleaning, or discarding work
    - Preserve primary and linked checkout state; never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
    - Use native `git worktree` and ordinary filesystem semantics as the portable policy authority; optional manual wrappers must never be a rule or reconciliation dependency
    - Link the primary checkout's `.env` into writable lanes by default when it exists, omit the link for isolation, never copy environment contents, and never automatically share `.envrc`

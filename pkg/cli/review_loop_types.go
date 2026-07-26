@@ -32,6 +32,7 @@ type reviewLoopPRContext struct {
 	IssueHints   []string
 	RepoFullName string
 	LocalRoot    string
+	Repair       *repairContext
 }
 
 type reviewLoopFinding struct {

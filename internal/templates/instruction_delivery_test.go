@@ -112,6 +112,8 @@ func TestMemoryWorktreeReferenceIsManagedAndNative(t *testing.T) {
 	for _, want := range []string{
 		"Native `git worktree` commands and ordinary filesystem operations define this",
 		"The clone's primary checkout owns the shared repository-root `.env`",
+		"The user does not need to",
+		"`include` makes the existing diff part of the full repair review",
 		"`git worktree remove",
 		"Runtime services, databases, ports",
 	} {

@@ -41,9 +41,11 @@ Input precedence:
   4. interactive editor-backed capture
 Interactive capture opens $EDITOR by default, falling back to a vim-compatible editor when $EDITOR is unset.
 
-The command never launches subagents itself. It only outputs the prompt unless
---resolve --yes is explicitly supplied to resolve already-handled PR review
-threads.`,
+The command never launches subagents itself. With --pr, Kit resolves and may
+prepare the exact writable PR-head worktree before generating the prompt; if
+that lane is dirty, Kit asks whether its changes belong in the repair. The only
+GitHub mutation is --resolve --yes, which resolves already-handled PR review
+threads explicitly.`,
 	Args: cobra.NoArgs,
 	RunE: runDispatch,
 }
@@ -110,9 +112,28 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	workingDirectory, err := os.Getwd()
+	cwd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)
+	}
+	workingDirectory, err := resolvePromptWorktreeRoot(cwd)
+	if err != nil {
+		return err
+	}
+	if inputSource == dispatchInputSourcePR {
+		repair, err := resolvePRRepairContext(
+			cmd.Context(),
+			cmd.InOrStdin(),
+			cmd.ErrOrStderr(),
+			cwd,
+			promptOptions.PRTarget,
+		)
+		if err != nil {
+			return err
+		}
+		workingDirectory = repair.WorktreePath
+		promptOptions.PRTarget = repair.PRURL
+		promptOptions.RepairContext = repair
 	}
 
 	prompt := buildDispatchPrompt(tasks, dispatchMaxSubagents, workingDirectory, inputSource, promptOptions)
