@@ -9,9 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"sort"
-	"strings"
-	"time"
 )
 
 var (
@@ -48,6 +45,7 @@ Environment:
 List flags:
   --sort <attribute>               Sort by updated, state, head, or path
   --reverse                        Reverse the selected sort order
+  --plain                          Print the table instead of opening the selector
 
 Safety:
   PR-<number> is detached and inspection-only; use repair for edits.
@@ -82,6 +80,8 @@ type App struct {
 	pathExists func(string) (bool, error)
 	resolvePR  resolvePRFunc
 	runShell   func(context.Context, string) error
+	isTerminal func() bool
+	selectList listSelectorFunc
 }
 
 // NewApp creates an App backed by the local Git and GitHub CLIs.
@@ -107,6 +107,7 @@ func NewApp(out, errOut io.Writer) *App {
 	}
 	app.resolvePR = app.resolvePullRequest
 	app.runShell = runInteractiveShell
+	app.isTerminal, app.selectList = newListInteraction(out)
 	return app
 }
 
@@ -219,113 +220,6 @@ func writableLaneArgs(command, placeholder string, args []string) (string, bool,
 	default:
 		return "", false, errors.New(commandUsage)
 	}
-}
-
-type listOptions struct {
-	sortBy  string
-	reverse bool
-}
-
-func parseListOptions(args []string) (listOptions, error) {
-	options := listOptions{sortBy: "updated"}
-	for i := 0; i < len(args); i++ {
-		switch {
-		case args[i] == "--reverse":
-			options.reverse = true
-		case args[i] == "--sort":
-			if i+1 >= len(args) {
-				return listOptions{}, errors.New("usage: git wt list [--sort <updated|state|head|path>] [--reverse]")
-			}
-			i++
-			options.sortBy = strings.ToLower(args[i])
-		case strings.HasPrefix(args[i], "--sort="):
-			options.sortBy = strings.ToLower(strings.TrimPrefix(args[i], "--sort="))
-		default:
-			return listOptions{}, fmt.Errorf("unknown list flag %q", args[i])
-		}
-	}
-	if options.sortBy != "updated" && options.sortBy != "state" && options.sortBy != "head" && options.sortBy != "path" {
-		return listOptions{}, fmt.Errorf("unsupported list sort %q (want updated, state, head, or path)", options.sortBy)
-	}
-	return options, nil
-}
-
-func (a *App) list(ctx context.Context, cwd string, args []string) error {
-	options, err := parseListOptions(args)
-	if err != nil {
-		return err
-	}
-	repo, err := a.repository(ctx, cwd)
-	if err != nil {
-		return err
-	}
-	entries, err := a.worktrees(ctx, repo.top)
-	if err != nil {
-		return err
-	}
-	for i := range entries {
-		entries[i].updatedText = "unknown"
-		updated, updateErr := a.gitText(ctx, entries[i].path, "log", "-1", "--format=%cI", "HEAD")
-		if updateErr == nil {
-			if parsed, parseErr := time.Parse(time.RFC3339, updated); parseErr == nil {
-				entries[i].lastUpdated = parsed
-				entries[i].updatedText = parsed.Format(time.RFC3339)
-			}
-		}
-	}
-	for i := range entries {
-		entries[i].state = "clean"
-		dirty, statusErr := a.status(ctx, entries[i].path, false)
-		if statusErr != nil {
-			entries[i].state = "unknown"
-		} else if dirty != "" {
-			entries[i].state = "dirty"
-		}
-	}
-	sort.SliceStable(entries, func(i, j int) bool {
-		left, right := entries[i], entries[j]
-		var less bool
-		var equal bool
-		switch options.sortBy {
-		case "updated":
-			less = left.lastUpdated.After(right.lastUpdated)
-			equal = left.lastUpdated.Equal(right.lastUpdated)
-			if equal {
-				less = left.path < right.path
-			}
-		case "state":
-			less = left.state < right.state
-			equal = left.state == right.state
-			if equal {
-				less = left.path < right.path
-			}
-		case "head":
-			less = left.branch < right.branch
-			equal = left.branch == right.branch
-			if equal {
-				less = left.head < right.head
-			}
-		case "path":
-			less = left.path < right.path
-		}
-		if options.reverse {
-			return !less && !equal
-		}
-		return less
-	})
-	if err := a.writef("STATE\tHEAD\tLAST UPDATED\tPATH\n"); err != nil {
-		return err
-	}
-	for _, entry := range entries {
-		head := entry.branch
-		if head == "" {
-			head = "detached@" + shortOID(entry.head)
-		}
-		if err := a.writef("%s\t%s\t%s\t%s\n", entry.state, head, entry.updatedText, entry.path); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (a *App) lanePath(ctx context.Context, cwd, lane string) error {

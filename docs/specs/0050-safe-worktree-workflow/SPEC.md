@@ -72,6 +72,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Provide `PR-<number>` as a detached inspection lane fetched from the pull request head.
 - Provide a repair command that resolves a same-repository pull request head and opens its durable branch worktree instead of editing the detached `PR-<number>` view.
 - Provide read-only listing, exact safe removal, explicit pruning, root discovery, and dry-run-first migration of legacy flat linked worktrees.
+- Make `git wt list` interactive by default when both input and output are terminals: render a colorized selector, support arrow keys and Tab for navigation, Enter for selection, and open a child shell in the selected worktree.
+- Preserve script-safe listing when input or output is not a terminal and provide `--plain` to request the table explicitly from a terminal.
+- Show `LAST UPDATED` at day precision in a human-readable format while retaining newest-first default sorting.
 - Provide a read-only `path <lane>` command that prints only the exact registered worktree path so callers can navigate with `cd "$(git wt path <lane>)"` without fuzzy matching or filesystem mutation.
 - Keep Kit-distributed rules and generated agent instructions portable: native `git worktree` and ordinary filesystem operations define the normative workflow, and no rule may require `git-wt`, `git wt`, `--no-link-env`, or another wrapper-specific command.
 - Document `git wt` only as an optional convenience for manual users. The wrapper may mirror the portable contract but must not define, direct, or become an execution dependency of Kit-managed rules.
@@ -104,6 +107,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 8. Refactor Kit-managed rules, generated instructions, and downstream LabCore guidance to express lane creation, reuse, environment linking, exact path validation, and removal with native Git and generic filesystem semantics; retain GitWT only in manual command documentation.
 9. Resolve environment ownership from the clone's primary worktree rather than the invoking linked checkout, then prove that lanes created from another lane remain valid after the invoking lane is removed.
 10. Promote the portable worktree guide into the V3 instruction support-document registry so `kit reconcile` creates and refreshes the workflow without changing immutable V1 or V2 payloads.
+11. Move list behavior into a focused component, keep non-terminal output deterministic, and add a raw-terminal selector with color, arrow/Tab navigation, explicit cancellation, and child-shell entry for the chosen worktree.
 
 ## DECISIONS
 
@@ -115,7 +119,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Make `.env` symlinking the one opinionated writable-lane convenience. It shares configuration without copying credentials and remains explicitly disableable with `--no-link-env`.
 - Recognize a removable environment link by exact destination name, symlink type, and target match only; do not add a broad `.env` deletion or dirty-state exception.
 - Keep application processes, databases, ports, Temporal state, and sibling repository coordination outside GitWT so the command remains a thin Git worktree wrapper.
-- Print an exact registered path instead of adding a misleading `cd` command: an external Git subcommand cannot change its parent shell's working directory, while `cd "$(git wt path GH-101)"` is portable and composable.
+- Preserve exact `path` output as the only way to change the invoking shell with `cd "$(git wt path GH-101)"`. The later `cd` command and interactive list selector intentionally open a child shell in the chosen worktree and must not claim to change their parent shell.
 - Build `git-wt` once into `bin/` and install that artifact from the shared Make target so `make build`, `make install-git-wt`, and `make install` cannot diverge.
 - Make native `git worktree` the policy authority. GitWT is a manually invoked convenience implementation of that policy, never a prerequisite for agents, reconciliation, or teammates using other tooling.
 - Treat the primary worktree as the stable owner of the shared `.env`. An invoking linked lane is an ephemeral consumer and must never become another lane's environment source.
@@ -137,6 +141,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Kit registry rules and generated instruction sources had made the optional wrapper authoritative by naming `git wt`, GitWT, and `--no-link-env`. Expressing the same behavior with `git worktree list --porcelain`, `git worktree add`, `git worktree move`, non-force `git worktree remove`, and exact `ln -s` validation keeps reconciliation portable without weakening the contract.
 - GitWT previously selected the invoking worktree as the `.env` source. A lane created from another linked lane therefore depended on that intermediate lane's lifetime and could be left with a broken link after conservative removal of the intermediate lane.
 - V3 guidance routed agents to `docs/references/worktrees.md` only “when present,” but the file was absent from `instructions.SupportDocs`; `kit reconcile` therefore could not create or refresh the canonical workflow.
+- Interactive navigation must be gated on both terminal input and terminal output. Redirected and piped invocations need stable plain text, while terminal users can safely receive raw input handling and ANSI color.
 
 ## VALIDATION
 
@@ -188,6 +193,10 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - LabCore branch `GH-80` passed `make check` after its rules and guide adopted the primary-checkout environment source.
 - Final `git diff --check` passed in Kit and LabCore.
 - Final `go run ./cmd/kit check safe-worktree-workflow`, `go run ./cmd/kit check --all`, and `go run ./cmd/kit check --project` passed; all 47 features and the project contract remained coherent.
+- Interactive-list regression coverage passed for TTY selection and child-shell entry, `--plain` fallback, arrow and Tab key decoding, ANSI state/selection colors, supported sort flags, and human-readable day formatting.
+- A real pseudo-terminal run moved from `GH-86` to `main` with the down arrow, opened a child shell, confirmed the selected worktree path with `pwd`, and returned cleanly after `exit`.
+- `make fmt`, `make vet`, `go test ./... -count=1`, `go test -race ./internal/worktree ./pkg/cli -count=1`, and `golangci-lint run --new-from-rev=origin/main ./...` passed after the selector follow-up; lint reported `0 issues`.
+- `go run ./cmd/kit capabilities git wt list --json`, `go run ./cmd/kit check safe-worktree-workflow`, `go run ./cmd/kit check --project`, `make build`, and `git diff --check` passed; the built and installed `git-wt` binaries had identical SHA-256 values.
 
 ## OUTCOME
 
@@ -203,6 +212,8 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Updated LabCore's active rules and guidance on issue `#80` and branch `GH-80` without changing its existing `GH-78` lane or reconciling any other managed project.
 - Added read-only `git wt path <lane>` lookup for exact registered lanes, enabling portable navigation with `cd "$(git wt path GH-101)"` while rejecting unknown lanes, fuzzy matches, and traversal.
 - Registered `git wt path` in Kit capabilities and updated help, command docs, the canonical worktree guide, and delivery guidance with path-based navigation.
+- `git wt list` now opens a colorized terminal selector by default, supports arrow keys and Tab with Enter-to-open child-shell behavior, retains deterministic table output for pipelines and `--plain`, and displays last updates as human-readable calendar days while sorting by the full commit timestamp.
+- Registered `git wt list` in Kit capabilities and documented its terminal, child-shell, plain-output, sorting, and day-precision boundaries.
 - `make build` now installs or updates `~/.local/bin/git-wt` from the same `bin/git-wt` artifact used for validation.
 - Kit rules, generated V3 instructions, and LabCore policy now use native `git worktree` plus ordinary filesystem operations as the portable authority. Reconciled guidance does not require the optional wrapper, its command names, or its flags.
 - The canonical guides map creation, reuse, detached inspection, repair, exact path validation, environment linking, migration, pruning, and conservative removal to native Git. Kit's command docs and LabCore's optional manual section retain `git wt` as a convenience cheat sheet only.

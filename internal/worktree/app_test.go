@@ -213,8 +213,12 @@ func TestListSortsByLastUpdatedByDefaultAndSupportsOtherAttributes(t *testing.T)
 	if !strings.Contains(fixture.out.String(), oldPath) || !strings.Contains(fixture.out.String(), "\nclean\tmain\t") {
 		t.Fatalf("default list should retain the older worktrees:\n%s", fixture.out.String())
 	}
-	if !strings.Contains(lines[1], "T") {
-		t.Fatalf("last updated value should be RFC3339:\n%s", fixture.out.String())
+	columns := strings.Split(lines[1], "\t")
+	if len(columns) != 4 {
+		t.Fatalf("list row should have four columns: %q", lines[1])
+	}
+	if _, err := time.Parse("Jan 02, 2006", columns[2]); err != nil {
+		t.Fatalf("last updated value should show a human-readable day, got %q: %v", columns[2], err)
 	}
 
 	fixture.out.Reset()

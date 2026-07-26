@@ -49,14 +49,18 @@ worktrees before creating anything:
 git worktree list --porcelain
 ```
 
-The optional `git wt list` helper includes each worktree's `LAST UPDATED`
-commit timestamp and sorts newest first. Select another key with
-`--sort updated|state|head|path`; add `--reverse` to invert the order. For
-example:
+In a terminal, the optional `git wt list` helper opens a colorized selector
+ordered by the human-readable `LAST UPDATED` day. Use arrow keys or Tab to
+move, Enter to open a child shell in the selected worktree, and `q` to cancel.
+The child shell cannot change its parent shell's directory.
+
+Piped or redirected output remains a plain table. Use `--plain` to request the
+table from a terminal, `--sort updated|state|head|path` to choose another key,
+or `--reverse` to invert the order. For example:
 
 ```bash
-git wt list --sort path
-git wt list --sort state --reverse
+git wt list --plain --sort path
+git wt list --plain --sort state --reverse
 ```
 
 The first entry is Git's primary worktree. Capture its stable physical path for

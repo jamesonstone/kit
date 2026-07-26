@@ -27,7 +27,7 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 		t.Fatalf("generated_by = %q, want kit capabilities", payload.GeneratedBy)
 	}
 
-	for _, command := range []string{"capabilities", "config", "config check", "aws", "aws verify", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine", "git wt cd", "git wt path"} {
+	for _, command := range []string{"capabilities", "config", "config check", "aws", "aws verify", "ci", "pr fix", "legacy verify", "loop prompt", "loop review", "project refresh", "improve", "improve run", "dispatch", "rules add", "skill mine", "git wt list", "git wt cd", "git wt path"} {
 		if findCompactCapability(payload.Commands, command) == nil {
 			t.Fatalf("expected compact capabilities to include %q", command)
 		}
@@ -55,6 +55,33 @@ func TestCapabilitiesIndexJSON(t *testing.T) {
 	}
 	if ci.NetworkUse.Summary == "none" {
 		t.Fatalf("expected ci network behavior to be documented, got %#v", ci.NetworkUse)
+	}
+}
+
+func TestCapabilitiesDescribeGitWTList(t *testing.T) {
+	output, err := executeCapabilitiesCommand("--json", "git", "wt", "list")
+	if err != nil {
+		t.Fatalf("kit capabilities git wt list --json error = %v", err)
+	}
+	var payload capabilityDetailPayload
+	if err := json.Unmarshal([]byte(output), &payload); err != nil {
+		t.Fatalf("json.Unmarshal(git wt list) error = %v", err)
+	}
+	if payload.Command.Command != "git wt list" {
+		t.Fatalf("command = %q, want git wt list", payload.Command.Command)
+	}
+	if payload.Command.MutationLevel != mutationNone {
+		t.Fatalf("mutation level = %q, want %q", payload.Command.MutationLevel, mutationNone)
+	}
+	combinedParts := append([]string{}, payload.Command.Examples...)
+	combinedParts = append(combinedParts, payload.Command.Caveats...)
+	combinedParts = append(combinedParts, payload.Command.WhenToUse...)
+	combinedParts = append(combinedParts, payload.Command.WhenNotToUse...)
+	combined := strings.Join(combinedParts, " ")
+	for _, want := range []string{"--plain", "arrow keys", "child shell", "day precision"} {
+		if !strings.Contains(combined, want) {
+			t.Fatalf("expected list capability to mention %q, got %#v", want, payload.Command)
+		}
 	}
 }
 
