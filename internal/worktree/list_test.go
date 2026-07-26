@@ -97,9 +97,9 @@ func TestRenderWorktreeSelectorUsesColorAndReadableDate(t *testing.T) {
 		t.Fatal(err)
 	}
 	entries := []worktreeEntry{
-		{branch: "main", primary: true, state: "clean", updatedText: "Jul 26, 2026", path: "/tmp/root"},
-		{branch: "GH-86", state: "clean", updatedText: "Jul 26, 2026", path: "/tmp/GH-86"},
-		{branch: "topic/dirty", state: "dirty", updatedText: "Jul 25, 2026", path: "/tmp/topic"},
+		{branch: "main", primary: true, state: "clean", updatedText: "Jul 26, 2026 17:44", path: "/tmp/root"},
+		{branch: "GH-86", state: "clean", updatedText: "Jul 26, 2026 17:43", path: "/tmp/GH-86"},
+		{branch: "topic/dirty", state: "dirty", updatedText: "Jul 25, 2026 09:08", path: "/tmp/topic"},
 	}
 	if _, err := renderWorktreeSelector(output, entries, 1); err != nil {
 		t.Fatal(err)
@@ -116,7 +116,7 @@ func TestRenderWorktreeSelectorUsesColorAndReadableDate(t *testing.T) {
 			t.Fatalf("selector output is missing %q: %q", color, data)
 		}
 	}
-	for _, want := range []string{"main", "GH-86", "topic/dirty", "Jul 26, 2026", "h: home"} {
+	for _, want := range []string{"main", "GH-86", "topic/dirty", "Jul 26, 2026 17:44", "h: home"} {
 		if !bytes.Contains(data, []byte(want)) {
 			t.Fatalf("selector output is missing %q: %q", want, data)
 		}
@@ -131,7 +131,7 @@ func TestRenderWorktreeSelectorKeepsSelectedHomeBrightGreen(t *testing.T) {
 	}
 	entry := worktreeEntry{
 		branch: "main", primary: true, state: "clean",
-		updatedText: "Jul 26, 2026", path: "/tmp/root",
+		updatedText: "Jul 26, 2026 17:44", path: "/tmp/root",
 	}
 	if _, err := renderWorktreeSelector(output, []worktreeEntry{entry}, 0); err != nil {
 		t.Fatal(err)
@@ -214,7 +214,7 @@ func TestRenderWorktreeSelectorSanitizesDynamicFields(t *testing.T) {
 	entry := worktreeEntry{
 		branch:      "topic/\x1b[31mred",
 		state:       "dirty\x1b[2J",
-		updatedText: "Jul 26,\r2026",
+		updatedText: "Jul 26,\r2026 17:44",
 		path:        "/tmp/\x9b2Jowned\nlane",
 	}
 	if _, err := renderWorktreeSelector(output, []worktreeEntry{entry}, 0); err != nil {
@@ -231,10 +231,10 @@ func TestRenderWorktreeSelectorSanitizesDynamicFields(t *testing.T) {
 		"%s%s%s\r\n",
 		colorBrightCyan,
 		fmt.Sprintf(
-			"> %-8s %-24s %-13s %s",
+			"> %-8s %-24s %-18s %s",
 			"dirty[2J",
 			"topic/[31mred",
-			"Jul 26,2026",
+			"Jul 26,2026 17:44",
 			"/tmp/2Jownedlane",
 		),
 		colorReset,
@@ -331,7 +331,7 @@ func TestSelectWorktreeTerminalCancellationPTYHelper(t *testing.T) {
 		ctx,
 		os.Stdin,
 		os.Stdout,
-		[]worktreeEntry{{branch: "GH-86", state: "clean", updatedText: "Jul 26, 2026", path: "/tmp/GH-86"}},
+		[]worktreeEntry{{branch: "GH-86", state: "clean", updatedText: "Jul 26, 2026 17:44", path: "/tmp/GH-86"}},
 	)
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("selector error = %v, want context cancellation", err)
@@ -400,5 +400,21 @@ func TestParseListOptionsRecognizesPlain(t *testing.T) {
 	}
 	if options.sortBy != "head" || options.rootPosition != "bottom" || !options.reverse || !options.plain {
 		t.Fatalf("options = %#v", options)
+	}
+}
+
+func TestApplyListUpdatedDisplayUsesUserTimezoneAtMinutePrecision(t *testing.T) {
+	t.Parallel()
+	commitZone := time.FixedZone("commit", -7*60*60)
+	userZone := time.FixedZone("user", 2*60*60)
+	entries := []worktreeEntry{{
+		lastUpdated: time.Date(2026, time.July, 26, 23, 58, 45, 123, commitZone),
+		updatedText: "Jul 26, 2026",
+	}}
+
+	applyListUpdatedDisplay(entries, userZone)
+
+	if got, want := entries[0].updatedText, "Jul 27, 2026 08:58"; got != want {
+		t.Fatalf("updated text = %q, want %q", got, want)
 	}
 }

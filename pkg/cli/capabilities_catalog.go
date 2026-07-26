@@ -331,7 +331,7 @@ func capabilityCatalog() []capabilityRecord {
 			withWhenToUse("Use interactively to choose a registered worktree with arrow keys or Tab; press h to open the primary checkout immediately.", "Use with --plain or redirected output when a script or terminal needs the table."),
 			withWhenNotToUse("Do not expect the selected child shell to change the parent shell's directory.", "Do not use as a policy dependency; native git worktree commands remain authoritative."),
 			withExamples("git wt list", "git wt list --root-position bottom", "git wt list --plain --sort path", "git wt list --sort state --reverse"),
-			withCaveats("Terminal selection uses color and opens the configured shell in the chosen worktree; the primary checkout and every main branch row remain bright green in every repository.", "Non-terminal input or output automatically uses the stable plain table.", "The primary checkout is pinned first by default; remaining entries are newest first by full commit timestamp, while --sort state, --sort head, and --sort path select alternate ordering.", "LAST UPDATED is display-only and shown at day precision."),
+			withCaveats("Terminal selection uses color and opens the configured shell in the chosen worktree; the primary checkout and every main branch row remain bright green in every repository.", "Non-terminal input or output automatically uses the stable plain table.", "The primary checkout is pinned first by default; remaining entries are newest first by full commit timestamp, while --sort state, --sort head, and --sort path select alternate ordering.", "LAST UPDATED is display-only, converted to the running user's local timezone, and shown at calendar-day plus HH:MM precision without seconds."),
 		),
 		capability(
 			"git wt sync",

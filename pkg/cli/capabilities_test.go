@@ -99,7 +99,7 @@ func TestCapabilitiesDescribeGitWTList(t *testing.T) {
 	combinedParts = append(combinedParts, payload.Command.WhenToUse...)
 	combinedParts = append(combinedParts, payload.Command.WhenNotToUse...)
 	combined := strings.Join(combinedParts, " ")
-	for _, want := range []string{"--plain", "--root-position bottom", "arrow keys", "press h", "child shell", "bright green", "--sort state", "--sort head", "--sort path", "display-only", "day precision"} {
+	for _, want := range []string{"--plain", "--root-position bottom", "arrow keys", "press h", "child shell", "bright green", "--sort state", "--sort head", "--sort path", "display-only", "local timezone", "HH:MM", "without seconds"} {
 		if !strings.Contains(combined, want) {
 			t.Fatalf("expected list capability to mention %q, got %#v", want, payload.Command)
 		}

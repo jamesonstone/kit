@@ -79,7 +79,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Make terminal selection context cancellation interrupt idle input promptly, restore the original terminal mode and cursor state, and leave no background reader that can consume later input.
 - Sanitize every dynamic terminal-table field before alignment and truncation so filesystem or Git metadata cannot inject terminal control sequences.
 - Preserve script-safe listing when input or output is not a terminal and provide `--plain` to request the table explicitly from a terminal.
-- Show `LAST UPDATED` at day precision in a human-readable format while retaining newest-first default sorting.
+- Show `LAST UPDATED` as a human-readable calendar day plus `HH:MM` in the running user's local timezone, omit seconds and finer precision, and retain newest-first sorting by the full commit timestamp.
 - Provide a read-only `path <lane>` command that prints only the exact registered worktree path so callers can navigate with `cd "$(git wt path <lane>)"` without fuzzy matching or filesystem mutation.
 - Keep Kit-distributed rules and generated agent instructions portable: native `git worktree` and ordinary filesystem operations define the normative workflow, and no rule may require `git-wt`, `git wt`, `--no-link-env`, or another wrapper-specific command.
 - Document `git wt` only as an optional convenience for manual users. The wrapper may mirror the portable contract but must not define, direct, or become an execution dependency of Kit-managed rules.
@@ -133,6 +133,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Resolve “home” from the first entry in Git's porcelain worktree list. That entry is available offline and identifies the primary checkout without guessing from branch names or paths.
 - Pin home after the requested list sort and reversal so it stays predictably selectable; `--root-position bottom` is the only option that moves the pinned row.
 - Reserve bright green for both the primary checkout and literal `main` rows, even while selected. The pointer still communicates selection without replacing stable home/default-branch identity.
+- Convert commit timestamps into the running user's local timezone only for `git wt list` presentation. Keep the full parsed instant for sorting and retain the existing sync report representation so list localization does not make sync JSON environment-dependent.
 
 ## DISCOVERIES
 
@@ -153,6 +154,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Interactive navigation must be gated on both terminal input and terminal output. Redirected and piped invocations need stable plain text, while terminal users can safely receive raw input handling and ANSI color.
 - Darwin pseudo-terminals do not support `os.File` read deadlines, and a goroutine-only cancellation wrapper can leave the underlying read blocked long enough to consume later terminal input. Context-aware readiness reads with exact descriptor-flag restoration avoid both failure modes.
 - Git's porcelain worktree output lists the primary worktree first, so one parsed `primary` marker can drive `git wt home`, list pinning, the `h` shortcut, and identity coloring without network access.
+- RFC 3339 commit dates retain the commit's recorded offset when parsed. An explicit `time.Local` conversion is required before formatting when `LAST UPDATED` must represent the user running the command rather than the commit author.
 
 ## VALIDATION
 
@@ -213,6 +215,8 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Issue `#95` follow-up coverage passed for `home` resolution from a linked lane, default top and explicit bottom pinning after alternate sort/reverse choices, `h`/`H` key decoding, stable primary/`main` bright-green selection color, capabilities, help, and exact guide/template parity.
 - `make fmt`, `make vet`, `go test ./... -count=1`, `go test -race ./internal/worktree ./pkg/cli -count=1`, `make build-git-wt`, `git diff --check`, `kit check safe-worktree-workflow`, and `kit check --project` passed for the home-navigation follow-up.
 - Built-binary smoke checks from linked worktree `GH-93` proved `git wt list --plain --sort path` pins the exact Git primary path first, `--root-position bottom` pins it last, and capability JSON advertises read-only home resolution, the `h` shortcut, and repository-independent bright-green identity.
+- Local-time follow-up coverage proved date rollover from a commit offset into a different user zone and exact `Jan 02, 2006 15:04` rendering without seconds. Full tests, vet, race tests, feature/project checks, capabilities, build, and diff checks passed.
+- Built-binary smoke output for the same `GH-93` commit was `Jul 26, 2026 17:44` under `America/New_York` and `Jul 26, 2026 21:44` under `UTC`, proving user-zone conversion at minute precision.
 
 ## OUTCOME
 
@@ -228,9 +232,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Updated LabCore's active rules and guidance on issue `#80` and branch `GH-80` without changing its existing `GH-78` lane or reconciling any other managed project.
 - Added read-only `git wt path <lane>` lookup for exact registered lanes, enabling portable navigation with `cd "$(git wt path GH-101)"` while rejecting unknown lanes, fuzzy matches, and traversal.
 - Registered `git wt path` in Kit capabilities and updated help, command docs, the canonical worktree guide, and delivery guidance with path-based navigation.
-- `git wt list` now opens a colorized terminal selector by default, supports arrow keys and Tab with Enter-to-open child-shell behavior, retains deterministic table output for pipelines and `--plain`, and displays last updates as human-readable calendar days while sorting by the full commit timestamp.
+- `git wt list` now opens a colorized terminal selector by default, supports arrow keys and Tab with Enter-to-open child-shell behavior, retains deterministic table output for pipelines and `--plain`, and displays last updates as local calendar days through `HH:MM` while sorting by the full commit timestamp.
 - Idle selector reads are context-cancellable without leaving a competing terminal reader, and all dynamic selector fields are control-sanitized before alignment and truncation.
-- Registered `git wt list` in Kit capabilities and documented its terminal, child-shell, plain-output, sorting, and day-precision boundaries.
+- Registered `git wt list` in Kit capabilities and documented its terminal, child-shell, plain-output, sorting, and local-minute-precision boundaries.
 - Added `git wt home`; default top pinning with explicit `--root-position bottom`; immediate `h` navigation; and constant bright-green identity for primary and `main` rows.
 - Tracked the home-navigation follow-up as issue `#95` and kept its scoped commit on existing branch `GH-93` / pull request `#94`.
 - `make build` now installs or updates `~/.local/bin/git-wt` from the same `bin/git-wt` artifact used for validation.
@@ -244,7 +248,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 
 Decision: updated
 
-Rationale: The stable primary-checkout ownership and navigation model and V3 distribution boundary are durable workflow policy that code and wrapper tests alone cannot preserve. The spec records why linked lanes are consumers rather than owners and why home identity survives sorting and selection; the managed worktree guide gives reconciled V3 projects the complete portable workflow without making the optional wrapper authoritative. No project-wide Constitution rule changed.
+Rationale: The stable primary-checkout ownership and navigation model, user-local list presentation, and V3 distribution boundary are durable workflow policy that code and wrapper tests alone cannot preserve. The spec records why linked lanes are consumers rather than owners, why home identity survives sorting and selection, and why local time formatting stays isolated from sync reporting. The managed worktree guide gives reconciled V3 projects the complete portable workflow without making the optional wrapper authoritative. No project-wide Constitution rule changed.
 
 Artifacts:
 
@@ -254,8 +258,6 @@ Artifacts:
 - `docs/specs/0050-safe-worktree-workflow/SPEC.md`
 - `docs/references/worktrees.md`
 - `internal/templates/worktrees_reference.md`
-- `internal/templates/worktrees_reference.md`
-- `docs/references/worktrees.md`
 - `docs/CONSTITUTION.md`
 - `docs/references/rules/safety-guardrails.md`
 - `docs/references/rules/github-pr-delivery.md`

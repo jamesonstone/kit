@@ -44,10 +44,12 @@ worktree. `git wt cd GH-123` does the same for an exact registered lane. To
 change the current shell's directory, use `cd "$(git wt path GH-123)"`.
 Interactive `git wt list` pins the primary checkout first by default, keeps it
 and every `main` row bright green, and accepts `h` to open home immediately;
-use `--root-position bottom` to move the pinned row. `git wt sync --dry-run`
-performs a strictly non-mutating live origin/GitHub preview; ordinary `git wt sync`
-fast-forwards only a clean, behind default branch and retires only canonical
-clean lanes with exact merged-PR evidence.
+use `--root-position bottom` to move the pinned row. `LAST UPDATED` uses the
+running user's local timezone and displays the day through `HH:MM`, without
+seconds. `git wt sync --dry-run` performs a strictly non-mutating live
+origin/GitHub preview; ordinary `git wt sync` fast-forwards only a clean,
+behind default branch and retires only canonical clean lanes with exact
+merged-PR evidence.
 
 ## Quick Start
 

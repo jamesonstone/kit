@@ -217,8 +217,8 @@ func TestListSortsByLastUpdatedByDefaultAndSupportsOtherAttributes(t *testing.T)
 	if len(columns) != 4 {
 		t.Fatalf("list row should have four columns: %q", lines[2])
 	}
-	if _, err := time.Parse("Jan 02, 2006", columns[2]); err != nil {
-		t.Fatalf("last updated value should show a human-readable day, got %q: %v", columns[2], err)
+	if _, err := time.Parse("Jan 02, 2006 15:04", columns[2]); err != nil {
+		t.Fatalf("last updated value should show a local human-readable minute, got %q: %v", columns[2], err)
 	}
 
 	fixture.out.Reset()

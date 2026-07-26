@@ -150,7 +150,8 @@ func renderWorktreeSelector(output *os.File, entries []worktreeEntry, selected i
 
 	titleText := fmt.Sprintf("Select a worktree (%d/%d)  arrows/Tab: move  Enter: open  h: home  q: cancel", selected+1, len(entries))
 	title := truncateTerminalLine(titleText, width)
-	header := truncateTerminalLine("  STATE    HEAD                     LAST UPDATED  PATH", width)
+	headerText := fmt.Sprintf("  %-8s %-24s %-18s %s", "STATE", "HEAD", "LAST UPDATED", "PATH")
+	header := truncateTerminalLine(headerText, width)
 	if _, err := fmt.Fprintf(output, "%s%s%s\r\n", colorBold, title, colorReset); err != nil {
 		return 0, fmt.Errorf("render worktree selector title: %w", err)
 	}
@@ -168,7 +169,7 @@ func renderWorktreeSelector(output *os.File, entries []worktreeEntry, selected i
 		if i == selected {
 			pointer = ">"
 		}
-		line := fmt.Sprintf("%s %-8s %-24s %-13s %s", pointer, state, head, updated, path)
+		line := fmt.Sprintf("%s %-8s %-24s %-18s %s", pointer, state, head, updated, path)
 		if _, err := fmt.Fprintf(output, "%s%s%s\r\n", color, truncateTerminalLine(line, width), colorReset); err != nil {
 			return 0, fmt.Errorf("render worktree selector entry: %w", err)
 		}

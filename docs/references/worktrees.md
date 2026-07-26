@@ -51,11 +51,12 @@ git worktree list --porcelain
 
 In a terminal, the optional `git wt list` helper opens a colorized selector
 with Git's primary worktree pinned at the top and the remaining lanes ordered
-by the human-readable `LAST UPDATED` day. The primary checkout and every
-`main` branch row stay bright green across repositories. Use arrow keys or Tab
-to move, Enter to open a child shell in the selected worktree, `h` to open the
-primary worktree immediately, and `q` to cancel. The child shell cannot change
-its parent shell's directory.
+by `LAST UPDATED`. Each timestamp uses the running user's local timezone and
+shows the calendar day plus hour and minute, with no seconds. The primary
+checkout and every `main` branch row stay bright green across repositories.
+Use arrow keys or Tab to move, Enter to open a child shell in the selected
+worktree, `h` to open the primary worktree immediately, and `q` to cancel. The
+child shell cannot change its parent shell's directory.
 
 Piped or redirected output remains a plain table. Use `--plain` to request the
 table from a terminal, `--sort updated|state|head|path` to choose another key,

@@ -74,6 +74,7 @@ func (a *App) list(ctx context.Context, cwd string, args []string) error {
 		return err
 	}
 	a.populateListMetadata(ctx, entries)
+	applyListUpdatedDisplay(entries, time.Local)
 	sortListEntries(entries, options)
 
 	if !options.plain && a.isTerminal() {
@@ -107,6 +108,17 @@ func (a *App) populateListMetadata(ctx context.Context, entries []worktreeEntry)
 		} else if dirty != "" {
 			entries[i].state = "dirty"
 		}
+	}
+}
+
+func applyListUpdatedDisplay(entries []worktreeEntry, location *time.Location) {
+	for i := range entries {
+		if entries[i].lastUpdated.IsZero() {
+			continue
+		}
+		entries[i].updatedText = entries[i].lastUpdated.
+			In(location).
+			Format("Jan 02, 2006 15:04")
 	}
 }
 
