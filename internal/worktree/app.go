@@ -1,6 +1,7 @@
 package worktree
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strings"
 )
 
 var (
@@ -26,6 +28,7 @@ const usage = `Usage: git wt <command> [arguments]
 Safe worktrees live at ~/worktrees/<owner>/<repository>/<lane>.
 
 Commands:
+  <branch>                         Open or create a worktree for a branch
   issue <number> [--no-link-env]   Create or reuse durable issue lane GH-<number>
   add <branch> [--no-link-env]     Open an existing local or origin branch
   pr <number>                      Create or refresh detached inspection lane PR-<number>
@@ -105,6 +108,7 @@ type App struct {
 	runShell       func(context.Context, string) error
 	isTerminal     func() bool
 	selectList     listSelectorFunc
+	stdin          io.Reader
 }
 
 // NewApp creates an App backed by the local Git and GitHub CLIs.
@@ -112,6 +116,7 @@ func NewApp(out, errOut io.Writer) *App {
 	app := &App{
 		out:      out,
 		errOut:   errOut,
+		stdin:    os.Stdin,
 		run:      runCommand,
 		homeDir:  os.UserHomeDir,
 		getenv:   os.Getenv,
@@ -208,8 +213,52 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 	case "migrate":
 		return a.migrate(ctx, cwd, args[1:])
 	default:
+		if len(args) == 1 {
+			return a.openOrCreateLane(ctx, cwd, args[0])
+		}
 		return fmt.Errorf("unknown command %q\n\n%s", args[0], usage)
 	}
+}
+
+func (a *App) openOrCreateLane(ctx context.Context, cwd, branch string) error {
+	repo, err := a.repository(ctx, cwd)
+	if err != nil {
+		return err
+	}
+	if _, err := validateLane(branch); err != nil {
+		return err
+	}
+	entries, err := a.worktrees(ctx, repo.top)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if entry.branch == branch {
+			return a.runShell(ctx, entry.path)
+		}
+	}
+
+	if err := a.writef("do you want to create this worktree? (y/n) "); err != nil {
+		return err
+	}
+	answer, err := bufio.NewReader(a.stdin).ReadString('\n')
+	if errors.Is(err, io.EOF) && strings.TrimSpace(answer) == "" {
+		return fmt.Errorf("unknown command %q\n\n%s", branch, usage)
+	}
+	if err != nil && !errors.Is(err, io.EOF) {
+		return fmt.Errorf("read worktree creation choice: %w", err)
+	}
+	if !strings.EqualFold(strings.TrimSpace(answer), "y") {
+		return nil
+	}
+	prepared, err := a.prepareOrCreateBranch(ctx, repo, branch, true)
+	if err != nil {
+		return err
+	}
+	if err := a.writePreparedBranch(prepared); err != nil {
+		return err
+	}
+	return a.runShell(ctx, prepared.Path)
 }
 
 func (a *App) enterLane(ctx context.Context, cwd, lane string) error {
