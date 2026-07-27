@@ -496,7 +496,7 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **PAUSED**: no
 - **INTENT**: Provide a portable native Git worktree policy plus an optional thin `git wt` convenience for exact navigation, bounded pull-request annotations, default writable-lane `.env` symlinks, explicit isolation, and conservative removal.
 - **APPROACH**: 1. Pass a default-enabled environment-link option through the shared writable-lane path while leaving detached PR, migration, and root behavior unchanged. 2. Link only the primary checkout's `.env`, refuse collisions, and support `--no-link-env` for manual wrapper isolation. 3. Recognize only a verified managed `.env` symlink during safe removal and restore it if native removal fails. 4. Print exact registered lane paths for safe shell navigation without fuzzy matching. 5. Cover the complete behavior with real-Git integration tests and command-help assertions. 6. Make native `git worktree` and exact filesystem operations authoritative in active rules, generated V3 guidance, and LabCore's dedicated policy lane while preserving immutable V1/V2 payloads. 7. Keep `git wt` documented only as an optional manual convenience that implements the portable contract without directing reconciliation. 8. Resolve `.env` ownership from the primary worktree and distribute the native guide as a V3 reconcile support artifact. 9. Annotate list rows with exact open-PR matches through one two-second batched `gh` lookup whose distinct failure markers never block local listing.
-- **OPEN ITEMS**: none
+- **OPEN ITEMS**: review and merge ready pull request #103 for issue #100
 - **POINTERS**: `docs/specs/0050-safe-worktree-workflow/SPEC.md`, `docs/references/worktrees.md`, `docs/references/rules/safety-guardrails.md`, `docs/references/rules/github-pr-delivery.md`
 
 ### resolve-pr-repair-worktrees
@@ -528,4 +528,4 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 
 ## LAST UPDATED
 
-2026-07-27 10:42:04 EDT
+2026-07-27 10:46:52 EDT

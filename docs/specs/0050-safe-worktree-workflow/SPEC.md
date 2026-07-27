@@ -43,7 +43,7 @@ skills:
     path: github:yeet
     trigger: publish the completed follow-up to the existing ready pull requests
     required: true
-delivery_intent: issue_branch_pr_in_progress
+delivery_intent: issue_branch_pr_ready
 ---
 # SPEC
 
@@ -269,6 +269,8 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - `kit capabilities git wt list --json`, `kit check
   safe-worktree-workflow`, `kit check worktree-sync`, and `kit check
   --project` passed; the project contract remained coherent.
+- After ready pull request #103 opened, the built command rendered
+  `clean GH-100 103` in the live `PR#` column and completed in 0.92 seconds.
 
 ## OUTCOME
 
@@ -304,8 +306,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - The pull-request annotation remains read-only, performs no fetch or Git
   mutation, and leaves explicit worktree synchronization solely with `git wt
   sync`.
-- The follow-up is tracked by issue `#100` and branch `GH-100`; ready pull
-  request delivery follows the final validation and review gate.
+- The follow-up is tracked by issue `#100`, branch `GH-100`, commit
+  `2040f73a164c92f18a4a84e9bbbd50b790086d16`, and ready pull request
+  <https://github.com/jamesonstone/kit/pull/103>.
 
 ## REPOSITORY MEMORY
 
