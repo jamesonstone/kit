@@ -86,7 +86,7 @@ func (a *App) inspectWorktreeRemoval(
 		return worktreeRemoval{}, err
 	}
 	if len(environmentLinks) > 0 {
-		dirty = statusWithoutManagedEnvironmentLinks(dirty)
+		dirty = statusWithoutManagedEnvironmentLinks(dirty, environmentLinks)
 	}
 	if dirty != "" {
 		return worktreeRemoval{}, worktreeDirtyError{path: selected.path, status: dirty}
@@ -232,11 +232,14 @@ func inspectManagedEnvironmentLink(
 	return &managedEnvironmentLink{path: path, target: target}, nil
 }
 
-func statusWithoutManagedEnvironmentLinks(status string) string {
+func statusWithoutManagedEnvironmentLinks(
+	status string,
+	environmentLinks []managedEnvironmentLink,
+) string {
 	lines := strings.Split(status, "\n")
 	kept := lines[:0]
 	for _, line := range lines {
-		if isManagedEnvironmentLinkStatus(line) {
+		if isManagedEnvironmentLinkStatus(line, environmentLinks) {
 			continue
 		}
 		if line != "" {
@@ -246,8 +249,12 @@ func statusWithoutManagedEnvironmentLinks(status string) string {
 	return strings.Join(kept, "\n")
 }
 
-func isManagedEnvironmentLinkStatus(line string) bool {
-	for _, name := range environmentFileNames {
+func isManagedEnvironmentLinkStatus(
+	line string,
+	environmentLinks []managedEnvironmentLink,
+) bool {
+	for _, environmentLink := range environmentLinks {
+		name := filepath.Base(environmentLink.path)
 		if line == "?? "+name || line == "!! "+name {
 			return true
 		}

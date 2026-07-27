@@ -46,7 +46,7 @@ func (a *App) issue(ctx context.Context, cwd, value string, linkEnv bool) error 
 		return err
 	}
 	if err := a.ensureEnvironmentLinks(repo.primary, destination, linkEnv); err != nil {
-		return err
+		return a.rollbackNewWorktreeSetup(ctx, repo.top, destination, err)
 	}
 	return a.writef("Created %s from origin/%s\n", destination, base)
 }
@@ -137,7 +137,7 @@ func (a *App) prepareBranch(
 		}
 	}
 	if err := a.ensureEnvironmentLinks(repo.primary, destination, linkEnv); err != nil {
-		return PreparedWorktree{}, err
+		return PreparedWorktree{}, a.rollbackNewWorktreeSetup(ctx, repo.top, destination, err)
 	}
 	return PreparedWorktree{Path: destination, Branch: branch, Created: true}, nil
 }

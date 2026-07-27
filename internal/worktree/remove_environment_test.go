@@ -79,6 +79,55 @@ func TestRemoveAllowsOnlyMatchingManagedEnvironmentLink(t *testing.T) {
 		assertBranch(t, worktreePath, "topic/regular-env")
 	})
 
+	t.Run("regular ignored envrc beside managed env link", func(t *testing.T) {
+		fixture := newGitFixture(t)
+		source := writeEnvironmentSource(t, fixture, "TOKEN=source\n")
+		if err := os.WriteFile(
+			filepath.Join(fixture.primary, ".gitignore"),
+			[]byte(environmentFileName+"\n"+environmentRCFileName+"\n"),
+			0o644,
+		); err != nil {
+			t.Fatal(err)
+		}
+		runGit(t, fixture.primary, "add", ".gitignore")
+		runGit(t, fixture.primary, "commit", "-m", "ignore environment")
+		runGit(t, fixture.primary, "push", "origin", "main")
+		runGit(t, fixture.primary, "branch", "--track", "topic/regular-envrc", "origin/main")
+		runWT(t, fixture.app, fixture.primary, "add", "topic/regular-envrc")
+		worktreePath := filepath.Join(
+			fixture.worktreeRoot,
+			"example",
+			"project",
+			"topic",
+			"regular-envrc",
+		)
+		envDestination := filepath.Join(worktreePath, environmentFileName)
+		assertEnvironmentSymlink(t, envDestination, source)
+		rcDestination := filepath.Join(worktreePath, environmentRCFileName)
+		if err := os.WriteFile(rcDestination, []byte("dotenv\n"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+
+		err := fixture.app.Run(
+			context.Background(),
+			fixture.primary,
+			[]string{"remove", "topic/regular-envrc"},
+		)
+		if err == nil || !strings.Contains(err.Error(), "!! "+environmentRCFileName) {
+			t.Fatalf("regular environment configuration removal error = %v", err)
+		}
+		if data, readErr := os.ReadFile(rcDestination); readErr != nil ||
+			string(data) != "dotenv\n" {
+			t.Fatalf(
+				"regular environment configuration was modified: data=%q err=%v",
+				data,
+				readErr,
+			)
+		}
+		assertEnvironmentSymlink(t, envDestination, source)
+		assertBranch(t, worktreePath, "topic/regular-envrc")
+	})
+
 	t.Run("unexpected symlink", func(t *testing.T) {
 		fixture := newGitFixture(t)
 		writeEnvironmentSource(t, fixture, "TOKEN=source\n")

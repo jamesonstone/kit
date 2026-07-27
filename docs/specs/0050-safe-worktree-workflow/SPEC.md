@@ -158,6 +158,10 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
     generic failure paths without allowing tests to depend on live GitHub.
 15. Align help, capabilities, command documentation, the canonical worktree
     guide and template, and the worktree-sync non-mutation boundary.
+16. Make multi-file environment setup transactional, clean up only worktrees
+    created by the failing invocation, and filter removable dirty-state entries
+    from the exact verified managed-link set rather than the configured
+    environment filename set.
 
 ## DECISIONS
 
@@ -176,6 +180,15 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Recognize removable environment links by exact destination name, symlink
   type, and target match only; do not add broad environment-file deletion or
   dirty-state exceptions.
+- Preflight every managed environment link before creating any link. If an
+  apply-time or output failure still occurs, remove only links created by that
+  invocation after re-verifying their exact targets.
+- When environment setup fails after native Git creates a worktree, remove that
+  fresh registration with ordinary non-force `git worktree remove`, preserve
+  the branch ref, and never apply this cleanup to a reused worktree.
+- Derive removal-status exceptions from the links already verified for that
+  selected worktree. A regular, ignored, or untracked `.envrc` remains dirty
+  even when `.env` is a verified managed link.
 - Keep application processes, databases, ports, Temporal state, and sibling repository coordination outside GitWT so the command remains a thin Git worktree wrapper.
 - Preserve exact `path` output as the only way to change the invoking shell with `cd "$(git wt path GH-101)"`. The later `cd` command and interactive list selector intentionally open a child shell in the chosen worktree and must not claim to change their parent shell.
 - Build `git-wt` once into `bin/` and install that artifact from the shared Make target so `make build`, `make install-git-wt`, and `make install` cannot diverge.
@@ -205,6 +218,15 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - A real dry run found 29 legacy linked worktrees with collision-free destinations: 25 dirty and 4 clean.
 - The existing writable-lane implementation already converged issue, add, repair, and reuse behavior through `addBranch`; passing one default-enabled option through that path keeps the environment policy consistent without touching detached PR or migration flows.
 - Git reports an ignored or untracked managed link as an exact `.env` porcelain entry. Filtering only that entry after verifying the symlink target preserves every existing dirty, ignored, and unpublished removal protection.
+- Filtering by the global environment filename set could hide a regular
+  ignored `.envrc` whenever a verified managed `.env` link was also present.
+  The verified link collection must therefore remain the sole authority for
+  both temporary link removal and porcelain-status filtering.
+- Sequential validation and mutation allowed a valid `.env` link to remain
+  after a later `.envrc` collision, and callers returned after link setup
+  failure without removing a worktree they had just registered. Preflight,
+  per-invocation rollback, and fresh-registration cleanup close both partial
+  setup paths without introducing force removal or branch deletion.
 - GitWT must restore the original symlink text rather than recreate a normalized target when native worktree removal fails, so relative and absolute matching links retain their original representation.
 - LabCore's live `GH-78` / PR `#79` is unrelated order-to-hold product work. Its dedicated worktree-policy lane is issue `#80`, branch `GH-80`, and PR `#81`; only that lane may receive downstream policy updates.
 - Navigation must be implemented as path resolution because a child process cannot change its invoking shell's current directory.
@@ -333,6 +355,21 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   LabCore tracked status remained clean.
 - `gitleaks git --redact --no-banner`, `git diff --check`, capability JSON
   generation, and exact worktree guide/template comparison passed.
+- Pull-request review regressions passed for preflighted dual-link setup,
+  reverse rollback after an injected apply-time collision or output-writer
+  failure, non-force cleanup of fresh issue/add/interactive worktrees,
+  preservation of reused worktrees and branch refs, and refusal to remove a
+  regular ignored `.envrc` beside a verified managed `.env`.
+- Review-repair validation passed `make fmt`, `make vet`, `go test ./...
+  -count=1`, and `go test -race ./internal/worktree -count=1`.
+- Review-repair `golangci-lint run --new-from-rev=origin/main ./...` reported
+  `0 issues`; `make build`, `make build-windows`, and `goreleaser check`
+  passed.
+- Review-repair `kit check safe-worktree-workflow`, `kit check
+  worktree-sync`, `kit check --all`, and `kit check --project` passed; all 50
+  features and the project contract remained coherent.
+- Review-repair `gitleaks git --redact --no-banner` and `git diff --check`
+  passed.
 
 ## OUTCOME
 
@@ -347,6 +384,12 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   preserves regular or unexpected destinations, retains every other dirty,
   ignored, and unpublished-state refusal, and restores all removed links if
   native non-force removal fails.
+- Environment-link setup is transactional across `.env` and `.envrc`; failed
+  fresh-lane setup removes the new worktree registration without deleting its
+  branch, while failures on reused lanes preserve the existing worktree.
+- Removal status filtering now ignores only filenames represented by verified
+  managed links, so a regular ignored or untracked `.envrc` still blocks
+  removal beside a managed `.env`.
 - GitWT remains limited to lane paths, branches, native worktree operations,
   and the bounded environment-link convenience; it does not orchestrate
   applications, databases, ports, Temporal state, processes, or sibling
@@ -393,14 +436,21 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 Decision: updated
 
 Rationale: Exact `.envrc` source ownership, executable-config trust, collision
-preservation, direnv approval, and multi-link removal restoration are durable
-workflow and security decisions that code and tests alone do not explain
-completely. The spec and canonical worktree guide preserve those decisions.
+preservation, transactional multi-link setup, fresh-worktree cleanup,
+verified-link-only status filtering, direnv approval, and multi-link removal
+restoration are durable workflow and security decisions that code and tests
+alone do not explain completely. The spec preserves those decisions.
 
 Constitution curation result: updated the project-wide worktree invariant so
 writable lanes may share exact primary-checkout `.envrc` sources without
 copying or requiring tracked files, while preserving destination material and
 direnv's approval boundary.
+
+Review-repair Constitution curation result: not required. The existing
+project-wide invariants already require preserving worktree state, prohibit
+force removal and branch deletion, and bound environment sharing to exact
+primary-checkout `.env` and `.envrc` links; failure atomicity and verified-link
+status filtering remain feature-specific rationale in this spec.
 
 Artifacts:
 
