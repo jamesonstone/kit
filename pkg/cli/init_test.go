@@ -50,10 +50,18 @@ func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 			"Expose `make dev` when the repository has a verified local development or run workflow",
 			"Do not leave TODO recipes, echo-only placeholders, guessed commands, or duplicated build logic",
 			"Run `make help` and each added target that is safe to execute",
+			"Delivery of command-created files:",
+			"Treat only this exact command-owned snapshot as transferable",
+			"`AGENTS.md` (create; pre-command absent; expected sha256:",
+			"explicitly stage only the captured paths (including deleted paths)",
+			"create or update the ready pull request",
 		} {
 			if !strings.Contains(copied, check) {
 				t.Fatalf("expected copied prompt to contain %q, got %q", check, copied)
 			}
+		}
+		if strings.Contains(copied, "`.env` (") || strings.Contains(copied, "`.envrc` (") {
+			t.Fatalf("expected copied prompt to exclude machine-local environment files, got %q", copied)
 		}
 		entrypointIndex := strings.Index(copied, agentsEntrypointGuidance)
 		bootstrapIndex := strings.Index(copied, "Treat the exact generated starter")

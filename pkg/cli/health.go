@@ -26,22 +26,17 @@ type healthChangeSummary struct {
 	Skipped int `json:"skipped"`
 }
 
-type healthFileChange struct {
-	Path   string `json:"path"`
-	Action string `json:"action"`
-}
-
 type healthReport struct {
-	State         string              `json:"state"`
-	Managed       bool                `json:"managed"`
-	DryRun        bool                `json:"dry_run"`
-	Changes       healthChangeSummary `json:"changes"`
-	Files         []healthFileChange  `json:"files,omitempty"`
-	RegistryState string              `json:"registry_state,omitempty"`
-	ProjectCheck  string              `json:"project_check"`
-	Notes         []string            `json:"notes,omitempty"`
-	NextActions   []string            `json:"next_actions,omitempty"`
-	CheckError    string              `json:"check_error,omitempty"`
+	State         string                        `json:"state"`
+	Managed       bool                          `json:"managed"`
+	DryRun        bool                          `json:"dry_run"`
+	Changes       healthChangeSummary           `json:"changes"`
+	Files         []managedFileDeliverySnapshot `json:"files,omitempty"`
+	RegistryState string                        `json:"registry_state,omitempty"`
+	ProjectCheck  string                        `json:"project_check"`
+	Notes         []string                      `json:"notes,omitempty"`
+	NextActions   []string                      `json:"next_actions,omitempty"`
+	CheckError    string                        `json:"check_error,omitempty"`
 }
 
 var healthCmd = &cobra.Command{
@@ -110,13 +105,13 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 		Merged:  plan.stats.merged,
 		Skipped: plan.stats.skipped,
 	}
-	report.Files = healthChangedFiles(plan.changes)
+	report.Files = healthChangedFiles(projectRoot, plan.changes)
 	report.Notes = append(report.Notes, plan.notes...)
 
 	if dryRun {
 		report.State = healthPlannedState(report)
 		report.RegistryState = report.State
-		report.NextActions = healthNextActions(report)
+		report.NextActions = healthNextActions(report, projectRoot)
 		if diffOutput {
 			if diff := renderInitRefreshDiff(plan.changes); strings.TrimSpace(diff) != "" {
 				if _, err := fmt.Fprint(cmd.OutOrStdout(), diff); err != nil {
@@ -152,7 +147,7 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 		report.CheckError = checkErr.Error()
 	}
 	report.State = healthFinalState(report, checkErr)
-	report.NextActions = healthNextActions(report)
+	report.NextActions = healthNextActions(report, projectRoot)
 
 	if !jsonOutput {
 		if _, err := io.Copy(cmd.OutOrStdout(), &checkOutput); err != nil {
@@ -168,15 +163,11 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func healthChangedFiles(changes []initRefreshFileChange) []healthFileChange {
-	files := make([]healthFileChange, 0, len(changes))
-	for _, change := range changes {
-		if change.result == instructionFileSkipped {
-			continue
-		}
-		files = append(files, healthFileChange{Path: change.relativePath, Action: dryRunActionLabel(change.result)})
-	}
-	return files
+func healthChangedFiles(
+	projectRoot string,
+	changes []initRefreshFileChange,
+) []managedFileDeliverySnapshot {
+	return managedFileDeliverySnapshotFromInitRefresh(projectRoot, changes)
 }
 
 func healthPlannedState(report healthReport) string {
@@ -216,7 +207,7 @@ func healthNotesNeedAttention(notes []string) bool {
 	return false
 }
 
-func healthNextActions(report healthReport) []string {
+func healthNextActions(report healthReport, projectRoot string) []string {
 	var actions []string
 	if report.State == statusKitManagedStateRefreshAvailable {
 		actions = append(actions, "run `kit health` to apply the planned safe Kit-managed updates")
@@ -229,6 +220,9 @@ func healthNextActions(report healthReport) []string {
 	}
 	if report.State == statusKitManagedStateUnknown {
 		actions = append(actions, "rerun `kit health` when registry access is restored")
+	}
+	if !report.DryRun && len(report.Files) > 0 {
+		actions = append(actions, managedFileDeliveryInstructions(projectRoot, report.Files)...)
 	}
 	return actions
 }

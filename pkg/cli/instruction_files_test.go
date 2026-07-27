@@ -163,6 +163,15 @@ func TestRunScaffoldAgents_TargetedSelectionScaffoldsOnlyRequestedFiles(t *testi
 		if !strings.Contains(output, "♻️ agents directory and files empty scaffolding created.") {
 			t.Fatalf("expected agents scaffold completion wording, got %q", output)
 		}
+		for _, check := range []string{
+			"`AGENTS.md` (create; pre-command absent; expected sha256:",
+			"explicitly stage only the captured paths (including deleted paths)",
+			"create or update the ready pull request",
+		} {
+			if !strings.Contains(output, check) {
+				t.Fatalf("expected agents scaffold delivery guidance to contain %q, got %q", check, output)
+			}
+		}
 	})
 
 	assertFileExists(t, filepath.Join(tempDir, agentsMDPath))

@@ -373,6 +373,10 @@ legacy active-feature supervisor prompt during compatibility.
 ## Scaffold And Refresh
 
 `kit scaffold agents` creates or refreshes repository instruction files.
+After it writes files, its completion guidance tells the agent to create or
+reuse the human-assigned issue and exact `GH-<issue>` worktree, move
+version-control-eligible unstaged files out of a protected root checkout, and
+include them in the explicitly staged commit and ready pull request.
 `kit scaffold spec <feature>` creates the current `SPEC.md` scaffold plus
 notes/reference-material directories without emitting an agent prompt. Legacy
 staged document scaffolds are available only through `kit legacy` commands.
@@ -422,4 +426,10 @@ Use `kit reconcile --include-files --force` after reviewing local generated-file
 changes when you want to accept refreshed generated guidance. When requested,
 Kit outputs a documentation review prompt so an agent can update
 `docs/CONSTITUTION.md`, agent docs, references, command docs, and directly
-affected feature specs semantically.
+affected feature specs semantically. Reconcile, init/refresh, scaffold-agents,
+and health follow-up guidance also owns any command-created instruction files:
+it inventories only in-scope version-control-eligible changes, creates or
+reuses the exact issue worktree, verifies the transferred content and diff,
+removes only the transferred root-checkout state, and includes the files in the
+explicitly staged commit and ready pull request. It preserves unrelated dirty
+work and excludes secrets, ignored files, and machine-local configuration.

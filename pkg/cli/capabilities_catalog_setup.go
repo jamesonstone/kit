@@ -38,10 +38,13 @@ func setupCapabilityRecords() []capabilityRecord {
 				"Do not use `--force` until local generated-doc or workflow changes have been reviewed.",
 				"Prefer `kit reconcile` when a human should choose whether to include files, force changes, or output the follow-up coding-agent prompt.",
 			),
-			withCaveats("The generated Constitution starter is a valid bootstrap state; the init prompt leaves project-specific sections unchanged until repository evidence demonstrates durable project-wide truth."),
+			withCaveats(
+				"The generated Constitution starter is a valid bootstrap state; the init prompt leaves project-specific sections unchanged until repository evidence demonstrates durable project-wide truth.",
+				"After writes, human output or the generated prompt instructs the agent to move version-control-eligible command-created files from a protected root checkout into the exact issue worktree and ready pull request without disturbing unrelated changes.",
+			),
 			withExamples("kit init", "kit reconcile", "kit reconcile --include-files --dry-run --diff", "kit init --refresh", "kit init --refresh --file=README.md", "kit init --refresh --file=.github/workflows/auto-assign.yml"),
 		),
 		capability("scaffold", "Setup", "Generate workflow artifacts for Kit features.", mutationWritesFiles, withFileWrites("writes generated docs under selected project paths"), withRelated(related("scaffold agents", "writes repo agent instructions"))),
-		capability("scaffold agents", "Setup", "Generate or refresh repo-local agent instruction files.", mutationWritesFiles, withFileWrites("writes AGENTS.md and docs/agents guidance"), withFlags(flag("--force", "replace existing agent guidance files", "review local edits first")), withRelated(related("init", "creates the broader project structure"))),
+		capability("scaffold agents", "Setup", "Generate or refresh repo-local agent instruction files.", mutationWritesFiles, withFileWrites("writes AGENTS.md and docs/agents guidance"), withFlags(flag("--force", "replace existing agent guidance files", "review local edits first")), withRelated(related("init", "creates the broader project structure")), withCaveats("After a write, completion guidance requires moving version-control-eligible command-created files from a protected root checkout into the exact issue worktree and ready pull request without disturbing unrelated changes.")),
 	}
 }

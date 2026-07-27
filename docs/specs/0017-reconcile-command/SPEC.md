@@ -69,6 +69,13 @@ references:
     read_policy: conditional
     used_for: rollup drift expectations
     status: active
+  - name: GitHub delivery rule
+    type: ruleset
+    target: docs/references/rules/github-pr-delivery.md
+    relation: constrains
+    read_policy: must
+    used_for: safe root-checkout transfer and issue-worktree delivery
+    status: active
 ---
 # SPEC
 
@@ -83,6 +90,7 @@ references:
 - Kit's document contract evolves over time, but older projects can drift away from current expectations for sections, tables, workflow semantics, and instruction-file structure.
 - Existing commands cover validation (`check`), feature catch-up (`catchup`), and handoff preparation (`handoff`), but none are designed to migrate a project's docs forward to newer Kit semantics.
 - Users currently need to discover document drift manually, decide which canonical source defines the current contract, and invent search strategies for filling missing content.
+- Managed-file commands can write instruction files into a protected root checkout before the issue worktree exists. Follow-up guidance that ignores those unstaged files can leave the generated contract stale on the default branch and absent from the resulting pull request.
 
 ## GOALS
 
@@ -99,6 +107,7 @@ references:
 - Keep the raw prompt concise enough to stay readable for repo-wide audits.
 - In project-wide interactive mode, ask whether to include managed files, force changes, and output the coding-agent prompt.
 - When managed files are included, reuse the init refresh planner to refresh `.kit.yaml`, README managed sections, rulesets, init scaffold artifacts, and instruction docs.
+- Carry command-created instruction-file changes into the canonical issue worktree and resulting pull request instead of leaving them unstaged in the protected root checkout.
 
 ## NON-GOALS
 
@@ -153,7 +162,7 @@ references:
 - Feature-scoped reconciliation and `--prompt-only` must remain prompt/audit-only and must not prompt for managed-file refresh choices.
 - If reconciliation finds no issues in documentation-audit mode, the command must print a concise success result and must not emit a prompt body or copy anything to the clipboard.
 - If managed files were included and the user requested the coding-agent prompt, a clean documentation audit may still emit the post-refresh documentation review prompt.
-- If reconciliation finds issues, the command must emit a prompt that begins with `/plan`.
+- If reconciliation finds issues, the command must emit a concise prompt that uses the host agent's native planning capability without embedding a `/plan` trigger.
 - The raw prompt body must stay plain text and concise in both normal and `--output-only` modes.
 - Human-readable non-`--output-only` terminal output may add compact graphical summaries such as ASCII tables or boxed sections, but must not change the raw prompt payload.
 - The prompt must keep the agent focused on documentation reconciliation only and must explicitly forbid unrelated code changes.
@@ -206,6 +215,11 @@ references:
   - `Updates`
   - `Verification`
 - The prompt must tell the agent when to use `kit scaffold agents --append-only` instead of manual instruction-file edits.
+- Reconcile and adjacent managed-instruction-file guidance must carry the command's exact version-control-eligible path, action, pre-command state, and expected result state rather than infer ownership from post-command Git status.
+- The transfer guidance must create or reuse the human-assigned issue and exact `GH-<issue>` worktree, abort when a captured destination path does not match its pre-command state or already has staged, working-tree, or untracked changes, and move only the captured command-owned delta into that worktree.
+- Created, updated, merged, and removed paths must be verified and explicitly staged; removed paths must remain absent in the destination and be represented as deletions in the index.
+- Before clearing source state, the guidance must verify the destination result state and require the index to contain exactly the captured command-owned paths, including deletions.
+- The transfer guidance must restore only the captured command-owned source delta to its exact pre-command state, preserve unrelated dirty files, exclude secrets and machine-local or ignored files, and forbid stash, reset, clean, bulk staging, protected-branch commits, and silent overwrite of worktree content.
 - The prompt must require verification after documentation changes with:
   - `kit check --all` for whole-project mode or `kit check <feature>` for feature mode
   - `kit rollup` when reconciled changes affect `PROJECT_PROGRESS_SUMMARY.md`
@@ -216,8 +230,10 @@ references:
 - Running `kit reconcile --all` produces the same project-wide behavior as `kit reconcile`.
 - Running `kit reconcile <feature>` audits only the selected feature plus related rollup context.
 - `kit reconcile <feature> --all` fails with an actionable error.
-- When findings exist, the prompt starts with `/plan`.
+- When findings exist, the prompt remains compatible with native agent planning and does not embed a `/plan` trigger.
 - The prompt is documentation-scoped, includes exact file paths, and forbids unrelated code changes.
+- Command-created instruction files are present in the issue worktree and resulting pull request, while the protected root checkout no longer retains the transferred unstaged state.
+- Unrelated root-checkout and worktree changes remain untouched throughout transfer and delivery.
 - The raw prompt stays compact by grouping findings by file, deduplicating search shortcuts, and avoiding repeated boilerplate.
 - The default prompt explicitly tells the coding agent to use subagents and queue work according to overlapping file changes, without conflicting with `--single-agent`.
 - Missing `RELATIONSHIPS`, malformed front matter references, and mismatched task IDs are surfaced as findings.
@@ -237,7 +253,42 @@ references:
 - Append-only planning for an instruction file fails because the file cannot be merged safely.
 - `PROJECT_PROGRESS_SUMMARY.md` exists but is missing a current feature row or summary heading.
 - The selected feature name resolves by slug or numeric prefix.
+- The command creates or updates tracked instruction files in the protected root checkout before an issue worktree exists.
+- The root checkout contains unrelated dirty files alongside the command-created instruction files.
+- The exact issue branch or worktree already exists and must be reused rather than duplicated.
 
 ## OPEN-QUESTIONS
 
 - none
+
+## VALIDATION
+
+- Focused reconcile, initial init, refresh, scaffold-agents, health, delivery-ruleset, exact-snapshot, alias-normalization, containment, nested-worktree ignore, and removal-only tests passed in `pkg/cli`.
+- `make fmt`, `make vet`, `go test ./... -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, and `go test -race ./pkg/cli -count=1` passed.
+- `make build` passed with an isolated temporary `GIT_WT_PREFIX`.
+- `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all` passed; the project refresh cadence was not due.
+- Health JSON and generated guidance confirmed that planned paths carry exact action, pre-command SHA-256 or absence, and expected result SHA-256 or absence while excluding `.env`, `.envrc`, Git-ignored paths, and obvious secret material.
+- Built-binary capability checks confirmed that `reconcile` and `init` document the root-checkout transfer and exact issue-worktree delivery guidance while retaining no direct Git or GitHub mutation.
+- An independent read-only verifier found and rechecked initial-init propagation, path-alias precedence, project-root containment, and nested-worktree ignore handling; the final verification pass reported no findings.
+
+## OUTCOME
+
+- Reconcile, initial project setup, forced refresh review, ordinary refresh output, scaffold-agents completion, and health next actions now share one safe delivery handoff for command-created files.
+- The handoff carries an exact snapshot of each version-control-eligible in-scope path, action, pre-command state, and expected result state; creates or reuses the human-assigned issue and exact issue worktree; aborts on destination conflicts; verifies created, updated, merged, and removed results; and requires the index to contain exactly the captured paths before clearing transferred root state.
+- Initial init captures whole-command baselines before any write, refresh planners propagate exact snapshots through health next actions, init-refresh documentation prompts, and reconcile prompts, and scaffold version cleanup contributes explicit removal entries with removal-only regression coverage.
+- Snapshot paths are normalized and confined to the project before reads or rendering; Git ignore detection works from nested project roots and fails closed on in-worktree Git errors.
+- The guidance excludes secrets, ignored files, and machine-local configuration and preserves unrelated root-checkout and worktree changes.
+- Kit commands continue to perform no hidden Git or GitHub delivery mutation; the generated prompt or human-readable next actions own the explicit follow-up workflow.
+
+## REPOSITORY MEMORY
+
+Decision: updated
+
+Rationale: Safe transfer of command-created instruction files from a protected root checkout into the exact issue worktree is a durable cross-command workflow boundary that code and tests alone do not explain fully.
+
+Artifacts:
+
+- `docs/specs/0017-reconcile-command/SPEC.md`
+- `docs/CONSTITUTION.md`
+- `docs/references/rules/github-pr-delivery.md`
+- `docs/commands.md`

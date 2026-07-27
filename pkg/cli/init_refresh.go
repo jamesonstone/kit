@@ -64,6 +64,14 @@ func (e *initRefreshRegistryError) Unwrap() error {
 }
 
 func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
+	_, err := runInitRefreshWithSnapshot(projectRoot, opts)
+	return err
+}
+
+func runInitRefreshWithSnapshot(
+	projectRoot string,
+	opts initRefreshOptions,
+) ([]managedFileDeliverySnapshot, error) {
 	if !opts.outputOnly && !opts.dryRun {
 		fmt.Println("🔄 Refreshing Kit-managed project files...")
 	}
@@ -71,17 +79,18 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 	ctx := context.Background()
 	plan, err := buildInitRefreshPlan(ctx, projectRoot, opts)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	deliverySnapshot := managedFileDeliverySnapshotFromInitRefresh(projectRoot, plan.changes)
 
 	if opts.dryRun {
 		printInitRefreshDryRun(plan.changes, plan.stats, opts)
 		printInitRefreshNotes(plan.notes, opts)
-		return nil
+		return deliverySnapshot, nil
 	}
 
 	if err := applyInitRefreshFileChangesAtomically(plan.changes); err != nil {
-		return err
+		return nil, err
 	}
 
 	if !opts.outputOnly {
@@ -98,12 +107,15 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 		)
 		printInitRefreshNotes(plan.notes, opts)
 		if shouldOutputInitRefreshDocumentationPrompt(opts, plan.targets) {
-			if err := outputInitRefreshDocumentationPrompt(projectRoot, plan.cfg); err != nil {
-				return err
+			if err := outputInitRefreshDocumentationPrompt(projectRoot, plan.cfg, deliverySnapshot); err != nil {
+				return nil, err
 			}
+		} else if plan.stats.created+plan.stats.updated+plan.stats.merged > 0 &&
+			!opts.suppressDocumentationPrompt {
+			printNumberedNextSteps(managedFileDeliveryInstructions(projectRoot, deliverySnapshot))
 		}
 	}
-	return nil
+	return deliverySnapshot, nil
 }
 
 func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefreshOptions) (*initRefreshPlan, error) {

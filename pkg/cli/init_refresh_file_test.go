@@ -72,6 +72,33 @@ func TestRunInitRefresh_CreatesMissingMakefile(t *testing.T) {
 	}
 }
 
+func TestRunInitRefresh_PrintsManagedFileDeliveryStepsAfterWrite(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	if err := config.Save(tempDir, config.Default()); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+
+	output := captureStdout(t, func() {
+		if err := runInitRefresh(tempDir, initRefreshOptions{
+			files: []string{makefilePath},
+		}); err != nil {
+			t.Fatalf("runInitRefresh() error = %v", err)
+		}
+	})
+
+	for _, check := range []string{
+		"`Makefile` (create; pre-command absent; expected sha256:",
+		"abort if a captured destination path has staged, working-tree, or untracked changes",
+		"restore each captured root path to its exact pre-command state",
+		"create or update the ready pull request",
+	} {
+		if !strings.Contains(output, check) {
+			t.Fatalf("expected refresh delivery guidance to contain %q, got:\n%s", check, output)
+		}
+	}
+}
+
 func TestRunInitRefresh_CreatesV3WorktreeReference(t *testing.T) {
 	tempDir := t.TempDir()
 	relativePath := "docs/references/worktrees.md"

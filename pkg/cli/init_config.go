@@ -25,7 +25,11 @@ func populateGlobalConfig(outputOnly bool) error {
 	return nil
 }
 
-func buildProjectInitPrompt(projectRoot, constitutionFullPath string) string {
+func buildProjectInitPrompt(
+	projectRoot,
+	constitutionFullPath string,
+	snapshots ...[]managedFileDeliverySnapshot,
+) string {
 	makefileFullPath := filepath.Join(projectRoot, makefilePath)
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Paragraph(fmt.Sprintf("Initialize project memory and verified command entrypoints for the repository at %s.", projectRoot))
@@ -58,5 +62,7 @@ func buildProjectInitPrompt(projectRoot, constitutionFullPath string) string {
 			"Initial product ideas and feature intent belong in the accepted native plan and relevant SPEC.md, not in the Constitution until implementation demonstrates project-wide truth",
 			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
 		)
+		doc.Paragraph("Delivery of command-created files:")
+		doc.BulletList(managedFileDeliveryInstructions(projectRoot, snapshots...)...)
 	})
 }
