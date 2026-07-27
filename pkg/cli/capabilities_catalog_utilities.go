@@ -38,7 +38,7 @@ func utilityCapabilityRecords() []capabilityRecord {
 				"ordinary sync fetches and prunes origin only; --dry-run does not fetch",
 			),
 			withFileWrites(
-				"ordinary sync may unlink a verified managed .env symlink and remove a proven-safe worktree directory",
+				"ordinary sync may unlink verified managed .env and .envrc symlinks and remove a proven-safe worktree directory",
 				"--dry-run performs no filesystem write",
 			),
 			withGitMutation(
@@ -63,7 +63,7 @@ func utilityCapabilityRecords() []capabilityRecord {
 			),
 			withExamples("git wt sync --dry-run", "git wt sync", "git wt sync --json"),
 			withCaveats(
-				"Removal requires an exact canonical path, one merged same-repository PR into origin's default branch, exact PR-head OID equality, and no material except the verified managed .env symlink.",
+				"Removal requires an exact canonical path, one merged same-repository PR into origin's default branch, exact PR-head OID equality, and no material except verified managed .env and .envrc symlinks.",
 				"The command never stashes, resets, cleans, force-removes, force-deletes, force-pushes, or deletes remote branches.",
 				"Manual git wt remove retains its upstream/ahead proof and preserves the branch; sync uses merged-PR plus exact-head proof and then attempts ordinary git branch -d.",
 				"Failures preserve ambiguous lanes, independent candidates may continue, and any operation failure makes the overall command nonzero.",

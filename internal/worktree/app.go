@@ -57,8 +57,8 @@ List PR# markers:
 
 Safety:
   PR-<number> is detached and inspection-only; use repair for edits.
-  Writable lanes link the primary checkout's .env by default; use --no-link-env for isolation.
-  .envrc is never linked automatically.
+  Writable lanes link the primary checkout's .env and .envrc by default when present.
+  Use --no-link-env to omit both links for isolation.
   remove never forces, deletes a branch, or discards dirty/unpushed state.
   sync removes only exact clean lanes proven merged into origin's default branch.
   sync --dry-run performs no fetch, ref update, removal, deletion, or pruning.

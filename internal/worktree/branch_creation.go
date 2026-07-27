@@ -41,8 +41,25 @@ func (a *App) prepareOrCreateBranch(
 	if _, err := a.git(ctx, repo.top, "worktree", "add", "-b", branch, destination, "refs/remotes/origin/"+base); err != nil {
 		return PreparedWorktree{}, err
 	}
-	if err := a.ensureEnvironmentLink(repo.primary, destination, linkEnv); err != nil {
-		return PreparedWorktree{}, err
+	if err := a.ensureEnvironmentLinks(repo.primary, destination, linkEnv); err != nil {
+		return PreparedWorktree{}, a.rollbackNewWorktreeSetup(ctx, repo.top, destination, err)
 	}
 	return PreparedWorktree{Path: destination, Branch: branch, Created: true}, nil
+}
+
+func (a *App) rollbackNewWorktreeSetup(
+	ctx context.Context,
+	repoRoot string,
+	destination string,
+	setupErr error,
+) error {
+	if _, err := a.git(ctx, repoRoot, "worktree", "remove", destination); err != nil {
+		return fmt.Errorf(
+			"%w; additionally failed to remove newly created worktree %s: %v",
+			setupErr,
+			destination,
+			err,
+		)
+	}
+	return setupErr
 }

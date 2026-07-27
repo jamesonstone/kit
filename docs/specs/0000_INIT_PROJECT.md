@@ -804,7 +804,7 @@ Flags:
   `--vim` or `--editor <cmd>` selects a specific editor path before the prompt
   is copied
 - preserve the delivery boundary: except for preparing a missing worktree and
-  its exact `.env` link, do not run the loop agent, edit source files, write
+  its exact `.env` and `.envrc` links, do not run the loop agent, edit source files, write
   `.kit/loops` evidence, stage, commit, push, post PR comments, resolve review
   threads, or perform GitHub delivery
 - after fixes or no-op decisions are validated, resolve matching current

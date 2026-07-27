@@ -37,7 +37,7 @@
 - If the resolved lane is dirty, Kit asks whether those changes belong in the repair and records `include` or `exclude`, the porcelain status, remote/local head SHAs, and the exact push target in the prompt.
 - Pass `--edit` to review and change the task list in the default editor before copying; `--vim` and `--editor <cmd>` also opt into editing.
 - The generated PR-fix prompt requires a post-push reflection cycle before review-thread resolution: the coding agent must review the pushed diff in context, confirm the PR head still matches the commit it pushed, and only then resolve verified addressed conversations.
-- `kit pr fix` remains prompt-producing: except for preparing the writable worktree and its exact `.env` link when needed, it does not run the loop agent, edit source files, write `.kit/loops` evidence, stage, commit, push, post PR comments, or resolve review threads.
+- `kit pr fix` remains prompt-producing: except for preparing the writable worktree and its exact `.env` and `.envrc` links when needed, it does not run the loop agent, edit source files, write `.kit/loops` evidence, stage, commit, push, post PR comments, or resolve review threads.
 - Use `kit loop review` when changed code should be locally reviewed and repaired by the configured loop agent until the final response reports at least 95% correctness and ends with `done`.
 - Without `--pr`, `kit loop review` reviews current-branch changes relative to `origin/main`, falling back to local `main`, plus staged and unstaged changes.
 - Use `kit loop review --pr <target>` when current unresolved CodeRabbit PR feedback should be opportunistically folded into the repair loop; Kit runs the configured agent from the resolved writable PR-head worktree.
@@ -62,8 +62,8 @@
 - Optional wrappers are manual conveniences only and must preserve the same path and safety contract
 - Keep the root checkout on the protected default branch and work directly in the assigned durable lane
 - Do not stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
-- Link the primary checkout's `.env` into writable lanes by default when it exists, using only an exact verified symlink; omit the link when isolation is required
-- Never copy `.env` contents or automatically share `.envrc`; worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories
+- Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists, using only exact verified symlinks; omit both links when isolation is required
+- Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied `.envrc`, and remember that direnv approval remains path-specific; worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories
 - Remember that refs, remotes, objects, configuration, and stash state are shared across worktrees even though checkout, index, and `HEAD` are separate
 - Load `docs/references/worktrees.md` when worktree creation, repair, migration, or removal affects the task
 

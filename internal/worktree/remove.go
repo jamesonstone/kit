@@ -16,8 +16,8 @@ type managedEnvironmentLink struct {
 }
 
 type worktreeRemoval struct {
-	entry           worktreeEntry
-	environmentLink *managedEnvironmentLink
+	entry            worktreeEntry
+	environmentLinks []managedEnvironmentLink
 }
 
 type worktreeDirtyError struct {
@@ -77,7 +77,7 @@ func (a *App) inspectWorktreeRemoval(
 	repo repository,
 	selected worktreeEntry,
 ) (worktreeRemoval, error) {
-	environmentLink, err := inspectManagedEnvironmentLink(repo.primary, selected.path)
+	environmentLinks, err := inspectManagedEnvironmentLinks(repo.primary, selected.path)
 	if err != nil {
 		return worktreeRemoval{}, err
 	}
@@ -85,13 +85,13 @@ func (a *App) inspectWorktreeRemoval(
 	if err != nil {
 		return worktreeRemoval{}, err
 	}
-	if environmentLink != nil {
-		dirty = statusWithoutManagedEnvironmentLink(dirty)
+	if len(environmentLinks) > 0 {
+		dirty = statusWithoutManagedEnvironmentLinks(dirty, environmentLinks)
 	}
 	if dirty != "" {
 		return worktreeRemoval{}, worktreeDirtyError{path: selected.path, status: dirty}
 	}
-	return worktreeRemoval{entry: selected, environmentLink: environmentLink}, nil
+	return worktreeRemoval{entry: selected, environmentLinks: environmentLinks}, nil
 }
 
 func (a *App) executeWorktreeRemoval(
@@ -99,27 +99,46 @@ func (a *App) executeWorktreeRemoval(
 	repo repository,
 	removal worktreeRemoval,
 ) error {
-	environmentLink := removal.environmentLink
-	if environmentLink != nil {
+	removedLinks := make([]managedEnvironmentLink, 0, len(removal.environmentLinks))
+	for _, environmentLink := range removal.environmentLinks {
 		if err := os.Remove(environmentLink.path); err != nil {
+			restoreErr := restoreManagedEnvironmentLinks(removedLinks)
+			if restoreErr != nil {
+				return fmt.Errorf(
+					"remove managed environment symlink %s: %w; additionally failed to restore an environment symlink: %v",
+					environmentLink.path,
+					err,
+					restoreErr,
+				)
+			}
 			return fmt.Errorf("remove managed environment symlink %s: %w", environmentLink.path, err)
 		}
+		removedLinks = append(removedLinks, environmentLink)
 	}
 	if _, err := a.git(ctx, repo.top, "worktree", "remove", removal.entry.path); err != nil {
-		if environmentLink == nil {
+		if len(removedLinks) == 0 {
 			return err
 		}
-		if restoreErr := os.Symlink(environmentLink.target, environmentLink.path); restoreErr != nil {
+		if restoreErr := restoreManagedEnvironmentLinks(removedLinks); restoreErr != nil {
 			return fmt.Errorf(
-				"%w; additionally failed to restore environment symlink %s: %v",
+				"%w; additionally failed to restore environment symlinks: %v",
 				err,
-				environmentLink.path,
 				restoreErr,
 			)
 		}
-		return fmt.Errorf("%w; restored environment symlink %s", err, environmentLink.path)
+		return fmt.Errorf("%w; restored environment symlink(s)", err)
 	}
 	return nil
+}
+
+func restoreManagedEnvironmentLinks(environmentLinks []managedEnvironmentLink) error {
+	var restoreErrors []error
+	for _, environmentLink := range environmentLinks {
+		if err := os.Symlink(environmentLink.target, environmentLink.path); err != nil {
+			restoreErrors = append(restoreErrors, fmt.Errorf("%s: %w", environmentLink.path, err))
+		}
+	}
+	return errors.Join(restoreErrors...)
 }
 
 func (a *App) ensurePublished(ctx context.Context, selected worktreeEntry) error {
@@ -159,11 +178,29 @@ func (a *App) ensurePublished(ctx context.Context, selected worktreeEntry) error
 	return nil
 }
 
+func inspectManagedEnvironmentLinks(
+	sourceRoot string,
+	worktreePath string,
+) ([]managedEnvironmentLink, error) {
+	environmentLinks := make([]managedEnvironmentLink, 0, len(environmentFileNames))
+	for _, name := range environmentFileNames {
+		environmentLink, err := inspectManagedEnvironmentLink(sourceRoot, worktreePath, name)
+		if err != nil {
+			return nil, err
+		}
+		if environmentLink != nil {
+			environmentLinks = append(environmentLinks, *environmentLink)
+		}
+	}
+	return environmentLinks, nil
+}
+
 func inspectManagedEnvironmentLink(
 	sourceRoot string,
 	worktreePath string,
+	name string,
 ) (*managedEnvironmentLink, error) {
-	path := filepath.Join(worktreePath, environmentFileName)
+	path := filepath.Join(worktreePath, name)
 	info, err := os.Lstat(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
@@ -172,12 +209,15 @@ func inspectManagedEnvironmentLink(
 		return nil, fmt.Errorf("inspect worktree environment file %s: %w", path, err)
 	}
 	if info.Mode()&os.ModeSymlink == 0 {
+		if name == environmentRCFileName {
+			return nil, nil
+		}
 		return nil, fmt.Errorf(
 			"%s is not a GitWT-managed environment symlink; refusing removal",
 			path,
 		)
 	}
-	expectedSource := filepath.Join(sourceRoot, environmentFileName)
+	expectedSource := filepath.Join(sourceRoot, name)
 	matches, target, err := environmentSymlinkMatches(path, expectedSource)
 	if err != nil {
 		return nil, err
@@ -192,11 +232,14 @@ func inspectManagedEnvironmentLink(
 	return &managedEnvironmentLink{path: path, target: target}, nil
 }
 
-func statusWithoutManagedEnvironmentLink(status string) string {
+func statusWithoutManagedEnvironmentLinks(
+	status string,
+	environmentLinks []managedEnvironmentLink,
+) string {
 	lines := strings.Split(status, "\n")
 	kept := lines[:0]
 	for _, line := range lines {
-		if line == "?? "+environmentFileName || line == "!! "+environmentFileName {
+		if isManagedEnvironmentLinkStatus(line, environmentLinks) {
 			continue
 		}
 		if line != "" {
@@ -204,4 +247,17 @@ func statusWithoutManagedEnvironmentLink(status string) string {
 		}
 	}
 	return strings.Join(kept, "\n")
+}
+
+func isManagedEnvironmentLinkStatus(
+	line string,
+	environmentLinks []managedEnvironmentLink,
+) bool {
+	for _, environmentLink := range environmentLinks {
+		name := filepath.Base(environmentLink.path)
+		if line == "?? "+name || line == "!! "+name {
+			return true
+		}
+	}
+	return false
 }

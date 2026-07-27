@@ -11,6 +11,7 @@ import (
 func TestWritableLaneCreatedFromLinkedLaneUsesPrimaryEnvironment(t *testing.T) {
 	fixture := newGitFixture(t)
 	source := writeEnvironmentSource(t, fixture, "TOKEN=primary\n")
+	rcSource := writeEnvironmentRCSource(t, fixture, "dotenv\n")
 	runGit(t, fixture.primary, "branch", "--track", "topic/source-lane", "origin/main")
 	runGit(t, fixture.primary, "branch", "--track", "topic/target-lane", "origin/main")
 	runWT(t, fixture.app, fixture.primary, "add", "topic/source-lane")
@@ -31,6 +32,7 @@ func TestWritableLaneCreatedFromLinkedLaneUsesPrimaryEnvironment(t *testing.T) {
 		"target-lane",
 		environmentFileName,
 	)
+	targetEnvironmentRC := filepath.Join(filepath.Dir(targetEnvironment), environmentRCFileName)
 
 	target, err := os.Readlink(targetEnvironment)
 	if err != nil {
@@ -43,6 +45,7 @@ func TestWritableLaneCreatedFromLinkedLaneUsesPrimaryEnvironment(t *testing.T) {
 	if target != expectedSource {
 		t.Fatalf("target environment link = %q, want primary source %q", target, expectedSource)
 	}
+	assertEnvironmentSymlink(t, targetEnvironmentRC, rcSource)
 
 	runWT(t, fixture.app, fixture.primary, "remove", "topic/source-lane")
 	data, err := os.ReadFile(targetEnvironment)
@@ -51,6 +54,9 @@ func TestWritableLaneCreatedFromLinkedLaneUsesPrimaryEnvironment(t *testing.T) {
 	}
 	if string(data) != "TOKEN=primary\n" {
 		t.Fatalf("target environment contents = %q", data)
+	}
+	if data, err := os.ReadFile(targetEnvironmentRC); err != nil || string(data) != "dotenv\n" {
+		t.Fatalf("target environment configuration broke: data=%q err=%v", data, err)
 	}
 }
 
@@ -65,8 +71,8 @@ func TestHelpDocumentsWritableEnvironmentOptOut(t *testing.T) {
 		"list [flags]",
 		"--plain",
 		"path <lane>",
-		"primary checkout's .env",
-		".envrc is never linked automatically",
+		"primary checkout's .env and .envrc",
+		"omit both links",
 		"No command starts applications or manages databases, ports, or runtime services",
 	} {
 		if !strings.Contains(fixture.out.String(), want) {
@@ -88,6 +94,15 @@ func TestHelpDocumentsWritableEnvironmentOptOut(t *testing.T) {
 func writeEnvironmentSource(t *testing.T, fixture gitFixture, contents string) string {
 	t.Helper()
 	path := filepath.Join(fixture.primary, environmentFileName)
+	if err := os.WriteFile(path, []byte(contents), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func writeEnvironmentRCSource(t *testing.T, fixture gitFixture, contents string) string {
+	t.Helper()
+	path := filepath.Join(fixture.primary, environmentRCFileName)
 	if err := os.WriteFile(path, []byte(contents), 0o600); err != nil {
 		t.Fatal(err)
 	}

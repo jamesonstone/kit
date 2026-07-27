@@ -54,7 +54,7 @@ func workflowCapabilityRecords() []capabilityRecord {
 			"Run a coding-agent correctness review loop over changes not in the remote mainline.",
 			mutationExecutesCommands,
 			withNetwork("none by default", "--pr reads PR metadata and review feedback through gh and fetches origin while resolving the writable PR head"),
-			withFileWrites("writes loop prompts, stdout, stderr, and run summaries under .kit/loops; delegated agent may edit local project files", "--pr may create the canonical PR-head worktree and link the primary checkout's exact .env"),
+			withFileWrites("writes loop prompts, stdout, stderr, and run summaries under .kit/loops; delegated agent may edit local project files", "--pr may create the canonical PR-head worktree and link the primary checkout's exact .env and .envrc"),
 			withGitMutation("none without --pr", "--pr may fetch origin and add or attach the exact PR-head worktree; it never stages, commits, pushes, comments, or resolves threads"),
 			withFlags(
 				flag("--base", "override the comparison base; default is origin/main, then main"),
