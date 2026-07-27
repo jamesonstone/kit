@@ -20,7 +20,7 @@ func isSafeProjectPart(value string) bool {
 	return value != "." && value != ".." && safeProjectPart.MatchString(value)
 }
 
-const usage = `Usage: git wt <command> [arguments]
+const usage = `Usage: git wt [command] [arguments]
 
 Safe worktrees live at ~/worktrees/<owner>/<repository>/<lane>.
 
@@ -30,7 +30,7 @@ Commands:
   add <branch> [--no-link-env]     Open an existing local or origin branch
   pr <number>                      Create or refresh detached inspection lane PR-<number>
   repair <number> [--no-link-env]  Open a same-repository PR's writable head branch
-  list [flags]                     List this clone's worktrees without pruning
+  list [flags]                     List this clone's worktrees without pruning (default)
   sync [--dry-run] [--json]       Reconcile origin and proven merged worktree lanes
   home                             Open a shell in this clone's primary worktree
   root                             Print the canonical linked-worktree directory
@@ -140,7 +140,7 @@ func NewApp(out, errOut io.Writer) *App {
 // Run executes one command from cwd.
 func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 	if len(args) == 0 {
-		return a.writef("%s\n", usage)
+		return a.list(ctx, cwd, nil)
 	}
 
 	switch args[0] {
