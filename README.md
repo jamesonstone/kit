@@ -119,7 +119,7 @@ the complete durable truth.
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
 | `git wt help`, `git wt --help` | Show help for the optional project-oriented worktree convenience |
-| `git wt`, `git wt list [--root-position top\|bottom]` | Select a worktree with the primary checkout pinned and bright green; local `LAST UPDATED` includes the day and `HH:MM`, and `h` opens home |
+| `git wt`, `git wt list [--root-position top\|bottom]` | Select a worktree with the primary checkout pinned and bright green; `PR#` is a two-second fail-soft GitHub annotation, local `LAST UPDATED` includes the day and `HH:MM`, and `h` opens home |
 | `git wt home` | Open a child shell in Git's primary worktree from any linked lane |
 | `git wt sync [--dry-run] [--json]` | Explicitly refresh the discovered origin default branch and retire only exact clean lanes proven merged by GitHub; dry-run is strictly non-mutating |
 

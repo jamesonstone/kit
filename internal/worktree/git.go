@@ -19,6 +19,7 @@ type worktreeEntry struct {
 	prunable    bool
 	lastUpdated time.Time
 	updatedText string
+	prText      string
 	state       string
 }
 

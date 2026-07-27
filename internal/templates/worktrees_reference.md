@@ -70,6 +70,13 @@ git wt list --root-position bottom
 git wt home
 ```
 
+The `PR#` column runs one batched `gh` lookup for open same-repository pull
+requests and stops that lookup after two seconds. An exact branch match shows
+the pull request number; a successful lookup without a match shows `-`.
+Multiple matches appear as ascending comma-separated numbers. Failures never
+prevent listing: `NG` means `gh` is unavailable, `RL` means GitHub rate
+limiting, `TO` means timeout, and `??` means another lookup or decode failure.
+
 For direct branch navigation, use `git wt <branch>`, for example
 `git wt GH-93`. Existing registered lanes open immediately. Missing lanes ask
 `do you want to create this worktree? (y/n)`. If the requested branch already
@@ -81,8 +88,9 @@ default branch; `n` exits without changes.
 worktree. Use it when returning to the clone's stable home checkout without
 looking up a lane name.
 
-Listing never fetches, prunes, or consults GitHub. Use the separate maintenance
-command when live reconciliation is intended:
+Listing never fetches, prunes, changes Git state, or requires GitHub to
+succeed. Its bounded pull-request annotation is read-only and fail-soft. Use
+the separate maintenance command when live reconciliation is intended:
 
 ```bash
 git wt sync --dry-run

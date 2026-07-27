@@ -38,6 +38,9 @@ func newGitFixture(t *testing.T) gitFixture {
 
 	out := &bytes.Buffer{}
 	app := NewApp(out, &bytes.Buffer{})
+	app.resolveListPRs = func(context.Context, string) listPRLookup {
+		return successfulListPRLookup(nil)
+	}
 	app.getenv = func(key string) string {
 		if key == "GIT_WT_ROOT" {
 			return worktreeRoot
@@ -72,7 +75,7 @@ func runWT(t *testing.T, app *App, cwd string, args ...string) {
 
 func runGit(t *testing.T, cwd string, args ...string) {
 	t.Helper()
-	cmd := exec.Command("git", args...)
+	cmd := gitCommand(cwd, args...)
 	cmd.Dir = cwd
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -82,13 +85,20 @@ func runGit(t *testing.T, cwd string, args ...string) {
 
 func gitText(t *testing.T, cwd string, args ...string) string {
 	t.Helper()
-	cmd := exec.Command("git", args...)
+	cmd := gitCommand(cwd, args...)
 	cmd.Dir = cwd
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return ""
 	}
 	return strings.TrimSpace(string(output))
+}
+
+func gitCommand(cwd string, args ...string) *exec.Cmd {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = cwd
+	cmd.Env = append(os.Environ(), "GIT_CONFIG_COUNT=1", "GIT_CONFIG_KEY_0=safe.bareRepository", "GIT_CONFIG_VALUE_0=all")
+	return cmd
 }
 
 func assertBranch(t *testing.T, path, want string) {
