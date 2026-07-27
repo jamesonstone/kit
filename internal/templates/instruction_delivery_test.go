@@ -193,6 +193,74 @@ func TestMemoryRepositoryInstructionsRouteApplicationArchitecture(t *testing.T) 
 	}
 }
 
+func TestInstructionTemplatesRouteTestingAndEnvironmentValidation(t *testing.T) {
+	routes := []string{
+		"load `docs/references/rules/testing-and-environment-validation.md`",
+		"the project's `docs/references/testing.md`",
+		"end-to-end and live-integration suites supplement rather than replace them",
+	}
+	for name, content := range map[string]string{
+		"V2 AGENTS.md":                       AgentsMD,
+		"V2 CLAUDE.md":                       ClaudeMD,
+		"V2 .github/copilot-instructions.md": CopilotInstructionsMD,
+		"V3 AGENTS.md":                       MemoryAgentsMD,
+		"V3 CLAUDE.md":                       MemoryClaudeMD,
+		"V3 .github/copilot-instructions.md": MemoryCopilotInstructionsMD,
+	} {
+		for _, route := range routes {
+			if !strings.Contains(content, route) {
+				t.Errorf("expected %s to contain testing route %q", name, route)
+			}
+		}
+	}
+
+	for _, version := range []int{
+		config.InstructionScaffoldVersionTOC,
+		config.InstructionScaffoldVersionMemory,
+	} {
+		generatedRLM := fileContentByPath(
+			InstructionSupportFiles(version),
+			"docs/agents/RLM.md",
+		)
+		for _, route := range []string{
+			"`docs/references/rules/testing-and-environment-validation.md`",
+			"`docs/references/testing.md`",
+			"before implementation or validation",
+		} {
+			if !strings.Contains(generatedRLM, route) {
+				t.Errorf("expected version %d RLM guidance to contain %q", version, route)
+			}
+		}
+	}
+
+	generatedTesting := fileContentByPath(
+		InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
+		"docs/references/testing.md",
+	)
+	for _, check := range []string{
+		"rules/testing-and-environment-validation.md",
+		"## Code-Level Validation",
+		"## High-Level Suites",
+		"## Environment Preflights",
+		"## Credentials And Test Data",
+		"## Evidence And Retention",
+		"`tests/RUN_STATUS.md`",
+		"## Automation And Fallbacks",
+		"## Known Gaps",
+	} {
+		if !strings.Contains(generatedTesting, check) {
+			t.Errorf("expected generated testing reference to contain %q", check)
+		}
+	}
+	checkedInTesting, err := os.ReadFile(filepath.Join("..", "..", "docs", "references", "testing.md"))
+	if err != nil {
+		t.Fatalf("read checked-in testing reference: %v", err)
+	}
+	if string(checkedInTesting) != generatedTesting {
+		t.Fatal("checked-in testing reference is not aligned with the V3 generator")
+	}
+}
+
 func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 	defaultChecks := []string{
 		"## GitHub Delivery Hard Gate",

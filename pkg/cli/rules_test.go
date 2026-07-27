@@ -182,6 +182,67 @@ func TestApplicationArchitectureRegistryRulesetsAreValid(t *testing.T) {
 	}
 }
 
+func TestTestingAndEnvironmentValidationRegistryRulesetIsValid(t *testing.T) {
+	const slug = "testing-and-environment-validation"
+	path := filepath.Join("..", "..", "docs", "references", "rules", slug+".md")
+	ruleset, err := parseRulesetFile(path)
+	if err != nil {
+		t.Fatalf("parseRulesetFile() error = %v", err)
+	}
+	if issues := validateRulesetDocument(ruleset, slug); len(issues) > 0 {
+		t.Fatalf("%s ruleset issues = %#v", slug, issues)
+	}
+	if ruleset.Metadata.RegistryScope != rulesetRegistryScopeDownstream {
+		t.Fatalf("registry_scope = %q, want downstream", ruleset.Metadata.RegistryScope)
+	}
+	if ruleset.Metadata.ReadPolicyDefault != document.ReferenceReadPolicyMust {
+		t.Fatalf("read_policy_default = %q, want must", ruleset.Metadata.ReadPolicyDefault)
+	}
+	for _, appliesTo := range []string{
+		"implementation",
+		"testing",
+		"validation",
+		"ci",
+		"deployment",
+		"local",
+		"production",
+		"end-to-end",
+		"live-integration",
+	} {
+		if !slices.Contains(ruleset.Metadata.AppliesTo, appliesTo) {
+			t.Errorf("applies_to = %#v, want %q", ruleset.Metadata.AppliesTo, appliesTo)
+		}
+	}
+	for _, check := range []string{
+		"Confidence, Not Certainty",
+		"supplement code-level tests and never",
+		"end-to-end/",
+		"live-integration/",
+		"tmp/<UTC-date>/<stable-test-id>/<positive-run-number>/",
+		"`output.txt`",
+		"`result.json`",
+		"`PASS`, `FAIL`, `PARTIAL`, `BLOCKED`",
+		"tests/RUN_STATUS.md",
+		"one current row per suite and environment",
+		"kit-e2e-<project>-<environment>-<run-id>-<resource>[-<ordinal>]",
+		"Cleanup must select both the `kit-e2e-` marker and exact run ID",
+		"report `PARTIAL`, not complete end-to-end validation",
+		"Never use customer data",
+	} {
+		if !strings.Contains(ruleset.Body, check) {
+			t.Errorf("expected %s ruleset to contain %q", slug, check)
+		}
+	}
+
+	index, err := os.ReadFile(filepath.Join("..", "..", "docs", "references", "README.md"))
+	if err != nil {
+		t.Fatalf("read references index: %v", err)
+	}
+	if !strings.Contains(string(index), "| `testing-and-environment-validation` |") {
+		t.Fatal("references index does not list testing-and-environment-validation")
+	}
+}
+
 func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 	path := filepath.Join("..", "..", "docs", "references", "rules", "github-pr-delivery.md")
 	ruleset, err := parseRulesetFile(path)

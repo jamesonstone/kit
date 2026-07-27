@@ -156,6 +156,7 @@ const referencesREADME = `# References
 - Use ` + "`rules/kit-capabilities-usage.md`" + ` in downstream projects for Kit command discovery guidance
 - Use ` + "`rules/feature-notes.md`" + ` when deciding how to load, reference, promote, or ignore source material under ` + "`docs/notes/<feature>`" + `
 - Use ` + "`rules/constitution-curation.md`" + ` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
+- Use ` + "`rules/testing-and-environment-validation.md`" + ` before implementation and validation to preserve code-level checks and add environment evidence safely
 - Use ` + "`worktrees.md`" + ` when present for the canonical native Git worktree hierarchy, naming, shared-state model, safety contract, and optional manual convenience commands
 - Use ` + "`kit rules add`" + ` to import or activate available registry rulesets from the Kit GitHub ` + "`main`" + ` branch
 - Use ` + "`kit rules view <slug>`" + ` to preview a local or registry ruleset before importing it
@@ -176,12 +177,45 @@ const referencesTesting = `# Testing Reference
 
 ## Purpose
 
-- Record durable repo-wide testing guidance that is broader than one feature
+- Record the project's durable commands, suites, environments, automation, and evidence expectations
+- Follow ` + "`rules/testing-and-environment-validation.md`" + ` for the mandatory cross-project testing and production-safety contract
 - Keep feature-specific testing details in the current feature's ` + "`SPEC.md`" + ` Validation Map and Evidence sections; legacy staged flows may still use ` + "`PLAN.md`" + ` or ` + "`TASKS.md`" + `
 
-## Current State
+## Code-Level Validation
 
-- add project-specific testing guidance here when it becomes stable enough to reuse across features
+| Layer | Command | PR workflow or check | Required | Notes |
+| --- | --- | --- | --- | --- |
+| Project-specific | Document the canonical command | Document the GitHub Actions job | yes or no | Record fixtures, services, and scope |
+
+## High-Level Suites
+
+| Suite | Type | Environment | Command | Automation | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| Project-specific | end-to-end or live-integration | local or production | Document the ordered invocation | PR, post-deploy, or manual fallback | ` + "`tmp/<UTC-date>/<test>/<run-number>/`" + ` |
+
+## Environment Preflights
+
+- Document exact local topology, target identity, deployed-version checks, dependencies, and timeouts
+- Document which environments are not applicable instead of creating artificial suites
+
+## Credentials And Test Data
+
+- List credential and secret names without values
+- Document synthetic-data naming, rate and cost limits, cleanup, and retention
+
+## Evidence And Retention
+
+- Keep ` + "`tmp/`" + ` ignored and record CI artifact locations and retention
+- Keep ` + "`tests/RUN_STATUS.md`" + ` curated at meaningful validation milestones
+
+## Automation And Fallbacks
+
+- Map code-level checks to pull-request jobs and high-level suites to PR or post-deployment jobs when feasible
+- Document ordered operator commands when safe automation is unavailable
+
+## Known Gaps
+
+- Record partial, blocked, skipped, and unavailable validation literally
 `
 
 const referencesTooling = `# Tooling Reference

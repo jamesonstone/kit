@@ -114,10 +114,11 @@ func TestRunInitRefresh_InstallsDownstreamCapabilitiesUsageRuleNotMaintainerRule
 	}
 }
 
-func TestRunInitRefresh_InstallsApplicationArchitectureRules(t *testing.T) {
+func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 	slugs := []string{
 		"backend-service-architecture",
 		"frontend-application-architecture",
+		"testing-and-environment-validation",
 	}
 	registry := make([]registryRuleset, 0, len(slugs))
 	for _, slug := range slugs {
