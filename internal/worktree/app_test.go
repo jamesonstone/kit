@@ -1,7 +1,6 @@
 package worktree
 
 import (
-	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -247,12 +246,4 @@ func TestParseListOptionsRejectsUnknownSort(t *testing.T) {
 	if _, err := parseListOptions([]string{"--root-position", "middle"}); err == nil {
 		t.Fatal("unknown root position should fail")
 	}
-}
-
-type gitFixture struct {
-	app          *App
-	out          *bytes.Buffer
-	remote       string
-	primary      string
-	worktreeRoot string
 }

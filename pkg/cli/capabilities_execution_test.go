@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCapabilitiesTargetedJSONAdditional(t *testing.T) {
+func TestCapabilitiesExecutionCommandsJSON(t *testing.T) {
 	output, err := executeCapabilitiesCommand("--json", "legacy", "verify")
 	if err != nil {
 		t.Fatalf("kit capabilities legacy verify --json error = %v", err)

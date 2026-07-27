@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCapabilitiesTargetedJSONLoopAndPR(t *testing.T) {
+func TestCapabilitiesWorkflowCommandsJSON(t *testing.T) {
 	loopPromptOutput, err := executeCapabilitiesCommand("--json", "loop", "prompt")
 	if err != nil {
 		t.Fatalf("kit capabilities loop prompt --json error = %v", err)

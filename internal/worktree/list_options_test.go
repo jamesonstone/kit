@@ -39,11 +39,11 @@ func normalizedTerminalState(state *term.State) []uint64 {
 }
 
 func TestParseListOptionsRecognizesPlain(t *testing.T) {
-	options, err := parseListOptions([]string{"--sort", "head", "--reverse", "--plain"})
+	options, err := parseListOptions([]string{"--sort", "head", "--root-position", "bottom", "--reverse", "--plain"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if options.sortBy != "head" || !options.reverse || !options.plain {
+	if options.sortBy != "head" || options.rootPosition != "bottom" || !options.reverse || !options.plain {
 		t.Fatalf("options = %#v", options)
 	}
 }
