@@ -72,9 +72,11 @@ git wt home
 
 For direct branch navigation, use `git wt <branch>`, for example
 `git wt GH-93`. Existing registered lanes open immediately. Missing lanes ask
-`do you want to create this worktree? (y/n)`; answering `y` creates the branch
-from the origin default branch in the canonical owner/repository directory and
-opens it, while `n` exits without changes.
+`do you want to create this worktree? (y/n)`. If the requested branch already
+exists locally or on origin, answering `y` attaches that branch in the
+canonical owner/repository directory. Only when the branch exists in neither
+the local repository nor origin does answering `y` create it from the origin
+default branch; `n` exits without changes.
 `git wt home` opens the same primary checkout in a child shell from any linked
 worktree. Use it when returning to the clone's stable home checkout without
 looking up a lane name.

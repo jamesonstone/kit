@@ -394,7 +394,7 @@ func capabilityCatalog() []capabilityRecord {
 			withGitMutation("reads registered worktrees and may create a branch and worktree after interactive confirmation"),
 			withWhenToUse("Use for quick interactive navigation to a branch such as GH-93."),
 			withExamples("git wt GH-93"),
-			withCaveats("Existing lanes open a child shell; the command cannot change the parent shell's directory.", "Missing lanes prompt exactly `do you want to create this worktree? (y/n)` and create from origin's default branch only after a `y` response."),
+			withCaveats("Existing lanes open a child shell; the command cannot change the parent shell's directory.", "Missing lanes prompt exactly `do you want to create this worktree? (y/n)`. A local or origin branch is attached after `y`; origin-default creation happens only when the branch exists in neither the local repository nor origin."),
 		),
 		capability(
 			"git wt cd",
