@@ -34,10 +34,11 @@ The separately installed `git-wt` executable is an optional manual convenience
 discovered by Git as `git wt`. Kit-managed rules and reconciled guidance use
 native `git worktree` commands and do not depend on this wrapper. For the
 portable workflow and optional command cheat sheet, see
-[references/worktrees.md](references/worktrees.md). Use `git wt help` for
-command discovery; Git reserves
-`git <command> --help` for installed manual pages. Writable `issue`, `add`, and
-`repair` lanes link the clone's primary checkout `.env` by default; append
+[references/worktrees.md](references/worktrees.md). Running `git wt` with no
+command opens the same worktree list as `git wt list`. Use `git wt help` for
+command help; the source installer also installs the `git-wt(1)` manual used by
+Git for `git wt --help`. Writable `issue`, `add`, and `repair` lanes link the
+clone's primary checkout `.env` by default; append
 `--no-link-env` when isolation is required. Detached `pr` lanes and migration do
 not create environment links. `git wt home` opens a child shell in Git's primary
 worktree. `git wt cd GH-123` does the same for an exact registered lane. To

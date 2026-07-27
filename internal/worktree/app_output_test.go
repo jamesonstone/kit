@@ -1,12 +1,41 @@
 package worktree
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"strings"
 	"testing"
 )
+
+func TestRootCommandRunsList(t *testing.T) {
+	fixture := newGitFixture(t)
+
+	runWT(t, fixture.app, fixture.primary)
+	got := fixture.out.String()
+
+	fixture.out.Reset()
+	runWT(t, fixture.app, fixture.primary, "list")
+	if want := fixture.out.String(); got != want {
+		t.Fatalf("root command output differs from list:\nroot:\n%s\nlist:\n%s", got, want)
+	}
+}
+
+func TestHelpCommandsShowUsage(t *testing.T) {
+	for _, args := range [][]string{{"help"}, {"--help"}} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			var out bytes.Buffer
+			app := NewApp(&out, io.Discard)
+			if err := app.Run(context.Background(), t.TempDir(), args); err != nil {
+				t.Fatalf("Run(%q) error = %v", args, err)
+			}
+			if !strings.Contains(out.String(), "Usage: git wt [command] [arguments]") {
+				t.Fatalf("Run(%q) output:\n%s", args, out.String())
+			}
+		})
+	}
+}
 
 func TestUnknownCommandShowsHelp(t *testing.T) {
 	fixture := newGitFixture(t)
