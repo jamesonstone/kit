@@ -20,6 +20,11 @@ func tocRepositoryInstructions(title string) string {
 - ` + "`docs/agents/RLM.md`" + ` — just-in-time context loading when broad context would be noisy
 - ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary inputs
 
+## Testing And Validation Gate
+
+- Before implementation or validation, load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and the project's ` + "`docs/references/testing.md`" + `
+- Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them
+
 ## GitHub Delivery Hard Gate
 
 - In Kit-managed projects, issue, branch, staging, commit, push, and PR actions are mutation boundaries
@@ -79,6 +84,11 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - ` + "`docs/agents/GUARDRAILS.md`" + ` — hard completion and safety rules
 - ` + "`docs/agents/RLM.md`" + ` — just-in-time context routing
 - ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary inputs
+
+## Testing And Validation Gate
+
+- Before implementation or validation, load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and the project's ` + "`docs/references/testing.md`" + `
+- Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them
 
 ## GitHub Delivery Hard Gate
 
@@ -255,6 +265,7 @@ const agentsRLM = `# RLM
 - Promote durable conclusions from notes into ` + "`SPEC.md`" + `, ` + "`docs/CONSTITUTION.md`" + `, or durable references, and record materially used note files in front matter references
 - Load ` + "`docs/references/rules/backend-service-architecture.md`" + ` before implementing API or backend routes, controllers or handlers, application services, repositories, persistence adapters, or gateways
 - Load ` + "`docs/references/rules/frontend-application-architecture.md`" + ` before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components
+- Load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and ` + "`docs/references/testing.md`" + ` before implementation or validation
 - Load ` + "`docs/references/rules/agent-team-orchestration.md`" + ` only when the immediate decision includes execution topology, subagent lanes, or read-only verification; do not load it for trivial single-lane tasks
 - Use indices first: start with ` + "`kit map <feature>`" + ` and ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` to shortlist candidate prior features under ` + "`docs/specs/`" + `
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only

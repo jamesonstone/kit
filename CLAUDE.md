@@ -33,6 +33,11 @@
 - `docs/agents/RLM.md` — just-in-time context loading
 - `docs/agents/TOOLING.md` — skills, post-plan dispatch, and secondary inputs
 
+## Testing And Validation Gate
+
+- Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`
+- Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them
+
 ## Application Architecture Gate
 
 - Before implementing API or backend routes, controllers or handlers, services, repositories, persistence adapters, or gateways, load `docs/references/rules/backend-service-architecture.md`

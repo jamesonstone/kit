@@ -54,6 +54,7 @@
 | 0050 | safe-worktree-workflow | `docs/specs/0050-safe-worktree-workflow` | complete | no | 2026-07-24 | Provide a portable native Git worktree policy plus an optional thin `git wt` convenience for exact navigation, default writable-lane `.env` symlinks, explicit isolation, and conservative removal. |
 | 0051 | resolve-pr-repair-worktrees | `docs/specs/0051-resolve-pr-repair-worktrees` | deliver | no | 2026-07-26 | Resolve target-bearing PR and CI repair commands to the exact writable branch worktree, create or attach the lane when needed, and carry dirty-state decisions into explicit agent instructions. |
 | 0052 | worktree-sync | `docs/specs/0052-worktree-sync` | deliver | no | 2026-07-26 | Add an explicit `git wt sync` command that safely reconciles the origin default branch, removes only exact merged-PR worktrees and their local branches, prunes stale metadata, and supports deterministic human/JSON dry-run reporting. |
+| 0053 | testing-and-environment-validation | `docs/specs/0053-testing-and-environment-validation` | complete | no | 2026-07-27 | Provide one mandatory downstream testing rule that keeps language-native code-level tests and pull-request CI authoritative while adding consistent local, live-integration, and production end-to-end validation, evidence, and production-safety contracts across Kit-managed projects. |
 
 ## PROJECT INTENT
 
@@ -516,6 +517,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: review and merge the ready pull request for issue #93
 - **POINTERS**: `docs/specs/0052-worktree-sync/SPEC.md`, `internal/worktree`, `docs/references/worktrees.md`, `docs/references/rules/command-capabilities.md`
 
+### testing-and-environment-validation
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Provide one mandatory downstream testing rule that keeps language-native code-level tests and pull-request CI authoritative while adding consistent local, live-integration, and production end-to-end validation, evidence, and production-safety contracts across Kit-managed projects.
+- **APPROACH**: 1. Add the canonical mandatory downstream rule with explicit code-level, high-level suite, evidence, status-map, automation, and production-safety contracts. 2. Expand the managed testing reference and ruleset index so projects can record their concrete commands, environment prerequisites, automation, and gaps. 3. Add concise testing gates to generated V2/V3 repository instructions, Copilot guidance, and RLM routing, then align checked-in artifacts. 4. Add focused ruleset, refresh-adoption, reference-template, and instruction routing tests. 5. Validate the focused and complete repository surfaces, curate repository memory, and deliver issue #98 through `GH-98` as a ready pull request.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0053-testing-and-environment-validation/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-26 17:18:16 EDT
+2026-07-27 10:09:53 EDT
