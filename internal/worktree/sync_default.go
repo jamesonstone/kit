@@ -132,8 +132,34 @@ func (a *App) reconcileDefaultBranch(
 			report.addFailure(operation, decision.Path, err)
 			return decision
 		}
+		reachedOID, err := a.gitText(
+			ctx,
+			repo.top,
+			"rev-parse",
+			"--verify",
+			"refs/heads/"+branch,
+		)
+		if err != nil {
+			verificationErr := fmt.Errorf("verify fast-forwarded default branch: %w", err)
+			decision.Action = "failed"
+			decision.Detail = verificationErr.Error()
+			report.addFailure("verify-default-ref", decision.Path, verificationErr)
+			return decision
+		}
+		if reachedOID != remoteOID {
+			err := fmt.Errorf(
+				"fast-forwarded default branch to %s, expected %s",
+				reachedOID,
+				remoteOID,
+			)
+			decision.Action = "failed"
+			decision.Detail = err.Error()
+			report.addFailure("verify-default-ref", decision.Path, err)
+			decision.LocalOID = reachedOID
+			return decision
+		}
 		decision.Action = "fast-forwarded"
-		decision.LocalOID = remoteOID
+		decision.LocalOID = reachedOID
 	case remoteBehind && !localBehind:
 		decision.State = "ahead"
 	case !localBehind && !remoteBehind:
@@ -165,7 +191,7 @@ func (a *App) fastForwardDefault(
 			worktreePath,
 			"merge",
 			"--ff-only",
-			"refs/remotes/origin/"+branch,
+			remoteOID,
 		)
 		return err
 	}

@@ -27,7 +27,7 @@ func writeSyncHuman(writer io.Writer, report SyncReport) error {
 		&output,
 		"FETCH\t%s\t%s\n",
 		report.Fetch.Status,
-		report.Fetch.Detail,
+		singleLine(report.Fetch.Detail),
 	)
 	fmt.Fprintf(
 		&output,

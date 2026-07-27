@@ -28,18 +28,17 @@ func (a *App) resolveSyncPullRequests(
 		}
 	}
 	for _, branch := range branches {
-		if len(result[branch]) != 0 {
-			continue
-		}
 		targeted, targetErr := a.querySyncPullRequests(ctx, cwd, repository, branch)
 		if targetErr != nil {
 			return nil, fmt.Errorf("pull-request lookup for %s: %w", branch, targetErr)
 		}
+		confirmed := make([]SyncPullRequest, 0, len(targeted))
 		for _, pr := range targeted {
 			if pr.HeadRefName == branch {
-				result[branch] = append(result[branch], pr)
+				confirmed = append(confirmed, pr)
 			}
 		}
+		result[branch] = confirmed
 	}
 	for branch := range result {
 		sort.Slice(result[branch], func(i, j int) bool {

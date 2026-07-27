@@ -224,13 +224,20 @@ func TestResolveSyncPullRequestsUsesBatchAndExactFallback(t *testing.T) {
 		}
 		calls = append(calls, head)
 		var prs []SyncPullRequest
-		if head == "" {
+		switch head {
+		case "":
 			prs = []SyncPullRequest{
 				mergedSyncPR(80, "topic/batch", "main", strings.Repeat("1", 40)),
 			}
-		} else if head == "topic/fallback" {
+		case "topic/batch":
+			prs = []SyncPullRequest{
+				mergedSyncPR(80, "topic/batch", "main", strings.Repeat("1", 40)),
+				mergedSyncPR(82, "other-head", "main", strings.Repeat("3", 40)),
+			}
+		case "topic/fallback":
 			prs = []SyncPullRequest{
 				mergedSyncPR(81, "topic/fallback", "main", strings.Repeat("2", 40)),
+				mergedSyncPR(83, "other-head", "main", strings.Repeat("4", 40)),
 			}
 		}
 		return json.Marshal(prs)
@@ -247,7 +254,7 @@ func TestResolveSyncPullRequestsUsesBatchAndExactFallback(t *testing.T) {
 	}
 	if len(result["topic/batch"]) != 1 ||
 		len(result["topic/fallback"]) != 1 ||
-		!reflect.DeepEqual(calls, []string{"", "topic/fallback"}) {
+		!reflect.DeepEqual(calls, []string{"", "topic/batch", "topic/fallback"}) {
 		t.Fatalf("result=%#v calls=%#v", result, calls)
 	}
 }
@@ -296,6 +303,25 @@ func TestSyncReportHumanJSONParityAndOutputFailure(t *testing.T) {
 	)
 	if err == nil || !strings.Contains(err.Error(), "write output") {
 		t.Fatalf("output failure error = %v", err)
+	}
+}
+
+func TestSyncHumanFetchDetailIsSingleLine(t *testing.T) {
+	report := SyncReport{
+		Repository: "example/project",
+		Result:     "failed",
+		Fetch: SyncOperation{
+			Status: "failed",
+			Detail: "fetch failed\nwith a second line",
+		},
+	}
+
+	var output bytes.Buffer
+	if err := writeSyncHuman(&output, report); err != nil {
+		t.Fatalf("writeSyncHuman() error = %v", err)
+	}
+	if got, want := output.String(), "SYNC example/project (failed)\nFETCH\tfailed\tfetch failed with a second line\nDEFAULT\t\t\t\nACTION\tBRANCH\tREASON\tPATH\nPRUNE\t\t\nSTATE\tHEAD\tLAST UPDATED\tPATH\n"; got != want {
+		t.Fatalf("human output = %q, want %q", got, want)
 	}
 }
 

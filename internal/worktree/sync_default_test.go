@@ -47,7 +47,8 @@ func TestSyncReconcilesDefaultBranchStates(t *testing.T) {
 			t.Fatalf("sync error = %v", err)
 		}
 		if report.DefaultBranch.State != "behind" ||
-			report.DefaultBranch.Action != "fast-forwarded" {
+			report.DefaultBranch.Action != "fast-forwarded" ||
+			report.DefaultBranch.LocalOID != remoteOID {
 			t.Fatalf("default decision = %#v", report.DefaultBranch)
 		}
 		if got := gitText(t, fixture.primary, "rev-parse", "main"); got != remoteOID {
@@ -65,7 +66,8 @@ func TestSyncReconcilesDefaultBranchStates(t *testing.T) {
 		}
 		if report.DefaultBranch.Path != "" ||
 			report.DefaultBranch.State != "behind" ||
-			report.DefaultBranch.Action != "fast-forwarded" {
+			report.DefaultBranch.Action != "fast-forwarded" ||
+			report.DefaultBranch.LocalOID != remoteOID {
 			t.Fatalf("default decision = %#v", report.DefaultBranch)
 		}
 		if got := gitText(t, fixture.primary, "rev-parse", "main"); got != remoteOID {
