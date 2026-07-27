@@ -38,6 +38,9 @@ func newGitFixture(t *testing.T) gitFixture {
 
 	out := &bytes.Buffer{}
 	app := NewApp(out, &bytes.Buffer{})
+	app.resolveListPRs = func(context.Context, string) listPRLookup {
+		return successfulListPRLookup(nil)
+	}
 	app.getenv = func(key string) string {
 		if key == "GIT_WT_ROOT" {
 			return worktreeRoot

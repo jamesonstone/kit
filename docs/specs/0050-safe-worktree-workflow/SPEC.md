@@ -60,6 +60,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - The accepted convention is `~/worktrees/<owner>/<repository>/<lane>`, with durable issue lanes named `GH-<number>` and temporary detached pull-request views named uppercase `PR-<number>`.
 - The root checkout remains on `main`; each coding agent develops and tests in its assigned durable issue lane without checking that branch out in the root checkout.
 - GitWT remains a thin wrapper around native Git worktree operations. Runtime services, databases, ports, Temporal state, and sibling repositories remain outside its scope.
+- GitHub issue #100 and branch `GH-100` track the follow-up that annotates list
+  rows with open pull request numbers without making GitHub availability a
+  prerequisite for worktree navigation.
 
 ## REQUIREMENTS
 
@@ -80,6 +83,15 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Sanitize every dynamic terminal-table field before alignment and truncation so filesystem or Git metadata cannot inject terminal control sequences.
 - Preserve script-safe listing when input or output is not a terminal and provide `--plain` to request the table explicitly from a terminal.
 - Show `LAST UPDATED` as a human-readable calendar day plus `HH:MM` in the running user's local timezone, omit seconds and finer precision, and retain newest-first sorting by the full commit timestamp.
+- Show `PR#` between `HEAD` and `LAST UPDATED` in both plain and interactive
+  list output. Resolve same-repository open pull requests with one batched
+  `gh` process invocation, match exact head branch names, and use `-` when the
+  successful lookup finds no match. If one branch has multiple open pull
+  requests, show their numbers in ascending comma-separated order.
+- Bound list-time GitHub lookup to two seconds and keep every failure
+  non-blocking. Use stable, distinct markers: `NG` when `gh` is unavailable,
+  `RL` for rate limiting, `TO` for timeout, and `??` for any other lookup or
+  decode failure.
 - Provide a read-only `path <lane>` command that prints only the exact registered worktree path so callers can navigate with `cd "$(git wt path <lane>)"` without fuzzy matching or filesystem mutation.
 - Keep Kit-distributed rules and generated agent instructions portable: native `git worktree` and ordinary filesystem operations define the normative workflow, and no rule may require `git-wt`, `git wt`, `--no-link-env`, or another wrapper-specific command.
 - Document `git wt` only as an optional convenience for manual users. The wrapper may mirror the portable contract but must not define, direct, or become an execution dependency of Kit-managed rules.
@@ -114,6 +126,13 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 10. Promote the portable worktree guide into the V3 instruction support-document registry so `kit reconcile` creates and refreshes the workflow without changing immutable V1 or V2 payloads.
 11. Move list behavior into a focused component, keep non-terminal output deterministic, and add a raw-terminal selector with color, arrow/Tab navigation, explicit cancellation, and child-shell entry for the chosen worktree.
 12. Expose the primary worktree as `git wt home`, pin it independently of list sorting, add the `h` selector shortcut, and reserve bright green for primary/`main` identity.
+13. Add one bounded open-pull-request resolver for list presentation, project
+    exact branch matches into a `PR#` field, and preserve successful listing
+    through explicit failure markers.
+14. Cover successful, empty, missing-CLI, rate-limit, timeout, malformed, and
+    generic failure paths without allowing tests to depend on live GitHub.
+15. Align help, capabilities, command documentation, the canonical worktree
+    guide and template, and the worktree-sync non-mutation boundary.
 
 ## DECISIONS
 
@@ -134,6 +153,12 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Pin home after the requested list sort and reversal so it stays predictably selectable; `--root-position bottom` is the only option that moves the pinned row.
 - Reserve bright green for both the primary checkout and literal `main` rows, even while selected. The pointer still communicates selection without replacing stable home/default-branch identity.
 - Convert commit timestamps into the running user's local timezone only for `git wt list` presentation. Keep the full parsed instant for sorting and retain the existing sync report representation so list localization does not make sync JSON environment-dependent.
+- Keep the optional pull-request annotation read-only and fail-soft rather
+  than adding an opt-in flag: one batched lookup measured 0.37 seconds in Kit,
+  and a two-second timeout bounds the new cost below the accepted three-second
+  threshold.
+- Use short ASCII markers instead of font-dependent glyphs so redirected
+  tables, narrow terminals, logs, and tests retain stable width and meaning.
 
 ## DISCOVERIES
 
@@ -155,6 +180,11 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Darwin pseudo-terminals do not support `os.File` read deadlines, and a goroutine-only cancellation wrapper can leave the underlying read blocked long enough to consume later terminal input. Context-aware readiness reads with exact descriptor-flag restoration avoid both failure modes.
 - Git's porcelain worktree output lists the primary worktree first, so one parsed `primary` marker can drive `git wt home`, list pinning, the `h` shortcut, and identity coloring without network access.
 - RFC 3339 commit dates retain the commit's recorded offset when parsed. An explicit `time.Local` conversion is required before formatting when `LAST UPDATED` must represent the user running the command rather than the commit author.
+- A live `gh pr list --state open --limit 1000 --json
+  number,headRefName` benchmark completed in 0.37 seconds while the existing
+  local list completed in 0.36 seconds. Sequential execution therefore remains
+  comfortably below three seconds in the current repository, and the timeout
+  prevents slow GitHub access from becoming an unbounded navigation delay.
 
 ## VALIDATION
 
@@ -217,6 +247,28 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Built-binary smoke checks from linked worktree `GH-93` proved `git wt list --plain --sort path` pins the exact Git primary path first, `--root-position bottom` pins it last, and capability JSON advertises read-only home resolution, the `h` shortcut, and repository-independent bright-green identity.
 - Local-time follow-up coverage proved date rollover from a commit offset into a different user zone and exact `Jan 02, 2006 15:04` rendering without seconds. Full tests, vet, race tests, feature/project checks, capabilities, build, and diff checks passed.
 - Built-binary smoke output for the same `GH-93` commit was `Jul 26, 2026 17:44` under `America/New_York` and `Jul 26, 2026 21:44` under `UTC`, proving user-zone conversion at minute precision.
+- Issue #100 focused coverage passed exact branch matching, ascending
+  multi-PR rendering, successful no-match display, missing-`gh`, rate-limit,
+  timeout, malformed-response, and generic-failure paths. All failure paths
+  retained successful plain list output.
+- The first complete test run exposed one new capability wording mismatch
+  (`none` versus the asserted `no local mutation`); the capability text was
+  corrected and the final `go test ./... -count=1` passed, including
+  `internal/worktree` in 40.200 seconds and `pkg/cli` in 9.548 seconds.
+- `make fmt`, `make vet`, `go test -race ./internal/worktree ./pkg/cli
+  -count=1`, and `golangci-lint run --new-from-rev=origin/main ./...` passed;
+  lint reported `0 issues` and the race packages passed in 43.037 and 12.302
+  seconds.
+- `make build-windows`, `goreleaser check`, and `make build` passed. The built
+  and installed `git-wt` binaries shared SHA-256
+  `a7bda569bb5e5dbb4a160e3488f41531abddb754b8405f65b6b70a411ddbc6a0`.
+- A built-binary live lookup rendered the five-column
+  `STATE HEAD PR# LAST UPDATED PATH` table and completed in 0.75 seconds. The
+  same command under a PATH with Git but without `gh` still listed every row
+  and rendered `NG`.
+- `kit capabilities git wt list --json`, `kit check
+  safe-worktree-workflow`, `kit check worktree-sync`, and `kit check
+  --project` passed; the project contract remained coherent.
 
 ## OUTCOME
 
@@ -242,25 +294,42 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - The canonical guides map creation, reuse, detached inspection, repair, exact path validation, environment linking, migration, pruning, and conservative removal to native Git. Kit's command docs and LabCore's optional manual section retain `git wt` as a convenience cheat sheet only.
 - Writable lanes now resolve `.env` ownership from Git's primary worktree, so a lane created from another linked lane never depends on that intermediate lane's lifetime.
 - V3 reconciliation now creates and refreshes the portable worktree guide as a managed support document; V1 and V2 payloads and V2 support-document membership remain unchanged.
-- Kit delivery uses issue `#78` and branch `GH-78`; both repositories remain ready for their normal commit, push, and ready-pull-request gates.
+- `git wt list` now shows `PR#` between `HEAD` and `LAST UPDATED`, resolves
+  exact same-repository open pull requests with one two-second batched `gh`
+  invocation, renders multiple matches in ascending comma-separated order, and
+  uses `-` for a successful no-match result.
+- Missing `gh`, rate limiting, timeout, malformed output, and other GitHub
+  failures no longer affect list success; they render `NG`, `RL`, `TO`, and
+  `??` respectively in both plain and interactive output.
+- The pull-request annotation remains read-only, performs no fetch or Git
+  mutation, and leaves explicit worktree synchronization solely with `git wt
+  sync`.
+- The follow-up is tracked by issue `#100` and branch `GH-100`; ready pull
+  request delivery follows the final validation and review gate.
 
 ## REPOSITORY MEMORY
 
 Decision: updated
 
-Rationale: The stable primary-checkout ownership and navigation model, user-local list presentation, and V3 distribution boundary are durable workflow policy that code and wrapper tests alone cannot preserve. The spec records why linked lanes are consumers rather than owners, why home identity survives sorting and selection, and why local time formatting stays isolated from sync reporting. The managed worktree guide gives reconciled V3 projects the complete portable workflow without making the optional wrapper authoritative. No project-wide Constitution rule changed.
+Rationale: The bounded network budget, fail-soft marker meanings, exact branch
+matching, and separation between read-only pull-request annotation and explicit
+worktree synchronization are durable user-facing behavior that code and tests
+alone do not explain completely. The spec and canonical worktree guide now
+preserve those decisions.
+
+Constitution curation result: no project-wide constitutional rule changed.
+The existing Constitution already establishes native Git authority and keeps
+the optional wrapper outside policy dependencies; the annotation details are
+feature-specific.
 
 Artifacts:
 
-- `cmd/git-wt`
 - `internal/worktree`
-- `internal/instructions`
+- `pkg/cli/capabilities_catalog_utilities.go`
 - `docs/specs/0050-safe-worktree-workflow/SPEC.md`
+- `docs/specs/0052-worktree-sync/SPEC.md`
 - `docs/references/worktrees.md`
 - `internal/templates/worktrees_reference.md`
-- `docs/CONSTITUTION.md`
-- `docs/references/rules/safety-guardrails.md`
-- `docs/references/rules/github-pr-delivery.md`
-- Kit-managed instruction and registry policy sources
-- `internal/instructions/versions/v3.md`
-- LabCore `docs/agents/*` and `docs/references/*` worktree guidance
+- `docs/commands.md`
+- `README.md`
+- `docs/PROJECT_PROGRESS_SUMMARY.md`

@@ -48,7 +48,7 @@ func TestListPlainBypassesInteractiveSelector(t *testing.T) {
 	}
 
 	runWT(t, fixture.app, fixture.primary, "list", "--plain")
-	if !strings.Contains(fixture.out.String(), "STATE\tHEAD\tLAST UPDATED\tPATH") {
+	if !strings.Contains(fixture.out.String(), "STATE\tHEAD\tPR#\tLAST UPDATED\tPATH") {
 		t.Fatalf("plain list output:\n%s", fixture.out.String())
 	}
 }
@@ -90,9 +90,9 @@ func TestRenderWorktreeSelectorUsesColorAndReadableDate(t *testing.T) {
 		t.Fatal(err)
 	}
 	entries := []worktreeEntry{
-		{branch: "main", primary: true, state: "clean", updatedText: "Jul 26, 2026 17:44", path: "/tmp/root"},
-		{branch: "GH-86", state: "clean", updatedText: "Jul 26, 2026 17:43", path: "/tmp/GH-86"},
-		{branch: "topic/dirty", state: "dirty", updatedText: "Jul 25, 2026 09:08", path: "/tmp/topic"},
+		{branch: "main", primary: true, state: "clean", prText: "-", updatedText: "Jul 26, 2026 17:44", path: "/tmp/root"},
+		{branch: "GH-86", state: "clean", prText: "94", updatedText: "Jul 26, 2026 17:43", path: "/tmp/GH-86"},
+		{branch: "topic/dirty", state: "dirty", prText: "-", updatedText: "Jul 25, 2026 09:08", path: "/tmp/topic"},
 	}
 	if _, err := renderWorktreeSelector(output, entries, 1); err != nil {
 		t.Fatal(err)
@@ -109,7 +109,7 @@ func TestRenderWorktreeSelectorUsesColorAndReadableDate(t *testing.T) {
 			t.Fatalf("selector output is missing %q: %q", color, data)
 		}
 	}
-	for _, want := range []string{"main", "GH-86", "topic/dirty", "Jul 26, 2026 17:44", "h: home"} {
+	for _, want := range []string{"main", "GH-86", "topic/dirty", "PR#", "94", "Jul 26, 2026 17:44", "h: home"} {
 		if !bytes.Contains(data, []byte(want)) {
 			t.Fatalf("selector output is missing %q: %q", want, data)
 		}
@@ -124,7 +124,7 @@ func TestRenderWorktreeSelectorKeepsSelectedHomeBrightGreen(t *testing.T) {
 	}
 	entry := worktreeEntry{
 		branch: "main", primary: true, state: "clean",
-		updatedText: "Jul 26, 2026 17:44", path: "/tmp/root",
+		prText: "-", updatedText: "Jul 26, 2026 17:44", path: "/tmp/root",
 	}
 	if _, err := renderWorktreeSelector(output, []worktreeEntry{entry}, 0); err != nil {
 		t.Fatal(err)
@@ -207,6 +207,7 @@ func TestRenderWorktreeSelectorSanitizesDynamicFields(t *testing.T) {
 	entry := worktreeEntry{
 		branch:      "topic/\x1b[31mred",
 		state:       "dirty\x1b[2J",
+		prText:      "12\x1b[2J",
 		updatedText: "Jul 26,\r2026 17:44",
 		path:        "/tmp/\x9b2Jowned\nlane",
 	}
@@ -224,9 +225,10 @@ func TestRenderWorktreeSelectorSanitizesDynamicFields(t *testing.T) {
 		"%s%s%s\r\n",
 		colorBrightCyan,
 		fmt.Sprintf(
-			"> %-8s %-24s %-18s %s",
+			"> %-8s %-24s %-6s %-18s %s",
 			"dirty[2J",
 			"topic/[31mred",
+			"12[2J",
 			"Jul 26,2026 17:44",
 			"/tmp/2Jownedlane",
 		),

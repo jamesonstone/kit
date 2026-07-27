@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"regexp"
+	"time"
 )
 
 var (
@@ -49,6 +51,9 @@ List flags:
   --root-position <top|bottom>     Pin the primary worktree (default: top)
   --reverse                        Reverse the selected sort order
   --plain                          Print the table instead of opening the selector
+
+List PR# markers:
+  - no open PR   NG gh unavailable   RL rate limited   TO timed out   ?? other failure
 
 Safety:
   PR-<number> is detached and inspection-only; use repair for edits.
@@ -100,8 +105,11 @@ type App struct {
 	readDir        func(string) ([]os.DirEntry, error)
 	mkdirAll       func(string, os.FileMode) error
 	pathExists     func(string) (bool, error)
+	lookPath       func(string) (string, error)
 	resolvePR      resolvePRFunc
+	resolveListPRs listPRResolverFunc
 	resolveSyncPRs syncPRResolverFunc
+	listPRTimeout  time.Duration
 	runShell       func(context.Context, string) error
 	isTerminal     func() bool
 	selectList     listSelectorFunc
@@ -111,14 +119,16 @@ type App struct {
 // NewApp creates an App backed by the local Git and GitHub CLIs.
 func NewApp(out, errOut io.Writer) *App {
 	app := &App{
-		out:      out,
-		errOut:   errOut,
-		stdin:    os.Stdin,
-		run:      runCommand,
-		homeDir:  os.UserHomeDir,
-		getenv:   os.Getenv,
-		readDir:  os.ReadDir,
-		mkdirAll: os.MkdirAll,
+		out:           out,
+		errOut:        errOut,
+		stdin:         os.Stdin,
+		run:           runCommand,
+		homeDir:       os.UserHomeDir,
+		getenv:        os.Getenv,
+		readDir:       os.ReadDir,
+		mkdirAll:      os.MkdirAll,
+		lookPath:      exec.LookPath,
+		listPRTimeout: defaultListPRTimeout,
 		pathExists: func(path string) (bool, error) {
 			_, err := os.Lstat(path)
 			if err == nil {
@@ -131,6 +141,7 @@ func NewApp(out, errOut io.Writer) *App {
 		},
 	}
 	app.resolvePR = app.resolvePullRequest
+	app.resolveListPRs = app.resolveListPullRequests
 	app.resolveSyncPRs = app.resolveSyncPullRequests
 	app.runShell = runInteractiveShell
 	app.isTerminal, app.selectList = newListInteraction(out)

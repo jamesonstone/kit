@@ -74,6 +74,7 @@ func (a *App) list(ctx context.Context, cwd string, args []string) error {
 		return err
 	}
 	a.populateListMetadata(ctx, entries)
+	a.populateListPullRequests(ctx, repo.top, entries)
 	applyListUpdatedDisplay(entries, time.Local)
 	sortListEntries(entries, options)
 
@@ -179,11 +180,11 @@ func compareListEntries(left, right worktreeEntry, sortBy string) int {
 }
 
 func (a *App) writeList(entries []worktreeEntry) error {
-	if err := a.writef("STATE\tHEAD\tLAST UPDATED\tPATH\n"); err != nil {
+	if err := a.writef("STATE\tHEAD\tPR#\tLAST UPDATED\tPATH\n"); err != nil {
 		return err
 	}
 	for _, entry := range entries {
-		if err := a.writef("%s\t%s\t%s\t%s\n", entry.state, displayHead(entry), entry.updatedText, entry.path); err != nil {
+		if err := a.writef("%s\t%s\t%s\t%s\t%s\n", entry.state, displayHead(entry), entry.prText, entry.updatedText, entry.path); err != nil {
 			return err
 		}
 	}

@@ -174,7 +174,7 @@ func TestMigratePreviewsThenMovesDirtyLegacyWorktree(t *testing.T) {
 func TestListDoesNotPruneAndPruneIsExplicit(t *testing.T) {
 	fixture := newGitFixture(t)
 	runWT(t, fixture.app, fixture.primary, "list")
-	if !strings.Contains(fixture.out.String(), "STATE\tHEAD\tLAST UPDATED\tPATH") {
+	if !strings.Contains(fixture.out.String(), "STATE\tHEAD\tPR#\tLAST UPDATED\tPATH") {
 		t.Fatalf("list output:\n%s", fixture.out.String())
 	}
 	fixture.out.Reset()
@@ -210,11 +210,11 @@ func TestListSortsByLastUpdatedByDefaultAndSupportsOtherAttributes(t *testing.T)
 		t.Fatalf("default list should retain the older worktrees:\n%s", fixture.out.String())
 	}
 	columns := strings.Split(lines[2], "\t")
-	if len(columns) != 4 {
-		t.Fatalf("list row should have four columns: %q", lines[2])
+	if len(columns) != 5 {
+		t.Fatalf("list row should have five columns: %q", lines[2])
 	}
-	if _, err := time.Parse("Jan 02, 2006 15:04", columns[2]); err != nil {
-		t.Fatalf("last updated value should show a local human-readable minute, got %q: %v", columns[2], err)
+	if _, err := time.Parse("Jan 02, 2006 15:04", columns[3]); err != nil {
+		t.Fatalf("last updated value should show a local human-readable minute, got %q: %v", columns[3], err)
 	}
 
 	fixture.out.Reset()

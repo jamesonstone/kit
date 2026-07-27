@@ -46,7 +46,12 @@ Interactive `git wt list` pins the primary checkout first by default, keeps it
 and every `main` row bright green, and accepts `h` to open home immediately;
 use `--root-position bottom` to move the pinned row. `LAST UPDATED` uses the
 running user's local timezone and displays the day through `HH:MM`, without
-seconds. `git wt sync --dry-run` performs a strictly non-mutating live
+seconds. `PR#` uses one batched, two-second `gh` lookup: it shows the open
+same-repository pull request number, `-` when no open pull request matches,
+ascending comma-separated numbers when more than one matches, `NG` when `gh`
+is unavailable, `RL` when rate limited, `TO` on timeout, and `??` for another
+lookup failure. Every lookup failure remains non-blocking.
+`git wt sync --dry-run` performs a strictly non-mutating live
 origin/GitHub preview; ordinary `git wt sync` fast-forwards only a clean,
 behind default branch and retires only canonical clean lanes with exact
 merged-PR evidence.

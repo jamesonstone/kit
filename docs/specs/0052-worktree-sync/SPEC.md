@@ -85,8 +85,9 @@ origin default branch, removes only worktrees proven to belong to merged
 same-repository pull requests, deletes their now-unused local branches, prunes
 stale worktree metadata, and reports every decision deterministically.
 
-`git wt list` remains read-only and offline-capable. Synchronization is never
-implicit in listing or navigation.
+`git wt list` remains read-only and offline-capable: its bounded, fail-soft
+open-pull-request annotation may consult `gh`, but failures never prevent
+listing. Synchronization is never implicit in listing or navigation.
 
 ## CONTEXT
 

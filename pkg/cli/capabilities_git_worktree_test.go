@@ -18,8 +18,8 @@ func TestCapabilitiesDescribeGitWTList(t *testing.T) {
 	if payload.Command.Command != "git wt list" {
 		t.Fatalf("command = %q, want git wt list", payload.Command.Command)
 	}
-	if payload.Command.MutationLevel != mutationNone {
-		t.Fatalf("mutation level = %q, want %q", payload.Command.MutationLevel, mutationNone)
+	if payload.Command.MutationLevel != mutationNetwork {
+		t.Fatalf("mutation level = %q, want %q", payload.Command.MutationLevel, mutationNetwork)
 	}
 	if !strings.Contains(payload.Command.Summary, "primary checkout pinned") {
 		t.Fatalf("expected list capability summary to document default ordering, got %q", payload.Command.Summary)
@@ -43,8 +43,11 @@ func TestCapabilitiesDescribeGitWTList(t *testing.T) {
 	combinedParts = append(combinedParts, payload.Command.Caveats...)
 	combinedParts = append(combinedParts, payload.Command.WhenToUse...)
 	combinedParts = append(combinedParts, payload.Command.WhenNotToUse...)
-	combined := strings.Join(combinedParts, " ")
-	for _, want := range []string{"--plain", "--root-position bottom", "arrow keys", "press h", "child shell", "bright green", "--sort state", "--sort head", "--sort path", "display-only", "local timezone", "HH:MM", "without seconds"} {
+	combined := strings.Join(combinedParts, " ") +
+		" " + payload.Command.NetworkUse.Summary +
+		" " + payload.Command.NetworkUse.FlagDependent +
+		" " + payload.Command.GitMutation.Summary
+	for _, want := range []string{"--plain", "--root-position bottom", "arrow keys", "press h", "child shell", "bright green", "--sort state", "--sort head", "--sort path", "display-only", "local timezone", "HH:MM", "without seconds", "PR#", "two-second", "NG", "RL", "TO", "??", "no local mutation"} {
 		if !strings.Contains(combined, want) {
 			t.Fatalf("expected list capability to mention %q, got %#v", want, payload.Command)
 		}
