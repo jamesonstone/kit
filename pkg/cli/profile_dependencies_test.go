@@ -128,10 +128,10 @@ func TestEnsureFrontendProfileDependencyRowsAppendsIdempotently(t *testing.T) {
 	checks := []string{
 		"| Frontend profile | profile | --profile=frontend | previous profile experiment | stale |",
 		"| Existing API | api | https://example.test | prior input | active |",
-		"name: Frontend profile",
-		"used_for: apply frontend-specific coding-agent instruction set",
-		"name: Design materials",
-		"target: docs/notes/0001-ui/design",
+		`name: "Frontend profile"`,
+		`used_for: "apply frontend-specific coding-agent instruction set"`,
+		`name: "Design materials"`,
+		`target: "docs/notes/0001-ui/design"`,
 		"<!-- keep this comment -->",
 	}
 	for _, check := range checks {

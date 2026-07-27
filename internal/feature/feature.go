@@ -242,6 +242,3 @@ func DeterminePhaseFromTasks(tasksPath string) Phase {
 	}
 	return PhaseImplement
 }
-
-// parseTaskProgressFromPath is a lightweight task counter used by DeterminePhase.
-// returns: progress counts, whether reflection marker is present, error

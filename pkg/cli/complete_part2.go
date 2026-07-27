@@ -33,10 +33,6 @@ func setSpecPhase(specPath, featureDirName, phase string) error {
 	return os.WriteFile(specPath, []byte(updated), 0644)
 }
 
-func isV2Feature(feat *feature.Feature) bool {
-	return workflowVersionForFeature(feat) == document.WorkflowVersionV2
-}
-
 func isLivingSpecFeature(feat *feature.Feature) bool {
 	version := workflowVersionForFeature(feat)
 	return version == document.WorkflowVersionV2 || version == document.WorkflowVersionV3

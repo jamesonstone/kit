@@ -1,4 +1,3 @@
-// package document handles markdown document parsing and validation.
 package document
 
 import (
@@ -8,7 +7,8 @@ import (
 	"strings"
 )
 
-// DocumentType represents a type of Kit document.
+// requiresPopulatedSection reports whether a section must contain visible
+// content for the document's current workflow and phase.
 func (d *Document) requiresPopulatedSection(section string) bool {
 	if d.Type != TypeSpec || d.Metadata == nil || d.Metadata.WorkflowVersion != WorkflowVersionV3 {
 		return documentTypeRequiresPopulatedSections(d.Type)

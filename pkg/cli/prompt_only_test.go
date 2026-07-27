@@ -102,14 +102,14 @@ func TestEnsureSpecV2AdoptionAddsMetadataAndMissingSections(t *testing.T) {
 	text := string(content)
 	for _, check := range []string{
 		"workflow_version: 2",
-		"phase: clarify",
+		`phase: "clarify"`,
 		"clarification:",
-		"  status: open",
+		`  status: "open"`,
 		"  confidence: 0",
 		"  unresolved_questions: 1",
 		"legacy summary",
 		"legacy problem",
-		"target: docs/notes/0001-sample",
+		`target: "docs/notes/0001-sample"`,
 	} {
 		if !strings.Contains(text, check) {
 			t.Fatalf("expected adopted SPEC.md to contain %q, got:\n%s", check, text)

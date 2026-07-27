@@ -1,4 +1,3 @@
-// package config handles .kit.yaml loading and project root discovery.
 package config
 
 import (

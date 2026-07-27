@@ -3,7 +3,40 @@ package document
 import (
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
+
+func TestStringMetadataScalarsAreDoubleQuotedAndRereadAsStrings(t *testing.T) {
+	parent := &yaml.Node{Kind: yaml.MappingNode}
+	setNodeString(parent, "id", "0001")
+	setOptionalNodeString(parent, "status", "true")
+	setNodeInt(parent, "version", 1)
+
+	encoded, err := encodeMetadataNode(parent)
+	if err != nil {
+		t.Fatalf("encodeMetadataNode() error = %v", err)
+	}
+	for _, check := range []string{`id: "0001"`, `status: "true"`, "version: 1"} {
+		if !strings.Contains(encoded, check) {
+			t.Fatalf("encoded metadata missing %q:\n%s", check, encoded)
+		}
+	}
+
+	var reread map[string]any
+	if err := yaml.Unmarshal([]byte(encoded), &reread); err != nil {
+		t.Fatalf("yaml.Unmarshal() error = %v", err)
+	}
+	for key, want := range map[string]string{"id": "0001", "status": "true"} {
+		got, ok := reread[key].(string)
+		if !ok || got != want {
+			t.Fatalf("reread[%q] = %#v, want string %q", key, reread[key], want)
+		}
+	}
+	if got, ok := reread["version"].(int); !ok || got != 1 {
+		t.Fatalf("reread[\"version\"] = %#v, want int 1", reread["version"])
+	}
+}
 
 func TestUpsertMetadataAddsClarificationState(t *testing.T) {
 	content := `---
@@ -34,7 +67,7 @@ alpha
 	}
 	for _, check := range []string{
 		"clarification:",
-		"  status: open",
+		`  status: "open"`,
 		"  confidence: 0",
 		"  unresolved_questions: 1",
 	} {

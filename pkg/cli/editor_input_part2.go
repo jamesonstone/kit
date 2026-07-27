@@ -16,7 +16,7 @@ func runEditorInput(inputCfg freeTextInputConfig, fieldName, initialContent stri
 		return "", false, fmt.Errorf("failed to create temp file for %s: %w", fieldName, err)
 	}
 	tempPath := tempFile.Name()
-	defer os.Remove(tempPath)
+	defer func() { _ = os.Remove(tempPath) }()
 
 	if _, err := tempFile.WriteString(initialContent); err != nil {
 		tempFile.Close()

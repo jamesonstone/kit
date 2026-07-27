@@ -10,7 +10,6 @@ import (
 	"github.com/jamesonstone/kit/internal/document"
 )
 
-// FeatureSummary contains extracted information about a feature for the rollup.
 func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 	var b strings.Builder
 

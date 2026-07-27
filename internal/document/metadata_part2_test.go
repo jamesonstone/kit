@@ -252,7 +252,7 @@ summary
 	if !strings.Contains(updated, "# SPEC\n\n## SUMMARY\n\nsummary\n") {
 		t.Fatalf("updated content lost body:\n%s", updated)
 	}
-	if !strings.Contains(updated, "delivery_intent: idea_only") {
+	if !strings.Contains(updated, `delivery_intent: "idea_only"`) {
 		t.Fatalf("updated content missing delivery intent:\n%s", updated)
 	}
 

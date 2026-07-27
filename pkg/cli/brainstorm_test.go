@@ -92,15 +92,15 @@ func TestRunBrainstorm_CreatesFeatureNotesDirAndSeedsReference(t *testing.T) {
 	}
 	checks := []string{
 		"kit_metadata_version: 1",
-		"artifact: brainstorm",
-		"dir: 0001-sample-feature",
+		`artifact: "brainstorm"`,
+		`dir: "0001-sample-feature"`,
 		"Need better import validation for malformed CSV uploads.",
-		"name: Feature notes",
-		"target: docs/notes/0001-sample-feature",
-		"relation: informs",
-		"read_policy: conditional",
-		"used_for: optional pre-brainstorm research input",
-		"status: optional",
+		`name: "Feature notes"`,
+		`target: "docs/notes/0001-sample-feature"`,
+		`relation: "informs"`,
+		`read_policy: "conditional"`,
+		`used_for: "optional pre-brainstorm research input"`,
+		`status: "optional"`,
 	}
 	for _, check := range checks {
 		if !strings.Contains(string(content), check) {
@@ -153,12 +153,12 @@ func TestRunBrainstormFrontendProfileCreatesDesignMaterialsAndSeedsReferences(t 
 	}
 	text := string(content)
 	checks := []string{
-		"name: Feature notes",
-		"target: docs/notes/0001-dashboard-redesign",
-		"name: Frontend profile",
-		"target: --profile=frontend",
-		"name: Design materials",
-		"target: docs/notes/0001-dashboard-redesign/design",
+		`name: "Feature notes"`,
+		`target: "docs/notes/0001-dashboard-redesign"`,
+		`name: "Frontend profile"`,
+		`target: "--profile=frontend"`,
+		`name: "Design materials"`,
+		`target: "docs/notes/0001-dashboard-redesign/design"`,
 	}
 	for _, check := range checks {
 		if !strings.Contains(text, check) {
@@ -229,8 +229,8 @@ questions
 	text := string(content)
 	checks := []string{
 		"| Existing note | notes | docs/notes/0001-sample/old.md | prior observation | stale |",
-		"name: Feature notes",
-		"target: docs/notes/0001-sample",
+		`name: "Feature notes"`,
+		`target: "docs/notes/0001-sample"`,
 		"<!-- keep this comment -->",
 	}
 	for _, check := range checks {

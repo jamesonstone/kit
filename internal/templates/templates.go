@@ -256,5 +256,3 @@ func replaceTemplateSection(content, sectionName, sectionBody string) string {
 	updatedLines = append(updatedLines, lines[end:]...)
 	return strings.Join(updatedLines, "\n")
 }
-
-// SpecV2 is retained for the legacy lifecycle supervisor.

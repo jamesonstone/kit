@@ -102,8 +102,9 @@ func renderFeatureCard(out io.Writer, style humanOutputStyle, glyphs mapGlyphs, 
 
 	width := 0
 	for _, line := range rawLines {
-		if len(line) > width {
-			width = len(line)
+		lineWidth := len([]rune(line))
+		if lineWidth > width {
+			width = lineWidth
 		}
 	}
 

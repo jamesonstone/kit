@@ -12,7 +12,47 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/feature"
 )
+
+func TestRenderFeatureCardAlignsBorderForMultibyteDocumentStatusGlyphs(t *testing.T) {
+	glyphs := mapGlyphs{
+		BoxTopLeft:  "┌",
+		BoxTopRight: "┐",
+		BoxBotLeft:  "└",
+		BoxBotRight: "┘",
+		Horizontal:  "─",
+		Vertical:    "│",
+		Present:     "●",
+		Missing:     "○",
+	}
+	featureMap := feature.FeatureMap{
+		Feature: feature.Feature{
+			DirName: "x",
+			Phase:   feature.Phase("x"),
+		},
+		Documents: []feature.MapDocument{
+			{Name: "BRAINSTORM.md", Exists: true},
+			{Name: "SPEC.md"},
+			{Name: "PLAN.md", Exists: true},
+			{Name: "TASKS.md"},
+			{Name: "ANALYSIS.md", Exists: true},
+		},
+	}
+
+	var out bytes.Buffer
+	renderFeatureCard(&out, humanOutputStyle{}, glyphs, featureMap)
+
+	want := "" +
+		"┌───────────────────────┐\n" +
+		"│ x                     │\n" +
+		"│ phase: x | paused: no │\n" +
+		"│ docs: B● S○ P● T○ A●  │\n" +
+		"└───────────────────────┘\n"
+	if got := out.String(); got != want {
+		t.Fatalf("renderFeatureCard() = %q, want %q", got, want)
+	}
+}
 
 func TestRunMap_FeatureContextOutput(t *testing.T) {
 	resetMapCommandState(t)

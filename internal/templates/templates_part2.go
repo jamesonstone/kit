@@ -1,9 +1,8 @@
 // package templates provides embedded document templates for Kit.
 package templates
 
-// Gitignore is the default Kit-local ignore block for repositories initialized
-// with Kit. It intentionally does not ignore all of .kit/ so future tracked
-// schema, README, or fixture files remain possible.
+// SpecV2 is the legacy staged-lifecycle specification template, including
+// thesis, context, clarification, plan, task, verification, and reflection sections.
 const SpecV2 = `# SPEC
 
 ## THESIS

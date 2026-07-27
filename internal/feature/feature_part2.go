@@ -1,4 +1,3 @@
-// package feature handles feature numbering, slug validation, and directory management.
 package feature
 
 import (
@@ -15,7 +14,8 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 )
 
-// Feature represents a feature directory and its metadata.
+// parseTaskProgressFromPath counts task completion and reports whether the
+// task file contains a reflection marker.
 func parseTaskProgressFromPath(tasksPath string) (struct{ Total, Complete int }, bool, error) {
 	progress := struct{ Total, Complete int }{}
 	hasReflectionMarker := false

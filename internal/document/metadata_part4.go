@@ -111,7 +111,11 @@ func findOrCreateSequence(parent *yaml.Node, key string) *yaml.Node {
 }
 
 func setNodeString(parent *yaml.Node, key, value string) {
-	setNode(parent, key, &yaml.Node{Kind: yaml.ScalarNode, Value: value})
+	setNode(parent, key, &yaml.Node{
+		Kind:  yaml.ScalarNode,
+		Style: yaml.DoubleQuotedStyle,
+		Value: value,
+	})
 }
 
 func setOptionalNodeString(parent *yaml.Node, key, value string) {
