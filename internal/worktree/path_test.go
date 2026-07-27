@@ -1,7 +1,9 @@
 package worktree
 
 import (
+	"bytes"
 	"context"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -73,5 +75,57 @@ func TestCDRejectsUnregisteredLane(t *testing.T) {
 	err := fixture.app.Run(context.Background(), fixture.primary, []string{"cd", "GH-999"})
 	if err == nil || !strings.Contains(err.Error(), "not an exact registered worktree") {
 		t.Fatalf("unregistered lane error = %v", err)
+	}
+}
+
+func TestBranchArgumentOpensExistingWorktree(t *testing.T) {
+	fixture := newGitFixture(t)
+	runGit(t, fixture.primary, "branch", "GH-93", "origin/main")
+	runWT(t, fixture.app, fixture.primary, "add", "GH-93", "--no-link-env")
+	want := filepath.Join(fixture.worktreeRoot, "example", "project", "GH-93")
+	var got string
+	fixture.app.runShell = func(_ context.Context, path string) error {
+		got = path
+		return nil
+	}
+
+	runWT(t, fixture.app, fixture.primary, "GH-93")
+	if !samePath(got, want) {
+		t.Fatalf("branch navigation path = %q, want %q", got, want)
+	}
+}
+
+func TestBranchArgumentPromptsBeforeCreatingMissingWorktree(t *testing.T) {
+	fixture := newGitFixture(t)
+	fixture.app.stdin = bytes.NewBufferString("y\n")
+	var got string
+	fixture.app.runShell = func(_ context.Context, path string) error {
+		got = path
+		return nil
+	}
+
+	runWT(t, fixture.app, fixture.primary, "GH-93")
+	want := filepath.Join(fixture.worktreeRoot, "example", "project", "GH-93")
+	if !samePath(got, want) {
+		t.Fatalf("created branch navigation path = %q, want %q", got, want)
+	}
+	assertBranch(t, want, "GH-93")
+	if !strings.Contains(fixture.out.String(), "do you want to create this worktree? (y/n)") {
+		t.Fatalf("creation prompt missing from output: %q", fixture.out.String())
+	}
+}
+
+func TestBranchArgumentDeclinesMissingWorktree(t *testing.T) {
+	fixture := newGitFixture(t)
+	fixture.app.stdin = bytes.NewBufferString("n\n")
+	fixture.app.runShell = func(_ context.Context, _ string) error {
+		t.Fatal("shell should not start when creation is declined")
+		return nil
+	}
+
+	runWT(t, fixture.app, fixture.primary, "GH-93")
+	want := filepath.Join(fixture.worktreeRoot, "example", "project", "GH-93")
+	if _, err := os.Stat(want); !os.IsNotExist(err) {
+		t.Fatalf("declined worktree exists or stat failed: %v", err)
 	}
 }

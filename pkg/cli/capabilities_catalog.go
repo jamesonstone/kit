@@ -333,6 +333,16 @@ func capabilityCatalog() []capabilityRecord {
 			withCaveats("Terminal selection uses color and opens the configured shell in the chosen worktree.", "Non-terminal input or output automatically uses the stable plain table.", "The default ordering is newest first by full commit timestamp; --sort state, --sort head, and --sort path select alternate orderings.", "LAST UPDATED is display-only and shown at day precision."),
 		),
 		capability(
+			"git wt <branch>",
+			"Utilities",
+			"Open an exact branch worktree, prompting to create it when absent.",
+			mutationGit,
+			withGitMutation("reads registered worktrees and may create a branch and worktree after interactive confirmation"),
+			withWhenToUse("Use for quick interactive navigation to a branch such as GH-93."),
+			withExamples("git wt GH-93"),
+			withCaveats("Existing lanes open a child shell; the command cannot change the parent shell's directory.", "Missing lanes prompt exactly `do you want to create this worktree? (y/n)` and create from origin's default branch only after a `y` response."),
+		),
+		capability(
 			"git wt cd",
 			"Utilities",
 			"Open an interactive shell in an exact registered worktree lane.",

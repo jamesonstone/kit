@@ -43,6 +43,11 @@ not create environment links. `git wt cd GH-123` opens a child shell in an
 exact registered lane for manual testing. To change the current shell's
 directory, use `cd "$(git wt path GH-123)"`.
 
+Passing a branch directly, such as `git wt GH-93`, opens its registered
+worktree. If it does not exist, the command asks whether to create it beneath
+`~/worktrees/<owner>/<repository>/<branch>` (or `GIT_WT_ROOT`) from the origin
+default branch, then opens a child shell there.
+
 ## Quick Start
 
 ```bash

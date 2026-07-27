@@ -63,6 +63,12 @@ git wt list --plain --sort path
 git wt list --plain --sort state --reverse
 ```
 
+For direct branch navigation, use `git wt <branch>`, for example
+`git wt GH-93`. Existing registered lanes open immediately. Missing lanes ask
+`do you want to create this worktree? (y/n)`; answering `y` creates the branch
+from the origin default branch in the canonical owner/repository directory and
+opens it, while `n` exits without changes.
+
 The first entry is Git's primary worktree. Capture its stable physical path for
 environment-link validation:
 
