@@ -116,7 +116,7 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 	if dryRun {
 		report.State = healthPlannedState(report)
 		report.RegistryState = report.State
-		report.NextActions = healthNextActions(report)
+		report.NextActions = healthNextActions(report, projectRoot)
 		if diffOutput {
 			if diff := renderInitRefreshDiff(plan.changes); strings.TrimSpace(diff) != "" {
 				if _, err := fmt.Fprint(cmd.OutOrStdout(), diff); err != nil {
@@ -152,7 +152,7 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 		report.CheckError = checkErr.Error()
 	}
 	report.State = healthFinalState(report, checkErr)
-	report.NextActions = healthNextActions(report)
+	report.NextActions = healthNextActions(report, projectRoot)
 
 	if !jsonOutput {
 		if _, err := io.Copy(cmd.OutOrStdout(), &checkOutput); err != nil {
@@ -216,7 +216,7 @@ func healthNotesNeedAttention(notes []string) bool {
 	return false
 }
 
-func healthNextActions(report healthReport) []string {
+func healthNextActions(report healthReport, projectRoot string) []string {
 	var actions []string
 	if report.State == statusKitManagedStateRefreshAvailable {
 		actions = append(actions, "run `kit health` to apply the planned safe Kit-managed updates")
@@ -229,6 +229,9 @@ func healthNextActions(report healthReport) []string {
 	}
 	if report.State == statusKitManagedStateUnknown {
 		actions = append(actions, "rerun `kit health` when registry access is restored")
+	}
+	if !report.DryRun && len(report.Files) > 0 {
+		actions = append(actions, managedFileDeliveryInstructions(projectRoot)...)
 	}
 	return actions
 }

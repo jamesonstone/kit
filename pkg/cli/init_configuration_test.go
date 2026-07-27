@@ -257,6 +257,10 @@ func TestRunInitRefreshForceCopiesDocumentationPrompt(t *testing.T) {
 		"docs/agents",
 		"docs/references",
 		"kit check --project",
+		"Delivery of command-created files:",
+		"additionally move the in-scope unstaged and untracked files into the writable issue worktree",
+		"remove only the transferred source state",
+		"create or update the ready pull request",
 		"no documentation updates needed",
 	} {
 		if !strings.Contains(copied, want) {

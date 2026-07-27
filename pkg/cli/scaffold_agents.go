@@ -179,6 +179,9 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 		skipped,
 	)
 	fmt.Printf(scaffoldPrepareMessage, "agents", "agents")
+	if created+updated+merged+removed > 0 {
+		printNumberedNextSteps(managedFileDeliveryInstructions(projectRoot))
+	}
 
 	if writeMode == instructionFileWriteModeSkipExisting && skipped > 0 {
 		fmt.Println("   Hint: use --append-only to merge missing Kit-managed sections without overwriting custom content, or --force to replace existing files.")

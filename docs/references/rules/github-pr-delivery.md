@@ -179,7 +179,11 @@ Include:
 - Create or reuse the human-assigned issue first. Then use exact uppercase `GH-<issue-number>` as both the branch and durable worktree lane.
 - Use exact uppercase `PR-<number>` only for detached inspection. Writable review repair must use the pull request's same-repository head branch, normally its durable `GH-<issue-number>` lane.
 - Fetch the remote base without switching, pulling, merging, stashing, resetting, cleaning, or writing in another checkout. Create a new issue branch from the freshly fetched remote base.
+- Before allocating a separate lane for a managed-file command, inspect the invoking checkout's status and diffs and identify only version-control-eligible unstaged or untracked files created or updated by that command. Preserve every unrelated change.
 - Use native `git worktree` commands as the portable authority for lane creation, reuse, detached inspection, repair, exact-path validation, movement, pruning, and removal. Optional wrappers may simplify manual use, but rules and reconciled guidance must not depend on them.
+- After creating or reusing the human-assigned issue and exact issue worktree, move the identified command-created files into that writable lane. Verify the destination content and complete diff before removing only the transferred source state from the protected root checkout so the files cannot remain stale on the default branch.
+- Integrate transferred files with the complete issue change, validate them, stage their exact paths, commit and push from the issue branch, and create or update the ready pull request.
+- Never transfer or stage `.env`, secrets, ignored files, or machine-local configuration. Never overwrite destination work or disturb unrelated root-checkout or worktree changes while transferring managed files.
 - Apply, validate, stage, commit, push, and create or update the ready pull request only within the selected writable issue branch worktree under the normal delivery gates.
 - Keep the root checkout on the protected default branch; do not automatically check the issue branch out there.
 - Writable lanes symlink the clone's primary checkout repository-root `.env` and `.envrc` by default when each exists. Omit both links for isolation, never copy environment contents, never overwrite destination environment material, and preserve a repository- or user-supplied `.envrc`.

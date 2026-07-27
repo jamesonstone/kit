@@ -111,6 +111,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if forceFlag == nil || !strings.Contains(forceFlag.Summary, "replace existing generated files") {
 		t.Fatalf("expected --force flag to document generated file replacement, got %#v", forceFlag)
 	}
+	if !strings.Contains(strings.Join(initPayload.Command.Caveats, " "), "exact issue worktree and ready pull request") {
+		t.Fatalf("expected init caveats to document managed-file delivery guidance, got %#v", initPayload.Command.Caveats)
+	}
 
 	reconcileOutput, err := executeCapabilitiesCommand("--json", "reconcile")
 	if err != nil {
@@ -139,6 +142,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(reconcilePayload.Command.Examples, " "), "kit reconcile --all --include-files") {
 		t.Fatalf("expected reconcile examples to document whole-project file refresh, got %#v", reconcilePayload.Command.Examples)
+	}
+	if !strings.Contains(strings.Join(reconcilePayload.Command.Caveats, " "), "verified root-checkout transfer") {
+		t.Fatalf("expected reconcile caveats to document managed-file delivery guidance, got %#v", reconcilePayload.Command.Caveats)
 	}
 
 	specOutput, err := executeCapabilitiesCommand("--json", "spec")

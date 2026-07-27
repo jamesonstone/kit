@@ -50,6 +50,10 @@ func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 			"Expose `make dev` when the repository has a verified local development or run workflow",
 			"Do not leave TODO recipes, echo-only placeholders, guessed commands, or duplicated build logic",
 			"Run `make help` and each added target that is safe to execute",
+			"Delivery of command-created files:",
+			"additionally move the in-scope unstaged and untracked files into the writable issue worktree",
+			"stage explicit paths",
+			"create or update the ready pull request",
 		} {
 			if !strings.Contains(copied, check) {
 				t.Fatalf("expected copied prompt to contain %q, got %q", check, copied)

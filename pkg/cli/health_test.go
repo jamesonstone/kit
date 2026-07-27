@@ -114,6 +114,16 @@ func TestRunHealthAppliesSafeRegistryUpdateAndChecksProject(t *testing.T) {
 	if report.State != healthStateUpdated || report.ProjectCheck != "passed" || report.RegistryState != statusKitManagedStateCurrent {
 		t.Fatalf("report = %#v, want updated and healthy", report)
 	}
+	nextActions := strings.Join(report.NextActions, " ")
+	for _, check := range []string{
+		"additionally move the in-scope unstaged and untracked files into the writable issue worktree",
+		"remove only the transferred source state",
+		"create or update the ready pull request",
+	} {
+		if !strings.Contains(nextActions, check) {
+			t.Fatalf("expected health delivery guidance to contain %q, got %#v", check, report.NextActions)
+		}
+	}
 }
 
 func TestRunHealthRegistryFailureIsReadOnlyUnknown(t *testing.T) {

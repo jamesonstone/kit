@@ -76,6 +76,8 @@ func buildInitRefreshDocumentationPrompt(projectRoot string, cfg *config.Config)
 			"`kit check --all` if feature specs or repo instruction files were touched",
 			"`git diff --check`",
 		)
+		doc.Paragraph("Delivery of command-created files:")
+		doc.BulletList(managedFileDeliveryInstructions(projectRoot)...)
 		doc.Paragraph("Final response:")
 		doc.BulletList(
 			"`Findings`: stale or missing project documentation, or `none`",

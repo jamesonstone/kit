@@ -101,6 +101,9 @@ func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
 			if err := outputInitRefreshDocumentationPrompt(projectRoot, plan.cfg); err != nil {
 				return err
 			}
+		} else if plan.stats.created+plan.stats.updated+plan.stats.merged > 0 &&
+			!opts.suppressDocumentationPrompt {
+			printNumberedNextSteps(managedFileDeliveryInstructions(projectRoot))
 		}
 	}
 	return nil

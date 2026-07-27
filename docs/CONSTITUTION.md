@@ -159,6 +159,7 @@ all decisions.
    - When the resolved repair worktree is dirty, ask whether its existing changes belong in the repair and carry the explicit include-or-exclude decision into the generated instructions without stashing, resetting, cleaning, or discarding work
    - Preserve primary and linked checkout state; never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
    - Use native `git worktree` and ordinary filesystem semantics as the portable policy authority; optional manual wrappers must never be a rule or reconciliation dependency
+   - When a managed-file command writes version-control-eligible files in the protected root checkout, its follow-up guidance must move those exact files into the human-assigned issue worktree, verify the destination before removing only the transferred root state, and include them in the explicitly staged commit and ready pull request without disturbing unrelated work
    - Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists, omit both links for isolation, never copy environment contents, and preserve a destination `.envrc` already supplied by the repository or user
    - Treat checkout, index, and `HEAD` as worktree-local while remembering that refs, remotes, objects, configuration, and stash state are shared across the clone
    - Keep worktree tooling limited to native worktree and lane management; runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration remain outside its scope
