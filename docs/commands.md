@@ -38,9 +38,10 @@ portable workflow and optional command cheat sheet, see
 command opens the same worktree list as `git wt list`. Use `git wt help` for
 command help; the source installer also installs the `git-wt(1)` manual used by
 Git for `git wt --help`. Writable `issue`, `add`, and `repair` lanes link the
-clone's primary checkout `.env` by default; append
-`--no-link-env` when isolation is required. Detached `pr` lanes and migration do
-not create environment links. `git wt home` opens a child shell in Git's primary
+clone's primary checkout `.env` and `.envrc` by default when each exists; append
+`--no-link-env` when isolation is required. Existing destination `.envrc` files
+are preserved, and detached `pr` lanes and migration do not create environment
+links. `git wt home` opens a child shell in Git's primary
 worktree. `git wt cd GH-123` does the same for an exact registered lane. To
 change the current shell's directory, use `cd "$(git wt path GH-123)"`.
 Interactive `git wt list` pins the primary checkout first by default, keeps it
@@ -202,7 +203,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
-| `git wt` | Optional manual wrapper for durable issue lanes, a colorized offline `list` selector with pinned-home navigation, explicit safe `sync`, exact path lookup, `home`/`cd` subshell navigation, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
+| `git wt` | Optional manual wrapper for durable issue lanes, a colorized offline `list` selector with pinned-home navigation, explicit safe `sync`, exact path lookup, `home`/`cd` subshell navigation, detached PR views, repair lanes, default writable-lane `.env` and `.envrc` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
 
 ## Prompt Profiles And Subagents
 
@@ -265,7 +266,7 @@ SHAs, the exact path, and the push target. Pass `--edit` to review and change
 the task list in the default editor first; `--vim` and `--editor <cmd>` also opt
 into editing. It does not run the loop agent, edit source files, stage, commit,
 push, post PR comments, resolve review threads, or perform GitHub delivery.
-Preparing a missing worktree and its exact `.env` link is the only conditional
+Preparing a missing worktree and its exact `.env` and `.envrc` links is the only conditional
 local mutation. The generated prompt tells the coding agent to run a post-push
 reflection cycle, confirm the PR head still matches its pushed commit, and only
 then resolve verified addressed conversations.

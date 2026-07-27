@@ -136,8 +136,8 @@ When .kit.yaml defines an enabled aws context, agents must:
 - Preserve the checkout that owns each lane; put separate lanes only beneath ` + "`~/worktrees/<owner>/<repository>/<lane>`" + ` and never inside a repository
 - Use native ` + "`git worktree`" + ` commands and ordinary filesystem operations as the portable authority; do not require a wrapper, alias, or plugin
 - Never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
-- Link the invoking checkout's ` + "`.env`" + ` into writable lanes by default when it exists, using only an exact verified symlink; omit the link when isolation is required
-- Never copy ` + "`.env`" + ` contents or automatically share ` + "`.envrc`" + `; keep runtime services, databases, ports, Temporal state, process supervision, and sibling repositories outside the worktree workflow
+- Link the primary checkout's ` + "`.env`" + ` and ` + "`.envrc`" + ` into writable lanes by default when each exists, using only exact verified symlinks; omit both links when isolation is required
+- Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied ` + "`.envrc`" + `, and remember that direnv approval remains path-specific; keep runtime services, databases, ports, Temporal state, process supervision, and sibling repositories outside the worktree workflow
 - Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
 - Do not ask for routine approval to switch supported tools, including authenticated ` + "`gh`" + `, when the authorized mutation is unchanged
 - Ask permission only before large-scale deletion or deleting sensitive files

@@ -35,6 +35,7 @@ func TestSyncManagedEnvironmentLinkAndRestoration(t *testing.T) {
 	t.Run("removed", func(t *testing.T) {
 		fixture := newGitFixture(t)
 		source := writeEnvironmentSource(t, fixture, "TOKEN=source\n")
+		rcSource := writeEnvironmentRCSource(t, fixture, "dotenv\n")
 		path, headOID := createMergedLane(t, fixture, "topic/env")
 		fixture.app.resolveSyncPRs = staticSyncPRs(map[string][]SyncPullRequest{
 			"topic/env": {mergedSyncPR(30, "topic/env", "main", headOID)},
@@ -49,11 +50,15 @@ func TestSyncManagedEnvironmentLinkAndRestoration(t *testing.T) {
 		if data, err := os.ReadFile(source); err != nil || string(data) != "TOKEN=source\n" {
 			t.Fatalf("source environment changed: data=%q err=%v", data, err)
 		}
+		if data, err := os.ReadFile(rcSource); err != nil || string(data) != "dotenv\n" {
+			t.Fatalf("source environment configuration changed: data=%q err=%v", data, err)
+		}
 	})
 
 	t.Run("restored after removal failure", func(t *testing.T) {
 		fixture := newGitFixture(t)
 		source := writeEnvironmentSource(t, fixture, "TOKEN=restore\n")
+		rcSource := writeEnvironmentRCSource(t, fixture, "dotenv\n")
 		path, headOID := createMergedLane(t, fixture, "topic/env-failure")
 		destination := filepath.Join(path, environmentFileName)
 		fixture.app.resolveSyncPRs = staticSyncPRs(map[string][]SyncPullRequest{
@@ -87,5 +92,10 @@ func TestSyncManagedEnvironmentLinkAndRestoration(t *testing.T) {
 			t.Fatalf("decision = %#v", decision)
 		}
 		assertEnvironmentSymlink(t, destination, source)
+		assertEnvironmentSymlink(
+			t,
+			filepath.Join(path, environmentRCFileName),
+			rcSource,
+		)
 	})
 }

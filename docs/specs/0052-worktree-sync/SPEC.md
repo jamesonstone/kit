@@ -92,14 +92,14 @@ listing. Synchronization is never implicit in listing or navigation.
 ## CONTEXT
 
 - Feature 0050 established the canonical external worktree hierarchy, exact
-  managed `.env` link, conservative manual removal, explicit pruning, and
+  managed environment links, conservative manual removal, explicit pruning, and
   native Git authority.
 - Feature 0051 added same-repository PR-head resolution, but no command
   reconciles merged lanes or the local default branch.
 - `internal/worktree/remove.go` already proves exact registration, refuses the
   current lane, inspects tracked, untracked, and ignored state, recognizes only
-  the verified managed `.env` symlink, and restores that link if native removal
-  fails.
+  verified managed `.env` and `.envrc` symlinks, and restores removed links if
+  native removal fails.
 - Manual `git wt remove` requires upstream and ahead-state proof and preserves
   the branch. Sync needs a separate proof because `fetch --prune` may remove the
   merged branch's upstream before cleanup.
@@ -138,16 +138,16 @@ listing. Synchronization is never implicit in listing or navigation.
   - a same-repository head branch;
   - unambiguous PR evidence for that branch;
   - local worktree `HEAD` exactly equal to the merged PR head OID;
-  - no tracked, staged, untracked, or ignored material except the verified
-    managed `.env` symlink.
+  - no tracked, staged, untracked, or ignored material except verified managed
+    `.env` and `.envrc` symlinks.
 - REQ-009: Open, closed-unmerged, wrong-base, fork, missing, ambiguous, or
   head-OID-mismatched PR evidence preserves the lane and reports why.
 - REQ-010: Reuse/refactor the existing manual-removal preflight and execution.
   Manual `git wt remove` retains upstream/ahead proof and branch preservation.
   Sync substitutes merged-PR plus exact-head proof.
 - REQ-011: Ordinary sync removes every proven-safe worktree immediately using
-  ordinary non-force `git worktree remove`, restores the managed `.env` link if
-  that removal fails, and then deletes the exact local branch with ordinary
+  ordinary non-force `git worktree remove`, restores all removed managed
+  environment links if that removal fails, and then deletes the exact local branch with ordinary
   `git branch -d`.
 - REQ-012: A local branch is never deleted before its worktree removal
   succeeds. Branch-deletion failure is reported, makes the overall command

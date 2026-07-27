@@ -94,11 +94,13 @@ lanes are inspection-only; use
 .B repair
 for edits. Writable lanes link the primary checkout's
 .B .env
-by default; use
-.B --no-link-env
-for isolation.
+and
 .B .envrc
-is never linked automatically.
+by default when each exists; use
+.B --no-link-env
+to omit both links for isolation. Existing destination
+.B .envrc
+files are preserved.
 .PP
 The
 .B remove

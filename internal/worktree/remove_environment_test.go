@@ -13,9 +13,10 @@ func TestRemoveAllowsOnlyMatchingManagedEnvironmentLink(t *testing.T) {
 	t.Run("matching link", func(t *testing.T) {
 		fixture := newGitFixture(t)
 		source := writeEnvironmentSource(t, fixture, "TOKEN=preserve\n")
+		rcSource := writeEnvironmentRCSource(t, fixture, "dotenv\n")
 		if err := os.WriteFile(
 			filepath.Join(fixture.primary, ".gitignore"),
-			[]byte(environmentFileName+"\n"),
+			[]byte(environmentFileName+"\n"+environmentRCFileName+"\n"),
 			0o644,
 		); err != nil {
 			t.Fatal(err)
@@ -40,6 +41,9 @@ func TestRemoveAllowsOnlyMatchingManagedEnvironmentLink(t *testing.T) {
 		data, err := os.ReadFile(source)
 		if err != nil || string(data) != "TOKEN=preserve\n" {
 			t.Fatalf("source environment was not preserved: data=%q err=%v", data, err)
+		}
+		if data, err := os.ReadFile(rcSource); err != nil || string(data) != "dotenv\n" {
+			t.Fatalf("source environment configuration was not preserved: data=%q err=%v", data, err)
 		}
 	})
 
@@ -119,6 +123,7 @@ func TestRemoveAllowsOnlyMatchingManagedEnvironmentLink(t *testing.T) {
 func TestRemoveRestoresManagedEnvironmentLinkWhenGitRemovalFails(t *testing.T) {
 	fixture := newGitFixture(t)
 	source := writeEnvironmentSource(t, fixture, "TOKEN=restore\n")
+	rcSource := writeEnvironmentRCSource(t, fixture, "dotenv\n")
 	runGit(t, fixture.primary, "branch", "--track", "topic/restore-env", "origin/main")
 	runWT(t, fixture.app, fixture.primary, "add", "topic/restore-env")
 	destination := filepath.Join(
@@ -152,4 +157,30 @@ func TestRemoveRestoresManagedEnvironmentLinkWhenGitRemovalFails(t *testing.T) {
 		t.Fatalf("failed removal error = %v", err)
 	}
 	assertEnvironmentSymlink(t, destination, source)
+	assertEnvironmentSymlink(
+		t,
+		filepath.Join(filepath.Dir(destination), environmentRCFileName),
+		rcSource,
+	)
+}
+
+func TestRestoreManagedEnvironmentLinksAttemptsEveryLink(t *testing.T) {
+	root := t.TempDir()
+	first := managedEnvironmentLink{
+		path:   filepath.Join(root, "missing", environmentFileName),
+		target: filepath.Join(root, "source-env"),
+	}
+	second := managedEnvironmentLink{
+		path:   filepath.Join(root, environmentRCFileName),
+		target: filepath.Join(root, "source-envrc"),
+	}
+
+	err := restoreManagedEnvironmentLinks([]managedEnvironmentLink{first, second})
+	if err == nil || !strings.Contains(err.Error(), first.path) {
+		t.Fatalf("restore error = %v, want first link failure", err)
+	}
+	target, readErr := os.Readlink(second.path)
+	if readErr != nil || target != second.target {
+		t.Fatalf("second link was not restored: target=%q err=%v", target, readErr)
+	}
 }

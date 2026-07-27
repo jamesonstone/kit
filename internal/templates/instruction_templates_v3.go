@@ -198,7 +198,21 @@ func memoryTooling() string {
 		"Use `kit dispatch` when broad work must be turned into a safe Agent Team Plan",
 		"Use `kit dispatch` after native planning when an accepted plan needs a safe multi-lane execution topology",
 	)
-	content = strings.ReplaceAll(content, "Link the invoking checkout's `.env`", "Link the primary checkout's `.env`")
+	content = strings.ReplaceAll(
+		content,
+		"Link the invoking checkout's `.env` into writable lanes by default when it exists, using only an exact verified symlink; omit the link when isolation is required",
+		"Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists, using only exact verified symlinks; omit both links when isolation is required",
+	)
+	content = strings.ReplaceAll(
+		content,
+		"Never copy `.env` contents or automatically share `.envrc`; worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
+		"Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied `.envrc`, and remember that direnv approval remains path-specific; worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
+	)
+	content = strings.ReplaceAll(
+		content,
+		"except for preparing the writable worktree and its exact `.env` link when needed",
+		"except for preparing the writable worktree and its exact `.env` and `.envrc` links when needed",
+	)
 	return strings.ReplaceAll(
 		content,
 		"Load `docs/references/worktrees.md` when present and worktree creation",

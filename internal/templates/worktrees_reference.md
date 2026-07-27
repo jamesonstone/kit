@@ -189,15 +189,12 @@ discarding user work. Prompt-producing commands remain prompt-producing after
 lane preparation; staging, commits, pushes, comments, review-thread resolution,
 and PR delivery retain their explicit gates.
 
-## Writable-Lane Environment Link
+## Writable-Lane Environment Links
 
-The clone's primary checkout owns the shared repository-root `.env`. Link that
-stable source into writable lanes by default when it exists:
+The clone's primary checkout owns the shared repository-root `.env` and
+`.envrc`. Link each stable source into writable lanes by default when it exists:
 
 ```bash
-SOURCE_ENV="$PRIMARY_ROOT/.env"
-DEST_ENV="$WORKTREE_PATH/.env"
-
 resolve_link_target() {
   link_text="$(readlink "$1")" || return 1
   case "$link_text" in
@@ -209,37 +206,55 @@ resolve_link_target() {
   printf '%s/%s\n' "$target_dir" "$(basename "$target_path")"
 }
 
-if [ -L "$DEST_ENV" ]; then
-  if [ ! -e "$DEST_ENV" ]; then
-    echo "ABORT: destination .env is a broken link" >&2
+ensure_environment_link() {
+  name="$1"
+  source_path="$PRIMARY_ROOT/$name"
+  destination_path="$WORKTREE_PATH/$name"
+
+  if [ -L "$destination_path" ]; then
+    if [ ! -e "$destination_path" ]; then
+      echo "ABORT: destination $name is a broken link" >&2
+      exit 1
+    fi
+    resolved_target="$(resolve_link_target "$destination_path")" || {
+      echo "ABORT: destination $name is unreadable" >&2
+      exit 1
+    }
+    if [ "$resolved_target" != "$source_path" ]; then
+      echo "ABORT: destination $name points to an unexpected target" >&2
+      exit 1
+    fi
+  elif [ -e "$destination_path" ]; then
+    if [ "$name" = ".envrc" ]; then
+      echo "Preserving existing destination .envrc: $destination_path"
+      return
+    fi
+    echo "ABORT: destination $name already exists: $destination_path" >&2
     exit 1
+  elif [ -f "$source_path" ]; then
+    ln -s "$source_path" "$destination_path"
+  else
+    echo "No primary-checkout $name exists; no $name link was created."
   fi
-  RESOLVED_TARGET="$(resolve_link_target "$DEST_ENV")" || {
-    echo "ABORT: destination .env is unreadable" >&2
-    exit 1
-  }
-  if [ "$RESOLVED_TARGET" != "$SOURCE_ENV" ]; then
-    echo "ABORT: destination .env points to an unexpected target" >&2
-    exit 1
-  fi
-elif [ -e "$DEST_ENV" ]; then
-  echo "ABORT: destination .env already exists: $DEST_ENV" >&2
-  exit 1
-elif [ -f "$SOURCE_ENV" ]; then
-  ln -s "$SOURCE_ENV" "$DEST_ENV"
-else
-  echo "No primary-checkout .env exists; no environment file was linked."
-fi
+}
+
+ensure_environment_link ".env"
+ensure_environment_link ".envrc"
 ```
 
-Reusing a writable lane must repeat the exact source and destination
-validation and create the link when missing. Omit the link intentionally when
+Reusing a writable lane must repeat each exact source and destination
+validation and create missing links. Omit both links intentionally when
 isolation is required.
 
-Never copy `.env`, overwrite a destination `.env`, or automatically share
-`.envrc`; `.envrc` is executable shell configuration. A regular destination,
-broken link, or unexpected symlink is a collision and must stop the operation.
-Detached PR inspection and migration do not create environment links.
+Never copy environment contents or overwrite destination material. A regular
+destination `.env` and any broken or unexpected environment symlink are
+collisions that must stop the operation. Preserve a regular destination
+`.envrc`, which may be tracked by Git or owned by the user.
+
+`.envrc` is executable shell configuration. Review the primary source before
+sharing it, and retain direnv's separate path-specific approval by running
+`direnv allow "$WORKTREE_PATH"` after inspecting a newly linked lane. Detached
+PR inspection and migration do not create environment links.
 
 ## Inspection, Synchronization, Migration, and Removal
 
@@ -275,17 +290,19 @@ Never use ordinary `mv`, stash, reset, clean, or force.
 
 Before removal, prove the target is an exact registered path, is not the
 current checkout, has no tracked, untracked, ignored, dirty, or unpublished
-state, and has no unsafe `.env`. A verified `.env` symlink to the primary
-checkout's exact source is the sole narrow exception:
+state, and has no unsafe environment material. Verified `.env` and `.envrc`
+symlinks to the matching primary-checkout sources are the sole narrow
+exceptions:
 
-1. Verify the destination is a symlink whose target matches
-   `$PRIMARY_ROOT/.env`.
-2. Unlink only that destination symlink.
+1. Verify each environment destination is a symlink whose target matches the
+   same name beneath `$PRIMARY_ROOT`.
+2. Unlink only those verified destination symlinks.
 3. Run ordinary non-force `git worktree remove "/exact/registered/path"`.
-4. If Git removal fails, restore the same symlink.
+4. If Git removal fails, restore every removed symlink.
 
-Refuse regular `.env` files, unexpected symlinks, and every other dirty,
-ignored, or unpublished item. Manual `git wt remove` never uses `--force`,
+Refuse regular ignored environment files, unexpected symlinks, and every other
+dirty, ignored, or unpublished item. A clean tracked `.envrc` remains ordinary
+Git-managed content. Manual `git wt remove` never uses `--force`,
 reset, clean, stash, or branch deletion. Sync uses its stricter merged-PR and
 exact-head proof instead of upstream/ahead proof, and only after successful
 worktree removal attempts ordinary local `git branch -d`.
@@ -293,6 +310,6 @@ worktree removal attempts ordinary local `git branch -d`.
 ## Scope Boundary
 
 Worktree tooling manages checkout paths, branches, native Git operations, and
-the narrow writable-lane `.env` link. Runtime services, databases, ports,
+the narrow writable-lane environment links. Runtime services, databases, ports,
 Temporal state, process supervision, application startup, and sibling
 repositories remain outside its scope.

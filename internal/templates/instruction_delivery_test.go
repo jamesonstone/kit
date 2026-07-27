@@ -42,7 +42,7 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 		"not as routine retry-permission requests",
 		"Use native `git worktree` commands and ordinary filesystem operations as the portable authority",
 		"do not require a wrapper, alias, or plugin",
-		"omit the link when isolation is required",
+		"omit both links when isolation is required",
 	} {
 		if !strings.Contains(generated, want) {
 			t.Fatalf("expected V3 guardrails to contain %q", want)
@@ -79,9 +79,10 @@ func TestMemoryInstructionsPreserveProjectOrientedWorktrees(t *testing.T) {
 		"do not require `git-wt`, an alias, or another wrapper",
 		"Optional wrappers are manual conveniences only",
 		"Keep the root checkout on the protected default branch",
-		"Link the primary checkout's `.env` into writable lanes by default when it exists",
-		"omit the link when isolation is required",
-		"Never copy `.env` contents or automatically share `.envrc`",
+		"Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists",
+		"omit both links when isolation is required",
+		"preserve a repository- or user-supplied `.envrc`",
+		"direnv approval remains path-specific",
 		"worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
 		"refs, remotes, objects, configuration, and stash state are shared",
 	} {

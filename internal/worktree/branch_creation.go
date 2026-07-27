@@ -41,7 +41,7 @@ func (a *App) prepareOrCreateBranch(
 	if _, err := a.git(ctx, repo.top, "worktree", "add", "-b", branch, destination, "refs/remotes/origin/"+base); err != nil {
 		return PreparedWorktree{}, err
 	}
-	if err := a.ensureEnvironmentLink(repo.primary, destination, linkEnv); err != nil {
+	if err := a.ensureEnvironmentLinks(repo.primary, destination, linkEnv); err != nil {
 		return PreparedWorktree{}, err
 	}
 	return PreparedWorktree{Path: destination, Branch: branch, Created: true}, nil

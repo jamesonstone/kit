@@ -63,6 +63,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - GitHub issue #100 and branch `GH-100` track the follow-up that annotates list
   rows with open pull request numbers without making GitHub availability a
   prerequisite for worktree navigation.
+- GitHub issue #104 and branch `GH-104` track the follow-up that shares an
+  ignored primary-checkout `.envrc` with writable lanes without requiring it to
+  be committed or copied into every worktree.
 
 ## REQUIREMENTS
 
@@ -97,27 +100,49 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Document `git wt` only as an optional convenience for manual users. The wrapper may mirror the portable contract but must not define, direct, or become an execution dependency of Kit-managed rules.
 - Removal must never use force, must refuse the current checkout, dirty state, ignored material, and local branch commits that are not present on the configured upstream.
 - Migration must preflight every candidate and destination before applying, use `git worktree move`, preserve dirty contents, skip already hierarchical directories, and stop rather than overwrite or force through a conflict.
-- Link the clone's primary checkout repository-root `.env` into writable `issue`, `add`, and `repair` lanes by default, using a symlink only and allowing explicit `--no-link-env` isolation.
-- Reusing an existing writable lane must ensure the expected `.env` symlink exists when linking is enabled.
-- Missing source `.env` files must not prevent lane creation; report that no environment file was linked.
-- Never overwrite a destination `.env`; refuse regular files and symlinks whose target is not the primary checkout's source `.env`.
-- Never automatically link `.envrc`, because it is executable shell configuration.
-- Detached `pr` inspection lanes must not link `.env`, and `migrate` must preserve existing files and links without creating new ones.
-- Safe removal may ignore only a verified GitWT-managed `.env` symlink, must unlink only that symlink before ordinary non-force worktree removal, and must restore it if removal fails.
+- Link the clone's primary checkout repository-root `.env` and `.envrc` into
+  writable `issue`, `add`, and `repair` lanes by default when each source
+  exists, using exact symlinks only and allowing explicit `--no-link-env`
+  isolation for both.
+- Reusing an existing writable lane must ensure each expected environment
+  symlink exists when linking is enabled.
+- Missing source `.env` or `.envrc` files must not prevent lane creation;
+  report each omitted link.
+- Never overwrite a destination `.env`, and refuse symlinks for either name
+  whose target is not the matching primary-checkout source. Preserve a regular
+  destination `.envrc` supplied by Git or the user instead of replacing it.
+- Treat `.envrc` as executable shell configuration: link only the exact
+  primary-checkout source, document review of that source, and retain direnv's
+  path-specific approval boundary.
+- Detached `pr` inspection lanes must not create environment links, and
+  `migrate` must preserve existing files and links without creating new ones.
+- Safe removal may ignore only verified GitWT-managed `.env` and `.envrc`
+  symlinks, must unlink only those symlinks before ordinary non-force worktree
+  removal, and must restore all removed links if removal fails.
 - Do not add substring-based targeting, implicit pruning during listing, forced `nuke`, stash, reset, clean, or branch deletion.
 - Project validation must not require ignored local-only `.env` or `.envrc` scaffold files in a linked checkout.
 - Update canonical Kit rules, generated instruction sources, active checked-in guidance, prompts, and tests so managed projects may use worktrees only beneath `~/worktrees` with one active branch per worktree and without nesting them inside repositories.
 - Keep subagents from independently creating, switching, moving, or removing worktrees; a supervisor may assign an already prepared worktree explicitly.
 - Document the mental model, command map, naming rules, lifecycle, shared-state caveats, and PR-review workflow.
 - Observable acceptance: focused integration tests exercise issue, branch, PR, repair, remove, prune, and dirty migration behavior; full Kit validation passes; the installed command replaces `git wa`; every legacy worktree is relocated with branch and dirty-state parity.
-- Non-goals: reconciling every managed project immediately, automatically sharing `.envrc`, starting or stopping applications, multi-repository runtime orchestration, database reset or snapshot behavior, port allocation, Temporal namespace management, process supervision, automatic root-checkout branch switching, supporting fork pull-request repair automatically, deleting branches, force-removing worktrees, moving standalone clones, or merging either delivery pull request.
+- Non-goals: reconciling every managed project immediately, bypassing direnv
+  approval, starting or stopping applications, multi-repository runtime
+  orchestration, database reset or snapshot behavior, port allocation, Temporal
+  namespace management, process supervision, automatic root-checkout branch
+  switching, supporting fork pull-request repair automatically, deleting
+  branches, force-removing worktrees, moving standalone clones, or merging
+  delivery pull requests.
 
 ## ACCEPTED PLAN
 
 1. Pass a default-enabled environment-link option through the shared writable-lane path used by `issue`, `add`, and `repair`, while keeping `pr`, `migrate`, and `GIT_WT_ROOT` behavior unchanged.
-2. Add a narrow symlink manager that links only `.env`, reports a missing source, refuses destination collisions, and validates an existing lane's expected link.
-3. Extend conservative removal to recognize only a verified expected `.env` symlink, preserve all other dirty, ignored, and unpublished-state protections, and restore the link if native removal fails.
-4. Add focused real-Git integration coverage plus command-help assertions for creation, reuse, opt-out, collisions, safe removal, and no-copy semantics.
+2. Add a narrow symlink manager for `.env` and `.envrc` that reports missing
+   sources, refuses unexpected symlinks, preserves an existing regular
+   `.envrc`, and validates an existing lane's expected links.
+3. Extend conservative removal to recognize only verified expected `.env` and
+   `.envrc` symlinks, preserve all other dirty, ignored, and unpublished-state
+   protections, and restore every removed link if native removal fails.
+4. Add focused real-Git integration coverage plus command-help assertions for creation, reuse, dual opt-out, collisions, checked-in `.envrc` compatibility, safe removal, and no-copy semantics.
 5. Align the canonical guide, README, command docs, Constitution, active registry rules, generated V3 support files, and current V3 instruction payload while preserving immutable V1 and V2 payloads.
 6. Validate Kit fully, then update only LabCore's dedicated worktree-policy PR if its managed rules and V3 guidance require the new contract.
 7. Add exact registered-lane path lookup for shell command substitution, document the parent-shell limitation, and register the command in Kit capabilities.
@@ -141,13 +166,23 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Make migration preview-only unless `--apply` is explicit.
 - Make safe removal conservative. Manual intervention is preferable to losing ignored files, untracked work, or unpushed commits.
 - Preserve arbitrary safe branch path components beneath owner and repository while reserving uppercase `GH-<number>` and `PR-<number>` identities for standard lanes.
-- Make `.env` symlinking the one opinionated writable-lane convenience. It shares configuration without copying credentials and remains explicitly disableable with `--no-link-env`.
-- Recognize a removable environment link by exact destination name, symlink type, and target match only; do not add a broad `.env` deletion or dirty-state exception.
+- Make exact `.env` and `.envrc` symlinking the bounded writable-lane
+  convenience. It shares primary-checkout configuration without copying
+  credentials and remains explicitly disableable with `--no-link-env`.
+- Preserve the earlier decision not to share `.envrc` as superseded by the
+  user's explicit workflow requirement on issue #104. The replacement keeps
+  the executable-config boundary narrow through exact-source validation,
+  destination preservation, and direnv's separate path approval.
+- Recognize removable environment links by exact destination name, symlink
+  type, and target match only; do not add broad environment-file deletion or
+  dirty-state exceptions.
 - Keep application processes, databases, ports, Temporal state, and sibling repository coordination outside GitWT so the command remains a thin Git worktree wrapper.
 - Preserve exact `path` output as the only way to change the invoking shell with `cd "$(git wt path GH-101)"`. The later `cd` command and interactive list selector intentionally open a child shell in the chosen worktree and must not claim to change their parent shell.
 - Build `git-wt` once into `bin/` and install that artifact from the shared Make target so `make build`, `make install-git-wt`, and `make install` cannot diverge.
 - Make native `git worktree` the policy authority. GitWT is a manually invoked convenience implementation of that policy, never a prerequisite for agents, reconciliation, or teammates using other tooling.
-- Treat the primary worktree as the stable owner of the shared `.env`. An invoking linked lane is an ephemeral consumer and must never become another lane's environment source.
+- Treat the primary worktree as the stable owner of shared `.env` and `.envrc`
+  sources. An invoking linked lane is an ephemeral consumer and must never
+  become another lane's environment source.
 - Distribute the native worktree guide as a V3 support document rather than a ruleset: it is required operational reference material for current scaffolds, while the active safety and delivery rules remain the normative policy.
 - Resolve “home” from the first entry in Git's porcelain worktree list. That entry is available offline and identifies the primary checkout without guessing from branch names or paths.
 - Pin home after the requested list sort and reversal so it stays predictably selectable; `--root-position bottom` is the only option that moves the pinned row.
@@ -175,6 +210,11 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Navigation must be implemented as path resolution because a child process cannot change its invoking shell's current directory.
 - Kit registry rules and generated instruction sources had made the optional wrapper authoritative by naming `git wt`, GitWT, and `--no-link-env`. Expressing the same behavior with `git worktree list --porcelain`, `git worktree add`, `git worktree move`, non-force `git worktree remove`, and exact `ln -s` validation keeps reconciliation portable without weakening the contract.
 - GitWT previously selected the invoking worktree as the `.env` source. A lane created from another linked lane therefore depended on that intermediate lane's lifetime and could be left with a broken link after conservative removal of the intermediate lane.
+- LabCore's primary checkout had regular ignored `.env` and `.envrc` files,
+  while writable lane `GH-90` had neither. `direnv exec .` in the primary
+  checkout exported the three required service tokens, but the same command in
+  `GH-90` exported none, proving the failure was missing lane links rather than
+  a requirement to commit `.envrc`.
 - V3 guidance routed agents to `docs/references/worktrees.md` only “when present,” but the file was absent from `instructions.SupportDocs`; `kit reconcile` therefore could not create or refresh the canonical workflow.
 - Interactive navigation must be gated on both terminal input and terminal output. Redirected and piped invocations need stable plain text, while terminal users can safely receive raw input handling and ANSI color.
 - Darwin pseudo-terminals do not support `os.File` read deadlines, and a goroutine-only cancellation wrapper can leave the underlying read blocked long enough to consume later terminal input. Context-aware readiness reads with exact descriptor-flag restoration avoid both failure modes.
@@ -232,7 +272,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - `make fmt`, `make vet`, and `go test ./... -count=1` passed after the stable-source and reconcile fixes.
 - `go test -race ./internal/worktree ./internal/instructions ./internal/templates ./pkg/cli -count=1` passed.
 - `golangci-lint run --new-from-rev=origin/main ./...` reported `0 issues`; `go build ./...` and `goreleaser check` passed.
-- V1 and V2 instruction payloads retained SHA-256 values `50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5` and `811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc`; current V3 is `970eead03113cbd0e576894f83098f28cacb2fadb8b15aeb17acc57a240098d3`.
+- V1 and V2 instruction payloads retained SHA-256 values `50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5` and `811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc`; current V3 is `a75fb2b02d37a7fbdc5926b9c71130210c6e929366b09707b410ab2f5b90792f`.
 - LabCore branch `GH-80` passed `make check` after its rules and guide adopted the primary-checkout environment source.
 - Final `git diff --check` passed in Kit and LabCore.
 - Final `go run ./cmd/kit check safe-worktree-workflow`, `go run ./cmd/kit check --all`, and `go run ./cmd/kit check --project` passed; all 47 features and the project contract remained coherent.
@@ -271,14 +311,46 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   --project` passed; the project contract remained coherent.
 - After ready pull request #103 opened, the built command rendered
   `clean GH-100 103` in the live `PR#` column and completed in 0.92 seconds.
+- Issue #104 focused integration coverage passed for default `.env` and
+  `.envrc` linking through issue, add, and repair; dual opt-out; missing
+  sources; existing-lane repair; checked-in `.envrc` preservation; unexpected
+  and broken-link refusal; detached isolation; exact dual-link removal; and
+  multi-link restoration after simulated Git removal failure.
+- `make fmt`, `make vet`, `go test ./... -count=1`, and
+  `go test -race ./internal/worktree ./internal/templates
+  ./internal/instructions ./pkg/cli -count=1` passed. `golangci-lint run
+  --new-from-rev=origin/main ./...` reported `0 issues`.
+- `make build`, `make build-windows`, and `goreleaser check` passed. The built
+  and installed `git-wt` binaries shared SHA-256
+  `7a617bc547f52288a9dac4244c3fb57cd843ac394696cf22c67b0f10669edb48`.
+- `kit check safe-worktree-workflow`, `kit check worktree-sync`, `kit check
+  --all`, and `kit check --project` passed; all 50 features and the project
+  contract were coherent.
+- Built-binary reuse linked Kit lane `GH-104` to both primary-checkout
+  environment sources. The same binary reused LabCore `GH-90`, verified both
+  exact links, and `direnv exec .` reported `CUSTOMER_API_TOKEN`,
+  `LABCORE_INTERNAL_TOKEN`, and `FLOWCORE_LABCORE_CALLER_TOKEN` as set while
+  LabCore tracked status remained clean.
+- `gitleaks git --redact --no-banner`, `git diff --check`, capability JSON
+  generation, and exact worktree guide/template comparison passed.
 
 ## OUTCOME
 
 - Added the Kit-owned `git-wt` executable with durable `GH-<number>` issue lanes, existing-branch reuse, detached `PR-<number>` views, writable PR-head repair, read-only listing, conservative exact removal, explicit pruning, canonical root discovery, and dry-run-first migration.
 - Installed `git-wt` at `~/.local/bin/git-wt`, removed only the obsolete global `alias.wa`, and intentionally removed forced cleanup, substring targeting, and implicit list-time pruning from the workflow.
-- Writable issue, add, repair, and existing-lane reuse now symlink the primary checkout's `.env` by default with explicit `--no-link-env` isolation; missing sources remain successful, `.envrc` remains unshared, and detached PR or migration flows create no links.
-- Safe removal recognizes only an exact expected `.env` symlink, preserves regular or unexpected destinations, retains every other dirty, ignored, and unpublished-state refusal, and restores the link if native non-force removal fails.
-- GitWT remains limited to lane paths, branches, native worktree operations, and the `.env` convenience; it does not orchestrate applications, databases, ports, Temporal state, processes, or sibling repositories.
+- Writable issue, add, repair, and existing-lane reuse now symlink the primary
+  checkout's `.env` and `.envrc` by default when each exists, with explicit
+  `--no-link-env` isolation for both; missing sources remain successful,
+  existing regular `.envrc` files are preserved, and detached PR or migration
+  flows create no links.
+- Safe removal recognizes only exact expected `.env` and `.envrc` symlinks,
+  preserves regular or unexpected destinations, retains every other dirty,
+  ignored, and unpublished-state refusal, and restores all removed links if
+  native non-force removal fails.
+- GitWT remains limited to lane paths, branches, native worktree operations,
+  and the bounded environment-link convenience; it does not orchestrate
+  applications, databases, ports, Temporal state, processes, or sibling
+  repositories.
 - Migrated the live worktree root to lowercase owner/repository hierarchy while preserving each branch and dirty checkout exactly.
 - Added immutable current agent instructions `v3`, generated/legacy template alignment, prompt boundaries, active registry policy, release/build/install support, and a practical worktree reference guide.
 - Updated project validation to recognize Git-file linked checkouts and avoid pressuring them to recreate or share ignored environment files.
@@ -309,30 +381,42 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - The follow-up is tracked by issue `#100`, branch `GH-100`, commit
   `2040f73a164c92f18a4a84e9bbbd50b790086d16`, and ready pull request
   <https://github.com/jamesonstone/kit/pull/103>.
+- Issue `#104` and branch `GH-104` extend the same primary-checkout ownership
+  model to ignored `.envrc` files, preserve existing destination material, and
+  retain direnv's per-path approval without requiring `.envrc` to be committed.
+- LabCore lane `GH-90` now has ignored exact `.env` and `.envrc` links to its
+  primary checkout and a lane-specific direnv approval; no LabCore tracked file
+  changed.
 
 ## REPOSITORY MEMORY
 
 Decision: updated
 
-Rationale: The bounded network budget, fail-soft marker meanings, exact branch
-matching, and separation between read-only pull-request annotation and explicit
-worktree synchronization are durable user-facing behavior that code and tests
-alone do not explain completely. The spec and canonical worktree guide now
-preserve those decisions.
+Rationale: Exact `.envrc` source ownership, executable-config trust, collision
+preservation, direnv approval, and multi-link removal restoration are durable
+workflow and security decisions that code and tests alone do not explain
+completely. The spec and canonical worktree guide preserve those decisions.
 
-Constitution curation result: no project-wide constitutional rule changed.
-The existing Constitution already establishes native Git authority and keeps
-the optional wrapper outside policy dependencies; the annotation details are
-feature-specific.
+Constitution curation result: updated the project-wide worktree invariant so
+writable lanes may share exact primary-checkout `.envrc` sources without
+copying or requiring tracked files, while preserving destination material and
+direnv's approval boundary.
 
 Artifacts:
 
 - `internal/worktree`
-- `pkg/cli/capabilities_catalog_utilities.go`
+- `pkg/cli/capabilities_catalog_*.go`
+- `internal/instructions/versions/v3.md`
+- `internal/templates`
+- `docs/CONSTITUTION.md`
+- `docs/agents/GUARDRAILS.md`
+- `docs/agents/TOOLING.md`
+- `docs/references/rules/safety-guardrails.md`
+- `docs/references/rules/github-pr-delivery.md`
 - `docs/specs/0050-safe-worktree-workflow/SPEC.md`
 - `docs/specs/0052-worktree-sync/SPEC.md`
 - `docs/references/worktrees.md`
 - `internal/templates/worktrees_reference.md`
 - `docs/commands.md`
-- `README.md`
+- `docs/man/git-wt.1`
 - `docs/PROJECT_PROGRESS_SUMMARY.md`

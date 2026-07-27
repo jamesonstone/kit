@@ -29,7 +29,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 	}{
 		{version: "v1", sha256: "50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5"},
 		{version: "v2", sha256: "811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc"},
-		{version: "v3", sha256: "970eead03113cbd0e576894f83098f28cacb2fadb8b15aeb17acc57a240098d3"},
+		{version: "v3", sha256: "a75fb2b02d37a7fbdc5926b9c71130210c6e929366b09707b410ab2f5b90792f"},
 	}
 
 	for _, test := range tests {
@@ -67,9 +67,10 @@ func TestAgentInstructionsV3EncodesLaneAllocationPolicy(t *testing.T) {
 		"do not require `git-wt`, an alias, or another wrapper",
 		"Optional wrappers are manual conveniences only",
 		"Keep the root checkout on the protected default branch",
-		"Link the primary checkout's `.env` into writable lanes by default when it exists",
-		"omit the link when isolation is required",
-		"Never copy `.env` contents or automatically share `.envrc`",
+		"Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists",
+		"omit both links when isolation is required",
+		"preserve a repository- or user-supplied `.envrc`",
+		"direnv approval remains path-specific",
 		"worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories",
 		"load `docs/references/rules/constitution-curation.md` when present",
 		"`Repository Memory`, `Decision`, `Rationale`, and `Artifacts`",
