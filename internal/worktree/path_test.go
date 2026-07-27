@@ -66,6 +66,28 @@ func TestCDOpensShellInExactRegisteredWorktree(t *testing.T) {
 	}
 }
 
+func TestHomeOpensShellInPrimaryWorktreeFromLinkedLane(t *testing.T) {
+	fixture := newGitFixture(t)
+	runGit(t, fixture.primary, "branch", "--track", "topic/navigate", "origin/main")
+	runWT(t, fixture.app, fixture.primary, "add", "topic/navigate", "--no-link-env")
+	lanePath := filepath.Join(fixture.worktreeRoot, "example", "project", "topic", "navigate")
+	var got string
+	fixture.app.runShell = func(_ context.Context, path string) error {
+		got = path
+		return nil
+	}
+
+	runWT(t, fixture.app, lanePath, "home")
+	if !samePath(got, fixture.primary) {
+		t.Fatalf("home shell path = %q, want filesystem-equivalent path %q", got, fixture.primary)
+	}
+
+	err := fixture.app.Run(context.Background(), lanePath, []string{"home", "extra"})
+	if err == nil || err.Error() != "home accepts no arguments" {
+		t.Fatalf("home usage error = %v", err)
+	}
+}
+
 func TestCDRejectsUnregisteredLane(t *testing.T) {
 	fixture := newGitFixture(t)
 	fixture.app.runShell = func(_ context.Context, _ string) error {

@@ -207,18 +207,18 @@ func TestListSortsByLastUpdatedByDefaultAndSupportsOtherAttributes(t *testing.T)
 	fixture.out.Reset()
 	runWT(t, fixture.app, fixture.primary, "list")
 	lines := strings.Split(strings.TrimSpace(fixture.out.String()), "\n")
-	if len(lines) < 4 || !strings.Contains(lines[1], newPath) {
-		t.Fatalf("default list should put newest worktree first:\n%s", fixture.out.String())
+	if len(lines) < 4 || !strings.Contains(lines[1], fixture.primary) || !strings.Contains(lines[2], newPath) {
+		t.Fatalf("default list should pin the primary worktree before the newest lane:\n%s", fixture.out.String())
 	}
 	if !strings.Contains(fixture.out.String(), oldPath) || !strings.Contains(fixture.out.String(), "\nclean\tmain\t") {
 		t.Fatalf("default list should retain the older worktrees:\n%s", fixture.out.String())
 	}
-	columns := strings.Split(lines[1], "\t")
+	columns := strings.Split(lines[2], "\t")
 	if len(columns) != 4 {
-		t.Fatalf("list row should have four columns: %q", lines[1])
+		t.Fatalf("list row should have four columns: %q", lines[2])
 	}
-	if _, err := time.Parse("Jan 02, 2006", columns[2]); err != nil {
-		t.Fatalf("last updated value should show a human-readable day, got %q: %v", columns[2], err)
+	if _, err := time.Parse("Jan 02, 2006 15:04", columns[2]); err != nil {
+		t.Fatalf("last updated value should show a local human-readable minute, got %q: %v", columns[2], err)
 	}
 
 	fixture.out.Reset()
@@ -231,14 +231,24 @@ func TestListSortsByLastUpdatedByDefaultAndSupportsOtherAttributes(t *testing.T)
 	fixture.out.Reset()
 	runWT(t, fixture.app, fixture.primary, "list", "--sort=path", "--reverse")
 	reverseLines := strings.Split(strings.TrimSpace(fixture.out.String()), "\n")
-	if len(reverseLines) < 4 || !strings.Contains(reverseLines[len(reverseLines)-1], fixture.primary) {
-		t.Fatalf("reverse path sort should end with the primary path:\n%s", fixture.out.String())
+	if len(reverseLines) < 4 || !strings.Contains(reverseLines[1], fixture.primary) {
+		t.Fatalf("primary pin should override reverse path sorting:\n%s", fixture.out.String())
+	}
+
+	fixture.out.Reset()
+	runWT(t, fixture.app, fixture.primary, "list", "--sort=path", "--reverse", "--root-position=bottom")
+	bottomLines := strings.Split(strings.TrimSpace(fixture.out.String()), "\n")
+	if len(bottomLines) < 4 || !strings.Contains(bottomLines[len(bottomLines)-1], fixture.primary) {
+		t.Fatalf("bottom root position should pin the primary path last:\n%s", fixture.out.String())
 	}
 }
 
 func TestParseListOptionsRejectsUnknownSort(t *testing.T) {
 	if _, err := parseListOptions([]string{"--sort", "branch"}); err == nil {
 		t.Fatal("unknown sort attribute should fail")
+	}
+	if _, err := parseListOptions([]string{"--root-position", "middle"}); err == nil {
+		t.Fatal("unknown root position should fail")
 	}
 }
 
@@ -431,12 +441,14 @@ func (failingWriter) Write([]byte) (int, error) {
 
 func Example() {
 	fmt.Println("git wt issue 76")
+	fmt.Println("git wt home")
 	fmt.Println("git wt cd GH-76")
 	fmt.Println(`cd "$(git wt path GH-76)"`)
 	fmt.Println("git wt pr 77")
 	fmt.Println("git wt repair 77")
 	// Output:
 	// git wt issue 76
+	// git wt home
 	// git wt cd GH-76
 	// cd "$(git wt path GH-76)"
 	// git wt pr 77

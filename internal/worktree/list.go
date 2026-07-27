@@ -10,15 +10,16 @@ import (
 )
 
 type listOptions struct {
-	sortBy  string
-	reverse bool
-	plain   bool
+	sortBy       string
+	rootPosition string
+	reverse      bool
+	plain        bool
 }
 
 type listSelectorFunc func(context.Context, []worktreeEntry) (worktreeEntry, bool, error)
 
 func parseListOptions(args []string) (listOptions, error) {
-	options := listOptions{sortBy: "updated"}
+	options := listOptions{sortBy: "updated", rootPosition: "top"}
 	for i := 0; i < len(args); i++ {
 		switch {
 		case args[i] == "--reverse":
@@ -33,12 +34,28 @@ func parseListOptions(args []string) (listOptions, error) {
 			options.sortBy = strings.ToLower(args[i])
 		case strings.HasPrefix(args[i], "--sort="):
 			options.sortBy = strings.ToLower(strings.TrimPrefix(args[i], "--sort="))
+		case args[i] == "--root-position":
+			if i+1 >= len(args) {
+				return listOptions{}, errors.New("usage: git wt list [--sort <updated|state|head|path>] [--root-position <top|bottom>] [--reverse] [--plain]")
+			}
+			i++
+			options.rootPosition = strings.ToLower(args[i])
+		case strings.HasPrefix(args[i], "--root-position="):
+			options.rootPosition = strings.ToLower(
+				strings.TrimPrefix(args[i], "--root-position="),
+			)
 		default:
 			return listOptions{}, fmt.Errorf("unknown list flag %q", args[i])
 		}
 	}
 	if options.sortBy != "updated" && options.sortBy != "state" && options.sortBy != "head" && options.sortBy != "path" {
 		return listOptions{}, fmt.Errorf("unsupported list sort %q (want updated, state, head, or path)", options.sortBy)
+	}
+	if options.rootPosition != "top" && options.rootPosition != "bottom" {
+		return listOptions{}, fmt.Errorf(
+			"unsupported root position %q (want top or bottom)",
+			options.rootPosition,
+		)
 	}
 	return options, nil
 }
@@ -57,6 +74,7 @@ func (a *App) list(ctx context.Context, cwd string, args []string) error {
 		return err
 	}
 	a.populateListMetadata(ctx, entries)
+	applyListUpdatedDisplay(entries, time.Local)
 	sortListEntries(entries, options)
 
 	if !options.plain && a.isTerminal() {
@@ -93,6 +111,17 @@ func (a *App) populateListMetadata(ctx context.Context, entries []worktreeEntry)
 	}
 }
 
+func applyListUpdatedDisplay(entries []worktreeEntry, location *time.Location) {
+	for i := range entries {
+		if entries[i].lastUpdated.IsZero() {
+			continue
+		}
+		entries[i].updatedText = entries[i].lastUpdated.
+			In(location).
+			Format("Jan 02, 2006 15:04")
+	}
+}
+
 func sortListEntries(entries []worktreeEntry, options listOptions) {
 	sort.SliceStable(entries, func(i, j int) bool {
 		comparison := compareListEntries(entries[i], entries[j], options.sortBy)
@@ -101,6 +130,29 @@ func sortListEntries(entries []worktreeEntry, options listOptions) {
 		}
 		return comparison < 0
 	})
+	pinPrimaryListEntry(entries, options.rootPosition)
+}
+
+func pinPrimaryListEntry(entries []worktreeEntry, position string) {
+	primary := -1
+	for i := range entries {
+		if entries[i].primary {
+			primary = i
+			break
+		}
+	}
+	if primary < 0 {
+		return
+	}
+	entry := entries[primary]
+	switch position {
+	case "top":
+		copy(entries[1:primary+1], entries[:primary])
+		entries[0] = entry
+	case "bottom":
+		copy(entries[primary:], entries[primary+1:])
+		entries[len(entries)-1] = entry
+	}
 }
 
 func compareListEntries(left, right worktreeEntry, sortBy string) int {
