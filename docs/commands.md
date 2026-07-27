@@ -51,6 +51,12 @@ origin/GitHub preview; ordinary `git wt sync` fast-forwards only a clean,
 behind default branch and retires only canonical clean lanes with exact
 merged-PR evidence.
 
+Passing a branch directly, such as `git wt GH-93`, opens its registered
+worktree. If the lane is not registered, the command asks whether to create it
+beneath `~/worktrees/<owner>/<repository>/<branch>` (or `GIT_WT_ROOT`). Existing
+local or origin branches are attached there; only a branch absent from both is
+created from the origin default branch. A child shell then opens in the lane.
+
 ## Quick Start
 
 ```bash

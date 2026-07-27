@@ -78,6 +78,16 @@ func utilityCapabilityRecords() []capabilityRecord {
 			withCaveats("The command starts the configured `$SHELL` (or `/bin/sh`) in Git's primary worktree and returns when that shell exits."),
 		),
 		capability(
+			"git wt <branch>",
+			"Utilities",
+			"Open an exact branch worktree, prompting to create it when absent.",
+			mutationGit,
+			withGitMutation("reads registered worktrees and may create a branch and worktree after interactive confirmation"),
+			withWhenToUse("Use for quick interactive navigation to a branch such as GH-93."),
+			withExamples("git wt GH-93"),
+			withCaveats("Existing lanes open a child shell; the command cannot change the parent shell's directory.", "Missing lanes prompt exactly `do you want to create this worktree? (y/n)`. A local or origin branch is attached after `y`; origin-default creation happens only when the branch exists in neither the local repository nor origin."),
+		),
+		capability(
 			"git wt cd",
 			"Utilities",
 			"Open an interactive shell in an exact registered worktree lane.",

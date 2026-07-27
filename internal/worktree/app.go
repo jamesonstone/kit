@@ -25,6 +25,7 @@ const usage = `Usage: git wt <command> [arguments]
 Safe worktrees live at ~/worktrees/<owner>/<repository>/<lane>.
 
 Commands:
+  <branch>                         Open or create a worktree for a branch
   issue <number> [--no-link-env]   Create or reuse durable issue lane GH-<number>
   add <branch> [--no-link-env]     Open an existing local or origin branch
   pr <number>                      Create or refresh detached inspection lane PR-<number>
@@ -104,6 +105,7 @@ type App struct {
 	runShell       func(context.Context, string) error
 	isTerminal     func() bool
 	selectList     listSelectorFunc
+	stdin          io.Reader
 }
 
 // NewApp creates an App backed by the local Git and GitHub CLIs.
@@ -111,6 +113,7 @@ func NewApp(out, errOut io.Writer) *App {
 	app := &App{
 		out:      out,
 		errOut:   errOut,
+		stdin:    os.Stdin,
 		run:      runCommand,
 		homeDir:  os.UserHomeDir,
 		getenv:   os.Getenv,
@@ -207,6 +210,9 @@ func (a *App) Run(ctx context.Context, cwd string, args []string) error {
 	case "migrate":
 		return a.migrate(ctx, cwd, args[1:])
 	default:
+		if len(args) == 1 {
+			return a.openOrCreateLane(ctx, cwd, args[0])
+		}
 		return fmt.Errorf("unknown command %q\n\n%s", args[0], usage)
 	}
 }
