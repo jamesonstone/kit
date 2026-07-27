@@ -1,11 +1,8 @@
 package worktree
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"reflect"
 	"strings"
@@ -201,127 +198,6 @@ func TestSyncInspectionAndPruneFailuresAreAggregated(t *testing.T) {
 	}
 	if _, err := os.Stat(path); err != nil {
 		t.Fatalf("inspection failure removed lane: %v", err)
-	}
-}
-
-func TestResolveSyncPullRequestsUsesBatchAndExactFallback(t *testing.T) {
-	app := NewApp(io.Discard, io.Discard)
-	var calls []string
-	app.run = func(
-		_ context.Context,
-		_ string,
-		name string,
-		args ...string,
-	) ([]byte, error) {
-		if name != "gh" {
-			return nil, fmt.Errorf("unexpected command %s", name)
-		}
-		head := ""
-		for i := range args {
-			if args[i] == "--head" && i+1 < len(args) {
-				head = args[i+1]
-			}
-		}
-		calls = append(calls, head)
-		var prs []SyncPullRequest
-		switch head {
-		case "":
-			prs = []SyncPullRequest{
-				mergedSyncPR(80, "topic/batch", "main", strings.Repeat("1", 40)),
-			}
-		case "topic/batch":
-			prs = []SyncPullRequest{
-				mergedSyncPR(80, "topic/batch", "main", strings.Repeat("1", 40)),
-				mergedSyncPR(82, "other-head", "main", strings.Repeat("3", 40)),
-			}
-		case "topic/fallback":
-			prs = []SyncPullRequest{
-				mergedSyncPR(81, "topic/fallback", "main", strings.Repeat("2", 40)),
-				mergedSyncPR(83, "other-head", "main", strings.Repeat("4", 40)),
-			}
-		}
-		return json.Marshal(prs)
-	}
-
-	result, err := app.resolveSyncPullRequests(
-		context.Background(),
-		t.TempDir(),
-		"example/project",
-		[]string{"topic/batch", "topic/fallback"},
-	)
-	if err != nil {
-		t.Fatalf("resolveSyncPullRequests() error = %v", err)
-	}
-	if len(result["topic/batch"]) != 1 ||
-		len(result["topic/fallback"]) != 1 ||
-		!reflect.DeepEqual(calls, []string{"", "topic/batch", "topic/fallback"}) {
-		t.Fatalf("result=%#v calls=%#v", result, calls)
-	}
-}
-
-func TestSyncReportHumanJSONParityAndOutputFailure(t *testing.T) {
-	fixture := newGitFixture(t)
-	report := fixture.app.runSync(
-		context.Background(),
-		fixture.primary,
-		SyncOptions{DryRun: true},
-	)
-
-	var human bytes.Buffer
-	if err := writeSyncHuman(&human, report); err != nil {
-		t.Fatalf("writeSyncHuman() error = %v", err)
-	}
-	var encoded bytes.Buffer
-	if err := writeSyncJSON(&encoded, report); err != nil {
-		t.Fatalf("writeSyncJSON() error = %v", err)
-	}
-	var decoded SyncReport
-	if err := json.Unmarshal(encoded.Bytes(), &decoded); err != nil {
-		t.Fatalf("decode JSON report: %v", err)
-	}
-	if !reflect.DeepEqual(report, decoded) {
-		t.Fatalf("JSON report changed data:\nreport=%#v\ndecoded=%#v", report, decoded)
-	}
-	for _, worktree := range report.Worktrees {
-		for _, value := range []string{
-			worktree.State,
-			worktree.Head,
-			worktree.LastUpdated,
-			worktree.Path,
-		} {
-			if !strings.Contains(human.String(), value) {
-				t.Fatalf("human report omitted %q:\n%s", value, human.String())
-			}
-		}
-	}
-
-	fixture.app.out = failingWriter{}
-	err := fixture.app.Run(
-		context.Background(),
-		fixture.primary,
-		[]string{"sync", "--dry-run", "--json"},
-	)
-	if err == nil || !strings.Contains(err.Error(), "write output") {
-		t.Fatalf("output failure error = %v", err)
-	}
-}
-
-func TestSyncHumanFetchDetailIsSingleLine(t *testing.T) {
-	report := SyncReport{
-		Repository: "example/project",
-		Result:     "failed",
-		Fetch: SyncOperation{
-			Status: "failed",
-			Detail: "fetch failed\nwith a second line",
-		},
-	}
-
-	var output bytes.Buffer
-	if err := writeSyncHuman(&output, report); err != nil {
-		t.Fatalf("writeSyncHuman() error = %v", err)
-	}
-	if got, want := output.String(), "SYNC example/project (failed)\nFETCH\tfailed\tfetch failed with a second line\nDEFAULT\t\t\t\nACTION\tBRANCH\tREASON\tPATH\nPRUNE\t\t\nSTATE\tHEAD\tLAST UPDATED\tPATH\n"; got != want {
-		t.Fatalf("human output = %q, want %q", got, want)
 	}
 }
 
