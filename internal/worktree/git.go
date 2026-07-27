@@ -15,6 +15,8 @@ type worktreeEntry struct {
 	path        string
 	head        string
 	branch      string
+	primary     bool
+	prunable    bool
 	lastUpdated time.Time
 	updatedText string
 	state       string
@@ -47,12 +49,17 @@ func (a *App) worktrees(ctx context.Context, cwd string) ([]worktreeEntry, error
 			current.head = strings.TrimPrefix(line, "HEAD ")
 		case strings.HasPrefix(line, "branch refs/heads/"):
 			current.branch = strings.TrimPrefix(line, "branch refs/heads/")
+		case strings.HasPrefix(line, "prunable"):
+			current.prunable = true
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("parse worktree list: %w", err)
 	}
 	flush()
+	if len(entries) != 0 {
+		entries[0].primary = true
+	}
 	return entries, nil
 }
 

@@ -39,9 +39,17 @@ command discovery; Git reserves
 `git <command> --help` for installed manual pages. Writable `issue`, `add`, and
 `repair` lanes link the clone's primary checkout `.env` by default; append
 `--no-link-env` when isolation is required. Detached `pr` lanes and migration do
-not create environment links. `git wt cd GH-123` opens a child shell in an
-exact registered lane for manual testing. To change the current shell's
-directory, use `cd "$(git wt path GH-123)"`.
+not create environment links. `git wt home` opens a child shell in Git's primary
+worktree. `git wt cd GH-123` does the same for an exact registered lane. To
+change the current shell's directory, use `cd "$(git wt path GH-123)"`.
+Interactive `git wt list` pins the primary checkout first by default, keeps it
+and every `main` row bright green, and accepts `h` to open home immediately;
+use `--root-position bottom` to move the pinned row. `LAST UPDATED` uses the
+running user's local timezone and displays the day through `HH:MM`, without
+seconds. `git wt sync --dry-run` performs a strictly non-mutating live
+origin/GitHub preview; ordinary `git wt sync` fast-forwards only a clean,
+behind default branch and retires only canonical clean lanes with exact
+merged-PR evidence.
 
 ## Quick Start
 
@@ -182,7 +190,7 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
-| `git wt` | Optional manual wrapper for durable issue lanes, a colorized `list` selector with plain-output fallback, exact path lookup, `cd` subshell navigation, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
+| `git wt` | Optional manual wrapper for durable issue lanes, a colorized offline `list` selector with pinned-home navigation, explicit safe `sync`, exact path lookup, `home`/`cd` subshell navigation, detached PR views, repair lanes, default writable-lane `.env` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
 
 ## Prompt Profiles And Subagents
 
