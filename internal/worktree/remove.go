@@ -15,6 +15,24 @@ type managedEnvironmentLink struct {
 	target string
 }
 
+type worktreeRemoval struct {
+	entry           worktreeEntry
+	environmentLink *managedEnvironmentLink
+}
+
+type worktreeDirtyError struct {
+	path   string
+	status string
+}
+
+func (err worktreeDirtyError) Error() string {
+	return fmt.Sprintf(
+		"%s contains tracked, untracked, or ignored material; refusing removal:\n%s",
+		err.path,
+		err.status,
+	)
+}
+
 func (a *App) remove(ctx context.Context, cwd, target string) error {
 	repo, err := a.repository(ctx, cwd)
 	if err != nil {
@@ -41,33 +59,53 @@ func (a *App) remove(ctx context.Context, cwd, target string) error {
 	if err != nil {
 		return err
 	}
-	environmentLink, err := inspectManagedEnvironmentLink(repo.primary, selected.path)
+	removal, err := a.inspectWorktreeRemoval(ctx, repo, *selected)
 	if err != nil {
 		return err
 	}
+	if err := a.ensurePublished(ctx, *selected); err != nil {
+		return err
+	}
+	if err := a.executeWorktreeRemoval(ctx, repo, removal); err != nil {
+		return err
+	}
+	return a.writef("Removed worktree %s; branch and shared Git state were preserved.\n", selected.path)
+}
+
+func (a *App) inspectWorktreeRemoval(
+	ctx context.Context,
+	repo repository,
+	selected worktreeEntry,
+) (worktreeRemoval, error) {
+	environmentLink, err := inspectManagedEnvironmentLink(repo.primary, selected.path)
+	if err != nil {
+		return worktreeRemoval{}, err
+	}
 	dirty, err := a.status(ctx, selected.path, true)
 	if err != nil {
-		return err
+		return worktreeRemoval{}, err
 	}
 	if environmentLink != nil {
 		dirty = statusWithoutManagedEnvironmentLink(dirty)
 	}
 	if dirty != "" {
-		return fmt.Errorf(
-			"%s contains tracked, untracked, or ignored material; refusing removal:\n%s",
-			selected.path,
-			dirty,
-		)
+		return worktreeRemoval{}, worktreeDirtyError{path: selected.path, status: dirty}
 	}
-	if err := a.ensurePublished(ctx, *selected); err != nil {
-		return err
-	}
+	return worktreeRemoval{entry: selected, environmentLink: environmentLink}, nil
+}
+
+func (a *App) executeWorktreeRemoval(
+	ctx context.Context,
+	repo repository,
+	removal worktreeRemoval,
+) error {
+	environmentLink := removal.environmentLink
 	if environmentLink != nil {
 		if err := os.Remove(environmentLink.path); err != nil {
 			return fmt.Errorf("remove managed environment symlink %s: %w", environmentLink.path, err)
 		}
 	}
-	if _, err := a.git(ctx, repo.top, "worktree", "remove", selected.path); err != nil {
+	if _, err := a.git(ctx, repo.top, "worktree", "remove", removal.entry.path); err != nil {
 		if environmentLink == nil {
 			return err
 		}
@@ -81,7 +119,7 @@ func (a *App) remove(ctx context.Context, cwd, target string) error {
 		}
 		return fmt.Errorf("%w; restored environment symlink %s", err, environmentLink.path)
 	}
-	return a.writef("Removed worktree %s; branch and shared Git state were preserved.\n", selected.path)
+	return nil
 }
 
 func (a *App) ensurePublished(ctx context.Context, selected worktreeEntry) error {

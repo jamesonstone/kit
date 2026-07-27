@@ -53,6 +53,7 @@
 | 0049 | application-architecture-rules | `docs/specs/0049-application-architecture-rules` | complete | no | 2026-07-23 | Provide reusable, framework-aware backend and frontend architecture rules that keep responsibilities and dependency direction explicit across Kit-managed application projects. |
 | 0050 | safe-worktree-workflow | `docs/specs/0050-safe-worktree-workflow` | complete | no | 2026-07-24 | Provide a portable native Git worktree policy plus an optional thin `git wt` convenience for exact navigation, default writable-lane `.env` symlinks, explicit isolation, and conservative removal. |
 | 0051 | resolve-pr-repair-worktrees | `docs/specs/0051-resolve-pr-repair-worktrees` | deliver | no | 2026-07-26 | Resolve target-bearing PR and CI repair commands to the exact writable branch worktree, create or attach the lane when needed, and carry dirty-state decisions into explicit agent instructions. |
+| 0052 | worktree-sync | `docs/specs/0052-worktree-sync` | deliver | no | 2026-07-26 | Add an explicit `git wt sync` command that safely reconciles the origin default branch, removes only exact merged-PR worktrees and their local branches, prunes stale metadata, and supports deterministic human/JSON dry-run reporting. |
 
 ## PROJECT INTENT
 
@@ -506,6 +507,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: review and merge the ready pull request for issue #89
 - **POINTERS**: `docs/specs/0051-resolve-pr-repair-worktrees/SPEC.md`, `docs/references/worktrees.md`, `docs/agents/TOOLING.md`, `docs/references/rules/command-capabilities.md`
 
+### worktree-sync
+
+- **STATUS**: reflect
+- **PAUSED**: no
+- **INTENT**: Add one explicit `git wt sync` maintenance command that safely reconciles the origin default branch, removes only worktrees proven to belong to merged same-repository pull requests, deletes their local branches, prunes stale metadata, and reports every decision deterministically.
+- **APPROACH**: 1. Define typed sync options, report, default-branch state, lane decisions, and aggregate failures. 2. Add batch-plus-targeted rich merged-PR resolution. 3. Reuse exact removal inspection and managed-link restoration while retaining manual remove's upstream proof. 4. Implement ordinary reconciliation/removal/pruning and strictly mutation-free dry-run behavior. 5. Render human and JSON output from one report and cover every preservation/failure path. 6. Update help, capabilities, canonical/generated docs, validation evidence, and repository memory.
+- **OPEN ITEMS**: review and merge the ready pull request for issue #93
+- **POINTERS**: `docs/specs/0052-worktree-sync/SPEC.md`, `internal/worktree`, `docs/references/worktrees.md`, `docs/references/rules/command-capabilities.md`
+
 ## LAST UPDATED
 
-2026-07-26 11:04:20 EDT
+2026-07-26 17:18:16 EDT
