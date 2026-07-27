@@ -1,0 +1,108 @@
+.TH GIT-WT 1 "July 27, 2026" "git-wt" "Git Manual"
+.SH NAME
+git-wt \- manage and open project-oriented Git worktrees
+.SH SYNOPSIS
+.B git wt
+.RI [ command ]
+.RI [ arguments ]
+.SH DESCRIPTION
+.B git wt
+is an optional manual convenience for project-oriented Git worktrees.
+With no command, it runs
+.BR "git wt list" .
+Writable lanes live beneath
+.IR ~/worktrees/<owner>/<repository>/<lane> .
+.SH COMMANDS
+.TP
+.I <branch>
+Open or create a worktree for a branch.
+.TP
+.BI "issue " number " [--no-link-env]"
+Create or reuse durable issue lane
+.BR GH-<number> .
+.TP
+.BI "add " branch " [--no-link-env]"
+Open an existing local or origin branch.
+.TP
+.BI "pr " number
+Create or refresh detached inspection lane
+.BR PR-<number> .
+.TP
+.BI "repair " number " [--no-link-env]"
+Open a same-repository pull request's writable head branch.
+.TP
+.B list
+List this clone's worktrees without pruning. This is the default command.
+.TP
+.B sync [--dry-run] [--json]
+Reconcile origin and proven merged worktree lanes.
+.TP
+.B home
+Open a shell in this clone's primary worktree.
+.TP
+.B root
+Print the canonical linked-worktree directory.
+.TP
+.BI "path " lane
+Print an exact registered lane path for shell navigation.
+.TP
+.BI "cd " lane
+Open an interactive shell in an exact registered lane.
+.TP
+.BI "remove " lane-or-path
+Remove one exact clean, fully-pushed worktree.
+.TP
+.B prune [--dry-run]
+Explicitly prune stale worktree metadata.
+.TP
+.B migrate [--apply]
+Preview or apply legacy flat-directory migration.
+.TP
+.B help
+Show command help.
+.SH LIST OPTIONS
+.TP
+.BI "--sort " attribute
+Sort by
+.BR updated ,
+.BR state ,
+.BR head ,
+or
+.BR path .
+.TP
+.BI "--root-position " position
+Pin the primary worktree at
+.B top
+(the default) or
+.BR bottom .
+.TP
+.B --reverse
+Reverse the selected sort order.
+.TP
+.B --plain
+Print the table instead of opening the terminal selector.
+.SH ENVIRONMENT
+.TP
+.B GIT_WT_ROOT
+Override
+.IR ~/worktrees ,
+primarily for testing.
+.SH SAFETY
+Detached
+.B PR-<number>
+lanes are inspection-only; use
+.B repair
+for edits. Writable lanes link the primary checkout's
+.B .env
+by default; use
+.B --no-link-env
+for isolation.
+.B .envrc
+is never linked automatically.
+.PP
+The
+.B remove
+command never forces, deletes a branch, or discards dirty or unpushed state.
+No command stashes, resets, cleans, or force-removes worktrees.
+.SH SEE ALSO
+.BR git-worktree (1)
