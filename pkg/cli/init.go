@@ -103,6 +103,21 @@ func runInit(cmd *cobra.Command, args []string) error {
 		})
 	}
 
+	deliveryCfg := defaultInitConfig()
+	if config.Exists(cwd) {
+		deliveryCfg, err = config.Load(cwd)
+		if err != nil {
+			return err
+		}
+	}
+	deliveryBaseline, err := captureManagedFileDeliveryBaseline(
+		cwd,
+		projectInitDeliveryPaths(deliveryCfg),
+	)
+	if err != nil {
+		return err
+	}
+
 	if !initOutputOnly {
 		fmt.Println("🎒 Initializing Kit project...")
 	}
@@ -240,9 +255,18 @@ func runInit(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if err := runInitRefresh(cwd, initRefreshOptions{outputOnly: true}); err != nil {
+	refreshDeliverySnapshot, err := runInitRefreshWithSnapshot(cwd, initRefreshOptions{outputOnly: true})
+	if err != nil {
 		return err
 	}
+	initialDeliverySnapshot, err := managedFileDeliverySnapshotFromBaseline(cwd, deliveryBaseline)
+	if err != nil {
+		return err
+	}
+	deliverySnapshot := mergeManagedFileDeliverySnapshots(
+		initialDeliverySnapshot,
+		refreshDeliverySnapshot,
+	)
 
 	if !initOutputOnly {
 		fmt.Println("\n✅ Kit project initialized!")
@@ -251,7 +275,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	// output easy-to-copy instruction for coding agents
 	constitutionRelPath := cfg.ConstitutionPath
 	constitutionFullPath := filepath.Join(cwd, constitutionRelPath)
-	prompt := buildProjectInitPrompt(cwd, constitutionFullPath)
+	prompt := buildProjectInitPrompt(cwd, constitutionFullPath, deliverySnapshot)
 
 	if err := outputPromptWithClipboardDefault(prompt, initOutputOnly, initCopy); err != nil {
 		return err
@@ -273,4 +297,28 @@ func defaultInitConfig() *config.Config {
 	cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
 	ensureInitLoopReviewConfig(cfg)
 	return cfg
+}
+
+func projectInitDeliveryPaths(cfg *config.Config) []string {
+	paths := []string{
+		config.ConfigFileName,
+		gitignorePath,
+		makefilePath,
+		codeRabbitConfigPath,
+		pullRequestTemplatePath,
+		autoAssignWorkflowPath,
+		readmePath,
+		cfg.ConstitutionPath,
+	}
+	for _, version := range []int{
+		config.InstructionScaffoldVersionVerbose,
+		config.InstructionScaffoldVersionTOC,
+		config.InstructionScaffoldVersionMemory,
+	} {
+		paths = append(
+			paths,
+			instructionArtifactPaths(cfg, instructionFileSelection{}, version, true)...,
+		)
+	}
+	return paths
 }

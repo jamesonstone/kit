@@ -88,8 +88,9 @@ func TestRunInitRefresh_PrintsManagedFileDeliveryStepsAfterWrite(t *testing.T) {
 	})
 
 	for _, check := range []string{
-		"additionally move the in-scope unstaged and untracked files into the writable issue worktree",
-		"remove only the transferred source state",
+		"`Makefile` (create; pre-command absent; expected sha256:",
+		"abort if a captured destination path has staged, working-tree, or untracked changes",
+		"restore each captured root path to its exact pre-command state",
 		"create or update the ready pull request",
 	} {
 		if !strings.Contains(output, check) {

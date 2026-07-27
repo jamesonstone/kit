@@ -215,8 +215,11 @@ references:
   - `Updates`
   - `Verification`
 - The prompt must tell the agent when to use `kit scaffold agents --append-only` instead of manual instruction-file edits.
-- Reconcile and adjacent managed-instruction-file guidance must require the agent to inventory command-created unstaged and untracked files, create or reuse the human-assigned issue and exact `GH-<issue>` worktree, move the in-scope files into that worktree, and include them in the explicitly staged commit and ready pull request.
-- The transfer guidance must require destination verification before removing transferred source state from the root checkout, preserve unrelated dirty files, exclude secrets and machine-local or ignored files, and forbid stash, reset, clean, bulk staging, protected-branch commits, and silent overwrite of worktree content.
+- Reconcile and adjacent managed-instruction-file guidance must carry the command's exact version-control-eligible path, action, pre-command state, and expected result state rather than infer ownership from post-command Git status.
+- The transfer guidance must create or reuse the human-assigned issue and exact `GH-<issue>` worktree, abort when a captured destination path does not match its pre-command state or already has staged, working-tree, or untracked changes, and move only the captured command-owned delta into that worktree.
+- Created, updated, merged, and removed paths must be verified and explicitly staged; removed paths must remain absent in the destination and be represented as deletions in the index.
+- Before clearing source state, the guidance must verify the destination result state and require the index to contain exactly the captured command-owned paths, including deletions.
+- The transfer guidance must restore only the captured command-owned source delta to its exact pre-command state, preserve unrelated dirty files, exclude secrets and machine-local or ignored files, and forbid stash, reset, clean, bulk staging, protected-branch commits, and silent overwrite of worktree content.
 - The prompt must require verification after documentation changes with:
   - `kit check --all` for whole-project mode or `kit check <feature>` for feature mode
   - `kit rollup` when reconciled changes affect `PROJECT_PROGRESS_SUMMARY.md`
@@ -260,16 +263,20 @@ references:
 
 ## VALIDATION
 
-- Focused reconcile, init, refresh, scaffold-agents, health, delivery-ruleset, and capability tests passed in `pkg/cli`.
+- Focused reconcile, initial init, refresh, scaffold-agents, health, delivery-ruleset, exact-snapshot, alias-normalization, containment, nested-worktree ignore, and removal-only tests passed in `pkg/cli`.
 - `make fmt`, `make vet`, `go test ./... -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, and `go test -race ./pkg/cli -count=1` passed.
 - `make build` passed with an isolated temporary `GIT_WT_PREFIX`.
 - `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all` passed; the project refresh cadence was not due.
+- Health JSON and generated guidance confirmed that planned paths carry exact action, pre-command SHA-256 or absence, and expected result SHA-256 or absence while excluding `.env`, `.envrc`, Git-ignored paths, and obvious secret material.
 - Built-binary capability checks confirmed that `reconcile` and `init` document the root-checkout transfer and exact issue-worktree delivery guidance while retaining no direct Git or GitHub mutation.
+- An independent read-only verifier found and rechecked initial-init propagation, path-alias precedence, project-root containment, and nested-worktree ignore handling; the final verification pass reported no findings.
 
 ## OUTCOME
 
 - Reconcile, initial project setup, forced refresh review, ordinary refresh output, scaffold-agents completion, and health next actions now share one safe delivery handoff for command-created files.
-- The handoff inventories only version-control-eligible in-scope files, creates or reuses the human-assigned issue and exact issue worktree, verifies the destination before clearing transferred root state, and includes the files in an explicitly staged commit and ready pull request.
+- The handoff carries an exact snapshot of each version-control-eligible in-scope path, action, pre-command state, and expected result state; creates or reuses the human-assigned issue and exact issue worktree; aborts on destination conflicts; verifies created, updated, merged, and removed results; and requires the index to contain exactly the captured paths before clearing transferred root state.
+- Initial init captures whole-command baselines before any write, refresh planners propagate exact snapshots through health next actions, init-refresh documentation prompts, and reconcile prompts, and scaffold version cleanup contributes explicit removal entries with removal-only regression coverage.
+- Snapshot paths are normalized and confined to the project before reads or rendering; Git ignore detection works from nested project roots and fails closed on in-worktree Git errors.
 - The guidance excludes secrets, ignored files, and machine-local configuration and preserves unrelated root-checkout and worktree changes.
 - Kit commands continue to perform no hidden Git or GitHub delivery mutation; the generated prompt or human-readable next actions own the explicit follow-up workflow.
 

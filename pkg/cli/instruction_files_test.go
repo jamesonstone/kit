@@ -164,8 +164,8 @@ func TestRunScaffoldAgents_TargetedSelectionScaffoldsOnlyRequestedFiles(t *testi
 			t.Fatalf("expected agents scaffold completion wording, got %q", output)
 		}
 		for _, check := range []string{
-			"additionally move the in-scope unstaged and untracked files into the writable issue worktree",
-			"stage explicit paths",
+			"`AGENTS.md` (create; pre-command absent; expected sha256:",
+			"explicitly stage only the captured paths (including deleted paths)",
 			"create or update the ready pull request",
 		} {
 			if !strings.Contains(output, check) {

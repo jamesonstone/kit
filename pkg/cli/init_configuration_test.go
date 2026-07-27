@@ -258,8 +258,9 @@ func TestRunInitRefreshForceCopiesDocumentationPrompt(t *testing.T) {
 		"docs/references",
 		"kit check --project",
 		"Delivery of command-created files:",
-		"additionally move the in-scope unstaged and untracked files into the writable issue worktree",
-		"remove only the transferred source state",
+		"exact command-owned path snapshot",
+		"explicitly stage only the captured paths (including deleted paths)",
+		"restore each captured root path to its exact pre-command state",
 		"create or update the ready pull request",
 		"no documentation updates needed",
 	} {

@@ -116,12 +116,21 @@ func TestRunHealthAppliesSafeRegistryUpdateAndChecksProject(t *testing.T) {
 	}
 	nextActions := strings.Join(report.NextActions, " ")
 	for _, check := range []string{
-		"additionally move the in-scope unstaged and untracked files into the writable issue worktree",
-		"remove only the transferred source state",
+		"Treat only this exact command-owned snapshot as transferable",
+		"abort if a captured destination path has staged, working-tree, or untracked changes",
+		"restore each captured root path to its exact pre-command state",
 		"create or update the ready pull request",
 	} {
 		if !strings.Contains(nextActions, check) {
 			t.Fatalf("expected health delivery guidance to contain %q, got %#v", check, report.NextActions)
+		}
+	}
+	for _, file := range report.Files {
+		if file.PreCommandState == "" || file.ResultState == "" {
+			t.Fatalf("health file snapshot is missing exact states: %#v", file)
+		}
+		if file.Path == ".env" || file.Path == ".envrc" {
+			t.Fatalf("health delivery snapshot contains machine-local path: %#v", file)
 		}
 	}
 }

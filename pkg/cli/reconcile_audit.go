@@ -36,6 +36,7 @@ type reconcileReport struct {
 	NeedsRollup           bool
 	ReferenceMigration    bool
 	VerificationMigration bool
+	DeliverySnapshot      []managedFileDeliverySnapshot
 }
 
 func (r *reconcileReport) cleanResult() string {

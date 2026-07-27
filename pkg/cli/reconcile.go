@@ -106,15 +106,17 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		includeFiles = false
 		outputPrompt = true
 	}
+	var deliverySnapshot []managedFileDeliverySnapshot
 	if includeFiles {
-		if err := runInitRefresh(projectRoot, initRefreshOptions{
+		deliverySnapshot, err = runInitRefreshWithSnapshot(projectRoot, initRefreshOptions{
 			force:                       reconcileForce,
 			dryRun:                      reconcileDryRun,
 			diff:                        reconcileDiff,
 			files:                       reconcileRefreshFiles,
 			outputOnly:                  reconcileOutputOnly,
 			suppressDocumentationPrompt: true,
-		}); err != nil {
+		})
+		if err != nil {
 			return err
 		}
 		if !reconcileDryRun {
@@ -131,6 +133,9 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	}
 	report.ReferenceMigration = reconcileMigrateReferences
 	report.VerificationMigration = reconcileMigrateVerification
+	if !reconcileDryRun {
+		report.DeliverySnapshot = deliverySnapshot
+	}
 	if active, err := feature.FindActiveFeatureWithState(cfg.SpecsPath(projectRoot), cfg); err != nil {
 		return fmt.Errorf("failed to resolve active feature: %w", err)
 	} else if feat == nil || (active != nil && active.DirName == feat.DirName) {
@@ -142,7 +147,11 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 			if !reconcileOutputOnly {
 				fmt.Fprintln(cmd.OutOrStdout(), "\nCoding-agent prompt:")
 			}
-			return outputPromptWithClipboardDefault(buildInitRefreshDocumentationPrompt(projectRoot, cfg), reconcileOutputOnly, reconcileCopy)
+			return outputPromptWithClipboardDefault(
+				buildInitRefreshDocumentationPrompt(projectRoot, cfg, deliverySnapshot),
+				reconcileOutputOnly,
+				reconcileCopy,
+			)
 		}
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), report.cleanResult())
 		return err

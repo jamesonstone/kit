@@ -1,6 +1,10 @@
 package cli
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+	"strings"
+)
 
 func docsOnlyWorkflowRule(target string) string {
 	return fmt.Sprintf(
@@ -9,15 +13,50 @@ func docsOnlyWorkflowRule(target string) string {
 	)
 }
 
-func managedFileDeliveryInstructions(projectRoot string) []string {
+func managedFileDeliveryInstructions(
+	projectRoot string,
+	snapshots ...[]managedFileDeliverySnapshot,
+) []string {
+	var snapshot []managedFileDeliverySnapshot
+	if len(snapshots) > 0 {
+		for _, change := range snapshots[0] {
+			change.Path = normalizeManagedFileDeliveryPath(change.Path)
+			if managedFileDeliveryPathEligible(projectRoot, change.Path) {
+				snapshot = append(snapshot, change)
+			}
+		}
+	}
+	sort.Slice(snapshot, func(i, j int) bool {
+		return snapshot[i].Path < snapshot[j].Path
+	})
+
+	boundary := "Use only the exact command-owned path snapshot emitted by this Kit command. If no snapshot is present, stop and rerun the command; do not infer ownership from post-command Git status."
+	if len(snapshot) > 0 {
+		entries := make([]string, 0, len(snapshot))
+		for _, change := range snapshot {
+			entries = append(entries, fmt.Sprintf(
+				"`%s` (%s; pre-command %s; expected %s)",
+				change.Path,
+				change.Action,
+				change.PreCommandState,
+				change.ResultState,
+			))
+		}
+		boundary = "Treat only this exact command-owned snapshot as transferable: " + strings.Join(entries, "; ") + "."
+	}
+
 	return []string{
+		boundary,
 		fmt.Sprintf(
-			"Inspect `git status --short --branch` in `%s` and identify only the version-control-eligible unstaged or untracked files created or updated by this Kit command; preserve every unrelated change.",
+			"Inspect `git status --short --branch` and exact-path diffs in `%s` only to verify the captured snapshot; never expand the command-owned boundary from post-command status, and preserve every unrelated change.",
 			projectRoot,
 		),
 		"Create or reuse the human-assigned GitHub issue first, then create or reuse its exact `GH-<issue-number>` branch and canonical writable worktree; reuse the current worktree when it already owns that lane.",
-		"If the command ran in the protected root checkout, additionally move the in-scope unstaged and untracked files into the writable issue worktree, verify that the destination content and diff match, then remove only the transferred source state so those files do not remain stale on the default branch.",
-		"Integrate the transferred files with the rest of the change, validate the complete diff, stage explicit paths, commit on the issue branch, push it, and create or update the ready pull request.",
+		"Before transfer, verify every captured source path matches its expected state and every destination path matches its pre-command state; abort if a captured destination path has staged, working-tree, or untracked changes, if any state differs, or if the destination index is not empty.",
+		"If the command ran in the protected root checkout, apply only the captured command-owned delta in the writable issue worktree: create or update captured files, remove captured deleted paths, and preserve every other destination path.",
+		"Verify every destination path matches its expected state, explicitly stage only the captured paths (including deleted paths), and require `git diff --cached --name-only` plus the staged patch to contain exactly the captured command-owned change.",
+		"Only after destination content and index verification succeeds, restore each captured root path to its exact pre-command state—removing command-created files and restoring command-updated or command-removed files—then verify that no captured command-owned state remains in the protected root checkout.",
+		"Integrate the verified staged files with the rest of the issue change, validate the complete diff, commit on the issue branch, push it, and create or update the ready pull request.",
 		"Never transfer or stage `.env`, secrets, ignored files, or machine-local configuration; never commit on the protected default branch, bulk-stage files, stash, reset, clean, overwrite destination work, or disturb unrelated root-checkout or worktree changes.",
 	}
 }

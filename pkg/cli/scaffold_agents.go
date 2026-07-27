@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -127,6 +128,15 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	deliverySnapshot, err := managedFileDeliverySnapshotFromScaffold(projectRoot, plans, cleanupPlans)
+	if err != nil {
+		return err
+	}
+	configPath := filepath.Join(projectRoot, config.ConfigFileName)
+	configBefore, configBeforeExists, err := readManagedFileDeliveryState(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to snapshot %s before instruction scaffolding: %w", config.ConfigFileName, err)
+	}
 
 	var created, updated, merged, skipped, removed int
 
@@ -168,6 +178,18 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 	if err := config.Save(projectRoot, cfg); err != nil {
 		return err
 	}
+	configAfter, configAfterExists, err := readManagedFileDeliveryState(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to snapshot %s after instruction scaffolding: %w", config.ConfigFileName, err)
+	}
+	deliverySnapshot = appendManagedFileDeliveryTransition(
+		deliverySnapshot,
+		config.ConfigFileName,
+		configBefore,
+		configBeforeExists,
+		configAfter,
+		configAfterExists,
+	)
 
 	fmt.Printf("\n✅ Instruction scaffolding complete!\n")
 	fmt.Printf(
@@ -180,7 +202,7 @@ func runScaffoldAgents(cmd *cobra.Command, args []string) error {
 	)
 	fmt.Printf(scaffoldPrepareMessage, "agents", "agents")
 	if created+updated+merged+removed > 0 {
-		printNumberedNextSteps(managedFileDeliveryInstructions(projectRoot))
+		printNumberedNextSteps(managedFileDeliveryInstructions(projectRoot, deliverySnapshot))
 	}
 
 	if writeMode == instructionFileWriteModeSkipExisting && skipped > 0 {

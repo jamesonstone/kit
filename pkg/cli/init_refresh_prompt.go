@@ -8,8 +8,12 @@ import (
 	"github.com/jamesonstone/kit/internal/promptdoc"
 )
 
-func outputInitRefreshDocumentationPrompt(projectRoot string, cfg *config.Config) error {
-	prompt := buildInitRefreshDocumentationPrompt(projectRoot, cfg)
+func outputInitRefreshDocumentationPrompt(
+	projectRoot string,
+	cfg *config.Config,
+	snapshots ...[]managedFileDeliverySnapshot,
+) error {
+	prompt := buildInitRefreshDocumentationPrompt(projectRoot, cfg, snapshots...)
 	fmt.Println()
 	fmt.Println("Documentation refresh prompt:")
 	if err := outputPromptWithClipboardDefault(prompt, false, false); err != nil {
@@ -23,7 +27,11 @@ func outputInitRefreshDocumentationPrompt(projectRoot string, cfg *config.Config
 	return nil
 }
 
-func buildInitRefreshDocumentationPrompt(projectRoot string, cfg *config.Config) string {
+func buildInitRefreshDocumentationPrompt(
+	projectRoot string,
+	cfg *config.Config,
+	snapshots ...[]managedFileDeliverySnapshot,
+) string {
 	constitutionPath := cfg.ConstitutionAbsPath(projectRoot)
 	summaryPath := cfg.ProgressSummaryPath(projectRoot)
 	specsPath := cfg.SpecsPath(projectRoot)
@@ -77,7 +85,7 @@ func buildInitRefreshDocumentationPrompt(projectRoot string, cfg *config.Config)
 			"`git diff --check`",
 		)
 		doc.Paragraph("Delivery of command-created files:")
-		doc.BulletList(managedFileDeliveryInstructions(projectRoot)...)
+		doc.BulletList(managedFileDeliveryInstructions(projectRoot, snapshots...)...)
 		doc.Paragraph("Final response:")
 		doc.BulletList(
 			"`Findings`: stale or missing project documentation, or `none`",
