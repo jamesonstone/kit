@@ -153,7 +153,10 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 				reconcileCopy,
 			)
 		}
-		_, err := fmt.Fprintln(cmd.OutOrStdout(), report.cleanResult())
+		_, err := fmt.Fprintln(
+			cmd.OutOrStdout(),
+			reconcileCleanResult(report, includeFiles, reconcileDryRun, len(deliverySnapshot)),
+		)
 		return err
 	}
 
@@ -173,6 +176,26 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	}
 
 	return outputPromptWithClipboardDefault(buildReconcilePrompt(report), outputOnly, reconcileCopy)
+}
+
+func reconcileCleanResult(
+	report *reconcileReport,
+	includeFiles bool,
+	dryRun bool,
+	managedFileChanges int,
+) string {
+	if includeFiles && dryRun && managedFileChanges > 0 {
+		noun := "files"
+		if managedFileChanges == 1 {
+			noun = "file"
+		}
+		return fmt.Sprintf(
+			"Managed-file refresh pending for %d %s. The semantic documentation audit is clean for this scope.",
+			managedFileChanges,
+			noun,
+		)
+	}
+	return report.cleanResult()
 }
 
 func shouldPromptReconcileMenu(cmd *cobra.Command, featureScoped bool, promptOnly bool) bool {

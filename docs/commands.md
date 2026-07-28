@@ -139,7 +139,7 @@ existing `BRAINSTORM.md`, `PLAN.md`, or `TASKS.md` work.
 | `kit eval` | Run small local harness regression checks. |
 | `kit improve run` | Run deterministic fixture suites. `default` is capability smoke coverage; `prompt-system` renders representative prompts three times and supports `--kit-binary` for identical-definition comparisons. |
 | `kit rules` / `kit rule` | Import, preview, create, list, and link repo-local rulesets. |
-| `kit reconcile [feature]` | Audit Kit-managed docs and init scaffold drift. Without a feature argument, the interactive menu asks whether to include files, force changes, and output the coding-agent prompt. Use `--include-files --dry-run --diff` to preview managed-file updates. |
+| `kit reconcile [feature]` | Audit Kit-managed docs, bounded instruction semantics, and init scaffold drift. Without a feature argument, the interactive menu asks whether to include files, force changes, and output the coding-agent prompt. Use `--include-files --dry-run --diff` to preview managed-file updates. |
 
 Inside the Kit source repository, every new command, subcommand, flag, alias,
 or command behavior extension must update `kit capabilities` in the same
@@ -416,11 +416,19 @@ workflow assigns new issues and pull requests to `github.default_assignees` from
 the project `.kit.yaml`, falls back to the global `~/.config/kit/.kit.yaml`, and
 safely no-ops when no assignees are configured.
 
+The documentation audit also checks bounded mandatory semantics inside existing
+instruction sections, including testing-validation routes and current V3
+worktree safety. Because customized sections are preserved, findings recommend
+manual integration or a reviewed targeted forced preview instead of claiming
+that append-only refresh can update existing section content.
+
 Run `kit reconcile` interactively to choose whether to include files, force
 changes, and output the follow-up coding-agent prompt.
 
 Use `kit reconcile --include-files --dry-run --diff` to preview managed-file
-changes without writing them.
+changes without writing them. When the preview contains version-control-eligible
+changes but the semantic audit is clean, the final result reports both facts
+instead of printing the unqualified no-reconciliation-needed result.
 
 Use `kit reconcile --include-files --force` after reviewing local generated-file
 changes when you want to accept refreshed generated guidance. When requested,
