@@ -91,6 +91,8 @@ references:
 - Existing commands cover validation (`check`), feature catch-up (`catchup`), and handoff preparation (`handoff`), but none are designed to migrate a project's docs forward to newer Kit semantics.
 - Users currently need to discover document drift manually, decide which canonical source defines the current contract, and invent search strategies for filling missing content.
 - Managed-file commands can write instruction files into a protected root checkout before the issue worktree exists. Follow-up guidance that ignores those unstaged files can leave the generated contract stale on the default branch and absent from the resulting pull request.
+- Append-only instruction refresh considers an existing top-level section preserved even when newer mandatory semantics were added inside that section or its preamble. Older V3 projects can therefore retain obsolete worktree behavior or omit the testing-validation route while a project-wide audit reports clean.
+- A managed-file dry-run can print a real structural diff and then end with the unqualified documentation-audit message `No reconciliation needed`, obscuring the distinction between pending file refreshes and semantic document findings.
 
 ## GOALS
 
@@ -108,6 +110,8 @@ references:
 - In project-wide interactive mode, ask whether to include managed files, force changes, and output the coding-agent prompt.
 - When managed files are included, reuse the init refresh planner to refresh `.kit.yaml`, README managed sections, rulesets, init scaffold artifacts, and instruction docs.
 - Carry command-created instruction-file changes into the canonical issue worktree and resulting pull request instead of leaving them unstaged in the protected root checkout.
+- Detect bounded semantic drift for current testing routes, testing-reference structure, worktree navigation, pull-request annotations, and writable-lane environment-link safety even when append-only section planning finds no missing headings.
+- Distinguish a clean semantic documentation audit from pending managed-file changes in dry-run output.
 
 ## NON-GOALS
 
@@ -116,6 +120,8 @@ references:
 - Producing machine-readable JSON, SARIF, or migration reports in v1.
 - Changing product code as part of reconciliation instructions.
 - Replacing `kit check`, `kit handoff`, `kit catchup`, or `kit scaffold agents`.
+- Automatically overwriting customized instruction or support-document sections merely because their wording differs from the current generated template.
+- Distributing Kit-maintainer release, Kit Improve, or other repository-specific GitHub Actions workflows to downstream projects.
 
 ## USERS
 
@@ -191,6 +197,9 @@ references:
   - dependency-table expectations in brainstorm/spec/plan docs
   - readiness-gate and related workflow wording where Kit-managed docs are missing those semantics
   - stale repository-instruction-file structure detectable via append-only planning
+  - mandatory testing-validation routes in provider instructions, RLM guidance, the references index, and the project testing reference
+  - current V3 worktree behavior for default list navigation, fail-soft pull-request annotations, direct branch navigation, `.env` and `.envrc` ownership, collision handling, and safe removal
+- Semantic findings inside existing sections must recommend reviewed manual integration or a targeted forced refresh only when generated overwrite is acceptable; they must not claim append-only refresh can replace existing section content.
 - The audit must include cross-document consistency checks, including:
   - `TASKS.md` ID alignment across progress table, task list, and task details
   - relationship targets that reference nonexistent feature directories
@@ -216,6 +225,7 @@ references:
   - `Verification`
 - The prompt must tell the agent when to use `kit scaffold agents --append-only` instead of manual instruction-file edits.
 - Reconcile and adjacent managed-instruction-file guidance must carry the command's exact version-control-eligible path, action, pre-command state, and expected result state rather than infer ownership from post-command Git status.
+- When an included managed-file dry-run plans version-control-eligible changes but the semantic documentation audit is otherwise clean, the final result must report both facts and must not print the unqualified no-reconciliation-needed result.
 - The transfer guidance must create or reuse the human-assigned issue and exact `GH-<issue>` worktree, abort when a captured destination path does not match its pre-command state or already has staged, working-tree, or untracked changes, and move only the captured command-owned delta into that worktree.
 - Created, updated, merged, and removed paths must be verified and explicitly staged; removed paths must remain absent in the destination and be represented as deletions in the index.
 - Before clearing source state, the guidance must verify the destination result state and require the index to contain exactly the captured command-owned paths, including deletions.
@@ -238,6 +248,9 @@ references:
 - The default prompt explicitly tells the coding agent to use subagents and queue work according to overlapping file changes, without conflicting with `--single-agent`.
 - Missing `RELATIONSHIPS`, malformed front matter references, and mismatched task IDs are surfaced as findings.
 - Instruction-file drift is surfaced without mutating instruction files.
+- Older V2 and V3 testing guidance that omits the mandatory testing-validation route is surfaced without overwriting local content.
+- Older V3 worktree guidance that omits current navigation, pull-request annotation, or environment-link safety semantics is surfaced without overwriting local content.
+- A managed-file dry-run with pending version-control-eligible changes reports that the structural refresh is pending while the semantic documentation audit is clean.
 - Interactive terminal output may show a compact graphical audit summary before the clipboard acknowledgement, while `--output-only` stays plain compact text.
 - A clean project prints a short success result and does not emit or copy a prompt.
 - Help and README document the new command distinctly from `check`, `catchup`, `handoff`, and `scaffold-agents`.
@@ -256,6 +269,8 @@ references:
 - The command creates or updates tracked instruction files in the protected root checkout before an issue worktree exists.
 - The root checkout contains unrelated dirty files alongside the command-created instruction files.
 - The exact issue branch or worktree already exists and must be reused rather than duplicated.
+- Existing support documents contain every expected top-level heading but predate mandatory testing or worktree semantics added within those headings.
+- A dry-run has pending managed-file changes but no semantic documentation findings.
 
 ## OPEN-QUESTIONS
 
@@ -270,6 +285,10 @@ references:
 - Health JSON and generated guidance confirmed that planned paths carry exact action, pre-command SHA-256 or absence, and expected result SHA-256 or absence while excluding `.env`, `.envrc`, Git-ignored paths, and obvious secret material.
 - Built-binary capability checks confirmed that `reconcile` and `init` document the root-checkout transfer and exact issue-worktree delivery guidance while retaining no direct Git or GitHub mutation.
 - An independent read-only verifier found and rechecked initial-init propagation, path-alias precedence, project-root containment, and nested-worktree ignore handling; the final verification pass reported no findings.
+- GH-108 focused tests confirmed that every current V2 and V3 guidance template satisfies the bounded semantic expectations and that stale testing routes, V3 worktree behavior, and unsafe append-only recommendations are detected.
+- A live `go run ./cmd/kit reconcile --all --include-files --dry-run --diff --output-only` preview surfaced the repository's pending testing-ruleset registry update and ended with `Managed-file refresh pending for 1 file` while leaving the worktree unchanged.
+- GH-108 passed `make fmt`, `make vet`, `go test ./... -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, `go test -race ./pkg/cli -count=1`, and `make build`.
+- The built GH-108 binary passed `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all`; its `kit capabilities reconcile --json` output documents existing-section semantic drift and distinct pending-refresh status.
 
 ## OUTCOME
 
@@ -279,16 +298,18 @@ references:
 - Snapshot paths are normalized and confined to the project before reads or rendering; Git ignore detection works from nested project roots and fails closed on in-worktree Git errors.
 - The guidance excludes secrets, ignored files, and machine-local configuration and preserves unrelated root-checkout and worktree changes.
 - Kit commands continue to perform no hidden Git or GitHub delivery mutation; the generated prompt or human-readable next actions own the explicit follow-up workflow.
+- GH-108 adds bounded V2 and V3 semantic expectations for current testing-validation routes and V3 worktree navigation, pull-request annotation, environment-link collision handling, and safe removal behavior.
+- Existing customized sections remain preserved: semantic findings now direct reviewed manual integration or a targeted forced dry-run instead of incorrectly claiming append-only refresh can update existing content.
+- Managed-file dry-runs use the exact version-control-eligible delivery snapshot to report pending structural refreshes separately from a clean semantic documentation audit.
+- Kit-specific improvement and release workflows remain outside downstream reconcile scope; the existing auto-assign workflow remains the only Kit-managed downstream GitHub workflow.
 
 ## REPOSITORY MEMORY
 
 Decision: updated
 
-Rationale: Safe transfer of command-created instruction files from a protected root checkout into the exact issue worktree is a durable cross-command workflow boundary that code and tests alone do not explain fully.
+Rationale: The existing reconcile feature spec and command reference now preserve the bounded semantic-audit and dry-run status contracts. The Constitution's existing instruction-alignment and explicit-state principles already cover the project-wide invariant, so GH-108 does not add a feature-specific constitutional rule.
 
 Artifacts:
 
 - `docs/specs/0017-reconcile-command/SPEC.md`
-- `docs/CONSTITUTION.md`
-- `docs/references/rules/github-pr-delivery.md`
 - `docs/commands.md`

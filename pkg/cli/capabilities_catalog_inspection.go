@@ -85,13 +85,18 @@ func inspectionCapabilityRecords() []capabilityRecord {
 				"Use as the reviewed surface for bringing a Kit-managed project up to date with current files, rules, and scaffold behavior.",
 				"Run interactively to answer include files?, force these changes?, and output coding-agent prompt too?",
 				"Use `--include-files --dry-run --diff` to preview structural refreshes before applying them.",
+				"Use the semantic findings to integrate mandatory testing and worktree guidance that is stale inside an existing customized section.",
 			),
 			withWhenNotToUse(
 				"Do not use as a GitHub delivery command; it does not stage, commit, push, or open PRs.",
 				"Do not choose force until local generated-doc, ruleset, or workflow edits have been reviewed.",
 			),
 			withExamples("kit reconcile", "kit reconcile --all --include-files", "kit reconcile --include-files --dry-run --diff", "kit reconcile --include-files", "kit reconcile --include-files --force", "kit reconcile --output-only"),
-			withCaveats("The follow-up prompt owns delivery of version-control-eligible command-created files: it requires the exact issue worktree, verified root-checkout transfer, explicit staging, and a ready pull request while the command itself performs no Git or GitHub mutation."),
+			withCaveats(
+				"Append-only refresh preserves existing section content; bounded existing-section semantic drift is surfaced for manual integration or a reviewed targeted forced preview.",
+				"A managed-file dry-run with pending version-control-eligible changes reports that pending refresh separately from a clean semantic audit.",
+				"The follow-up prompt owns delivery of version-control-eligible command-created files: it requires the exact issue worktree, verified root-checkout transfer, explicit staging, and a ready pull request while the command itself performs no Git or GitHub mutation.",
+			),
 		),
 	}
 }

@@ -146,6 +146,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(strings.Join(reconcilePayload.Command.Caveats, " "), "verified root-checkout transfer") {
 		t.Fatalf("expected reconcile caveats to document managed-file delivery guidance, got %#v", reconcilePayload.Command.Caveats)
 	}
+	if !strings.Contains(strings.Join(reconcilePayload.Command.Caveats, " "), "existing-section semantic drift") {
+		t.Fatalf("expected reconcile caveats to document semantic drift handling, got %#v", reconcilePayload.Command.Caveats)
+	}
 
 	specOutput, err := executeCapabilitiesCommand("--json", "spec")
 	if err != nil {

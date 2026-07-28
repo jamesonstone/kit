@@ -11,33 +11,7 @@ import (
 )
 
 func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
-	expectations := map[string][]string{
-		"docs/agents/README.md": {
-			"## Runtime Routing",
-			"load only the linked doc needed for the current decision",
-			"Stop loading once the decision is supported",
-		},
-		"docs/agents/RLM.md": {
-			"## Runtime Loop",
-			"identify the immediate decision",
-			"load the smallest relevant artifact",
-			"stop loading once the decision is supported",
-			"## Context Budget Rules",
-			"specific section over full file",
-			"repo-local docs before global model/vendor instructions",
-		},
-		"docs/agents/WORKFLOWS.md": {
-			"Authority order:",
-			"Execution order for feature work:",
-			"`SPEC.md` controls requirements, plan, tasks, validation, reflection, delivery, and evidence",
-			"`BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` are non-binding historical context in v2",
-		},
-		"docs/agents/GUARDRAILS.md": {
-			"Never claim tests passed unless they ran",
-			"Never claim files were inspected unless they were inspected",
-			"If validation cannot run, state why",
-		},
-	}
+	expectations := v2GuidanceExpectations()
 
 	var findings []reconcileFinding
 	for relativePath, snippets := range expectations {
@@ -56,9 +30,12 @@ func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
 				absolutePath,
 				fmt.Sprintf("v2 instruction support document is missing required guidance %q", snippet),
 				templateSource(projectRoot),
-				"refresh the v2 docs tree with `kit scaffold agents --version 2 --append-only` or `--force` if a full refresh is acceptable",
+				fmt.Sprintf(
+					"integrate the missing V2 guidance manually, or preview a targeted generated replacement with `kit reconcile --include-files --force --dry-run --diff --file %s` before overwriting customized content",
+					relativePath,
+				),
 				[]string{
-					"kit scaffold agents --version 2 --append-only",
+					fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", relativePath),
 					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
 				},
 			))
@@ -80,34 +57,7 @@ func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
 }
 
 func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
-	expectations := map[string][]string{
-		"docs/agents/README.md": {
-			"## Runtime Routing",
-			"Native agent planning owns research, clarification, design, and plan formation",
-			"V1 and V2 artifacts remain supported legacy inputs",
-		},
-		"docs/agents/WORKFLOWS.md": {
-			"## Native Planning To Repository Memory",
-			"Before code, assess whether the work contains material rationale",
-			"Never mechanically rewrite a V2 spec into V3",
-			"`kit dispatch` supports post-plan execution topology",
-		},
-		"docs/agents/RLM.md": {
-			"## Runtime Loop",
-			"identify the immediate decision",
-			"stop loading once the decision is supported",
-			"## Context Budget Rules",
-		},
-		"docs/agents/TOOLING.md": {
-			"Use `kit dispatch` after native planning",
-			"accepted plan needs a safe multi-lane execution topology",
-		},
-		"docs/agents/GUARDRAILS.md": {
-			"## Repository Memory Completion Gate",
-			"Create or adopt a spec before code when material rationale exists",
-			"Every implementation final response must include `Repository Memory`",
-		},
-	}
+	expectations := v3GuidanceExpectations()
 
 	var findings []reconcileFinding
 	for relativePath, snippets := range expectations {
@@ -126,9 +76,12 @@ func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
 				absolutePath,
 				fmt.Sprintf("V3 instruction support document is missing required guidance %q", snippet),
 				templateSource(projectRoot),
-				"refresh the V3 docs tree with `kit scaffold agents --version 3 --append-only` or `--force` if a full refresh is acceptable",
+				fmt.Sprintf(
+					"integrate the missing V3 guidance manually, or preview a targeted generated replacement with `kit reconcile --include-files --force --dry-run --diff --file %s` before overwriting customized content",
+					relativePath,
+				),
 				[]string{
-					"kit scaffold agents --version 3 --append-only",
+					fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", relativePath),
 					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
 				},
 			))
