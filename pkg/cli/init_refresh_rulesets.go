@@ -71,7 +71,7 @@ func planRefreshInitRulesets(
 		if err != nil {
 			return nil, nil, false, fmt.Errorf("failed to sync %s: %w", relativePath, err)
 		}
-		recordRulesetRegistryState(cfg, item, syncResult.state, syncResult.hash, syncResult.content)
+		recordRefreshedRulesetRegistryState(cfg, item, state, syncResult.state, syncResult.hash, syncResult.content)
 		registryChanged = true
 		if len(syncResult.conflicts) > 0 {
 			notes = append(notes, syncResult.conflicts...)

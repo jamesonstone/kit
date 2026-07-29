@@ -93,6 +93,7 @@ references:
 - Managed-file commands can write instruction files into a protected root checkout before the issue worktree exists. Follow-up guidance that ignores those unstaged files can leave the generated contract stale on the default branch and absent from the resulting pull request.
 - Append-only instruction refresh considers an existing top-level section preserved even when newer mandatory semantics were added inside that section or its preamble. Older V3 projects can therefore retain obsolete worktree behavior or omit the testing-validation route while a project-wide audit reports clean.
 - A managed-file dry-run can print a real structural diff and then end with the unqualified documentation-audit message `No reconciliation needed`, obscuring the distinction between pending file refreshes and semantic document findings.
+- Registry refresh currently advances every ruleset artifact's `source_commit` to the registry repository head even when that artifact's normalized content and `installed_hash` are unchanged. Scheduled maintenance therefore produces noisy `.kit.yaml` churn and can disconnect a retained base hash from the commit that actually supplied it.
 
 ## GOALS
 
@@ -112,6 +113,7 @@ references:
 - Carry command-created instruction-file changes into the canonical issue worktree and resulting pull request instead of leaving them unstaged in the protected root checkout.
 - Detect bounded semantic drift for current testing routes, testing-reference structure, worktree navigation, pull-request annotations, and writable-lane environment-link safety even when append-only section planning finds no missing headings.
 - Distinguish a clean semantic documentation audit from pending managed-file changes in dry-run output.
+- Keep per-artifact registry provenance stable when a refresh does not change the installed normalized content.
 
 ## NON-GOALS
 
@@ -226,6 +228,9 @@ references:
 - The prompt must tell the agent when to use `kit scaffold agents --append-only` instead of manual instruction-file edits.
 - Reconcile and adjacent managed-instruction-file guidance must carry the command's exact version-control-eligible path, action, pre-command state, and expected result state rather than infer ownership from post-command Git status.
 - When an included managed-file dry-run plans version-control-eligible changes but the semantic documentation audit is otherwise clean, the final result must report both facts and must not print the unqualified no-reconciliation-needed result.
+- A tracked ruleset artifact must retain its existing `source_commit` when its source repository, branch, path, and installed normalized hash are unchanged.
+- A ruleset artifact must advance `source_commit` when a refresh installs changed normalized content from the current registry head.
+- A conflict or local-custom result that retains the prior `installed_hash` must also retain the prior `source_commit`; conflict recovery must continue to point at the source checkpoint used as its merge base.
 - The transfer guidance must create or reuse the human-assigned issue and exact `GH-<issue>` worktree, abort when a captured destination path does not match its pre-command state or already has staged, working-tree, or untracked changes, and move only the captured command-owned delta into that worktree.
 - Created, updated, merged, and removed paths must be verified and explicitly staged; removed paths must remain absent in the destination and be represented as deletions in the index.
 - Before clearing source state, the guidance must verify the destination result state and require the index to contain exactly the captured command-owned paths, including deletions.
@@ -251,6 +256,9 @@ references:
 - Older V2 and V3 testing guidance that omits the mandatory testing-validation route is surfaced without overwriting local content.
 - Older V3 worktree guidance that omits current navigation, pull-request annotation, or environment-link safety semantics is surfaced without overwriting local content.
 - A managed-file dry-run with pending version-control-eligible changes reports that the structural refresh is pending while the semantic documentation audit is clean.
+- Refreshing from a newer registry repository head with unchanged ruleset content produces no `.kit.yaml` change for that artifact.
+- A mixed refresh advances provenance only for rulesets whose installed normalized content changed.
+- Conflict and local-custom refresh outcomes keep provenance aligned with the retained registry checkpoint.
 - Interactive terminal output may show a compact graphical audit summary before the clipboard acknowledgement, while `--output-only` stays plain compact text.
 - A clean project prints a short success result and does not emit or copy a prompt.
 - Help and README document the new command distinctly from `check`, `catchup`, `handoff`, and `scaffold-agents`.
@@ -271,10 +279,18 @@ references:
 - The exact issue branch or worktree already exists and must be reused rather than duplicated.
 - Existing support documents contain every expected top-level heading but predate mandatory testing or worktree semantics added within those headings.
 - A dry-run has pending managed-file changes but no semantic documentation findings.
+- The registry repository head advances because an unrelated ruleset or non-registry file changed.
+- A ruleset conflicts locally and remotely while its recorded base content remains unchanged.
 
 ## OPEN-QUESTIONS
 
 - none
+
+## PLAN
+
+- Add focused refresh regressions for a newer registry head with unchanged normalized content and for mixed unchanged/changed artifacts.
+- Preserve a tracked artifact's prior `source_commit` only when its source identity and retained `installed_hash` still match; otherwise record the current registry source commit.
+- Run focused registry tests, the complete Go validation suite, and Kit feature/project checks before delivery.
 
 ## VALIDATION
 
@@ -289,6 +305,9 @@ references:
 - A live `go run ./cmd/kit reconcile --all --include-files --dry-run --diff --output-only` preview surfaced the repository's pending testing-ruleset registry update and ended with `Managed-file refresh pending for 1 file` while leaving the worktree unchanged.
 - GH-108 passed `make fmt`, `make vet`, `go test ./... -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, `go test -race ./pkg/cli -count=1`, and `make build`.
 - The built GH-108 binary passed `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all`; its `kit capabilities reconcile --json` output documents existing-section semantic drift and distinct pending-refresh status.
+- GH-112 focused regressions confirmed that an unchanged ruleset retains its prior `source_commit` without rewriting `.kit.yaml`, a mixed refresh advances only changed ruleset provenance, and a conflict retains its prior source checkpoint.
+- GH-112 passed `make fmt`, `make vet`, `go test ./... -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, `go test -race ./pkg/cli -count=1`, and an isolated `make build`.
+- The built GH-112 binary passed `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all`.
 
 ## OUTCOME
 
@@ -302,14 +321,15 @@ references:
 - Existing customized sections remain preserved: semantic findings now direct reviewed manual integration or a targeted forced dry-run instead of incorrectly claiming append-only refresh can update existing content.
 - Managed-file dry-runs use the exact version-control-eligible delivery snapshot to report pending structural refreshes separately from a clean semantic documentation audit.
 - Kit-specific improvement and release workflows remain outside downstream reconcile scope; the existing auto-assign workflow remains the only Kit-managed downstream GitHub workflow.
+- Ruleset refresh now retains an artifact's prior `source_commit` when its installed normalized hash and source repository, branch, and path remain unchanged, eliminating repository-head-only `.kit.yaml` churn.
+- Changed rulesets advance to the current registry commit, while conflict and local-custom outcomes that retain the prior installed hash also retain the prior registry checkpoint for future comparison and merge recovery.
 
 ## REPOSITORY MEMORY
 
 Decision: updated
 
-Rationale: The existing reconcile feature spec and command reference now preserve the bounded semantic-audit and dry-run status contracts. The Constitution's existing instruction-alignment and explicit-state principles already cover the project-wide invariant, so GH-108 does not add a feature-specific constitutional rule.
+Rationale: The existing reconcile feature spec now preserves the per-artifact provenance and idempotency contract behind managed ruleset refresh. The behavior is feature-specific and fully demonstrated by code and regression tests, so no new project-wide Constitution rule or reusable reference is warranted.
 
 Artifacts:
 
 - `docs/specs/0017-reconcile-command/SPEC.md`
-- `docs/commands.md`

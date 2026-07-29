@@ -78,6 +78,29 @@ func recordRulesetRegistryState(cfg *config.Config, item registryRuleset, state 
 	cfg.UpsertRegistryArtifact(registryArtifactForRuleset(item, state, installedHash, content))
 }
 
+func recordRefreshedRulesetRegistryState(
+	cfg *config.Config,
+	item registryRuleset,
+	previous config.RegistryArtifact,
+	state string,
+	installedHash string,
+	content string,
+) {
+	if installedHash != "" &&
+		installedHash == previous.InstalledHash &&
+		previous.SourceCommit != "" &&
+		rulesetRegistrySourceIdentityMatches(item, previous) {
+		item.SourceCommit = previous.SourceCommit
+	}
+	recordRulesetRegistryState(cfg, item, state, installedHash, content)
+}
+
+func rulesetRegistrySourceIdentityMatches(item registryRuleset, artifact config.RegistryArtifact) bool {
+	return firstNonEmpty(item.SourceRepo, rulesetRegistryRepoFullName()) == artifact.SourceRepo &&
+		firstNonEmpty(item.SourceBranch, rulesetRegistryBranch) == artifact.SourceBranch &&
+		firstNonEmpty(item.SourcePath, rulesetTarget(item.Slug)) == artifact.SourcePath
+}
+
 func rulesetRegistryState(cfg *config.Config, slug string) (config.RegistryArtifact, bool) {
 	if cfg == nil {
 		return config.RegistryArtifact{}, false

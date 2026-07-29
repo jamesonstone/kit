@@ -101,6 +101,115 @@ func TestRunInitRefresh_FastForwardsManagedRuleset(t *testing.T) {
 	}
 }
 
+func TestRunInitRefresh_PreservesSourceCommitForUnchangedManagedRuleset(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	base := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
+	remote := registryRulesetWithContentForTest(base.Slug, base.Content, "new-registry-head")
+	stubRulesetRegistry(t, remote)
+
+	cfg := defaultInitConfig()
+	recordRulesetRegistryState(cfg, base, registryArtifactStateManaged, base.NormalizedHash, base.Content)
+	if err := config.Save(tempDir, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+	writeFile(t, filepath.Join(tempDir, rulesetTarget(base.Slug)), base.Content)
+	configBefore, err := os.ReadFile(filepath.Join(tempDir, config.ConfigFileName))
+	if err != nil {
+		t.Fatalf("failed to read config before refresh: %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+		initRefreshFiles = []string{rulesetTarget(base.Slug)}
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	updated, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	artifact, ok := updated.RegistryArtifact(rulesetKind, base.Slug)
+	if !ok {
+		t.Fatalf("missing registry artifact %q", base.Slug)
+	}
+	if artifact.SourceCommit != base.SourceCommit {
+		t.Fatalf("artifact.SourceCommit = %q, want unchanged %q", artifact.SourceCommit, base.SourceCommit)
+	}
+	configAfter, err := os.ReadFile(filepath.Join(tempDir, config.ConfigFileName))
+	if err != nil {
+		t.Fatalf("failed to read config after refresh: %v", err)
+	}
+	if string(configAfter) != string(configBefore) {
+		t.Fatalf("unchanged ruleset rewrote config:\n%s", configAfter)
+	}
+}
+
+func TestRunInitRefresh_AdvancesOnlyChangedRulesetSourceCommit(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	unchangedBase := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
+	changedBase := registryRulesetForTest("work-lane-gating", []string{"workflow"})
+	unchangedRemote := registryRulesetWithContentForTest(unchangedBase.Slug, unchangedBase.Content, "new-registry-head")
+	changedContent := strings.Replace(changedBase.Content, "## Verification", "- Registry refresh verification.\n\n## Verification", 1)
+	changedRemote := registryRulesetWithContentForTest(changedBase.Slug, changedContent, "new-registry-head")
+	stubRulesetRegistry(t, unchangedRemote, changedRemote)
+
+	cfg := defaultInitConfig()
+	recordRulesetRegistryState(cfg, unchangedBase, registryArtifactStateManaged, unchangedBase.NormalizedHash, unchangedBase.Content)
+	recordRulesetRegistryState(cfg, changedBase, registryArtifactStateManaged, changedBase.NormalizedHash, changedBase.Content)
+	if err := config.Save(tempDir, cfg); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+	writeFile(t, filepath.Join(tempDir, rulesetTarget(unchangedBase.Slug)), unchangedBase.Content)
+	writeFile(t, filepath.Join(tempDir, rulesetTarget(changedBase.Slug)), changedBase.Content)
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+		initRefreshFiles = []string{
+			rulesetTarget(unchangedBase.Slug),
+			rulesetTarget(changedBase.Slug),
+		}
+
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	updated, err := config.Load(tempDir)
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	unchangedArtifact, ok := updated.RegistryArtifact(rulesetKind, unchangedBase.Slug)
+	if !ok {
+		t.Fatalf("missing registry artifact %q", unchangedBase.Slug)
+	}
+	if unchangedArtifact.SourceCommit != unchangedBase.SourceCommit {
+		t.Fatalf("unchanged artifact.SourceCommit = %q, want %q", unchangedArtifact.SourceCommit, unchangedBase.SourceCommit)
+	}
+	changedArtifact, ok := updated.RegistryArtifact(rulesetKind, changedBase.Slug)
+	if !ok {
+		t.Fatalf("missing registry artifact %q", changedBase.Slug)
+	}
+	if changedArtifact.SourceCommit != changedRemote.SourceCommit {
+		t.Fatalf("changed artifact.SourceCommit = %q, want %q", changedArtifact.SourceCommit, changedRemote.SourceCommit)
+	}
+	if changedArtifact.InstalledHash != changedRemote.NormalizedHash {
+		t.Fatalf("changed artifact.InstalledHash = %q, want %q", changedArtifact.InstalledHash, changedRemote.NormalizedHash)
+	}
+}
+
 func TestRunInitRefresh_SectionMergesManagedRuleset(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
@@ -210,5 +319,8 @@ func TestRunInitRefresh_SkipsConflictedManagedRuleset(t *testing.T) {
 	artifact, ok := updated.RegistryArtifact(rulesetKind, base.Slug)
 	if !ok || artifact.State != registryArtifactStateConflict {
 		t.Fatalf("artifact = %#v, want conflict", artifact)
+	}
+	if artifact.SourceCommit != base.SourceCommit {
+		t.Fatalf("artifact.SourceCommit = %q, want retained base %q", artifact.SourceCommit, base.SourceCommit)
 	}
 }
