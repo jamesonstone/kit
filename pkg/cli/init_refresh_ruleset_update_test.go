@@ -152,25 +152,30 @@ func TestRunInitRefresh_PreservesSourceCommitForUnchangedManagedRuleset(t *testi
 	}
 }
 
-func TestRunInitRefresh_AdvancesOnlyChangedRulesetSourceCommit(t *testing.T) {
+func TestRunInitRefresh_AdvancesChangedContentOrSourceIdentityCommit(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
 	unchangedBase := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
 	changedBase := registryRulesetForTest("work-lane-gating", []string{"workflow"})
+	movedBase := registryRulesetForTest("github-pr-delivery", []string{"github"})
 	unchangedRemote := registryRulesetWithContentForTest(unchangedBase.Slug, unchangedBase.Content, "new-registry-head")
 	changedContent := strings.Replace(changedBase.Content, "## Verification", "- Registry refresh verification.\n\n## Verification", 1)
 	changedRemote := registryRulesetWithContentForTest(changedBase.Slug, changedContent, "new-registry-head")
-	stubRulesetRegistry(t, unchangedRemote, changedRemote)
+	movedRemote := registryRulesetWithContentForTest(movedBase.Slug, movedBase.Content, "new-registry-head")
+	movedRemote.SourcePath = "docs/references/rules/moved-github-pr-delivery.md"
+	stubRulesetRegistry(t, unchangedRemote, changedRemote, movedRemote)
 
 	cfg := defaultInitConfig()
 	recordRulesetRegistryState(cfg, unchangedBase, registryArtifactStateManaged, unchangedBase.NormalizedHash, unchangedBase.Content)
 	recordRulesetRegistryState(cfg, changedBase, registryArtifactStateManaged, changedBase.NormalizedHash, changedBase.Content)
+	recordRulesetRegistryState(cfg, movedBase, registryArtifactStateManaged, movedBase.NormalizedHash, movedBase.Content)
 	if err := config.Save(tempDir, cfg); err != nil {
 		t.Fatalf("failed to save config: %v", err)
 	}
 	writeFile(t, filepath.Join(tempDir, rulesetTarget(unchangedBase.Slug)), unchangedBase.Content)
 	writeFile(t, filepath.Join(tempDir, rulesetTarget(changedBase.Slug)), changedBase.Content)
+	writeFile(t, filepath.Join(tempDir, rulesetTarget(movedBase.Slug)), movedBase.Content)
 
 	withInitFlags(t, func() {
 		initRefresh = true
@@ -178,6 +183,7 @@ func TestRunInitRefresh_AdvancesOnlyChangedRulesetSourceCommit(t *testing.T) {
 		initRefreshFiles = []string{
 			rulesetTarget(unchangedBase.Slug),
 			rulesetTarget(changedBase.Slug),
+			rulesetTarget(movedBase.Slug),
 		}
 
 		_ = captureStdout(t, func() {
@@ -207,6 +213,16 @@ func TestRunInitRefresh_AdvancesOnlyChangedRulesetSourceCommit(t *testing.T) {
 	}
 	if changedArtifact.InstalledHash != changedRemote.NormalizedHash {
 		t.Fatalf("changed artifact.InstalledHash = %q, want %q", changedArtifact.InstalledHash, changedRemote.NormalizedHash)
+	}
+	movedArtifact, ok := updated.RegistryArtifact(rulesetKind, movedBase.Slug)
+	if !ok {
+		t.Fatalf("missing registry artifact %q", movedBase.Slug)
+	}
+	if movedArtifact.SourceCommit != movedRemote.SourceCommit {
+		t.Fatalf("moved artifact.SourceCommit = %q, want %q", movedArtifact.SourceCommit, movedRemote.SourceCommit)
+	}
+	if movedArtifact.SourcePath != movedRemote.SourcePath {
+		t.Fatalf("moved artifact.SourcePath = %q, want %q", movedArtifact.SourcePath, movedRemote.SourcePath)
 	}
 }
 

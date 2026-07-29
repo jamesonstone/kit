@@ -305,7 +305,7 @@ references:
 - A live `go run ./cmd/kit reconcile --all --include-files --dry-run --diff --output-only` preview surfaced the repository's pending testing-ruleset registry update and ended with `Managed-file refresh pending for 1 file` while leaving the worktree unchanged.
 - GH-108 passed `make fmt`, `make vet`, `go test ./... -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, `go test -race ./pkg/cli -count=1`, and `make build`.
 - The built GH-108 binary passed `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all`; its `kit capabilities reconcile --json` output documents existing-section semantic drift and distinct pending-refresh status.
-- GH-112 focused regressions confirmed that an unchanged ruleset retains its prior `source_commit` without rewriting `.kit.yaml`, a mixed refresh advances only changed ruleset provenance, and a conflict retains its prior source checkpoint.
+- GH-112 focused regressions confirmed that an unchanged ruleset retains its prior `source_commit` without rewriting `.kit.yaml`, changed content or source identity advances provenance, a mixed refresh leaves unrelated provenance stable, and a conflict retains its prior source checkpoint.
 - GH-112 passed `make fmt`, `make vet`, `go test ./... -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, `go test -race ./pkg/cli -count=1`, and an isolated `make build`.
 - The built GH-112 binary passed `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all`.
 
