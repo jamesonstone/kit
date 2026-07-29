@@ -46,7 +46,7 @@ registry:
           path: docs/references/rules/agent-team-orchestration.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/agent-team-orchestration.md
           installed_hash: sha256:1ddad317c3cd1fd48caae3cb9122e29f876f672df8c600e5e1fb743afa6559c8
           state: managed
@@ -55,7 +55,7 @@ registry:
           path: docs/references/rules/backend-service-architecture.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/backend-service-architecture.md
           installed_hash: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
           state: managed
@@ -64,7 +64,7 @@ registry:
           path: docs/references/rules/constitution-curation.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/constitution-curation.md
           installed_hash: sha256:e462fa2563a35bfbb300e54f1e9ecc60f17f983c00d89731a0efa255edb28895
           state: managed
@@ -73,7 +73,7 @@ registry:
           path: docs/references/rules/feature-notes.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/feature-notes.md
           installed_hash: sha256:7545870fd2f8dc484ff60f551c6c20f055856cdf4bc6a399195b1af259427450
           state: managed
@@ -82,7 +82,7 @@ registry:
           path: docs/references/rules/frontend-application-architecture.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/frontend-application-architecture.md
           installed_hash: sha256:31fafc0f1b1bf2690e88d6f713603f9eee178de14e4d1dffe880272523ee073c
           state: managed
@@ -91,16 +91,16 @@ registry:
           path: docs/references/rules/github-pr-delivery.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/github-pr-delivery.md
-          installed_hash: sha256:d71d0fbb3480e0ad3ee614cbff19f874efbb4e32757261a8dd5e71961196872a
+          installed_hash: sha256:7ea1f6537ef864eb7986e75fbf8e04b990aa92062b104800fb3590e55aec59c4
           state: managed
         - kind: ruleset
           slug: kit-capabilities-usage
           path: docs/references/rules/kit-capabilities-usage.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/kit-capabilities-usage.md
           installed_hash: sha256:b48b8687f4dac7b59b7c0492739e8a0e97b1769226f15cfb7f997b78fef17207
           state: managed
@@ -109,7 +109,7 @@ registry:
           path: docs/references/rules/llms-txt.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/llms-txt.md
           installed_hash: sha256:4aaa326493395e357b1cd28ed2dda4c2c454e0fe7fa31fffdeea753bd6fb5884
           state: managed
@@ -118,7 +118,7 @@ registry:
           path: docs/references/rules/readme-header-tagline.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/readme-header-tagline.md
           installed_hash: sha256:062443de22fe7f99f17aeec03c8db15739cdbad64800716daeedb8b47aa63761
           state: managed
@@ -127,16 +127,25 @@ registry:
           path: docs/references/rules/safety-guardrails.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/safety-guardrails.md
-          installed_hash: sha256:2b1249c851cb5d0a20272a9c1fcded6fd2e20a7d4919881a741e1e91bc5a7aae
+          installed_hash: sha256:ea73163fd33875ef9f91baefafc6983090695b7a9ec2406cdd1e41abb350371b
+          state: managed
+        - kind: ruleset
+          slug: testing-and-environment-validation
+          path: docs/references/rules/testing-and-environment-validation.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_path: docs/references/rules/testing-and-environment-validation.md
+          installed_hash: sha256:5925adfeb52f636fd0d625743d0c55be3bef39a7825cbf77c20c08b7deae5b1c
           state: managed
         - kind: ruleset
           slug: work-lane-gating
           path: docs/references/rules/work-lane-gating.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 4678378be35a28c2b389e3b8e1dbb77e5a571b1b
+          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/work-lane-gating.md
           installed_hash: sha256:34f8dd58c9b3190a83d3440788c96f2e82fba7812d51b41115074961e1c9429e
           state: managed
