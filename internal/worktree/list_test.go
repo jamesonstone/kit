@@ -104,19 +104,19 @@ func TestRenderWorktreeSelectorUsesColorAndReadableDate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, color := range []string{colorBrightGreen, colorBrightCyan, colorYellow} {
+	for _, color := range []string{colorBrightMagenta, colorBrightCyan, colorYellow} {
 		if !bytes.Contains(data, []byte(color)) {
 			t.Fatalf("selector output is missing %q: %q", color, data)
 		}
 	}
-	for _, want := range []string{"main", "GH-86", "topic/dirty", "PR#", "94", "Jul 26, 2026 17:44", "h: home"} {
+	for _, want := range []string{"main [home]", "GH-86", "topic/dirty", "PR#", "94", "Jul 26, 2026 17:44", "h: home"} {
 		if !bytes.Contains(data, []byte(want)) {
 			t.Fatalf("selector output is missing %q: %q", want, data)
 		}
 	}
 }
 
-func TestRenderWorktreeSelectorKeepsSelectedHomeBrightGreen(t *testing.T) {
+func TestRenderWorktreeSelectorKeepsSelectedHomeBrightMagenta(t *testing.T) {
 	outputPath := filepath.Join(t.TempDir(), "selector.txt")
 	output, err := os.Create(outputPath)
 	if err != nil {
@@ -136,25 +136,46 @@ func TestRenderWorktreeSelectorKeepsSelectedHomeBrightGreen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectedLine := colorBrightGreen + "> clean"
+	expectedLine := colorBrightMagenta + "> clean"
 	if !bytes.Contains(data, []byte(expectedLine)) {
-		t.Fatalf("selected primary row is not bright green: %q", data)
+		t.Fatalf("selected primary row is not bright magenta: %q", data)
 	}
 	if bytes.Contains(data, []byte(colorBrightCyan+"> clean")) {
 		t.Fatalf("selected primary row used the generic selection color: %q", data)
 	}
 }
 
-func TestSelectorEntryColorKeepsMainBrightGreen(t *testing.T) {
+func TestSelectorEntryColorKeepsMainBrightMagenta(t *testing.T) {
 	t.Parallel()
-	if got := selectorEntryColor(worktreeEntry{branch: "main"}, "clean", true); got != colorBrightGreen {
-		t.Fatalf("selected main color = %q, want %q", got, colorBrightGreen)
+	if got := selectorEntryColor(worktreeEntry{branch: "main"}, "clean", true); got != colorBrightMagenta {
+		t.Fatalf("selected main color = %q, want %q", got, colorBrightMagenta)
 	}
-	if got := selectorEntryColor(worktreeEntry{primary: true, branch: "topic"}, "dirty", false); got != colorBrightGreen {
-		t.Fatalf("primary topic color = %q, want %q", got, colorBrightGreen)
+	if got := selectorEntryColor(worktreeEntry{primary: true, branch: "topic"}, "dirty", false); got != colorBrightMagenta {
+		t.Fatalf("primary topic color = %q, want %q", got, colorBrightMagenta)
 	}
 	if got := selectorEntryColor(worktreeEntry{branch: "GH-95"}, "clean", true); got != colorBrightCyan {
 		t.Fatalf("selected lane color = %q, want %q", got, colorBrightCyan)
+	}
+}
+
+func TestSelectorDisplayHeadMarksIdentity(t *testing.T) {
+	t.Parallel()
+	for _, test := range []struct {
+		name  string
+		entry worktreeEntry
+		want  string
+	}{
+		{name: "primary main", entry: worktreeEntry{primary: true, branch: "main"}, want: "main [home]"},
+		{name: "primary topic", entry: worktreeEntry{primary: true, branch: "topic"}, want: "topic [home]"},
+		{name: "linked main", entry: worktreeEntry{branch: "main"}, want: "main [main]"},
+		{name: "ordinary lane", entry: worktreeEntry{branch: "GH-114"}, want: "GH-114"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			if got := selectorDisplayHead(test.entry); got != test.want {
+				t.Fatalf("selectorDisplayHead() = %q, want %q", got, test.want)
+			}
+		})
 	}
 }
 
@@ -239,7 +260,7 @@ func TestRenderWorktreeSelectorSanitizesDynamicFields(t *testing.T) {
 	}
 
 	unstyled := string(data)
-	for _, sequence := range []string{colorReset, colorBold, colorBrightCyan, colorBrightGreen, colorGreen, colorYellow, colorRed} {
+	for _, sequence := range []string{colorReset, colorBold, colorBrightCyan, colorBrightMagenta, colorGreen, colorYellow, colorRed} {
 		unstyled = strings.ReplaceAll(unstyled, sequence, "")
 	}
 	for _, char := range unstyled {

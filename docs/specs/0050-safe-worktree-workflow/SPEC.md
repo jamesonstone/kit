@@ -66,6 +66,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - GitHub issue #104 and branch `GH-104` track the follow-up that shares an
   ignored primary-checkout `.envrc` with writable lanes without requiring it to
   be committed or copied into every worktree.
+- GitHub issue #114 and branch `GH-114` track the selector-identity follow-up
+  after user-visible evidence showed that bright green is too similar to the
+  ordinary green used for clean lanes in some terminal themes.
 
 ## REQUIREMENTS
 
@@ -80,7 +83,7 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Provide read-only listing, exact safe removal, explicit pruning, root discovery, and dry-run-first migration of legacy flat linked worktrees.
 - Make `git wt list` interactive by default when both input and output are terminals: render a colorized selector, support arrow keys and Tab for navigation, Enter for selection, and open a child shell in the selected worktree.
 - Keep Git's primary worktree selectable and pinned at the top of `git wt list` by default, allow an explicit bottom pin, and make `h` open that home checkout immediately.
-- Keep the primary worktree and every literal `main` branch row bright green even when selected, using one repository-independent identity color distinct from ordinary lane colors.
+- Keep the primary worktree and every literal `main` branch row visibly distinct even when selected: use a dedicated bright-magenta identity color plus an ASCII `[home]` or `[main]` suffix so identity does not depend on ANSI brightness alone.
 - Provide `git wt home` as read-only primary-worktree resolution followed by the same child-shell navigation used by `git wt cd`.
 - Make terminal selection context cancellation interrupt idle input promptly, restore the original terminal mode and cursor state, and leave no background reader that can consume later input.
 - Sanitize every dynamic terminal-table field before alignment and truncation so filesystem or Git metadata cannot inject terminal control sequences.
@@ -162,6 +165,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
     created by the failing invocation, and filter removable dirty-state entries
     from the exact verified managed-link set rather than the configured
     environment filename set.
+17. Replace the bright-green-only home/`main` cue with bright magenta and an
+    explicit ASCII role suffix while preserving navigation, alignment,
+    sanitization, truncation, and plain-output behavior.
 
 ## DECISIONS
 
@@ -199,7 +205,14 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Distribute the native worktree guide as a V3 support document rather than a ruleset: it is required operational reference material for current scaffolds, while the active safety and delivery rules remain the normative policy.
 - Resolve “home” from the first entry in Git's porcelain worktree list. That entry is available offline and identifies the primary checkout without guessing from branch names or paths.
 - Pin home after the requested list sort and reversal so it stays predictably selectable; `--root-position bottom` is the only option that moves the pinned row.
-- Reserve bright green for both the primary checkout and literal `main` rows, even while selected. The pointer still communicates selection without replacing stable home/default-branch identity.
+- Superseded by issue #114: reserve bright green for both the primary checkout
+  and literal `main` rows, even while selected. This originally provided a
+  stable identity while the pointer communicated selection, but user-visible
+  evidence showed insufficient contrast with ordinary clean-row green.
+- Use bright magenta for primary/`main` identity and append `[home]` to the
+  primary checkout or `[main]` to a non-primary literal `main` row. The stable
+  identity survives selection, remains distinct from clean green, and stays
+  understandable when terminal color rendering reduces contrast.
 - Convert commit timestamps into the running user's local timezone only for `git wt list` presentation. Keep the full parsed instant for sorting and retain the existing sync report representation so list localization does not make sync JSON environment-dependent.
 - Keep the optional pull-request annotation read-only and fail-soft rather
   than adding an opt-in flag: one batched lookup measured 0.37 seconds in Kit,
@@ -241,6 +254,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Interactive navigation must be gated on both terminal input and terminal output. Redirected and piped invocations need stable plain text, while terminal users can safely receive raw input handling and ANSI color.
 - Darwin pseudo-terminals do not support `os.File` read deadlines, and a goroutine-only cancellation wrapper can leave the underlying read blocked long enough to consume later terminal input. Context-aware readiness reads with exact descriptor-flag restoration avoid both failure modes.
 - Git's porcelain worktree output lists the primary worktree first, so one parsed `primary` marker can drive `git wt home`, list pinning, the `h` shortcut, and identity coloring without network access.
+- ANSI bright green and ordinary green can render too similarly for the
+  primary `main` row to stand out. A distinct hue plus a short ASCII marker is
+  more robust than brightness alone and preserves stable terminal width.
 - RFC 3339 commit dates retain the commit's recorded offset when parsed. An explicit `time.Local` conversion is required before formatting when `LAST UPDATED` must represent the user running the command rather than the commit author.
 - A live `gh pr list --state open --limit 1000 --json
   number,headRefName` benchmark completed in 0.37 seconds while the existing
@@ -370,6 +386,19 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   features and the project contract remained coherent.
 - Review-repair `gitleaks git --redact --no-banner` and `git diff --check`
   passed.
+- Issue #114 validation passed `make fmt`, `make vet`, `go test
+  ./internal/worktree -count=1`, `go test ./... -count=1`, and `go test -race
+  ./internal/worktree -count=1`.
+- Issue #114 changed-lines lint reported `0 issues`; `make build` produced Kit
+  and installed `git-wt`, and the build and installed binary shared SHA-256
+  `4695149bbbaa523d0decd357de7cd2fa7eb71650c2992627c69021fa2c261e3b`.
+- A real pseudo-terminal selector run rendered `main [home]` with ANSI bright
+  magenta (`1;95`), kept ordinary clean lanes green, and restored the cursor
+  after `q`. `git wt list --plain` retained the unchanged script-safe header
+  and literal `main` head value.
+- `gitleaks git --redact --no-banner`, `git diff --check`, exact worktree
+  guide/template comparison, `kit check safe-worktree-workflow`, and `kit
+  check --project` passed for issue #114.
 
 ## OUTCOME
 
@@ -430,6 +459,10 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - LabCore lane `GH-90` now has ignored exact `.env` and `.envrc` links to its
   primary checkout and a lane-specific direnv approval; no LabCore tracked file
   changed.
+- Issue `#114` and branch `GH-114` replace the subtle bright-green-only
+  selector identity with bright magenta plus `[home]` or `[main]`. The marker
+  and identity color remain stable while selected, and plain output is
+  unchanged.
 
 ## REPOSITORY MEMORY
 
@@ -437,9 +470,10 @@ Decision: updated
 
 Rationale: Exact `.envrc` source ownership, executable-config trust, collision
 preservation, transactional multi-link setup, fresh-worktree cleanup,
-verified-link-only status filtering, direnv approval, and multi-link removal
-restoration are durable workflow and security decisions that code and tests
-alone do not explain completely. The spec preserves those decisions.
+verified-link-only status filtering, direnv approval, multi-link removal
+restoration, and the user-evidenced selector identity change are durable
+workflow decisions that code and tests alone do not explain completely. The
+spec preserves those decisions and the superseded bright-green rationale.
 
 Constitution curation result: updated the project-wide worktree invariant so
 writable lanes may share exact primary-checkout `.envrc` sources without
@@ -452,9 +486,14 @@ force removal and branch deletion, and bound environment sharing to exact
 primary-checkout `.env` and `.envrc` links; failure atomicity and verified-link
 status filtering remain feature-specific rationale in this spec.
 
+Issue #114 Constitution curation result: not required. Selector color and role
+markers are feature-specific presentation behavior, not a project-wide
+principle or workflow boundary.
+
 Artifacts:
 
 - `internal/worktree`
+- `README.md`
 - `pkg/cli/capabilities_catalog_*.go`
 - `internal/instructions/versions/v3.md`
 - `internal/templates`
