@@ -45,11 +45,12 @@ links. `git wt home` opens a child shell in Git's primary
 worktree. `git wt cd GH-123` does the same for an exact registered lane. To
 change the current shell's directory, use `cd "$(git wt path GH-123)"`.
 Interactive `git wt list` pins the primary checkout first by default, keeps it
-and every `main` row bright green, and accepts `h` to open home immediately;
-use `--root-position bottom` to move the pinned row. `LAST UPDATED` uses the
-running user's local timezone and displays the day through `HH:MM`, without
-seconds. `PR#` uses one batched, two-second `gh` lookup: it shows the open
-same-repository pull request number, `-` when no open pull request matches,
+and every `main` row bright magenta, adds `[home]` or `[main]` to make that
+identity clear without relying on color alone, and accepts `h` to open home
+immediately. Use `--root-position bottom` to move the pinned row. `LAST UPDATED`
+uses the running user's local timezone and displays the day through `HH:MM`,
+without seconds. `PR#` uses one batched, two-second `gh` lookup: it shows the
+open same-repository pull request number, `-` when no open pull request matches,
 ascending comma-separated numbers when more than one matches, `NG` when `gh`
 is unavailable, `RL` when rate limited, `TO` on timeout, and `??` for another
 lookup failure. Every lookup failure remains non-blocking.

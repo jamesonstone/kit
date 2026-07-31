@@ -53,10 +53,12 @@ In a terminal, the optional `git wt` helper opens the same colorized selector
 as `git wt list`, with Git's primary worktree pinned at the top and the
 remaining lanes ordered by `LAST UPDATED`. Each timestamp uses the running
 user's local timezone and shows the calendar day plus hour and minute, with no
-seconds. The primary checkout and every `main` branch row stay bright green
-across repositories. Use arrow keys or Tab to move, Enter to open a child shell
-in the selected worktree, `h` to open the primary worktree immediately, and
-`q` to cancel. The child shell cannot change its parent shell's directory.
+seconds. The primary checkout and every `main` branch row use bright magenta
+and carry `[home]` or `[main]` across repositories, keeping them distinct from
+ordinary green clean lanes even when terminal brightness differences are
+subtle. Use arrow keys or Tab to move, Enter to open a child shell in the
+selected worktree, `h` to open the primary worktree immediately, and `q` to
+cancel. The child shell cannot change its parent shell's directory.
 
 Piped or redirected output remains a plain table. Use `--plain` to request the
 table from a terminal, `--sort updated|state|head|path` to choose another key,

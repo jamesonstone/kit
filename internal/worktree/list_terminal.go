@@ -14,15 +14,15 @@ import (
 )
 
 const (
-	colorReset       = "\x1b[0m"
-	colorBold        = "\x1b[1m"
-	colorBrightCyan  = "\x1b[1;36m"
-	colorBrightGreen = "\x1b[1;92m"
-	colorGreen       = "\x1b[32m"
-	colorYellow      = "\x1b[33m"
-	colorRed         = "\x1b[31m"
-	hideCursor       = "\x1b[?25l"
-	showCursor       = "\x1b[?25h"
+	colorReset         = "\x1b[0m"
+	colorBold          = "\x1b[1m"
+	colorBrightCyan    = "\x1b[1;36m"
+	colorBrightMagenta = "\x1b[1;95m"
+	colorGreen         = "\x1b[32m"
+	colorYellow        = "\x1b[33m"
+	colorRed           = "\x1b[31m"
+	hideCursor         = "\x1b[?25l"
+	showCursor         = "\x1b[?25h"
 )
 
 func newListInteraction(out io.Writer) (func() bool, listSelectorFunc) {
@@ -162,7 +162,7 @@ func renderWorktreeSelector(output *os.File, entries []worktreeEntry, selected i
 		entry := entries[i]
 		pointer := " "
 		state := sanitizeTerminalField(entry.state)
-		head := sanitizeTerminalField(displayHead(entry))
+		head := sanitizeTerminalField(selectorDisplayHead(entry))
 		pr := sanitizeTerminalField(entry.prText)
 		updated := sanitizeTerminalField(entry.updatedText)
 		path := sanitizeTerminalField(entry.path)
@@ -187,9 +187,20 @@ func primaryListEntry(entries []worktreeEntry) (worktreeEntry, bool) {
 	return worktreeEntry{}, false
 }
 
+func selectorDisplayHead(entry worktreeEntry) string {
+	head := displayHead(entry)
+	if entry.primary {
+		return head + " [home]"
+	}
+	if entry.branch == "main" {
+		return head + " [main]"
+	}
+	return head
+}
+
 func selectorEntryColor(entry worktreeEntry, state string, selected bool) string {
 	if entry.primary || entry.branch == "main" {
-		return colorBrightGreen
+		return colorBrightMagenta
 	}
 	if selected {
 		return colorBrightCyan
