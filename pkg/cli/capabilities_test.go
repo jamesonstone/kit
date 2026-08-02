@@ -135,6 +135,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(strings.Join(reconcilePayload.Command.WhenToUse, " "), "include files?") {
 		t.Fatalf("expected reconcile guidance to document interactive menu, got %#v", reconcilePayload.Command.WhenToUse)
 	}
+	if !strings.Contains(strings.Join(reconcilePayload.Command.WhenToUse, " "), "300-physical-line limit") {
+		t.Fatalf("expected reconcile guidance to document whole-project source audit, got %#v", reconcilePayload.Command.WhenToUse)
+	}
 	for _, flagName := range []string{"--include-files", "--all", "--force", "--dry-run", "--diff", "--file"} {
 		if findDetailedFlag(reconcilePayload.Command.DetailedFlagBehavior, flagName) == nil {
 			t.Fatalf("expected reconcile detailed flags to include %s", flagName)
@@ -148,6 +151,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(reconcilePayload.Command.Caveats, " "), "existing-section semantic drift") {
 		t.Fatalf("expected reconcile caveats to document semantic drift handling, got %#v", reconcilePayload.Command.Caveats)
+	}
+	if !strings.Contains(strings.Join(reconcilePayload.Command.Caveats, " "), "source-file-size audit: complete") {
+		t.Fatalf("expected reconcile caveats to document source audit evidence, got %#v", reconcilePayload.Command.Caveats)
 	}
 
 	specOutput, err := executeCapabilitiesCommand("--json", "spec")

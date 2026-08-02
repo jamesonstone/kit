@@ -28,9 +28,12 @@ func v2GuidanceExpectations() map[string][]string {
 			"Never claim tests passed unless they ran",
 			"Never claim files were inspected unless they were inspected",
 			"If validation cannot run, state why",
+			"docs/references/rules/source-file-size.md",
+			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		},
 		"docs/references/README.md": {
 			"`rules/testing-and-environment-validation.md`",
+			"`rules/source-file-size.md`",
 		},
 		"docs/references/testing.md": {
 			"`rules/testing-and-environment-validation.md`",
@@ -48,6 +51,8 @@ func v3GuidanceExpectations() map[string][]string {
 		".github/copilot-instructions.md": {
 			"Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md`",
 			"end-to-end and live-integration suites supplement rather than replace them",
+			"Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`",
+			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		},
 		"docs/agents/README.md": {
 			"## Runtime Routing",
@@ -78,9 +83,12 @@ func v3GuidanceExpectations() map[string][]string {
 			"## Repository Memory Completion Gate",
 			"Create or adopt a spec before code when material rationale exists",
 			"Every implementation final response must include `Repository Memory`",
+			"docs/references/rules/source-file-size.md",
+			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		},
 		"docs/references/README.md": {
 			"`rules/testing-and-environment-validation.md`",
+			"`rules/source-file-size.md`",
 			"`worktrees.md` for the canonical native Git worktree hierarchy",
 			"environment ownership",
 		},

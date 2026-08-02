@@ -55,6 +55,7 @@
 | 0051 | resolve-pr-repair-worktrees | `docs/specs/0051-resolve-pr-repair-worktrees` | deliver | no | 2026-07-26 | Resolve target-bearing PR and CI repair commands to the exact writable branch worktree, create or attach the lane when needed, and carry dirty-state decisions into explicit agent instructions. |
 | 0052 | worktree-sync | `docs/specs/0052-worktree-sync` | deliver | no | 2026-07-26 | Add an explicit `git wt sync` command that safely reconciles the origin default branch, removes only exact merged-PR worktrees and their local branches, prunes stale metadata, and supports deterministic human/JSON dry-run reporting. |
 | 0053 | testing-and-environment-validation | `docs/specs/0053-testing-and-environment-validation` | complete | no | 2026-07-27 | Provide one mandatory downstream testing rule that keeps language-native code-level tests and pull-request CI authoritative while adding consistent local, live-integration, and production end-to-end validation, evidence, and production-safety contracts across Kit-managed projects. |
+| 0054 | source-file-line-enforcement | `docs/specs/0054-source-file-line-enforcement` | complete | no | 2026-08-02 | Make the existing 300-line source-file policy consistently visible, machine-audited, and periodically repairable in new and existing Kit-managed projects instead of relying on an agent to notice subjective prose. |
 
 ## PROJECT INTENT
 
@@ -526,6 +527,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0053-testing-and-environment-validation/SPEC.md`
 
+### source-file-line-enforcement
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Make the existing 300-line source-file policy consistently visible, machine-audited, and periodically repairable in new and existing Kit-managed projects instead of relying on an agent to notice subjective prose.
+- **APPROACH**: 1. Add the canonical downstream rule and strengthen Constitution, guardrail, V3 root-instruction, Copilot, and reference-index templates plus checked-in artifacts. 2. Implement a focused source-file enumerator and physical-line audit in a new reconcile source file, including exact scope/exclusion helpers and unit tests for Git, non-Git, generated, vendored, documentation, extensionless, unterminated-final-line, and enumeration-failure cases. 3. Append whole-project findings to the existing reconcile report and adapt prompt/category/summary behavior so code findings authorize only safe semantic splits while document-only runs remain documentation-only. 4. Add generator-alignment, stale-guidance, ruleset-validity, prompt, and end-to-end reconcile tests. 5. Split the six currently oversized Kit Go files by responsibility without changing behavior or public entry points, then verify no in-scope file exceeds 300 physical lines. 6. Update `weekly-kit-health` in place with the third evidence dimension, bounded remediation authority, explicit no-op gate, validation, CI-skip, issue, and final-report requirements. 7. Run focused/full tests, formatting, vet, race checks, build, changed-lines lint, Kit feature/project checks, built-binary reconcile smoke tests, full diff review, and secret scanning; curate repository memory and deliver a ready pull request for issue #116.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0054-source-file-line-enforcement/SPEC.md`
+
 ## LAST UPDATED
 
-2026-07-27 10:46:52 EDT
+2026-08-02 07:46:57 EDT

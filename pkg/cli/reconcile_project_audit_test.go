@@ -163,6 +163,12 @@ func TestRenderReconcileSummaryShowsCompactTable(t *testing.T) {
 	projectRoot := t.TempDir()
 	report := &reconcileReport{
 		ProjectRoot: projectRoot,
+		SourceFileAudit: &sourceFileAuditSummary{
+			CandidateCount: 8,
+			EligibleCount:  3,
+			ViolationCount: 1,
+			Complete:       true,
+		},
 		Findings: []reconcileFinding{
 			{
 				Severity:          reconcileSeverityError,
@@ -184,6 +190,7 @@ func TestRenderReconcileSummaryShowsCompactTable(t *testing.T) {
 		"Reconcile Audit",
 		"Scope: whole project",
 		"Findings: 2 (1 errors, 1 warnings) across 2 files",
+		"source-file-size audit: complete (8 version-control-eligible candidates; 3 eligible handwritten source/test files checked; 1 above 300 physical lines)",
 		"Severity  Issues",
 		"E1",
 		"W1",

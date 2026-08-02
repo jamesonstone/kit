@@ -169,9 +169,13 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	}
 	if !outputOnly {
 		printReconcileSummary(report)
+		scopeInstruction := "keep changes limited to documentation reconciliation"
+		if reconcileAllowsCodeChanges(report.Findings) {
+			scopeInstruction = "limit source/test edits to listed behavior-preserving responsibility splits and directly required tests or canonical docs"
+		}
 		printWorkflowInstructions("reconcile (supporting step)", []string{
 			"run the generated prompt in the current coding agent session",
-			"keep changes limited to documentation reconciliation",
+			scopeInstruction,
 		})
 	}
 
@@ -189,11 +193,15 @@ func reconcileCleanResult(
 		if managedFileChanges == 1 {
 			noun = "file"
 		}
-		return fmt.Sprintf(
+		result := fmt.Sprintf(
 			"Managed-file refresh pending for %d %s. The semantic documentation audit is clean for this scope.",
 			managedFileChanges,
 			noun,
 		)
+		if evidence := sourceFileAuditEvidence(report.SourceFileAudit); evidence != "" {
+			result += " " + evidence + "."
+		}
+		return result
 	}
 	return report.cleanResult()
 }

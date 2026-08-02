@@ -33,6 +33,10 @@ func renderReconcileSummary(report *reconcileReport, style humanOutputStyle) str
 	sb.WriteString(fmt.Sprintf("%s %s\n", style.label("Scope:"), scope))
 	sb.WriteString(fmt.Sprintf("%s %d (%d errors, %d warnings) across %d files\n\n",
 		style.label("Findings:"), len(report.Findings), errors, warnings, len(fileSummaries)))
+	if evidence := sourceFileAuditEvidence(report.SourceFileAudit); evidence != "" {
+		sb.WriteString(evidence)
+		sb.WriteString("\n\n")
+	}
 
 	sb.WriteString(renderReconcileSummaryTable(fileSummaries))
 	sb.WriteString("\n")

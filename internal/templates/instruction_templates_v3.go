@@ -41,6 +41,12 @@ func memoryRepositoryInstructions(title string) string {
 - Before implementation or validation, load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and the project's ` + "`docs/references/testing.md`" + `
 - Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them
 
+## Source File Size Gate
+
+- Before editing implementation/source or test files, load ` + "`docs/references/rules/source-file-size.md`" + `
+- Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less
+- Audit the complete affected source/test scope before delivery; whole-project reconcile and scheduled maintenance audit the entire repository
+
 ## Application Architecture Gate
 
 - Before implementing API or backend routes, controllers or handlers, services, repositories, persistence adapters, or gateways, load ` + "`docs/references/rules/backend-service-architecture.md`" + `
@@ -83,6 +89,8 @@ const memoryCopilotInstructions = `# GitHub Copilot Repository Instructions
 Start with ` + "`docs/agents/README.md`" + `. Before implementing API or backend routes, handlers, services, repositories, persistence adapters, or gateways, load ` + "`docs/references/rules/backend-service-architecture.md`" + `. Before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components, load ` + "`docs/references/rules/frontend-application-architecture.md`" + `. Treat both rules as responsibility boundaries rather than mandatory directory names, and preserve stronger repo-local architecture.
 
 Before implementation or validation, load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and the project's ` + "`docs/references/testing.md`" + `. Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them.
+
+Before editing implementation/source or test files, load ` + "`docs/references/rules/source-file-size.md`" + `. Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less, audit the complete affected scope before delivery, and audit the entire repository during whole-project reconcile and scheduled maintenance.
 
 Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults.
 

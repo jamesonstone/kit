@@ -46,7 +46,7 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	}
 
 	rules := []string{
-		docsOnlyWorkflowRule("Kit-managed docs and scaffold files"),
+		reconcileWorkflowScopeRule(report.Findings),
 		"preserve project wording when it already satisfies the current contract",
 		fmt.Sprintf(
 			"contract order: %s -> %s -> %s",
@@ -89,6 +89,9 @@ func buildReconcilePrompt(report *reconcileReport) string {
 		fmt.Sprintf("files to touch: %d", len(fileSummaries)),
 		fmt.Sprintf("verify after edits: %s", verifyCmd),
 	}
+	if evidence := sourceFileAuditEvidence(report.SourceFileAudit); evidence != "" {
+		snapshot = append(snapshot, evidence)
+	}
 	if report.ReferenceMigration {
 		snapshot = append(snapshot, "reference migration: enabled")
 	}
@@ -125,7 +128,7 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	}
 
 	return renderPromptDocument(func(doc *promptdoc.Document) {
-		doc.Paragraph(fmt.Sprintf("Reconcile Kit-managed docs for the %s.", scope))
+		doc.Paragraph(reconcilePromptOpening(report.Findings, scope))
 		if report.ReferenceMigration {
 			doc.Paragraph("Migration target: replace deprecated front matter `dependencies` with canonical graph-like `references` and keep the prompt/context surface pointer-only.")
 		}
@@ -225,6 +228,8 @@ func reconcileFindingCategory(finding reconcileFinding) string {
 	base := filepath.Base(finding.FilePath)
 
 	switch {
+	case finding.AllowsCodeChanges || strings.Contains(lowerIssue, "source-file-size audit"):
+		return "source file size"
 	case strings.Contains(lowerIssue, "init scaffold") || strings.Contains(lowerIssue, ".gitignore"):
 		return "init scaffold"
 	case strings.Contains(lowerIssue, "executable verification"):

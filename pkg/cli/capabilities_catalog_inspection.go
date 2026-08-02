@@ -83,6 +83,7 @@ func inspectionCapabilityRecords() []capabilityRecord {
 			),
 			withWhenToUse(
 				"Use as the reviewed surface for bringing a Kit-managed project up to date with current files, rules, and scaffold behavior.",
+				"Use whole-project reconcile to audit every version-control-eligible handwritten source and test file against the exact 300-physical-line limit.",
 				"Run interactively to answer include files?, force these changes?, and output coding-agent prompt too?",
 				"Use `--include-files --dry-run --diff` to preview structural refreshes before applying them.",
 				"Use the semantic findings to integrate mandatory testing and worktree guidance that is stale inside an existing customized section.",
@@ -94,6 +95,7 @@ func inspectionCapabilityRecords() []capabilityRecord {
 			withExamples("kit reconcile", "kit reconcile --all --include-files", "kit reconcile --include-files --dry-run --diff", "kit reconcile --include-files", "kit reconcile --include-files --force", "kit reconcile --output-only"),
 			withCaveats(
 				"Append-only refresh preserves existing section content; bounded existing-section semantic drift is surfaced for manual integration or a reviewed targeted forced preview.",
+				"Whole-project output emits literal `source-file-size audit: complete` evidence with candidate, eligible-file, and violation counts; missing or incomplete evidence cannot support a clean result.",
 				"A managed-file dry-run with pending version-control-eligible changes reports that pending refresh separately from a clean semantic audit.",
 				"The follow-up prompt owns delivery of version-control-eligible command-created files: it requires the exact issue worktree, verified root-checkout transfer, explicit staging, and a ready pull request while the command itself performs no Git or GitHub mutation.",
 			),

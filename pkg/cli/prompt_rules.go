@@ -30,7 +30,7 @@ func managedFileDeliveryInstructions(
 		return snapshot[i].Path < snapshot[j].Path
 	})
 
-	boundary := "Use only the exact command-owned path snapshot emitted by this Kit command. If no snapshot is present, stop and rerun the command; do not infer ownership from post-command Git status."
+	boundary := "No exact command-owned path snapshot is present. Do not infer or transfer a managed-file delta from post-command Git status; apply only the listed manual findings in the selected writable lane, and rerun write-capable Kit commands there before adopting managed changes."
 	if len(snapshot) > 0 {
 		entries := make([]string, 0, len(snapshot))
 		for _, change := range snapshot {

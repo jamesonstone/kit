@@ -158,6 +158,28 @@ func TestReconcileCleanResultReportsPendingManagedFileDryRun(t *testing.T) {
 	}
 }
 
+func TestReconcileCleanResultIncludesSourceAuditDuringPendingDryRun(t *testing.T) {
+	report := &reconcileReport{
+		SourceFileAudit: &sourceFileAuditSummary{
+			CandidateCount: 12,
+			EligibleCount:  7,
+			Complete:       true,
+		},
+	}
+
+	got := reconcileCleanResult(report, true, true, 1)
+	for _, want := range []string{
+		"Managed-file refresh pending for 1 file.",
+		"source-file-size audit: complete",
+		"7 eligible handwritten source/test files checked",
+		"0 above 300 physical lines",
+	} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("reconcileCleanResult() = %q, want %q", got, want)
+		}
+	}
+}
+
 func writeCurrentReconcileGuidanceFixture(t *testing.T, version int) string {
 	t.Helper()
 

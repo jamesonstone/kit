@@ -43,8 +43,10 @@ func TestInstructionTemplatesScopeCodeFileSizeGuidance(t *testing.T) {
 		"docs/agents/GUARDRAILS.md",
 	)
 	for _, check := range []string{
-		"implementation/source code files around 300 lines",
-		"documentation files, `docs/**`, `.kit/**`, or `.kit.yaml`",
+		"docs/references/rules/source-file-size.md",
+		"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
+		"whole-project reconcile and scheduled maintenance audit the entire repository",
+		"ignored files, vendored dependencies, and proven generated files",
 	} {
 		if !strings.Contains(guardrails, check) {
 			t.Fatalf("expected GUARDRAILS.md to contain %q", check)
@@ -58,8 +60,10 @@ func TestConstitutionTemplateIncludesKitManagedBaselineRules(t *testing.T) {
 		"BEGIN KIT-MANAGED BASELINE RULES",
 		"docs/notes/<feature>",
 		"optional source material, not canonical truth",
-		"Prefer implementation/source code files around 300 lines",
-		"Do not apply the code-file size guideline to documentation files",
+		"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
+		"whole-project reconcile and scheduled maintenance audit the entire repository",
+		"vendored dependencies, and proven generated files",
+		"never use minification or arbitrary numbered chunks",
 	} {
 		if !strings.Contains(Constitution, check) {
 			t.Fatalf("expected Constitution template to contain %q", check)

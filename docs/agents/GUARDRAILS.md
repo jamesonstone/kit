@@ -119,8 +119,12 @@ When .kit.yaml defines an enabled aws context, agents must:
 
 - Remove dead code, unused exports, and public surfaces that are not strictly necessary
 - If a symbol is only used locally, reduce its visibility instead of keeping it exported
-- Keep implementation/source code files around 300 lines or less when splitting improves clarity
-- Do not apply the 300-line guideline to documentation files, `docs/**`, `.kit/**`, or `.kit.yaml`
+- Load `docs/references/rules/source-file-size.md` before editing implementation/source or test files
+- Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less
+- Before delivery, audit the complete affected source/test scope; whole-project reconcile and scheduled maintenance audit the entire repository
+- Exclude documentation files, `docs/**`, `.kit/**`, `.kit.yaml`, ignored files, vendored dependencies, and proven generated files
+- Split oversized files by semantic responsibility while preserving stable public entry points and behavior; do not use minification or arbitrary numbered chunks
+- If a safe split cannot be completed, report the exact file and blocker instead of silently accepting the violation
 
 ## Safety
 

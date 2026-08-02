@@ -22,6 +22,7 @@ const (
 type reconcileFinding struct {
 	Severity          reconcileSeverity
 	NonBlocking       bool
+	AllowsCodeChanges bool
 	FilePath          string
 	Issue             string
 	ContractSource    string
@@ -37,13 +38,18 @@ type reconcileReport struct {
 	ReferenceMigration    bool
 	VerificationMigration bool
 	DeliverySnapshot      []managedFileDeliverySnapshot
+	SourceFileAudit       *sourceFileAuditSummary
 }
 
 func (r *reconcileReport) cleanResult() string {
 	if r.Feature != nil {
 		return fmt.Sprintf("No reconciliation needed for feature %s.", r.Feature.Slug)
 	}
-	return "No reconciliation needed. Kit-managed documents and scaffold artifacts already match the current contract for this scope."
+	result := "No reconciliation needed. Kit-managed project state already matches the current contract for this scope."
+	if evidence := sourceFileAuditEvidence(r.SourceFileAudit); evidence != "" {
+		result += " " + evidence + "."
+	}
+	return result
 }
 
 func buildReconcileReport(projectRoot string, cfg *config.Config, feat *feature.Feature) (*reconcileReport, error) {
@@ -64,6 +70,9 @@ func buildReconcileReport(projectRoot string, cfg *config.Config, feat *feature.
 	}
 
 	if feat == nil {
+		sourceAudit := inspectSourceFileSizes(projectRoot)
+		report.SourceFileAudit = &sourceAudit.Summary
+		report.Findings = append(report.Findings, sourceAudit.Findings...)
 		report.Findings = append(report.Findings, auditDuplicateFeatureNumbers(cfg.SpecsPath(projectRoot), projectRoot, features)...)
 		report.Findings = append(report.Findings, auditInitScaffoldArtifacts(projectRoot)...)
 		report.Findings = append(report.Findings, auditConstitution(projectRoot)...)
