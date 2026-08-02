@@ -223,6 +223,12 @@ projects instead of relying on an agent to notice subjective prose.
   deterministic repository allowlist. It now requires both capability-level
   support and literal complete audit evidence before classifying this
   dimension as clean.
+- Post-PR review found that non-source candidates were read before cheap
+  metadata eligibility checks, display text duplicated the numeric limit, and
+  no-snapshot delivery guidance referred to state it did not possess. The
+  repair now prefilters by extension and executable metadata, derives display
+  text from the limit constant, and requires a fresh command-emitted snapshot
+  before any managed change can be adopted.
 
 ## VALIDATION
 
@@ -257,6 +263,9 @@ projects instead of relying on an agent to notice subjective prose.
 - PASS: post-validation Constitution review was recorded with
   `/tmp/kit-gh116 project refresh --now`; the follow-up status reports the
   review is not due for another five completed features or 30 days.
+- PASS: post-PR focused tests cover metadata prefiltering, constant-derived
+  evidence, fresh no-snapshot capture, and explicit source-changing CI-skip
+  exclusion; full validation was rerun before the review-repair commit.
 
 ## OUTCOME
 

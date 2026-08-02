@@ -61,6 +61,7 @@ func TestGitHubPRDeliveryRulesetPreservesAdditionalScopeLane(t *testing.T) {
 func TestGitHubPRDeliveryRulesetSkipsCIForDocumentationOnlySquashMerges(t *testing.T) {
 	ruleset := loadGitHubPRDeliveryRuleset(t)
 	for _, check := range []string{
+		"Source-changing pull requests are not eligible for Kit-only CI skips",
 		"complete branch and pull request diff",
 		"`kit reconcile` is a candidate signal, not proof of eligibility",
 		"documentation-only follow-up on a mixed pull request is not eligible",

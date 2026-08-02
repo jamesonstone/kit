@@ -52,6 +52,37 @@ func TestGeneratedSourceContentRequiresHeaderComment(t *testing.T) {
 	}
 }
 
+func TestSourceFileMetadataInScopePrefiltersNonSourceCandidates(t *testing.T) {
+	projectRoot := t.TempDir()
+	tests := []struct {
+		name string
+		path string
+		mode os.FileMode
+		want bool
+	}{
+		{name: "recognized source", path: "main.go", mode: 0o644, want: true},
+		{name: "unknown extension executable", path: "archive.bin", mode: 0o755, want: false},
+		{name: "extensionless executable", path: "tool", mode: 0o755, want: true},
+		{name: "extensionless non-executable", path: "NOTICE", mode: 0o644, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(projectRoot, tt.path)
+			writeFile(t, path, "fixture\n")
+			if err := os.Chmod(path, tt.mode); err != nil {
+				t.Fatalf("os.Chmod() error = %v", err)
+			}
+			info, err := os.Stat(path)
+			if err != nil {
+				t.Fatalf("os.Stat() error = %v", err)
+			}
+			if got := sourceFileMetadataInScope(tt.path, info); got != tt.want {
+				t.Fatalf("sourceFileMetadataInScope() = %t, want %t", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestAuditSourceFileSizesWithoutGitScopesFilesAndExclusions(t *testing.T) {
 	projectRoot := t.TempDir()
 	writeLines(t, filepath.Join(projectRoot, "main.go"), 301, "package main")

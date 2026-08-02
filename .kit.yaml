@@ -91,10 +91,10 @@ registry:
           path: docs/references/rules/github-pr-delivery.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: 84bc11c469bd7573cda7568c08c094983d5ab09a
           source_path: docs/references/rules/github-pr-delivery.md
-          installed_hash: sha256:7ea1f6537ef864eb7986e75fbf8e04b990aa92062b104800fb3590e55aec59c4
-          state: managed
+          installed_hash: sha256:f300d5d397aec24f9a16f64b6d12ce904d907dafbaf73a1c75498040dbcfcc77
+          state: local-custom
         - kind: ruleset
           slug: kit-capabilities-usage
           path: docs/references/rules/kit-capabilities-usage.md

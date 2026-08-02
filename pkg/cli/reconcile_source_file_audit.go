@@ -76,6 +76,9 @@ func auditSourceFileSize(projectRoot, relativePath string) (reconcileFinding, bo
 	if err != nil {
 		return sourceFileReadFinding(projectRoot, absPath, err), true, false
 	}
+	if !sourceFileMetadataInScope(relativePath, info) {
+		return reconcileFinding{}, false, false
+	}
 	data, err := os.ReadFile(absPath)
 	if err != nil {
 		return sourceFileReadFinding(projectRoot, absPath, err), true, false
@@ -91,9 +94,9 @@ func auditSourceFileSize(projectRoot, relativePath string) (reconcileFinding, bo
 	finding := newFinding(
 		reconcileSeverityWarning,
 		absPath,
-		fmt.Sprintf("version-control-eligible handwritten source/test file exceeds 300 physical lines (%d)", lineCount),
+		fmt.Sprintf("version-control-eligible handwritten source/test file exceeds %d physical lines (%d)", sourceFileLineLimit, lineCount),
 		sourceFileSizeRuleSource(projectRoot),
-		"split the file by semantic responsibility until every resulting handwritten source/test file is at most 300 physical lines; preserve behavior, stable public entry points, and language-native test discovery, and use responsibility-based filenames",
+		fmt.Sprintf("split the file by semantic responsibility until every resulting handwritten source/test file is at most %d physical lines; preserve behavior, stable public entry points, and language-native test discovery, and use responsibility-based filenames", sourceFileLineLimit),
 		[]string{
 			fmt.Sprintf("awk 'END { print NR }' %s", shellQuoteArgument(absPath)),
 			fmt.Sprintf("git diff -- %s", shellQuoteArgument(relativePath)),
@@ -112,11 +115,12 @@ func sourceFileAuditEvidence(summary *sourceFileAuditSummary) string {
 		state = "incomplete; clean result prohibited"
 	}
 	return fmt.Sprintf(
-		"source-file-size audit: %s (%d version-control-eligible candidates; %d eligible handwritten source/test files checked; %d above 300 physical lines)",
+		"source-file-size audit: %s (%d version-control-eligible candidates; %d eligible handwritten source/test files checked; %d above %d physical lines)",
 		state,
 		summary.CandidateCount,
 		summary.EligibleCount,
 		summary.ViolationCount,
+		sourceFileLineLimit,
 	)
 }
 
@@ -217,13 +221,15 @@ func sourceFilePathExcluded(relativePath string) bool {
 }
 
 func sourceFileContentInScope(relativePath string, info fs.FileInfo, data []byte) bool {
-	if bytes.IndexByte(data, 0) >= 0 || generatedSourceContent(data) {
+	if !sourceFileMetadataInScope(relativePath, info) || bytes.IndexByte(data, 0) >= 0 || generatedSourceContent(data) {
 		return false
 	}
-	if recognizedSourceExtension(filepath.Ext(relativePath)) {
-		return true
-	}
-	return filepath.Ext(relativePath) == "" && info.Mode()&0o111 != 0 && bytes.HasPrefix(data, []byte("#!"))
+	return filepath.Ext(relativePath) != "" || bytes.HasPrefix(data, []byte("#!"))
+}
+
+func sourceFileMetadataInScope(relativePath string, info fs.FileInfo) bool {
+	extension := filepath.Ext(relativePath)
+	return recognizedSourceExtension(extension) || extension == "" && info.Mode()&0o111 != 0
 }
 
 func generatedSourceContent(data []byte) bool {
