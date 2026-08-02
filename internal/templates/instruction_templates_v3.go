@@ -3,7 +3,7 @@ package templates
 import "strings"
 
 func memoryRepositoryInstructions(title string) string {
-	return `## Purpose
+	return codexThreadInitializationGate(title) + `## Purpose
 
 - This file is a routing table, not the full manual
 - Start at ` + "`docs/agents/README.md`" + ` and load only the guidance needed for the current decision
@@ -77,6 +77,25 @@ func memoryRepositoryInstructions(title string) string {
 - Keep ` + title + ` short and stable
 - Put durable workflow guidance in ` + "`docs/agents/*`" + ` instead of expanding always-loaded files
 - Do not ingest or depend on agent transcripts as repository memory
+`
+}
+
+func codexThreadInitializationGate(title string) string {
+	if title != "AGENTS" {
+		return ""
+	}
+
+	return `## Codex Thread Initialization Hard Gate
+
+- For every newly created Codex task, this is a blocking pre-response gate. Complete it before the first commentary message and before planning, repository inspection, shell or network commands, or any other task action; only the minimum capability lookup needed to locate the two thread operations may precede it.
+- First, call the available thread-title operation (` + "`set_thread_title`" + ` when available) with ` + "`[<project>] <description>`" + `.
+- Second, call the available thread-pin operation (` + "`set_thread_pinned`" + ` when available).
+- Both actions are required and ordered. Never defer either supported operation to a later interaction.
+- Derive ` + "`<project>`" + ` from the host-provided repository or working-directory context and ` + "`<description>`" + ` from the user request without inspecting the repository first. Keep the description lowercase and at most four words.
+- Verify each operation from its returned state when the host exposes one.
+- If an operation is unsupported, unavailable, or fails, do not silently skip it or retry indefinitely. After resolving both actions in order, begin the first commentary with ` + "`Thread initialization: rename <status>; pin <status>.`" + `, include a concise reason for every non-success status, then continue the requested work.
+- For a continued Codex task, preserve its current title and pin state unless either is missing or the user explicitly requests a change.
+
 `
 }
 

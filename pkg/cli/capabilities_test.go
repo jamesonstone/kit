@@ -152,6 +152,9 @@ func TestCapabilitiesTargetedJSON(t *testing.T) {
 	if !strings.Contains(strings.Join(reconcilePayload.Command.Caveats, " "), "existing-section semantic drift") {
 		t.Fatalf("expected reconcile caveats to document semantic drift handling, got %#v", reconcilePayload.Command.Caveats)
 	}
+	if !strings.Contains(strings.Join(reconcilePayload.Command.Caveats, " "), "ordered Codex pre-response thread-title and thread-pin gate") {
+		t.Fatalf("expected reconcile caveats to document Codex thread initialization audit, got %#v", reconcilePayload.Command.Caveats)
+	}
 	if !strings.Contains(strings.Join(reconcilePayload.Command.Caveats, " "), "source-file-size audit: complete") {
 		t.Fatalf("expected reconcile caveats to document source audit evidence, got %#v", reconcilePayload.Command.Caveats)
 	}

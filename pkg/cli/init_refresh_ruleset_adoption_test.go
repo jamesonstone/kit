@@ -117,6 +117,7 @@ func TestRunInitRefresh_InstallsDownstreamCapabilitiesUsageRuleNotMaintainerRule
 func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 	slugs := []string{
 		"backend-service-architecture",
+		"codex-thread-initialization",
 		"frontend-application-architecture",
 		"source-file-size",
 		"testing-and-environment-validation",

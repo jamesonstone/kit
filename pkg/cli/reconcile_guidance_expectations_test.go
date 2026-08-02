@@ -87,11 +87,15 @@ func TestAuditV2SupportGuidanceFindsStaleTestingSemantics(t *testing.T) {
 	}
 }
 
-func TestAuditV3SupportGuidanceFindsStaleTestingAndWorktreeSemantics(t *testing.T) {
+func TestAuditV3SupportGuidanceFindsStaleSessionTestingAndWorktreeSemantics(t *testing.T) {
 	tests := []struct {
 		path    string
 		snippet string
 	}{
+		{
+			path:    "AGENTS.md",
+			snippet: "First, call the available thread-title operation (`set_thread_title` when available)",
+		},
 		{
 			path:    ".github/copilot-instructions.md",
 			snippet: "Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md`",
@@ -188,6 +192,11 @@ func writeCurrentReconcileGuidanceFixture(t *testing.T, version int) string {
 		writeFile(t, filepath.Join(projectRoot, filepath.FromSlash(support.RelativePath)), support.Content)
 	}
 	if version == config.InstructionScaffoldVersionMemory {
+		writeFile(
+			t,
+			filepath.Join(projectRoot, "AGENTS.md"),
+			templates.MemoryAgentsMD,
+		)
 		writeFile(
 			t,
 			filepath.Join(projectRoot, ".github", "copilot-instructions.md"),

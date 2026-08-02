@@ -56,6 +56,7 @@
 | 0052 | worktree-sync | `docs/specs/0052-worktree-sync` | deliver | no | 2026-07-26 | Add an explicit `git wt sync` command that safely reconciles the origin default branch, removes only exact merged-PR worktrees and their local branches, prunes stale metadata, and supports deterministic human/JSON dry-run reporting. |
 | 0053 | testing-and-environment-validation | `docs/specs/0053-testing-and-environment-validation` | complete | no | 2026-07-27 | Provide one mandatory downstream testing rule that keeps language-native code-level tests and pull-request CI authoritative while adding consistent local, live-integration, and production end-to-end validation, evidence, and production-safety contracts across Kit-managed projects. |
 | 0054 | source-file-line-enforcement | `docs/specs/0054-source-file-line-enforcement` | complete | no | 2026-08-02 | Make the existing 300-line source-file policy consistently visible, machine-audited, and periodically repairable in new and existing Kit-managed projects instead of relying on an agent to notice subjective prose. |
+| 0055 | codex-thread-initialization | `docs/specs/0055-codex-thread-initialization` | complete | no | 2026-08-02 | Make Codex thread renaming and pinning mandatory, ordered, pre-response initialization actions for newly created tasks, while making unavailable or failed host operations immediately visible instead of silently weakening the contract. |
 
 ## PROJECT INTENT
 
@@ -536,6 +537,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0054-source-file-line-enforcement/SPEC.md`
 
+### codex-thread-initialization
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Make Codex thread renaming and pinning mandatory, ordered, pre-response initialization actions for newly created tasks, while making unavailable or failed host operations immediately visible instead of silently weakening the contract.
+- **APPROACH**: 1. Add a provider-specific first-section gate to the V3 AGENTS generator and align the checked-in AGENTS artifact without changing Claude or Copilot. 2. Add the canonical downstream rule and reference-index routes, then register it for new-project initialization and managed refresh. 3. Add AGENTS-specific V3 reconcile expectations that pin the gate, ordered operations, and fail-visible first-commentary fallback. 4. Add focused generator, reconciliation, ruleset, and adoption regression tests, then run complete repository validation and a built-binary reconcile smoke test. 5. Curate the completed rationale, commit the additional scope against issue #118 on GH-116, update pull request #117 to close both issues, push, and verify exact local, remote, pull-request, and hosted-check state.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0055-codex-thread-initialization/SPEC.md`
+
 ## LAST UPDATED
 
-2026-08-02 07:46:57 EDT
+2026-08-02 08:16:47 EDT

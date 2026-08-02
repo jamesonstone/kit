@@ -48,6 +48,13 @@ func v2GuidanceExpectations() map[string][]string {
 
 func v3GuidanceExpectations() map[string][]string {
 	return map[string][]string{
+		"AGENTS.md": {
+			"## Codex Thread Initialization Hard Gate",
+			"before the first commentary message",
+			"First, call the available thread-title operation (`set_thread_title` when available)",
+			"Second, call the available thread-pin operation (`set_thread_pinned` when available)",
+			"Thread initialization: rename <status>; pin <status>.",
+		},
 		".github/copilot-instructions.md": {
 			"Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md`",
 			"end-to-end and live-integration suites supplement rather than replace them",
@@ -89,6 +96,7 @@ func v3GuidanceExpectations() map[string][]string {
 		"docs/references/README.md": {
 			"`rules/testing-and-environment-validation.md`",
 			"`rules/source-file-size.md`",
+			"`rules/codex-thread-initialization.md`",
 			"`worktrees.md` for the canonical native Git worktree hierarchy",
 			"environment ownership",
 		},
