@@ -71,7 +71,8 @@ func TestRunInitRefresh_PreservesGeneratedVerboseInstructionsAsLegacy(t *testing
 	for _, check := range []string{
 		"custom",
 		"### Kit-Managed Baseline Rules",
-		"Do not apply the code-file size guideline to documentation files",
+		"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
+		"vendored dependencies, and proven generated files",
 	} {
 		if !strings.Contains(string(constitutionContent), check) {
 			t.Fatalf("expected CONSTITUTION.md to contain %q, got:\n%s", check, constitutionContent)

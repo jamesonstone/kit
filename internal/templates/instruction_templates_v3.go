@@ -3,7 +3,7 @@ package templates
 import "strings"
 
 func memoryRepositoryInstructions(title string) string {
-	return `## Purpose
+	return codexThreadInitializationGate(title) + `## Purpose
 
 - This file is a routing table, not the full manual
 - Start at ` + "`docs/agents/README.md`" + ` and load only the guidance needed for the current decision
@@ -41,6 +41,12 @@ func memoryRepositoryInstructions(title string) string {
 - Before implementation or validation, load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and the project's ` + "`docs/references/testing.md`" + `
 - Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them
 
+## Source File Size Gate
+
+- Before editing implementation/source or test files, load ` + "`docs/references/rules/source-file-size.md`" + `
+- Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less
+- Audit the complete affected source/test scope before delivery; whole-project reconcile and scheduled maintenance audit the entire repository
+
 ## Application Architecture Gate
 
 - Before implementing API or backend routes, controllers or handlers, services, repositories, persistence adapters, or gateways, load ` + "`docs/references/rules/backend-service-architecture.md`" + `
@@ -74,6 +80,25 @@ func memoryRepositoryInstructions(title string) string {
 `
 }
 
+func codexThreadInitializationGate(title string) string {
+	if title != "AGENTS" {
+		return ""
+	}
+
+	return `## Codex Thread Initialization Hard Gate
+
+- For every newly created Codex task, this is a blocking pre-response gate. Complete it before the first commentary message and before planning, repository inspection, shell or network commands, or any other task action; only the minimum capability lookup needed to locate the two thread operations may precede it.
+- First, call the available thread-title operation (` + "`set_thread_title`" + ` when available) with ` + "`[<project>] <description>`" + `.
+- Second, call the available thread-pin operation (` + "`set_thread_pinned`" + ` when available).
+- Both actions are required and ordered. Never defer either supported operation to a later interaction.
+- Derive ` + "`<project>`" + ` from the host-provided repository or working-directory context and ` + "`<description>`" + ` from the user request without inspecting the repository first. Keep the description lowercase and at most four words.
+- Verify each operation from its returned state when the host exposes one.
+- If an operation is unsupported, unavailable, or fails, do not silently skip it or retry indefinitely. After resolving both actions in order, begin the first commentary with ` + "`Thread initialization: rename <status>; pin <status>.`" + `, include a concise reason for every non-success status, then continue the requested work.
+- For a continued Codex task, preserve its current title and pin state unless either is missing or the user explicitly requests a change.
+
+`
+}
+
 const memoryCopilotInstructions = `# GitHub Copilot Repository Instructions
 
 ## Native Planning
@@ -83,6 +108,8 @@ const memoryCopilotInstructions = `# GitHub Copilot Repository Instructions
 Start with ` + "`docs/agents/README.md`" + `. Before implementing API or backend routes, handlers, services, repositories, persistence adapters, or gateways, load ` + "`docs/references/rules/backend-service-architecture.md`" + `. Before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components, load ` + "`docs/references/rules/frontend-application-architecture.md`" + `. Treat both rules as responsibility boundaries rather than mandatory directory names, and preserve stronger repo-local architecture.
 
 Before implementation or validation, load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and the project's ` + "`docs/references/testing.md`" + `. Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them.
+
+Before editing implementation/source or test files, load ` + "`docs/references/rules/source-file-size.md`" + `. Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less, audit the complete affected scope before delivery, and audit the entire repository during whole-project reconcile and scheduled maintenance.
 
 Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults.
 

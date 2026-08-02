@@ -87,11 +87,15 @@ func TestAuditV2SupportGuidanceFindsStaleTestingSemantics(t *testing.T) {
 	}
 }
 
-func TestAuditV3SupportGuidanceFindsStaleTestingAndWorktreeSemantics(t *testing.T) {
+func TestAuditV3SupportGuidanceFindsStaleSessionTestingAndWorktreeSemantics(t *testing.T) {
 	tests := []struct {
 		path    string
 		snippet string
 	}{
+		{
+			path:    "AGENTS.md",
+			snippet: "First, call the available thread-title operation (`set_thread_title` when available)",
+		},
 		{
 			path:    ".github/copilot-instructions.md",
 			snippet: "Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md`",
@@ -158,6 +162,28 @@ func TestReconcileCleanResultReportsPendingManagedFileDryRun(t *testing.T) {
 	}
 }
 
+func TestReconcileCleanResultIncludesSourceAuditDuringPendingDryRun(t *testing.T) {
+	report := &reconcileReport{
+		SourceFileAudit: &sourceFileAuditSummary{
+			CandidateCount: 12,
+			EligibleCount:  7,
+			Complete:       true,
+		},
+	}
+
+	got := reconcileCleanResult(report, true, true, 1)
+	for _, want := range []string{
+		"Managed-file refresh pending for 1 file.",
+		"source-file-size audit: complete",
+		"7 eligible handwritten source/test files checked",
+		"0 above 300 physical lines",
+	} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("reconcileCleanResult() = %q, want %q", got, want)
+		}
+	}
+}
+
 func writeCurrentReconcileGuidanceFixture(t *testing.T, version int) string {
 	t.Helper()
 
@@ -166,6 +192,11 @@ func writeCurrentReconcileGuidanceFixture(t *testing.T, version int) string {
 		writeFile(t, filepath.Join(projectRoot, filepath.FromSlash(support.RelativePath)), support.Content)
 	}
 	if version == config.InstructionScaffoldVersionMemory {
+		writeFile(
+			t,
+			filepath.Join(projectRoot, "AGENTS.md"),
+			templates.MemoryAgentsMD,
+		)
 		writeFile(
 			t,
 			filepath.Join(projectRoot, ".github", "copilot-instructions.md"),

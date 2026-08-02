@@ -259,8 +259,9 @@ func TestRunInitRefreshForceCopiesDocumentationPrompt(t *testing.T) {
 		"kit check --project",
 		"Delivery of command-created files:",
 		"exact command-owned path snapshot",
-		"explicitly stage only the captured paths (including deleted paths)",
-		"restore each captured root path to its exact pre-command state",
+		"require the rerun to emit a new exact command-owned snapshot",
+		"explicitly stage only those paths",
+		"match the snapshot exactly",
 		"create or update the ready pull request",
 		"no documentation updates needed",
 	} {

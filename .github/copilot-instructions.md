@@ -8,6 +8,8 @@ Start with `docs/agents/README.md`. Before implementing API or backend routes, h
 
 Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`. Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them.
 
+Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`. Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less, audit the complete affected scope before delivery, and audit the entire repository during whole-project reconcile and scheduled maintenance.
+
 Before Git, GitHub, or AWS mutations, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*`. Repo-local Kit rules outrank generic defaults.
 
 ## Final Response

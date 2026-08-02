@@ -10,6 +10,8 @@
 - Use `rules/feature-notes.md` when deciding how to load, reference, promote, or ignore source material under `docs/notes/<feature>`
 - Use `rules/constitution-curation.md` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use `rules/testing-and-environment-validation.md` before implementation and validation to preserve code-level checks and add environment evidence safely
+- Use `rules/source-file-size.md` before editing implementation/source or test files and for whole-project reconcile audits
+- Use `rules/codex-thread-initialization.md` to preserve Codex's ordered pre-response rename and pin gate during instruction refresh and reconciliation
 - Use `worktrees.md` for the canonical native Git worktree hierarchy, naming, shared-state model, environment ownership, and safety contract
 - Use `kit rules add` to import or activate available registry rulesets from the Kit GitHub `main` branch
 - Use `kit rules view <slug>` to preview a local or registry ruleset before importing it
@@ -35,6 +37,7 @@ are:
 | --- | --- | --- |
 | `agent-team-orchestration` | coding-agent, workflow, dispatch, subagent, verification | Accountable supervisor plans, bounded specialist lanes, overlap control, and read-only verification. |
 | `backend-service-architecture` | architecture, backend, API, service, repository, gateway | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |
+| `codex-thread-initialization` | codex, coding-agent, session, thread, session-management | Ordered pre-response thread renaming and pinning with verified or fail-visible status. |
 | `constitution-curation` | implementation, validation, repository-memory, constitution, project-refresh | Evidence-based promotion of durable rationale and project-wide invariants. |
 | `feature-notes` | notes, source-material, documentation | Optional feature source material and promotion boundaries for `docs/notes/<feature>`. |
 | `frontend-application-architecture` | architecture, frontend, route, page, component, state | Responsibility and dependency boundaries for frontend routes, features, data adapters, state, and UI. |
@@ -43,6 +46,7 @@ are:
 | `llms-txt` | web, website, API, documentation | `/llms.txt` contract for applicable public web and API surfaces. |
 | `readme-header-tagline` | README and repository onboarding | Consistent top-level README identity and opening structure. |
 | `safety-guardrails` | git, GitHub, safety | Recon, identity, worktree, secret, protected-branch, and failure-recovery boundaries. |
+| `source-file-size` | implementation, testing, validation, refactor, reconcile, maintenance | Exact 300-line handwritten source/test limit, exclusions, semantic splits, and verification. |
 | `testing-and-environment-validation` | implementation, testing, validation, CI, deployment, local, production | Code-level PR checks, high-level environment suites, immutable evidence, status reporting, and safe production validation. |
 | `work-lane-gating` | git, GitHub, workflow | Separates non-implementation documentation work from implementation delivery lanes. |
 

@@ -100,6 +100,33 @@ func TestManagedFileDeliveryInstructionsCarryRemovalOnlyChange(t *testing.T) {
 	}
 }
 
+func TestManagedFileDeliveryInstructionsWithoutSnapshotRequiresFreshBoundary(t *testing.T) {
+	projectRoot := t.TempDir()
+	instructions := strings.Join(managedFileDeliveryInstructions(projectRoot), "\n")
+
+	for _, expected := range []string{
+		"No exact command-owned path snapshot is present",
+		"apply only the listed manual findings until a fresh snapshot exists",
+		"rerun the write-capable Kit command",
+		"require the rerun to emit a new exact command-owned snapshot",
+		"if it cannot, do not adopt managed-file changes and report the blocker",
+		"explicitly stage only those paths",
+		"match the snapshot exactly",
+	} {
+		if !strings.Contains(instructions, expected) {
+			t.Fatalf("expected no-snapshot instructions to contain %q, got:\n%s", expected, instructions)
+		}
+	}
+	for _, forbidden := range []string{
+		"Before transfer, verify every captured source path",
+		"restore each captured root path",
+	} {
+		if strings.Contains(instructions, forbidden) {
+			t.Fatalf("no-snapshot instructions require unavailable state %q:\n%s", forbidden, instructions)
+		}
+	}
+}
+
 func TestMergeManagedFileDeliverySnapshotsPreservesWholeCommandBaseline(t *testing.T) {
 	primary := []managedFileDeliverySnapshot{{
 		Path:            config.ConfigFileName,

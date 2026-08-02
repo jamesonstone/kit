@@ -10,6 +10,8 @@ import (
 func shortActionForFinding(finding reconcileFinding) string {
 	issue := strings.ToLower(finding.Issue)
 	switch {
+	case finding.AllowsCodeChanges:
+		return "split by responsibility"
 	case strings.Contains(issue, "init scaffold") || strings.Contains(issue, ".gitignore"):
 		return "refresh init scaffold"
 	case strings.Contains(issue, "executable verification"):
@@ -37,6 +39,29 @@ func shortActionForFinding(finding reconcileFinding) string {
 	default:
 		return "reconcile document"
 	}
+}
+
+func reconcileAllowsCodeChanges(findings []reconcileFinding) bool {
+	for _, finding := range findings {
+		if finding.AllowsCodeChanges {
+			return true
+		}
+	}
+	return false
+}
+
+func reconcileWorkflowScopeRule(findings []reconcileFinding) string {
+	if !reconcileAllowsCodeChanges(findings) {
+		return docsOnlyWorkflowRule("Kit-managed docs and scaffold files")
+	}
+	return "Only update files listed by this audit and directly required tests or canonical docs; source/test edits are authorized only for behavior-preserving semantic splits under the source-file-size rule. Do not change product behavior, dependencies, public interfaces, runtime configuration, or generated artifacts."
+}
+
+func reconcilePromptOpening(findings []reconcileFinding, scope string) string {
+	if reconcileAllowsCodeChanges(findings) {
+		return fmt.Sprintf("Reconcile Kit-managed project state for the %s.", scope)
+	}
+	return fmt.Sprintf("Reconcile Kit-managed docs for the %s.", scope)
 }
 
 func issueLimitForScope(report *reconcileReport) int {
