@@ -196,9 +196,7 @@ func TestMemoryRepositoryInstructionsRouteApplicationArchitecture(t *testing.T) 
 
 func TestInstructionTemplatesRouteTestingAndEnvironmentValidation(t *testing.T) {
 	routes := []string{
-		"load `docs/references/rules/testing-and-environment-validation.md`",
-		"the project's `docs/references/testing.md`",
-		"including browser automation and browser testing",
+		"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 		"end-to-end and live-integration suites supplement rather than replace them",
 	}
 	for name, content := range map[string]string{
@@ -225,10 +223,7 @@ func TestInstructionTemplatesRouteTestingAndEnvironmentValidation(t *testing.T) 
 			"docs/agents/RLM.md",
 		)
 		for _, route := range []string{
-			"`docs/references/rules/testing-and-environment-validation.md`",
-			"`docs/references/testing.md`",
-			"before implementation or validation",
-			"including browser automation and browser testing",
+			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
 		} {
 			if !strings.Contains(generatedRLM, route) {
 				t.Errorf("expected version %d RLM guidance to contain %q", version, route)
