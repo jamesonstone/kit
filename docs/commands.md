@@ -53,7 +53,11 @@ without seconds. `PR#` uses one batched, two-second `gh` lookup: it shows the
 open same-repository pull request number, `-` when no open pull request matches,
 ascending comma-separated numbers when more than one matches, `NG` when `gh`
 is unavailable, `RL` when rate limited, `TO` on timeout, and `??` for another
-lookup failure. Every lookup failure remains non-blocking.
+lookup failure. The interactive selector adds `TITLE` between `PR#` and
+`LAST UPDATED`; matching titles are kept in pull-request-number order and the
+shared title width truncates before the complete `PATH` value. No-PR rows show
+`-`, lookup failures mirror the `PR#` marker, and plain output remains
+unchanged. Every lookup failure remains non-blocking.
 `git wt sync --dry-run` performs a strictly non-mutating live
 origin/GitHub preview; ordinary `git wt sync` fast-forwards only a clean,
 behind default branch and retires only canonical clean lanes with exact

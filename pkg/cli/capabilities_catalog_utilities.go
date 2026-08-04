@@ -11,7 +11,7 @@ func utilityCapabilityRecords() []capabilityRecord {
 			"Select or print registered worktrees with the primary checkout pinned above newest-first lanes; this is the default git wt command.",
 			mutationNetwork,
 			withNetwork(
-				"runs one batched `gh pr list` lookup with a two-second timeout to annotate exact same-repository branch matches",
+				"runs one batched `gh pr list` lookup with a two-second timeout to annotate exact same-repository branch matches with numbers and titles",
 				"missing gh, rate limiting, timeout, and other failures remain successful and render NG, RL, TO, or ?? respectively",
 			),
 			withFileWrites("none"),
@@ -23,10 +23,10 @@ func utilityCapabilityRecords() []capabilityRecord {
 				flag("--plain", "print the table instead of opening the terminal selector"),
 			),
 			withRelated(related("git wt home", "opens a child shell in the primary checkout"), related("git wt cd", "opens a child shell for an exact lane"), related("git wt path", "prints an exact lane path for parent-shell navigation")),
-			withWhenToUse("Use interactively to choose a registered worktree with arrow keys or Tab; press h to open the primary checkout immediately.", "Use with --plain or redirected output when a script or terminal needs the table.", "Read PR# as ascending comma-separated open same-repository pull request numbers or - when the lookup succeeds without a match."),
+			withWhenToUse("Use interactively to choose a registered worktree with arrow keys or Tab; press h to open the primary checkout immediately.", "Use with --plain or redirected output when a script or terminal needs the table.", "Read PR# as ascending comma-separated open same-repository pull request numbers or - when the lookup succeeds without a match.", "In the interactive selector, TITLE shows matching pull-request titles and truncates before the complete PATH value."),
 			withWhenNotToUse("Do not expect the selected child shell to change the parent shell's directory.", "Do not use as a policy dependency; native git worktree commands remain authoritative."),
 			withExamples("git wt", "git wt list", "git wt list --root-position bottom", "git wt list --plain --sort path", "git wt list --sort state --reverse"),
-			withCaveats("Terminal selection uses color and opens the configured shell in the chosen worktree; the primary checkout and every main branch row remain bright green in every repository.", "Non-terminal input or output automatically uses the stable plain table.", "The primary checkout is pinned first by default; remaining entries are newest first by full commit timestamp, while --sort state, --sort head, and --sort path select alternate ordering.", "LAST UPDATED is display-only, converted to the running user's local timezone, and shown at calendar-day plus HH:MM precision without seconds.", "PR# lookup is fail-soft: NG means gh is unavailable, RL means rate limited, TO means the two-second deadline expired, and ?? means another lookup or decode failure."),
+			withCaveats("Terminal selection uses color and opens the configured shell in the chosen worktree; the primary checkout and every main branch row remain bright magenta in every repository.", "Non-terminal input or output automatically uses the stable plain table without TITLE.", "The primary checkout is pinned first by default; remaining entries are newest first by full commit timestamp, while --sort state, --sort head, and --sort path select alternate ordering.", "LAST UPDATED is display-only, converted to the running user's local timezone, and shown at calendar-day plus HH:MM precision without seconds.", "PR metadata lookup is fail-soft: NG means gh is unavailable, RL means rate limited, TO means the two-second deadline expired, and ?? means another lookup or decode failure; TITLE mirrors those markers."),
 		),
 		capability(
 			"git wt sync",

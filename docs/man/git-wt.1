@@ -1,4 +1,4 @@
-.TH GIT-WT 1 "July 27, 2026" "git-wt" "Git Manual"
+.TH GIT-WT 1 "August 4, 2026" "git-wt" "Git Manual"
 .SH NAME
 git-wt \- manage and open project-oriented Git worktrees
 .SH SYNOPSIS
@@ -32,7 +32,12 @@ Create or refresh detached inspection lane
 Open a same-repository pull request's writable head branch.
 .TP
 .B list
-List this clone's worktrees without pruning. This is the default command.
+List this clone's worktrees without pruning. This is the default command. The
+interactive selector shows pull request titles in a flexible-width
+.B TITLE
+column while preserving complete
+.B PATH
+values; plain output retains its stable columns.
 .TP
 .B sync [--dry-run] [--json]
 Reconcile origin and proven merged worktree lanes.

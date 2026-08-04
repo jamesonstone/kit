@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: spec
 workflow_version: 3
-phase: complete
+phase: deliver
 feature:
   id: 0050
   slug: safe-worktree-workflow
@@ -69,6 +69,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - GitHub issue #114 and branch `GH-114` track the selector-identity follow-up
   after user-visible evidence showed that bright green is too similar to the
   ordinary green used for clean lanes in some terminal themes.
+- GitHub issue #119 and branch `GH-119` track the interactive-selector
+  follow-up that exposes pull-request titles without allowing the new field to
+  truncate the worktree path.
 
 ## REQUIREMENTS
 
@@ -98,6 +101,20 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   non-blocking. Use stable, distinct markers: `NG` when `gh` is unavailable,
   `RL` for rate limiting, `TO` for timeout, and `??` for any other lookup or
   decode failure.
+- Show `TITLE` between `PR#` and `LAST UPDATED` in the interactive selector.
+  A successful no-match renders `-`; an exact open-PR match renders its title;
+  and lookup failures render the same marker as `PR#` so unavailable metadata
+  is never misrepresented as a proven no-PR result. Preserve the existing
+  plain tabular output.
+- Give `TITLE` the selector's only flexible column width. Reserve the complete
+  sanitized `PATH` value and existing fixed columns first, align every row to
+  one shared title width, and truncate only the title with an ASCII ellipsis.
+  When a terminal is narrower than the fixed columns, `TITLE` header, and
+  complete path together, preserve the complete path rather than slicing it
+  and count wrapped physical rows so redraw and cleanup remain correct.
+- When an exact branch has multiple open pull requests, keep `PR#` in ascending
+  numeric order and render the corresponding titles in the same order,
+  separated by ` | ` before width truncation.
 - Provide a read-only `path <lane>` command that prints only the exact registered worktree path so callers can navigate with `cd "$(git wt path <lane>)"` without fuzzy matching or filesystem mutation.
 - Keep Kit-distributed rules and generated agent instructions portable: native `git worktree` and ordinary filesystem operations define the normative workflow, and no rule may require `git-wt`, `git wt`, `--no-link-env`, or another wrapper-specific command.
 - Document `git wt` only as an optional convenience for manual users. The wrapper may mirror the portable contract but must not define, direct, or become an execution dependency of Kit-managed rules.
@@ -168,6 +185,10 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 17. Replace the bright-green-only home/`main` cue with bright magenta and an
     explicit ASCII role suffix while preserving navigation, alignment,
     sanitization, truncation, and plain-output behavior.
+18. Extend the existing batched PR annotation with titles, add an interactive
+    `TITLE` column whose shared width yields to the longest complete path, and
+    cover matching, no-match, failure, sanitization, multiple-PR ordering, and
+    narrow-terminal truncation without changing plain output.
 
 ## DECISIONS
 
@@ -220,6 +241,18 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   threshold.
 - Use short ASCII markers instead of font-dependent glyphs so redirected
   tables, narrow terminals, logs, and tests retain stable width and meaning.
+- Keep the plain table stable and add `TITLE` only to the interactive selector,
+  matching the confirmed scope while allowing scripts to retain their exact
+  existing fields.
+- Reserve the complete sanitized path before allocating the shared title
+  width. Truncate fixed columns to their declared widths and truncate only
+  `TITLE` after that allocation; when the fixed columns, title header, and path
+  cannot fit together, preserve the complete path instead of slicing it.
+- Mirror PR lookup failure markers into `TITLE` rather than rendering `-`,
+  because unavailable metadata is not proof that no pull request exists.
+- When complete-path preservation forces terminal wrapping, count physical
+  rows rather than logical entries so selector redraw and final cleanup still
+  restore the occupied terminal area.
 
 ## DISCOVERIES
 
@@ -263,6 +296,18 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   local list completed in 0.36 seconds. Sequential execution therefore remains
   comfortably below three seconds in the current repository, and the timeout
   prevents slow GitHub access from becoming an unbounded navigation delay.
+- The selector previously truncated the complete rendered row to terminal
+  width, so appending a flexible field would necessarily remove the tail of
+  `PATH`. Reserving the longest sanitized path before formatting removes that
+  failure mode.
+- Go's minimum string widths do not constrain oversized values. Truncating the
+  fixed `STATE`, `HEAD`, `PR#`, and `LAST UPDATED` fields to their declared
+  widths is necessary for the title-width calculation to remain true for long
+  branch names or multiple pull-request numbers.
+- Preserving a path that is itself wider than the remaining terminal space can
+  produce wrapped rows. The selector must return the physical row count, not
+  only the logical header and entry count, so its existing clear operation
+  does not leave wrapped fragments behind.
 
 ## VALIDATION
 
@@ -399,6 +444,28 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - `gitleaks git --redact --no-banner`, `git diff --check`, exact worktree
   guide/template comparison, `kit check safe-worktree-workflow`, and `kit
   check --project` passed for issue #114.
+- Issue #119 focused tests passed exact PR title projection, ascending
+  multi-PR number/title ordering, empty-title fallback, no-PR `-`, mirrored
+  failure markers, control sanitization, fixed-column constraints, title
+  truncation, complete-path preservation, wrapped physical-row accounting,
+  and unchanged plain columns.
+- `make fmt`, `make vet`, `go test ./... -count=1`, and `go test -race
+  ./internal/worktree ./internal/templates ./pkg/cli -count=1` passed. After
+  wrapped-row accounting was added, the final full suite, worktree race suite,
+  vet, and changed-lines lint reruns also passed.
+- `golangci-lint run --new-from-rev=origin/main ./...` reported `0 issues`
+  after one test-only De Morgan simplification. `make build-git-wt`, the Kit
+  native build, `make build-windows`, `goreleaser check`, and `mandoc` lint and
+  UTF-8 rendering passed.
+- `kit check safe-worktree-workflow`, `kit check --project`, capability JSON,
+  exact worktree guide/template comparison, and `git diff --check` passed. The
+  output-only reconcile audit checked 506 eligible handwritten source/test
+  files among 812 version-control-eligible candidates and found 0 above 300
+  physical lines.
+- A built-binary pseudo-terminal smoke at 160 columns rendered `TITLE` between
+  `PR#` and `LAST UPDATED`, rendered `-` for no-PR rows, preserved the complete
+  long `GH-119` and primary-checkout paths, and restored the terminal after
+  `q`. Built-binary `--plain` output retained the exact five-column header.
 
 ## OUTCOME
 
@@ -463,6 +530,15 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   selector identity with bright magenta plus `[home]` or `[main]`. The marker
   and identity color remain stable while selected, and plain output is
   unchanged.
+- Issue `#119` and branch `GH-119` add PR titles to the interactive selector.
+  One batched lookup now returns numbers and titles; exact matches render titles
+  in ascending PR-number order, successful no-matches render `-`, and failure
+  markers remain fail-soft in both PR metadata fields.
+- The selector now places `TITLE` between `PR#` and `LAST UPDATED`, allocates
+  one aligned width after reserving the longest complete path, truncates titles
+  with an ASCII ellipsis, and constrains the existing fixed columns so path
+  reservation remains valid. Unavoidable path wrapping is included in terminal
+  cleanup accounting. Plain output retains its previous schema.
 
 ## REPOSITORY MEMORY
 
@@ -471,9 +547,14 @@ Decision: updated
 Rationale: Exact `.envrc` source ownership, executable-config trust, collision
 preservation, transactional multi-link setup, fresh-worktree cleanup,
 verified-link-only status filtering, direnv approval, multi-link removal
-restoration, and the user-evidenced selector identity change are durable
-workflow decisions that code and tests alone do not explain completely. The
-spec preserves those decisions and the superseded bright-green rationale.
+restoration, the user-evidenced selector identity change, and path-priority
+title allocation are durable workflow decisions that code and tests alone do
+not explain completely. The spec preserves those decisions and the superseded
+bright-green rationale.
+
+Issue #119 Constitution curation result: not required. The interactive title
+layout is feature-local presentation behavior and does not establish or change
+a project-wide invariant.
 
 Constitution curation result: updated the project-wide worktree invariant so
 writable lanes may share exact primary-checkout `.envrc` sources without

@@ -18,7 +18,9 @@ func TestListShowsOpenPullRequestNumbers(t *testing.T) {
 	runWT(t, fixture.app, fixture.primary, "add", "GH-100", "--no-link-env")
 	fixture.out.Reset()
 	fixture.app.resolveListPRs = func(context.Context, string) listPRLookup {
-		return successfulListPRLookup(map[string]string{"GH-100": "101"})
+		return successfulListPRLookup(map[string]listPRAnnotation{
+			"GH-100": {numbers: "101", titles: "Add PR titles"},
+		})
 	}
 
 	runWT(t, fixture.app, fixture.primary, "list", "--plain")
@@ -26,11 +28,60 @@ func TestListShowsOpenPullRequestNumbers(t *testing.T) {
 	if !strings.HasPrefix(output, "STATE\tHEAD\tPR#\tLAST UPDATED\tPATH\n") {
 		t.Fatalf("list header:\n%s", output)
 	}
+	if strings.Contains(strings.SplitN(output, "\n", 2)[0], "TITLE") {
+		t.Fatalf("plain list unexpectedly changed columns:\n%s", output)
+	}
 	if !strings.Contains(output, "\nclean\tmain\t-\t") {
 		t.Fatalf("main row should show no open pull request:\n%s", output)
 	}
 	if !strings.Contains(output, "\nclean\tGH-100\t101\t") {
 		t.Fatalf("issue row should show pull request 101:\n%s", output)
+	}
+}
+
+func TestPopulateListPullRequestsAddsTitlesAndMirrorsFailures(t *testing.T) {
+	t.Parallel()
+	for _, test := range []struct {
+		name       string
+		lookup     listPRLookup
+		wantNumber string
+		wantTitle  string
+	}{
+		{
+			name: "matching PR",
+			lookup: successfulListPRLookup(map[string]listPRAnnotation{
+				"GH-100": {numbers: "101", titles: "Add PR titles"},
+			}),
+			wantNumber: "101",
+			wantTitle:  "Add PR titles",
+		},
+		{
+			name:       "no PR",
+			lookup:     successfulListPRLookup(nil),
+			wantNumber: listPRNoneMarker,
+			wantTitle:  listPRNoneMarker,
+		},
+		{
+			name:       "lookup failure",
+			lookup:     failedListPRLookup(listPRTimeoutMarker),
+			wantNumber: listPRTimeoutMarker,
+			wantTitle:  listPRTimeoutMarker,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			app := NewApp(io.Discard, io.Discard)
+			app.resolveListPRs = func(context.Context, string) listPRLookup {
+				return test.lookup
+			}
+			entries := []worktreeEntry{{branch: "GH-100"}}
+			app.populateListPullRequests(context.Background(), t.TempDir(), entries)
+			if got := entries[0].prText; got != test.wantNumber {
+				t.Fatalf("PR# = %q, want %q", got, test.wantNumber)
+			}
+			if got := entries[0].prTitle; got != test.wantTitle {
+				t.Fatalf("TITLE = %q, want %q", got, test.wantTitle)
+			}
+		})
 	}
 }
 
@@ -75,15 +126,20 @@ func TestResolveListPullRequestsUsesOneExactBranchBatch(t *testing.T) {
 		}
 		calls = append(calls, append([]string(nil), args...))
 		return json.Marshal([]listPullRequest{
-			{Number: 12, HeadRefName: "GH-100"},
-			{Number: 7, HeadRefName: "GH-100"},
-			{Number: 5, HeadRefName: "fork-topic", IsCrossRepository: true},
+			{Number: 12, HeadRefName: "GH-100", Title: "Second title"},
+			{Number: 7, HeadRefName: "GH-100", Title: "First title"},
+			{Number: 13, HeadRefName: "empty-title"},
+			{Number: 5, HeadRefName: "fork-topic", IsCrossRepository: true, Title: "Fork"},
 			{Number: 0, HeadRefName: "invalid"},
 		})
 	}
 
 	lookup := app.resolveListPullRequests(context.Background(), t.TempDir())
-	if !reflect.DeepEqual(lookup.byBranch, map[string]string{"GH-100": "7,12"}) {
+	wantAnnotations := map[string]listPRAnnotation{
+		"GH-100":      {numbers: "7,12", titles: "First title | Second title"},
+		"empty-title": {numbers: "13", titles: listPRUnknownMarker},
+	}
+	if !reflect.DeepEqual(lookup.byBranch, wantAnnotations) {
 		t.Fatalf("pull requests = %#v", lookup.byBranch)
 	}
 	if lookup.fallback != listPRNoneMarker {
@@ -91,7 +147,7 @@ func TestResolveListPullRequestsUsesOneExactBranchBatch(t *testing.T) {
 	}
 	wantArgs := []string{
 		"pr", "list", "--state", "open", "--limit", "1000",
-		"--json", "number,headRefName,isCrossRepository",
+		"--json", "number,headRefName,isCrossRepository,title",
 	}
 	if !reflect.DeepEqual(calls, [][]string{wantArgs}) {
 		t.Fatalf("gh calls = %#v, want one batch %#v", calls, wantArgs)
@@ -102,7 +158,7 @@ func TestHelpDocumentsListPullRequestMarkers(t *testing.T) {
 	fixture := newGitFixture(t)
 	runWT(t, fixture.app, fixture.primary, "help")
 	output := fixture.out.String()
-	for _, want := range []string{"List PR# markers:", "NG gh unavailable", "RL rate limited", "TO timed out", "?? other failure"} {
+	for _, want := range []string{"List PR# markers:", "NG gh unavailable", "RL rate limited", "TO timed out", "?? other failure", "Interactive TITLE:", "truncates before PATH", "plain output is unchanged"} {
 		if !strings.Contains(output, want) {
 			t.Fatalf("help is missing %q:\n%s", want, output)
 		}
