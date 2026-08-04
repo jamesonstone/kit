@@ -98,7 +98,7 @@ func TestAuditV3SupportGuidanceFindsStaleSessionTestingAndWorktreeSemantics(t *t
 		},
 		{
 			path:    ".github/copilot-instructions.md",
-			snippet: "Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md`",
+			snippet: "Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md`",
 		},
 		{
 			path:    "docs/agents/RLM.md",

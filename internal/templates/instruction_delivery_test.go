@@ -198,6 +198,7 @@ func TestInstructionTemplatesRouteTestingAndEnvironmentValidation(t *testing.T) 
 	routes := []string{
 		"load `docs/references/rules/testing-and-environment-validation.md`",
 		"the project's `docs/references/testing.md`",
+		"including browser automation and browser testing",
 		"end-to-end and live-integration suites supplement rather than replace them",
 	}
 	for name, content := range map[string]string{
@@ -227,6 +228,7 @@ func TestInstructionTemplatesRouteTestingAndEnvironmentValidation(t *testing.T) 
 			"`docs/references/rules/testing-and-environment-validation.md`",
 			"`docs/references/testing.md`",
 			"before implementation or validation",
+			"including browser automation and browser testing",
 		} {
 			if !strings.Contains(generatedRLM, route) {
 				t.Errorf("expected version %d RLM guidance to contain %q", version, route)
