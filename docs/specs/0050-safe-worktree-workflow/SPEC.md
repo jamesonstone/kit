@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: spec
 workflow_version: 3
-phase: deliver
+phase: complete
 feature:
   id: 0050
   slug: safe-worktree-workflow
@@ -466,6 +466,12 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   `PR#` and `LAST UPDATED`, rendered `-` for no-PR rows, preserved the complete
   long `GH-119` and primary-checkout paths, and restored the terminal after
   `q`. Built-binary `--plain` output retained the exact five-column header.
+- After ready pull request #120 opened, the installed binary's live batched
+  lookup rendered `GH-119`, PR `120`, and the truncated title
+  `feat(GH-119): :sparkles: add PR titles t...` while preserving the complete
+  `/Users/jamesonstone/worktrees/jamesonstone/kit/GH-119` path at 160 columns.
+  GitHub reported the human author and committer as Jameson Stone, the
+  auto-assignment check succeeded, and CodeRabbit was pending at observation.
 
 ## OUTCOME
 
@@ -539,6 +545,9 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
   with an ASCII ellipsis, and constrains the existing fixed columns so path
   reservation remains valid. Unavoidable path wrapping is included in terminal
   cleanup accounting. Plain output retains its previous schema.
+- Issue #119 was delivered by human-authored commit
+  `38058082cc39197874d9e6c117fe25fca10d73e8` on `GH-119` and ready pull
+  request <https://github.com/jamesonstone/kit/pull/120>.
 
 ## REPOSITORY MEMORY
 
