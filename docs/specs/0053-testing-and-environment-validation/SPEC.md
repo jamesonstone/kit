@@ -94,8 +94,14 @@ production-safety contracts across Kit-managed projects.
 - Production end-to-end validation may require bounded synthetic writes, but
   must never use customer data, broad cleanup, infrastructure mutation, or
   unverified targets.
+- Browser automation across Kit-managed repositories can leak user-installed
+  Chrome processes and macOS code-sign clones when browser selection, session
+  ownership, retries, and cleanup are left implicit.
 - GitHub issue #98 and branch `GH-98` own this Kit-only change. Migrating the
   motivating LabCore scripts and workflows is a separate downstream task.
+- GitHub issue #121 and branch `GH-121` own the browser-lifecycle extension to
+  the same canonical testing rule. The extension remains Kit-only and does not
+  mutate downstream repositories or global browser tooling.
 
 ## REQUIREMENTS
 
@@ -132,6 +138,21 @@ production-safety contracts across Kit-managed projects.
 - Require cleanup to select both the test marker and exact run ID. Prohibit
   customer data, unrelated records, production reset, infrastructure or shared
   configuration mutation, and authentication weakening.
+- Default automated browser work to Playwright-managed Chromium or Chrome for
+  Testing. Treat the user's installed, auto-updating Google Chrome as an
+  explicit, justified exception rather than a default.
+- Require one uniquely named browser session per task or test run, reuse that
+  session across repeated operations, and prohibit unbounded instance-creating
+  retries.
+- Distinguish task-owned browser sessions, processes, and automation daemons
+  from user-owned browsers. Close task-owned resources and detach from
+  user-owned resources without closing them.
+- Put scoped browser cleanup in unconditional lifecycle handling that runs on
+  success, failure, cancellation, timeout, and interrupted validation, then
+  verify that every task-owned browser resource exited.
+- Treat browser cleanup failure as validation failure. Prohibit broad process
+  termination, shared temporary-directory deletion, code-sign protection
+  weakening, and routine clone-directory deletion as cleanup substitutes.
 - Treat read-only production smoke as `PARTIAL` when safe write isolation is
   unavailable.
 - Require CI to upload run directories as artifacts without committing raw
@@ -156,6 +177,10 @@ production-safety contracts across Kit-managed projects.
 - Automatically creating test directories, workflows, credentials, or
   production data in downstream repositories.
 - Migrating LabCore scripts, workflows, or evidence in this issue.
+- Adding a browser launcher, wrapper, or daemon to Kit when repository
+  inspection finds no Kit-owned browser automation implementation to enforce.
+- Modifying global Codex skills, browser plugins, installed browsers, macOS
+  code-signing settings, or downstream repositories.
 
 ## ACCEPTED PLAN
 
@@ -171,6 +196,19 @@ production-safety contracts across Kit-managed projects.
    routing tests.
 5. Validate the focused and complete repository surfaces, curate repository
    memory, and deliver issue #98 through `GH-98` as a ready pull request.
+
+Issue #121 extends that accepted plan without replacing it:
+
+1. Add browser-automation applicability and one required browser lifecycle
+   section to the existing canonical ruleset.
+2. Route browser automation and browser testing explicitly through generated
+   V2/V3 instructions, Copilot guidance, and RLM support guidance.
+3. Strengthen ruleset and downstream refresh tests to assert lifecycle,
+   ownership, safety, and exact propagated content.
+4. Do not add enforcement code unless repository inspection finds a Kit-owned
+   browser launcher, wrapper, example, or validation helper.
+5. Run focused and complete validation, including output-only whole-project
+   reconcile, then deliver issue #121 through `GH-121` as a ready pull request.
 
 ## DECISIONS
 
@@ -189,6 +227,13 @@ production-safety contracts across Kit-managed projects.
   unavailable.
 - Do not prescribe automatic rollback. A failed production suite blocks the
   validation claim and defers remediation to the project release policy.
+- Keep browser lifecycle in the unified testing rule because browser process
+  ownership and cleanup are validation responsibilities, not a separate Kit
+  subsystem.
+- Route browser-specific work explicitly while retaining the existing
+  mandatory pre-implementation and pre-validation load gate for all projects.
+- Do not invent a Kit browser wrapper solely to encode policy. Enforcement code
+  is required only at an implementation surface Kit actually owns.
 
 ## DISCOVERIES
 
@@ -203,6 +248,10 @@ production-safety contracts across Kit-managed projects.
   until the rule merges into the configured `main` registry source. Local
   parsing, refresh-adoption tests, and generated-routing tests provide the
   pre-merge distribution evidence.
+- Repository-wide searches found no Kit-owned Playwright, Chromium, Chrome for
+  Testing, Google Chrome, browser-session, or browser-daemon implementation;
+  the owned enforcement surfaces are the downstream rule, generated routing,
+  registry refresh, reconcile, and their tests.
 
 ## VALIDATION
 
@@ -237,6 +286,34 @@ production-safety contracts across Kit-managed projects.
   registry/template change. LabCore environment execution remains explicitly
   outside issue #98.
 
+### Issue #121 browser lifecycle extension
+
+- Focused `pkg/cli` ruleset, exact refresh-adoption, reconcile-guidance, and
+  stale-guidance tests passed with `-count=1`.
+- `go test ./internal/templates -run
+  'TestInstructionTemplatesRouteTestingAndEnvironmentValidation$' -count=1`
+  passed for V2/V3, Copilot, RLM, and checked-in V3 routing.
+- `make fmt`, `go test ./... -count=1`, `go vet ./...`, and
+  `go test -race ./internal/templates ./pkg/cli -count=1` passed.
+- `cmd/kit` and `cmd/git-wt` built independently into ignored `bin/`
+  artifacts; no global binary or browser tooling was installed or changed.
+- `golangci-lint run --new-from-rev=origin/main ./...` passed with `0 issues`.
+- `./bin/kit rules view testing-and-environment-validation` parsed and rendered
+  the browser lifecycle section, and `./bin/kit rules list` showed
+  `browser-automation` and `browser-testing` applicability.
+- `./bin/kit check --project` passed, and `./bin/kit check --all` passed all 52
+  feature contracts including feature 0053.
+- `./bin/kit reconcile --all --output-only` reported no reconciliation needed
+  and a complete source-file audit: 812 version-control-eligible candidates,
+  506 eligible handwritten source/test files, and 0 above 300 physical lines.
+- `./bin/kit reconcile --all --include-files --dry-run --diff --output-only`
+  proposed only `.kit.yaml` registry bookkeeping. It correctly treated the
+  locally changed testing rule as `local-custom` until issue #121 merges into
+  the configured `main` registry source; the dry-run diff was not applied.
+- `git diff --check` passed. No browser end-to-end execution applied because
+  Kit owns policy, routing, registry refresh, and reconcile rather than a
+  browser runtime or launcher.
+
 ## OUTCOME
 
 - Added the active mandatory downstream
@@ -260,16 +337,35 @@ production-safety contracts across Kit-managed projects.
 - Kept the delivery Kit-only; no LabCore files, workflows, tests, or production
   systems changed.
 
+### Issue #121 browser lifecycle extension
+
+- Added one required `Browser Automation Lifecycle` section to the existing
+  canonical testing rule, covering managed Chromium selection, explicit
+  installed-Chrome exceptions, named session reuse, task versus user ownership,
+  unconditional cleanup, scoped termination, exit verification, and macOS
+  code-sign safety.
+- Added `browser-automation` and `browser-testing` applicability and surfaced
+  browser lifecycle ownership in the maintained rules index.
+- Routed browser automation and browser testing explicitly through generated
+  V2/V3 agents, Copilot instructions, RLM guidance, and checked-in V3 artifacts.
+- Strengthened ruleset and refresh-adoption tests so the lifecycle contract and
+  exact registry source content propagate together through Kit's reconcile
+  refresh path.
+- Added no browser wrapper because Kit owns no browser launcher, session
+  manager, daemon, validation helper, or example. No global Codex files,
+  installed browsers, macOS settings, or downstream repositories changed.
+
 ## REPOSITORY MEMORY
 
-Decision: created
+Decision: updated
 
 Rationale: The testing taxonomy, environment evidence interface, curated
 status model, capability-based automation, and production synthetic-data
-safety defaults are durable cross-project decisions that code and tests alone
-cannot preserve. The existing Constitution already defines downstream registry
-distribution and repository-memory behavior, so no Constitution change is
-warranted.
+safety defaults now include durable browser lifecycle ownership and cleanup
+requirements that code and tests alone cannot preserve across downstream
+projects. The existing Constitution already defines downstream registry
+distribution and repository-memory behavior; no project-wide Constitution
+invariant changed, so the Constitution remains unchanged.
 
 Artifacts:
 
@@ -277,3 +373,5 @@ Artifacts:
 - `docs/references/rules/testing-and-environment-validation.md`
 - `docs/references/testing.md`
 - `docs/agents/RLM.md`
+- `docs/references/README.md`
+- `docs/PROJECT_PROGRESS_SUMMARY.md`

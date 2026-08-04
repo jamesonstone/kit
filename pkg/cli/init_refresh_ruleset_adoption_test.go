@@ -123,11 +123,13 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"testing-and-environment-validation",
 	}
 	registry := make([]registryRuleset, 0, len(slugs))
+	expectedContent := make(map[string]string, len(slugs))
 	for _, slug := range slugs {
 		content, err := os.ReadFile(filepath.Join("..", "..", rulesetTarget(slug)))
 		if err != nil {
 			t.Fatalf("read registry ruleset %s: %v", slug, err)
 		}
+		expectedContent[slug] = string(content)
 		registry = append(registry, registryRulesetWithContentForTest(slug, string(content), "test-"+slug+"-commit"))
 	}
 
@@ -158,6 +160,9 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		content, err := os.ReadFile(filepath.Join(tempDir, rulesetTarget(slug)))
 		if err != nil {
 			t.Fatalf("expected downstream ruleset %s to be installed: %v", slug, err)
+		}
+		if string(content) != expectedContent[slug] {
+			t.Errorf("installed %s ruleset differs from registry source", slug)
 		}
 		for _, check := range []string{
 			"slug: " + slug,

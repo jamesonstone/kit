@@ -15,8 +15,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"## Context Budget Rules",
 			"specific section over full file",
 			"repo-local docs before global model/vendor instructions",
-			"`docs/references/rules/testing-and-environment-validation.md`",
-			"`docs/references/testing.md`",
+			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
 		},
 		"docs/agents/WORKFLOWS.md": {
 			"Authority order:",
@@ -54,9 +53,10 @@ func v3GuidanceExpectations() map[string][]string {
 			"First, call the available thread-title operation (`set_thread_title` when available)",
 			"Second, call the available thread-pin operation (`set_thread_pinned` when available)",
 			"Thread initialization: rename <status>; pin <status>.",
+			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 		},
 		".github/copilot-instructions.md": {
-			"Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md`",
+			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 			"end-to-end and live-integration suites supplement rather than replace them",
 			"Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`",
 			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
@@ -77,8 +77,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"identify the immediate decision",
 			"stop loading once the decision is supported",
 			"## Context Budget Rules",
-			"`docs/references/rules/testing-and-environment-validation.md`",
-			"`docs/references/testing.md`",
+			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
 		},
 		"docs/agents/TOOLING.md": {
 			"Use `kit dispatch` after native planning",
@@ -99,6 +98,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"`rules/codex-thread-initialization.md`",
 			"`worktrees.md` for the canonical native Git worktree hierarchy",
 			"environment ownership",
+			"browser lifecycle ownership",
 		},
 		"docs/references/testing.md": {
 			"`rules/testing-and-environment-validation.md`",

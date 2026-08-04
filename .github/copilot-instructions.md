@@ -6,7 +6,7 @@ Use native planning for research and design. Before implementation, inspect code
 
 Start with `docs/agents/README.md`. Before implementing API or backend routes, handlers, services, repositories, persistence adapters, or gateways, load `docs/references/rules/backend-service-architecture.md`. Before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components, load `docs/references/rules/frontend-application-architecture.md`. Treat both rules as responsibility boundaries rather than mandatory directory names, and preserve stronger repo-local architecture.
 
-Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`. Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them.
+Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`. Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them.
 
 Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`. Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less, audit the complete affected scope before delivery, and audit the entire repository during whole-project reconcile and scheduled maintenance.
 

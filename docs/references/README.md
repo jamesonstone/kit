@@ -9,7 +9,7 @@
 - Use `rules/kit-capabilities-usage.md` in downstream projects for Kit command discovery guidance
 - Use `rules/feature-notes.md` when deciding how to load, reference, promote, or ignore source material under `docs/notes/<feature>`
 - Use `rules/constitution-curation.md` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
-- Use `rules/testing-and-environment-validation.md` before implementation and validation to preserve code-level checks and add environment evidence safely
+- Use `rules/testing-and-environment-validation.md` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
 - Use `rules/source-file-size.md` before editing implementation/source or test files and for whole-project reconcile audits
 - Use `rules/codex-thread-initialization.md` to preserve Codex's ordered pre-response rename and pin gate during instruction refresh and reconciliation
 - Use `worktrees.md` for the canonical native Git worktree hierarchy, naming, shared-state model, environment ownership, and safety contract
@@ -47,7 +47,7 @@ are:
 | `readme-header-tagline` | README and repository onboarding | Consistent top-level README identity and opening structure. |
 | `safety-guardrails` | git, GitHub, safety | Recon, identity, worktree, secret, protected-branch, and failure-recovery boundaries. |
 | `source-file-size` | implementation, testing, validation, refactor, reconcile, maintenance | Exact 300-line handwritten source/test limit, exclusions, semantic splits, and verification. |
-| `testing-and-environment-validation` | implementation, testing, validation, CI, deployment, local, production | Code-level PR checks, high-level environment suites, immutable evidence, status reporting, and safe production validation. |
+| `testing-and-environment-validation` | implementation, testing, validation, CI, deployment, local, production, browser automation, browser testing | Code-level PR checks, high-level environment suites, browser lifecycle ownership, immutable evidence, status reporting, and safe production validation. |
 | `work-lane-gating` | git, GitHub, workflow | Separates non-implementation documentation work from implementation delivery lanes. |
 
 `command-capabilities` is a Kit-maintainer-only local ruleset. It requires

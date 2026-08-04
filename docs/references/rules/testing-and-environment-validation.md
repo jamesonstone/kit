@@ -16,6 +16,8 @@ applies_to:
   - production
   - end-to-end
   - live-integration
+  - browser-automation
+  - browser-testing
 read_policy_default: must
 ---
 
@@ -133,6 +135,40 @@ tests/
   purpose.
 - Do not relabel a narrow health probe or mocked component test as
   end-to-end.
+
+### Browser Automation Lifecycle
+
+- Default automated browser work to Playwright-managed Chromium or Chrome for
+  Testing. Do not default to the user's installed, auto-updating Google Chrome.
+  Using installed Chrome is an explicit exception that must be justified in
+  the test or task evidence.
+- Create one uniquely named browser session per task or test run. Reuse that
+  session for repeated operations instead of opening a new browser instance on
+  each step or attempt. Bound retries and never let a retry loop create
+  unbounded browser instances.
+- Record enough ownership information to distinguish the current task's
+  session, browser process, and automation daemon from an existing user-owned
+  browser or another task's automation. Process discovery alone does not grant
+  ownership.
+- Close every task-owned browser session, browser process, and automation
+  daemon during cleanup. When attaching to a user-owned browser, detach from
+  the automation connection without closing the browser or its user-owned
+  tabs, profiles, or processes.
+- Put browser and session cleanup in `finally`, `defer`, teardown hooks, or an
+  equivalent unconditional lifecycle mechanism. Cleanup must run on success,
+  failure, cancellation, timeout, and interrupted validation. A final `close`
+  command at the end of a linear script is insufficient.
+- Terminate only sessions and processes proven to be owned by the current task.
+  Never use broad cleanup such as `pkill Chrome`, `killall`, “close all
+  sessions,” or deletion of shared temporary directories during normal
+  validation.
+- Before claiming browser validation complete, verify that the task-owned
+  session, browser process, and automation daemon have exited. Treat any
+  cleanup or exit-verification failure as a validation failure, preserve the
+  original test result, and report the cleanup failure explicitly.
+- Do not disable or weaken macOS code-signing protections. Do not routinely
+  delete Chrome code-sign clone directories as a substitute for hermetic
+  browser selection, scoped ownership, and correct lifecycle cleanup.
 
 ### Local And Production Execution
 

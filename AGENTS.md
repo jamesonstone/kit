@@ -46,7 +46,7 @@
 
 ## Testing And Validation Gate
 
-- Before implementation or validation, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`
+- Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`
 - Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them
 
 ## Source File Size Gate

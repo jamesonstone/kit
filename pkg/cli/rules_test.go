@@ -208,11 +208,14 @@ func TestTestingAndEnvironmentValidationRegistryRulesetIsValid(t *testing.T) {
 		"production",
 		"end-to-end",
 		"live-integration",
+		"browser-automation",
+		"browser-testing",
 	} {
 		if !slices.Contains(ruleset.Metadata.AppliesTo, appliesTo) {
 			t.Errorf("applies_to = %#v, want %q", ruleset.Metadata.AppliesTo, appliesTo)
 		}
 	}
+	normalizedBody := strings.Join(strings.Fields(ruleset.Body), " ")
 	for _, check := range []string{
 		"Confidence, Not Certainty",
 		"supplement code-level tests and never",
@@ -228,8 +231,24 @@ func TestTestingAndEnvironmentValidationRegistryRulesetIsValid(t *testing.T) {
 		"Cleanup must select both the `kit-e2e-` marker and exact run ID",
 		"report `PARTIAL`, not complete end-to-end validation",
 		"Never use customer data",
+		"### Browser Automation Lifecycle",
+		"Playwright-managed Chromium or Chrome for Testing",
+		"Using installed Chrome is an explicit exception",
+		"one uniquely named browser session per task or test run",
+		"existing user-owned browser or another task's automation",
+		"detach from the automation connection without closing the browser",
+		"`finally`, `defer`, teardown hooks",
+		"Cleanup must run on success, failure, cancellation, timeout",
+		"A final `close` command at the end of a linear script is insufficient",
+		"`pkill Chrome`, `killall`, “close all",
+		"shared temporary directories",
+		"Before claiming browser validation complete",
+		"session, browser process, and automation daemon have exited",
+		"cleanup or exit-verification failure as a validation failure",
+		"Do not disable or weaken macOS code-signing protections",
+		"Do not routinely delete Chrome code-sign clone directories",
 	} {
-		if !strings.Contains(ruleset.Body, check) {
+		if !strings.Contains(normalizedBody, check) {
 			t.Errorf("expected %s ruleset to contain %q", slug, check)
 		}
 	}
