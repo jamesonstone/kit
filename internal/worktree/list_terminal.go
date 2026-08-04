@@ -10,6 +10,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/mattn/go-runewidth"
 	"golang.org/x/term"
 )
 
@@ -223,9 +224,13 @@ func truncateTerminalLine(value string, width int) string {
 	if width <= 3 {
 		return strings.Repeat(".", max(width, 0))
 	}
-	if utf8.RuneCountInString(value) <= width {
-		return value
-	}
-	runes := []rune(value)
-	return string(runes[:width-3]) + "..."
+	return runewidth.Truncate(value, width, "...")
+}
+
+func padTerminalLine(value string, width int) string {
+	return runewidth.FillRight(value, width)
+}
+
+func terminalDisplayWidth(value string) int {
+	return runewidth.StringWidth(value)
 }

@@ -13,13 +13,15 @@ import (
 )
 
 func TestListShowsOpenPullRequestNumbers(t *testing.T) {
+	const pullRequestTitle = "Add PR titles"
+
 	fixture := newGitFixture(t)
 	runGit(t, fixture.primary, "branch", "--track", "GH-100", "origin/main")
 	runWT(t, fixture.app, fixture.primary, "add", "GH-100", "--no-link-env")
 	fixture.out.Reset()
 	fixture.app.resolveListPRs = func(context.Context, string) listPRLookup {
 		return successfulListPRLookup(map[string]listPRAnnotation{
-			"GH-100": {numbers: "101", titles: "Add PR titles"},
+			"GH-100": {numbers: "101", titles: pullRequestTitle},
 		})
 	}
 
@@ -30,6 +32,9 @@ func TestListShowsOpenPullRequestNumbers(t *testing.T) {
 	}
 	if strings.Contains(strings.SplitN(output, "\n", 2)[0], "TITLE") {
 		t.Fatalf("plain list unexpectedly changed columns:\n%s", output)
+	}
+	if strings.Contains(strings.SplitN(output, "\n", 2)[1], pullRequestTitle) {
+		t.Fatalf("plain list unexpectedly included pull request title %q:\n%s", pullRequestTitle, output)
 	}
 	if !strings.Contains(output, "\nclean\tmain\t-\t") {
 		t.Fatalf("main row should show no open pull request:\n%s", output)

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"unicode/utf8"
 
 	"golang.org/x/term"
 )
@@ -51,8 +50,13 @@ func renderWorktreeSelectorAtSize(
 	titleText := fmt.Sprintf("Select a worktree (%d/%d)  arrows/Tab: move  Enter: open  h: home  q: cancel", selected+1, len(entries))
 	title := truncateTerminalLine(titleText, width)
 	header := fmt.Sprintf(
-		"  %-8s %-24s %-6s %-*s %-18s %s",
-		"STATE", "HEAD", "PR#", titleWidth, "TITLE", "LAST UPDATED", "PATH",
+		"  %s %s %s %s %s %s",
+		padTerminalLine("STATE", selectorStateWidth),
+		padTerminalLine("HEAD", selectorHeadWidth),
+		padTerminalLine("PR#", selectorPRWidth),
+		padTerminalLine("TITLE", titleWidth),
+		padTerminalLine("LAST UPDATED", selectorUpdatedWidth),
+		"PATH",
 	)
 	if _, err := fmt.Fprintf(output, "%s%s%s\r\n", colorBold, title, colorReset); err != nil {
 		return 0, fmt.Errorf("render worktree selector title: %w", err)
@@ -75,8 +79,14 @@ func renderWorktreeSelectorAtSize(
 			pointer = ">"
 		}
 		line := fmt.Sprintf(
-			"%s %-8s %-24s %-6s %-*s %-18s %s",
-			pointer, state, head, pr, titleWidth, prTitle, updated, path,
+			"%s %s %s %s %s %s %s",
+			pointer,
+			padTerminalLine(state, selectorStateWidth),
+			padTerminalLine(head, selectorHeadWidth),
+			padTerminalLine(pr, selectorPRWidth),
+			padTerminalLine(prTitle, titleWidth),
+			padTerminalLine(updated, selectorUpdatedWidth),
+			path,
 		)
 		if _, err := fmt.Fprintf(output, "%s%s%s\r\n", color, line, colorReset); err != nil {
 			return 0, fmt.Errorf("render worktree selector entry: %w", err)
@@ -92,11 +102,11 @@ func selectorTitleWidth(entries []worktreeEntry, terminalWidth int) int {
 	for _, entry := range entries {
 		maxTitleWidth = max(
 			maxTitleWidth,
-			utf8.RuneCountInString(sanitizeTerminalField(entry.prTitle)),
+			terminalDisplayWidth(sanitizeTerminalField(entry.prTitle)),
 		)
 		maxPathWidth = max(
 			maxPathWidth,
-			utf8.RuneCountInString(sanitizeTerminalField(entry.path)),
+			terminalDisplayWidth(sanitizeTerminalField(entry.path)),
 		)
 	}
 	available := terminalWidth - selectorFixedColumnsWidth - maxPathWidth
@@ -107,5 +117,5 @@ func selectorDisplayRows(value string, terminalWidth int) int {
 	if terminalWidth <= 0 {
 		return 1
 	}
-	return max((utf8.RuneCountInString(value)+terminalWidth-1)/terminalWidth, 1)
+	return max((terminalDisplayWidth(value)+terminalWidth-1)/terminalWidth, 1)
 }

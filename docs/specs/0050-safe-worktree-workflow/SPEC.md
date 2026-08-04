@@ -109,6 +109,8 @@ Provide one safe, memorable `git wt` workflow for isolated Git issue and pull-re
 - Give `TITLE` the selector's only flexible column width. Reserve the complete
   sanitized `PATH` value and existing fixed columns first, align every row to
   one shared title width, and truncate only the title with an ASCII ellipsis.
+  Measure allocation, truncation, padding, and physical-row accounting in
+  terminal display cells so wide glyphs and combining sequences remain aligned.
   When a terminal is narrower than the fixed columns, `TITLE` header, and
   complete path together, preserve the complete path rather than slicing it
   and count wrapped physical rows so redraw and cleanup remain correct.
