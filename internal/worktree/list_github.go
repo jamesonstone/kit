@@ -23,16 +23,22 @@ type listPullRequest struct {
 	Number            int    `json:"number"`
 	HeadRefName       string `json:"headRefName"`
 	IsCrossRepository bool   `json:"isCrossRepository"`
+	Title             string `json:"title"`
+}
+
+type listPRAnnotation struct {
+	numbers string
+	titles  string
 }
 
 type listPRLookup struct {
-	byBranch map[string]string
+	byBranch map[string]listPRAnnotation
 	fallback string
 }
 
 type listPRResolverFunc func(context.Context, string) listPRLookup
 
-func successfulListPRLookup(byBranch map[string]string) listPRLookup {
+func successfulListPRLookup(byBranch map[string]listPRAnnotation) listPRLookup {
 	return listPRLookup{byBranch: byBranch, fallback: listPRNoneMarker}
 }
 
@@ -51,8 +57,10 @@ func (a *App) populateListPullRequests(
 	}
 	for i := range entries {
 		entries[i].prText = lookup.fallback
-		if number, ok := lookup.byBranch[entries[i].branch]; ok {
-			entries[i].prText = number
+		entries[i].prTitle = lookup.fallback
+		if annotation, ok := lookup.byBranch[entries[i].branch]; ok {
+			entries[i].prText = annotation.numbers
+			entries[i].prTitle = annotation.titles
 		}
 	}
 }
@@ -75,7 +83,7 @@ func (a *App) resolveListPullRequests(ctx context.Context, cwd string) listPRLoo
 		"--limit",
 		"1000",
 		"--json",
-		"number,headRefName,isCrossRepository",
+		"number,headRefName,isCrossRepository,title",
 	)
 	if err != nil {
 		return failedListPRLookup(listPRFailureMarker(lookupCtx, output, err))
@@ -88,17 +96,24 @@ func (a *App) resolveListPullRequests(ctx context.Context, cwd string) listPRLoo
 	sort.Slice(prs, func(i, j int) bool {
 		return prs[i].Number < prs[j].Number
 	})
-	byBranch := make(map[string]string, len(prs))
+	byBranch := make(map[string]listPRAnnotation, len(prs))
 	for _, pr := range prs {
 		if pr.IsCrossRepository || pr.Number <= 0 || pr.HeadRefName == "" {
 			continue
 		}
-		number := strconv.Itoa(pr.Number)
-		if existing := byBranch[pr.HeadRefName]; existing != "" {
-			byBranch[pr.HeadRefName] = existing + "," + number
-		} else {
-			byBranch[pr.HeadRefName] = number
+		title := pr.Title
+		if strings.TrimSpace(title) == "" {
+			title = listPRUnknownMarker
 		}
+		number := strconv.Itoa(pr.Number)
+		annotation := byBranch[pr.HeadRefName]
+		if annotation.numbers != "" {
+			annotation.numbers += ","
+			annotation.titles += " | "
+		}
+		annotation.numbers += number
+		annotation.titles += title
+		byBranch[pr.HeadRefName] = annotation
 	}
 	return successfulListPRLookup(byBranch)
 }

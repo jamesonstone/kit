@@ -47,7 +47,7 @@ func TestCapabilitiesDescribeGitWTList(t *testing.T) {
 		" " + payload.Command.NetworkUse.Summary +
 		" " + payload.Command.NetworkUse.FlagDependent +
 		" " + payload.Command.GitMutation.Summary
-	for _, want := range []string{"--plain", "--root-position bottom", "arrow keys", "press h", "child shell", "bright green", "--sort state", "--sort head", "--sort path", "display-only", "local timezone", "HH:MM", "without seconds", "PR#", "two-second", "NG", "RL", "TO", "??", "no local mutation"} {
+	for _, want := range []string{"--plain", "--root-position bottom", "arrow keys", "press h", "child shell", "bright magenta", "--sort state", "--sort head", "--sort path", "display-only", "local timezone", "HH:MM", "without seconds", "PR#", "TITLE", "complete PATH", "two-second", "NG", "RL", "TO", "??", "no local mutation"} {
 		if !strings.Contains(combined, want) {
 			t.Fatalf("expected list capability to mention %q, got %#v", want, payload.Command)
 		}

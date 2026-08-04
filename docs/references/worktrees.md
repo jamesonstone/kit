@@ -78,6 +78,11 @@ the pull request number; a successful lookup without a match shows `-`.
 Multiple matches appear as ascending comma-separated numbers. Failures never
 prevent listing: `NG` means `gh` is unavailable, `RL` means GitHub rate
 limiting, `TO` means timeout, and `??` means another lookup or decode failure.
+The interactive selector adds `TITLE` between `PR#` and `LAST UPDATED`.
+Matching titles follow pull-request-number order, no-match rows show `-`, and
+lookup failures mirror the `PR#` marker. `TITLE` takes the remaining terminal
+width after reserving the complete `PATH` value, so only the title is
+truncated. Piped and `--plain` output retain the existing stable columns.
 
 For direct branch navigation, use `git wt <branch>`, for example
 `git wt GH-93`. Existing registered lanes open immediately. Missing lanes ask

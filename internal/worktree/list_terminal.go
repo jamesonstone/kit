@@ -10,6 +10,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/mattn/go-runewidth"
 	"golang.org/x/term"
 )
 
@@ -131,53 +132,6 @@ func selectWorktreeTerminal(ctx context.Context, input, output *os.File, entries
 	}
 }
 
-func renderWorktreeSelector(output *os.File, entries []worktreeEntry, selected int) (int, error) {
-	width, height := 120, len(entries)+3
-	if terminalWidth, terminalHeight, err := term.GetSize(int(output.Fd())); err == nil {
-		if terminalWidth > 0 {
-			width = terminalWidth
-		}
-		if terminalHeight > 3 {
-			height = terminalHeight
-		}
-	}
-	visibleCount := min(len(entries), max(height-3, 1))
-	start := max(selected-visibleCount+1, 0)
-	if start+visibleCount > len(entries) {
-		start = max(len(entries)-visibleCount, 0)
-	}
-	end := min(start+visibleCount, len(entries))
-
-	titleText := fmt.Sprintf("Select a worktree (%d/%d)  arrows/Tab: move  Enter: open  h: home  q: cancel", selected+1, len(entries))
-	title := truncateTerminalLine(titleText, width)
-	headerText := fmt.Sprintf("  %-8s %-24s %-6s %-18s %s", "STATE", "HEAD", "PR#", "LAST UPDATED", "PATH")
-	header := truncateTerminalLine(headerText, width)
-	if _, err := fmt.Fprintf(output, "%s%s%s\r\n", colorBold, title, colorReset); err != nil {
-		return 0, fmt.Errorf("render worktree selector title: %w", err)
-	}
-	if _, err := fmt.Fprintf(output, "%s%s%s\r\n", colorBold, header, colorReset); err != nil {
-		return 0, fmt.Errorf("render worktree selector header: %w", err)
-	}
-	for i := start; i < end; i++ {
-		entry := entries[i]
-		pointer := " "
-		state := sanitizeTerminalField(entry.state)
-		head := sanitizeTerminalField(selectorDisplayHead(entry))
-		pr := sanitizeTerminalField(entry.prText)
-		updated := sanitizeTerminalField(entry.updatedText)
-		path := sanitizeTerminalField(entry.path)
-		color := selectorEntryColor(entry, state, i == selected)
-		if i == selected {
-			pointer = ">"
-		}
-		line := fmt.Sprintf("%s %-8s %-24s %-6s %-18s %s", pointer, state, head, pr, updated, path)
-		if _, err := fmt.Fprintf(output, "%s%s%s\r\n", color, truncateTerminalLine(line, width), colorReset); err != nil {
-			return 0, fmt.Errorf("render worktree selector entry: %w", err)
-		}
-	}
-	return end - start + 2, nil
-}
-
 func primaryListEntry(entries []worktreeEntry) (worktreeEntry, bool) {
 	for _, entry := range entries {
 		if entry.primary {
@@ -270,9 +224,13 @@ func truncateTerminalLine(value string, width int) string {
 	if width <= 3 {
 		return strings.Repeat(".", max(width, 0))
 	}
-	if utf8.RuneCountInString(value) <= width {
-		return value
-	}
-	runes := []rune(value)
-	return string(runes[:width-3]) + "..."
+	return runewidth.Truncate(value, width, "...")
+}
+
+func padTerminalLine(value string, width int) string {
+	return runewidth.FillRight(value, width)
+}
+
+func terminalDisplayWidth(value string) int {
+	return runewidth.StringWidth(value)
 }

@@ -55,6 +55,9 @@ List flags:
 List PR# markers:
   - no open PR   NG gh unavailable   RL rate limited   TO timed out   ?? other failure
 
+Interactive TITLE:
+  Shows matching PR titles and truncates before PATH; plain output is unchanged.
+
 Safety:
   PR-<number> is detached and inspection-only; use repair for edits.
   Writable lanes link the primary checkout's .env and .envrc by default when present.

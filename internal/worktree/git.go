@@ -20,6 +20,7 @@ type worktreeEntry struct {
 	lastUpdated time.Time
 	updatedText string
 	prText      string
+	prTitle     string
 	state       string
 }
 
