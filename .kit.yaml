@@ -60,6 +60,15 @@ registry:
           installed_hash: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
           state: managed
         - kind: ruleset
+          slug: codex-thread-initialization
+          path: docs/references/rules/codex-thread-initialization.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 8f01671a053c69658c13aba879695722f6064af2
+          source_path: docs/references/rules/codex-thread-initialization.md
+          installed_hash: sha256:5cab73a2486ee949d964f656f1c82ad5e613fb486f8ad2822be63fc28a78723e
+          state: managed
+        - kind: ruleset
           slug: constitution-curation
           path: docs/references/rules/constitution-curation.md
           source_repo: jamesonstone/kit
@@ -94,7 +103,7 @@ registry:
           source_commit: 84bc11c469bd7573cda7568c08c094983d5ab09a
           source_path: docs/references/rules/github-pr-delivery.md
           installed_hash: sha256:f300d5d397aec24f9a16f64b6d12ce904d907dafbaf73a1c75498040dbcfcc77
-          state: local-custom
+          state: managed
         - kind: ruleset
           slug: kit-capabilities-usage
           path: docs/references/rules/kit-capabilities-usage.md
@@ -132,13 +141,22 @@ registry:
           installed_hash: sha256:ea73163fd33875ef9f91baefafc6983090695b7a9ec2406cdd1e41abb350371b
           state: managed
         - kind: ruleset
+          slug: source-file-size
+          path: docs/references/rules/source-file-size.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 8f01671a053c69658c13aba879695722f6064af2
+          source_path: docs/references/rules/source-file-size.md
+          installed_hash: sha256:270f3df4d0619b68ce9cdc21e6725a53089495355d4697a41ccf4d4c454aacb0
+          state: managed
+        - kind: ruleset
           slug: testing-and-environment-validation
           path: docs/references/rules/testing-and-environment-validation.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: 8f01671a053c69658c13aba879695722f6064af2
           source_path: docs/references/rules/testing-and-environment-validation.md
-          installed_hash: sha256:5925adfeb52f636fd0d625743d0c55be3bef39a7825cbf77c20c08b7deae5b1c
+          installed_hash: sha256:3e0187674f8cb661ee76aa9fcf9c864fe46946502928ef4dc40ea1045f3d8177
           state: managed
         - kind: ruleset
           slug: work-lane-gating
