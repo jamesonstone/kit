@@ -31,14 +31,14 @@ func utilityCapabilityRecords() []capabilityRecord {
 		capability(
 			"git wt sync",
 			"Utilities",
-			"Reconcile origin's default branch and remove only exact clean worktree lanes proven merged by GitHub.",
+			"Reconcile origin's default branch and remove only exact worktree lanes proven merged by GitHub, allowing ignored root bin build output.",
 			mutationGit,
 			withNetwork(
 				"reads origin's live default branch and GitHub pull-request metadata",
 				"ordinary sync fetches and prunes origin only; --dry-run does not fetch",
 			),
 			withFileWrites(
-				"ordinary sync may unlink verified managed .env and .envrc symlinks and remove a proven-safe worktree directory",
+				"ordinary sync may unlink verified managed .env and .envrc symlinks, discard an ignored root bin/ build-output directory, and remove a proven-safe worktree directory",
 				"--dry-run performs no filesystem write",
 			),
 			withGitMutation(
@@ -63,7 +63,8 @@ func utilityCapabilityRecords() []capabilityRecord {
 			),
 			withExamples("git wt sync --dry-run", "git wt sync", "git wt sync --json"),
 			withCaveats(
-				"Removal requires an exact canonical path, one merged same-repository PR into origin's default branch, exact PR-head OID equality, and no material except verified managed .env and .envrc symlinks.",
+				"Removal requires an exact canonical path, one merged same-repository PR into origin's default branch, exact PR-head OID equality, and no material except verified managed .env and .envrc symlinks plus an actual ignored root bin/ directory.",
+				"Only sync treats ignored root bin/ build output as disposable; manual remove, nested bin directories, symlinks, tracked changes, ordinary untracked files, and every other ignored path remain protected.",
 				"The command never stashes, resets, cleans, force-removes, force-deletes, force-pushes, or deletes remote branches.",
 				"Manual git wt remove retains its upstream/ahead proof and preserves the branch; sync anchors merged-PR plus exact-head evidence in a task-owned proof ref, runs ordinary git branch -d against that proof to support squash merges, and removes the proof with its expected OID.",
 				"Failures preserve ambiguous lanes, independent candidates may continue, and any operation failure makes the overall command nonzero.",

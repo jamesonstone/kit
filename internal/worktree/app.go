@@ -63,7 +63,7 @@ Safety:
   Writable lanes link the primary checkout's .env and .envrc by default when present.
   Use --no-link-env to omit both links for isolation.
   remove never forces, deletes a branch, or discards dirty/unpushed state.
-  sync removes only exact clean lanes proven merged into origin's default branch.
+  sync may discard ignored root bin/ output only from exact proven merged lanes.
   sync --dry-run performs no fetch, ref update, removal, deletion, or pruning.
   migrate previews by default and uses git worktree move when applied.
   No command starts applications or manages databases, ports, or runtime services.
@@ -107,6 +107,7 @@ type App struct {
 	getenv         func(string) string
 	readDir        func(string) ([]os.DirEntry, error)
 	mkdirAll       func(string, os.FileMode) error
+	removeAll      func(string) error
 	pathExists     func(string) (bool, error)
 	lookPath       func(string) (string, error)
 	resolvePR      resolvePRFunc
@@ -130,6 +131,7 @@ func NewApp(out, errOut io.Writer) *App {
 		getenv:        os.Getenv,
 		readDir:       os.ReadDir,
 		mkdirAll:      os.MkdirAll,
+		removeAll:     os.RemoveAll,
 		lookPath:      exec.LookPath,
 		listPRTimeout: defaultListPRTimeout,
 		pathExists: func(path string) (bool, error) {

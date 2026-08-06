@@ -29,7 +29,7 @@ references:
     target: docs/references/rules/github-pr-delivery.md
     relation: constrains
     read_policy: must
-    used_for: issues GH-93 and GH-125, their exact branches, and ready pull-request delivery
+    used_for: issues GH-93, GH-125, and GH-127, their exact branches, and ready pull-request delivery
     status: active
   - id: command-capabilities
     name: Command capabilities
@@ -111,6 +111,9 @@ listing. Synchronization is never implicit in listing or navigation.
   OID as an ancestor. Sync therefore removed the proven-safe worktree and then
   failed when ordinary `git branch -d` applied a different ancestry proof.
 - GitHub issue #125 and branch `GH-125` own the squash-merge repair.
+- GitHub issue #127 and branch `GH-127` own the ignored root `bin/` cleanup
+  exception requested for repositories that use the conventional Go build
+  output directory.
 
 ## REQUIREMENTS
 
@@ -181,6 +184,13 @@ listing. Synchronization is never implicit in listing or navigation.
 - REQ-017: Update help, README summary if useful, command documentation,
   canonical and embedded worktree guidance, command capabilities, tests, and
   repository memory with the exact behavior.
+- REQ-018: Sync may discard one ignored repository-root `bin/` directory from
+  an otherwise proven-safe merged lane immediately before native worktree
+  removal. The exception applies only when `bin/` is an actual directory and
+  every reported entry beneath it is ignored. Tracked changes, ordinary
+  untracked material, symlinks, nested `*/bin/` paths, and every other ignored
+  path still preserve the lane. Manual `git wt remove` retains its existing
+  all-ignored-material refusal.
 
 ### Non-goals
 
@@ -228,6 +238,10 @@ listing. Synchronization is never implicit in listing or navigation.
 - AC-014: A branch ref moved or reattached after worktree removal is preserved,
   the temporary proof ref is cleaned, the failure is reported, and sync returns
   nonzero. Proof preparation failure preserves the worktree as well.
+- AC-015: Real-Git tests prove sync removes an eligible merged lane containing
+  ignored root `bin/` output, dry-run leaves that output untouched, and manual
+  removal plus tracked, untracked, symlinked, nested, or other ignored material
+  continue to fail closed.
 
 ## ACCEPTED PLAN
 
@@ -258,6 +272,18 @@ listing. Synchronization is never implicit in listing or navigation.
    validation matrix, curate this spec, and deliver through issue #125 and
    `GH-125`.
 
+### GH-127 ignored root bin cleanup
+
+1. Extend sync-only removal inspection to recognize literal ignored porcelain
+   entries beneath repository-root `bin/` after proving the root is a real
+   directory; preserve manual removal and every other dirty-state refusal.
+2. Reinspect the lane immediately before deletion, remove only the exact
+   worktree-root `bin/` directory, and then retain ordinary non-force worktree
+   and local-branch removal.
+3. Add real-Git success, dry-run, refusal, and cleanup-failure coverage; align
+   help, capabilities, canonical and embedded worktree guidance; validate and
+   deliver through issue #127 and `GH-127`.
+
 ## DECISIONS
 
 - Ordinary `git wt sync` immediately applies every mutation that passes the
@@ -278,11 +304,17 @@ listing. Synchronization is never implicit in listing or navigation.
   candidates, but any operational failure makes the final command nonzero.
 - Human and JSON output are views of one report, not separately accumulated
   command logs.
+- Ignored root `bin/` output is a sync-only disposable-build exception. It is
+  recognized from Git's ignored porcelain status plus an exact non-symlink
+  directory check, removed by exact absolute path, and never restored if a
+  later native worktree or branch operation fails. Manual removal remains
+  conservative because it lacks sync's complete merged-PR and exact-head proof.
 
 ## OPEN QUESTIONS
 
 None. The user explicitly selected immediate application, local branch
-deletion, and strictly mutation-free dry-run behavior.
+deletion, strictly mutation-free dry-run behavior, and disposal of ignored
+root `bin/` build output during proven merged-lane cleanup.
 
 ## DISCOVERIES
 
@@ -314,6 +346,33 @@ deletion, and strictly mutation-free dry-run behavior.
   collisions or cleanup races.
 
 ## VALIDATION
+
+### GH-127 ignored root bin cleanup
+
+- Focused real-Git tests passed for automatic ignored root `bin/` removal,
+  strictly non-mutating dry-run, manual-removal refusal, ordinary untracked
+  root `bin/`, ignored nested `*/bin/`, other ignored material, root symlinks,
+  tracked changes beneath `bin/`, build-output deletion failure, managed-link
+  restoration, and native worktree-removal failure after build-output disposal.
+- `make fmt`, `go test ./... -count=1`, `make vet`, and the affected
+  `go test -race ./internal/worktree -run
+  '^(TestSync|TestManualRemoveStillRefusesIgnoredRootBuildOutput)' -count=1`
+  suite passed.
+- `make build` passed, rebuilt both binaries, and installed the validated
+  `git-wt` artifact and manpage.
+- `kit capabilities git wt sync --json` and the `ignored root bin` capability
+  search exposed the new file-deletion and refusal boundaries.
+- `kit check worktree-sync`, `kit check safe-worktree-workflow`, and
+  `kit check --project` passed.
+- Canonical and embedded worktree guidance matched byte-for-byte; manpage lint,
+  `git diff --check`, and `gitleaks git --redact --no-banner` passed.
+- Every affected handwritten Go source and test file remained at most 300
+  physical lines; `internal/worktree/remove.go` was the largest at 299 lines.
+- A built-binary live `merge-controller` dry run reported zero failures, all
+  24 linked branch lanes as `would-remove / proven-safe-merged-lane`, and only
+  the primary checkout as preserved. A SHA-256 digest over local refs,
+  registered worktrees, and every lane's tracked, untracked, and ignored status
+  was identical before and after the preview.
 
 ### GH-125 squash-merge repair
 
@@ -365,6 +424,18 @@ deletion, and strictly mutation-free dry-run behavior.
 
 ## OUTCOME
 
+### GH-127 ignored root bin cleanup
+
+Implementation and local validation are complete on issue #127 and branch
+`GH-127`. Sync now recognizes only literal ignored porcelain entries beneath an
+actual repository-root `bin/` directory, reinspects the lane immediately before
+deletion, removes that exact disposable build-output directory, and continues
+through ordinary non-force worktree removal and exact local-branch deletion.
+Manual removal, nested or symlinked bin paths, tracked changes, ordinary
+untracked files, and every other ignored path remain fail-closed. If a later
+native operation fails, the disposable build output stays deleted while the
+remaining worktree and branch are preserved and the failure is reported.
+
 ### GH-125 squash-merge repair
 
 Implementation and local validation are complete on issue #125 and branch
@@ -390,20 +461,25 @@ The ready pull request is
 Decision: updated
 
 Rationale: GH-93 created the durable contract for automatic merged-lane removal
-and local branch deletion. GH-125 updates that contract because squash-merge
-compatibility changes the destructive-boundary implementation from ancestry
-against the default branch to a transient exact-head proof consumed by ordinary
-branch deletion. The exact GitHub, OID, canonical-path, dirty-state, dry-run,
-failure-aggregation, and restoration rationale must survive beyond code and
-tests.
+and local branch deletion. GH-125 updated that contract for squash merges, and
+GH-127 adds one deliberate destructive-boundary exception for ignored root
+`bin/` build output. The distinction between sync-only disposal and conservative
+manual removal, exact ignored-path recognition, immediate reinspection,
+non-restoration after later failures, and all retained dirty-state protections
+must survive beyond code and tests.
 
-Constitution curation result: no project-wide constitutional rule changed.
-The GH-125 repair remains feature-specific and is fully captured in this spec
-plus the canonical worktree reference, so `docs/CONSTITUTION.md` remains
-unchanged.
+Constitution curation result: updated the project-wide worktree invariant with
+the single validated sync-only ignored root `bin/` exception while retaining
+the prohibition on stash, reset, clean, force removal, and disposal of every
+other dirty or ignored path. Feature-specific implementation and failure
+rationale remains in this spec and the canonical worktree reference.
 
 Artifacts:
 
 - `docs/specs/0052-worktree-sync/SPEC.md`
 - `docs/references/worktrees.md`
 - `internal/templates/worktrees_reference.md`
+- `internal/worktree/remove_build_output.go`
+- `internal/worktree/sync_build_output_test.go`
+- `pkg/cli/capabilities_catalog_utilities.go`
+- `docs/CONSTITUTION.md`

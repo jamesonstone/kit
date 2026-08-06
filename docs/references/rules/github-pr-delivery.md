@@ -192,6 +192,7 @@ Include:
 - Detached `PR-<number>` inspection lanes do not create environment links; migration preserves existing files and links without creating new ones.
 - Never nest worktrees inside a repository or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
 - Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. Verified expected `.env` and `.envrc` symlinks targeting the matching primary-checkout sources are the sole narrow exceptions: remove only those links before ordinary non-force `git worktree remove` and restore them if removal fails.
+- Kit's explicit merged-lane sync has one additional build-output exception: after merged same-repository PR and exact-head proof, it may recheck and discard an actual ignored repository-root `bin/` directory before ordinary non-force worktree removal. Manual cleanup and every other ignored path retain the preceding rule.
 - Keep application startup, databases, port allocation, Temporal state, process supervision, and multi-repository runtime orchestration outside the worktree workflow.
 
 ### Branch Workflow

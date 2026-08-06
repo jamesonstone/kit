@@ -16,8 +16,9 @@ type managedEnvironmentLink struct {
 }
 
 type worktreeRemoval struct {
-	entry            worktreeEntry
-	environmentLinks []managedEnvironmentLink
+	entry                  worktreeEntry
+	environmentLinks       []managedEnvironmentLink
+	ignoredBuildOutputPath string
 }
 
 type worktreeDirtyError struct {
@@ -59,7 +60,7 @@ func (a *App) remove(ctx context.Context, cwd, target string) error {
 	if err != nil {
 		return err
 	}
-	removal, err := a.inspectWorktreeRemoval(ctx, repo, *selected)
+	removal, err := a.inspectWorktreeRemoval(ctx, repo, *selected, preserveIgnoredBuildOutput)
 	if err != nil {
 		return err
 	}
@@ -76,6 +77,7 @@ func (a *App) inspectWorktreeRemoval(
 	ctx context.Context,
 	repo repository,
 	selected worktreeEntry,
+	allowIgnoredBuildOutput bool,
 ) (worktreeRemoval, error) {
 	environmentLinks, err := inspectManagedEnvironmentLinks(repo.primary, selected.path)
 	if err != nil {
@@ -88,10 +90,21 @@ func (a *App) inspectWorktreeRemoval(
 	if len(environmentLinks) > 0 {
 		dirty = statusWithoutManagedEnvironmentLinks(dirty, environmentLinks)
 	}
+	ignoredBuildOutputPath := ""
+	if allowIgnoredBuildOutput {
+		dirty, ignoredBuildOutputPath, err = inspectIgnoredRootBuildOutput(selected.path, dirty)
+		if err != nil {
+			return worktreeRemoval{}, err
+		}
+	}
 	if dirty != "" {
 		return worktreeRemoval{}, worktreeDirtyError{path: selected.path, status: dirty}
 	}
-	return worktreeRemoval{entry: selected, environmentLinks: environmentLinks}, nil
+	return worktreeRemoval{
+		entry:                  selected,
+		environmentLinks:       environmentLinks,
+		ignoredBuildOutputPath: ignoredBuildOutputPath,
+	}, nil
 }
 
 func (a *App) executeWorktreeRemoval(
@@ -99,6 +112,17 @@ func (a *App) executeWorktreeRemoval(
 	repo repository,
 	removal worktreeRemoval,
 ) error {
+	current, err := a.inspectWorktreeRemoval(
+		ctx,
+		repo,
+		removal.entry,
+		removal.ignoredBuildOutputPath != "",
+	)
+	if err != nil {
+		return fmt.Errorf("reinspect worktree before removal: %w", err)
+	}
+	removal = current
+
 	removedLinks := make([]managedEnvironmentLink, 0, len(removal.environmentLinks))
 	for _, environmentLink := range removal.environmentLinks {
 		if err := os.Remove(environmentLink.path); err != nil {
@@ -114,6 +138,18 @@ func (a *App) executeWorktreeRemoval(
 			return fmt.Errorf("remove managed environment symlink %s: %w", environmentLink.path, err)
 		}
 		removedLinks = append(removedLinks, environmentLink)
+	}
+	if removal.ignoredBuildOutputPath != "" {
+		if err := a.removeIgnoredRootBuildOutput(removal.ignoredBuildOutputPath); err != nil {
+			if restoreErr := restoreManagedEnvironmentLinks(removedLinks); restoreErr != nil {
+				return fmt.Errorf(
+					"%w; additionally failed to restore environment symlinks: %v",
+					err,
+					restoreErr,
+				)
+			}
+			return err
+		}
 	}
 	if _, err := a.git(ctx, repo.top, "worktree", "remove", removal.entry.path); err != nil {
 		if len(removedLinks) == 0 {

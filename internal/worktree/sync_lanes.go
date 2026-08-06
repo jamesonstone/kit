@@ -100,7 +100,7 @@ func (a *App) syncLane(
 		return
 	}
 
-	removal, err := a.inspectWorktreeRemoval(ctx, repo, entry)
+	removal, err := a.inspectWorktreeRemoval(ctx, repo, entry, discardIgnoredBuildOutput)
 	if err != nil {
 		decision.Reason = removalRefusalReason(err)
 		decision.Detail = err.Error()

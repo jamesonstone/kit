@@ -121,7 +121,7 @@ the complete durable truth.
 | `git wt help`, `git wt --help` | Show help for the optional project-oriented worktree convenience |
 | `git wt`, `git wt list [--root-position top\|bottom]` | Select a worktree with the primary checkout pinned and marked `[home]`; literal `main` worktrees are marked `[main]`; both use bright magenta; `PR#` is a two-second fail-soft GitHub annotation, interactive `TITLE` truncates before the complete `PATH`, local `LAST UPDATED` includes the day and `HH:MM`, and `h` opens home |
 | `git wt home` | Open a child shell in Git's primary worktree from any linked lane |
-| `git wt sync [--dry-run] [--json]` | Explicitly refresh the discovered origin default branch and retire only exact clean lanes proven merged by GitHub; dry-run is strictly non-mutating |
+| `git wt sync [--dry-run] [--json]` | Explicitly refresh the discovered origin default branch and retire only exact lanes proven merged by GitHub; ignored root `bin/` build output is disposable, while dry-run is strictly non-mutating |
 
 See [docs/commands.md](docs/commands.md) for the full Kit command guide and
 [docs/references/worktrees.md](docs/references/worktrees.md) for the portable
