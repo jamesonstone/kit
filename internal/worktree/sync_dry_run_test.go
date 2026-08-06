@@ -11,7 +11,7 @@ import (
 
 func TestSyncDryRunIsStrictlyMutationFree(t *testing.T) {
 	fixture := newGitFixture(t)
-	path, headOID := createMergedLane(t, fixture, "topic/dry-run")
+	path, headOID := createSquashMergedLane(t, fixture, "topic/dry-run")
 	runGit(t, fixture.remote, "update-ref", "-d", "refs/heads/topic/dry-run")
 	advanceRemoteMain(t, fixture, "remote-after-merge.txt")
 	fixture.app.resolveSyncPRs = staticSyncPRs(map[string][]SyncPullRequest{

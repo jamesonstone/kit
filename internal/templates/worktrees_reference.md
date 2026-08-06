@@ -110,7 +110,10 @@ local ref, worktree, branch, metadata, symlink, or filesystem mutation.
 Ordinary sync fetches and prunes only `origin`; fast-forwards the local default
 branch only when it is clean and strictly behind; removes only exact canonical
 lanes backed by one same-repository PR merged into that default branch whose
-head OID exactly equals local `HEAD`; and then uses ordinary `git branch -d`.
+head OID exactly equals local `HEAD`; anchors that OID in a create-only
+temporary proof ref; and then uses ordinary `git branch -d` against that proof.
+This supports squash merges while retaining Git's refusal to delete a moved or
+reattached branch. Sync removes only its exact proof ref afterward.
 Every dirty, ignored, fork-backed, open, closed-unmerged, wrong-base, missing,
 ambiguous, OID-mismatched, detached, legacy, primary, or current lane is
 preserved with a reason. The command never stashes, resets, cleans,
@@ -312,7 +315,9 @@ dirty, ignored, or unpublished item. A clean tracked `.envrc` remains ordinary
 Git-managed content. Manual `git wt remove` never uses `--force`,
 reset, clean, stash, or branch deletion. Sync uses its stricter merged-PR and
 exact-head proof instead of upstream/ahead proof, and only after successful
-worktree removal attempts ordinary local `git branch -d`.
+worktree removal attempts ordinary local `git branch -d` through a task-owned
+proof remote. Proof creation and cleanup use compare-and-swap OIDs; missing,
+changed, reattached, or colliding state fails closed.
 
 ## Scope Boundary
 

@@ -2,6 +2,7 @@ package worktree
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -113,19 +114,49 @@ func (a *App) syncLane(
 		decision.Reason = "proven-safe-merged-lane"
 		return
 	}
+	proofRef, err := a.prepareMergedLocalBranchDeletion(
+		ctx,
+		repo,
+		entry.branch,
+		entry.head,
+	)
+	if err != nil {
+		decision.Action = "preserved"
+		decision.Reason = "branch-deletion-preparation-failed"
+		decision.Detail = err.Error()
+		report.addFailure("prepare-local-branch-deletion", entry.path, err)
+		return
+	}
 	if err := a.executeWorktreeRemoval(ctx, repo, removal); err != nil {
 		decision.Action = "preserved"
 		decision.Reason = "worktree-removal-failed"
 		decision.Detail = err.Error()
 		report.addFailure("remove-worktree", entry.path, err)
+		if cleanupErr := a.cleanupMergedLocalBranchDeletion(
+			context.WithoutCancel(ctx),
+			repo,
+			proofRef,
+			entry.head,
+		); cleanupErr != nil {
+			report.addFailure("remove-branch-deletion-proof", entry.path, cleanupErr)
+		}
 		return
 	}
-	if err := a.deleteMergedLocalBranch(
+	deleteErr := a.deleteMergedLocalBranch(
 		ctx,
 		repo,
-		defaultBranch,
 		entry.branch,
-	); err != nil {
+		entry.head,
+		proofRef,
+	)
+	cleanupErr := a.cleanupMergedLocalBranchDeletion(
+		context.WithoutCancel(ctx),
+		repo,
+		proofRef,
+		entry.head,
+	)
+	if deleteErr != nil || cleanupErr != nil {
+		err := errors.Join(deleteErr, cleanupErr)
 		decision.Action = "worktree-removed"
 		decision.Reason = "branch-deletion-failed"
 		decision.Detail = err.Error()
@@ -160,25 +191,4 @@ func pullRequestRefusal(
 	default:
 		return ""
 	}
-}
-
-func (a *App) deleteMergedLocalBranch(
-	ctx context.Context,
-	repo repository,
-	defaultBranch string,
-	branch string,
-) error {
-	_, err := a.git(
-		ctx,
-		repo.top,
-		"-c",
-		"branch."+branch+".remote=origin",
-		"-c",
-		"branch."+branch+".merge=refs/heads/"+defaultBranch,
-		"branch",
-		"-d",
-		"--",
-		branch,
-	)
-	return err
 }

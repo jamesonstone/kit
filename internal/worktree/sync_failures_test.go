@@ -128,7 +128,7 @@ func TestSyncBranchDeletionFailureIsReportedWithoutForce(t *testing.T) {
 		args ...string,
 	) ([]byte, error) {
 		if name == "git" &&
-			strings.Contains(strings.Join(args, "\x00"), "branch\x00-d") {
+			strings.Contains(strings.Join(args, "\x00"), "branch\x00-d\x00--\x00topic/branch-delete") {
 			return []byte("simulated branch deletion failure"), fmt.Errorf("simulated failure")
 		}
 		return run(ctx, cwd, name, args...)
@@ -148,6 +148,9 @@ func TestSyncBranchDeletionFailureIsReportedWithoutForce(t *testing.T) {
 	}
 	if got := gitText(t, fixture.primary, "show-ref", "--verify", "refs/heads/topic/branch-delete"); got == "" {
 		t.Fatal("branch should remain after ordinary deletion failure")
+	}
+	if got := gitText(t, fixture.primary, "show-ref", "--verify", "refs/remotes/kit-wt-sync-proof/topic/branch-delete"); got != "" {
+		t.Fatalf("branch-deletion proof still exists: %s", got)
 	}
 }
 
