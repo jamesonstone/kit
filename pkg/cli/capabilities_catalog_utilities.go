@@ -42,7 +42,7 @@ func utilityCapabilityRecords() []capabilityRecord {
 				"--dry-run performs no filesystem write",
 			),
 			withGitMutation(
-				"ordinary sync may fast-forward the clean local default branch, remove proven merged worktrees, delete their local branches with git branch -d, and prune stale metadata",
+				"ordinary sync may fast-forward the clean local default branch, create and remove a compare-and-swap exact-head proof ref, remove proven merged worktrees, delete their local branches with ordinary git branch -d, and prune stale metadata",
 				"--dry-run performs no fetch, ref update, removal, branch deletion, or metadata pruning",
 			),
 			withFlags(
@@ -65,7 +65,7 @@ func utilityCapabilityRecords() []capabilityRecord {
 			withCaveats(
 				"Removal requires an exact canonical path, one merged same-repository PR into origin's default branch, exact PR-head OID equality, and no material except verified managed .env and .envrc symlinks.",
 				"The command never stashes, resets, cleans, force-removes, force-deletes, force-pushes, or deletes remote branches.",
-				"Manual git wt remove retains its upstream/ahead proof and preserves the branch; sync uses merged-PR plus exact-head proof and then attempts ordinary git branch -d.",
+				"Manual git wt remove retains its upstream/ahead proof and preserves the branch; sync anchors merged-PR plus exact-head evidence in a task-owned proof ref, runs ordinary git branch -d against that proof to support squash merges, and removes the proof with its expected OID.",
 				"Failures preserve ambiguous lanes, independent candidates may continue, and any operation failure makes the overall command nonzero.",
 			),
 		),

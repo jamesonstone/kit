@@ -76,6 +76,31 @@ func createMergedLane(
 	branch string,
 ) (string, string) {
 	t.Helper()
+	path, headOID := createPublishedLane(t, fixture, branch)
+	runGit(t, fixture.primary, "merge", "--no-ff", "--no-edit", branch)
+	runGit(t, fixture.primary, "push", "origin", "main")
+	return path, headOID
+}
+
+func createSquashMergedLane(
+	t *testing.T,
+	fixture gitFixture,
+	branch string,
+) (string, string) {
+	t.Helper()
+	path, headOID := createPublishedLane(t, fixture, branch)
+	runGit(t, fixture.primary, "merge", "--squash", branch)
+	runGit(t, fixture.primary, "commit", "-m", "squash merged lane")
+	runGit(t, fixture.primary, "push", "origin", "main")
+	return path, headOID
+}
+
+func createPublishedLane(
+	t *testing.T,
+	fixture gitFixture,
+	branch string,
+) (string, string) {
+	t.Helper()
 	runGit(t, fixture.primary, "branch", "--track", branch, "origin/main")
 	runWT(t, fixture.app, fixture.primary, "add", branch)
 	path := canonicalTestLanePath(fixture, branch)
@@ -87,8 +112,6 @@ func createMergedLane(
 	runGit(t, path, "commit", "-m", "merged lane")
 	runGit(t, path, "push", "-u", "origin", branch)
 	headOID := gitText(t, path, "rev-parse", "HEAD")
-	runGit(t, fixture.primary, "merge", "--no-ff", "--no-edit", branch)
-	runGit(t, fixture.primary, "push", "origin", "main")
 	return path, headOID
 }
 

@@ -29,7 +29,7 @@ references:
     target: docs/references/rules/github-pr-delivery.md
     relation: constrains
     read_policy: must
-    used_for: issue GH-93, branch GH-93, and ready pull-request delivery
+    used_for: issues GH-93 and GH-125, their exact branches, and ready pull-request delivery
     status: active
   - id: command-capabilities
     name: Command capabilities
@@ -106,6 +106,11 @@ listing. Synchronization is never implicit in listing or navigation.
 - Git ancestry or a missing remote branch does not prove that a pull request
   merged, targeted the origin default branch, or came from this repository.
 - GitHub issue #93 and branch `GH-93` are the delivery lane.
+- In `jamesonstone/merge-controller`, merged PR #2 records local `GH-1` OID
+  `7dc7b8d` as its exact head but squash commit `3748110` does not contain that
+  OID as an ancestor. Sync therefore removed the proven-safe worktree and then
+  failed when ordinary `git branch -d` applied a different ancestry proof.
+- GitHub issue #125 and branch `GH-125` own the squash-merge repair.
 
 ## REQUIREMENTS
 
@@ -147,11 +152,18 @@ listing. Synchronization is never implicit in listing or navigation.
   Sync substitutes merged-PR plus exact-head proof.
 - REQ-011: Ordinary sync removes every proven-safe worktree immediately using
   ordinary non-force `git worktree remove`, restores all removed managed
-  environment links if that removal fails, and then deletes the exact local branch with ordinary
-  `git branch -d`.
+  environment links if that removal fails, and then deletes the exact local
+  branch with ordinary non-force `git branch -d`. Before worktree removal, sync
+  must create an exact PR-head proof ref through a create-only compare-and-swap
+  and verify the branch's configured merge ref. Branch deletion must resolve
+  that proof through a command-local temporary remote, so squash merges do not
+  depend on default-branch ancestry while Git still refuses moved or reattached
+  branches. Sync must remove its proof ref with the expected OID afterward.
 - REQ-012: A local branch is never deleted before its worktree removal
-  succeeds. Branch-deletion failure is reported, makes the overall command
-  nonzero, and does not trigger force deletion or destructive recovery.
+  succeeds. Proof preparation failure preserves the entire lane. Missing or
+  changed exact-ref evidence, checked-out branch state, branch-deletion failure,
+  and proof cleanup failure are reported, make the overall command nonzero,
+  and do not trigger force deletion or destructive recovery.
 - REQ-013: After lane processing, ordinary sync prunes stale worktree metadata
   with ordinary `git worktree prune --verbose`. Dry-run reports what would be
   pruned without invoking a mutating prune.
@@ -176,7 +188,8 @@ listing. Synchronization is never implicit in listing or navigation.
 - Removing a worktree using branch ancestry, missing upstream, merged commit
   reachability, branch naming, age, or remote-branch deletion alone.
 - Cleaning, stashing, resetting, rebasing, merging, force-removing, force
-  deleting, force-pushing, or discarding any lane state.
+  deleting, deleting a branch ref that moved from the proven PR head OID,
+  force-pushing, or discarding any lane state.
 - Removing detached PR inspection lanes automatically.
 - Deleting remote branches.
 - Changing application processes, databases, ports, Temporal state, runtime
@@ -209,6 +222,12 @@ listing. Synchronization is never implicit in listing or navigation.
   worktree, branch, ref, status, and filesystem state identical.
 - AC-012: Full formatting, focused/full tests, vet, `build-git-wt`, Kit
   feature/project checks, diff/secret review, and ready-PR delivery pass.
+- AC-013: A real-Git squash-merged fixture removes both the clean canonical
+  worktree and its exact local branch without requiring ancestry to the
+  synthesized default-branch commit.
+- AC-014: A branch ref moved or reattached after worktree removal is preserved,
+  the temporary proof ref is cleaned, the failure is reported, and sync returns
+  nonzero. Proof preparation failure preserves the worktree as well.
 
 ## ACCEPTED PLAN
 
@@ -227,13 +246,30 @@ listing. Synchronization is never implicit in listing or navigation.
 7. Update command/help/capability/docs/template surfaces, validate end to end,
    curate repository memory, and deliver through issue #93 and `GH-93`.
 
+### GH-125 squash-merge repair
+
+1. Anchor the merged PR head in a create-only temporary proof ref before
+   worktree removal, recheck the exact local branch, and run ordinary
+   `git branch -d` against that proof through a command-local remote mapping.
+   Remove only the task-owned proof ref with its expected OID afterward.
+2. Add real-Git coverage for successful squash-merged cleanup and fail-closed
+   preservation when the branch ref changes before deletion.
+3. Update canonical and embedded worktree guidance, run the complete affected
+   validation matrix, curate this spec, and deliver through issue #125 and
+   `GH-125`.
+
 ## DECISIONS
 
 - Ordinary `git wt sync` immediately applies every mutation that passes the
   complete safety proof; preview-only behavior is available through
   `--dry-run`.
-- V1 deletes the exact local branch after successful worktree removal using
-  ordinary `git branch -d`; it never force-deletes and never deletes remotely.
+- GH-125 refines V1's ordinary `git branch -d` choice. Sync first creates a
+  task-owned remote-tracking proof ref at the exact merged PR head using a
+  create-only expected-zero OID, then asks ordinary `git branch -d` to evaluate
+  the local branch against that proof through command-local remote mapping.
+  This supports squash merges while retaining Git's checked-out and moved-head
+  refusals. The proof is removed only with its expected OID; sync never
+  force-deletes and never deletes the real remote branch.
 - Dry-run does not fetch or update any local ref. It reports from current local
   state plus live remote/GitHub reads.
 - Batch GitHub lookup is an optimization only. Exact targeted fallback and
@@ -269,8 +305,45 @@ deletion, and strictly mutation-free dry-run behavior.
 - The installed GitHub CLI supports all required rich fields in one `pr list`
   query: number, state, merge time, base/head names, head OID,
   cross-repository status, and URL.
+- `git branch -d` answers a commit-ancestry question that is incompatible with
+  GitHub squash merges. Merge-controller PR #2 proves the stronger identity
+  needed by sync: merged state, same-repository/default-base ownership, and an
+  exact PR-head/local-head OID match. A task-owned proof ref lets ordinary
+  `git branch -d` consume that identity while preserving its worktree-ownership
+  guard; create-only and expected-old-OID proof updates fail closed on
+  collisions or cleanup races.
 
 ## VALIDATION
+
+### GH-125 squash-merge repair
+
+- Focused real-Git sync tests passed for squash-merged cleanup, exact-ref
+  movement and reattachment refusal, proof preparation and collision handling,
+  proof cleanup, ordinary merged cleanup, off-default invocation,
+  branch-deletion failure reporting, and dry-run immutability.
+- `go test ./internal/worktree -count=1` passed.
+- `go test -race ./internal/worktree -run '^TestSync' -count=1` passed.
+- `go test ./...` passed.
+- `go vet ./...` passed.
+- `make build-git-wt` passed.
+- `go test -race ./internal/worktree` reached the unchanged terminal-selector
+  cancellation baseline failure in
+  `TestSelectWorktreeTerminalCancellationRestoresPTY`; the complete affected
+  sync race scope passed separately.
+- `go run ./cmd/kit capabilities git wt sync --json` and the `merged worktree`
+  capability search reported compare-and-swap exact-ref deletion and squash
+  merge support.
+- `go run ./cmd/kit check worktree-sync` and
+  `go run ./cmd/kit check --project` passed.
+- Every changed handwritten Go source and test file was at most 300 physical
+  lines; the largest was 237 lines.
+- A real built-binary `git wt sync --dry-run --json` smoke test reported no
+  failures, and complete local/origin refs, registered worktrees, plus tracked,
+  untracked, and ignored status snapshots were identical before and after.
+- Canonical and embedded worktree guidance remained byte-identical, and
+  `git diff --check` passed.
+
+### GH-93 original delivery
 
 - `gofmt` completed for every changed Go file.
 - Focused real-Git sync tests passed for default-branch states, exact merged
@@ -292,6 +365,19 @@ deletion, and strictly mutation-free dry-run behavior.
 
 ## OUTCOME
 
+### GH-125 squash-merge repair
+
+Implementation and local validation are complete on issue #125 and branch
+`GH-125`. Sync now anchors the already-proven merged PR head OID in a temporary,
+create-only proof ref before removing the worktree, then uses ordinary
+`git branch -d` through a command-local remote mapping and removes the proof by
+expected OID. GitHub squash merges no longer fail the unrelated default-branch
+ancestry check, while missing, moved, or reattached branches remain preserved
+with an explicit operation failure. Dry-run behavior and all pre-existing lane
+refusal proofs remain unchanged.
+
+### GH-93 original delivery
+
 Implementation and validation are complete on issue #93 and branch `GH-93`.
 `git wt sync` is explicit, default-applying only for fully proven safe merged
 lanes, branch-deleting only through ordinary `git branch -d`, deterministic in
@@ -301,16 +387,19 @@ The ready pull request is
 
 ## REPOSITORY MEMORY
 
-Decision: created
+Decision: updated
 
-Rationale: Automatic merged-lane removal and local branch deletion introduce a
-consequential destructive boundary. The exact GitHub, OID, canonical-path,
-dirty-state, dry-run, failure-aggregation, and restoration rationale must
-survive beyond code and tests.
+Rationale: GH-93 created the durable contract for automatic merged-lane removal
+and local branch deletion. GH-125 updates that contract because squash-merge
+compatibility changes the destructive-boundary implementation from ancestry
+against the default branch to a transient exact-head proof consumed by ordinary
+branch deletion. The exact GitHub, OID, canonical-path, dirty-state, dry-run,
+failure-aggregation, and restoration rationale must survive beyond code and
+tests.
 
 Constitution curation result: no project-wide constitutional rule changed.
-The new destructive boundary is feature-specific and is fully captured in this
-spec plus the canonical worktree reference, so `docs/CONSTITUTION.md` remains
+The GH-125 repair remains feature-specific and is fully captured in this spec
+plus the canonical worktree reference, so `docs/CONSTITUTION.md` remains
 unchanged.
 
 Artifacts:
