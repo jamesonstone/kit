@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: infrastructure-change-approval
-description: Requires a consolidated user-approved outline before cloud or infrastructure-as-code mutations.
+description: Requires a consolidated user-approved outline before public-cloud, Kubernetes, or infrastructure-as-code mutations.
 status: active
 registry_scope: downstream
 applies_to:
@@ -24,8 +24,8 @@ read_policy_default: must
 
 ## Purpose
 
-- Make cloud and infrastructure-as-code changes explicit and reviewable before
-  mutation.
+- Make public-cloud, Kubernetes, and infrastructure-as-code changes explicit
+  and reviewable before mutation.
 - Give the user one meaningful approval boundary at the beginning of a bounded
   change batch.
 - Preserve autonomous execution and recovery after approval while preventing
@@ -44,9 +44,9 @@ read_policy_default: must
   mutations.
 
 This rule does not automatically cover adjacent infrastructure SaaS or general
-CI/CD configuration unless the operation directly invokes a covered cloud or
-infrastructure-as-code mutation. Project-local rules may define a broader
-scope.
+CI/CD configuration unless the operation directly invokes a covered
+public-cloud, Kubernetes, or infrastructure-as-code mutation. Project-local
+rules may define a broader scope.
 
 ## Rules
 

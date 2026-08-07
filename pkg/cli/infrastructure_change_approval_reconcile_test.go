@@ -18,14 +18,14 @@ func TestReconcileFindsStaleInfrastructureChangeApprovalGuidance(t *testing.T) {
 			name:    "V2 RLM route",
 			version: config.InstructionScaffoldVersionTOC,
 			path:    "docs/agents/RLM.md",
-			snippet: "Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing public-cloud or infrastructure-as-code mutations",
+			snippet: "Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
 			audit:   auditV2SupportGuidance,
 		},
 		{
 			name:    "V3 root gate",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "Before mutating public-cloud resources or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
+			snippet: "Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 			audit:   auditV3SupportGuidance,
 		},
 	}

@@ -58,7 +58,7 @@
 | 0054 | source-file-line-enforcement | `docs/specs/0054-source-file-line-enforcement` | complete | no | 2026-08-02 | Make the existing 300-line source-file policy consistently visible, machine-audited, and periodically repairable in new and existing Kit-managed projects instead of relying on an agent to notice subjective prose. |
 | 0055 | codex-thread-initialization | `docs/specs/0055-codex-thread-initialization` | complete | no | 2026-08-02 | Make Codex thread renaming and pinning mandatory, ordered, pre-response initialization actions for newly created tasks, while making unavailable or failed host operations immediately visible instead of silently weakening the contract. |
 | 0056 | codex-browser-policy | `docs/specs/0056-codex-browser-policy` | complete | no | 2026-08-07 | Make Codex interactive browser work use the built-in `@Browser`, prohibit silent external-browser fallback, and require verified cleanup for explicitly authorized task-owned browser processes. |
-| 0057 | infrastructure-change-approval | `docs/specs/0057-infrastructure-change-approval` | complete | no | 2026-08-07 | Require Kit-managed agents to outline and obtain user confirmation for a bounded public-cloud or infrastructure-as-code mutation batch before changing it, then complete the unchanged approved batch autonomously. |
+| 0057 | infrastructure-change-approval | `docs/specs/0057-infrastructure-change-approval` | complete | no | 2026-08-07 | Require Kit-managed agents to outline and obtain user confirmation for a bounded public-cloud, Kubernetes, or infrastructure-as-code mutation batch before changing it, then complete the unchanged approved batch autonomously. |
 
 ## PROJECT INTENT
 
@@ -561,7 +561,7 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 
 - **STATUS**: complete
 - **PAUSED**: no
-- **INTENT**: Require Kit-managed coding agents to outline cloud and infrastructure-as-code mutations and obtain user confirmation before changing them, while allowing the approved bounded batch to run to completion without routine approval interruptions.
+- **INTENT**: Require Kit-managed coding agents to outline public-cloud, Kubernetes, and infrastructure-as-code mutations and obtain user confirmation before changing them, while allowing the approved bounded batch to run to completion without routine approval interruptions.
 - **APPROACH**: 1. Add the canonical mandatory downstream rule and references route. 2. Add a provider-neutral approval gate to V1, V2, and V3 managed instructions while preserving the additive AWS identity gate. 3. Align checked-in V3 provider and support guidance. 4. Prove ruleset validity, registry adoption, generated routing, and reconciliation drift detection. 5. Validate, curate repository memory, and deliver issue #131 as a ready pull request.
 - **OPEN ITEMS**: review and merge issue #131's ready pull request
 - **POINTERS**: `docs/specs/0057-infrastructure-change-approval/SPEC.md`, `docs/references/rules/infrastructure-change-approval.md`, `AGENTS.md`, `docs/agents/GUARDRAILS.md`

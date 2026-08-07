@@ -162,7 +162,7 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 ### Permission Boundary
 
 - Resolve all in-scope implementation, validation, and delivery issues autonomously and continue until the requested goal is fully complete or a genuine external blocker remains.
-- Honor explicit repo-local approval gates. For covered cloud or infrastructure-as-code mutations, follow `infrastructure-change-approval` before mutation; once the exact batch is approved, routine commands and compatible retries remain autonomous.
+- Honor explicit repo-local approval gates. For covered public-cloud, Kubernetes, or infrastructure-as-code mutations, follow `infrastructure-change-approval` before mutation; once the exact batch is approved, routine commands and compatible retries remain autonomous.
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files.
 - Before requesting deletion permission, resolve the exact targets, scope, sensitivity, and recoverability with read-only inspection; prefer recoverable deletion where practical.
 - This permission boundary does not authorize actions prohibited above. Never ask for permission to bypass protected branches, review, identity, secret, force-push, merge, or repository-setting safeguards.

@@ -43,7 +43,7 @@ delivery_intent: new_issue_branch_pr_ready
 
 ## PURPOSE
 
-Require Kit-managed coding agents to outline cloud and
+Require Kit-managed coding agents to outline public-cloud, Kubernetes, and
 infrastructure-as-code mutations and obtain user confirmation before changing
 them, while allowing the approved bounded batch to run to completion without
 routine approval interruptions.
@@ -141,6 +141,10 @@ routine approval interruptions.
 - V3 reconciliation uses exact guidance expectations for checked-in provider
   files and support docs, so the approval route can be made observable without
   adding a command or a new mutation mechanism.
+- Review of the completed implementation exposed that the detailed ruleset
+  covered Kubernetes while the concise hard gate and discovery routes named
+  only public-cloud and infrastructure-as-code mutations. Direct Kubernetes
+  mutations now remain explicit at every routing boundary.
 - The existing autonomous-recovery permission boundary said deletion was the
   only reason to request permission. It now defers to explicit repo-local
   approval gates so infrastructure confirmation and routine recovery do not
@@ -178,6 +182,24 @@ routine approval interruptions.
 - PASS: final built-binary whole-project reconcile reported no reconciliation
   needed and repeated the complete 826-candidate, 517-eligible-file,
   zero-violation source-file audit.
+- PASS: review repair added direct Kubernetes scope to the shared gate, RLM
+  route, references index, checked-in mirrors, reconciliation expectations,
+  and focused regression assertions without changing approval semantics.
+- PASS: repair validation completed `make fmt`, `git diff --check`, focused
+  template and CLI tests, `go test ./... -count=1`, `go vet ./...`, targeted
+  race tests, new-diff golangci-lint, and standalone Kit and git-wt builds.
+- PASS: the built repair binary validated feature 0057, all 54 features, and
+  the project contract; whole-project reconciliation reported no semantic
+  reconciliation need and repeated the 826-candidate, 517-eligible-file,
+  zero-violation source-size audit.
+- PASS: an independent read-only verifier found no blocking or non-blocking
+  gaps across D001, generated and checked-in mirrors, approval semantics,
+  regression coverage, and affected-file size limits.
+- EXPECTED MANAGED-REFRESH DRIFT: a forced include-files dry run reported three
+  refresh targets because the registry `main` source does not yet contain this
+  branch's new approval rule and Kit-maintainer reference extensions. Applying
+  that refresh would discard in-scope branch content, so no refresh was
+  applied.
 
 ## OUTCOME
 

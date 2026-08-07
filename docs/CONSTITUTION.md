@@ -168,7 +168,7 @@ all decisions.
    - Resolve all in-scope implementation, validation, and delivery failures autonomously after diagnosis and continue until the requested goal is complete or a genuine external blocker remains
    - A supported tool-path change does not require routine permission when repository, target, scope, intended effect, and human identity remain unchanged
    - Honor explicit repo-local approval gates; outside those gates, ask permission only before large-scale deletion or deleting sensitive files; existing protected-branch, force-push, merge, review, identity, secret, and repository-setting prohibitions remain hard boundaries
-   - Before public-cloud or infrastructure-as-code mutation, require one consolidated target, action, impact, recovery, and validation outline plus explicit user confirmation unless the initial request already contains and authorizes that complete bounded batch; execute the unchanged approved batch autonomously and renew confirmation only for material deviations
+   - Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, require one consolidated target, action, impact, recovery, and validation outline plus explicit user confirmation unless the initial request already contains and authorizes that complete bounded batch; execute the unchanged approved batch autonomously and renew confirmation only for material deviations
    - Preserve user-owned dirty work; when branch, target, identity, or ownership remains ambiguous after read-only inspection, request only the smallest missing input instead of guessing or discarding changes
 
 ### Code Quality Constraints

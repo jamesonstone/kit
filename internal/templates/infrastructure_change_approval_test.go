@@ -11,6 +11,8 @@ func TestInstructionTemplatesRequireInfrastructureChangeApproval(t *testing.T) {
 	required := []string{
 		"## Infrastructure Change Approval Hard Gate",
 		"docs/references/rules/infrastructure-change-approval.md",
+		"Kubernetes resources or cluster state",
+		"does not alter cloud resources, Kubernetes objects",
 		"present one consolidated outline of the target context",
 		"obtain explicit user confirmation",
 		"sufficiently detailed initial request may satisfy the gate",
@@ -47,11 +49,11 @@ func TestInstructionSupportRoutesInfrastructureChangeApproval(t *testing.T) {
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
-		if !strings.Contains(rlm, "Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing public-cloud or infrastructure-as-code mutations") {
+		if !strings.Contains(rlm, "Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state") {
 			t.Errorf("expected version %d RLM to route infrastructure approval", version)
 		}
 		references := fileContentByPath(files, "docs/references/README.md")
-		if !strings.Contains(references, "rules/infrastructure-change-approval.md") {
+		if !strings.Contains(references, "Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state") {
 			t.Errorf("expected version %d references index to route infrastructure approval", version)
 		}
 	}
