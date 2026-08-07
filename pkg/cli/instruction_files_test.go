@@ -76,6 +76,9 @@ func TestRunInit_CreatesRepositoryInstructionFiles(t *testing.T) {
 	if !strings.Contains(string(agentsContent), "`docs/agents/README.md`") {
 		t.Fatalf("AGENTS.md did not contain the docs/agents entrypoint guidance")
 	}
+	if !strings.Contains(string(agentsContent), "use Codex's built-in browser through `@Browser`") {
+		t.Fatal("AGENTS.md did not contain the Codex Browser policy")
+	}
 
 	claudeContent, err := os.ReadFile(filepath.Join(tempDir, "CLAUDE.md"))
 	if err != nil {

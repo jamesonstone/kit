@@ -3,7 +3,7 @@ package templates
 import "strings"
 
 func memoryRepositoryInstructions(title string) string {
-	return codexThreadInitializationGate(title) + `## Purpose
+	return codexThreadInitializationGate(title) + codexBrowserPolicy(title) + `## Purpose
 
 - This file is a routing table, not the full manual
 - Start at ` + "`docs/agents/README.md`" + ` and load only the guidance needed for the current decision

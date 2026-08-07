@@ -11,6 +11,17 @@
 - If an operation is unsupported, unavailable, or fails, do not silently skip it or retry indefinitely. After resolving both actions in order, begin the first commentary with `Thread initialization: rename <status>; pin <status>.`, include a concise reason for every non-success status, then continue the requested work.
 - For a continued Codex task, preserve its current title and pin state unless either is missing or the user explicitly requests a change.
 
+## Browser policy
+
+- For interactive browser work, use Codex's built-in browser through `@Browser`.
+- Do not use `@Chrome`, control my active Chrome profile, or launch external
+  Chrome or Chromium through Playwright, Selenium, Cypress, or browser MCP tools
+  unless I explicitly request it.
+- If `@Browser` is unavailable, report the limitation instead of silently
+  falling back.
+- When I explicitly authorize an external browser, terminate and verify all
+  task-owned browser and automation processes before finishing.
+
 ## Purpose
 
 - This file is a routing table, not the full manual

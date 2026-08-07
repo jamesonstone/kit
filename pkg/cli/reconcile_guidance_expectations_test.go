@@ -87,7 +87,7 @@ func TestAuditV2SupportGuidanceFindsStaleTestingSemantics(t *testing.T) {
 	}
 }
 
-func TestAuditV3SupportGuidanceFindsStaleSessionTestingAndWorktreeSemantics(t *testing.T) {
+func TestAuditV3SupportGuidanceFindsStaleSessionBrowserTestingAndWorktreeSemantics(t *testing.T) {
 	tests := []struct {
 		path    string
 		snippet string
@@ -95,6 +95,18 @@ func TestAuditV3SupportGuidanceFindsStaleSessionTestingAndWorktreeSemantics(t *t
 		{
 			path:    "AGENTS.md",
 			snippet: "First, call the available thread-title operation (`set_thread_title` when available)",
+		},
+		{
+			path:    "AGENTS.md",
+			snippet: "For interactive browser work, use Codex's built-in browser through `@Browser`.",
+		},
+		{
+			path:    "AGENTS.md",
+			snippet: "unless I explicitly request it.",
+		},
+		{
+			path:    "AGENTS.md",
+			snippet: "When I explicitly authorize an external browser, terminate and verify all",
 		},
 		{
 			path:    ".github/copilot-instructions.md",

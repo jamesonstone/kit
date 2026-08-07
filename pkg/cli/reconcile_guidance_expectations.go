@@ -53,6 +53,13 @@ func v3GuidanceExpectations() map[string][]string {
 			"First, call the available thread-title operation (`set_thread_title` when available)",
 			"Second, call the available thread-pin operation (`set_thread_pinned` when available)",
 			"Thread initialization: rename <status>; pin <status>.",
+			"## Browser policy",
+			"For interactive browser work, use Codex's built-in browser through `@Browser`.",
+			"Do not use `@Chrome`, control my active Chrome profile, or launch external",
+			"unless I explicitly request it.",
+			"If `@Browser` is unavailable, report the limitation instead of silently",
+			"When I explicitly authorize an external browser, terminate and verify all",
+			"task-owned browser and automation processes before finishing.",
 			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 		},
 		".github/copilot-instructions.md": {
