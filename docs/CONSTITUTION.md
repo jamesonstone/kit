@@ -167,7 +167,8 @@ all decisions.
    - Keep worktree tooling limited to native worktree and lane management; runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration remain outside its scope
    - Resolve all in-scope implementation, validation, and delivery failures autonomously after diagnosis and continue until the requested goal is complete or a genuine external blocker remains
    - A supported tool-path change does not require routine permission when repository, target, scope, intended effect, and human identity remain unchanged
-   - Ask permission only before large-scale deletion or deleting sensitive files; existing protected-branch, force-push, merge, review, identity, secret, and repository-setting prohibitions remain hard boundaries
+   - Honor explicit repo-local approval gates; outside those gates, ask permission only before large-scale deletion or deleting sensitive files; existing protected-branch, force-push, merge, review, identity, secret, and repository-setting prohibitions remain hard boundaries
+   - Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, include one consolidated target, action, impact, recovery, and validation outline in the task plan and obtain one confirmation for the complete batch; execute that batch and the rest of the task in one pass without re-prompting, consolidate additional required changes into one follow-up batch, and always obtain post-outline confirmation for deletion or removal even when the initial request already requested it
    - Preserve user-owned dirty work; when branch, target, identity, or ownership remains ambiguous after read-only inspection, request only the smallest missing input instead of guessing or discarding changes
 
 ### Code Quality Constraints

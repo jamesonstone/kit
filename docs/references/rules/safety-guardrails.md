@@ -162,7 +162,8 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 ### Permission Boundary
 
 - Resolve all in-scope implementation, validation, and delivery issues autonomously and continue until the requested goal is fully complete or a genuine external blocker remains.
-- Ask permission only before large-scale deletion or deleting sensitive files.
+- Honor explicit repo-local approval gates. For covered public-cloud, Kubernetes, or infrastructure-as-code mutations, follow `infrastructure-change-approval` before mutation; use one plan-level confirmation per complete batch, then execute that batch and compatible retries without re-prompting; consolidate additional required changes into one follow-up batch, and always obtain post-outline confirmation for deletion or removal.
+- Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files.
 - Before requesting deletion permission, resolve the exact targets, scope, sensitivity, and recoverability with read-only inspection; prefer recoverable deletion where practical.
 - This permission boundary does not authorize actions prohibited above. Never ask for permission to bypass protected branches, review, identity, secret, force-push, merge, or repository-setting safeguards.
 
@@ -176,6 +177,7 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Do not proceed to lane gating before branch and repository recon is complete.
 - Do not commit when author or committer identity is missing, ambiguous, or not the human user's.
 - Do not ask the user to authorize a compatible `gh` or connector retry that preserves the already-authorized mutation.
+- Do not treat autonomous failure recovery as permission to bypass an explicit infrastructure-change approval gate.
 - Do not blindly repeat a failed mutation without new evidence or a revised recovery path.
 - Do not perform large-scale deletion or delete sensitive files without explicit permission.
 
@@ -194,6 +196,7 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Confirm secret scanning happened before staging.
 - Confirm routine failures were diagnosed, recovered autonomously, and verified, or that a genuine blocker was reported with the smallest required user input.
 - Confirm compatible authenticated tool-path changes did not trigger routine permission requests.
+- Confirm explicit repo-local approval gates were satisfied before their covered mutations.
 - Confirm large-scale deletion and sensitive-file deletion did not occur without explicit permission.
 
 ## Examples

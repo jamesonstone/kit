@@ -65,7 +65,10 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 	for _, check := range []string{
 		"retry autonomously",
 		"including `gh`",
-		"Ask permission only before large-scale deletion or deleting sensitive files",
+		"Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files",
+		"follow `infrastructure-change-approval` before mutation",
+		"one plan-level confirmation per complete batch",
+		"always obtain post-outline confirmation for deletion or removal",
 		"do not frame this as permission for a routine retry",
 		"`~/worktrees/<owner>/<repository>/<lane>`",
 		"exact uppercase `GH-<number>`",
