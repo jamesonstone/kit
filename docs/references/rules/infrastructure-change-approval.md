@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: infrastructure-change-approval
-description: Requires a consolidated user-approved outline before public-cloud, Kubernetes, or infrastructure-as-code mutations.
+description: Requires one plan-level confirmation and one-pass execution per infrastructure batch, with explicit deletion confirmation.
 status: active
 registry_scope: downstream
 applies_to:
@@ -26,10 +26,9 @@ read_policy_default: must
 
 - Make public-cloud, Kubernetes, and infrastructure-as-code changes explicit
   and reviewable before mutation.
-- Give the user one meaningful approval boundary at the beginning of a bounded
-  change batch.
-- Preserve autonomous execution and recovery after approval while preventing
-  unreviewed scope or impact expansion.
+- Give the user one meaningful approval boundary per bounded change batch.
+- Preserve one-pass execution and autonomous recovery after approval while
+  preventing unreviewed scope, deletion, or impact expansion.
 
 ## Applies When
 
@@ -63,7 +62,7 @@ rules may define a broader scope.
 
 ### Consolidated Change Outline
 
-Before the first covered mutation, present one consolidated outline containing:
+Before the first covered mutation, create one consolidated outline containing:
 
 - target identity: provider, account, project or subscription, environment,
   region or zone, cluster, and relevant source paths;
@@ -80,27 +79,56 @@ Before the first covered mutation, present one consolidated outline containing:
 The outline may cover multiple providers or tools only when every target and
 mutation is included in the same bounded batch.
 
-### Confirmation And Execution
+- When the task uses a plan, include the complete infrastructure outline in
+  that plan instead of creating a separate approval ceremony.
+- Use read-only discovery to make the outline complete before asking. Do not
+  split known changes into several summaries or approval prompts.
 
-- Obtain explicit user confirmation of the complete outline before editing
+### One Confirmation And One-Pass Execution
+
+- Obtain one explicit user confirmation of the complete outline before editing
   covered infrastructure source or performing a live mutation.
-- A sufficiently detailed initial request counts as confirmation only when it
-  contains the complete required outline and clearly authorizes the exact
-  bounded mutations. A broad request such as "deploy it" or "fix the infra"
-  is not confirmation.
+- User approval of a task plan that contains the complete infrastructure
+  outline counts as confirmation; do not ask again before individual commands.
+- For a batch with no deletion or removal, a sufficiently detailed initial
+  request also counts as confirmation only when it contains the complete
+  required outline and clearly authorizes the exact bounded mutations. A broad
+  request such as "deploy it" or "fix the infra" is not confirmation.
 - Confirmation authorizes the exact outlined batch, not unrelated follow-on
   changes or an open-ended task-wide infrastructure grant.
 - After confirmation, execute the approved implementation, application,
-  validation, and routine failure recovery to completion without asking for
-  command-by-command approval.
+  validation, routine failure recovery, and remaining task work to completion
+  in one pass without asking for command-by-command approval.
 - Compatible tools and diagnosed retries do not require renewed confirmation
   when the target, intended effect, material impact, and recovery boundary are
   unchanged.
 
-### Material Deviations
+### Deletion And Removal Exception
 
-Stop before the next covered mutation, revise the outline, and obtain renewed
-confirmation when any of these change materially:
+- Deleting, destroying, or removing infrastructure always requires explicit
+  user confirmation after the consolidated outline, even when the initial
+  request already asked for or authorized the deletion.
+- This includes provider delete or destroy operations, Kubernetes object
+  deletion, and infrastructure-as-code edits or plans that remove or replace a
+  managed resource.
+- One confirmation covers every deletion or removal named in the batch. After
+  that confirmation, execute the whole deletion batch and its validation in
+  one pass; do not ask again for each resource or command.
+- A task-plan approval counts as the required deletion confirmation only when
+  the plan contains the complete deletion outline and the user approves it
+  after seeing that outline. An earlier broad or detailed request alone never
+  satisfies this exception.
+
+### Follow-Up Batches And Material Deviations
+
+When additional covered infrastructure changes become necessary, use read-only
+discovery to collect all then-known changes into one follow-up outline. Obtain
+one confirmation for that follow-up batch, execute it to completion in one
+pass, and continue the rest of the task. Do not create a separate prompt for
+each newly discovered command or resource.
+
+Treat the change as a follow-up batch when any of these fall outside the
+approved outline or change materially:
 
 - provider identity, account, project, subscription, environment, region,
   zone, or cluster;
@@ -112,19 +140,27 @@ confirmation when any of these change materially:
 - an observed plan or provider response that differs materially from the
   approved outline.
 
-Do not split a known batch into repeated approval prompts. Renew approval only
-for a material deviation or a newly proposed batch.
+Stop before the first mutation in the follow-up batch, not before every
+subsequent command. Do not re-confirm actions already included in an approved
+batch. A newly discovered deletion or removal always uses the deletion
+confirmation boundary above.
 
 ## Anti-Patterns
 
 - Treating the original goal as approval when it does not contain the required
   target, action, impact, recovery, and validation outline.
+- Treating an initial request as deletion confirmation before the user sees the
+  consolidated deletion outline.
 - Editing Terraform, Pulumi, CloudFormation, CDK, Bicep, or Kubernetes sources
   before the covered batch is confirmed.
 - Applying a plan whose deletes, replacements, target, or material impact were
   not in the approved outline.
 - Asking for approval before every command or routine retry inside an unchanged
   approved batch.
+- Interrupting execution with repeated prompts for infrastructure actions that
+  were already included in the approved plan.
+- Prompting separately for several follow-up changes that read-only discovery
+  could consolidate into one new batch.
 - Hiding uncertainty with generic language such as "minor cloud updates."
 - Treating a successful command exit as proof that the intended infrastructure
   state is correct.
@@ -133,14 +169,19 @@ for a material deviation or a newly proposed batch.
 
 - Confirm the outline identifies target, actions, execution boundary, impact,
   rollback or recovery, and validation before the first mutation.
-- Confirm the user explicitly approved the outline or supplied and authorized
-  an initial request that already meets every outline requirement.
+- Confirm the user approved the plan or outline once for the complete batch, or
+  supplied a qualifying initial request for a non-deletion batch.
+- Confirm every deletion or removal received explicit confirmation after its
+  complete consolidated outline; confirm the batch was not re-prompted after
+  that approval.
 - Compare the final provider or infrastructure-as-code plan with the approved
   batch and fail closed on material deviations.
 - Verify the target identity again at any project-required mutation boundary.
 - Run the outlined post-change checks and report actual evidence, skipped
   validation, partial results, and rollback status literally.
 - Confirm no covered mutation occurred outside the approved batch.
+- Confirm additional required changes were consolidated into one follow-up
+  batch and received one confirmation before their first mutation.
 
 ## Examples
 
@@ -156,7 +197,7 @@ Validation: inspect the server-side diff, rollout status, ready replicas, and se
 Proceed with this bounded batch?
 ```
 
-Detailed initial request that can count as confirmation:
+Detailed non-deletion initial request that can count as confirmation:
 
 ```text
 In AWS account 123456789012, region us-east-1, update only the existing staging
@@ -166,10 +207,25 @@ service deployment, ready task count, and health check. Proceed with exactly
 that change.
 ```
 
-Material deviation requiring renewed confirmation:
+Planned deletion that always requires confirmation after the summary:
+
+```text
+Target: AWS account 123456789012, us-east-1, staging VPC.
+Actions: delete the unused staging NAT gateway and release its elastic IP.
+Impact: staging private subnets lose outbound access until the replacement
+path is enabled; no production or data impact; hourly cost decreases.
+Recovery: recreate the gateway and re-associate a new elastic IP.
+Validation: inspect the final plan, route tables, gateway absence, and billing
+inventory.
+
+Proceed with this complete deletion batch?
+```
+
+Follow-up batch required by a material deviation:
 
 ```text
 The approved update planned an in-place change, but the provider plan now
-replaces the database. Stop and present the replacement, data, downtime,
-recovery, and validation implications before any apply.
+replaces the database. Consolidate the replacement with any other newly
+required changes, present one follow-up outline covering data, downtime,
+recovery, and validation, and obtain one confirmation before that batch.
 ```

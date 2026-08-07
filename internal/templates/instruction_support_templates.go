@@ -160,7 +160,7 @@ const referencesREADME = `# References
 - Use ` + "`rules/kit-capabilities-usage.md`" + ` in downstream projects for Kit command discovery guidance
 - Use ` + "`rules/feature-notes.md`" + ` when deciding how to load, reference, promote, or ignore source material under ` + "`docs/notes/<feature>`" + `
 - Use ` + "`rules/constitution-curation.md`" + ` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
-- Use ` + "`rules/infrastructure-change-approval.md`" + ` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one approved bounded change outline
+- Use ` + "`rules/infrastructure-change-approval.md`" + ` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal
 - Use ` + "`rules/testing-and-environment-validation.md`" + ` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
 - Use ` + "`rules/source-file-size.md`" + ` before editing implementation/source or test files and for whole-project reconcile audits
 - Use ` + "`rules/codex-thread-initialization.md`" + ` to preserve Codex's ordered pre-response rename and pin gate during instruction refresh and reconciliation

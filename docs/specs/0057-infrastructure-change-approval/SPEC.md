@@ -45,8 +45,9 @@ delivery_intent: new_issue_branch_pr_ready
 
 Require Kit-managed coding agents to outline public-cloud, Kubernetes, and
 infrastructure-as-code mutations and obtain user confirmation before changing
-them, while allowing the approved bounded batch to run to completion without
-routine approval interruptions.
+them, while allowing each approved bounded batch to run to completion in one
+pass without routine approval interruptions and always confirming deletion or
+removal after its summary.
 
 ## CONTEXT
 
@@ -60,8 +61,14 @@ routine approval interruptions.
   infrastructure-as-code sources as well as live provider changes.
 - The approval interaction must be consolidated at the beginning so the agent
   can work autonomously through the exact approved batch.
-- A sufficiently detailed initial request may itself satisfy the gate when it
-  includes the required outline and clearly authorizes the bounded mutations.
+- Infrastructure changes should be outlined as part of the task plan when one
+  is used, and approval of that plan should count as the batch confirmation.
+- A sufficiently detailed initial request may itself satisfy a non-deletion
+  batch when it includes the required outline and clearly authorizes the
+  bounded mutations.
+- Deleting or removing infrastructure is the exception: the agent must always
+  summarize the complete deletion batch and receive confirmation afterward,
+  but that one confirmation authorizes the full deletion batch.
 
 ## REQUIREMENTS
 
@@ -79,14 +86,22 @@ routine approval interruptions.
   states the exact target context, intended resource actions, execution
   boundary, material availability/data/security/cost impact, rollback or
   recovery path, and validation evidence.
-- Require explicit user confirmation after the outline unless the initial
-  request already contains the complete outline and clearly authorizes it.
+- Put the infrastructure outline into the task plan when planning is used and
+  treat approval of that complete plan as the single batch confirmation.
+- Require one explicit user confirmation after the outline unless a
+  non-deletion initial request already contains and authorizes the complete
+  batch.
+- Always require explicit confirmation after a deletion or removal outline;
+  the initial-request exception does not apply to destructive batches.
 - Scope confirmation to the exact bounded batch. Within that scope, continue
-  implementation, application, validation, and routine failure recovery
-  without asking for command-by-command approval.
-- Require a revised outline and renewed confirmation when the provider
-  identity, environment, region or cluster, resource set, action type,
-  material impact, rollback path, or intended effect changes materially.
+  implementation, application, validation, routine failure recovery, and the
+  rest of the task in one pass without command-by-command approval.
+- When additional covered changes become necessary, collect all then-known
+  changes into one follow-up outline, obtain one confirmation, and execute the
+  complete follow-up batch in one pass.
+- Treat provider identity, environment, region or cluster, resource set,
+  action type, material impact, rollback path, or intended-effect changes
+  outside the approved outline as one follow-up batch, not repeated prompts.
 - Keep the existing AWS identity verification gate additive: an approved AWS
   batch still requires the configured account and credentials to verify before
   AWS-dependent work and immediately before AWS mutation.
@@ -97,7 +112,8 @@ routine approval interruptions.
   instruction routing, checked-in alignment, and reconciliation expectations.
 - Observable acceptance: new and refreshed projects receive the rule;
   applicable agents encounter the hard gate before mutation; one approval
-  authorizes the complete unchanged batch; material deviations fail closed.
+  authorizes the complete unchanged batch; follow-up changes are consolidated;
+  and deletion or removal always receives post-outline confirmation.
 
 ## ACCEPTED PLAN
 
@@ -121,9 +137,16 @@ routine approval interruptions.
   live cloud or cluster mutations.
 - Approval is one exact bounded batch, not one prompt per command and not an
   unbounded whole-task grant.
-- Detailed initial instructions can count as approval only when they contain
-  the same target, action, impact, rollback, and validation information that a
-  separate agent outline would require.
+- Approval of a task plan containing the complete infrastructure outline is
+  the preferred confirmation UX and must not be followed by routine prompts.
+- Detailed initial instructions can count as approval for non-deletion work
+  only when they contain the same target, action, impact, rollback, and
+  validation information that a separate agent outline would require.
+- Deletion or removal always requires confirmation after its consolidated
+  outline, including when the initial request already asked for it; one
+  confirmation covers every named destructive action in the batch.
+- Additional infrastructure work is a follow-up batch: summarize all then-known
+  changes once, confirm once, and execute once.
 - Routine retries and compatible tool changes inside the approved target and
   intended effect remain autonomous under the existing mutation-recovery
   contract.
@@ -145,6 +168,11 @@ routine approval interruptions.
   covered Kubernetes while the concise hard gate and discovery routes named
   only public-cloud and infrastructure-as-code mutations. Direct Kubernetes
   mutations now remain explicit at every routing boundary.
+- User review clarified that the approval boundary is a planning UX, not a
+  command-interruption mechanism: approve each complete batch once, execute it
+  and the rest of the task in one pass, and use the same one-summary UX for a
+  later batch. Deletion or removal remains the explicit exception that always
+  requires post-summary confirmation.
 - The existing autonomous-recovery permission boundary said deletion was the
   only reason to request permission. It now defers to explicit repo-local
   approval gates so infrastructure confirmation and routine recovery do not
@@ -200,6 +228,20 @@ routine approval interruptions.
   branch's new approval rule and Kit-maintainer reference extensions. Applying
   that refresh would discard in-scope branch content, so no refresh was
   applied.
+- PASS: one-confirmation UX refinement focused tests cover task-plan approval,
+  the non-deletion initial-request exception, deletion/removal confirmation,
+  one-pass execution, consolidated follow-up batches, no re-confirmation, and
+  compatible retry autonomy.
+- PASS: refinement validation completed `make fmt`, `git diff --check`,
+  `go test ./... -count=1`, `go vet ./...`, targeted race tests, new-diff
+  golangci-lint, and standalone Kit and git-wt builds.
+- PASS: the built refinement binary validated feature 0057, all 54 features,
+  the project contract, and whole-project reconciliation with 826 candidates,
+  517 eligible source/test files, and zero files above 300 physical lines.
+- PASS: an independent read-only verifier found no blocking or non-blocking
+  gaps in planning integration, confirmation cardinality, destructive-action
+  handling, follow-up batching, mirror alignment, regression coverage, or
+  affected source/test file sizes.
 
 ## OUTCOME
 
@@ -207,9 +249,13 @@ routine approval interruptions.
   `infrastructure-change-approval` ruleset covering public clouds,
   Kubernetes, and infrastructure-as-code source and apply mutations.
 - V1, V2, and V3 managed instructions require one complete bounded outline and
-  confirmation before covered mutation, allow a fully detailed and authorized
-  initial request to satisfy the gate, and require renewed approval only for a
-  material deviation.
+  one plan-level confirmation before covered mutation, execute the batch and
+  remaining task work in one pass, consolidate later required changes into one
+  follow-up batch, and never re-prompt for already approved actions.
+- A fully detailed and authorized initial request may satisfy only a
+  non-deletion batch. Deletion or removal always requires explicit confirmation
+  after the complete outline, with that one confirmation authorizing the whole
+  destructive batch.
 - The existing AWS identity gate remains additive, and autonomous failure
   recovery remains active after the exact infrastructure batch is approved.
 - New projects and existing projects that run managed refresh adopt the rule
@@ -219,10 +265,10 @@ routine approval interruptions.
 
 Decision: created
 
-Rationale: The approval boundary, scope exclusions, initial-request exception,
-batch lifetime, and material-deviation rule are consequential cross-project
-policy decisions whose rationale is not recoverable from template assertions
-alone.
+Rationale: The plan-level approval boundary, scope exclusions, non-deletion
+initial-request exception, one-pass batch lifetime, follow-up batching, and
+deletion confirmation rule are consequential cross-project policy decisions
+whose rationale is not recoverable from template assertions alone.
 
 Artifacts:
 

@@ -13,11 +13,15 @@ func TestInstructionTemplatesRequireInfrastructureChangeApproval(t *testing.T) {
 		"docs/references/rules/infrastructure-change-approval.md",
 		"Kubernetes resources or cluster state",
 		"does not alter cloud resources, Kubernetes objects",
-		"present one consolidated outline of the target context",
-		"obtain explicit user confirmation",
-		"sufficiently detailed initial request may satisfy the gate",
-		"execute the exact approved batch to completion",
-		"obtain renewed confirmation",
+		"into the task plan when planning is used",
+		"one explicit user confirmation for the complete bounded batch",
+		"Approval of a task plan containing the complete outline counts as confirmation",
+		"batch does not delete or remove infrastructure",
+		"Deleting, destroying, or removing infrastructure always requires explicit confirmation",
+		"continue the rest of the task to completion in one pass",
+		"collect all then-known changes into one follow-up outline",
+		"Do not re-confirm actions already included in an approved batch",
+		"do not require another prompt",
 	}
 	for name, content := range map[string]string{
 		"V1 AGENTS.md":            LegacyAgentsMD,
@@ -53,7 +57,7 @@ func TestInstructionSupportRoutesInfrastructureChangeApproval(t *testing.T) {
 			t.Errorf("expected version %d RLM to route infrastructure approval", version)
 		}
 		references := fileContentByPath(files, "docs/references/README.md")
-		if !strings.Contains(references, "Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state") {
+		if !strings.Contains(references, "Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal") {
 			t.Errorf("expected version %d references index to route infrastructure approval", version)
 		}
 	}

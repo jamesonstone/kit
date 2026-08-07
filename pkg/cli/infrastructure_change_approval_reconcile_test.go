@@ -28,6 +28,13 @@ func TestReconcileFindsStaleInfrastructureChangeApprovalGuidance(t *testing.T) {
 			snippet: "Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 			audit:   auditV3SupportGuidance,
 		},
+		{
+			name:    "V3 deletion confirmation",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
+			audit:   auditV3SupportGuidance,
+		},
 	}
 
 	for _, tt := range tests {

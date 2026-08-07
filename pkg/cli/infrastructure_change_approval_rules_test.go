@@ -50,11 +50,17 @@ func TestInfrastructureChangeApprovalRegistryRulesetIsValid(t *testing.T) {
 		"target identity: provider, account, project or subscription",
 		"material impact and risk: availability, data, security or IAM, cost",
 		"rollback or recovery",
-		"Obtain explicit user confirmation",
-		"initial request counts as confirmation only when it contains the complete required outline",
-		"execute the approved implementation, application, validation, and routine failure recovery to completion",
-		"### Material Deviations",
-		"Do not split a known batch into repeated approval prompts",
+		"include the complete infrastructure outline in that plan instead of creating a separate approval ceremony",
+		"### One Confirmation And One-Pass Execution",
+		"User approval of a task plan that contains the complete infrastructure outline counts as confirmation",
+		"For a batch with no deletion or removal, a sufficiently detailed initial request also counts as confirmation",
+		"remaining task work to completion in one pass without asking for command-by-command approval",
+		"### Deletion And Removal Exception",
+		"always requires explicit user confirmation after the consolidated outline",
+		"One confirmation covers every deletion or removal named in the batch",
+		"### Follow-Up Batches And Material Deviations",
+		"collect all then-known changes into one follow-up outline",
+		"Do not re-confirm actions already included in an approved batch",
 	} {
 		if !strings.Contains(normalizedBody, check) {
 			t.Errorf("expected %s ruleset to contain %q", slug, check)
