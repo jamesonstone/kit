@@ -101,6 +101,14 @@ func TestAuditV3SupportGuidanceFindsStaleSessionBrowserTestingAndWorktreeSemanti
 			snippet: "For interactive browser work, use Codex's built-in browser through `@Browser`.",
 		},
 		{
+			path:    "AGENTS.md",
+			snippet: "unless I explicitly request it.",
+		},
+		{
+			path:    "AGENTS.md",
+			snippet: "When I explicitly authorize an external browser, terminate and verify all",
+		},
+		{
 			path:    ".github/copilot-instructions.md",
 			snippet: "Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md`",
 		},

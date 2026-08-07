@@ -25,6 +25,7 @@ func TestMemoryAgentsContainsCodexBrowserPolicy(t *testing.T) {
 		"use Codex's built-in browser through `@Browser`",
 		"Do not use `@Chrome`, control my active Chrome profile",
 		"Playwright, Selenium, Cypress, or browser MCP tools",
+		"unless I explicitly request it",
 		"If `@Browser` is unavailable, report the limitation",
 		"terminate and verify all",
 		"task-owned browser and automation processes before finishing",

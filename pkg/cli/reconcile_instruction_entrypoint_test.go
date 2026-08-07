@@ -9,10 +9,11 @@ import (
 )
 
 func TestRootInstructionMaxLinesIncludesCurrentGeneratedContract(t *testing.T) {
-	want := countLines(templates.MemoryAgentsMD)
-	if want <= rootInstructionMinimumMaxLines {
-		t.Fatalf("V3 AGENTS.md has %d lines, want above baseline %d for regression coverage", want, rootInstructionMinimumMaxLines)
+	generatedLines := countLines(templates.MemoryAgentsMD)
+	if generatedLines <= rootInstructionMinimumMaxLines {
+		t.Fatalf("V3 AGENTS.md has %d lines, want above baseline %d for regression coverage", generatedLines, rootInstructionMinimumMaxLines)
 	}
+	want := max(generatedLines, rootInstructionMinimumMaxLines)
 
 	got := rootInstructionMaxLines(
 		instructions.AgentsMDPath,
