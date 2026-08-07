@@ -110,7 +110,7 @@ func TestSyncPreservesMaterialOutsideIgnoredRootBuildOutput(t *testing.T) {
 	t.Run("tracked change beneath bin", func(t *testing.T) {
 		fixture := newGitFixture(t)
 		configureIgnoredBuildOutput(t, fixture, "bin/\n")
-		path, headOID := createPublishedLane(t, fixture, "topic/tracked-bin")
+		path, _ := createPublishedLane(t, fixture, "topic/tracked-bin")
 		tracked := filepath.Join(path, "bin", "tracked-tool")
 		if err := os.MkdirAll(filepath.Dir(tracked), 0o755); err != nil {
 			t.Fatal(err)
@@ -121,13 +121,44 @@ func TestSyncPreservesMaterialOutsideIgnoredRootBuildOutput(t *testing.T) {
 		runGit(t, path, "add", "--force", "bin/tracked-tool")
 		runGit(t, path, "commit", "-m", "track bin tool")
 		runGit(t, path, "push", "origin", "topic/tracked-bin")
-		headOID = gitText(t, path, "rev-parse", "HEAD")
+		headOID := gitText(t, path, "rev-parse", "HEAD")
 		runGit(t, fixture.primary, "merge", "--no-ff", "--no-edit", "topic/tracked-bin")
 		runGit(t, fixture.primary, "push", "origin", "main")
 		if err := os.WriteFile(tracked, []byte("modified\n"), 0o755); err != nil {
 			t.Fatal(err)
 		}
 		assertMergedLanePreserved(t, fixture, "topic/tracked-bin", headOID)
+	})
+
+	t.Run("clean tracked file beside nested ignored bin", func(t *testing.T) {
+		fixture := newGitFixture(t)
+		configureIgnoredBuildOutput(t, fixture, "bin/\n")
+		path, _ := createPublishedLane(t, fixture, "topic/tracked-bin-sibling")
+		tracked := filepath.Join(path, "bin", "tracked-tool")
+		if err := os.MkdirAll(filepath.Dir(tracked), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(tracked, []byte("tracked\n"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		runGit(t, path, "add", "--force", "bin/tracked-tool")
+		runGit(t, path, "commit", "-m", "track bin tool")
+		runGit(t, path, "push", "origin", "topic/tracked-bin-sibling")
+		headOID := gitText(t, path, "rev-parse", "HEAD")
+		runGit(t, fixture.primary, "merge", "--no-ff", "--no-edit", "topic/tracked-bin-sibling")
+		runGit(t, fixture.primary, "push", "origin", "main")
+		ignored := filepath.Join(path, "bin", "generated", "tool")
+		if err := os.MkdirAll(filepath.Dir(ignored), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(ignored, []byte("ignored\n"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+
+		assertMergedLanePreserved(t, fixture, "topic/tracked-bin-sibling", headOID)
+		if got, err := os.ReadFile(tracked); err != nil || string(got) != "tracked\n" {
+			t.Fatalf("tracked bin sibling changed: content=%q err=%v", got, err)
+		}
 	})
 }
 

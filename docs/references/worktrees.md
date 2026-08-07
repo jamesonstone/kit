@@ -318,13 +318,14 @@ dirty, ignored, or unpublished item. A clean tracked `.envrc` remains ordinary
 Git-managed content. Manual `git wt remove` never uses `--force`,
 reset, clean, stash, or branch deletion. Sync uses its stricter merged-PR and
 exact-head proof instead of upstream/ahead proof. It may additionally discard
-only an actual ignored root `bin/` directory before worktree removal; nested
-`*/bin/` paths, symlinks, tracked changes, ordinary untracked files, and other
-ignored paths remain removal blockers. The disposable build output is not
-restored if a later operation fails. Only after successful worktree removal
-does sync attempt ordinary local `git branch -d` through a task-owned proof
-remote. Proof creation and cleanup use compare-and-swap OIDs; missing, changed,
-reattached, or colliding state fails closed.
+only an actual ignored root `bin/` directory when Git reports the exact
+`!! bin/` porcelain record before worktree removal. Nested ignored records such
+as `!! bin/generated/`, nested `*/bin/` paths, symlinks, tracked changes,
+ordinary untracked files, and other ignored paths remain removal blockers. The
+disposable build output is not restored if a later operation fails. Only after
+successful worktree removal does sync attempt ordinary local `git branch -d`
+through a task-owned proof ref. Proof creation and cleanup use compare-and-swap
+OIDs; missing, changed, reattached, or colliding state fails closed.
 
 ## Scope Boundary
 

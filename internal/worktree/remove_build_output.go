@@ -42,12 +42,7 @@ func inspectIgnoredRootBuildOutput(
 }
 
 func isIgnoredRootBuildOutputStatus(line string) bool {
-	const ignoredPrefix = "!! "
-	if !strings.HasPrefix(line, ignoredPrefix) {
-		return false
-	}
-	relative := strings.TrimPrefix(line, ignoredPrefix)
-	return strings.HasPrefix(relative, ignoredBuildOutputDirName+"/")
+	return line == "!! "+ignoredBuildOutputDirName+"/"
 }
 
 func requireIgnoredRootBuildOutputDirectory(path string) error {
