@@ -138,10 +138,16 @@ tests/
 
 ### Browser Automation Lifecycle
 
-- Default automated browser work to Playwright-managed Chromium or Chrome for
-  Testing. Do not default to the user's installed, auto-updating Google Chrome.
-  Using installed Chrome is an explicit exception that must be justified in
-  the test or task evidence.
+- For interactive browser work in Codex, follow the managed `AGENTS.md`
+  Browser policy: use `@Browser`; do not use `@Chrome`, control the user's
+  active Chrome profile, or launch external Chrome or Chromium through
+  Playwright, Selenium, Cypress, or browser MCP tools unless the user explicitly
+  requests it.
+- If `@Browser` is unavailable, report the limitation instead of silently
+  falling back to an external browser.
+- Treat explicit authorization for an external browser as bounded to the
+  requested task-owned run. Use an isolated automation-managed browser unless
+  the user explicitly requests their installed browser or profile.
 - Create one uniquely named browser session per task or test run. Reuse that
   session for repeated operations instead of opening a new browser instance on
   each step or attempt. Bound retries and never let a retry loop create

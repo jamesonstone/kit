@@ -96,6 +96,7 @@ func inspectionCapabilityRecords() []capabilityRecord {
 			withCaveats(
 				"Append-only refresh preserves existing section content; bounded existing-section semantic drift is surfaced for manual integration or a reviewed targeted forced preview.",
 				"V3 whole-project reconciliation checks `AGENTS.md` for the ordered Codex pre-response thread-title and thread-pin gate, including fail-visible first-commentary semantics.",
+				"V3 whole-project reconciliation checks `AGENTS.md` for the Codex `@Browser` default, explicit external-browser authorization, unavailable-browser reporting, and task-owned process cleanup.",
 				"Whole-project output emits literal `source-file-size audit: complete` evidence with candidate, eligible-file, and violation counts; missing or incomplete evidence cannot support a clean result.",
 				"A managed-file dry-run with pending version-control-eligible changes reports that pending refresh separately from a clean semantic audit.",
 				"The follow-up prompt owns delivery of version-control-eligible command-created files: it requires the exact issue worktree, verified root-checkout transfer, explicit staging, and a ready pull request while the command itself performs no Git or GitHub mutation.",

@@ -57,6 +57,7 @@
 | 0053 | testing-and-environment-validation | `docs/specs/0053-testing-and-environment-validation` | complete | no | 2026-07-27 | Provide one mandatory downstream testing rule that keeps language-native code-level tests and pull-request CI authoritative while adding consistent environment validation, task-scoped browser automation lifecycle ownership, evidence, and production-safety contracts across Kit-managed projects. |
 | 0054 | source-file-line-enforcement | `docs/specs/0054-source-file-line-enforcement` | complete | no | 2026-08-02 | Make the existing 300-line source-file policy consistently visible, machine-audited, and periodically repairable in new and existing Kit-managed projects instead of relying on an agent to notice subjective prose. |
 | 0055 | codex-thread-initialization | `docs/specs/0055-codex-thread-initialization` | complete | no | 2026-08-02 | Make Codex thread renaming and pinning mandatory, ordered, pre-response initialization actions for newly created tasks, while making unavailable or failed host operations immediately visible instead of silently weakening the contract. |
+| 0056 | codex-browser-policy | `docs/specs/0056-codex-browser-policy` | complete | no | 2026-08-07 | Make Codex interactive browser work use the built-in `@Browser`, prohibit silent external-browser fallback, and require verified cleanup for explicitly authorized task-owned browser processes. |
 
 ## PROJECT INTENT
 
@@ -524,7 +525,7 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **STATUS**: complete
 - **PAUSED**: no
 - **INTENT**: Provide one mandatory downstream testing rule that keeps language-native code-level tests and pull-request CI authoritative while adding consistent environment validation, task-scoped browser automation lifecycle ownership, evidence, and production-safety contracts across Kit-managed projects.
-- **APPROACH**: 1. Keep the canonical downstream testing rule responsible for code-level checks, high-level suites, evidence, production safety, and browser automation lifecycle. 2. Require managed Chromium by default, one reusable named session, explicit task ownership, unconditional scoped cleanup, exit verification, and code-sign safety. 3. Route browser automation and browser testing through generated V2/V3, Copilot, RLM, and rules-index guidance. 4. Prove ruleset content, applicability, generated routing, and exact downstream refresh propagation without inventing a Kit wrapper when no owned browser launcher exists. 5. Validate focused and complete repository surfaces, curate repository memory, and deliver issue #121 through `GH-121` as a ready pull request.
+- **APPROACH**: 1. Keep the canonical downstream testing rule responsible for code-level checks, high-level suites, evidence, production safety, and browser automation lifecycle. 2. Default Codex interactive work to built-in `@Browser`; require explicit authorization, one reusable named session, task ownership, unconditional scoped cleanup, exit verification, and code-sign safety for external-browser runs. 3. Route browser automation and browser testing through generated V2/V3, Copilot, RLM, and rules-index guidance. 4. Prove ruleset content, applicability, generated routing, and exact downstream refresh propagation without inventing a Kit wrapper when no owned browser launcher exists. 5. Validate focused and complete repository surfaces and preserve the original issue #121 delivery history plus the issue #129 policy refinement.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0053-testing-and-environment-validation/SPEC.md`, `docs/references/rules/testing-and-environment-validation.md`
 
@@ -546,6 +547,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0055-codex-thread-initialization/SPEC.md`
 
+### codex-browser-policy
+
+- **STATUS**: complete
+- **PAUSED**: no
+- **INTENT**: Make Codex interactive browser work default to its isolated built-in `@Browser`, prohibit silent external Chrome or browser-automation fallback, and require verified cleanup whenever the user explicitly authorizes an external browser.
+- **APPROACH**: 1. Add the requested Codex-only Browser policy to generated and checked-in V3 `AGENTS.md`. 2. Remove the canonical testing rule's contradictory default external-browser launcher while preserving bounded task ownership and cleanup. 3. Make V3 reconcile detect weakened policy semantics and keep the thin-entrypoint validator aligned with the exact generated provider contract. 4. Prove provider isolation, generated alignment, downstream initialization, ruleset validity, semantic reconciliation, full Go validation, build, lint, and built-binary project checks. 5. Deliver issue #129 through `GH-129` as a ready pull request.
+- **OPEN ITEMS**: review and merge issue #129's ready pull request
+- **POINTERS**: `docs/specs/0056-codex-browser-policy/SPEC.md`, `AGENTS.md`, `docs/references/rules/testing-and-environment-validation.md`
+
 ## LAST UPDATED
 
-2026-08-02 08:16:47 EDT
+2026-08-07 09:31:28 EDT
