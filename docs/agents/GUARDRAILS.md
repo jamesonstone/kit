@@ -90,6 +90,15 @@ Do not create:
 
 unless the repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
 
+## Infrastructure Change Approval Hard Gate
+
+- Before mutating public-cloud resources or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.
+- Read-only discovery may precede confirmation only when it does not alter cloud resources, remote state, or repository-owned infrastructure source.
+- Before the first covered mutation, present one consolidated outline of the target context, resource actions, execution boundary, material impact and risk, rollback or recovery, and validation evidence; obtain explicit user confirmation.
+- A sufficiently detailed initial request may satisfy the gate only when it contains that complete outline and clearly authorizes the exact bounded batch.
+- After confirmation, execute the exact approved batch to completion without routine command-by-command approval.
+- If the provider identity, environment, region or cluster, resource set, action type, material impact, or rollback plan changes, stop, revise the outline, and obtain renewed confirmation.
+
 ## AWS Context Hard Gate
 
 When .kit.yaml defines an enabled aws context, agents must:
@@ -137,7 +146,7 @@ When .kit.yaml defines an enabled aws context, agents must:
 - Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied `.envrc`, and remember that direnv approval remains path-specific; keep runtime services, databases, ports, Temporal state, process supervision, and sibling repositories outside the worktree workflow
 - Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
 - Do not ask for routine approval to switch supported tools, including authenticated `gh`, when the authorized mutation is unchanged
-- Ask permission only before large-scale deletion or deleting sensitive files
+- Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files
 - Treat missing credentials, ambiguous identity or target, conflicting user-owned changes, and required external authorization as blockers requiring the smallest missing input, not as routine retry-permission requests
 - Do not run `coderabbit --prompt-only` unless explicitly requested or approved
 

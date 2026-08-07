@@ -33,6 +33,8 @@ When the user asks to create or mutate an issue, branch, staging, commit, push, 
 
 ---
 
+` + infrastructureChangeApprovalGate + `---
+
 ## AWS Context Hard Gate
 
 When .kit.yaml defines an enabled aws context:

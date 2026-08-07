@@ -38,7 +38,7 @@ func TestMemoryGuardrailsPreserveAutonomousRecovery(t *testing.T) {
 	for _, want := range []string{
 		"Resolve all in-scope issues autonomously and continue until the goal is fully complete",
 		"including authenticated `gh`",
-		"Ask permission only before large-scale deletion or deleting sensitive files",
+		"Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files",
 		"not as routine retry-permission requests",
 		"Use native `git worktree` commands and ordinary filesystem operations as the portable authority",
 		"do not require a wrapper, alias, or plugin",

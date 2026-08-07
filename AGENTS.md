@@ -78,6 +78,15 @@
 - Before a delivery mutation, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*` delivery rules
 - Repo-local Kit rules outrank generic GitHub or plugin defaults
 
+## Infrastructure Change Approval Hard Gate
+
+- Before mutating public-cloud resources or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.
+- Read-only discovery may precede confirmation only when it does not alter cloud resources, remote state, or repository-owned infrastructure source.
+- Before the first covered mutation, present one consolidated outline of the target context, resource actions, execution boundary, material impact and risk, rollback or recovery, and validation evidence; obtain explicit user confirmation.
+- A sufficiently detailed initial request may satisfy the gate only when it contains that complete outline and clearly authorizes the exact bounded batch.
+- After confirmation, execute the exact approved batch to completion without routine command-by-command approval.
+- If the provider identity, environment, region or cluster, resource set, action type, material impact, or rollback plan changes, stop, revise the outline, and obtain renewed confirmation.
+
 ## AWS Context Hard Gate
 
 - If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation

@@ -16,6 +16,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"specific section over full file",
 			"repo-local docs before global model/vendor instructions",
 			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
+			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing public-cloud or infrastructure-as-code mutations",
 		},
 		"docs/agents/WORKFLOWS.md": {
 			"Authority order:",
@@ -31,6 +32,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		},
 		"docs/references/README.md": {
+			"`rules/infrastructure-change-approval.md`",
 			"`rules/testing-and-environment-validation.md`",
 			"`rules/source-file-size.md`",
 		},
@@ -60,9 +62,13 @@ func v3GuidanceExpectations() map[string][]string {
 			"If `@Browser` is unavailable, report the limitation instead of silently",
 			"When I explicitly authorize an external browser, terminate and verify all",
 			"task-owned browser and automation processes before finishing.",
+			"Before mutating public-cloud resources or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
+			"Before the first covered mutation, present one consolidated outline of the target context, resource actions, execution boundary, material impact and risk, rollback or recovery, and validation evidence; obtain explicit user confirmation.",
+			"After confirmation, execute the exact approved batch to completion without routine command-by-command approval.",
 			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 		},
 		".github/copilot-instructions.md": {
+			"Before mutating public-cloud resources or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 			"end-to-end and live-integration suites supplement rather than replace them",
 			"Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`",
@@ -85,6 +91,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"stop loading once the decision is supported",
 			"## Context Budget Rules",
 			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
+			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing public-cloud or infrastructure-as-code mutations",
 		},
 		"docs/agents/TOOLING.md": {
 			"Use `kit dispatch` after native planning",
@@ -98,8 +105,10 @@ func v3GuidanceExpectations() map[string][]string {
 			"Every implementation final response must include `Repository Memory`",
 			"docs/references/rules/source-file-size.md",
 			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
+			"Before mutating public-cloud resources or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 		},
 		"docs/references/README.md": {
+			"`rules/infrastructure-change-approval.md`",
 			"`rules/testing-and-environment-validation.md`",
 			"`rules/source-file-size.md`",
 			"`rules/codex-thread-initialization.md`",

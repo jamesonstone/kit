@@ -119,6 +119,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"backend-service-architecture",
 		"codex-thread-initialization",
 		"frontend-application-architecture",
+		"infrastructure-change-approval",
 		"source-file-size",
 		"testing-and-environment-validation",
 	}

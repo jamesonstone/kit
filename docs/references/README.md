@@ -9,6 +9,7 @@
 - Use `rules/kit-capabilities-usage.md` in downstream projects for Kit command discovery guidance
 - Use `rules/feature-notes.md` when deciding how to load, reference, promote, or ignore source material under `docs/notes/<feature>`
 - Use `rules/constitution-curation.md` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
+- Use `rules/infrastructure-change-approval.md` before public-cloud or infrastructure-as-code mutation to require one approved bounded change outline
 - Use `rules/testing-and-environment-validation.md` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
 - Use `rules/source-file-size.md` before editing implementation/source or test files and for whole-project reconcile audits
 - Use `rules/codex-thread-initialization.md` to preserve Codex's ordered pre-response rename and pin gate during instruction refresh and reconciliation
@@ -42,6 +43,7 @@ are:
 | `feature-notes` | notes, source-material, documentation | Optional feature source material and promotion boundaries for `docs/notes/<feature>`. |
 | `frontend-application-architecture` | architecture, frontend, route, page, component, state | Responsibility and dependency boundaries for frontend routes, features, data adapters, state, and UI. |
 | `github-pr-delivery` | git, GitHub, pull-request, documentation | Issue-to-PR delivery sequencing and post-PR verification. |
+| `infrastructure-change-approval` | cloud, infrastructure-as-code, AWS, GCP, Azure, Kubernetes, Terraform, Pulumi, CloudFormation | Consolidated user-approved outlines before bounded cloud and infrastructure-as-code mutations. |
 | `kit-capabilities-usage` | Kit command discovery in downstream projects | Targeted, read-only capability lookup without maintaining Kit's internal catalog downstream. |
 | `llms-txt` | web, website, API, documentation | `/llms.txt` contract for applicable public web and API surfaces. |
 | `readme-header-tagline` | README and repository onboarding | Consistent top-level README identity and opening structure. |
