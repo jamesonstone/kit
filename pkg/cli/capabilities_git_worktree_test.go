@@ -117,6 +117,7 @@ func TestCapabilitiesDescribeGitWTSync(t *testing.T) {
 		"origin only",
 		"exact PR-head OID",
 		"compare-and-swap",
+		"ignored root bin/",
 		"squash merges",
 		"nonzero",
 		"never stashes",

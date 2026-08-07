@@ -113,11 +113,14 @@ lanes backed by one same-repository PR merged into that default branch whose
 head OID exactly equals local `HEAD`; anchors that OID in a create-only
 temporary proof ref; and then uses ordinary `git branch -d` against that proof.
 This supports squash merges while retaining Git's refusal to delete a moved or
-reattached branch. Sync removes only its exact proof ref afterward.
-Every dirty, ignored, fork-backed, open, closed-unmerged, wrong-base, missing,
-ambiguous, OID-mismatched, detached, legacy, primary, or current lane is
-preserved with a reason. The command never stashes, resets, cleans,
-force-removes, force-deletes, force-pushes, or deletes a remote branch.
+reattached branch. Sync removes only its exact proof ref afterward. An actual
+ignored repository-root `bin/` directory is treated as disposable build output:
+sync rechecks the lane, removes that exact directory, and then uses ordinary
+non-force worktree removal. Every other dirty or ignored lane, plus every
+fork-backed, open, closed-unmerged, wrong-base, missing, ambiguous,
+OID-mismatched, detached, legacy, primary, or current lane is preserved with a
+reason. The command never stashes, resets, cleans, force-removes, force-deletes,
+force-pushes, or deletes a remote branch.
 
 The first entry is Git's primary worktree. Capture its stable physical path for
 environment-link validation:
@@ -314,10 +317,15 @@ Refuse regular ignored environment files, unexpected symlinks, and every other
 dirty, ignored, or unpublished item. A clean tracked `.envrc` remains ordinary
 Git-managed content. Manual `git wt remove` never uses `--force`,
 reset, clean, stash, or branch deletion. Sync uses its stricter merged-PR and
-exact-head proof instead of upstream/ahead proof, and only after successful
-worktree removal attempts ordinary local `git branch -d` through a task-owned
-proof remote. Proof creation and cleanup use compare-and-swap OIDs; missing,
-changed, reattached, or colliding state fails closed.
+exact-head proof instead of upstream/ahead proof. It may additionally discard
+only an actual ignored root `bin/` directory when Git reports the exact
+`!! bin/` porcelain record before worktree removal. Nested ignored records such
+as `!! bin/generated/`, nested `*/bin/` paths, symlinks, tracked changes,
+ordinary untracked files, and other ignored paths remain removal blockers. The
+disposable build output is not restored if a later operation fails. Only after
+successful worktree removal does sync attempt ordinary local `git branch -d`
+through a task-owned proof ref. Proof creation and cleanup use compare-and-swap
+OIDs; missing, changed, reattached, or colliding state fails closed.
 
 ## Scope Boundary
 

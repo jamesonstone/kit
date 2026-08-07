@@ -40,7 +40,10 @@ column while preserving complete
 values; plain output retains its stable columns.
 .TP
 .B sync [--dry-run] [--json]
-Reconcile origin and proven merged worktree lanes.
+Reconcile origin and proven merged worktree lanes. An actual ignored
+repository-root
+.B bin/
+directory is disposable build output during sync.
 .TP
 .B home
 Open a shell in this clone's primary worktree.
@@ -110,6 +113,11 @@ files are preserved.
 The
 .B remove
 command never forces, deletes a branch, or discards dirty or unpushed state.
-No command stashes, resets, cleans, or force-removes worktrees.
+Sync may discard only an actual ignored root
+.B bin/
+directory after merged-pull-request and exact-head proof. Other ignored paths,
+nested bin directories, symlinks, tracked changes, and ordinary untracked files
+remain protected. No command stashes, resets, cleans, or force-removes
+worktrees.
 .SH SEE ALSO
 .BR git-worktree (1)

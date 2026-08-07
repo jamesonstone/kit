@@ -60,8 +60,10 @@ shared title width truncates before the complete `PATH` value. No-PR rows show
 unchanged. Every lookup failure remains non-blocking.
 `git wt sync --dry-run` performs a strictly non-mutating live
 origin/GitHub preview; ordinary `git wt sync` fast-forwards only a clean,
-behind default branch and retires only canonical clean lanes with exact
-merged-PR evidence.
+behind default branch and retires only canonical lanes with exact merged-PR
+evidence. An actual ignored repository-root `bin/` directory is treated as
+disposable build output during sync; other ignored or dirty material still
+preserves the lane.
 
 Passing a branch directly, such as `git wt GH-93`, opens its registered
 worktree. If the lane is not registered, the command asks whether to create it
