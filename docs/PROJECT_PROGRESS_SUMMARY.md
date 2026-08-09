@@ -2,9 +2,9 @@
 
 ## Current product line
 
-- **0058 coding-agent-first** — implementation and local acceptance complete
-  for the Kit 2.0 contract architecture, schema-v2 migration, reduced CLI, and
-  major-release documentation; ready PR delivery remains. See
+- **0058 coding-agent-first** — implementation, local acceptance, and ready PR
+  #134 delivery complete for the Kit 2.0 contract architecture, schema-v2
+  migration, reduced CLI, and major-release documentation. See
   [`docs/specs/0058-coding-agent-first/SPEC.md`](specs/0058-coding-agent-first/SPEC.md).
 
 ## Historical work

@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: spec
 workflow_version: 3
-phase: validate
+phase: complete
 feature:
   id: 0058
   slug: coding-agent-first
@@ -181,6 +181,11 @@ contract without launching or supervising agents.
   binary implementation is unchanged.
 - The complete version-control-eligible handwritten source and test audit found
   no file above 300 physical lines.
+- Ready PR #134 was opened from exact pushed head
+  `59cf7dea0d0b7328fa77abcb32c19804c36faf92`; GitHub reported it mergeable,
+  issue and PR assignment to `jamesonstone`, a passing auto-assign check, and a
+  passing CodeRabbit check whose review was explicitly skipped because the
+  change exceeded its 300-file service limit.
 
 ## OUTCOME
 
@@ -199,9 +204,9 @@ contract without launching or supervising agents.
   mainline releases increment within major version 2.
 - README, overview, Constitution, workflows, commands, migration, release, and
   generated agent-routing documentation now describe the new product model.
-- Implementation and local acceptance are complete on `GH-133`; ready
-  pull-request delivery and hosted-check verification are the remaining
-  delivery actions.
+- Implementation, local acceptance, ready pull-request delivery, exact-head
+  verification, and hosted-check observation are complete on `GH-133` and PR
+  #134. Human review and merge remain external repository actions.
 
 ## REPOSITORY MEMORY
 
