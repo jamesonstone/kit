@@ -16,7 +16,7 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -s -w -X github.com/jamesonstone/kit/pkg/cli.Version={{ .Version }}
+      - -s -w -X github.com/jamesonstone/kit/pkg/agentcli.Version={{ .Version }}
   - id: git-wt
     main: ./cmd/git-wt
     binary: git-wt

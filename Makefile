@@ -6,7 +6,7 @@ GIT_WT_PREFIX?=$(HOME)/.local
 GIT_WT_BIN_DIR?=$(GIT_WT_PREFIX)/bin
 GIT_WT_MAN_DIR?=$(GIT_WT_PREFIX)/share/man/man1
 VERSION?=$(shell git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo dev)
-LDFLAGS=-ldflags "-X github.com/jamesonstone/kit/pkg/cli.Version=$(VERSION)"
+LDFLAGS=-ldflags "-X github.com/jamesonstone/kit/pkg/agentcli.Version=$(VERSION)"
 
 build: install-git-wt
 	go build $(LDFLAGS) -o bin/$(BINARY_NAME) ./cmd/kit

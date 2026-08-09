@@ -1,0 +1,174 @@
+schema_version: 1
+artifacts:
+  - kind: ruleset
+    slug: agent-team-orchestration
+    description: Controls accountable supervisor, specialist subagent lanes, concurrency, and read-only verification.
+    visibility: downstream
+    source_path: docs/references/rules/agent-team-orchestration.md
+    target_path: docs/references/rules/agent-team-orchestration.md
+    version: 1
+    digest: sha256:b2339f4adf3c688a9eb1b9d84827858f3a450287e80e1a019eb0e4ed685e68db
+    read_policy: conditional
+    applies_to: [coding-agent, workflow, dispatch, subagent, verification]
+  - kind: ruleset
+    slug: backend-service-architecture
+    description: Defines framework-aware boundaries for backend services and APIs.
+    visibility: downstream
+    source_path: docs/references/rules/backend-service-architecture.md
+    target_path: docs/references/rules/backend-service-architecture.md
+    version: 1
+    digest: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
+    read_policy: must
+    applies_to: [architecture, backend, api, route, controller, service, repository, coding-agent]
+  - kind: ruleset
+    slug: codex-thread-initialization
+    description: Requires ordered Codex task renaming and pinning with fail-visible status.
+    visibility: downstream
+    source_path: docs/references/rules/codex-thread-initialization.md
+    target_path: docs/references/rules/codex-thread-initialization.md
+    version: 1
+    digest: sha256:5cab73a2486ee949d964f656f1c82ad5e613fb486f8ad2822be63fc28a78723e
+    read_policy: must
+    applies_to: [codex, coding-agent, session, thread]
+  - kind: ruleset
+    slug: constitution-curation
+    description: Curates demonstrated project-wide truth after validated implementation.
+    visibility: downstream
+    source_path: docs/references/rules/constitution-curation.md
+    target_path: docs/references/rules/constitution-curation.md
+    version: 1
+    digest: sha256:e629aca7f43c59bf10ead70a88918ba43d1cfa03e43baa73642d740e76182d4d
+    read_policy: must
+    applies_to: [coding-agent, implementation, validation, repository-memory, constitution]
+  - kind: ruleset
+    slug: feature-notes
+    description: Keeps optional feature source material separate from canonical repository truth.
+    visibility: downstream
+    source_path: docs/references/rules/feature-notes.md
+    target_path: docs/references/rules/feature-notes.md
+    version: 1
+    digest: sha256:1318a30df003ed2674176d33a46e9948c0193ca0a728c9677e8a915df81cc742
+    read_policy: conditional
+    applies_to: [notes, feature-notes, source-material, context, documentation, coding-agent]
+    paths: [docs/notes/**]
+  - kind: ruleset
+    slug: frontend-application-architecture
+    description: Defines framework-aware boundaries for frontend applications.
+    visibility: downstream
+    source_path: docs/references/rules/frontend-application-architecture.md
+    target_path: docs/references/rules/frontend-application-architecture.md
+    version: 1
+    digest: sha256:31fafc0f1b1bf2690e88d6f713603f9eee178de14e4d1dffe880272523ee073c
+    read_policy: must
+    applies_to: [architecture, frontend, web, mobile, ui, route, page, component, coding-agent]
+  - kind: ruleset
+    slug: github-pr-delivery
+    description: Sequences issue, branch, commit, push, ready PR, and post-PR verification.
+    visibility: downstream
+    source_path: docs/references/rules/github-pr-delivery.md
+    target_path: docs/references/rules/github-pr-delivery.md
+    version: 1
+    digest: sha256:183ebc6ef9b2cff3d4b4e89a2fbfaca4cf79280f981c00d25b32e5b9bbed0975
+    read_policy: conditional
+    applies_to: [git, github, pull-request, github-actions, documentation, coding-agent]
+    paths: [.github/**]
+  - kind: ruleset
+    slug: infrastructure-change-approval
+    description: Requires plan-level confirmation and one-pass execution for infrastructure batches.
+    visibility: downstream
+    source_path: docs/references/rules/infrastructure-change-approval.md
+    target_path: docs/references/rules/infrastructure-change-approval.md
+    version: 1
+    digest: sha256:876b5f569dbec518a4b9b0475af3b0e84be854e4de528dee0989986f0d4a84ce
+    read_policy: must
+    applies_to: [cloud, infrastructure, infrastructure-as-code, aws, gcp, azure, kubernetes, deployment, coding-agent]
+  - kind: ruleset
+    slug: llms-txt
+    description: Requires web services, websites, and APIs to expose an LLM-friendly llms.txt endpoint.
+    visibility: downstream
+    source_path: docs/references/rules/llms-txt.md
+    target_path: docs/references/rules/llms-txt.md
+    version: 1
+    digest: sha256:4aaa326493395e357b1cd28ed2dda4c2c454e0fe7fa31fffdeea753bd6fb5884
+    read_policy: conditional
+    applies_to: [web, website, webservice, api, documentation, llms-txt, coding-agent]
+    paths: [llms.txt, "**/llms.txt"]
+  - kind: ruleset
+    slug: readme-header-tagline
+    description: Standardizes top-level README openings with a concise product identity.
+    visibility: downstream
+    source_path: docs/references/rules/readme-header-tagline.md
+    target_path: docs/references/rules/readme-header-tagline.md
+    version: 1
+    digest: sha256:062443de22fe7f99f17aeec03c8db15739cdbad64800716daeedb8b47aa63761
+    read_policy: conditional
+    applies_to: [readme, documentation, branding, repo-onboarding, coding-agent]
+    paths: [README.md, "**/README.md"]
+  - kind: ruleset
+    slug: safety-guardrails
+    description: Provides always-on Git, GitHub, secret, identity, and recovery guardrails.
+    visibility: downstream
+    source_path: docs/references/rules/safety-guardrails.md
+    target_path: docs/references/rules/safety-guardrails.md
+    version: 1
+    digest: sha256:13f1fcfa492d4797fc1eb5d99d1a3e2946ecbd5acd5662f60261b59ed732153b
+    read_policy: must
+    applies_to: [git, github, safety, coding-agent]
+  - kind: ruleset
+    slug: source-file-size
+    description: Enforces the 300-line handwritten source and test file limit.
+    visibility: downstream
+    source_path: docs/references/rules/source-file-size.md
+    target_path: docs/references/rules/source-file-size.md
+    version: 1
+    digest: sha256:3438e448623737d2ca500c24be07f6f2813a30ccc475da518a7c86918f6ecac6
+    read_policy: must
+    applies_to: [coding-agent, implementation, testing, validation, refactor, reconcile, maintenance]
+  - kind: ruleset
+    slug: testing-and-environment-validation
+    description: Defines code-level checks, environment suites, immutable evidence, and safe end-to-end validation.
+    visibility: downstream
+    source_path: docs/references/rules/testing-and-environment-validation.md
+    target_path: docs/references/rules/testing-and-environment-validation.md
+    version: 1
+    digest: sha256:8e5786045643a8b8548a92efe7d63940f566331929f06d74c94e6c77d52a4c46
+    read_policy: must
+    applies_to: [coding-agent, implementation, testing, validation, ci, deployment, end-to-end, browser-testing]
+  - kind: ruleset
+    slug: work-lane-gating
+    description: Prevents coding agents from mixing unrelated implementation lanes.
+    visibility: downstream
+    source_path: docs/references/rules/work-lane-gating.md
+    target_path: docs/references/rules/work-lane-gating.md
+    version: 1
+    digest: sha256:34f8dd58c9b3190a83d3440788c96f2e82fba7812d51b41115074961e1c9429e
+    read_policy: must
+    applies_to: [git, github, workflow, coding-agent]
+  - kind: workflow
+    slug: implementation-delivery
+    description: Drives coding-agent work from repository grounding through validated pull-request delivery.
+    visibility: downstream
+    source_path: docs/references/workflows/implementation-delivery.md
+    target_path: docs/references/workflows/implementation-delivery.md
+    version: 1
+    digest: sha256:4b19b09042703600d067d6c95271cc5f9288a1f86efabcab9928dc95075c6bc8
+    read_policy: must
+    applies_to: [coding-agent, implementation, delivery]
+    dependencies:
+      - ruleset/safety-guardrails
+      - ruleset/work-lane-gating
+      - ruleset/testing-and-environment-validation
+      - ruleset/source-file-size
+      - ruleset/constitution-curation
+  - kind: workflow
+    slug: registry-maintenance
+    description: Safely previews and reconciles repository-local contract artifacts against their registry.
+    visibility: downstream
+    source_path: docs/references/workflows/registry-maintenance.md
+    target_path: docs/references/workflows/registry-maintenance.md
+    version: 1
+    digest: sha256:646aae8d2d4a02d608478a67f14578319a199bff9418233835628f6717b215d3
+    read_policy: conditional
+    applies_to: [coding-agent, registry, reconcile, maintenance]
+    dependencies:
+      - ruleset/safety-guardrails

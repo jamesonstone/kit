@@ -1,744 +1,133 @@
 # CONSTITUTION
 
-Kit is a repository-memory and specification harness for agent-driven work.
-Native agent planning owns research, clarification, design, and implementation
-planning. Kit ensures consequential rationale, accepted plans, discoveries,
-validation, and outcomes survive in canonical repository documents when code
-and tests alone are insufficient. The harness also supports ad hoc execution,
-catch-up, handoff, summarization, review, and post-plan orchestration.
-This constitution defines the invariant rules, patterns, and vision that guide
-all decisions.
-
----
+Kit is a provider-neutral, repository-native contract layer for coding agents.
+It materializes registry-backed Markdown and resolves a deterministic local
+contract without launching, supervising, or reasoning on behalf of an agent.
 
 ## PRINCIPLES
 
-### 1. Native Planning, Durable Memory
+### 1. Repository-local truth
 
-- Kit is a harness, not a single rigid workflow.
-- Host-agent planning is the primary design surface; Kit does not duplicate it.
-- Specifications are durable byproducts of accepted plans when material rationale exists.
-- Ad hoc work, recovery flows, and orchestration flows are part of the product surface, not side utilities.
-- The harness should help teams choose the right level of structure for the work.
-- Software is a current packaging default, not the conceptual boundary of the product.
+- Materialized Markdown is canonical and directly reviewable.
+- Resolved JSON is a reproducible machine projection, never a competing source
+  of truth.
+- Durable product rationale belongs in canonical repository documentation when
+  code and tests cannot preserve it.
 
-### 2. Repositories Own Durable Truth
+### 2. Coding-agent-first interfaces
 
-- Consequential decisions must be traceable to canonical repository documentation.
-- Feature rationale belongs in `SPEC.md`; invariants, reusable practices, and domain knowledge belong in their scope-appropriate canonical documents.
-- Code and tests may be the complete durable truth for code-sufficient work; do not create documentation solely for ceremony.
-- If reality diverges from durable repository memory, curate the memory to match what was actually built.
-- The exact generated Constitution starter is a valid bootstrap state; initial aspiration remains in native plans and feature specs until implementation demonstrates durable project-wide truth.
-- After validation, normal coding-agent work applies `docs/references/rules/constitution-curation.md`; periodic project refresh audits for missed, stale, or cross-feature rules.
+- Agent routing points to `kit contract resolve` and local artifacts.
+- Selection uses explicit feature, path, applicability, and workflow hints.
+- Workflows declare execution phases and gates but do not manage processes.
+- Human commands exist to initialize, inspect, install, and reconcile the
+  contract.
 
-### 3. Portable and Agent-Agnostic
+### 3. Provider neutrality
 
-- No vendor lock-in to any coding agent (Claude, Copilot, Codex, etc.).
-- Documents use only markdown and YAML — universally readable.
-- Repository instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) stay aligned with canonical docs and summarize the active workflow contract for supported tools.
-- `kit init` also creates shared local support files, including `.env`, `.envrc`, `.coderabbit.yaml`, `.github/pull_request_template.md`, and the optional `.github/workflows/auto-assign.yml` workflow, without overwriting custom local versions.
-- Agents can be swapped with zero document changes.
+- Catalog and project schemas do not encode one coding-agent vendor.
+- Rules and workflows use Markdown plus YAML front matter.
+- Routing updates are bounded and preserve provider-specific project content.
+- Registry source access is isolated behind a provider interface.
 
-### 4. Minimal Magic, Explicit State
+### 4. Determinism and explicit state
 
-- Prefer explicit over implicit behavior.
-- No hidden databases, lock files, or external state.
-- All state lives in the filesystem (markdown files + `.kit.yaml` + visible generated `.kit/` artifacts).
-- Markdown remains authoritative; `.kit/runs/`, `.kit/loops/`, and `.kit/state.json` are local generated evidence/state surfaces that can be regenerated or deleted.
-- Commands fail fast with actionable error messages.
+- Versions, digests, source revisions, paths, section hashes, and states are
+  visible in `.kit.yaml`.
+- Contract resolution performs no network calls, writes, Git operations, model
+  calls, or task-text inference.
+- Invalid or unresolved required artifacts block the contract with actionable
+  diagnostics.
 
-### 5. Opinionated Defaults, Configurable Escapes
+### 5. Fail-closed reconciliation
 
-- Sensible defaults work out of the box.
-- Configuration overrides via `.kit.yaml` for team customization.
-- CLI flags always override configuration.
-- Escape hatches exist but aren't encouraged.
+- Reconciliation is read-only by default.
+- The complete catalog and plan are validated before writes.
+- Local-only edits become `local-custom`.
+- Disjoint Markdown-section edits merge; same-section divergence conflicts.
+- Registry content replaces customization only through an exact targeted
+  acceptance.
+- Managed routing changes only inside marker-delimited sections.
 
-### 6. Tooling Should Disappear
+### 6. Narrow product boundary
 
-- Kit's job is done once implementation and repository memory agree.
-- Application implementation remains outside Kit's product scope.
-- Kit may run declared local verification commands or configured agent loops only when an explicit command contract says so.
-- The CLI becomes unnecessary once understanding is achieved.
-- Teams should reach clarity faster with fewer reworks.
-
-### 7. Density Over Prose
-
-- Documents prioritize brevity and precision.
-- One sentence where possible.
-- Bullet points over paragraphs.
-- Code snippets only when unavoidable.
-
----
+- Kit owns artifact distribution, provenance, resolution, and reconciliation.
+- Coding agents own planning, implementation, validation, and delivery through
+  repository-native tools.
+- `git-wt` is a separate worktree convenience and not part of the contract
+  runtime.
 
 ## CONSTRAINTS
 
-
-### Kit-Managed Baseline Rules
+### Kit-managed baseline rules
 
 <!-- BEGIN KIT-MANAGED BASELINE RULES -->
 - Treat `docs/CONSTITUTION.md` as the canonical project contract.
-- Keep `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` aligned with the repo-local docs tree.
-- Treat `docs/notes/<feature>` as optional source material, not canonical truth; promote durable decisions into `SPEC.md`, `docs/CONSTITUTION.md`, or durable references.
-- Use native agent planning for research, clarification, design, and implementation planning.
-- Before implementation, inspect code and repository memory; create or adopt `SPEC.md` when material rationale exists.
-- After validation, curate feature rationale, project invariants, reusable practices, and domain knowledge into their scope-appropriate canonical documents.
-- Allow a justified `not required` repository-memory decision when code and tests preserve the complete durable truth.
-- Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less.
-- Before delivery, audit the complete affected source/test scope; whole-project reconcile and scheduled maintenance audit the entire repository.
-- Exclude documentation files, all `docs/**`, all `.kit/**`, `.kit.yaml`, ignored files, vendored dependencies, and proven generated files.
-- Split oversized files by semantic responsibility while preserving stable public entry points and behavior; never use minification or arbitrary numbered chunks to claim compliance.
+- Run `kit contract resolve` before implementation and when scope changes.
+- Treat returned repository-local rulesets and workflows as authoritative.
+- Keep routing, registry provenance, and local artifacts synchronized through
+  `kit init` and `kit reconcile`.
+- Preserve intentional local customization and stop on unresolved conflicts.
+- Keep every version-control-eligible handwritten implementation and test file
+  at 300 physical lines or less.
+- Validate affected code and curate material repository rationale after
+  implementation.
 <!-- END KIT-MANAGED BASELINE RULES -->
-### Non-Negotiable Rules
 
-1. **Native-Plan Repository-Memory Workflow**
-   - Native plan → semantic memory decision → pre-implementation `SPEC.md` when required → implementation → validation → curated repository memory
-   - Before code, inspect relevant code and existing memory; capture purpose, context, requirements, and the accepted plan when material rationale exists
-   - During implementation, keep consequential decisions and discoveries current
-   - At completion, record validation, actual outcome, and repository-memory disposition with no pending placeholders
-   - A justified `not required` decision is valid when code and tests communicate the complete durable truth
-   - Legacy V1/V2 artifacts remain readable and valid but are never mechanically rewritten into V3
+### Registry invariants
 
-2. **Document Structure**
-   - All canonical markdown files use FULL CAPITALIZATION (e.g., `CONSTITUTION.md`, `SPEC.md`)
-   - Use snake_case for multi-word file names (e.g., `PROJECT_PROGRESS_SUMMARY.md`)
-   - Use kebab-case for directories (e.g., `0001-feat-name`)
-   - Feature directories use numeric prefix + slug format
+1. Catalog entries have a supported kind, unique kind/slug key, safe relative
+   source and target paths, positive version, digest, read policy, and valid
+   dependencies.
+2. Catalog dependency graphs are complete and acyclic.
+3. Fresh initialization installs every downstream-visible artifact.
+4. Schema-v2 is the only runtime project schema; v1 is only a reconcile input.
+5. Repeated initialization or reconciliation against unchanged state is
+   idempotent.
 
-3. **Section Requirements**
-   - Each document type has required sections that must be present
-   - Required V3 sections must exist; visible-content requirements are phase-aware
-   - Required sections in legacy staged artifacts must be populated when those artifacts are actively used
-   - Do not leave HTML TODO comments as the only content in a required section
-   - If a required section has no feature-specific detail, replace the placeholder comment with `not applicable`, `not required`, or `no additional information required`
-   - `CONSTITUTION.md`: PRINCIPLES, CONSTRAINTS, NON-GOALS, DEFINITIONS
-   - V3 `SPEC.md`: PURPOSE, CONTEXT, REQUIREMENTS, ACCEPTED PLAN, DECISIONS, DISCOVERIES, VALIDATION, OUTCOME, REPOSITORY MEMORY
-   - V2 compatibility `SPEC.md`: THESIS, CONTEXT, CLARIFICATIONS, REQUIREMENTS, ASSUMPTIONS, ACCEPTANCE CRITERIA, IMPLEMENTATION PLAN, TASK CHECKLIST, VALIDATION MAP, REFLECTION NOTES, DOCUMENTATION UPDATES, DELIVERY DECISION, EVIDENCE
-   - legacy `BRAINSTORM.md`: SUMMARY, USER THESIS, RELATIONSHIPS, CODEBASE FINDINGS, AFFECTED FILES, DEPENDENCIES, QUESTIONS, OPTIONS, RECOMMENDED STRATEGY, NEXT STEP
-   - legacy `SPEC.md`: SUMMARY, PROBLEM, GOALS, NON-GOALS, USERS, SKILLS, RELATIONSHIPS, DEPENDENCIES, REQUIREMENTS, ACCEPTANCE, EDGE-CASES, OPEN-QUESTIONS
-   - legacy `PLAN.md`: SUMMARY, APPROACH, COMPONENTS, DATA, INTERFACES, RISKS, TESTING
-   - legacy `TASKS.md`: PROGRESS TABLE, TASK LIST, TASK DETAILS, DEPENDENCIES, NOTES
-   - `RELATIONSHIPS` in `BRAINSTORM.md` and `SPEC.md` must be either `none` or explicit bullets using `builds on: <feature>`, `depends on: <feature>`, or `related to: <feature>`
-   - inline-code-wrapped relationship targets are valid if they normalize back to a canonical feature directory identifier
+### Implementation invariants
 
-4. **Single Feature Per Directory**
-   - Never mix features in one `docs/specs/<feature>/` directory
-   - If work spans features, update each feature's docs separately
-   - Feature directories are immutable once created
+1. `cmd/kit` is a thin entrypoint; human and machine CLI adapters live in
+   `pkg/agentcli`.
+2. Registry fetching, validation, provenance, merge, planning, and application
+   live in `internal/registry`.
+3. Local-only selection and resolved-contract projection live in
+   `internal/contract`.
+4. Handwritten source and test files do not exceed 300 physical lines.
+5. Errors include context and never silently continue after partial state.
+6. `cmd/git-wt` and `internal/worktree` remain independent of the Kit contract
+   runtime.
 
-5. **Accepted Plan Before Material Implementation**
-   - Use the host agent's native planning capability before implementation
-   - When material rationale exists, semantically capture the accepted plan in `SPEC.md` before code
-   - No code in specifications
-   - No technology choices unless accepted requirements or repo-grounded constraints require them
+### Public CLI allowlist
 
-6. **Traceability Without Bureaucracy**
-   - V3 requirements include observable acceptance but do not require identifiers, task checklists, or a 1:1 validation map
-   - Legacy staged tasks link to plan items using `[PLAN-XX]` syntax, and plan items link to spec items using `[SPEC-XX]` syntax
-   - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
-   - Validation evidence belongs in `SPEC.md` Evidence and Validation Map sections; legacy executable verification may still use task-level `VERIFY` fields where available
-   - Generated JSON state and run artifacts must point back to source documents instead of replacing them
-   - When preflight proves that implementation starts from a clean, current default branch with no issue, branch, or pull request covering the work, allocate the human-assigned issue and exact issue-number branch without asking for a lane choice; retain explicit choice when work is already in progress or the lane is ambiguous
-   - When the user explicitly continues unrelated or tangential scope on an existing pull request, the added scope has its own GitHub issue and issue-scoped commits, while the pull request body closes every fully resolved issue
+The `kit` command tree is limited to:
 
-7. **Execution Boundaries**
-   - Prompt-producing and inspection commands must not edit source files or perform delivery; target-aware repair prompts may conditionally fetch and add or attach only the exact writable worktree they already identify when that behavior is explicit in help and capabilities
-   - Local execution surfaces must be explicit in command help and `kit capabilities`
-   - Verification, replay, eval, and loop commands may run local commands or configured agent commands only within their documented command contracts
-   - Local run evidence under `.kit/runs/` and loop evidence under `.kit/loops/` is generated, inspectable, and non-authoritative
-   - Kit must not become a general-purpose task runner, CI replacement, daemon, or hidden supervisor
-   - `kit health` may refresh only Kit-managed project files and validate the project contract; Git, GitHub, semantic curation, and arbitrary product-code changes remain outside the command
-
-8. **External Review Tools**
-   - Do NOT run `coderabbit --prompt-only` unless the user explicitly asks for it or explicitly approves it first
-
-9. **Project-Oriented Git Worktrees**
-   - Work in the existing checkout when it already owns the requested lane
-   - Put separate lanes only beneath `~/worktrees/<owner>/<repository>/<lane>` and never inside a repository
-   - Use exact `GH-<number>` for durable issue lanes; reserve uppercase detached `PR-<number>` for temporary pull-request inspection and reuse the pull request head branch for writable repair
-   - Target-bearing PR and CI repair commands resolve the exact writable branch worktree from command context; they must not require manual navigation or select by recency, fuzzy matching, substring, or an interactive worktree list
-   - When the resolved repair worktree is dirty, ask whether its existing changes belong in the repair and carry the explicit include-or-exclude decision into the generated instructions without stashing, resetting, cleaning, or discarding work
-   - Preserve primary and linked checkout state; never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
-   - The explicit merged-lane sync may discard only an actual ignored repository-root `bin/` build-output directory reported by Git as the exact `!! bin/` porcelain record after same-repository merged-PR and exact-head proof; manual removal and all other dirty or ignored material remain protected
-   - Use native `git worktree` and ordinary filesystem semantics as the portable policy authority; optional manual wrappers must never be a rule or reconciliation dependency
-   - When a managed-file command changes version-control-eligible files in the protected root checkout, its follow-up guidance must carry the exact changed paths and their pre-command and expected result states, abort on destination path or index conflicts, transfer and explicitly stage created, updated, and removed results, verify that the destination and index contain exactly the captured command-owned change, and only then restore the source to its pre-command state without disturbing unrelated work
-   - Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists, omit both links for isolation, never copy environment contents, and preserve a destination `.envrc` already supplied by the repository or user
-   - Treat checkout, index, and `HEAD` as worktree-local while remembering that refs, remotes, objects, configuration, and stash state are shared across the clone
-   - Keep worktree tooling limited to native worktree and lane management; runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration remain outside its scope
-   - Resolve all in-scope implementation, validation, and delivery failures autonomously after diagnosis and continue until the requested goal is complete or a genuine external blocker remains
-   - A supported tool-path change does not require routine permission when repository, target, scope, intended effect, and human identity remain unchanged
-   - Honor explicit repo-local approval gates; outside those gates, ask permission only before large-scale deletion or deleting sensitive files; existing protected-branch, force-push, merge, review, identity, secret, and repository-setting prohibitions remain hard boundaries
-   - Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, include one consolidated target, action, impact, recovery, and validation outline in the task plan and obtain one confirmation for the complete batch; execute that batch and the rest of the task in one pass without re-prompting, consolidate additional required changes into one follow-up batch, and always obtain post-outline confirmation for deletion or removal even when the initial request already requested it
-   - Preserve user-owned dirty work; when branch, target, identity, or ownership remains ambiguous after read-only inspection, request only the smallest missing input instead of guessing or discarding changes
-
-### Code Quality Constraints
-
-1. **Go Best Practices**
-   - Single binary with subcommands (Cobra CLI)
-   - No global state beyond package-level constants
-   - Error handling must be explicit (`%w` for wrapped errors)
-   - Test coverage for critical paths
-
-2. **Package Structure**
-   - `cmd/kit/` — main entry point only
-   - `pkg/cli/` — command implementations
-   - `internal/` — private packages for config, documents, features, instruction contracts, prompts, rollups, and templates
-   - No circular dependencies
-
-3. **Error Messages**
-   - Must be actionable (suggest fixes)
-   - Include context (file paths, feature names)
-   - Fail fast — don't continue with partial state
-
-4. **Code File Size**
-   - Applies to version-control-eligible handwritten implementation/source and test files
-   - Keep every in-scope file at 300 physical lines or less
-   - Audit the complete affected scope before delivery and the entire repository during whole-project reconcile maintenance
-   - Excluded: documentation files, all `docs/**`, all `.kit/**`, `.kit.yaml`, ignored files, vendored dependencies, and proven generated files
-   - Split by semantic responsibility while preserving behavior and public entry points; minification and arbitrary numbered chunks do not establish compliance
-
----
-
-## CHANGE CLASSIFICATION
-
-All work falls into one of two tracks. Classify before acting.
-
-### Spec-Driven (Formal)
-
-Use when ANY of these apply:
-
-- Contains material feature rationale, product decisions, architecture, or cross-component contracts that future agents must understand
-- New feature or capability
-- Substantial architectural or behavioral change
-- Work that has existing spec docs in `docs/specs/<feature>/`
-- Change affects multiple components or public interfaces
-
-**Workflow**: native agent planning → create/adopt `SPEC.md` before code when rationale is material → implement and validate → curate repository memory
-
-**Clarification protocol for native planning**:
-
-- Resolve repository-discoverable facts before asking the user
-- Ask concise numbered questions only for material non-discoverable choices
-- Include a recommended default and explain how the answer changes scope, behavior, risk, validation, or delivery
-- Outside explicit clarification, continue safe in-scope work without routine approval pauses
-- Record accepted durable answers in `SPEC.md` when the memory gate requires a spec; block rather than guess when a required choice remains
-
-### Ad Hoc (Lightweight)
-
-Use when ALL of these apply:
-
-- Does not contain material rationale beyond what code and tests preserve
-- Bug fix, security review, refactor, dependency update, config change, or small refinement
-- Scope is contained and well-understood without formal specification
-
-**Workflow**: Understand → implement → verify
-
-**Documentation**: Update practical canonical docs when behavior changes. Do not create a feature `SPEC.md` solely to satisfy process; report the justified `not required` decision.
-
-### Ad Hoc with Existing Specs
-
-If an ad hoc change touches code covered by existing spec docs in `docs/specs/<feature>/`:
-
-- **Default to updating** the spec docs if the change alters behavior, requirements, or approach
-- **Skip spec updates** only if the change is purely mechanical (formatting, typo fix, dependency bump)
-
-### Classification Examples
-
-| Change                              | Track                 | Why                           |
-| ----------------------------------- | --------------------- | ----------------------------- |
-| New CLI command                     | Spec-driven           | New capability                |
-| Fix nil pointer in existing handler | Ad hoc                | Bug fix, contained scope      |
-| Security review of auth flow        | Ad hoc                | Review, no new feature        |
-| Refactor package structure          | Ad hoc or Spec-driven | Depends on scope              |
-| Add streaming support to export     | Spec-driven           | Substantial behavioral change |
-| Update dependency version           | Ad hoc                | Mechanical change             |
-| Fix typo in error message           | Ad hoc                | Trivial, mechanical           |
-
----
+- `init`
+- `reconcile`
+- `contract resolve`
+- `registry add|list|status|view`
+- `rules add|list|view`
 
 ## NON-GOALS
 
-Kit explicitly does NOT:
+Kit does not:
 
-### Process & Execution
-
-- ❌ Run undeclared arbitrary commands or act as a general-purpose task runner
-- ❌ Manage agents directly or maintain hidden prompt registries outside YAML files
-- ❌ Merge branches or manage PRs
-- ❌ Replace CI/CD systems
-
-### Data & State
-
-- ❌ Maintain databases or external state
-- ❌ Use lock files or semaphores
-- ❌ Store credentials or secrets
-- ❌ Track metrics or analytics
-
-### Content & Format
-
-- ❌ Invent new document formats
-- ❌ Generate prose or content (only templates)
-- ❌ Define understanding rubrics or scoring models
-- ❌ Duplicate specifications in agent files
-
-### Scope
-
-- ❌ Manage multi-repository projects
-- ❌ Handle deployment or infrastructure
-- ❌ Provide a web interface or GUI
-- ❌ Support non-markdown documentation
-
----
+- launch, dispatch, supervise, evaluate, or retry coding agents;
+- infer applicability from natural-language task text;
+- generate prompts or manage feature/spec lifecycles;
+- run CI, review, pull-request, cloud, or deployment workflows;
+- maintain hidden databases, remote state, credentials, or telemetry;
+- overwrite project customization by default;
+- retain broad Kit 1.x CLI compatibility.
 
 ## DEFINITIONS
 
-### Native-Plan Repository-Memory Workflow
-
-The default feature workflow that pairs native planning with durable repository rationale:
-
-1. **Constitution** — Project-wide constraints, principles, long-term vision. Kept updated with priors. Single per repository.
-
-2. **Specification (SPEC.md)** — Living feature memory when required. Captures purpose, context, requirements, accepted plan, decisions, discoveries, validation, outcome, and repository-memory curation.
-
-3. **Feature Notes** — Optional source material under `docs/notes/<feature>`. Notes may hold raw context, screenshots, research, Slack/customer excerpts, draft responses, and local-only private context, but they do not replace `SPEC.md`, `docs/CONSTITUTION.md`, or durable references.
-
-4. **Implementation** — Code execution after the native plan is accepted and, when required, captured in the spec. Material decisions and discoveries stay current.
-
-5. **Validation and Curation** — Verification of observable acceptance followed by curation of the actual outcome and broader repository memory.
-
-Legacy staged artifacts (`BRAINSTORM.md`, `PLAN.md`, `TASKS.md`) may exist in upgraded projects and remain readable historical context. They are binding only when a legacy staged command is explicitly used.
-
-### Feature
-
-A self-contained unit of work with its own directory under `docs/specs/`. Identified by:
-
-- **Numeric prefix**: Reserved by Kit's feature allocator, using repo-shared Git common-dir state when available and falling back to local `docs/specs/` inspection (e.g., `0001`)
-- **Slug**: Lowercase kebab-case name, max 5 words (e.g., `init-project`)
-- **Directory**: Combined format (e.g., `0001-init-project`)
-
-Feature notes may exist separately under `docs/notes/<feature>` before, during, or after feature work. The standard scaffold is:
-
-- `README.md` — note directory contract and feature pointer.
-- `inbox/` — raw captured inputs, conversation excerpts, and transient context.
-- `references/` — source material, links, screenshots, research, and external references.
-- `responses/` — draft or sent responses tied to the feature.
-- `private/` — local-only ignored context; only `README.md` and `.gitignore` are tracked.
-
-Agents should load note files only when they materially affect the current decision, ignore `.gitkeep` placeholders, and promote durable conclusions into canonical project artifacts.
-
-### Phase
-
-The current lifecycle state of a feature. Versioned living specs record their workflow phase in front matter.
-
-- `brainstorm` — Legacy staged research exists without `SPEC.md`
-- `spec` — A legacy unversioned `SPEC.md` exists; V2/V3 specs use explicit living-workflow phases
-- `plan` — Legacy staged `PLAN.md` exists
-- `tasks` — Legacy staged `TASKS.md` exists
-- `implement` — Implementation work is in progress beyond Kit's prompt-generation scope
-- `reflect` — Implementation work is ready for validation, reflection, and documentation sync
-- `complete` — Marked complete after reflection and lifecycle completion
-- `removed` — Removed from `docs/specs/` but retained as history through `.kit.yaml`
-
-### Understanding Percentage (V2 Compatibility)
-
-A single integer (0–100) reported by the coding agent indicating:
-
-- Completeness of requirements understanding
-- Clarity of implementation approach
-- Readiness to proceed to next phase
-- Recorded with clarification state when readiness is evaluated; it need not be repeated when no material question remains
-
-Kit does not define a scoring rubric — the agent determines the value.
-
-### Repository Instruction File
-
-A markdown file (e.g., `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) that:
-
-- Links to canonical documents
-- Defines the active workflow contract for supported tools
-- Summarizes repository standards and execution rules
-- Must stay aligned with canonical project documents
-
-### Project Root
-
-The directory containing `.kit.yaml`. All Kit commands traverse upward to find this file. Enables running commands from any subdirectory.
-
-### Rollup
-
-The process of scanning all features and generating `PROJECT_PROGRESS_SUMMARY.md`:
-
-- High-level briefing document
-- Sufficient to onboard or fork the project
-- Primary context input for any coding agent
-
-### Project Refresh
-
-The periodic semantic audit that complements continuous post-validation Constitution curation:
-
-- Normal implementation work applies `docs/references/rules/constitution-curation.md` before final handoff.
-- Invoke `kit project refresh` when the configured cadence is due or a broader project-memory review is needed.
-- Update `docs/CONSTITUTION.md` only when durable project-wide rules, vocabulary, constraints, or conventions changed.
-- Treat the cadence as a review trigger, not permission for a blind rewrite.
-- Use `kit reconcile --all` for structural contract drift instead of duplicating reconciliation.
-- Keep the audit advisory and docs-only; it does not rerun `kit init` or block lifecycle commands.
-
-### Reconcile Refresh
-
-The structural refresh flow for updating Kit-managed project files to the current Kit defaults:
-
-- Invoked with `kit reconcile`, then choose whether to include files, force changes, and output the coding-agent prompt
-- Creates missing Kit-managed scaffold files, instruction docs, support docs, and known registry rulesets
-- Creates or refreshes the Kit-managed `.github/workflows/auto-assign.yml` workflow from project-local `github.default_assignees`, falling back to global `~/.config/kit/.kit.yaml`, and rendering a non-blocking no-op when no assignees are configured
-- Merges or appends missing Kit-managed documentation sections by default instead of overwriting project-specific content
-- Adopts existing registry rulesets into `.kit.yaml` registry state and syncs safe upstream ruleset updates from the Kit GitHub `main` branch
-- Preserves local ruleset `status` while comparing registry content, because activation and silencing are project-local choices
-- Skips and reports local-custom or conflicted rulesets instead of writing conflict markers or silently overwriting project guidance
-- Atomically migrates exact generated V2 instruction artifacts to V3 native-plan repository-memory guidance
-- Preserves customized V2 instructions and reports reviewed reconciliation or explicit `kit scaffold agents --version 3 --force` guidance
-- Uses `kit reconcile --include-files --dry-run --diff` to preview managed-file changes without writing them
-- Uses `kit reconcile --include-files --force` for generated documentation overwrites and for accepting latest registry ruleset content while preserving local ruleset status
-- Uses `kit reconcile --include-files --file=<path> --force` for targeted overwrites such as `.envrc` or `docs/references/rules/<slug>.md`
-
-### Map
-
-The read-only structural view rendered by `kit map`:
-
-- Opens an interactive feature selector by default and shows the full project view with `kit map --all`
-- Shows global docs, feature docs, lifecycle state, and explicit feature-to-feature relationships
-- Derives its state from canonical markdown docs and the filesystem
-- Normalizes harmless inline-code formatting around relationship targets and warns on malformed lines instead of failing the whole map
-- May color terminal output for scanability, while keeping non-TTY output plain
-- Does not create another persisted graph document in the repository
-
----
-
-## ARCHITECTURAL PATTERNS
-
-### Package Organization
-
-```bash
-kit/
-├── cmd/kit/main.go          # thin entry point
-├── cmd/git-wt/main.go       # optional native-Git worktree convenience entry point
-├── pkg/cli/                 # public CLI commands, prompt builders, and human output
-│   ├── root*.go             # root command, banner, help, profiles
-│   ├── brainstorm*.go       # brainstorm, backlog capture, notes, prompts
-│   ├── spec*.go             # specification workflow and interactive inputs
-│   ├── plan*.go             # plan workflow and prompt generation
-│   ├── tasks*.go            # task workflow and prompt generation
-│   ├── implement*.go        # readiness-gated implementation prompts
-│   ├── reflect.go           # reflection prompt and refresh advisory
-│   ├── status*.go           # active and project-wide lifecycle views
-│   ├── map.go               # document map and relationship rendering
-│   ├── reconcile*.go        # structural doc drift audit and prompt
-│   ├── loop*.go             # workflow, review, and prompt loop surfaces
-│   ├── pr*.go               # PR review-feedback command aliases
-│   ├── prompt*.go           # prompt library, profiles, IR helpers, output wrappers
-│   ├── scaffold.go          # empty workflow document structure scaffolding
-│   ├── scaffold_agents*.go  # repository instruction scaffolding under kit scaffold agents
-│   ├── complete.go          # completion lifecycle command
-│   ├── pause.go             # pause lifecycle command
-│   ├── remove.go            # remove lifecycle command
-│   ├── resume.go            # canonical resume routing
-│   ├── dispatch*.go         # task clustering and subagent dispatch prompt
-│   ├── handoff*.go          # handoff prompt and doc-sync guidance
-│   ├── summarize.go         # summarization prompt
-│   ├── skill*.go            # skill mining prompts
-│   ├── upgrade*.go          # self-upgrade support
-│   └── version.go           # version command
-├── internal/
-│   ├── config/              # .kit.yaml loading, project root discovery, prompt config
-│   ├── document/            # Markdown parsing, metadata, relationships, validation
-│   ├── feature/             # feature identity, allocator, lifecycle, map, status
-│   ├── eval/                # deterministic evaluation fixtures and runners
-│   ├── improve/             # improvement-suite execution and reporting
-│   ├── instructions/        # repository scaffold and versioned agent instruction registries
-│   ├── promptdoc/           # typed prompt document rendering
-│   ├── promptlib/           # prompt library merge, normalize, resolve, suggest
-│   ├── rollup/              # PROJECT_PROGRESS_SUMMARY.md generation
-│   ├── runstore/            # local verification run evidence and trace lookup
-│   ├── state/               # generated project-state pointers
-│   ├── templates/            # embedded project and instruction templates
-│   ├── verify/               # project and feature validation orchestration
-│   └── worktree/             # optional Git worktree command implementation
-└── docs/
-    ├── CONSTITUTION.md      # this file
-    ├── PROJECT_PROGRESS_SUMMARY.md
-    ├── agents/              # repo-local agent routing docs
-    ├── future/              # non-binding future architecture notes
-    ├── notes/               # optional feature source material; private contents ignored
-    ├── references/          # durable repo references and pointer-loaded rulesets
-    └── specs/               # feature directories and core spec
-```
-
-### Command Pattern
-
-Most stateful workflow commands follow the same structure:
-
-1. Find project root via `config.FindProjectRoot()` when project context is required
-2. Load configuration via `config.Load(projectRoot)`
-3. Resolve feature or project scope via feature helpers when needed
-4. Perform the action: scaffold, validate, render, prompt, or mutate lifecycle docs
-5. Update rollup only when feature or project summary state can change
-6. Output next steps, validation results, or agent prompts
-
-Prompt-only and inspection commands may skip feature resolution, document writes, or rollup updates by design.
-
-### Error Handling Pattern
-
-```go
-// Wrap errors with context
-if err != nil {
-    return fmt.Errorf("failed to create %s: %w", path, err)
-}
-
-// Suggest fixes in error messages
-return fmt.Errorf("SPEC.md not found. Run 'kit spec %s' first or use --force", slug)
-
-// Use warnings for non-fatal issues
-fmt.Printf("  ⚠ Could not update PROJECT_PROGRESS_SUMMARY.md: %v\n", err)
-```
-
-### Document Validation Pattern
-
-```go
-doc, err := document.ParseFile(path, document.TypeSpec)
-if err != nil {
-    return err
-}
-for _, e := range doc.Validate() {
-    errors = append(errors, e.Error())
-}
-if doc.HasUnresolvedPlaceholders() {
-    warnings = append(warnings, "has unresolved TODO placeholders")
-}
-```
-
----
-
-## CODE STYLE CONVENTIONS
-
-### Naming
-
-- **Packages**: lowercase, single word (`config`, `document`, `feature`)
-- **Files**: lowercase, descriptive (`config.go`, `document.go`)
-- **Types**: PascalCase (`Config`, `Feature`, `Document`)
-- **Functions**: PascalCase for exported, camelCase for internal
-- **Variables**: camelCase (`projectRoot`, `specsDir`)
-- **Constants**: PascalCase for exported, camelCase for internal
-
-### Go Idioms
-
-- Use `%w` for error wrapping
-- Return errors, don't panic
-- Prefer early returns over deep nesting
-- Use `filepath.Join()` for paths
-- Use `strings.Builder` for string concatenation
-
-### CLI Conventions
-
-- Use emoji sparingly for visual feedback (🎒 📁 ✓ ⚠ ❌ ✅ 📋 📝 🔎 📊 🔍)
-- Provide copy-pasteable prompts for coding agents
-- Show next steps after every command
-- Support `--help` on all commands
-
----
-
-## DEPENDENCIES
-
-| Dependency                   | Purpose                             | Version |
-| ---------------------------- | ----------------------------------- | ------- |
-| `github.com/chzyer/readline` | Interactive terminal input support  | v1.5.1  |
-| `github.com/spf13/cobra`     | CLI framework                       | v1.10.2 |
-| `golang.org/x/term`          | Terminal capability and TTY helpers | v0.41.0 |
-| `gopkg.in/yaml.v3`           | YAML parsing for `.kit.yaml`        | v3.0.1  |
-
-### Why These Dependencies?
-
-- **Cobra**: Industry standard for Go CLIs. Provides subcommands, flags, help generation.
-- **YAML v3**: Required for `.kit.yaml` configuration. v3 has better error messages.
-- **readline / x/term**: Support interactive terminal flows, editor gates, and terminal-aware output.
-
-### Dependency Constraints
-
-Kit intentionally keeps direct dependencies small:
-
-- No database drivers
-- No service-specific SDKs
-- No testing frameworks beyond stdlib
-- Transitive dependencies are accepted only through direct dependencies that serve current CLI needs
-
----
-
-## CONFIGURATION REFERENCE
-
-### `.kit.yaml` Full Schema
-
-The same top-level schema is used for project-local `.kit.yaml` and global
-`~/.config/kit/.kit.yaml`. `kit init` populates both locations, while command
-state such as `feature_state` remains project-local in practice.
-
-```yaml
-# Understanding threshold percentage (0-100)
-goal_percentage: 95
-
-# Location of feature specs relative to project root
-specs_dir: docs/specs
-# Location of reusable agent skills relative to project root
-skills_dir: .agents/skills
-
-# Location of constitution file
-constitution_path: docs/CONSTITUTION.md
-
-# If true, kit legacy plan/tasks create missing prerequisites
-allow_out_of_order: false
-# Autonomous workflow loop policy and local agent command
-loop:
-  min_confidence: 95
-  max_iterations: 20
-  agent:
-    command: codex
-    args:
-      - --ask-for-approval
-      - never
-      - exec
-      - --model
-      - gpt-5.6
-      - --sandbox
-      - workspace-write
-      - --ignore-user-config
-      - --color
-      - never
-      - "-"
-# Repository instruction scaffold model
-instruction_scaffold_version: 3
-
-# Agent pointer files to scaffold on kit init
-agents:
-  - AGENTS.md
-  - CLAUDE.md
-  - .github/copilot-instructions.md
-
-# GitHub integration defaults
-github:
-  repository: owner/repo
-  default_branch: main
-  # Project-local assignees take precedence over global config.
-  # Omit or set null to fall back to ~/.config/kit/.kit.yaml.
-  # Set [] to make the generated workflow no-op.
-  default_assignees:
-    - github-login
-# Feature lifecycle state
-feature_state:
-  0001-feat-name:
-    paused: false
-removed_features:
-  - number: 1
-    slug: feat-name
-    dir_name: 0001-feat-name
-    created_at: "2026-01-01"
-    removed_at: "2026-01-02"
-
-# Feature directory naming
-feature_naming:
-  numeric_width: 4 # Pads to 0001, 0002, etc.
-  separator: '-' # Between number and slug
-
-# Local prompt library entries
-prompts:
-  coding-agent:
-    short:
-      content: |
-        Clarify the task, inspect the codebase, then propose the next change.
-      description: Short coding-agent planning prompt
-```
-
-Prompt library rules:
-
-- Project-local `.kit.yaml` entries have highest precedence.
-- Global prompt entries live in `~/.config/kit/.kit.yaml` and override built-ins when no local prompt exists.
-- `kit init` creates or updates the global config with missing default fields without replacing existing prompt entries.
-- Built-in prompts have lowest precedence.
-- Prompt identities normalize to lowercase kebab-case.
-- Prompt entries require `content` and may include `description`.
-- Unknown prompt metadata must not break reads.
-- v0 does not support `--source`, `--no-copy`, auto-paste, clipboard restore, stdin setters, or file setters.
-
----
-
-## LONG-TERM VISION
-
-### Kit 1.0 (Current)
-
-- ✅ Document-centered workflow
-- ✅ Feature lifecycle management
-- ✅ Front-matter-first metadata with legacy body fallback
-- ✅ Prompt library with built-in, global, and project-local prompt precedence
-- ✅ Agent portability via versioned pointer files and repo-local routing docs
-- ✅ Validation, reconciliation, mapping, and rollup generation
-- ✅ Context resume, handoff, summarization, review, and dispatch prompts
-- ✅ Soft project refresh advisory for mature repositories
-
-### Kit 1.x (Near-term)
-
-- [ ] Template customization via `.kit/templates/`
-- [ ] Plugin system for custom validators
-- [ ] Multi-language support for agent prompts
-- [ ] Integration with common editors (VS Code, Neovim)
-- [ ] Formalize selected future architecture notes from `docs/future/` into normal feature specs
-
-### Kit 2.0 (Future)
-
-- [ ] Team collaboration features
-- [ ] Specification diffing and versioning
-- [ ] AI-assisted spec completion (opt-in)
-- [ ] Metrics and insights (local only, no telemetry)
-
-### V1 Next-Generation Direction
-
-`docs/future/V1_NEXT_GEN.md` is non-binding until converted into normal feature specs.
-It records a possible evolution from static prompt generation toward a local intent and alignment runtime:
-
-- compact intent contracts for current work sessions
-- provider-neutral event streams for observed agent activity
-- deterministic policy checks before model-backed supervision
-- narrow interventions such as context injection, nudges, pauses, or blocks
-- host adapters for coding-agent CLIs, desktop agents, MCP-capable clients, Warp, and PTY fallback
-- visible local runtime files that remain inspectable and removable
-
-Current Kit workflows remain document-first and prompt-centered until a formal feature spec changes the shipped product contract.
-
-### Guiding Principle
-
-Kit will always prioritize:
-
-1. Documents over tools
-2. Simplicity over features
-3. Portability over convenience
-4. Explicit over magic
-
-The CLI should become unnecessary once understanding is achieved.
-
----
-
-## SUCCESS CRITERIA
-
-Kit is successful if:
-
-1. **Documents remain readable without Kit** — Any markdown viewer works
-2. **Agents can be swapped with zero document changes** — No lock-in
-3. **Teams reach clarity faster with fewer reworks** — Measurable improvement
-4. **The CLI becomes unnecessary once understanding is achieved** — Tool disappears
-
----
-
-## MAINTENANCE
-
-This constitution should be updated when:
-
-- Core principles change (rare)
-- New patterns emerge from usage
-- Constraints prove too restrictive or too loose
-- Definitions need clarification
-
-Last reviewed: 2026-05-17
+- **Artifact**: A typed catalog entry and its Markdown content.
+- **Ruleset**: Declarative constraints and verification for applicable work.
+- **Workflow**: Declarative phases, gates, dependencies, and completion
+  expectations for a coding agent.
+- **Resolved contract**: Versioned JSON selecting ordered local artifacts and
+  explaining applicability, provenance, state, diagnostics, and next actions.
+- **Managed**: Local content matches the tracked installed state.
+- **Local-custom**: Valid repository-owned content differs intentionally.
+- **Conflict**: Local and registry edits diverge in the same Markdown section.
+- **Routing section**: Marker-bounded provider instruction text owned by Kit.

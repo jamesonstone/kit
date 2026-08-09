@@ -29,7 +29,7 @@ read_policy_default: must
 
 - An agent creates, edits, reviews, validates, or delivers handwritten
   implementation/source or test files.
-- `kit reconcile --all` or scheduled Kit maintenance audits a whole project.
+- A requested whole-project or scheduled maintenance audit covers the project.
 - A project adopts or refreshes Kit-managed instructions.
 
 Load this rule before editing implementation/source or test files. For normal
@@ -86,18 +86,18 @@ version-control-eligible repository scope.
   removed useful whitespace, long generated expressions, or moving code into
   documentation or configuration.
 
-### Reconcile And Scheduled Maintenance
+### Whole-Project And Scheduled Maintenance
 
-- `kit reconcile` identifies exact violations and produces coding-agent
-  guidance; it does not rewrite product source files itself.
-- A reconcile repair may edit only listed oversized source/test files, directly
+- A whole-project audit identifies exact violations; Kit itself does not
+  rewrite product source files.
+- A maintenance repair may edit only listed oversized source/test files, directly
   required tests, and directly required canonical documentation.
 - Scheduled Kit maintenance may apply a responsibility-preserving split only
   when the current whole-project reconcile audit identifies the file.
 - A scheduled split must not change product behavior, dependencies, public
   interfaces, runtime configuration, deployment state, or production data.
-- `kit health` remains limited to Kit-managed files and project validation; it
-  does not mutate product source.
+- Contract reconciliation remains limited to managed contract files; it does
+  not mutate product source.
 
 ### Validation Requirements
 

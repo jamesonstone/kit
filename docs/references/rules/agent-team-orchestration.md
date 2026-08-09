@@ -28,8 +28,8 @@ or GitHub delivery gates.
 - A coding agent plans implementation, validation, review, or repair work.
 - Work may split into backend, frontend, CLI, tests, docs, data, security,
   compatibility, validation, or repo-research lanes.
-- `kit dispatch`, `kit pr fix`, a prompt-library dispatch prompt, CI dispatch,
-  or a subagent-enabled loop review is used.
+- The coding-agent runtime supports delegated research, implementation, or
+  read-only verification lanes.
 - A v2 `SPEC.md` workflow needs an Agent Team Plan.
 
 Use one supervisor lane only, and record the reason, when the work is trivial,

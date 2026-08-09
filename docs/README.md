@@ -1,47 +1,38 @@
 # Kit Documentation
 
-Use this directory as the durable documentation map for Kit. The root
-[README](../README.md) is intentionally short and routes here for detail.
+## Product
 
-## Guides
+- [Overview](overview.md) — coding-agent-first architecture and boundaries.
+- [Workflows](workflows.md) — initialize, resolve, implement, and reconcile.
+- [Commands](commands.md) — exact major-release CLI and exit behavior.
+- [Constitution](CONSTITUTION.md) — durable project invariants.
 
-| Guide | Purpose |
-| --- | --- |
-| 🧭 [Overview](overview.md) | What Kit is, where it applies, and why the harness is broader than software. |
-| ⚙️ [Commands](commands.md) | Installation, command groups, prompt behavior, prompt libraries, and scaffold refresh. |
-| 🔁 [Workflows](workflows.md) | V2 single-`SPEC.md` workflow, legacy v1 foundations, loops, usage examples, and project structure. |
+## Major release
 
-## Project Contract
+- [Migration guide](migrations/coding-agent-first-major.md) — schema-v1 preview,
+  apply, customization, and conflict handling.
+- [Kit 2.0 release notes](releases/coding-agent-first-major.md) — protected,
+  added, and removed surfaces.
+- [Accepted architecture](specs/0058-coding-agent-first/SPEC.md) — rationale,
+  decisions, validation, and outcome.
 
-| Document | Purpose |
-| --- | --- |
-| 🧱 [CONSTITUTION.md](CONSTITUTION.md) | Project invariants, workflow definitions, and completion rules. |
-| 📈 [PROJECT_PROGRESS_SUMMARY.md](PROJECT_PROGRESS_SUMMARY.md) | Current feature index and progress summary. |
+## Agent contract
 
-## Agent Runtime Docs
+- [Agent routing](agents/README.md)
+- [Agent workflow](agents/WORKFLOWS.md)
+- [Tool boundaries](agents/TOOLING.md)
+- [Context loading](agents/RLM.md)
+- [Guardrails](agents/GUARDRAILS.md)
+- [Registry catalog](../registry/catalog.yaml)
+- [Versioned schemas](../schemas)
+- [Rules and workflows](references/README.md)
 
-| Document | Purpose |
-| --- | --- |
-| 🤖 [agents/README.md](agents/README.md) | Agent routing table and loading rules. |
-| 🛡️ [agents/GUARDRAILS.md](agents/GUARDRAILS.md) | Completion, safety, validation, and GitHub delivery hard gates. |
-| 🔁 [agents/WORKFLOWS.md](agents/WORKFLOWS.md) | Spec-driven versus ad hoc flow semantics. |
-| 🧠 [agents/RLM.md](agents/RLM.md) | Just-in-time context loading and progressive disclosure. |
-| 🧰 [agents/TOOLING.md](agents/TOOLING.md) | Command capability discovery, dispatch, and tool routing. |
-| 🌳 [references/worktrees.md](references/worktrees.md) | Safe worktree mental model, hierarchy, naming, commands, and lifecycle. |
+## Project references
 
-## References
+- [Testing](references/testing.md)
+- [Worktrees and `git-wt`](references/worktrees.md)
+- [Tooling](references/tooling.md)
+- [External systems](references/external-systems.md)
 
-| Document | Purpose |
-| --- | --- |
-| 📌 [references/README.md](references/README.md) | Durable reference index. |
-| 🧪 [references/testing.md](references/testing.md) | Testing guidance. |
-| 🛠️ [references/tooling.md](references/tooling.md) | Tooling notes. |
-| 🌐 [references/external-systems.md](references/external-systems.md) | External system references. |
-| 📜 [references/rules/](references/rules/) | Repo-local rulesets for agents and Kit-managed workflows. |
-
-## Specs And Notes
-
-- `docs/specs/<feature>/SPEC.md` is the versioned durable feature workflow artifact; V3 is current and V1/V2 remain readable compatibility formats.
-- Legacy `BRAINSTORM.md`, `PLAN.md`, and `TASKS.md` files may exist under feature directories as historical staged artifacts.
-- `docs/notes/<feature>/` stores optional source material, screenshots, references, draft responses, design inputs, and gitignored private conversation context.
-- `docs/references/rules/feature-notes.md` defines how agents load, reference, promote, or ignore feature notes.
+Historical feature specifications remain under `docs/specs/` and are not
+runtime compatibility documentation.

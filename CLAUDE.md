@@ -3,6 +3,7 @@
 ## Purpose
 
 - This file is a routing table, not the full manual
+- Run `kit contract resolve --json` before implementation and when scope changes
 - Start at `docs/agents/README.md` and load only the guidance needed for the current decision
 - Use native agent planning for research, clarification, design, and implementation planning
 - Treat repo-local markdown under `docs/` as persistent repository memory
@@ -27,11 +28,11 @@
 
 ## Runtime Routing
 
-- `docs/agents/README.md` — classify the work and choose the next document
-- `docs/agents/WORKFLOWS.md` — native planning, implementation, and repository-memory lifecycle
+- `docs/agents/README.md` — resolve and interpret the local agent contract
+- `docs/agents/WORKFLOWS.md` — implementation delivery and registry maintenance
 - `docs/agents/GUARDRAILS.md` — completion, safety, and hard rules
 - `docs/agents/RLM.md` — just-in-time context loading
-- `docs/agents/TOOLING.md` — skills, post-plan dispatch, and secondary inputs
+- `docs/agents/TOOLING.md` — Kit and native-agent ownership boundaries
 
 ## Testing And Validation Gate
 
@@ -42,7 +43,7 @@
 
 - Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`
 - Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less
-- Audit the complete affected source/test scope before delivery; whole-project reconcile and scheduled maintenance audit the entire repository
+- Audit the complete affected source/test scope before delivery; requested whole-project and scheduled maintenance audits cover the entire repository
 
 ## Application Architecture Gate
 
@@ -67,11 +68,6 @@
 - If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.
 - Treat a material change to target identity, environment, region or cluster, resource set, action type, impact, or recovery as a follow-up batch; compatible tools, commands, and retries inside the approved boundary do not require another prompt.
 
-## AWS Context Hard Gate
-
-- If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation
-- Use only the verified configured profile; stop on missing credentials, incomplete configuration, or identity mismatch
-
 ## Knowledge Map
 
 - `docs/specs/<feature>/SPEC.md` — material feature rationale and living implementation history
@@ -85,3 +81,12 @@
 - Keep CLAUDE short and stable
 - Put durable workflow guidance in `docs/agents/*` instead of expanding always-loaded files
 - Do not ingest or depend on agent transcripts as repository memory
+
+<!-- BEGIN KIT AGENT CONTRACT -->
+## Kit Agent Contract
+
+- Run `kit contract resolve --json` before implementation and whenever task scope materially changes.
+- Treat repository-local rulesets and workflows returned by the resolver as the authoritative contract.
+- The resolver is local-only and read-only; use `kit registry status` for remote freshness and `kit reconcile` to preview drift.
+- Installed contract: 14 ruleset(s), 2 workflow(s).
+<!-- END KIT AGENT CONTRACT -->

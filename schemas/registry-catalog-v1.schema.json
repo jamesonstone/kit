@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jamesonstone/kit/schemas/registry-catalog-v1.schema.json",
+  "title": "Kit Registry Catalog v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "artifacts"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact" }
+    }
+  },
+  "$defs": {
+    "artifactKey": {
+      "type": "string",
+      "pattern": "^(ruleset|workflow)/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "^(?:/|\\.\\.(?:/|$))" }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind", "slug", "description", "visibility", "source_path",
+        "target_path", "version", "digest", "read_policy"
+      ],
+      "properties": {
+        "kind": { "enum": ["ruleset", "workflow"] },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "description": { "type": "string", "minLength": 1 },
+        "visibility": { "enum": ["downstream", "registry"] },
+        "source_path": { "$ref": "#/$defs/relativePath" },
+        "target_path": { "$ref": "#/$defs/relativePath" },
+        "version": { "type": "integer", "minimum": 1 },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "read_policy": { "enum": ["must", "conditional"] },
+        "applies_to": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "paths": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/relativePath" },
+          "uniqueItems": true
+        },
+        "dependencies": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/artifactKey" },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

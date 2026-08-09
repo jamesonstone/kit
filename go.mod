@@ -1,9 +1,8 @@
 module github.com/jamesonstone/kit
 
-go 1.25.5
+go 1.25.12
 
 require (
-	github.com/chzyer/readline v1.5.1
 	github.com/mattn/go-runewidth v0.0.27
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/term v0.41.0

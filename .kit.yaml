@@ -1,182 +1,569 @@
-schema_version: 1
-goal_percentage: 95
-specs_dir: docs/specs
-skills_dir: .agents/skills
-constitution_path: docs/CONSTITUTION.md
-allow_out_of_order: false
-loop:
-    min_confidence: 95
-    max_iterations: 20
-    agent:
-        command: codex
-        args:
-            - --ask-for-approval
-            - never
-            - exec
-            - --model
-            - gpt-5.6
-            - --sandbox
-            - workspace-write
-            - --ignore-user-config
-            - --color
-            - never
-            - '-'
-agents:
-    - AGENTS.md
-    - CLAUDE.md
-    - .github/copilot-instructions.md
-instruction_scaffold_version: 3
-feature_naming:
-    numeric_width: 4
-    separator: '-'
-removed_features:
-    - number: 36
-      slug: kit-dream
-      dir_name: 0036-kit-dream
-      created_at: "2026-06-21T19:24:47Z"
-      removed_at: "2026-06-21T19:25:34Z"
+schema_version: 2
 registry:
     schema_version: 1
     source:
-        repo: jamesonstone/kit
         branch: main
+        path: .
+        catalog_path: registry/catalog.yaml
+        revision: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
     artifacts:
         - kind: ruleset
           slug: agent-team-orchestration
+          description: Controls accountable supervisor, specialist subagent lanes, concurrency, and read-only verification.
           path: docs/references/rules/agent-team-orchestration.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: conditional
+          applies_to:
+            - coding-agent
+            - workflow
+            - dispatch
+            - subagent
+            - verification
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/agent-team-orchestration.md
-          installed_hash: sha256:1ddad317c3cd1fd48caae3cb9122e29f876f672df8c600e5e1fb743afa6559c8
+          installed_hash: sha256:b2339f4adf3c688a9eb1b9d84827858f3a450287e80e1a019eb0e4ed685e68db
+          content_hash: sha256:b2339f4adf3c688a9eb1b9d84827858f3a450287e80e1a019eb0e4ed685e68db
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:f63ff672e5158425a66d758049e17f6ad3767c24fcd07432ae6f8479ec1988d5
+            - key: anti-patterns
+              hash: sha256:3bacdf6ec2dd96814904b5f479eee14cda44a769ac9dd9fec1b017ed029e9081
+            - key: applies when
+              hash: sha256:8525160e7c77d96bdb67f8f92659b2e1935b47fa70c53a97bdb30b4cf7884919
+            - key: examples
+              hash: sha256:3849c7ee70cb1c5b5c75436a3b54316ebdd927668f1930fa209ec191dcc2f41f
+            - key: purpose
+              hash: sha256:cd4fa342cadf772b157051a92f80f078da1c6c8564e39ee97df6f76649f6bc90
+            - key: rules
+              hash: sha256:a4b7ffaebf939af41c40371f0b1d5bbb3ceb04918034b39eb8168e455c740450
+            - key: verification
+              hash: sha256:d4f471cd5be13ba85777c228cbb263733d6591bb51f7c6a042759e6ecd6f0e44
         - kind: ruleset
           slug: backend-service-architecture
+          description: Defines framework-aware boundaries for backend services and APIs.
           path: docs/references/rules/backend-service-architecture.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: must
+          applies_to:
+            - architecture
+            - backend
+            - api
+            - route
+            - controller
+            - service
+            - repository
+            - coding-agent
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/backend-service-architecture.md
           installed_hash: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
+          content_hash: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:e75eb318a4cb41ec2df5231f349967f5aa8478f9259afb92c83f92dc649a3317
+            - key: anti-patterns
+              hash: sha256:00d88d5a34c806f3800e5edaeb965d33b3e3946bad737b65d97d3674463d0ce8
+            - key: applies when
+              hash: sha256:8a735fd3a88a26be4c6b6bea18459dabbe109ad2cf5f37cfbc61d1221fd03b29
+            - key: examples
+              hash: sha256:84e416ccdcb8d22d7f3573d24c61d8465d37ee36e5e17b5c23e6c030be03b3d2
+            - key: purpose
+              hash: sha256:a52b836045c4f6147455f3b58448bb244838b7bc0fbeb4935a5e7d339421cc1f
+            - key: rules
+              hash: sha256:288a7adf38242dec4c073d1224adc5074e666d58e4a49f8a952e5ee7d0a2a92f
+            - key: verification
+              hash: sha256:f764649c700f6138977f037980ae2105441305652be348c03f2f257d4e747cca
         - kind: ruleset
           slug: codex-thread-initialization
+          description: Requires ordered Codex task renaming and pinning with fail-visible status.
           path: docs/references/rules/codex-thread-initialization.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: must
+          applies_to:
+            - codex
+            - coding-agent
+            - session
+            - thread
           source_branch: main
-          source_commit: 8f01671a053c69658c13aba879695722f6064af2
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/codex-thread-initialization.md
           installed_hash: sha256:5cab73a2486ee949d964f656f1c82ad5e613fb486f8ad2822be63fc28a78723e
+          content_hash: sha256:5cab73a2486ee949d964f656f1c82ad5e613fb486f8ad2822be63fc28a78723e
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:0b1e7ea66d5ef8c89f8f7de631ec0d715a1a7cfc8e146abcccede56fa18bd3d9
+            - key: anti-patterns
+              hash: sha256:b845a9e3248b2bb310b7cc495b1a358241b997792abca59487a11fd59599fd09
+            - key: applies when
+              hash: sha256:2d5dae1791190dfddf563f2dd19c7f1c2b70882ae199ff70411879d0736a90da
+            - key: examples
+              hash: sha256:8fae08d82672c89378bd11dcdfdf6806d9461fd5b2508dfdc796a507ef6eb996
+            - key: purpose
+              hash: sha256:ddb67fd365221b0871a67e9656cd7de8fc85b17e4b903c776ecf8e301b9f0475
+            - key: rules
+              hash: sha256:4ee8505ad3162b13134fdb91773332c31bd4e90b906f5f6a7d057380b88ea1b3
+            - key: verification
+              hash: sha256:3f90591b93ef86a1b8490f5d95f60a5b35f1179bcabbc706ef32778edd9a9caf
         - kind: ruleset
           slug: constitution-curation
+          description: Curates demonstrated project-wide truth after validated implementation.
           path: docs/references/rules/constitution-curation.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: must
+          applies_to:
+            - coding-agent
+            - implementation
+            - validation
+            - repository-memory
+            - constitution
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/constitution-curation.md
-          installed_hash: sha256:e462fa2563a35bfbb300e54f1e9ecc60f17f983c00d89731a0efa255edb28895
+          installed_hash: sha256:e629aca7f43c59bf10ead70a88918ba43d1cfa03e43baa73642d740e76182d4d
+          content_hash: sha256:e629aca7f43c59bf10ead70a88918ba43d1cfa03e43baa73642d740e76182d4d
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:bd44be821e37f06e2f3f6ab10d49217589bdede4470732536a2eedc136077daa
+            - key: anti-patterns
+              hash: sha256:64fd063a2aaf7d2f9925246ebadb3d9d6567239af22b057e24b51e9b648d94f4
+            - key: applies when
+              hash: sha256:043fc3f2ef6bfca1e5cc4a45a2d2690cba51f2c3239ca793f85eca86bbfe2bb0
+            - key: examples
+              hash: sha256:db5b9c71f6dabd421a939d18b97a84c65af574298d293f2ca35e233cbbf83fe6
+            - key: purpose
+              hash: sha256:3d9e5c332e68e6dfef69979b5ea17a4bfc651414558c238f93efb4f78944d08b
+            - key: rules
+              hash: sha256:1a0b576ccbd16cb49297b304f313e36a05f4ed65bdd6f03ad887290fc506239c
+            - key: verification
+              hash: sha256:f4c86f29b39f0b01afec90dde4d0c7a830153d54800ff065901be08940e6e742
         - kind: ruleset
           slug: feature-notes
+          description: Keeps optional feature source material separate from canonical repository truth.
           path: docs/references/rules/feature-notes.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: conditional
+          applies_to:
+            - notes
+            - feature-notes
+            - source-material
+            - context
+            - documentation
+            - coding-agent
+          paths:
+            - docs/notes/**
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/feature-notes.md
-          installed_hash: sha256:7545870fd2f8dc484ff60f551c6c20f055856cdf4bc6a399195b1af259427450
+          installed_hash: sha256:1318a30df003ed2674176d33a46e9948c0193ca0a728c9677e8a915df81cc742
+          content_hash: sha256:1318a30df003ed2674176d33a46e9948c0193ca0a728c9677e8a915df81cc742
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:ad2587a40c6056c9b55c84baf2f7022f10f22cb943dc778c71baf7da53595643
+            - key: anti-patterns
+              hash: sha256:66b5d37624d8c8508daaf59f32758f5b9aa3e757af5ad827d0ab056b57aeec01
+            - key: applies when
+              hash: sha256:ca91135fb4246a292d7952be622d04b17479bd3200202adec09b4808a2878787
+            - key: examples
+              hash: sha256:54ffd63ba8d1633cda7d05affaa10ae06265ac410abddb377a8a15a330b81fe2
+            - key: purpose
+              hash: sha256:6170aebaddeb2d6c763e5dcda38199e9e39b821a02034bfdbe95e801b8ea6b5a
+            - key: rules
+              hash: sha256:4a3e620879c8941f6969ac53b545d5194e28ba2c7cf686ea1c988e1593ffc476
+            - key: verification
+              hash: sha256:0d70c6e68fc2ba5de9000873c1df7dae6428e09349024281bd125f4289d1048d
         - kind: ruleset
           slug: frontend-application-architecture
+          description: Defines framework-aware boundaries for frontend applications.
           path: docs/references/rules/frontend-application-architecture.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: must
+          applies_to:
+            - architecture
+            - frontend
+            - web
+            - mobile
+            - ui
+            - route
+            - page
+            - component
+            - coding-agent
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/frontend-application-architecture.md
           installed_hash: sha256:31fafc0f1b1bf2690e88d6f713603f9eee178de14e4d1dffe880272523ee073c
+          content_hash: sha256:31fafc0f1b1bf2690e88d6f713603f9eee178de14e4d1dffe880272523ee073c
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:732826a773af3ed2209e93a15ff88de2432864efd5492b4a4440bdbc7dfd52d6
+            - key: anti-patterns
+              hash: sha256:1eb0813fc4dc14107d17cb54c52bfb9adf0698e5e5bf334ccc9f6b764ff0d1c0
+            - key: applies when
+              hash: sha256:7dc7c1472a12bc5c76dc119dc008397d82e7842b24557aed78975a7f80615c16
+            - key: examples
+              hash: sha256:4804b08b02df50db0609638c8e0242e615026e06dd2e1019ff459a4bed26abdd
+            - key: purpose
+              hash: sha256:dd6524dd769326f5072666af697a4d19b16c83df88d2309feb9bcefd7bc9163a
+            - key: rules
+              hash: sha256:0a0588be80b58d2db2073f4619e55da1edd50fd28835ad79cfdce71142756955
+            - key: verification
+              hash: sha256:92f08e5150459876c42ac0fffbdc2641af773edf6fcc92241cb31d039658ece3
         - kind: ruleset
           slug: github-pr-delivery
+          description: Sequences issue, branch, commit, push, ready PR, and post-PR verification.
           path: docs/references/rules/github-pr-delivery.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: conditional
+          applies_to:
+            - git
+            - github
+            - pull-request
+            - github-actions
+            - documentation
+            - coding-agent
+          paths:
+            - .github/**
           source_branch: main
-          source_commit: 84bc11c469bd7573cda7568c08c094983d5ab09a
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/github-pr-delivery.md
-          installed_hash: sha256:f300d5d397aec24f9a16f64b6d12ce904d907dafbaf73a1c75498040dbcfcc77
+          installed_hash: sha256:183ebc6ef9b2cff3d4b4e89a2fbfaca4cf79280f981c00d25b32e5b9bbed0975
+          content_hash: sha256:183ebc6ef9b2cff3d4b4e89a2fbfaca4cf79280f981c00d25b32e5b9bbed0975
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:0abdb1dd07b2ee2da4ca0753110de87d4c867504cda34cac4b21d6420ff951e5
+            - key: anti-patterns
+              hash: sha256:3733d7545e4547b58c396decaeb94d7c19909a90e7a4bcdaca4d66d158110cb1
+            - key: applies when
+              hash: sha256:6ad1a8134d5e14248a3b2100fe22ede345b18d7a1d7a9f78cdd0c1c802957179
+            - key: examples
+              hash: sha256:89d71f2e7ca266521574c177c08a1d5190e91b55380120ca2fd50ede0cd48447
+            - key: purpose
+              hash: sha256:0e6d6550deb2ebd1a0213da208bcc88eb027081cc21b57d2eb93c8847ead310f
+            - key: rules
+              hash: sha256:d76594a248ca54e58d056fc6bfc1b3c3555db26898fd1332cb47080875444520
+            - key: verification
+              hash: sha256:b81d5d67d07c058298c27b05914aa9fa142a02390ec8eff8c974f6f115195421
         - kind: ruleset
-          slug: kit-capabilities-usage
-          path: docs/references/rules/kit-capabilities-usage.md
-          source_repo: jamesonstone/kit
+          slug: infrastructure-change-approval
+          description: Requires plan-level confirmation and one-pass execution for infrastructure batches.
+          path: docs/references/rules/infrastructure-change-approval.md
+          version: 1
+          read_policy: must
+          applies_to:
+            - cloud
+            - infrastructure
+            - infrastructure-as-code
+            - aws
+            - gcp
+            - azure
+            - kubernetes
+            - deployment
+            - coding-agent
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
-          source_path: docs/references/rules/kit-capabilities-usage.md
-          installed_hash: sha256:b48b8687f4dac7b59b7c0492739e8a0e97b1769226f15cfb7f997b78fef17207
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
+          source_path: docs/references/rules/infrastructure-change-approval.md
+          installed_hash: sha256:876b5f569dbec518a4b9b0475af3b0e84be854e4de528dee0989986f0d4a84ce
+          content_hash: sha256:876b5f569dbec518a4b9b0475af3b0e84be854e4de528dee0989986f0d4a84ce
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:01d11795c47f3c55d32be8a48aa163ba976e3d2532ab21ac9b504ef263dcda50
+            - key: anti-patterns
+              hash: sha256:cff8c70420f528f05d6d53c55dda7c8ad273b8d772697721432322e43ca69b48
+            - key: applies when
+              hash: sha256:965185e4836b99370d49d249f6ee76e7950105a5e45dd217fd51f5b3d646ecb1
+            - key: examples
+              hash: sha256:2ad33db0f6fcaff1eb01bcfbc238972bcf23ed671aab241e3a8fb7c7fb1c591a
+            - key: purpose
+              hash: sha256:05d701b76dacfc58d7621893bc71c6918e3bf37fe8981c2794e3fa4183dad13b
+            - key: rules
+              hash: sha256:d8e48e97cfbedfaae6ee6c74e5c9fb2eb7acacff4a891979e90da88cfc02420d
+            - key: verification
+              hash: sha256:8a528f8ae680ca4996a08bd4de3a03e181fcf417f0017bc8b3580bc67d2d4ada
         - kind: ruleset
           slug: llms-txt
+          description: Requires web services, websites, and APIs to expose an LLM-friendly llms.txt endpoint.
           path: docs/references/rules/llms-txt.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: conditional
+          applies_to:
+            - web
+            - website
+            - webservice
+            - api
+            - documentation
+            - llms-txt
+            - coding-agent
+          paths:
+            - llms.txt
+            - '**/llms.txt'
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/llms-txt.md
           installed_hash: sha256:4aaa326493395e357b1cd28ed2dda4c2c454e0fe7fa31fffdeea753bd6fb5884
+          content_hash: sha256:4aaa326493395e357b1cd28ed2dda4c2c454e0fe7fa31fffdeea753bd6fb5884
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:75aae0a6d60905f86a519bcfd598a8f4484dae38ac0eac7c503247ec12f8e007
+            - key: anti-patterns
+              hash: sha256:486d3e0918750ee09a149657a6bb72ca42f73c7fe472ea2f80fe26a51a33bc86
+            - key: applies when
+              hash: sha256:7effa12e8171ef2dd91ac93f39e47655a7b86647f5aac2ec7ff914b6f060a021
+            - key: examples
+              hash: sha256:f6e1fb7554abaea201d300954a7683041957b82b622ed74df06497139d3b50b1
+            - key: purpose
+              hash: sha256:744e33dbeab7f0e6b169ebf89a758eec1ed58568d5b2dd02e3e379e31384e2be
+            - key: rules
+              hash: sha256:53ae27ec82fba32db26b3b2348b87348057c6c626ce7c4d772ac6db26d67c8d2
+            - key: verification
+              hash: sha256:a8114b70224b60924e8945117bc256c607917822473c3fe61aa14b3937ae94b0
         - kind: ruleset
           slug: readme-header-tagline
+          description: Standardizes top-level README openings with a concise product identity.
           path: docs/references/rules/readme-header-tagline.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: conditional
+          applies_to:
+            - readme
+            - documentation
+            - branding
+            - repo-onboarding
+            - coding-agent
+          paths:
+            - README.md
+            - '**/README.md'
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/readme-header-tagline.md
           installed_hash: sha256:062443de22fe7f99f17aeec03c8db15739cdbad64800716daeedb8b47aa63761
+          content_hash: sha256:062443de22fe7f99f17aeec03c8db15739cdbad64800716daeedb8b47aa63761
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:b348b191767c3eebc8c0597edd07a64c2f58392c93f1fb99043a05310555b84d
+            - key: anti-patterns
+              hash: sha256:4e2adefe8273718d4fc9c891827189a51a44cbd9ee4850618cdba35a85aa809b
+            - key: applies when
+              hash: sha256:d9360f611c8dad0fd97dcda2a992926bbbe468831b69589c7d7bf15846554c9e
+            - key: examples
+              hash: sha256:525bb03041bd1b36ad35cf38eeb76d0e4b7d31544b0eedabf2e5c1856afb4b74
+            - key: purpose
+              hash: sha256:8df7d9ae247d27f15388f768786b6cc623e0e3f94b676ad9bbb9fd58fdb4b757
+            - key: rules
+              hash: sha256:8ec387110fa598e7f591e04d86a043cf747a0adda9bb81b5bdfb351dfd52a69e
+            - key: verification
+              hash: sha256:ae68636699533fea7ac0b5c8f7932af3445b33c9b00e734f8583064c89d1b0bd
         - kind: ruleset
           slug: safety-guardrails
+          description: Provides always-on Git, GitHub, secret, identity, and recovery guardrails.
           path: docs/references/rules/safety-guardrails.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: must
+          applies_to:
+            - git
+            - github
+            - safety
+            - coding-agent
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/safety-guardrails.md
-          installed_hash: sha256:ea73163fd33875ef9f91baefafc6983090695b7a9ec2406cdd1e41abb350371b
+          installed_hash: sha256:13f1fcfa492d4797fc1eb5d99d1a3e2946ecbd5acd5662f60261b59ed732153b
+          content_hash: sha256:13f1fcfa492d4797fc1eb5d99d1a3e2946ecbd5acd5662f60261b59ed732153b
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:3cd4c94853a0a3377edd78960098f530a571bbd8b6b17ada07f13ac8c7e2f968
+            - key: anti-patterns
+              hash: sha256:f135242871f5eff8e4d2ba07f9d9b1aa87ed614e43fd54e8567424a2cdb4b7f2
+            - key: applies when
+              hash: sha256:314fc912c3b24ac8bb34c76017b28681295f242f1f2ecca86383eb5a76873b48
+            - key: examples
+              hash: sha256:ee183b727df6716eb4293f8fbca6e8cf7d73e80bc86535a4a54aeb20fbd82946
+            - key: purpose
+              hash: sha256:f619d0ccba96df9f952131dba9406920ca6b5e25f82ae951091369a9ca892327
+            - key: rules
+              hash: sha256:7a387f914f582fd91c730d044aa3f42d9c22f9b9844cdfb13956e228a503a0cf
+            - key: verification
+              hash: sha256:1c79d98826f99878c98b6470b174e704a3f34cf6b9c2f7d90bc78bd6cf1e1b85
         - kind: ruleset
           slug: source-file-size
+          description: Enforces the 300-line handwritten source and test file limit.
           path: docs/references/rules/source-file-size.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: must
+          applies_to:
+            - coding-agent
+            - implementation
+            - testing
+            - validation
+            - refactor
+            - reconcile
+            - maintenance
           source_branch: main
-          source_commit: 8f01671a053c69658c13aba879695722f6064af2
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/source-file-size.md
-          installed_hash: sha256:270f3df4d0619b68ce9cdc21e6725a53089495355d4697a41ccf4d4c454aacb0
+          installed_hash: sha256:3438e448623737d2ca500c24be07f6f2813a30ccc475da518a7c86918f6ecac6
+          content_hash: sha256:3438e448623737d2ca500c24be07f6f2813a30ccc475da518a7c86918f6ecac6
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:a695bf9e7547a060d0dbb943464f33924cfc6abb4f87189517f51b133ce2aaf2
+            - key: anti-patterns
+              hash: sha256:ce390e6acede42abe87c4eef07c1a919cbc4cb58a9c8d4a0305ea469aa0d3e91
+            - key: applies when
+              hash: sha256:ffbe131c2d1be4a4a632df5a869378c6d130e571405dfd6a4c1b465868c65f67
+            - key: examples
+              hash: sha256:52d0d1c88d41167165d154bc3dc78f54fe7acc65826408314cdc597a968cf00d
+            - key: purpose
+              hash: sha256:5f826289da34c12f7df7d3ebc8bec98d4ec56209056713e9335e68c71d085dc4
+            - key: rules
+              hash: sha256:a8b7d6a12f135c04c64cc03b8d2f641e0b84a3dd5c001250e9fee2e6074c597a
+            - key: verification
+              hash: sha256:ab82e2381a11539c3ab07e77a292ec0c2e6ed2dc4975a10f727f5955dd892ffc
         - kind: ruleset
           slug: testing-and-environment-validation
+          description: Defines code-level checks, environment suites, immutable evidence, and safe end-to-end validation.
           path: docs/references/rules/testing-and-environment-validation.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: must
+          applies_to:
+            - coding-agent
+            - implementation
+            - testing
+            - validation
+            - ci
+            - deployment
+            - end-to-end
+            - browser-testing
           source_branch: main
-          source_commit: 8f01671a053c69658c13aba879695722f6064af2
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/testing-and-environment-validation.md
-          installed_hash: sha256:3e0187674f8cb661ee76aa9fcf9c864fe46946502928ef4dc40ea1045f3d8177
+          installed_hash: sha256:8e5786045643a8b8548a92efe7d63940f566331929f06d74c94e6c77d52a4c46
+          content_hash: sha256:8e5786045643a8b8548a92efe7d63940f566331929f06d74c94e6c77d52a4c46
           state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:18d0b74ff212bf4a12f06f66616f29da8024c7a9c178088592fb711ce39fddaa
+            - key: anti-patterns
+              hash: sha256:be62af5d0562931dba38307875a16018c58642a3a1059ac809bb40e92dab19ea
+            - key: applies when
+              hash: sha256:ab6d1c6077a67b7251890eaf125b8075d8b3c3f721e03cf5def9c181e437f170
+            - key: examples
+              hash: sha256:ea96c0e71a5ba7139803358617d45e6a1565d129d76d86c5f526dfb948e9fc86
+            - key: purpose
+              hash: sha256:f86d73f6bb876120bcd063eed5cb1442be36e622566b174ee812a7216fed275f
+            - key: rules
+              hash: sha256:11483df125c61de76c8dd9a905bd31aa49d53a7a937d2ba6648788a20e232931
+            - key: verification
+              hash: sha256:7b7adc514c4bc64b893fa6fe960678c44cb73c4e331c1b908f37a30407bef42d
         - kind: ruleset
           slug: work-lane-gating
+          description: Prevents coding agents from mixing unrelated implementation lanes.
           path: docs/references/rules/work-lane-gating.md
-          source_repo: jamesonstone/kit
+          version: 1
+          read_policy: must
+          applies_to:
+            - git
+            - github
+            - workflow
+            - coding-agent
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
           source_path: docs/references/rules/work-lane-gating.md
           installed_hash: sha256:34f8dd58c9b3190a83d3440788c96f2e82fba7812d51b41115074961e1c9429e
+          content_hash: sha256:34f8dd58c9b3190a83d3440788c96f2e82fba7812d51b41115074961e1c9429e
           state: managed
-health:
-    managed: true
-github:
-    default_assignees:
-        - jamesonstone
-aws:
-    enabled: false
-project_refresh:
-    constitution:
-        feature_interval: 5
-        max_age_days: 30
-        last_reviewed_at: "2026-08-02T11:46:09Z"
-        last_completed_feature_count: 15
+          sections:
+            - key: __preamble__
+              hash: sha256:f9d980fe6f8d7167b462b3a4d22698853181372e1324fb1053e00042c3cac08f
+            - key: anti-patterns
+              hash: sha256:fbae7f0d3c1a31ed7db4eef7b4ad4c4b5afb988eb3df7340744d3217dc5975b1
+            - key: applies when
+              hash: sha256:a531e4da8fefc80d08eb9e2eff1e1de331f49b85f162612deb117369fddfb753
+            - key: examples
+              hash: sha256:02e301412770f64fa0cf58495c8351ec3b44076cc1bf57bfae1124a9b9f2210f
+            - key: purpose
+              hash: sha256:5c62f1111c088cddbdeb5ff05f3c53cad0aee0bbf38aecb3ddfad0659dac996f
+            - key: rules
+              hash: sha256:f4c8bc98d4270559b461687e275b2464fd515ec1ea4c12d41f206482cfe739a4
+            - key: verification
+              hash: sha256:3b953d25318b56eb424dfd4b138a66ac9c1815de65a51c2cf39c1545cd2f9b73
+        - kind: workflow
+          slug: implementation-delivery
+          description: Drives coding-agent work from repository grounding through validated pull-request delivery.
+          path: docs/references/workflows/implementation-delivery.md
+          version: 1
+          read_policy: must
+          applies_to:
+            - coding-agent
+            - implementation
+            - delivery
+          dependencies:
+            - ruleset/safety-guardrails
+            - ruleset/work-lane-gating
+            - ruleset/testing-and-environment-validation
+            - ruleset/source-file-size
+            - ruleset/constitution-curation
+          source_branch: main
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
+          source_path: docs/references/workflows/implementation-delivery.md
+          installed_hash: sha256:4b19b09042703600d067d6c95271cc5f9288a1f86efabcab9928dc95075c6bc8
+          content_hash: sha256:4b19b09042703600d067d6c95271cc5f9288a1f86efabcab9928dc95075c6bc8
+          state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:fa9093b72a6b35fefb770e96d0b1b0fae9c5f80ec9663eeaed18b65415054ccd
+            - key: applies when
+              hash: sha256:44274d3b7a9eaeac3627ff4384193803bdd911b059e31f5b9e2524205b6ea5ea
+            - key: completion
+              hash: sha256:d43af0966b6022d49daf7372c6f553aaa67b18584735442e91893c72b201e01f
+            - key: gates
+              hash: sha256:5bb8a135386094eef1b360d544c234797ffa091bdb2e6f7975b53aabc5721b4d
+            - key: purpose
+              hash: sha256:9528ed50446f3fc071eab1f4c2e21c800a7e29ca0d9e1fa4ce79d01664d9492b
+            - key: verification
+              hash: sha256:563ae52886688f1ae221bc33baf239426c581a356ddadd678b2ffb604ac90193
+            - key: workflow
+              hash: sha256:b248bfc7b15f9b20a445f2f8a7d574f407483b7e1b1a2d4934a93854af305b49
+        - kind: workflow
+          slug: registry-maintenance
+          description: Safely previews and reconciles repository-local contract artifacts against their registry.
+          path: docs/references/workflows/registry-maintenance.md
+          version: 1
+          read_policy: conditional
+          applies_to:
+            - coding-agent
+            - registry
+            - reconcile
+            - maintenance
+          dependencies:
+            - ruleset/safety-guardrails
+          source_branch: main
+          source_commit: local-adbb9c5666c6fcc24a39eb1c1b200321be01204c6996a9cbb2e8a814a1022fd3
+          source_path: docs/references/workflows/registry-maintenance.md
+          installed_hash: sha256:646aae8d2d4a02d608478a67f14578319a199bff9418233835628f6717b215d3
+          content_hash: sha256:646aae8d2d4a02d608478a67f14578319a199bff9418233835628f6717b215d3
+          state: managed
+          sections:
+            - key: __preamble__
+              hash: sha256:3e72598aab2f3e60a06c420b66abdb62afeea0235e1ca058aca067bc3dba85bd
+            - key: applies when
+              hash: sha256:8a4f6adaff41e3ed5a8edc5d156efabd08d5386599c9aed08d1f8a44302ddaa0
+            - key: completion
+              hash: sha256:03af784fd071fe31d14d9c7778532b3cb776adc178061128cb256ded092ec82a
+            - key: gates
+              hash: sha256:3dab2a044f1532f89ea0b98d95b0a89e3b0a5fcac3a122104cbe515f39f37bfa
+            - key: purpose
+              hash: sha256:2f038df77195e9ee159aa55b99fea6c8736b094cbb6380c15d31df6f4acc0b13
+            - key: verification
+              hash: sha256:d70a2707ce5acbacce473a8ab4eb2e13a24c61d23ea4102a00350f41ac9b99f9
+            - key: workflow
+              hash: sha256:e14b4d06299848a32595daa4bf0a04b93da92d8d3c80d35f2c829d6b1bee63ad

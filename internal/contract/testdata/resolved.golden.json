@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "state": "ready",
+  "project_root": "\u003cproject\u003e",
+  "hints": {
+    "paths": [
+      "internal/deep/agent.go"
+    ],
+    "workflows": [
+      "delivery"
+    ]
+  },
+  "registry": {
+    "branch": "main",
+    "path": ".",
+    "catalog_path": "registry/catalog.yaml"
+  },
+  "routing": [
+    "AGENTS.md"
+  ],
+  "workflows": [
+    {
+      "kind": "workflow",
+      "slug": "delivery",
+      "description": "delivery contract",
+      "path": "docs/references/workflows/delivery.md",
+      "version": 1,
+      "read_policy": "conditional",
+      "state": "managed",
+      "digest": "DIGEST_DELIVERY",
+      "dependencies": [
+        "ruleset/base"
+      ],
+      "applicability": [
+        "delivery"
+      ],
+      "reason": "explicit workflow"
+    }
+  ],
+  "rules": {
+    "conditional": [
+      {
+        "kind": "ruleset",
+        "slug": "base",
+        "description": "base contract",
+        "path": "docs/references/rules/base.md",
+        "version": 1,
+        "read_policy": "conditional",
+        "state": "local-custom",
+        "digest": "DIGEST_BASE_CUSTOM",
+        "applicability": [
+          "core"
+        ],
+        "reason": "dependency of workflow/delivery"
+      },
+      {
+        "kind": "ruleset",
+        "slug": "go-paths",
+        "description": "go-paths contract",
+        "path": "docs/references/rules/go-paths.md",
+        "version": 1,
+        "read_policy": "conditional",
+        "state": "managed",
+        "digest": "DIGEST_GO_PATHS",
+        "applicability": [
+          "go"
+        ],
+        "reason": "path internal/deep/agent.go"
+      }
+    ],
+    "must": [
+      {
+        "kind": "ruleset",
+        "slug": "safety",
+        "description": "safety contract",
+        "path": "docs/references/rules/safety.md",
+        "version": 1,
+        "read_policy": "must",
+        "state": "managed",
+        "digest": "DIGEST_SAFETY",
+        "applicability": [
+          "safety"
+        ],
+        "reason": "mandatory"
+      }
+    ]
+  },
+  "next_actions": [
+    "read the selected workflows and ordered rules before implementation"
+  ]
+}

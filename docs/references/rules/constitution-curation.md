@@ -27,7 +27,7 @@ read_policy_default: must
 - A coding agent finishes implementation and validation in a Kit-managed project.
 - The implemented work establishes, changes, or disproves a project-wide principle, constraint, non-goal, definition, vocabulary term, or workflow boundary.
 - A generated starter Constitution still contains only Kit-managed baseline rules and project-specific placeholders.
-- `kit project refresh` reports that a broader semantic Constitution review is due.
+- A requested periodic review identifies missed, stale, or cross-feature rules.
 
 ## Rules
 
@@ -53,11 +53,12 @@ read_policy_default: must
 - When current implementation disproves a constitutional rule, correct or remove the stale rule and retain material historical rationale in the relevant spec.
 - When no project-wide truth changed, leave the Constitution unchanged and report `Repository Memory` as `not required` with the evidence-based rationale.
 
-### Periodic Refresh
+### Periodic Review
 
-- Treat project-refresh cadence as a trigger for reviewed semantic analysis, never as permission for automatic edits.
-- When refresh is due, use `kit project refresh` to look for missed, stale, or cross-feature patterns after completing the current change's normal curation gate.
-- Record a refresh with `kit project refresh --now` only after the reviewed semantic refresh is complete.
+- Treat a periodic review request as a trigger for semantic analysis, never as
+  permission for automatic edits.
+- Look for missed, stale, or cross-feature patterns after completing the
+  current change's normal curation gate.
 
 ## Anti-Patterns
 
@@ -75,7 +76,8 @@ read_policy_default: must
 - Confirm project-specific additions are durable and project-wide rather than feature-local.
 - Confirm superseded historical rationale remains in the relevant spec when its removal from the Constitution would otherwise erase an important decision.
 - Confirm the Kit-managed baseline and marker comments remain intact.
-- Run `kit check --project` after changing the Constitution.
+- Validate the Constitution structure and review it against the resolved local
+  contract after changing it.
 - Review `git diff -- docs/CONSTITUTION.md docs/specs docs/references` before finalizing.
 - State the Constitution curation result in the final `Repository Memory` report, including `not required` when no update was warranted.
 

@@ -1,22 +1,36 @@
-# Agents Docs
+# Agent Routing
 
-## Purpose
+## Entry point
 
-- Route agents from native planning through implementation to curated repository memory
-- Load only the guidance and repository context needed for the current decision
+Run `kit contract resolve --json` before implementation and whenever the task's
+feature, paths, applicability, or workflow changes materially. Treat the
+returned repository-local Markdown as the authoritative contract.
 
-## Runtime Routing
+## Local guidance
 
-- `WORKFLOWS.md` — native-plan lifecycle and memory routing
-- `GUARDRAILS.md` — safety, completion, validation, and final-response rules
-- `RLM.md` — progressive disclosure for broad context
-- `TOOLING.md` — skills, execution topology, and secondary inputs
-- `docs/specs/<feature>/SPEC.md` — material feature rationale when required
-- `docs/references/` — durable reusable knowledge
+- `WORKFLOWS.md` — how this repository moves from resolved contract to
+  implementation and reconciliation.
+- `GUARDRAILS.md` — safety, delivery, validation, and completion boundaries.
+- `RLM.md` — progressive context loading.
+- `TOOLING.md` — Kit command and native-tool ownership.
+- `docs/specs/<feature>/SPEC.md` — material feature rationale when required.
+- `docs/CONSTITUTION.md` — durable project invariants.
 
-## System Of Record
+## Contract states
 
-- Native agent planning owns research, clarification, design, and plan formation
-- The repository owns durable rationale; chat and transcripts do not
-- V3 `SPEC.md` records purpose, context, requirements, accepted plan, decisions, discoveries, validation, outcome, and repository-memory curation
-- V1 and V2 artifacts remain supported legacy inputs and must not be mechanically rewritten into V3
+- `ready`: read the selected workflow and ordered rules, then proceed.
+- `local-custom`: valid project-owned customization; treat it as authoritative.
+- `blocked`: stop implementation, follow diagnostics and next actions, and use
+  `kit reconcile` to inspect required artifact state.
+
+Kit resolves instructions. It does not plan, implement, test, commit, or
+supervise work for the agent.
+
+<!-- BEGIN KIT AGENT CONTRACT -->
+## Kit Agent Contract
+
+- Run `kit contract resolve --json` before implementation and whenever task scope materially changes.
+- Treat repository-local rulesets and workflows returned by the resolver as the authoritative contract.
+- The resolver is local-only and read-only; use `kit registry status` for remote freshness and `kit reconcile` to preview drift.
+- Installed contract: 14 ruleset(s), 2 workflow(s).
+<!-- END KIT AGENT CONTRACT -->

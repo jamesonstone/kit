@@ -8,9 +8,9 @@ Start with `docs/agents/README.md`. Before implementing API or backend routes, h
 
 Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`. Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them.
 
-Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`. Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less, audit the complete affected scope before delivery, and audit the entire repository during whole-project reconcile and scheduled maintenance.
+Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`. Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less, audit the complete affected scope before delivery, and audit the entire repository during requested whole-project or scheduled maintenance.
 
-Before Git, GitHub, or AWS mutations, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*`. Repo-local Kit rules outrank generic defaults.
+Before Git, GitHub, or cloud mutations, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*`. Repo-local Kit rules outrank generic defaults.
 
 ## Infrastructure Change Approval Hard Gate
 
@@ -31,3 +31,12 @@ Every implementation final response must include:
 - Decision: created | updated | refactored | deleted | not required
 - Rationale: why this persistence decision is correct
 - Artifacts: paths or none
+
+<!-- BEGIN KIT AGENT CONTRACT -->
+## Kit Agent Contract
+
+- Run `kit contract resolve --json` before implementation and whenever task scope materially changes.
+- Treat repository-local rulesets and workflows returned by the resolver as the authoritative contract.
+- The resolver is local-only and read-only; use `kit registry status` for remote freshness and `kit reconcile` to preview drift.
+- Installed contract: 14 ruleset(s), 2 workflow(s).
+<!-- END KIT AGENT CONTRACT -->

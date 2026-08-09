@@ -1,66 +1,58 @@
 # Kit Overview
 
-Kit is a repository-memory and specification harness for agent-driven work.
+Kit is a provider-neutral contract layer between a repository and coding
+agents. It distributes typed Markdown artifacts, preserves their provenance,
+and resolves the deterministic subset applicable to a task.
 
-The shipped command surface is packaged around repositories and software
-delivery, but the underlying model is broader: constraints, clarification,
-native planning, execution, verification, curated rationale, and transfer are
-useful in any serious domain.
+## Product model
 
-## Principles
+1. A versioned registry catalog indexes `ruleset` and `workflow` artifacts.
+2. `kit init` materializes every downstream-visible artifact and bounded
+   routing block into a project.
+3. `.kit.yaml` records source identity, revision, digests, section hashes,
+   paths, and artifact state.
+4. `kit contract resolve` selects ordered local artifacts from explicit hints.
+5. `kit reconcile` compares local, installed, and current registry state and
+   previews every write before an explicit apply.
 
-- 🧰 **Harness-first, workflow-second** - Kit coordinates work without locking it to one agent vendor.
-- 📄 **Repositories own durable memory** - consequential decisions live in canonical files, not only in chat or transcripts.
-- 🧠 **Native planning owns design** - use the host agent's planning capability for research, clarification, design, and implementation planning.
-- 📐 **Specifications preserve material why** - create or adopt a living spec before code when future agents need rationale that code and tests cannot recover.
-- ⚡ **Ad hoc work stays lightweight** - small changes do not need a full feature workflow.
-- 🤝 **Portable by default** - generated prompts are meant for capable coding agents, not one runtime.
-- 🔍 **Explicit gates beat hidden automation** - issue, branch, PR, delivery, and validation boundaries stay visible.
-- 🔄 **Reflection closes the loop** - correctness, evidence, docs, and handoff matter after implementation.
+Repository-local Markdown is authoritative. Resolved-contract JSON is a stable
+machine interface, not a second source of truth.
 
-## Cross-Domain Concepts
+Published schema files are
+[`registry-catalog-v1`](../schemas/registry-catalog-v1.schema.json),
+[`project-config-v2`](../schemas/project-config-v2.schema.json), and
+[`resolved-contract-v1`](../schemas/resolved-contract-v1.schema.json).
 
-| Kit Concept | In Software | In Research | In Strategy / Ops | In Writing / Policy |
-| --- | --- | --- | --- | --- |
-| `CONSTITUTION.md` | Engineering constraints | Study constraints | Operating principles | Editorial or policy constraints |
-| `SPEC.md` | Feature workflow artifact | Research question, study plan, proof | Decision brief, rollout, evidence | Argument, outline, revision evidence |
-| Requirements and observable acceptance | Behavior checks | Falsifiable success criteria | Decision or rollout gates | Editorial acceptance standards |
-| Validation and outcome | Tests, runtime checks, docs review | Result evidence and audit trail | Operational validation | Source/proof trail and revision notes |
-| Legacy `BRAINSTORM.md` / `PLAN.md` / `TASKS.md` | Historical staged artifacts | Historical staged artifacts | Historical staged artifacts | Historical staged artifacts |
-| `reconcile` / `resume` / `summarize` / `handoff` | Reconcile, resume, or transfer context | Resume investigation | Transfer project state | Transfer editorial context |
+## Artifact types
 
-## Artifact Model
+- A `ruleset` states durable constraints, applicability, and verification.
+- A `workflow` declares phases, gates, dependencies, validation, and completion
+  expectations. It never starts or controls an agent process.
 
-Feature artifacts use typed YAML front matter for canonical metadata such as:
+Both types carry a version and digest and may declare applicability tags, path
+patterns, dependencies, visibility, and read policy.
 
-- artifact identity
-- feature identity
-- relationships
-- references
-- skills
-- summary or intent
-- workflow phase
+## Trust boundaries
 
-New feature memory uses a compact V3 `SPEC.md`: purpose, context, requirements,
-accepted plan, decisions, discoveries, validation, outcome, and repository
-memory. V1 and V2 artifacts remain readable compatibility inputs and are never
-mechanically rewritten into V3 because migration requires semantic curation.
+- Contract resolution is local-only and read-only.
+- Registry administration may read the configured source.
+- Initialization validates the complete catalog and write plan before changing
+  the project.
+- Reconciliation is read-only by default, applies only explicit conflict-free
+  plans, and requires an exact artifact acceptance to replace customization.
+- Materialized paths are confined to the project and managed routing is bounded
+  by marker comments.
 
-## Positioning
+## Source providers
 
-Kit is broader than a spec generator. It supports:
+GitHub repository and branch catalogs are the first remote source provider.
+The registry core is provider-neutral, and `.kit.yaml` owns source
+configuration. A local path source supports offline development and self-hosted
+repositories.
 
-- durable plan and decision capture after native planning
-- lightweight ad hoc execution when the change is contained
-- recovery tools such as `reconcile`, `resume`, `summarize`, and `handoff`
-- review and orchestration tools such as `code-review`, `dispatch`, and `loop review`
+## Product boundary
 
-The key judgment is semantic: persist the why when it matters, and prefer a
-clear `not required` decision when code and tests are sufficient.
-
-## Inspiration
-
-Kit is inspired by GitHub's [spec-kit](https://github.com/github/spec-kit),
-which pioneered specification-driven development. Kit keeps that discipline
-where it helps most, then broadens it into a lighter, more portable,
-general-purpose harness.
+Kit does not implement features, infer a task from prose, run prompts, dispatch
+subagents, execute validation, manage CI or pull requests, or supervise an
+agent loop. The coding agent and repository-native tooling own those actions.
+The separate `git-wt` binary remains available outside this boundary.
