@@ -23,6 +23,8 @@ scope changes materially. Repository-local Markdown is authoritative.
 - ` + "`RLM.md`" + ` — progressive context loading.
 - ` + "`TOOLING.md`" + ` — Kit and native-tool ownership.
 - ` + "`docs/CONSTITUTION.md`" + ` — demonstrated durable project invariants.
+- ` + "`docs/specs/<feature>/SPEC.md`" + ` — mandatory living history for every
+  non-trivial feature.
 `
 
 const workflowsStarter = `# Agent Workflows
@@ -34,8 +36,9 @@ evidence progressively and populate only verified project context and commands.
 
 ## Implementation
 
-Resolve the applicable workflow, inspect repository evidence, plan natively,
-implement, validate, curate repository memory, and deliver through local rules.
+Resolve ` + "`implementation-delivery`" + ` with ` + "`--feature <feature>`" + `, create or
+adopt the complete living V3 spec from the accepted native plan, re-resolve,
+then implement, validate, curate repository memory, and deliver.
 
 ## Reconciliation
 
@@ -47,8 +50,8 @@ const rlmStarter = `# Progressive Context Loading
 
 1. Start with ` + "`docs/agents/README.md`" + ` and a resolved Kit contract.
 2. Read selected workflows, mandatory rules, and explicit dependencies.
-3. Inspect only relevant manifests, build scripts, CI, tests, docs, code
-   boundaries, specifications, and external-system evidence.
+3. For feature work, inspect the current spec, progress summary, explicitly
+   related historical specs, and only relevant repository evidence.
 4. Expand context only when a decision or newly discovered scope requires it.
 5. Re-resolve with explicit path, applicability, feature, or workflow hints
    when scope changes.
@@ -78,7 +81,10 @@ const guardrailsStarter = `# Agent Guardrails
 - Never infer credentials, endpoints, owners, deployment state, or project
   commands from Kit starter files.
 - Keep contract resolution local-only and read-only.
+- Treat a blocked feature-spec state as permission to author the spec only;
+  re-resolve before source implementation.
 - Report skipped, blocked, pending, unavailable, and failing validation
   literally.
-- Curate material repository rationale after validated implementation.
+- Keep the living feature spec current through validation, outcome, delivery,
+  and repository-memory curation.
 `

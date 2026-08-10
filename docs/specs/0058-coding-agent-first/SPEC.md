@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: spec
 workflow_version: 3
-phase: complete
+phase: deliver
 feature:
   id: 0058
   slug: coding-agent-first
@@ -66,6 +66,23 @@ contract without launching or supervising agents.
   Its compatibility boundary includes the historical scaffold footprint and
   semantic coding-agent bootstrap prompt, even though the rest of the legacy
   CLI remains intentionally removed.
+- The initial coding-agent-first implementation left feature specifications
+  conditional on whether an agent judged rationale to be material and removed
+  the former detailed template enforcement. An empty `docs/specs/` bootstrap
+  plus advisory wording is insufficient to preserve feature history.
+
+## SOURCE EVIDENCE AND HISTORICAL RELATIONSHIPS
+
+- `docs/specs/0021-project-validation-and-instruction-registry/SPEC.md`
+  establishes the registry provenance and reconciliation model extended here.
+- Historical specifications under `docs/specs/` demonstrate the repository's
+  long-lived feature rationale and remain evidence even when the CLI or runtime
+  they describe is removed.
+- The current `implementation-delivery` workflow and generated agent guidance
+  make `SPEC.md` conditional, while the resolver has no feature-specification
+  state. Those concrete artifacts are the implementation gap corrected here.
+- SPEC 0058 is the current living V3 exemplar and must itself retain every
+  required lifecycle section while this major release evolves.
 
 ## REQUIREMENTS
 
@@ -136,6 +153,60 @@ contract without launching or supervising agents.
 - Preserve clipboard-first init prompt behavior through `--output-only` and
   `--copy`, while keeping `--dry-run` and `--json` strictly write-free and
   secret-free.
+- Keep `docs/specs/` as the canonical feature-history container. Fresh init
+  creates only the directory and never invents a feature or restores
+  `docs/specs/0000_INIT_PROJECT.md` downstream.
+- Require every non-trivial feature implementation to create or adopt a living
+  `docs/specs/<feature>/SPEC.md` before source implementation. This is a hard
+  workflow phase gate, not an agent discretion or rationale-materiality test.
+- Define and validate the living V3 SPEC contract: purpose, context, source
+  evidence and historical relationships, requirements, non-goals, observable
+  acceptance criteria, accepted plan, architecture and consequential decisions
+  including superseded alternatives, discoveries, validation plan and literal
+  results, actual outcome, delivery evidence, and repository-memory
+  disposition.
+- Make `workflow/implementation-delivery` unconditionally depend on a
+  downstream `ruleset/feature-specification`, with explicit pre-source,
+  pre-delivery, and completion gates.
+- For an explicit `--feature` resolution, report the canonical spec path,
+  structural state, required and missing sections, relevant historical specs,
+  and phase permissions. Missing or incomplete specs permit spec authoring but
+  block source implementation and delivery until the agent updates the spec
+  and re-resolves.
+- Remove `docs/notes` and `ruleset/feature-notes` from Kit's active product
+  model and generated guidance without deleting downstream project-owned notes
+  or rewriting historical specifications that mention them.
+
+## NON-GOALS
+
+- Do not restore `kit spec`, staged feature lifecycle commands, or broad legacy
+  CLI compatibility to enforce the feature-history contract.
+- Do not make Kit infer feature truth, author a feature spec, execute a plan,
+  launch an agent, or mutate source through contract resolution.
+- Do not invent a bootstrap feature, scaffold `0000_INIT_PROJECT.md`, delete
+  existing downstream `docs/notes`, or mechanically rewrite historical specs.
+- Do not turn historical specifications into current CLI documentation; agents
+  use them as progressively disclosed rationale alongside current evidence.
+
+## ACCEPTANCE CRITERIA
+
+- Fresh init creates `docs/specs/` and no invented feature specification.
+- Resolving `implementation-delivery` selects `feature-specification`
+  transitively; resolving with `--feature` exposes deterministic feature-spec
+  state and relevant historical specification paths.
+- Missing, invalid, or structurally incomplete feature specs keep spec
+  authoring allowed while source implementation and delivery are blocked;
+  a structurally complete V3 spec unlocks those phases after re-resolution.
+- The V3 structural contract requires every detailed lifecycle section and
+  preserves material alternatives, discoveries, literal validation, outcome,
+  delivery, and repository-memory disposition.
+- Routing and workflow guidance require the spec before source edits and keep
+  it live through integrated-diff validation and completion.
+- Active catalogs and generated guidance do not install, select, scaffold, or
+  recommend `docs/notes`; existing downstream content and historical specs are
+  not automatically removed or rewritten.
+- The reduced command tree remains exact and does not regain `kit spec` or any
+  other removed feature lifecycle command.
 
 ## ACCEPTED PLAN
 
@@ -166,8 +237,18 @@ contract without launching or supervising agents.
     worktree adapter. Reuse the resolved workflow for policy, retain
     clipboard/output/editor controls, add bounded await plus immediate collect,
     and require exact head and thread identifiers for explicit resolution.
+11. Replace the active feature-notes artifact with a mandatory downstream
+    feature-specification ruleset and make it an unconditional dependency of
+    implementation delivery.
+12. Extend local feature resolution with deterministic living-spec structural
+    inspection, phase permissions, historical-spec discovery, diagnostics, and
+    re-resolution actions while preserving schema-v1 compatibility and the
+    resolver's read-only, local-only boundary.
+13. Tighten routing, workflow, migration, release, and command documentation;
+    remove active `docs/notes` guidance; and add focused/golden coverage for the
+    feature-history harness without rewriting historical specifications.
 
-## DECISIONS
+## ARCHITECTURE AND DECISIONS
 
 - This is a semantic-version major release; compatibility is intentionally
   exhaustive and limited to the seven protected command paths and their
@@ -220,6 +301,23 @@ contract without launching or supervising agents.
   `docs/specs/0000_INIT_PROJECT.md`, runtime state/evidence, transcripts,
   mined skills, Kit-internal fixtures, and downstream copies of Kit product
   guides remain excluded.
+- A non-trivial feature is represented by an explicit feature hint and the
+  implementation-delivery workflow. The resolver does not infer feature scope
+  from prose; agents must resolve with `--feature <feature>` before feature
+  source work.
+- Feature-spec authoring and source implementation are distinct phases in one
+  resolved contract. Missing or incomplete SPEC content blocks source and
+  delivery, but never blocks the documentation work needed to satisfy the gate.
+- Structural completeness is deterministic Markdown/front-matter validation,
+  not semantic truth inference. The coding agent remains accountable for
+  evidence, accepted-plan fidelity, and keeping the living document accurate.
+- `feature-specification` replaces `feature-notes` in the typed catalog so the
+  artifact count remains stable while the mandatory dependency set becomes
+  stronger. Existing downstream note directories remain project-owned data.
+- Historical specs are immutable rationale inputs discovered through the
+  specs index, progress summary, explicit relationships, and repository
+  evidence. Their mention of removed concepts does not make those concepts
+  active again.
 
 ## DISCOVERIES
 
@@ -259,6 +357,43 @@ contract without launching or supervising agents.
   `.gitignore`; it created an empty `.env`, a non-trusting `.envrc`, and a
   `.DEFAULT_GOAL := help` Makefile without guessed project commands. Those
   semantics remain appropriate for deterministic starters.
+- The current resolver validates catalog artifacts only. It requires a
+  separate feature-spec state projection so incomplete project-owned feature
+  memory cannot be mistaken for registry drift or repaired by reconcile.
+- Existing agent docs explicitly say feature specs are conditional, confirming
+  that documentation-only tightening would still leave machine resolution
+  unable to enforce the required pre-source gate.
+- Resolved-contract v1 can preserve compatibility through one optional
+  `feature_spec` projection. It reports deterministic structural state and
+  separate spec-authoring, source-implementation, and delivery permissions
+  without changing local-only resolver ownership or requiring a new command.
+- A safe feature hint maps to exactly one project-confined
+  `docs/specs/<feature>/SPEC.md`; relationship targets map only to existing
+  confined historical SPEC paths, while the progress summary and specs
+  directory remain lightweight RLM indices.
+- Replacing `feature-notes` with `feature-specification` keeps the downstream
+  catalog at 14 rulesets and four workflows while changing implementation
+  delivery from five to six explicit dependencies. Reconcile retires only the
+  old managed artifact record and does not scan or delete downstream notes.
+
+## VALIDATION PLAN AND MAP
+
+- Catalog and dependency tests prove `feature-specification` replaces
+  `feature-notes`, is downstream-visible, and is selected transitively by
+  implementation delivery.
+- Resolver unit and JSON-schema tests cover missing, invalid, incomplete, and
+  complete feature specs; spec-authoring/source/delivery permissions; stable
+  required-section diagnostics; deterministic historical discovery; and
+  strictly local read-only behavior.
+- Bootstrap and command-tree tests prove fresh init creates only the empty
+  specs container and no removed feature lifecycle surface returns.
+- Documentation and routing assertions prove the pre-source, live-update,
+  pre-delivery, and completion gates while excluding active `docs/notes`
+  guidance.
+- Full Go tests, focused race tests, formatting, vet, lint, security checks,
+  binary and release builds, the affected-source 300-line audit, self-hosted
+  resolution, exact pushed-head verification, and hosted PR status complete
+  the integrated acceptance evidence.
 
 ## VALIDATION
 
@@ -345,6 +480,33 @@ contract without launching or supervising agents.
   issue and PR assigned to `jamesonstone`; exact pushed-head and hosted-state
   evidence is refreshed after every update rather than treating a successful
   CodeRabbit context as completed review.
+- Feature-spec resolver tests cover missing, invalid, incomplete, ready, and
+  delivery-ready states; safe feature paths; spec-authoring/source/delivery
+  permissions; exact required V3 sections; transitive rule selection;
+  deterministic historical relationships; and the stable projection golden.
+- The self-hosted SPEC 0058 resolution reports `ready`, workflow version 3,
+  zero missing sections, source and delivery permission, both declared
+  historical specs, and the progress-summary/specs-directory RLM indices.
+- A fresh external fixture initialized all 14 rulesets and four workflows,
+  created `docs/specs/` without `0000_INIT_PROJECT.md` or `docs/notes`, resolved
+  repository bootstrap, and returned exit 2 plus spec-authoring-only permission
+  for a missing feature spec.
+- Repository reconciliation retired the managed `feature-notes` record, added
+  `feature-specification`, updated the six-dependency implementation workflow
+  and bounded routing, and then reported `current` with 18 artifacts.
+- The correction passed `go test ./...`, affected-package race tests,
+  `go vet ./...`, `golangci-lint run ./...`, `govulncheck ./...`, focused gosec with
+  zero issues, gitleaks with no leaks, both binary builds, `goreleaser check`,
+  the complete snapshot build matrix, schema parsing, the exact command-tree
+  tests, and the full version-control-eligible 300-line source/test audit.
+- The full race suite reproduced only the unchanged `internal/worktree` PTY
+  cancellation timing failure. The normal full suite and all affected-package
+  race tests pass, the six whole-tree gosec findings remain in unchanged
+  registry/worktree code, and `git diff -- cmd/git-wt internal/worktree` is
+  empty.
+- Diff assertions confirm no historical specification other than living SPEC
+  0058 changed, active routing does not reference `feature-notes` or
+  `docs/notes`, and the reduced command tree still rejects `kit spec`.
 
 ## OUTCOME
 
@@ -376,9 +538,26 @@ contract without launching or supervising agents.
   and populates only verified Constitution, progress, testing, tooling,
   integration, Makefile, and README content. Kit itself does not infer that
   truth or read secrets.
+- Every non-trivial feature now resolves a mandatory living V3 specification
+  contract. Missing or incomplete specs expose authoring permission but block
+  source and delivery; complete specs unlock source, and only deliver/complete
+  phases unlock delivery. Relevant historical specs remain progressively
+  discoverable without restoring `kit spec` or the active `docs/notes` model.
 - Implementation, local acceptance, ready pull-request delivery, exact-head
   verification, and hosted-check observation are complete on `GH-133` and PR
   #134. Human review and merge remain external repository actions.
+
+## DELIVERY EVIDENCE
+
+- GitHub issue #133, branch `GH-133`, and ready PR #134 are the single accepted
+  delivery lane for the complete coding-agent-first major release and every
+  accepted correction.
+- Before this correction's delivery commit, local `HEAD`, `origin/GH-133`, the
+  GitHub branch ref, and PR head all matched
+  `87d9de4d01990d1ae278c0697b2c352f0d647f69`; the issue and PR were open and
+  assigned to `jamesonstone`, and the PR remained mergeable.
+- The correction's exact pushed head and hosted-check state are recorded after
+  push. Human review and merge remain external actions.
 
 ## REPOSITORY MEMORY
 

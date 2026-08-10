@@ -14,12 +14,32 @@ type Resolved struct {
 	State         string                `json:"state"`
 	ProjectRoot   string                `json:"project_root"`
 	Hints         Hints                 `json:"hints"`
+	FeatureSpec   *FeatureSpec          `json:"feature_spec,omitempty"`
 	Registry      registry.SourceConfig `json:"registry"`
 	Routing       []string              `json:"routing"`
 	Workflows     []Artifact            `json:"workflows"`
 	Rules         map[string][]Artifact `json:"rules"`
 	Diagnostics   []string              `json:"diagnostics,omitempty"`
 	NextActions   []string              `json:"next_actions,omitempty"`
+}
+
+type FeatureSpec struct {
+	Feature          string           `json:"feature"`
+	Path             string           `json:"path"`
+	State            string           `json:"state"`
+	WorkflowVersion  int              `json:"workflow_version,omitempty"`
+	Phase            string           `json:"phase,omitempty"`
+	RequiredSections []string         `json:"required_sections"`
+	MissingSections  []string         `json:"missing_sections"`
+	HistoricalSpecs  []string         `json:"historical_specs"`
+	HistoryIndexes   []string         `json:"history_indexes"`
+	PhasePermissions PhasePermissions `json:"phase_permissions"`
+}
+
+type PhasePermissions struct {
+	SpecAuthoring        bool `json:"spec_authoring"`
+	SourceImplementation bool `json:"source_implementation"`
+	Delivery             bool `json:"delivery"`
 }
 
 type Artifact struct {

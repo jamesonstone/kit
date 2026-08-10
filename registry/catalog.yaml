@@ -41,16 +41,15 @@ artifacts:
     read_policy: must
     applies_to: [coding-agent, implementation, validation, repository-memory, constitution]
   - kind: ruleset
-    slug: feature-notes
-    description: Keeps optional feature source material separate from canonical repository truth.
+    slug: feature-specification
+    description: Requires a complete living V3 feature specification before source implementation and through delivery.
     visibility: downstream
-    source_path: docs/references/rules/feature-notes.md
-    target_path: docs/references/rules/feature-notes.md
+    source_path: docs/references/rules/feature-specification.md
+    target_path: docs/references/rules/feature-specification.md
     version: 1
-    digest: sha256:1318a30df003ed2674176d33a46e9948c0193ca0a728c9677e8a915df81cc742
-    read_policy: conditional
-    applies_to: [notes, feature-notes, source-material, context, documentation, coding-agent]
-    paths: [docs/notes/**]
+    digest: sha256:a2f60277d60bd891fc17761d9ab2fb09eef43fa411b0f6fe82a0a19a97ee189d
+    read_policy: must
+    applies_to: [coding-agent, feature, implementation, planning, repository-memory]
   - kind: ruleset
     slug: frontend-application-architecture
     description: Defines framework-aware boundaries for frontend applications.
@@ -151,10 +150,11 @@ artifacts:
     source_path: docs/references/workflows/implementation-delivery.md
     target_path: docs/references/workflows/implementation-delivery.md
     version: 1
-    digest: sha256:4b19b09042703600d067d6c95271cc5f9288a1f86efabcab9928dc95075c6bc8
+    digest: sha256:24e4736e639f8208566869aa09f00b11aec727b0ab8652ec784f22acc8d91876
     read_policy: must
     applies_to: [coding-agent, implementation, delivery]
     dependencies:
+      - ruleset/feature-specification
       - ruleset/safety-guardrails
       - ruleset/work-lane-gating
       - ruleset/testing-and-environment-validation

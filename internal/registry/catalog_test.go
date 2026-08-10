@@ -151,6 +151,44 @@ func TestRepositoryCatalogIncludesRepositoryBootstrapDependencies(t *testing.T) 
 	}
 }
 
+func TestRepositoryCatalogRequiresFeatureSpecificationForDelivery(t *testing.T) {
+	content, err := os.ReadFile("../../registry/catalog.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := ParseCatalog(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rule, found := FindArtifact(catalog, KindRuleset, "feature-specification")
+	if !found || rule.ReadPolicy != "must" {
+		t.Fatalf("mandatory feature-specification rule = %#v, found = %t", rule, found)
+	}
+	if _, retired := FindArtifact(catalog, KindRuleset, "feature-notes"); retired {
+		t.Fatal("retired feature-notes ruleset remains active")
+	}
+	workflow, found := FindArtifact(catalog, KindWorkflow, "implementation-delivery")
+	if !found || !slices.Contains(workflow.Dependencies, "ruleset/feature-specification") {
+		t.Fatalf("implementation-delivery dependencies = %v", workflow.Dependencies)
+	}
+	for _, artifact := range []CatalogArtifact{rule, workflow} {
+		document, readErr := os.ReadFile("../../" + artifact.SourcePath)
+		if readErr != nil {
+			t.Fatal(readErr)
+		}
+		if artifact.Digest != HashContent(string(document)) {
+			t.Fatalf("catalog digest for %s is stale", ArtifactKey(artifact.Kind, artifact.Slug))
+		}
+		doc, parseErr := ParseMarkdown(string(document))
+		if parseErr != nil {
+			t.Fatal(parseErr)
+		}
+		if validateErr := ValidateDocument(doc, artifact); validateErr != nil {
+			t.Fatal(validateErr)
+		}
+	}
+}
+
 func testCatalogArtifact(kind, slug string, dependencies []string) CatalogArtifact {
 	directory := "rules"
 	target := "docs/references/rules/"

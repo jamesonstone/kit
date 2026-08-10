@@ -11,8 +11,10 @@ contract without launching, supervising, or reasoning on behalf of an agent.
 - Materialized Markdown is canonical and directly reviewable.
 - Resolved JSON is a reproducible machine projection, never a competing source
   of truth.
-- Durable product rationale belongs in canonical repository documentation when
-  code and tests cannot preserve it.
+- Every non-trivial feature has a complete living V3 specification before
+  source implementation and maintains it through delivery and curation.
+- Historical specifications remain progressively discoverable repository
+  evidence even when their runtime surface is removed.
 
 ### 2. Coding-agent-first interfaces
 
@@ -43,6 +45,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
   calls, or task-text inference.
 - Invalid or unresolved required artifacts block the contract with actionable
   diagnostics.
+- Feature-spec authoring remains allowed while a missing or incomplete spec
+  blocks source implementation and delivery.
 
 ### 5. Fail-closed reconciliation
 
@@ -87,7 +91,7 @@ contract without launching, supervising, or reasoning on behalf of an agent.
 - Keep every version-control-eligible handwritten implementation and test file
   at 300 physical lines or less.
 - Validate affected code and curate material repository rationale after
-  implementation.
+  implementation; keep the living feature spec current throughout the work.
 <!-- END KIT-MANAGED BASELINE RULES -->
 
 ### Registry invariants
@@ -120,6 +124,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
    materialization before repository mutation.
 9. `internal/prfix` owns the narrow protected PR-feedback adapter; it never
    launches agents or performs repair, staging, commit, push, or merge work.
+10. `internal/contract` validates living V3 feature-spec structure and phase
+    permissions without inferring or authoring project truth.
 
 ### Public CLI allowlist
 

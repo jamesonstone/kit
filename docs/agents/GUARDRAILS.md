@@ -9,6 +9,8 @@
 - Keep handwritten source and test files at 300 physical lines or less.
 - Run the applicable code-level validation and report exact evidence.
 - Do not treat a blocked contract as implementation-ready.
+- A blocked feature spec permits only spec authoring; source edits wait for a
+  structurally complete V3 spec and a successful re-resolution.
 
 ## GitHub delivery gate
 

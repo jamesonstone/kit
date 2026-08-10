@@ -27,6 +27,7 @@ Before implementation, the coding agent runs:
 ```bash
 kit contract resolve \
   --workflow implementation-delivery \
+  --feature 0059-example \
   --path internal/example.go \
   --applies-to backend
 ```
@@ -37,11 +38,24 @@ mandatory rules and workflow dependencies are included automatically. A
 missing, invalid, conflicted, or unresolved required artifact returns blocked
 JSON and a nonzero status.
 
+For a non-trivial feature, resolution also reports the canonical living V3
+spec path, required and missing sections, related historical specs, RLM
+indices, and phase permissions. A missing or incomplete spec permits authoring
+that spec but blocks source implementation. The agent writes it from the
+accepted native plan and actual evidence, re-resolves before source edits,
+keeps decisions and discoveries live, and reconciles validation and outcome
+against the integrated diff before delivery.
+
 ## Implement with native agent tooling
 
 The agent reads routing entrypoints and ordered artifacts returned by the
 resolver, then uses its native planning, editing, testing, and delivery tools.
 Kit does not manage that process.
+
+Historical specifications remain under `docs/specs/` and are loaded only when
+the progress summary, explicit relationships, or repository evidence makes
+them relevant. Removed commands or conventions are not mechanically rewritten
+into current behavior.
 
 ## Repair asynchronous PR feedback
 

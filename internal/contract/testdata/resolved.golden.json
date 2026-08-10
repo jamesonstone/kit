@@ -29,7 +29,8 @@
       "state": "managed",
       "digest": "DIGEST_DELIVERY",
       "dependencies": [
-        "ruleset/base"
+        "ruleset/base",
+        "ruleset/feature-specification"
       ],
       "applicability": [
         "delivery"
@@ -50,6 +51,20 @@
         "digest": "DIGEST_BASE_CUSTOM",
         "applicability": [
           "core"
+        ],
+        "reason": "dependency of workflow/delivery"
+      },
+      {
+        "kind": "ruleset",
+        "slug": "feature-specification",
+        "description": "feature-specification contract",
+        "path": "docs/references/rules/feature-specification.md",
+        "version": 1,
+        "read_policy": "conditional",
+        "state": "managed",
+        "digest": "DIGEST_FEATURE_SPECIFICATION",
+        "applicability": [
+          "feature"
         ],
         "reason": "dependency of workflow/delivery"
       },

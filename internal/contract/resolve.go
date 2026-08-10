@@ -55,6 +55,26 @@ func Resolve(root string, hints Hints) (Resolved, error) {
 			resolved.Diagnostics = append(resolved.Diagnostics, fmt.Sprintf("requested workflow %q is not installed", workflow))
 		}
 	}
+	if resolved.Hints.Feature != "" {
+		featureSpec, diagnostic := inspectFeatureSpec(root, resolved.Hints.Feature)
+		resolved.FeatureSpec = &featureSpec
+		if !hasRule(resolved.Rules, "feature-specification") {
+			resolved.State = "blocked"
+			resolved.Diagnostics = append(resolved.Diagnostics, "required ruleset/feature-specification is not installed")
+		}
+		if diagnostic != "" {
+			resolved.State = "blocked"
+			resolved.Diagnostics = append(resolved.Diagnostics, diagnostic)
+			if featureSpec.Path == "" {
+				resolved.NextActions = appendUnique(resolved.NextActions, "supply a safe canonical feature directory name")
+			} else {
+				resolved.NextActions = appendUnique(resolved.NextActions,
+					fmt.Sprintf("create or update %s from the accepted native plan; spec authoring remains allowed", featureSpec.Path))
+				resolved.NextActions = appendUnique(resolved.NextActions,
+					fmt.Sprintf("re-run `kit contract resolve --feature %s --workflow implementation-delivery --json` before source implementation", resolved.Hints.Feature))
+			}
+		}
+	}
 	resolved.Routing = existingRouting(root)
 	sortResolved(&resolved)
 	if resolved.State == "blocked" {
@@ -245,6 +265,15 @@ func contains(values []string, value string) bool {
 func hasArtifact(artifacts []Artifact, slug string) bool {
 	for _, artifact := range artifacts {
 		if artifact.Slug == slug {
+			return true
+		}
+	}
+	return false
+}
+
+func hasRule(rules map[string][]Artifact, slug string) bool {
+	for _, artifacts := range rules {
+		if hasArtifact(artifacts, slug) {
 			return true
 		}
 	}

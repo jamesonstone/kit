@@ -45,6 +45,20 @@ retained.
   sections; surrounding text remains project-owned.
 - Retired managed artifacts are removed only when their installed content is
   unchanged. Customized retired files are preserved.
+- The retired `feature-notes` ruleset is replaced by mandatory
+  `feature-specification`. Existing downstream `docs/notes` content remains
+  project-owned and is not automatically deleted; historical specs are not
+  rewritten.
+
+## Feature-history correction
+
+The initial coding-agent-first implementation made feature specs advisory.
+That was incomplete. Every non-trivial feature must now resolve with an
+explicit feature directory and create or adopt a complete living V3
+`docs/specs/<feature>/SPEC.md` before source edits. Missing or incomplete specs
+allow spec authoring but block source implementation until re-resolution.
+Fresh init still creates only the empty `docs/specs/` container and never
+invents a feature or restores `0000_INIT_PROJECT.md` downstream.
 
 ## Canonical init correction
 

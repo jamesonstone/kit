@@ -14,15 +14,18 @@ The canonical declarative workflow is
 
 ## Implementation delivery
 
-1. Resolve the local contract with explicit workflow and task hints.
+1. Resolve the local contract with `implementation-delivery`, explicit task
+   hints, and `--feature <feature>` for every non-trivial feature.
 2. Read the returned routing entrypoints, workflow, mandatory rules, and
    conditional rules before mutation.
 3. Inspect repository state, relevant code, tests, and durable rationale.
-4. Use native agent planning when material ambiguity or architecture requires
-   it; keep accepted durable rationale in the current feature spec.
+4. Create or adopt the complete living V3 feature spec from the accepted native
+   plan, then re-resolve and do not begin source edits until its permission is
+   ready.
 5. Implement the smallest complete change and validate the affected boundaries.
-6. Curate repository memory, review the complete diff, and deliver through the
-   repository's GitHub rules.
+6. Keep decisions and discoveries live, then reconcile validation, actual
+   outcome, delivery evidence, and repository-memory disposition against the
+   complete integrated diff before delivery.
 
 The canonical declarative workflow is
 [`implementation-delivery.md`](../references/workflows/implementation-delivery.md).
@@ -56,7 +59,8 @@ The canonical declarative workflow is
 
 ## Repository memory
 
-When code and tests cannot preserve material rationale, create or adopt
-`docs/specs/<feature>/SPEC.md` before source edits. Keep decisions and
-discoveries current, then record literal validation and outcome. Preserve
-historical specifications even when their former runtime surface is removed.
+Every non-trivial feature requires `docs/specs/<feature>/SPEC.md` before source
+edits. The spec remains live through decisions, discoveries, validation,
+outcome, delivery, and curation. Use the project progress summary, explicit
+relationships, and repository evidence to load relevant historical specs
+progressively; preserve them even when their former runtime surface is removed.

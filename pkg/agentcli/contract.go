@@ -32,7 +32,7 @@ func newContractResolveCommand() *cobra.Command {
 			return runContractResolve(command, *options)
 		},
 	}
-	command.Flags().StringVar(&options.feature, "feature", "", "explicit feature identifier")
+	command.Flags().StringVar(&options.feature, "feature", "", "canonical living feature directory")
 	command.Flags().StringArrayVar(&options.paths, "path", nil, "task path hint; repeat as needed")
 	command.Flags().StringArrayVar(&options.applicability, "applies-to", nil, "applicability tag; repeat as needed")
 	command.Flags().StringArrayVar(&options.workflows, "workflow", nil, "explicit workflow slug; repeat as needed")

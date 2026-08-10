@@ -3,7 +3,8 @@
 ## Kit-owned operations
 
 - `kit contract resolve`: deterministic local contract selection; no network,
-  write, Git, subprocess, or model activity.
+  write, Git, subprocess, or model activity. With `--feature`, it reports the
+  living V3 spec's structural state, historical links, and phase permissions.
 - `kit init`: validated canonical repository bootstrap and evidence-gathering
   prompt; it never reads `.env` or infers project truth.
 - `kit reconcile`: read-only drift and migration planning by default; explicit

@@ -25,6 +25,9 @@ memory, prompt, or agent-execution harness.
 - The protected `kit pr fix` prompt fallback with active human/CodeRabbit
   collection, exact writable-head lane pinning, bounded wait, and explicit
   verified thread resolution.
+- A mandatory registry-backed `feature-specification` contract, living V3 spec
+  phase state in local resolution, and hard pre-source/pre-delivery gates for
+  every non-trivial feature.
 
 ## Protected command paths
 
@@ -46,6 +49,8 @@ All other Kit 1.x commands, runtime packages, general prompt templates, improvem
 evaluations, command metadata, and command-specific automation were removed.
 Only the narrow `kit pr fix` adapter is restored; dispatch, loop, the broader
 legacy PR family, and agent-launching behavior remain removed.
+The active `feature-notes`/`docs/notes` convention is also removed. Migration
+does not delete existing downstream notes or rewrite historical specs.
 The separate `git-wt` binary and implementation remain unchanged.
 
 ## Required migration

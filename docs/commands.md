@@ -41,7 +41,8 @@ to `kit reconcile`; schema-v1 projects must migrate first.
 Emits resolved-contract schema v1 as JSON. It is deterministic, local-only,
 read-only, and performs no Git operation or model inference.
 
-- `--feature <id>`: add an explicit feature applicability hint.
+- `--feature <directory>`: inspect the canonical living V3 feature spec and
+  expose its structural state, historical links, and phase permissions.
 - `--path <path>`: add a path hint; repeatable.
 - `--applies-to <tag>`: add an applicability tag; repeatable.
 - `--workflow <slug>`: request a workflow; repeatable.
@@ -52,6 +53,14 @@ does not wait for or collect network feedback.
 
 Blocked required artifacts still produce diagnostic JSON and exit with status
 2. Input or project errors exit with status 1.
+
+For non-trivial features, combine `--workflow implementation-delivery` with
+`--feature`. A missing, invalid, or incomplete spec keeps
+`feature_spec.phase_permissions.spec_authoring` true while source
+implementation and delivery remain false. Create or repair the reported
+`docs/specs/<feature>/SPEC.md`, then re-run the same local resolution before
+source edits. Kit validates structure and phase state; the coding agent authors
+the spec from the accepted plan and repository evidence.
 
 ## `kit pr fix`
 

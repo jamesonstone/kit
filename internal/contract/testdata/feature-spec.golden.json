@@ -1,0 +1,36 @@
+{
+  "feature": "0059-example",
+  "path": "docs/specs/0059-example/SPEC.md",
+  "state": "ready",
+  "workflow_version": 3,
+  "phase": "ready",
+  "required_sections": [
+    "purpose",
+    "context",
+    "source evidence and historical relationships",
+    "requirements",
+    "non-goals",
+    "acceptance criteria",
+    "accepted plan",
+    "architecture and decisions",
+    "discoveries",
+    "validation plan and map",
+    "validation",
+    "outcome",
+    "delivery evidence",
+    "repository memory"
+  ],
+  "missing_sections": [],
+  "historical_specs": [
+    "docs/specs/0042-history/SPEC.md"
+  ],
+  "history_indexes": [
+    "docs/PROJECT_PROGRESS_SUMMARY.md",
+    "docs/specs/"
+  ],
+  "phase_permissions": {
+    "spec_authoring": true,
+    "source_implementation": true,
+    "delivery": false
+  }
+}

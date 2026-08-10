@@ -112,11 +112,13 @@ func writeContractProject(t *testing.T) string {
 	artifacts := []registry.ArtifactRecord{
 		contractRecord("ruleset", "agent-team", "docs/references/rules/agent-team.md", "conditional", []string{"subagent"}, nil, nil),
 		contractRecord("ruleset", "base", "docs/references/rules/base.md", "conditional", []string{"core"}, nil, nil),
+		contractRecord("ruleset", "feature-specification", "docs/references/rules/feature-specification.md", "conditional", []string{"feature"}, nil, nil),
 		contractRecord("ruleset", "github-delivery", "docs/references/rules/github-delivery.md", "conditional", []string{"github"}, nil, nil),
 		contractRecord("ruleset", "go-paths", "docs/references/rules/go-paths.md", "conditional", []string{"go"}, []string{"**/*.go"}, nil),
 		contractRecord("ruleset", "safety", "docs/references/rules/safety.md", "must", []string{"safety"}, nil, nil),
 		contractRecord("ruleset", "work-lane", "docs/references/rules/work-lane.md", "conditional", []string{"lane"}, nil, nil),
-		contractRecord("workflow", "delivery", "docs/references/workflows/delivery.md", "conditional", []string{"delivery"}, nil, []string{"ruleset/base"}),
+		contractRecord("workflow", "delivery", "docs/references/workflows/delivery.md", "conditional", []string{"delivery"}, nil,
+			[]string{"ruleset/base", "ruleset/feature-specification"}),
 		contractRecord("workflow", "pr-feedback-repair", "docs/references/workflows/pr-feedback-repair.md", "conditional", []string{"review"}, nil,
 			[]string{"ruleset/agent-team", "ruleset/github-delivery", "ruleset/work-lane"}),
 	}

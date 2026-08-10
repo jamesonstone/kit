@@ -13,6 +13,7 @@
     "state": { "enum": ["ready", "blocked"] },
     "project_root": { "type": "string" },
     "hints": { "$ref": "#/$defs/hints" },
+    "feature_spec": { "$ref": "#/$defs/feature_spec" },
     "registry": { "type": "object" },
     "routing": { "type": "array", "items": { "type": "string" } },
     "workflows": { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
@@ -27,6 +28,35 @@
     "next_actions": { "type": "array", "items": { "type": "string" } }
   },
   "$defs": {
+    "feature_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feature", "path", "state", "required_sections", "missing_sections",
+        "historical_specs", "history_indexes", "phase_permissions"
+      ],
+      "properties": {
+        "feature": { "type": "string" },
+        "path": { "type": "string" },
+        "state": { "enum": ["missing", "invalid", "incomplete", "ready"] },
+        "workflow_version": { "type": "integer", "minimum": 3 },
+        "phase": { "enum": ["clarify", "ready", "implement", "validate", "reflect", "deliver", "complete", "blocked"] },
+        "required_sections": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "missing_sections": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "historical_specs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "history_indexes": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "phase_permissions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["spec_authoring", "source_implementation", "delivery"],
+          "properties": {
+            "spec_authoring": { "type": "boolean" },
+            "source_implementation": { "type": "boolean" },
+            "delivery": { "type": "boolean" }
+          }
+        }
+      }
+    },
     "hints": {
       "type": "object",
       "properties": {

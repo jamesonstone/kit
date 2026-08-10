@@ -13,7 +13,9 @@ and resolves the deterministic subset applicable to a task.
 3. `.kit.yaml` records source identity, revision, digests, section hashes,
    paths, and artifact state.
 4. `kit contract resolve` selects ordered local artifacts from explicit hints.
-5. `kit reconcile` compares local, installed, and current registry state and
+5. Feature resolution projects living V3 spec structure, historical links,
+   and phase permissions; spec authoring remains agent-owned.
+6. `kit reconcile` compares local, installed, and current registry state and
    previews every write before an explicit apply.
 
 Repository-local Markdown is authoritative. Resolved-contract JSON is a stable
@@ -35,6 +37,12 @@ narrow PR await adapter emits
 Both types carry a version and digest and may declare applicability tags, path
 patterns, dependencies, visibility, and read policy.
 
+`feature-specification` is a mandatory dependency of implementation delivery.
+Every non-trivial feature has a living V3 spec before source edits and keeps it
+current through decisions, discoveries, validation, outcome, delivery, and
+repository-memory curation. Historical specs remain repository evidence, not
+legacy runtime compatibility.
+
 The `pr-feedback-repair` workflow adds a structured asynchronous-review
 contract. Kit resolves it locally. The explicit `kit pr fix` fallback may use
 native GitHub APIs for bounded waiting, active collection, lane preparation,
@@ -43,6 +51,8 @@ and verified named-thread resolution; it never performs the repair itself.
 ## Trust boundaries
 
 - Contract resolution is local-only and read-only.
+- A missing or incomplete feature spec blocks source implementation while
+  leaving spec authoring explicitly permitted.
 - Registry administration may read the configured source.
 - Initialization validates the complete catalog and write plan before changing
   the project, never reads `.env`, and separately snapshots the preserved

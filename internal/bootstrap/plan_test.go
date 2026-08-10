@@ -64,7 +64,7 @@ func TestFreshPlanCreatesExactBootstrapAndResolvableWorkflow(t *testing.T) {
 	if err != nil || len(env) != 0 {
 		t.Fatalf(".env = %q, err %v", env, err)
 	}
-	for _, excluded := range []string{"BRAINSTORM.md", "PLAN.md", "TASKS.md", "docs/specs/0000_INIT_PROJECT.md", ".kit/loops"} {
+	for _, excluded := range []string{"BRAINSTORM.md", "PLAN.md", "TASKS.md", "docs/specs/0000_INIT_PROJECT.md", "docs/notes", ".kit/loops"} {
 		if _, err := os.Stat(filepath.Join(project, excluded)); !os.IsNotExist(err) {
 			t.Errorf("excluded bootstrap path %s exists: %v", excluded, err)
 		}
@@ -77,8 +77,13 @@ func TestFreshPlanCreatesExactBootstrapAndResolvableWorkflow(t *testing.T) {
 		t.Fatalf("resolved repository bootstrap = %#v", resolved)
 	}
 	assertResolvedRule(t, resolved, "constitution-curation")
+	assertResolvedRule(t, resolved, "feature-specification")
 	assertResolvedRule(t, resolved, "testing-and-environment-validation")
 	assertResolvedRule(t, resolved, "readme-header-tagline")
+	agentWorkflow := readFile(t, project, "docs/agents/WORKFLOWS.md")
+	if !strings.Contains(agentWorkflow, "complete living V3 spec") || !strings.Contains(agentWorkflow, "--feature <feature>") {
+		t.Fatalf("generated implementation routing is incomplete: %s", agentWorkflow)
+	}
 }
 
 func TestRepositoryBootstrapPromptGolden(t *testing.T) {

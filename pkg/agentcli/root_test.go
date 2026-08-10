@@ -46,6 +46,7 @@ func TestReadmeDocumentsMajorReleaseAndPrimaryFlow(t *testing.T) {
 	required := []string{
 		"Major update", "kit init", "kit contract resolve", "agent implementation", "kit reconcile",
 		"complete coding-agent bootstrap", "repository-bootstrap", "kit pr fix",
+		"living V3", "--feature 0059-example",
 		"docs/migrations/coding-agent-first-major.md",
 	}
 	for _, phrase := range required {

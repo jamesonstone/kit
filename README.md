@@ -30,7 +30,10 @@ and [release notes](docs/releases/coding-agent-first-major.md).
 kit init
 
 # Give a coding agent the stable, local-only contract for its task.
-kit contract resolve --workflow implementation-delivery --path internal/example.go
+kit contract resolve \
+  --workflow implementation-delivery \
+  --feature 0059-example \
+  --path internal/example.go
 
 # agent implementation happens in the repository
 
@@ -45,6 +48,12 @@ In short: `kit init` → `kit contract resolve` → agent implementation →
 The init prompt routes the coding agent through the local
 `repository-bootstrap` workflow; Kit supplies starters but does not infer
 project truth.
+
+For every non-trivial feature, the agent creates or adopts the reported living V3
+`docs/specs/<feature>/SPEC.md` from its accepted native plan before source edits.
+Missing or incomplete specs permit spec authoring but block source work until
+the agent re-resolves the local contract. Historical specs remain progressively
+discoverable and are never mechanically rewritten.
 
 For asynchronous or late pull-request feedback, `kit pr fix` collects active
 human and provider review, pins the exact writable PR-head lane, and emits the
