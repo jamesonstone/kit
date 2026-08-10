@@ -60,6 +60,7 @@
 | 0056 | codex-browser-policy | `docs/specs/0056-codex-browser-policy` | complete | no | 2026-08-07 | Make Codex interactive browser work default to its isolated built-in `@Browser`, prohibit silent external Chrome or browser-automation fallback, and require verified cleanup whenever the user explicitly authorizes an external browser. |
 | 0057 | infrastructure-change-approval | `docs/specs/0057-infrastructure-change-approval` | complete | no | 2026-08-07 | Require Kit-managed coding agents to outline public-cloud, Kubernetes, and infrastructure-as-code mutations and obtain user confirmation before changing them, while allowing each approved bounded batch to run to completion in one pass without routine approval interruptions and always confirming deletion or removal after its summary. |
 | 0058 | cross-repository-program-coordination | `docs/specs/0058-cross-repository-program-coordination` | complete | no | 2026-08-10 | Ensure that an accepted plan spanning multiple repositories, dependent deliverables, staged deployments, or agent handoffs retains enough operational state to resume safely and transfer accountability without relying on one chat, one agent's context, or an overloaded task checklist. |
+| 0059 | git-wt-removal | `docs/specs/0059-git-wt-removal` | deliver | no | 2026-08-10 | Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows. |
 
 ## PROJECT INTENT
 
@@ -576,6 +577,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0058-cross-repository-program-coordination/SPEC.md`
 
+### git-wt-removal
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows.
+- **APPROACH**: 1. Coordinate the Kura distribution and Kit removal through one Kit-owned program ledger with Kura PR #2 as the Kit merge prerequisite. 2. Retain only the native, output-free worktree preparation required by Kit repair workflows in `internal/worktreeprep`. 3. Remove the `git-wt` executable, command implementation, build, release, capability, manpage, and current user-documentation surfaces. 4. Keep canonical native worktree guidance and its embedded template aligned. 5. Run focused and complete validation, curate repository memory, and deliver issue #139 through exact branch `GH-139` as a ready companion pull request.
+- **OPEN ITEMS**: create the ready companion pull request and observe its hosted checks; Kura PR #2 is merged, while release and host-installation evidence remain outside this delivery
+- **POINTERS**: `docs/specs/0059-git-wt-removal/SPEC.md`, `docs/programs/git-wt-extraction/PROGRAM.md`
+
 ## LAST UPDATED
 
-2026-08-10 12:09:50 EDT
+2026-08-10 17:18:03 EDT

@@ -33,7 +33,6 @@ why.
 
 ```bash
 go install github.com/jamesonstone/kit/cmd/kit@latest
-GOBIN="$HOME/.local/bin" go install github.com/jamesonstone/kit/cmd/git-wt@latest
 ```
 
 Or build from source:
@@ -44,10 +43,7 @@ cd kit
 make build
 ```
 
-`make build` builds both Kit executables and installs or updates the optional
-`~/.local/bin/git-wt` manual convenience so Git can discover it as `git wt`.
-Kit-managed rules and reconciled guidance use native `git worktree` commands
-and do not require this wrapper.
+`make build` builds the Kit executable at `bin/kit`.
 
 Enable repository-managed hooks for this clone:
 
@@ -118,14 +114,9 @@ the complete durable truth.
 | `kit instructions [--version=vN]` | Print current (`v3`) provider-neutral coding-agent instructions as raw Markdown; use `--version=vN` to retrieve an immutable version for reproducible use |
 | `kit prompt list` | List reusable prompt-library entries |
 | `kit legacy --help` | List v1 staged workflow commands retained for migration |
-| `git wt help`, `git wt --help` | Show help for the optional project-oriented worktree convenience |
-| `git wt`, `git wt list [--root-position top\|bottom]` | Select a worktree with the primary checkout pinned and marked `[home]`; literal `main` worktrees are marked `[main]`; both use bright magenta; `PR#` is a two-second fail-soft GitHub annotation, interactive `TITLE` truncates before the complete `PATH`, local `LAST UPDATED` includes the day and `HH:MM`, and `h` opens home |
-| `git wt home` | Open a child shell in Git's primary worktree from any linked lane |
-| `git wt sync [--dry-run] [--json]` | Explicitly refresh the discovered origin default branch and retire only exact lanes proven merged by GitHub; ignored root `bin/` build output is disposable, while dry-run is strictly non-mutating |
-
 See [docs/commands.md](docs/commands.md) for the full Kit command guide and
 [docs/references/worktrees.md](docs/references/worktrees.md) for the portable
-native Git workflow and optional `git wt` cheat sheet.
+native Git worktree workflow.
 
 ## Documentation Map
 

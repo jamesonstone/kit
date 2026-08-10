@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/worktree"
+	"github.com/jamesonstone/kit/internal/worktreeprep"
 )
 
 type repairChangeDisposition string
@@ -38,17 +38,15 @@ var (
 		ctx context.Context,
 		cwd string,
 		number int,
-	) (worktree.PullRequestRepair, error) {
-		return worktree.NewApp(io.Discard, io.Discard).
-			PreparePullRequestRepair(ctx, cwd, number, true)
+	) (worktreeprep.PullRequest, error) {
+		return worktreeprep.New().PreparePullRequest(ctx, cwd, number, true)
 	}
 	prepareBranchWorktree = func(
 		ctx context.Context,
 		cwd string,
 		branch string,
-	) (worktree.PreparedWorktree, error) {
-		return worktree.NewApp(io.Discard, io.Discard).
-			PrepareBranch(ctx, cwd, branch, true)
+	) (worktreeprep.Prepared, error) {
+		return worktreeprep.New().PrepareBranch(ctx, cwd, branch, true)
 	}
 	repairContextCommandOutput = runRepairContextCommand
 	resolvePRRepairContext     = preparePRRepairContext

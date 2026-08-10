@@ -141,14 +141,13 @@ func v3GuidanceExpectations() map[string][]string {
 			"## Known Gaps",
 		},
 		"docs/references/worktrees.md": {
-			"optional `git wt` helper opens the same colorized selector",
-			"The `PR#` column runs one batched `gh` lookup",
-			"For direct branch navigation, use `git wt <branch>`",
+			"Native `git worktree` commands and ordinary filesystem operations define this",
+			"## Target-Aware Kit Repair Commands",
+			"Resolution proves the current clone owns the requested repository",
 			"## Writable-Lane Environment Links",
 			"Link each stable source into writable lanes by default",
 			"Preserve a regular destination",
-			"`.envrc`, which may be tracked by Git or owned by the user",
-			"Verified `.env` and `.envrc`",
+			"Never use `--force`, reset, clean, stash, or branch deletion",
 		},
 	}
 }

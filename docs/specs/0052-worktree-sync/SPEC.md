@@ -467,6 +467,15 @@ human and JSON modes, and strictly local-mutation-free under `--dry-run`.
 The ready pull request is
 <https://github.com/jamesonstone/kit/pull/94>; review and merge remain.
 
+### GH-139 decommission
+
+Feature 0059 removes the `git wt sync` command and its implementation from Kit
+after the generic `git-wt` product moved to Kura. The safety rationale and
+historical validation above remain as the record of what Kit previously
+delivered; current Kit policy no longer grants an internal merged-lane removal
+exception. Any future generic worktree synchronization belongs outside Kit and
+must establish its own fail-closed contract.
+
 ## REPOSITORY MEMORY
 
 Decision: updated

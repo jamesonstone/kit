@@ -161,8 +161,7 @@ all decisions.
    - Target-bearing PR and CI repair commands resolve the exact writable branch worktree from command context; they must not require manual navigation or select by recency, fuzzy matching, substring, or an interactive worktree list
    - When the resolved repair worktree is dirty, ask whether its existing changes belong in the repair and carry the explicit include-or-exclude decision into the generated instructions without stashing, resetting, cleaning, or discarding work
    - Preserve primary and linked checkout state; never stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
-   - The explicit merged-lane sync may discard only an actual ignored repository-root `bin/` build-output directory reported by Git as the exact `!! bin/` porcelain record after same-repository merged-PR and exact-head proof; manual removal and all other dirty or ignored material remain protected
-   - Use native `git worktree` and ordinary filesystem semantics as the portable policy authority; optional manual wrappers must never be a rule or reconciliation dependency
+   - Use native `git worktree` and ordinary filesystem semantics as the portable policy authority; external wrappers must never be a rule or reconciliation dependency
    - When a managed-file command changes version-control-eligible files in the protected root checkout, its follow-up guidance must carry the exact changed paths and their pre-command and expected result states, abort on destination path or index conflicts, transfer and explicitly stage created, updated, and removed results, verify that the destination and index contain exactly the captured command-owned change, and only then restore the source to its pre-command state without disturbing unrelated work
    - Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists, omit both links for isolation, never copy environment contents, and preserve a destination `.envrc` already supplied by the repository or user
    - Treat checkout, index, and `HEAD` as worktree-local while remembering that refs, remotes, objects, configuration, and stash state are shared across the clone
@@ -421,7 +420,6 @@ The read-only structural view rendered by `kit map`:
 ```bash
 kit/
 ├── cmd/kit/main.go          # thin entry point
-├── cmd/git-wt/main.go       # optional native-Git worktree convenience entry point
 ├── pkg/cli/                 # public CLI commands, prompt builders, and human output
 │   ├── root*.go             # root command, banner, help, profiles
 │   ├── brainstorm*.go       # brainstorm, backlog capture, notes, prompts
@@ -462,7 +460,7 @@ kit/
 │   ├── state/               # generated project-state pointers
 │   ├── templates/            # embedded project and instruction templates
 │   ├── verify/               # project and feature validation orchestration
-│   └── worktree/             # optional Git worktree command implementation
+│   └── worktreeprep/         # canonical writable-lane preparation for Kit repair workflows
 └── docs/
     ├── CONSTITUTION.md      # this file
     ├── PROJECT_PROGRESS_SUMMARY.md

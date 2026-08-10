@@ -7,7 +7,6 @@ libraries, scaffold refresh, and common command paths.
 
 ```bash
 go install github.com/jamesonstone/kit/cmd/kit@latest
-GOBIN="$HOME/.local/bin" go install github.com/jamesonstone/kit/cmd/git-wt@latest
 ```
 
 Or build from source:
@@ -18,8 +17,7 @@ cd kit
 make build
 ```
 
-`make build` builds `bin/kit` and `bin/git-wt`, then installs or updates
-`~/.local/bin/git-wt`.
+`make build` builds `bin/kit`.
 
 To enable repository-managed Git hooks:
 
@@ -30,46 +28,8 @@ make install-git-hooks
 This configures `core.hooksPath` to use `.githooks/`, including a `pre-commit`
 hook that runs `make build` before every commit.
 
-The separately installed `git-wt` executable is an optional manual convenience
-discovered by Git as `git wt`. Kit-managed rules and reconciled guidance use
-native `git worktree` commands and do not depend on this wrapper. For the
-portable workflow and optional command cheat sheet, see
-[references/worktrees.md](references/worktrees.md). Running `git wt` with no
-command opens the same worktree list as `git wt list`. Use `git wt help` for
-command help; the source installer also installs the `git-wt(1)` manual used by
-Git for `git wt --help`. Writable `issue`, `add`, and `repair` lanes link the
-clone's primary checkout `.env` and `.envrc` by default when each exists; append
-`--no-link-env` when isolation is required. Existing destination `.envrc` files
-are preserved, and detached `pr` lanes and migration do not create environment
-links. `git wt home` opens a child shell in Git's primary
-worktree. `git wt cd GH-123` does the same for an exact registered lane. To
-change the current shell's directory, use `cd "$(git wt path GH-123)"`.
-Interactive `git wt list` pins the primary checkout first by default, keeps it
-and every `main` row bright magenta, adds `[home]` or `[main]` to make that
-identity clear without relying on color alone, and accepts `h` to open home
-immediately. Use `--root-position bottom` to move the pinned row. `LAST UPDATED`
-uses the running user's local timezone and displays the day through `HH:MM`,
-without seconds. `PR#` uses one batched, two-second `gh` lookup: it shows the
-open same-repository pull request number, `-` when no open pull request matches,
-ascending comma-separated numbers when more than one matches, `NG` when `gh`
-is unavailable, `RL` when rate limited, `TO` on timeout, and `??` for another
-lookup failure. The interactive selector adds `TITLE` between `PR#` and
-`LAST UPDATED`; matching titles are kept in pull-request-number order and the
-shared title width truncates before the complete `PATH` value. No-PR rows show
-`-`, lookup failures mirror the `PR#` marker, and plain output remains
-unchanged. Every lookup failure remains non-blocking.
-`git wt sync --dry-run` performs a strictly non-mutating live
-origin/GitHub preview; ordinary `git wt sync` fast-forwards only a clean,
-behind default branch and retires only canonical lanes with exact merged-PR
-evidence. An actual ignored repository-root `bin/` directory is treated as
-disposable build output during sync; other ignored or dirty material still
-preserves the lane.
-
-Passing a branch directly, such as `git wt GH-93`, opens its registered
-worktree. If the lane is not registered, the command asks whether to create it
-beneath `~/worktrees/<owner>/<repository>/<branch>` (or `GIT_WT_ROOT`). Existing
-local or origin branches are attached there; only a branch absent from both is
-created from the origin default branch. A child shell then opens in the lane.
+Kit-managed rules and repair workflows use the portable native Git worktree
+contract documented in [references/worktrees.md](references/worktrees.md).
 
 ## Quick Start
 
@@ -210,7 +170,6 @@ Run `kit aws verify` before the first AWS-dependent command in a task and immedi
 | `kit upgrade` | Download and install the latest Kit release. |
 | `kit version` | Print the installed Kit version. |
 | `kit completion` | Generate shell autocompletion scripts. |
-| `git wt` | Optional manual wrapper for durable issue lanes, a colorized offline `list` selector with pinned-home navigation, explicit safe `sync`, exact path lookup, `home`/`cd` subshell navigation, detached PR views, repair lanes, default writable-lane `.env` and `.envrc` links, safe removal, pruning, and legacy migration beneath `~/worktrees`; reconciled rules use native Git. |
 
 ## Prompt Profiles And Subagents
 
