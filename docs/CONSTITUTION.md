@@ -138,6 +138,8 @@ all decisions.
    - Every claim in `PROJECT_PROGRESS_SUMMARY.md` must map to a feature document
    - Validation evidence belongs in `SPEC.md` Evidence and Validation Map sections; legacy executable verification may still use task-level `VERIFY` fields where available
    - Generated JSON state and run artifacts must point back to source documents instead of replacing them
+   - An accepted plan spanning multiple repositories requires one coordinator repository and one canonical `docs/programs/<program>/PROGRAM.md` ledger when deliverables are dependent, deployment or activation is staged, or execution is expected to cross agent or session handoffs; participant repositories remain authoritative for local specifications, delivery state, runbooks, and evidence
+   - Program dispatch, resume, handoff, milestone advancement, and completion operate only from a reconciled ready frontier; stale or unobserved repository, GitHub, deployment/runtime, or validation claims are unknown until verified against current evidence
    - When preflight proves that implementation starts from a clean, current default branch with no issue, branch, or pull request covering the work, allocate the human-assigned issue and exact issue-number branch without asking for a lane choice; retain explicit choice when work is already in progress or the lane is ambiguous
    - When the user explicitly continues unrelated or tangential scope on an existing pull request, the added scope has its own GitHub issue and issue-scoped commits, while the pull request body closes every fully resolved issue
 

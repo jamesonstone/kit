@@ -33,7 +33,7 @@ When the user asks to create or mutate an issue, branch, staging, commit, push, 
 
 ---
 
-` + infrastructureChangeApprovalGate + `---
+` + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `---
 
 ## AWS Context Hard Gate
 

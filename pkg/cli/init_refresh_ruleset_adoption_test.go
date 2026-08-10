@@ -118,6 +118,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 	slugs := []string{
 		"backend-service-architecture",
 		"codex-thread-initialization",
+		"cross-repository-program-coordination",
 		"frontend-application-architecture",
 		"infrastructure-change-approval",
 		"source-file-size",

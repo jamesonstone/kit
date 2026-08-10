@@ -21,6 +21,7 @@ const agentsTooling = `# Tooling
 
 - Use ` + "`kit dispatch`" + ` when broad work must be turned into a safe Agent Team Plan
 - Load ` + "`docs/references/rules/agent-team-orchestration.md`" + ` when dispatch, direct subagent execution, or read-only verification topology affects the task
+- When ` + "`cross-repository-program-coordination`" + ` applies, dispatch only the canonical program ledger's reconciled ready frontier and checkpoint program state after each material transition or handoff
 - Keep one accountable supervisor responsible for scope, integration, validation, evidence, delivery gating, and final reporting
 - Use subagents when the work cleanly separates into low-overlap lanes after discovery
 - Keep single-lane work in one supervisor lane when the task is trivial, tightly coupled, high-overlap, high-ambiguity, cannot spawn subagents, or the user requested single-agent execution

@@ -17,6 +17,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"repo-local docs before global model/vendor instructions",
 			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
+			"Load `docs/references/rules/cross-repository-program-coordination.md` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff",
 		},
 		"docs/agents/WORKFLOWS.md": {
 			"Authority order:",
@@ -33,6 +34,7 @@ func v2GuidanceExpectations() map[string][]string {
 		},
 		"docs/references/README.md": {
 			"`rules/infrastructure-change-approval.md`",
+			"`rules/cross-repository-program-coordination.md`",
 			"`rules/testing-and-environment-validation.md`",
 			"`rules/source-file-size.md`",
 		},
@@ -63,6 +65,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"When I explicitly authorize an external browser, terminate and verify all",
 			"task-owned browser and automation processes before finishing.",
 			"Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
+			"Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.",
 			"Put one consolidated outline of the target context, resource actions, execution boundary, material impact and risk, rollback or recovery, and validation evidence into the task plan when planning is used; otherwise present it once before the first covered mutation. Obtain one explicit user confirmation for the complete bounded batch.",
 			"Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
 			"After confirmation, execute the exact approved batch and continue the rest of the task to completion in one pass without routine command-by-command approval.",
@@ -71,6 +74,7 @@ func v3GuidanceExpectations() map[string][]string {
 		},
 		".github/copilot-instructions.md": {
 			"Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
+			"Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.",
 			"Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
 			"If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
 			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
@@ -96,10 +100,12 @@ func v3GuidanceExpectations() map[string][]string {
 			"## Context Budget Rules",
 			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
+			"Load `docs/references/rules/cross-repository-program-coordination.md` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff",
 		},
 		"docs/agents/TOOLING.md": {
 			"Use `kit dispatch` after native planning",
 			"accepted plan needs a safe multi-lane execution topology",
+			"When `cross-repository-program-coordination` applies, dispatch only the canonical program ledger's reconciled ready frontier and checkpoint program state after each material transition or handoff",
 			"Link the primary checkout's `.env` and `.envrc` into writable lanes by default",
 			"preserve a repository- or user-supplied `.envrc`",
 		},
@@ -115,6 +121,7 @@ func v3GuidanceExpectations() map[string][]string {
 		},
 		"docs/references/README.md": {
 			"`rules/infrastructure-change-approval.md`",
+			"`rules/cross-repository-program-coordination.md`",
 			"`rules/testing-and-environment-validation.md`",
 			"`rules/source-file-size.md`",
 			"`rules/codex-thread-initialization.md`",
