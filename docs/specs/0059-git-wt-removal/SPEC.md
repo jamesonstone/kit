@@ -130,6 +130,9 @@ Non-goals:
   `2ec9cbe058bdf6da8a3a0e1f2b9f6dd717137239` on 2026-08-10. Its merge and
   post-merge CI are proven, while a Kura release and host installation remain
   unobserved.
+- Hosted review found that preparation still needed to reject the protected
+  primary checkout and revalidate a reused environment link's source type.
+  Both checks now fail closed with focused real-Git regression coverage.
 
 ## VALIDATION
 

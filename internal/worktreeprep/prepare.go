@@ -98,6 +98,13 @@ func (preparer *Preparer) prepareBranch(
 		if entry.branch != branch {
 			continue
 		}
+		if samePath(entry.path, repo.primary) {
+			return Prepared{}, fmt.Errorf(
+				"branch %q is checked out in the protected primary worktree: %s",
+				branch,
+				entry.path,
+			)
+		}
 		if err := ensureEnvironmentLinks(repo.primary, entry.path, linkEnvironment); err != nil {
 			return Prepared{}, err
 		}

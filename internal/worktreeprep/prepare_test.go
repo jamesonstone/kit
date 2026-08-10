@@ -66,6 +66,19 @@ func TestPrepareBranchTracksRemoteBranch(t *testing.T) {
 	}
 }
 
+func TestPrepareBranchRejectsProtectedPrimaryWorktree(t *testing.T) {
+	fixture := newRepositoryFixture(t)
+	_, err := fixture.preparer.PrepareBranch(
+		context.Background(),
+		fixture.primary,
+		"main",
+		true,
+	)
+	if err == nil || !strings.Contains(err.Error(), "protected primary worktree") {
+		t.Fatalf("PrepareBranch(main) error = %v", err)
+	}
+}
+
 func TestPrepareBranchRejectsMissingAndUnsafeBranches(t *testing.T) {
 	fixture := newRepositoryFixture(t)
 	for _, branch := range []string{"GH-404", "../escape", "/absolute"} {
@@ -185,5 +198,25 @@ func TestPrepareBranchPreservesRegularEnvironmentRC(t *testing.T) {
 	content, err := os.ReadFile(localRC)
 	if err != nil || string(content) != "local\n" {
 		t.Fatalf("preserved .envrc = %q, %v", content, err)
+	}
+}
+
+func TestPrepareBranchRejectsMatchingLinkToNonRegularSource(t *testing.T) {
+	fixture := newRepositoryFixture(t)
+	fixture.createLocalBranch(t, "GH-144")
+	prepared, err := fixture.preparer.PrepareBranch(context.Background(), fixture.primary, "GH-144", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := filepath.Join(fixture.primary, ".env")
+	if err := os.Mkdir(source, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(source, filepath.Join(prepared.Path, ".env")); err != nil {
+		t.Fatal(err)
+	}
+	_, err = fixture.preparer.PrepareBranch(context.Background(), fixture.primary, "GH-144", true)
+	if err == nil || !strings.Contains(err.Error(), "source environment file must be a regular file") {
+		t.Fatalf("PrepareBranch(reuse) error = %v", err)
 	}
 }

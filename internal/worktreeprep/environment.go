@@ -54,7 +54,7 @@ func planEnvironmentLink(sourceRoot, destinationRoot, name string) (environmentL
 		return environmentLinkPlan{}, fmt.Errorf("resolve destination environment path: %w", err)
 	}
 	plan := environmentLinkPlan{source: source, destination: destination}
-	if samePath(source, destination) {
+	if filepath.Clean(source) == filepath.Clean(destination) {
 		return plan, nil
 	}
 	destinationInfo, err := os.Lstat(destination)
@@ -84,6 +84,13 @@ func planEnvironmentLink(sourceRoot, destinationRoot, name string) (environmentL
 				destination,
 				err,
 			)
+		}
+		sourceInfo, err := os.Stat(source)
+		if err != nil {
+			return environmentLinkPlan{}, fmt.Errorf("inspect source environment file %s: %w", source, err)
+		}
+		if !sourceInfo.Mode().IsRegular() {
+			return environmentLinkPlan{}, fmt.Errorf("source environment file must be a regular file: %s", source)
 		}
 		return plan, nil
 	}
