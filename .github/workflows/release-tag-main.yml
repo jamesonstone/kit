@@ -30,8 +30,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # patch-only bump policy: every push to main increments patch.
-          # manual semantic tags can be used for major/minor version changes.
+          # The conservative coding-agent-first reset is the v2 boundary.
+          # After v2 exists, every push to main resumes patch increments.
 
           latest_tag="$(
             git tag --list 'v*' --sort=-v:refname \
@@ -40,7 +40,7 @@ jobs:
           )"
 
           if [[ -z "${latest_tag}" ]]; then
-            next_tag="v1.0.0"
+            next_tag="v2.0.0"
           else
             if [[ ! "${latest_tag}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
               echo "Invalid semantic tag format: ${latest_tag}" >&2
@@ -49,7 +49,11 @@ jobs:
             major="${BASH_REMATCH[1]}"
             minor="${BASH_REMATCH[2]}"
             patch="${BASH_REMATCH[3]}"
-            next_tag="v${major}.${minor}.$((patch + 1))"
+            if (( major < 2 )); then
+              next_tag="v2.0.0"
+            else
+              next_tag="v${major}.${minor}.$((patch + 1))"
+            fi
           fi
 
           echo "next_tag=${next_tag}" >> "${GITHUB_OUTPUT}"

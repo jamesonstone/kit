@@ -69,6 +69,14 @@ registry:
           installed_hash: sha256:5cab73a2486ee949d964f656f1c82ad5e613fb486f8ad2822be63fc28a78723e
           state: managed
         - kind: ruleset
+          slug: coding-agent-context-usage
+          path: docs/references/rules/coding-agent-context-usage.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_path: docs/references/rules/coding-agent-context-usage.md
+          installed_hash: sha256:7a1b8c2e89ca8fd04e4f22b04e70d3c9d34b0499332cac7fa5efcc6a76218971
+          state: local-custom
+        - kind: ruleset
           slug: constitution-curation
           path: docs/references/rules/constitution-curation.md
           source_repo: jamesonstone/kit
@@ -76,16 +84,7 @@ registry:
           source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/constitution-curation.md
           installed_hash: sha256:e462fa2563a35bfbb300e54f1e9ecc60f17f983c00d89731a0efa255edb28895
-          state: managed
-        - kind: ruleset
-          slug: feature-notes
-          path: docs/references/rules/feature-notes.md
-          source_repo: jamesonstone/kit
-          source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
-          source_path: docs/references/rules/feature-notes.md
-          installed_hash: sha256:7545870fd2f8dc484ff60f551c6c20f055856cdf4bc6a399195b1af259427450
-          state: managed
+          state: local-custom
         - kind: ruleset
           slug: frontend-application-architecture
           path: docs/references/rules/frontend-application-architecture.md
@@ -112,7 +111,7 @@ registry:
           source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
           source_path: docs/references/rules/kit-capabilities-usage.md
           installed_hash: sha256:b48b8687f4dac7b59b7c0492739e8a0e97b1769226f15cfb7f997b78fef17207
-          state: managed
+          state: local-custom
         - kind: ruleset
           slug: llms-txt
           path: docs/references/rules/llms-txt.md

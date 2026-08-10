@@ -1,6 +1,6 @@
 module github.com/jamesonstone/kit
 
-go 1.25.5
+go 1.25.12
 
 require (
 	github.com/chzyer/readline v1.5.1

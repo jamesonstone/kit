@@ -52,7 +52,10 @@ func TestSelectWorktreeTerminalCancellationRestoresPTY(t *testing.T) {
 	}
 	sentinelWritten := make(chan error, 1)
 	go func() {
-		time.Sleep(200 * time.Millisecond)
+		// Race-instrumented helper startup can exceed 200 ms. Keep the input
+		// absent until well after the helper's 50 ms cancellation timer starts,
+		// otherwise the queued newline is interpreted as a selection.
+		time.Sleep(2 * time.Second)
 		_, writeErr := fmt.Fprintln(stdin, "sentinel-after-cancel")
 		sentinelWritten <- writeErr
 	}()

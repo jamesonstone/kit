@@ -42,7 +42,7 @@ func fetchGitHubRulesetRegistry(ctx context.Context) ([]registryRuleset, error) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch ruleset registry from GitHub: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to fetch ruleset registry from GitHub: %s", resp.Status)
 	}
@@ -93,7 +93,7 @@ func fetchGitHubRegistryCommit(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch ruleset registry source commit: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to fetch ruleset registry source commit: %s", resp.Status)
 	}
@@ -119,7 +119,7 @@ func fetchGitHubRegistryRuleset(ctx context.Context, entry githubContentEntry, s
 	if err != nil {
 		return registryRuleset{}, fmt.Errorf("failed to fetch registry ruleset %s: %w", entry.Name, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return registryRuleset{}, fmt.Errorf("failed to fetch registry ruleset %s: %s", entry.Name, resp.Status)
 	}
@@ -174,7 +174,7 @@ func fetchGitHubRegistryContent(ctx context.Context, sourceRepo, sourceCommit, s
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch registry artifact base content: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to fetch registry artifact base content: %s", resp.Status)
 	}

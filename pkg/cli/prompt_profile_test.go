@@ -86,7 +86,7 @@ func TestPreparePromptWithFrontendProfileOrdersSuffixes(t *testing.T) {
 	skillsIndex := strings.Index(got, "## Skills")
 	frontendIndex := strings.Index(got, "## Frontend Profile")
 	subagentIndex := strings.Index(got, "## Subagent Orchestration")
-	if !(skillsIndex < frontendIndex && frontendIndex < subagentIndex) {
+	if skillsIndex >= frontendIndex || frontendIndex >= subagentIndex {
 		t.Fatalf("expected skills -> frontend profile -> subagents ordering, got:\n%s", got)
 	}
 }

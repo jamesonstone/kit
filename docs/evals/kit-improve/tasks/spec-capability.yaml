@@ -1,0 +1,29 @@
+schema_version: 1
+id: spec-capability
+title: Living V3 specification ownership is discoverable
+category: capabilities
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Inspect the preserved feature-specification interface.
+expected_behavior: Capability metadata routes material feature rationale into a living V3 specification without launching an agent.
+oracle: deterministic-cli
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} capabilities spec --json"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: living V3 feature specification
+  - type: stdout_contains
+    command_index: 0
+    value: launch an agent
+  - type: git_diff_empty
+regression_tags:
+  - agent-contract
+held_out_eligible: false
+known_failure_modes:
+  - capabilities:living-spec-contract-missing

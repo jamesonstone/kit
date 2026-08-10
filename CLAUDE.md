@@ -7,6 +7,14 @@
 - Use native agent planning for research, clarification, design, and implementation planning
 - Treat repo-local markdown under `docs/` as persistent repository memory
 
+## Coding Agent Context Gate
+
+- When Kit command behavior is not already established, run `kit capabilities <command> --json` before choosing the command
+- Before implementation, maintenance, PR repair, or repository bootstrap, run `kit context resolve --workflow <slug> --json` with relevant feature and path hints
+- Load every required selected artifact before acting; load optional evidence only when its applicability boundary is reached
+- Treat a blocked contract as a hard evidence gap and rerun resolution after material scope changes
+- `kit context resolve` is local-only and read-only; it never fetches, writes, mutates Git, infers truth, or launches an agent
+
 ## Repository Memory Gate
 
 - Before implementation, inspect relevant code and existing repository memory
@@ -84,7 +92,6 @@
 - `docs/CONSTITUTION.md` — project invariants
 - `docs/references/` — reusable repo-wide knowledge and practices
 - domain documentation — canonical domain behavior and interfaces
-- `docs/notes/<feature>/` — optional source material, never canonical truth by itself
 
 ## Constraints
 

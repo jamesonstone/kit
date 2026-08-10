@@ -113,7 +113,7 @@ func auditInstructionPromptEntrypoints(projectRoot string, cfg *config.Config, v
 		fmt.Sprintf("generated prompt routing cannot find the version %d repo-local entrypoint", version),
 		templateSource(projectRoot),
 		"restore `docs/agents/README.md` so prompts can use just-in-time context loading",
-		[]string{fmt.Sprintf("kit scaffold agents --version %d --append-only", version)},
+		[]string{"kit reconcile --include-files --dry-run --diff --file docs/agents/README.md"},
 	)}
 }
 

@@ -7,8 +7,6 @@ const capabilitiesSchemaVersion = 1
 func capabilityCatalog() []capabilityRecord {
 	records := setupCapabilityRecords()
 	records = append(records, workflowCapabilityRecords()...)
-	records = append(records, legacyCapabilityRecords()...)
-	records = append(records, promptCapabilityRecords()...)
 	records = append(records, inspectionCapabilityRecords()...)
 	records = append(records, utilityCapabilityRecords()...)
 	sort.SliceStable(records, func(i, j int) bool {

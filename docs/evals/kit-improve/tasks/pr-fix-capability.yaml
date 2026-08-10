@@ -1,0 +1,29 @@
+schema_version: 1
+id: pr-fix-capability
+title: PR feedback repair remains prompt-producing
+category: capabilities
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Inspect the protected PR-feedback repair boundary without contacting GitHub.
+expected_behavior: Capability metadata preserves CodeRabbit and human feedback intake while Kit remains prompt-producing.
+oracle: deterministic-cli
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} capabilities pr fix --json"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: CodeRabbit
+  - type: stdout_contains
+    command_index: 0
+    value: prompt
+  - type: git_diff_empty
+regression_tags:
+  - agent-contract
+held_out_eligible: false
+known_failure_modes:
+  - capabilities:pr-fix-boundary-missing

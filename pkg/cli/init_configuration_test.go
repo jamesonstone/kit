@@ -72,7 +72,7 @@ func TestRunInit_CreatesNonBlockingAutoAssignWorkflowWithoutAssignees(t *testing
 	}
 }
 
-func TestRunInit_CreatesLoopReviewAgentConfig(t *testing.T) {
+func TestRunInitOmitsRetiredConfiguration(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
@@ -87,11 +87,15 @@ func TestRunInit_CreatesLoopReviewAgentConfig(t *testing.T) {
 		})
 	})
 
-	created, err := config.Load(tempDir)
+	created, err := os.ReadFile(filepath.Join(tempDir, config.ConfigFileName))
 	if err != nil {
-		t.Fatalf("config.Load() error = %v", err)
+		t.Fatalf("read config: %v", err)
 	}
-	assertDefaultInitLoopAgent(t, created)
+	for _, retired := range []string{"loop:", "prompts:", "feature_state:", "removed_features:", "project_refresh:"} {
+		if strings.Contains(string(created), retired) {
+			t.Fatalf("fresh config contains retired field %q:\n%s", retired, created)
+		}
+	}
 }
 
 func TestRunInit_InstallsRegistryRulesetsAndState(t *testing.T) {

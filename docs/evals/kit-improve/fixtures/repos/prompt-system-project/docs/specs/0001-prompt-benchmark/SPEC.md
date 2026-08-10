@@ -1,13 +1,8 @@
 ---
 kit_metadata_version: 1
 artifact: spec
-workflow_version: 2
-phase: ready
-delivery_intent: local_only
-clarification:
-  status: ready
-  confidence: 99
-  unresolved_questions: 0
+workflow_version: 3
+phase: complete
 feature:
   id: 0001
   slug: prompt-benchmark
@@ -20,11 +15,11 @@ references:
     relation: constrains
     read_policy: must
     used_for: repository invariants
-    status: loaded
+    status: active
 ---
 # SPEC
 
-## THESIS
+## PURPOSE
 
 Add a deterministic sample feature that exercises generated prompt contracts.
 
@@ -32,49 +27,35 @@ Add a deterministic sample feature that exercises generated prompt contracts.
 
 The fixture is intentionally small and contains no external dependencies.
 
-## CLARIFICATIONS
-
-No unresolved clarification questions.
-
 ## REQUIREMENTS
 
-- REQ-001: Preserve the requested output contract.
-- REQ-002: Validate behavior before completion.
+- Preserve the requested output contract.
+- Validate behavior before completion.
+- Non-goal: invoke a model or external system.
+- Observable acceptance: context resolution includes this specification and its required local evidence.
 
-## ASSUMPTIONS
-
-- Local deterministic checks are sufficient for this fixture.
-
-## ACCEPTANCE CRITERIA
-
-- AC-001: The generated prompt identifies the goal and expected output.
-- AC-002: Validation and evidence are required before completion.
-
-## IMPLEMENTATION PLAN
+## ACCEPTED PLAN
 
 Implement the smallest change, run focused checks, and record evidence.
 
-## TASK CHECKLIST
+## DECISIONS
 
-- [ ] T-001: Implement and validate the sample behavior. Maps to AC-001, AC-002.
+Use deterministic local evidence so the fixture can run offline.
 
-## VALIDATION MAP
+## DISCOVERIES
 
-- AC-001: Inspect the generated output contract.
-- AC-002: Run the focused deterministic test.
+No additional information required.
 
-## REFLECTION NOTES
+## VALIDATION
 
-Pending implementation.
+Resolve the implementation-delivery workflow and verify this path appears in the versioned JSON contract.
 
-## DOCUMENTATION UPDATES
+## OUTCOME
 
-- Update the fixture documentation if behavior changes.
+The fixture provides a complete living V3 specification for deterministic context evaluation.
 
-## DELIVERY DECISION
+## REPOSITORY MEMORY
 
-Local-only fixture; no GitHub mutation.
-
-## EVIDENCE
-
-Pending validation.
+- Decision: updated
+- Rationale: the agent-contract benchmark must exercise the current living-spec shape.
+- Artifacts: SPEC.md

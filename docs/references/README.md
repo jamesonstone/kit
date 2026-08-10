@@ -7,7 +7,6 @@
 - Link these files from feature front matter references when they materially shape work
 - Store durable rulesets under `rules/<slug>.md` and link them with `kit rules link` instead of copying rules into agent instruction files
 - Use `rules/kit-capabilities-usage.md` in downstream projects for Kit command discovery guidance
-- Use `rules/feature-notes.md` when deciding how to load, reference, promote, or ignore source material under `docs/notes/<feature>`
 - Use `rules/constitution-curation.md` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use `rules/cross-repository-program-coordination.md` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff
 - Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal
@@ -19,7 +18,9 @@
 - Use `kit rules view <slug>` to preview a local or registry ruleset before importing it
 - Use `kit init --refresh` to adopt existing registry rules into `.kit.yaml` registry state and pick up safe upstream ruleset updates
 - Use `kit rules add --custom` for the interactive `$EDITOR` ruleset builder
-- `kit rule` is the singular alias for `kit rules`
+
+- Use `rules/coding-agent-context-usage.md` for the capability, resolution, loading, and re-resolution sequence
+- Store declarative coding-agent workflow contracts under `workflows/<slug>.md`
 
 ## Starter Files
 
@@ -27,7 +28,6 @@
 - `tooling.md` — local tooling and command references that are broader than one feature
 - `external-systems.md` — durable notes about external systems, APIs, or integrations
 - `rules/` — pointer-loaded durable rulesets such as frontend UI rules, testing rules, API conventions, security constraints, or domain rules
-- `../notes/<feature>/` — optional feature source material; not canonical truth and private contents remain ignored
 
 ## Ruleset Index
 
@@ -40,9 +40,9 @@ are:
 | `agent-team-orchestration` | coding-agent, workflow, dispatch, subagent, verification | Accountable supervisor plans, bounded specialist lanes, overlap control, and read-only verification. |
 | `backend-service-architecture` | architecture, backend, API, service, repository, gateway | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |
 | `codex-thread-initialization` | codex, coding-agent, session, thread, session-management | Ordered pre-response thread renaming and pinning with verified or fail-visible status. |
-| `constitution-curation` | implementation, validation, repository-memory, constitution, project-refresh | Evidence-based promotion of durable rationale and project-wide invariants. |
+| `coding-agent-context-usage` | coding-agent, workflow, rules, context, evidence | Capability lookup, deterministic context resolution, required evidence loading, and re-resolution. |
+| `constitution-curation` | implementation, validation, repository-memory, constitution | Evidence-based promotion of durable rationale and project-wide invariants. |
 | `cross-repository-program-coordination` | coding-agent, workflow, cross-repository, program, deployment, handoff, resume, dispatch | Coordinator-owned ledger, dependency frontier, exact evidence, checkpoints, reconciliation, and handoff for multi-repository programs. |
-| `feature-notes` | notes, source-material, documentation | Optional feature source material and promotion boundaries for `docs/notes/<feature>`. |
 | `frontend-application-architecture` | architecture, frontend, route, page, component, state | Responsibility and dependency boundaries for frontend routes, features, data adapters, state, and UI. |
 | `github-pr-delivery` | git, GitHub, pull-request, documentation | Issue-to-PR delivery sequencing and post-PR verification. |
 | `infrastructure-change-approval` | cloud, infrastructure-as-code, AWS, GCP, Azure, Kubernetes, Terraform, Pulumi, CloudFormation | One plan-level confirmation and one-pass execution per infrastructure batch, with explicit confirmation for deletion or removal. |

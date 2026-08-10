@@ -130,7 +130,7 @@ func checkFeature(projectRoot string, specsDir string, featureRef string) error 
 	planPath := filepath.Join(feat.Path, "PLAN.md")
 	if !document.Exists(planPath) {
 		if !livingSpecFeature {
-			warnings = append(warnings, fmt.Sprintf("legacy PLAN.md not found. Run 'kit legacy plan %s' only when continuing staged v1 work", feat.Slug))
+			warnings = append(warnings, "legacy PLAN.md not found; preserve historical staged work as-is or adopt a V3 living spec with 'kit spec'")
 		}
 	} else {
 		doc, err := document.ParseFile(planPath, document.TypePlan)
@@ -154,7 +154,7 @@ func checkFeature(projectRoot string, specsDir string, featureRef string) error 
 	tasksPath := filepath.Join(feat.Path, "TASKS.md")
 	if !document.Exists(tasksPath) {
 		if !livingSpecFeature {
-			warnings = append(warnings, fmt.Sprintf("legacy TASKS.md not found. Run 'kit legacy tasks %s' only when continuing staged v1 work", feat.Slug))
+			warnings = append(warnings, "legacy TASKS.md not found; preserve historical staged work as-is or adopt a V3 living spec with 'kit spec'")
 		}
 	} else {
 		doc, err := document.ParseFile(tasksPath, document.TypeTasks)

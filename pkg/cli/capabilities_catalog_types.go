@@ -10,12 +10,9 @@ const (
 )
 
 var capabilityCategoryOrder = map[string]int{
-	"Setup":            1,
-	"Workflow":         2,
-	"Legacy":           3,
-	"Inspect & Repair": 4,
-	"Prompt Utilities": 5,
-	"Utilities":        6,
+	"Agent Workflow":   1,
+	"Inspect & Repair": 2,
+	"Utilities":        3,
 }
 
 type capabilityBehavior struct {
@@ -160,12 +157,6 @@ func withRelated(related ...capabilityRelatedCommand) capabilityOption {
 	}
 }
 
-func withAliases(aliases ...string) capabilityOption {
-	return func(record *capabilityRecord) {
-		record.Aliases = append(record.Aliases, aliases...)
-	}
-}
-
 func withWhenToUse(values ...string) capabilityOption {
 	return func(record *capabilityRecord) {
 		record.WhenToUse = append([]string(nil), values...)
@@ -187,23 +178,6 @@ func withExamples(values ...string) capabilityOption {
 func withCaveats(values ...string) capabilityOption {
 	return func(record *capabilityRecord) {
 		record.Caveats = append(record.Caveats, values...)
-	}
-}
-
-func hiddenDeprecated(note string) capabilityOption {
-	return func(record *capabilityRecord) {
-		record.Hidden = true
-		record.Deprecated = true
-		record.DeprecationNote = note
-		record.IncludeInCompact = false
-	}
-}
-
-func deprecated(note string) capabilityOption {
-	return func(record *capabilityRecord) {
-		record.Deprecated = true
-		record.DeprecationNote = note
-		record.IncludeInCompact = false
 	}
 }
 

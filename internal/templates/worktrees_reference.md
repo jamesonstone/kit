@@ -178,8 +178,7 @@ branch instead.
 
 When a Kit command already identifies a pull request or failed branch, use that
 target to resolve the writable lane automatically. The user does not need to
-navigate to a worktree before running `kit pr fix`, PR-backed dispatch or
-review-loop commands, `kit loop review --pr`, or `kit ci --dispatch`.
+navigate to a worktree before running `kit pr fix` or PR-backed `kit dispatch`.
 
 Resolution must prove the current clone owns the requested repository, use the
 exact same-repository PR head or exact diagnosed branch, and consult

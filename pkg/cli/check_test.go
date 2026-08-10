@@ -134,37 +134,6 @@ func TestRunCheckProjectDoesNotFailForCustomizedV2MigrationAdvisory(t *testing.T
 	}
 }
 
-func TestRunCheckProjectWarnsForOverdueProjectRefreshWithoutFailing(t *testing.T) {
-	projectRoot := setupCoherentProjectForCheck(t)
-	cfg, err := config.Load(projectRoot)
-	if err != nil {
-		t.Fatalf("config.Load() error = %v", err)
-	}
-	cfg.ProjectRefresh.Constitution.MaxAgeDays = 1
-	cfg.ProjectRefresh.Constitution.LastReviewedAt = "2026-01-01T00:00:00Z"
-	if err := config.Save(projectRoot, cfg); err != nil {
-		t.Fatalf("config.Save() error = %v", err)
-	}
-	setWorkingDirectory(t, projectRoot)
-
-	checkProject = true
-	checkAll = false
-	t.Cleanup(func() {
-		checkProject = false
-		checkAll = false
-	})
-
-	cmd := &cobra.Command{}
-	output := captureStdout(t, func() {
-		if err := runCheck(cmd, nil); err != nil {
-			t.Fatalf("runCheck() error = %v", err)
-		}
-	})
-	if !strings.Contains(output, "Project refresh due") {
-		t.Fatalf("expected project refresh warning, got:\n%s", output)
-	}
-}
-
 func TestBuildReconcileReportAcceptsBootstrapConstitution(t *testing.T) {
 	projectRoot := setupCoherentProjectForCheck(t)
 	cfg, err := config.Load(projectRoot)

@@ -34,6 +34,40 @@ func auditActiveFrontendRulesetAdvisory(projectRoot string, feat *feature.Featur
 	)}
 }
 
+func featureHasActiveFrontendProfileDependency(featurePath string) bool {
+	for _, source := range rulesetReferenceSources(featurePath) {
+		if !document.Exists(source.path) {
+			continue
+		}
+		doc, err := document.ParseFile(source.path, source.docType)
+		if err != nil {
+			continue
+		}
+		for _, reference := range doc.References() {
+			if strings.EqualFold(reference.Name, "Frontend profile") &&
+				strings.EqualFold(reference.Type, "profile") &&
+				reference.Target == "--profile=frontend" &&
+				reference.Status == document.ReferenceStatusActive {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func canonicalFrontendProfileReferences(_ string) []document.MetadataReference {
+	return []document.MetadataReference{{
+		ID:         "frontend-profile",
+		Name:       "Frontend profile",
+		Type:       "profile",
+		Target:     "--profile=frontend",
+		Relation:   document.ReferenceRelationGuides,
+		ReadPolicy: document.ReferenceReadPolicyConditional,
+		UsedFor:    "apply frontend-specific coding-agent guidance",
+		Status:     document.ReferenceStatusActive,
+	}}
+}
+
 func featureHasActiveRulesetForApplicability(projectRoot string, feat *feature.Feature, appliesTo string) bool {
 	for _, source := range rulesetReferenceSources(feat.Path) {
 		if !document.Exists(source.path) {

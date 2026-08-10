@@ -119,14 +119,14 @@ func TestAssertionResultPersistsZeroCommandIndex(t *testing.T) {
 	}
 }
 
-func TestLoadPromptSystemSuiteExercisesPromptSurfaces(t *testing.T) {
+func TestLoadPromptSystemSuiteExercisesAgentContractSurfaces(t *testing.T) {
 	root := fixtureProjectRoot(t)
 	suite, tasks, err := LoadSuite(root, "prompt-system")
 	if err != nil {
 		t.Fatalf("LoadSuite(prompt-system) error = %v", err)
 	}
-	if suite.Repeat != 3 || len(tasks) != 15 {
-		t.Fatalf("prompt-system suite repeat/tasks = %d/%d, want 3/15", suite.Repeat, len(tasks))
+	if suite.Repeat != 3 || len(tasks) != 8 {
+		t.Fatalf("prompt-system suite repeat/tasks = %d/%d, want 3/8", suite.Repeat, len(tasks))
 	}
 }
 
@@ -163,12 +163,11 @@ func fakeKitBinary(t *testing.T) string {
 	content := "#!/bin/sh\n" +
 		"printf '%s\\n' '\"command\": \"capabilities\"'\n" +
 		"printf '%s\\n' 'CodeRabbit'\n" +
-		"printf '%s\\n' 'Kit-managed refresh state'\n" +
+		"printf '%s\\n' '\"command\": \"status\"'\n" +
 		"printf '%s\\n' 'github'\n" +
-		"printf '%s\\n' '--refresh'\n" +
+		"printf '%s\\n' '\"command\": \"init\"' '--refresh' '--dry-run'\n" +
 		"printf '%s\\n' '.kit/improve'\n" +
-		"printf '%s\\n' 'private repositories skip'\n" +
-		"printf '%s\\n' 'rules view'\n"
+		"printf '%s\\n' '\"command\": \"rules add\"' 'writes_files'\n"
 	if err := os.WriteFile(path, []byte(content), 0o755); err != nil {
 		t.Fatalf("write fake kit binary: %v", err)
 	}

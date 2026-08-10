@@ -1,0 +1,29 @@
+schema_version: 1
+id: usage-capability
+title: Local usage reporting bounds are discoverable
+category: capabilities
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: maintainer
+timeout_seconds: 30
+input_prompt: Inspect usage-report capability metadata without recording telemetry.
+expected_behavior: Capability metadata identifies read-only aggregation and a bounded report window.
+oracle: deterministic-cli
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} capabilities usage report --json"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: '"command": "usage report"'
+  - type: stdout_contains
+    command_index: 0
+    value: --since
+  - type: git_diff_empty
+regression_tags:
+  - agent-contract
+held_out_eligible: false
+known_failure_modes:
+  - capabilities:usage-report-missing

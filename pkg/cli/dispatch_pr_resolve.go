@@ -75,11 +75,17 @@ func runDispatchPRResolve(cmd *cobra.Command) error {
 		}
 	}
 
-	fmt.Fprintf(cmd.OutOrStdout(), "Resolved %d PR review thread(s):\n", len(candidates))
+	if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Resolved %d PR review thread(s):\n", len(candidates)); err != nil {
+		return err
+	}
 	for _, candidate := range candidates {
-		fmt.Fprintf(cmd.OutOrStdout(), "- %s (%s)\n", dispatchResolutionSourceLabel(candidate), candidate.ThreadID)
+		if _, err := fmt.Fprintf(cmd.OutOrStdout(), "- %s (%s)\n", dispatchResolutionSourceLabel(candidate), candidate.ThreadID); err != nil {
+			return err
+		}
 		if strings.TrimSpace(candidate.Body) != "" {
-			fmt.Fprintf(cmd.OutOrStdout(), "  Review: %s\n", candidate.Body)
+			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "  Review: %s\n", candidate.Body); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

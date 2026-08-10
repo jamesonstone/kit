@@ -193,7 +193,7 @@ func TestReviewLoopClassifications(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Chdir(previousDir)
+	defer func() { _ = os.Chdir(previousDir) }()
 	if err := os.Chdir(tmp); err != nil {
 		t.Fatal(err)
 	}
@@ -248,7 +248,7 @@ func TestReviewLoopClassifiesRepoRelativePathsFromSubdirectory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Chdir(previousDir)
+	defer func() { _ = os.Chdir(previousDir) }()
 	if err := os.Chdir(filepath.Join(root, "cmd")); err != nil {
 		t.Fatal(err)
 	}
