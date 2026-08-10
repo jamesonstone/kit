@@ -18,7 +18,7 @@
 | Workstream | Repository | Local spec | Issue | Branch | Pull request | Operational reference |
 | --- | --- | --- | --- | --- | --- | --- |
 | `WS-kura-distribution` | `jamesonstone/kura` | `docs/specs/0001-interactive-script-installer/SPEC.md` | `jamesonstone/kura#1` | `GH-1` | `jamesonstone/kura#2` | Kura README and catalog |
-| `WS-kit-removal` | `jamesonstone/kit` | `docs/specs/0059-git-wt-removal/SPEC.md` | `jamesonstone/kit#139` | `GH-139` | pending | Kit release and command docs |
+| `WS-kit-removal` | `jamesonstone/kit` | `docs/specs/0059-git-wt-removal/SPEC.md` | `jamesonstone/kit#139` | `GH-139` | `jamesonstone/kit#140` | Kit release and command docs |
 
 ## Dependency Graph
 
@@ -40,7 +40,7 @@ WS-kura-distribution implementation and validation
 | Workstream | Implementation | GitHub delivery | Deployment/runtime | Validation |
 | --- | --- | --- | --- | --- |
 | `WS-kura-distribution` | complete at `195184cf25143a264cd549f7ab0880ca1cb0999c` | PR `jamesonstone/kura#2` merged as `2ec9cbe058bdf6da8a3a0e1f2b9f6dd717137239` | release and host installation unobserved | four PR checks and post-merge main CI passed |
-| `WS-kit-removal` | complete locally from `81546aa56dbd9a32031aeaae55aa22c1b068424c` | issue #139 open and assigned; branch `GH-139`; PR pending | not applicable before merge; release unobserved | complete local matrix passed with documented baseline lint and Go advisories |
+| `WS-kit-removal` | complete locally in validated commit `3d1d882f6b3c0a404f9667c3dc5217636dc75cee` | ready PR `jamesonstone/kit#140` open and mergeable; hosted checks running | not applicable before merge; release unobserved | complete local matrix passed with documented baseline lint and Go advisories |
 
 ## Milestones And Gates
 
@@ -54,8 +54,8 @@ WS-kura-distribution implementation and validation
 
 ## Ready Frontier And Blockers
 
-- Ready frontier: `WS-kit-removal` commit, push, ready-PR creation, and hosted
-  check observation.
+- Ready frontier: hosted check observation for ready Kit PR #140 and any
+  in-scope repair required by those checks.
 - `GATE-kura-merged` is satisfied. No cross-repository blocker remains for Kit
   PR delivery; merge remains outside this task's authority.
 - No deployment or infrastructure mutation is authorized or required.
@@ -74,14 +74,15 @@ WS-kura-distribution implementation and validation
 
 ## Current Checkpoint
 
-- Observed at: `2026-08-10T21:18:03Z`
+- Observed at: `2026-08-10T21:20:29Z`
 - Supervisor: `jamesonstone`
 - State changes: Kura PR #2 merged its reviewed head unchanged as `2ec9cbe0`
-  and post-merge main CI passed; Kit removal and local validation completed.
-- Ready frontier: commit and push `GH-139`, open the ready Kit PR, observe its
-  hosted state, and update this checkpoint.
+  and post-merge main CI passed; Kit removal and local validation completed;
+  ready Kit PR #140 opened mergeable with implementation commit `3d1d882f`
+  and checks running.
+- Ready frontier: observe Kit PR #140 checks and repair any in-scope failure.
 - Blockers: none for delivery. Kit merge, release, and host installation remain
   separate unperformed actions.
-- Next safe actions: deliver the ready Kit PR and reconcile hosted checks.
-- Live claims still required: Kit PR/check/merge state, Kura and Kit release
-  publication, and any actual host installation remain unobserved.
+- Next safe actions: reconcile Kit PR #140 hosted state and update this ledger.
+- Live claims still required: final Kit PR check and merge state, Kura and Kit
+  release publication, and any actual host installation remain unobserved.

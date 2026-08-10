@@ -583,9 +583,9 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **PAUSED**: no
 - **INTENT**: Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows.
 - **APPROACH**: 1. Coordinate the Kura distribution and Kit removal through one Kit-owned program ledger with Kura PR #2 as the Kit merge prerequisite. 2. Retain only the native, output-free worktree preparation required by Kit repair workflows in `internal/worktreeprep`. 3. Remove the `git-wt` executable, command implementation, build, release, capability, manpage, and current user-documentation surfaces. 4. Keep canonical native worktree guidance and its embedded template aligned. 5. Run focused and complete validation, curate repository memory, and deliver issue #139 through exact branch `GH-139` as a ready companion pull request.
-- **OPEN ITEMS**: create the ready companion pull request and observe its hosted checks; Kura PR #2 is merged, while release and host-installation evidence remain outside this delivery
+- **OPEN ITEMS**: observe hosted checks on ready Kit PR #140; Kura PR #2 is merged, while merges, releases, and host-installation evidence remain outside this delivery
 - **POINTERS**: `docs/specs/0059-git-wt-removal/SPEC.md`, `docs/programs/git-wt-extraction/PROGRAM.md`
 
 ## LAST UPDATED
 
-2026-08-10 17:18:03 EDT
+2026-08-10 17:20:29 EDT

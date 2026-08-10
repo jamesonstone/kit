@@ -173,7 +173,10 @@ Non-goals:
 - Active worktree policy is native-only, and historical feature records retain
   explicit decommission notes instead of erasing the prior delivery.
 - Kura PR #2 is merged and its post-merge CI passed. Issue #139 and branch
-  `GH-139` own the Kit companion delivery; the ready pull request is pending.
+  `GH-139` own the Kit companion delivery. Ready Kit PR #140 is open and
+  mergeable and contains validated implementation commit
+  `3d1d882f6b3c0a404f9667c3dc5217636dc75cee`; hosted validation was still
+  running when this checkpoint was recorded.
 
 ## REPOSITORY MEMORY
 
