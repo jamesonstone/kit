@@ -90,14 +90,35 @@ func TestResolveBlocksSchemaV1WithoutNetworkOrWrites(t *testing.T) {
 	}
 }
 
+func TestResolvePRFeedbackWorkflowIncludesTeamAndLaneDependencies(t *testing.T) {
+	root := writeContractProject(t)
+	resolved, err := Resolve(root, Hints{Workflows: []string{"pr-feedback-repair"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resolved.State != "ready" || !hasArtifact(resolved.Workflows, "pr-feedback-repair") {
+		t.Fatalf("resolved state = %s, workflows = %#v", resolved.State, resolved.Workflows)
+	}
+	for _, slug := range []string{"agent-team", "github-delivery", "work-lane"} {
+		if !hasArtifact(resolved.Rules["conditional"], slug) {
+			t.Fatalf("dependency %q was not selected: %#v", slug, resolved.Rules["conditional"])
+		}
+	}
+}
+
 func writeContractProject(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	artifacts := []registry.ArtifactRecord{
+		contractRecord("ruleset", "agent-team", "docs/references/rules/agent-team.md", "conditional", []string{"subagent"}, nil, nil),
 		contractRecord("ruleset", "base", "docs/references/rules/base.md", "conditional", []string{"core"}, nil, nil),
+		contractRecord("ruleset", "github-delivery", "docs/references/rules/github-delivery.md", "conditional", []string{"github"}, nil, nil),
 		contractRecord("ruleset", "go-paths", "docs/references/rules/go-paths.md", "conditional", []string{"go"}, []string{"**/*.go"}, nil),
 		contractRecord("ruleset", "safety", "docs/references/rules/safety.md", "must", []string{"safety"}, nil, nil),
+		contractRecord("ruleset", "work-lane", "docs/references/rules/work-lane.md", "conditional", []string{"lane"}, nil, nil),
 		contractRecord("workflow", "delivery", "docs/references/workflows/delivery.md", "conditional", []string{"delivery"}, nil, []string{"ruleset/base"}),
+		contractRecord("workflow", "pr-feedback-repair", "docs/references/workflows/pr-feedback-repair.md", "conditional", []string{"review"}, nil,
+			[]string{"ruleset/agent-team", "ruleset/github-delivery", "ruleset/work-lane"}),
 	}
 	for index := range artifacts {
 		content := contractDocument(artifacts[index])

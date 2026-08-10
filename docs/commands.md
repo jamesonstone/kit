@@ -32,6 +32,10 @@ read-only, and performs no Git operation or model inference.
 - `--applies-to <tag>`: add an applicability tag; repeatable.
 - `--workflow <slug>`: request a workflow; repeatable.
 
+For pull-request review repair, request `--workflow pr-feedback-repair`. The
+result selects its orchestration and GitHub-delivery dependencies locally; it
+does not wait for or collect network feedback.
+
 Blocked required artifacts still produce diagnostic JSON and exit with status
 2. Input or project errors exit with status 1.
 

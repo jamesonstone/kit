@@ -31,6 +31,23 @@ The agent reads routing entrypoints and ordered artifacts returned by the
 resolver, then uses its native planning, editing, testing, and delivery tools.
 Kit does not manage that process.
 
+## Repair asynchronous PR feedback
+
+```bash
+kit contract resolve --workflow pr-feedback-repair
+```
+
+The selected local workflow has two intake modes: bounded `await` for expected
+CodeRabbit feedback and event-triggered or one-shot `collect` for late provider
+or human feedback. The host or coding agent runs the single token-free `gh`
+observer, preserves exact head and rate-limit evidence, and performs repair;
+Kit does not wait, access GitHub, launch agents, or mutate review threads.
+
+`SUCCESS / Review completed` and `SUCCESS / Review skipped: <reason>` are
+different terminal outcomes. Pending, skipped, timeout, unavailable, provider
+failure, head change, and rate limit are never inferred to be clean review.
+See the [workflow contract](references/workflows/pr-feedback-repair.md).
+
 ## Reconcile drift
 
 ```bash

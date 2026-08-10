@@ -32,5 +32,5 @@ supervise work for the agent.
 - Run `kit contract resolve --json` before implementation and whenever task scope materially changes.
 - Treat repository-local rulesets and workflows returned by the resolver as the authoritative contract.
 - The resolver is local-only and read-only; use `kit registry status` for remote freshness and `kit reconcile` to preview drift.
-- Installed contract: 14 ruleset(s), 2 workflow(s).
+- Installed contract: 14 ruleset(s), 3 workflow(s).
 <!-- END KIT AGENT CONTRACT -->

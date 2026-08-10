@@ -15,6 +15,19 @@
 The canonical declarative workflow is
 [`implementation-delivery.md`](../references/workflows/implementation-delivery.md).
 
+## Pull-request feedback repair
+
+1. Resolve `pr-feedback-repair` for one exact writable PR-head lane.
+2. Use a host wakeup or the bounded token-free `gh` await mode; use one-shot
+   collect for late or human feedback.
+3. Verify every active finding against current `HEAD`, repair only valid
+   findings, validate the integrated diff, and push one coherent batch.
+4. Refresh the exact pushed head and resolve only verified addressed threads.
+
+The canonical declarative workflow is
+[`pr-feedback-repair.md`](../references/workflows/pr-feedback-repair.md). Kit
+does not execute its GitHub, waiting, agent, or delivery steps.
+
 ## Contract maintenance
 
 1. Run `kit registry status` or `kit reconcile --json --diff`.

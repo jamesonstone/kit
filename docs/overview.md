@@ -32,6 +32,10 @@ Published schema files are
 Both types carry a version and digest and may declare applicability tags, path
 patterns, dependencies, visibility, and read policy.
 
+The `pr-feedback-repair` workflow adds a structured asynchronous-review
+contract. Kit resolves it locally; a coding-agent host uses native GitHub tools
+or event wakeups for bounded waiting, collection, repair, and thread updates.
+
 ## Trust boundaries
 
 - Contract resolution is local-only and read-only.
@@ -42,6 +46,8 @@ patterns, dependencies, visibility, and read policy.
   plans, and requires an exact artifact acceptance to replace customization.
 - Materialized paths are confined to the project and managed routing is bounded
   by marker comments.
+- Provider success descriptions, head identity, timeout, and rate limits remain
+  explicit workflow states; success alone is never treated as completed review.
 
 ## Source providers
 

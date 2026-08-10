@@ -15,6 +15,9 @@ memory, prompt, or agent-execution harness.
 - Transactional initialization and section-aware reconciliation over one
   reusable registry core.
 - Bounded provider-routing sections that preserve project-owned content.
+- A `pr-feedback-repair` workflow with bounded asynchronous CodeRabbit and
+  human-review intake, exact terminal states, rate-aware observation, and an
+  explicit agent-team dependency.
 
 ## Protected command paths
 
@@ -31,6 +34,8 @@ Protection covers names and core outcomes only, not legacy flags or output.
 
 All other Kit 1.x commands, runtime packages, prompt templates, improvement
 evaluations, command metadata, and command-specific automation were removed.
+The former `kit pr fix` prompt semantics live in the declarative workflow; its
+command and any agent-launching behavior are not restored.
 The separate `git-wt` binary and implementation remain unchanged.
 
 ## Required migration

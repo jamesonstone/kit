@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -13,15 +14,16 @@ import (
 const preambleSection = "__preamble__"
 
 type DocumentMetadata struct {
-	Kind              string   `yaml:"kind"`
-	Slug              string   `yaml:"slug"`
-	Description       string   `yaml:"description"`
-	Status            string   `yaml:"status"`
-	RegistryScope     string   `yaml:"registry_scope"`
-	ReadPolicyDefault string   `yaml:"read_policy_default"`
-	AppliesTo         []string `yaml:"applies_to"`
-	Paths             []string `yaml:"paths"`
-	Dependencies      []string `yaml:"dependencies"`
+	Kind              string              `yaml:"kind"`
+	Slug              string              `yaml:"slug"`
+	Description       string              `yaml:"description"`
+	Status            string              `yaml:"status"`
+	RegistryScope     string              `yaml:"registry_scope"`
+	ReadPolicyDefault string              `yaml:"read_policy_default"`
+	AppliesTo         []string            `yaml:"applies_to"`
+	Paths             []string            `yaml:"paths"`
+	Dependencies      []string            `yaml:"dependencies"`
+	PRFeedback        *PRFeedbackContract `yaml:"pr_feedback,omitempty"`
 }
 
 type MarkdownDocument struct {
@@ -55,7 +57,29 @@ func ValidateDocument(doc MarkdownDocument, artifact CatalogArtifact) error {
 	if strings.TrimSpace(doc.Metadata.Description) == "" {
 		return fmt.Errorf("front matter description is required")
 	}
+	if len(artifact.Dependencies) > 0 && !sameStrings(doc.Metadata.Dependencies, artifact.Dependencies) {
+		return fmt.Errorf("front matter dependencies do not match the catalog")
+	}
+	if doc.Metadata.PRFeedback != nil {
+		if artifact.Kind != KindWorkflow {
+			return fmt.Errorf("pr_feedback contract is only valid for workflows")
+		}
+		if err := ValidatePRFeedbackContract(*doc.Metadata.PRFeedback); err != nil {
+			return fmt.Errorf("validate pr_feedback contract: %w", err)
+		}
+	}
+	if artifact.Kind == KindWorkflow && artifact.Slug == "pr-feedback-repair" && doc.Metadata.PRFeedback == nil {
+		return fmt.Errorf("workflow/pr-feedback-repair requires a pr_feedback contract")
+	}
 	return nil
+}
+
+func sameStrings(left, right []string) bool {
+	left = append([]string(nil), left...)
+	right = append([]string(nil), right...)
+	slices.Sort(left)
+	slices.Sort(right)
+	return slices.Equal(left, right)
 }
 
 func HashContent(content string) string {

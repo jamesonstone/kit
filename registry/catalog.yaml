@@ -161,6 +161,23 @@ artifacts:
       - ruleset/source-file-size
       - ruleset/constitution-curation
   - kind: workflow
+    slug: pr-feedback-repair
+    description: Collects asynchronous pull-request feedback and drives bounded coding-agent repair.
+    visibility: downstream
+    source_path: docs/references/workflows/pr-feedback-repair.md
+    target_path: docs/references/workflows/pr-feedback-repair.md
+    version: 1
+    digest: sha256:ad4ab2909c3aeb2925821d409cdd4444563810557fa7116e6d1953f73713fe8b
+    read_policy: conditional
+    applies_to: [coding-agent, github, pull-request, review, feedback, repair, coderabbit]
+    dependencies:
+      - ruleset/agent-team-orchestration
+      - ruleset/github-pr-delivery
+      - ruleset/safety-guardrails
+      - ruleset/work-lane-gating
+      - ruleset/testing-and-environment-validation
+      - ruleset/source-file-size
+  - kind: workflow
     slug: registry-maintenance
     description: Safely previews and reconciles repository-local contract artifacts against their registry.
     visibility: downstream

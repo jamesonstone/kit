@@ -19,6 +19,7 @@ dependencies, validation, and completion expectations. They never execute or
 supervise an agent.
 
 - [Implementation delivery](workflows/implementation-delivery.md)
+- [PR feedback repair](workflows/pr-feedback-repair.md)
 - [Registry maintenance](workflows/registry-maintenance.md)
 
 ## Other references

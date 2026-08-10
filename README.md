@@ -39,6 +39,12 @@ kit reconcile --apply
 In short: `kit init` → `kit contract resolve` → agent implementation →
 `kit reconcile`.
 
+For asynchronous pull-request review repair, resolve
+`kit contract resolve --workflow pr-feedback-repair`. The local workflow
+defines bounded CodeRabbit and human-feedback intake while the coding agent or
+host owns `gh`, waiting, repair, and delivery; no legacy `kit pr fix` command
+or agent runtime is restored.
+
 ## Protected rules lifecycle
 
 These command paths retain their names and core purpose across the major

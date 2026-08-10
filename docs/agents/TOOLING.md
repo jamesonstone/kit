@@ -21,6 +21,10 @@ planning, file edits, test execution, Git/GitHub delivery, review, CI repair,
 cloud operations, and deployment. Follow selected repository rules for those
 actions.
 
+For `pr-feedback-repair`, the host should prefer status, review, or comment
+wakeups. Its fallback is one bounded `gh` helper process with no model turns
+while sleeping; Kit supplies only the resolved local workflow contract.
+
 ## Worktrees
 
 Use native Git worktrees as the policy authority. The separate `git-wt` binary

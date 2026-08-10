@@ -19,6 +19,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
 - Agent routing points to `kit contract resolve` and local artifacts.
 - Selection uses explicit feature, path, applicability, and workflow hints.
 - Workflows declare execution phases and gates but do not manage processes.
+- Workflows may define asynchronous GitHub intake and repair contracts, while
+  the coding agent or host owns every network request, wait, and mutation.
 - Human commands exist to initialize, inspect, install, and reconcile the
   contract.
 
@@ -55,6 +57,15 @@ contract without launching, supervising, or reasoning on behalf of an agent.
   repository-native tools.
 - `git-wt` is a separate worktree convenience and not part of the contract
   runtime.
+
+### 7. Asynchronous feedback is fail-closed
+
+- Provider status state and description are one decision; success alone is not
+  completed review.
+- Waiting is bounded, rate-aware, head-specific, and token-free while sleeping.
+- Active provider and human findings are refreshed against the current head;
+  only verified addressed review threads may be resolved.
+- Head epochs, repair passes, pagination, and request budgets are finite.
 
 ## CONSTRAINTS
 
@@ -96,6 +107,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
 5. Errors include context and never silently continue after partial state.
 6. `cmd/git-wt` and `internal/worktree` remain independent of the Kit contract
    runtime.
+7. Structured workflow-specific front matter is validated during catalog
+   materialization before repository mutation.
 
 ### Public CLI allowlist
 

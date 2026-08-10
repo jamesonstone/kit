@@ -51,6 +51,10 @@ contract without launching or supervising agents.
   accepted coding-agent-first boundary.
 - The user explicitly selected an aggressive major-version reset rather than
   broad compatibility or dual-mode operation.
+- Pull-request feedback can arrive asynchronously after local implementation
+  and after a provider status first becomes successful. A successful provider
+  context is not sufficient evidence of completed review: the description may
+  instead report a terminal skipped review with its exact reason.
 - `kit init`, `kit reconcile`, `kit rules add|list|view`, and
   `kit registry status` are the exhaustive protected legacy command paths.
 - The separate `git-wt` binary remains unchanged.
@@ -87,6 +91,23 @@ contract without launching or supervising agents.
   resolves offline, preserves a local customization across a disjoint remote
   change, blocks a same-section conflict, and exposes only the protected plus
   new command surface.
+- Add a registry-backed `pr-feedback-repair` workflow with an explicit
+  `ruleset/agent-team-orchestration` dependency and every applicable delivery,
+  lane, safety, testing, and source-size dependency.
+- Preserve the former `kit pr fix` supervisor semantics as declarative
+  repository-local instructions. Kit must not restore that command, launch an
+  agent, supervise a repair, call GitHub, or add network behavior to contract
+  resolution.
+- Define bounded await and event-triggered or one-shot collect intake modes
+  over one repair workflow. Native host wakeups are preferred; a single
+  token-free `gh` helper process is the bounded fallback.
+- Make provider completion, skip, failure, head-change, unavailability,
+  timeout, and rate-limit outcomes explicit. Pending and timeout are never
+  clean completion.
+- Specify rate-conscious status observation, quiet-window confirmation,
+  paginated active-feedback collection, durable fingerprints, watcher
+  deduplication, and bounded head epochs and repair passes as a structured,
+  testable workflow contract.
 
 ## ACCEPTED PLAN
 
@@ -103,6 +124,10 @@ contract without launching or supervising agents.
 6. Validate schemas, deterministic output, migration, merge safety,
    transactional initialization, command removal, git-wt preservation, full
    Go correctness, file-size limits, and hosted PR checks.
+7. Add the asynchronous PR-feedback workflow without changing the public CLI;
+   validate its structured state classifier, request budget, dependencies,
+   feedback sources, and resolver selection, then reconcile Kit's own catalog
+   provenance and routing counts.
 
 ## DECISIONS
 
@@ -121,6 +146,19 @@ contract without launching or supervising agents.
 - Schema-v1 migration is previewed and applied through reconcile. No legacy
   runtime mode survives the migration.
 - `git-wt` remains independently supported and unchanged.
+- Asynchronous GitHub intake belongs to the coding agent or host. Kit owns the
+  declarative workflow, deterministic contract validation, and local resolver
+  projection only.
+- `SUCCESS` plus a `Review completed` description means provider completion;
+  `SUCCESS` plus `Review skipped:` is a terminal non-clean skip whose suffix is
+  preserved exactly. Unknown success descriptions fail closed as unavailable.
+- Await mode uses a bounded, jittered schedule rather than constant polling;
+  collect mode can run once long after provider completion and includes active
+  human feedback by default.
+- A repair supervisor owns one writable PR-head lane and at most three default
+  independent repair lanes, with a hard maximum of four. Shared files are
+  serialized, excess work is queued, and nontrivial repairs receive a
+  read-only verification lane.
 
 ## DISCOVERIES
 
@@ -144,6 +182,18 @@ contract without launching or supervising agents.
 - The network-backed registry provider made the repository's Go 1.25.5 pin an
   active security boundary; Go 1.25.12 is the smallest compatible patch with
   no reachable standard-library vulnerabilities in the final scan.
+- CodeRabbit reports both `Review completed` and `Review skipped: <reason>`
+  through successful status contexts, so state and exact description must be
+  classified together. Review threads are a separate paginated source and
+  must not be fetched during status polling.
+- Workflow-specific structured front matter can make asynchronous intake
+  policy testable without adding a network command or changing resolved
+  contract schema v1. Catalog and front-matter dependencies must match so an
+  orchestration dependency cannot silently disappear during materialization.
+- One compact GraphQL observation can return PR state, head SHA, provider
+  status and description, and rate budget at a verified current cost of one;
+  the durable contract still consumes the returned cost rather than assuming
+  that cost permanently.
 
 ## VALIDATION
 
@@ -170,7 +220,7 @@ contract without launching or supervising agents.
   and exact-accept reconciliation states.
 - The repository migrated itself through a local-catalog reconcile preview and
   explicit apply; follow-up `kit registry status --json` reported `current`
-  with 16 artifacts and zero changes.
+  with 17 artifacts and zero changes.
 - `kit contract resolve --workflow implementation-delivery --path README.md`
   returned ready schema-v1 JSON, the explicit workflow, mandatory rules, the
   path-selected README rule, provenance, states, reasons, and next action.
@@ -181,6 +231,20 @@ contract without launching or supervising agents.
   binary implementation is unchanged.
 - The complete version-control-eligible handwritten source and test audit found
   no file above 300 physical lines.
+- PR-feedback tests cover completed versus skipped successful contexts, unknown
+  success, provider failure, head change, timeout, HTTP 403/429 retry evidence,
+  rate reserve, bounded schedule and quiet confirmation, watcher keys and host
+  wakeups, collection pagination, human sources, fingerprints, prompt and
+  trusted-comment markers, late collect mode, dependency drift, and hard
+  timeout/request/page/head/pass ceilings.
+- `kit contract resolve --workflow pr-feedback-repair` returned ready local-only
+  JSON containing the workflow, `agent-team-orchestration`, GitHub delivery,
+  safety, work-lane, testing, and source-size dependencies. The exact CLI
+  allowlist test still rejects the removed `pr` root.
+- Final validation passed `go test ./...`, focused race tests, `go vet ./...`,
+  `golangci-lint run ./...` with zero issues, `govulncheck ./...` with zero
+  reachable vulnerabilities, both direct binary builds, `goreleaser check`,
+  and the full snapshot build matrix.
 - Ready PR #134 was opened from exact pushed head
   `59cf7dea0d0b7328fa77abcb32c19804c36faf92`; GitHub reported it mergeable,
   issue and PR assignment to `jamesonstone`, a passing auto-assign check, and a
@@ -192,7 +256,7 @@ contract without launching or supervising agents.
 - Kit now exposes a coding-agent-first contract architecture with a typed
   catalog, schema-v2 project provenance, stable resolved-contract v1 JSON,
   declarative workflows, bounded routing, and a reusable registry core.
-- Fresh initialization installs all 14 downstream rulesets and two workflows;
+- Fresh initialization installs all 14 downstream rulesets and three workflows;
   repeat initialization is idempotent and delegates drift maintenance to
   reconcile.
 - Reconciliation is preview-first, section-aware, transactional on failure,
@@ -204,6 +268,11 @@ contract without launching or supervising agents.
   mainline releases increment within major version 2.
 - README, overview, Constitution, workflows, commands, migration, release, and
   generated agent-routing documentation now describe the new product model.
+- Asynchronous PR feedback now has one registry-backed repair workflow with
+  bounded await and late collect intake, fail-closed terminal states,
+  rate-conscious GitHub observation, active human feedback, deterministic
+  fingerprints, bounded repair passes, and the former `kit pr fix` supervisor
+  semantics. Kit still performs no GitHub access or agent supervision.
 - Implementation, local acceptance, ready pull-request delivery, exact-head
   verification, and hosted-check observation are complete on `GH-133` and PR
   #134. Human review and merge remain external repository actions.

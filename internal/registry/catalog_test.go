@@ -1,6 +1,8 @@
 package registry
 
 import (
+	"os"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -69,6 +71,46 @@ artifacts:
 	}
 	if got := ArtifactKey(catalog.Artifacts[0].Kind, catalog.Artifacts[0].Slug); got != "ruleset/alpha" {
 		t.Fatalf("first artifact = %q", got)
+	}
+}
+
+func TestRepositoryCatalogIncludesPRFeedbackRepairDependencies(t *testing.T) {
+	content, err := os.ReadFile("../../registry/catalog.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := ParseCatalog(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact, found := FindArtifact(catalog, KindWorkflow, "pr-feedback-repair")
+	if !found {
+		t.Fatal("workflow/pr-feedback-repair is missing")
+	}
+	want := []string{
+		"ruleset/agent-team-orchestration", "ruleset/github-pr-delivery",
+		"ruleset/safety-guardrails", "ruleset/source-file-size",
+		"ruleset/testing-and-environment-validation", "ruleset/work-lane-gating",
+	}
+	if !sameStrings(artifact.Dependencies, want) {
+		t.Fatalf("dependencies = %v, want %v", artifact.Dependencies, want)
+	}
+	workflow, err := os.ReadFile("../../" + artifact.SourcePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if artifact.Digest != HashContent(string(workflow)) {
+		t.Fatalf("catalog digest %s does not match workflow", artifact.Digest)
+	}
+	doc, err := ParseMarkdown(string(workflow))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ValidateDocument(doc, artifact); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(doc.Metadata.PRFeedback.Modes, "collect") {
+		t.Fatal("one-shot collect mode is missing")
 	}
 }
 

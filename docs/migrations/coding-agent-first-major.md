@@ -74,4 +74,9 @@ verification and replay, state, improvement, scaffold, skill, and legacy
 commands have been removed. Use the coding agent's native tools and
 repository-owned automation for those responsibilities.
 
+The strategic supervisor contract formerly rendered by `kit pr fix` is now the
+registry-backed `pr-feedback-repair` workflow. Resolve it with `kit contract
+resolve --workflow pr-feedback-repair`; there is no compatibility command and
+Kit still does not launch agents or access GitHub during resolution.
+
 The separate `git-wt` executable is unchanged.
