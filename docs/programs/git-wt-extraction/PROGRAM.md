@@ -40,22 +40,22 @@ WS-kura-distribution implementation and validation
 | Workstream | Implementation | GitHub delivery | Deployment/runtime | Validation |
 | --- | --- | --- | --- | --- |
 | `WS-kura-distribution` | complete at `195184cf25143a264cd549f7ab0880ca1cb0999c` | PR `jamesonstone/kura#2` merged as `2ec9cbe058bdf6da8a3a0e1f2b9f6dd717137239` | release and host installation unobserved | four PR checks and post-merge main CI passed |
-| `WS-kit-removal` | complete locally in validated commit `3d1d882f6b3c0a404f9667c3dc5217636dc75cee` | ready PR `jamesonstone/kit#140` open and mergeable; hosted checks running | not applicable before merge; release unobserved | complete local matrix passed with documented baseline lint and Go advisories |
+| `WS-kit-removal` | complete in repaired implementation commit `594ba9c4674da7287c02d477d131cb7639be940a` | ready PR `jamesonstone/kit#140` is `MERGEABLE/CLEAN`; validate and CodeRabbit passed | not applicable before merge; release unobserved | complete local matrix and hosted validation passed; three review findings repaired and resolved |
 
 ## Milestones And Gates
 
 | ID | State | Evidence required to advance |
 | --- | --- | --- |
 | `M1-kura-ready` | satisfied | Kura PR #2 at `195184cf` is ready, mergeable, and all observed hosted checks passed |
-| `M2-kit-decommission` | in progress | Kit implementation, complete local validation, ready PR, and observed hosted state |
+| `M2-kit-decommission` | satisfied | Kit implementation, complete local validation, ready PR, and observed hosted state |
 | `GATE-kura-merged` | satisfied | Kura PR #2 is `MERGED` at exact merge commit `2ec9cbe0`; post-merge main CI passed |
-| `GATE-kit-merge-ready` | in progress | `GATE-kura-merged` plus a ready, mergeable Kit PR with required checks resolved |
+| `GATE-kit-merge-ready` | satisfied | Ready Kit PR #140 is mergeable and clean with validate and CodeRabbit passing |
 | `M3-transition-complete` | blocked | Both PRs merged, release/runtime obligations observed or explicitly accepted, and final repository memory reconciled |
 
 ## Ready Frontier And Blockers
 
-- Ready frontier: hosted check observation for ready Kit PR #140 and any
-  in-scope repair required by those checks.
+- Ready frontier: human review and optional merge of ready Kit PR #140, followed
+  by explicit release/runtime reconciliation if desired.
 - `GATE-kura-merged` is satisfied. No cross-repository blocker remains for Kit
   PR delivery; merge remains outside this task's authority.
 - No deployment or infrastructure mutation is authorized or required.
@@ -74,15 +74,16 @@ WS-kura-distribution implementation and validation
 
 ## Current Checkpoint
 
-- Observed at: `2026-08-10T21:20:29Z`
+- Observed at: `2026-08-10T21:35:07Z`
 - Supervisor: `jamesonstone`
 - State changes: Kura PR #2 merged its reviewed head unchanged as `2ec9cbe0`
   and post-merge main CI passed; Kit removal and local validation completed;
-  ready Kit PR #140 opened mergeable with implementation commit `3d1d882f`
-  and checks running.
-- Ready frontier: observe Kit PR #140 checks and repair any in-scope failure.
-- Blockers: none for delivery. Kit merge, release, and host installation remain
-  separate unperformed actions.
-- Next safe actions: reconcile Kit PR #140 hosted state and update this ledger.
-- Live claims still required: final Kit PR check and merge state, Kura and Kit
-  release publication, and any actual host installation remain unobserved.
+  ready Kit PR #140 reached `MERGEABLE/CLEAN` at repaired implementation commit
+  `594ba9c4` with validate and CodeRabbit passing and all review threads resolved.
+- Ready frontier: human review and optional merge of Kit PR #140.
+- Blockers: none for delivery or merge readiness. Kit merge, release, and host
+  installation remain separate unperformed actions.
+- Next safe actions: merge Kit PR #140 when desired, then reconcile merge and
+  any release/runtime evidence before declaring the transition complete.
+- Live claims still required: Kit merge state, Kura and Kit release publication,
+  and any actual host installation remain unobserved.

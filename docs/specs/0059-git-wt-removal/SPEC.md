@@ -161,6 +161,10 @@ Non-goals:
   refresh was applied.
 - `kit check git-wt-removal`, `kit check --project`, canonical/template byte
   equality, `git diff --check`, and Gitleaks directory scanning passed.
+- Hosted Kit Improve validation and the CodeRabbit status passed at repaired
+  implementation head `594ba9c4674da7287c02d477d131cb7639be940a`.
+  All three valid review findings were repaired, retested, and resolved; no
+  unresolved review threads remain.
 - `govulncheck ./...` reports the existing Go 1.25.5 standard-library baseline:
   13 reachable advisories, all fixed by later Go 1.25 patch releases. This PR
   does not change Kit's Go toolchain and introduces no new dependency.
@@ -177,9 +181,8 @@ Non-goals:
   explicit decommission notes instead of erasing the prior delivery.
 - Kura PR #2 is merged and its post-merge CI passed. Issue #139 and branch
   `GH-139` own the Kit companion delivery. Ready Kit PR #140 is open and
-  mergeable and contains validated implementation commit
-  `3d1d882f6b3c0a404f9667c3dc5217636dc75cee`; hosted validation was still
-  running when this checkpoint was recorded.
+  `MERGEABLE/CLEAN` with hosted validation and review passing at repaired
+  implementation commit `594ba9c4674da7287c02d477d131cb7639be940a`.
 
 ## REPOSITORY MEMORY
 
