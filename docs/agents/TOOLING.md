@@ -11,6 +11,9 @@
 - `kit registry list|view|add|status`: remote catalog inspection and typed
   artifact administration.
 - `kit rules list|view|add`: ruleset-filtered registry administration.
+- `kit pr fix`: explicit GitHub feedback intake, exact writable-head lane
+  preparation, supervisor-prompt output, and confirmed named-thread resolution;
+  it never runs the repair or launches an agent.
 
 Use command help and [`docs/commands.md`](../commands.md) for the exact current
 surface. Do not infer removed Kit 1.x commands from historical specs.
@@ -22,9 +25,9 @@ planning, file edits, test execution, Git/GitHub delivery, review, CI repair,
 cloud operations, and deployment. Follow selected repository rules for those
 actions.
 
-For `pr-feedback-repair`, the host should prefer status, review, or comment
-wakeups. Its fallback is one bounded `gh` helper process with no model turns
-while sleeping; Kit supplies only the resolved local workflow contract.
+For `pr-feedback-repair`, prefer status, review, or comment host wakeups.
+`kit pr fix --wait` is the bounded `gh` fallback with no model turns while
+sleeping; an immediate invocation handles late or human feedback.
 
 ## Worktrees
 

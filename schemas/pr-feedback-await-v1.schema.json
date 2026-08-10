@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jamesonstone/kit/schemas/pr-feedback-await-v1.schema.json",
+  "title": "Kit PR Feedback Await Result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "mode", "state", "repository", "pull_request",
+    "expected_head", "reason", "request_count"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "mode": { "enum": ["await", "collect"] },
+    "state": {
+      "enum": [
+        "pending", "completed", "skipped-with-reason", "provider-failure",
+        "head-changed", "unavailable", "timed-out", "rate-limited"
+      ]
+    },
+    "repository": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+    "pull_request": { "type": "integer", "minimum": 1 },
+    "expected_head": { "type": "string", "minLength": 1 },
+    "observed_head": { "type": "string" },
+    "provider_state": { "type": "string" },
+    "provider_description": { "type": "string" },
+    "reason": { "type": "string", "minLength": 1 },
+    "retry_at": { "type": "string" },
+    "rate_cost": { "type": "integer", "minimum": 0 },
+    "rate_limit": { "type": "integer", "minimum": 0 },
+    "rate_remaining": { "type": "integer", "minimum": 0 },
+    "rate_reset_at": { "type": "string" },
+    "request_count": { "type": "integer", "minimum": 0 }
+  }
+}

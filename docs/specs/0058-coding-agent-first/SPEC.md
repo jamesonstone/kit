@@ -55,8 +55,9 @@ contract without launching or supervising agents.
   and after a provider status first becomes successful. A successful provider
   context is not sufficient evidence of completed review: the description may
   instead report a terminal skipped review with its exact reason.
-- `kit init`, `kit reconcile`, `kit rules add|list|view`, and
-  `kit registry status` are the exhaustive protected legacy command paths.
+- `kit init`, `kit reconcile`, `kit rules add|list|view`,
+  `kit registry status`, and `kit pr fix` are the exhaustive protected legacy
+  command paths.
 - The separate `git-wt` binary remains unchanged.
 - The first major-release implementation narrowed `kit init` too far: it
   materialized registry artifacts and routing, but omitted the complete
@@ -101,10 +102,12 @@ contract without launching or supervising agents.
 - Add a registry-backed `pr-feedback-repair` workflow with an explicit
   `ruleset/agent-team-orchestration` dependency and every applicable delivery,
   lane, safety, testing, and source-size dependency.
-- Preserve the former `kit pr fix` supervisor semantics as declarative
-  repository-local instructions. Kit must not restore that command, launch an
-  agent, supervise a repair, call GitHub, or add network behavior to contract
-  resolution.
+- Restore `kit pr fix` as a narrow prompt-producing fallback over the
+  declarative `pr-feedback-repair` workflow. The explicit adapter may call
+  GitHub, select or prepare the exact writable same-repository PR-head lane,
+  collect current active feedback, and explicitly resolve named verified
+  threads; it must not launch agents, edit source, stage, commit, push, post
+  comments, merge, or add network behavior to contract resolution.
 - Define bounded await and event-triggered or one-shot collect intake modes
   over one repair workflow. Native host wakeups are preferred; a single
   token-free `gh` helper process is the bounded fallback.
@@ -149,10 +152,9 @@ contract without launching or supervising agents.
 6. Validate schemas, deterministic output, migration, merge safety,
    transactional initialization, command removal, git-wt preservation, full
    Go correctness, file-size limits, and hosted PR checks.
-7. Add the asynchronous PR-feedback workflow without changing the public CLI;
-   validate its structured state classifier, request budget, dependencies,
-   feedback sources, and resolver selection, then reconcile Kit's own catalog
-   provenance and routing counts.
+7. Add the asynchronous PR-feedback workflow; validate its structured state
+   classifier, request budget, dependencies, feedback sources, and resolver
+   selection, then reconcile Kit's own catalog provenance and routing counts.
 8. Add a bootstrap planner around the registry init plan so the complete
    repository scaffold, empty specs directory, project provenance, and
    separately reversible user-config merge are validated before mutation and
@@ -160,11 +162,16 @@ contract without launching or supervising agents.
 9. Restore deterministic starter templates and the semantic bootstrap prompt,
    register `repository-bootstrap`, and cover the exact path allowlist,
    preservation, secrecy, rollback, idempotency, and prompt-output modes.
+10. Restore only the `kit pr fix` compatibility path as a thin GitHub and
+    worktree adapter. Reuse the resolved workflow for policy, retain
+    clipboard/output/editor controls, add bounded await plus immediate collect,
+    and require exact head and thread identifiers for explicit resolution.
 
 ## DECISIONS
 
 - This is a semantic-version major release; compatibility is intentionally
-  exhaustive and limited to the six protected command paths and their purpose.
+  exhaustive and limited to the seven protected command paths and their
+  purpose.
 - Repository-local Markdown is canonical. Resolved JSON is a reproducible
   projection and never a second source of truth.
 - Fresh initialization installs every registry artifact visible to downstream
@@ -178,9 +185,14 @@ contract without launching or supervising agents.
 - Schema-v1 migration is previewed and applied through reconcile. No legacy
   runtime mode survives the migration.
 - `git-wt` remains independently supported and unchanged.
-- Asynchronous GitHub intake belongs to the coding agent or host. Kit owns the
-  declarative workflow, deterministic contract validation, and local resolver
-  projection only.
+- Asynchronous GitHub intake normally belongs to the coding agent or host. The
+  protected `kit pr fix` fallback may perform explicit bounded GitHub intake,
+  lane preparation, and named-thread resolution while Kit continues to own the
+  declarative workflow, contract validation, and local resolver projection.
+- `kit pr fix` is not a repair runtime. It prepares and records the safe lane,
+  generates the supervisor prompt, and optionally waits or resolves explicitly
+  named verified threads; the coding agent owns reasoning, edits, validation,
+  delivery, reflection, and repair decisions.
 - `SUCCESS` plus a `Review completed` description means provider completion;
   `SUCCESS` plus `Review skipped:` is a terminal non-clean skip whose suffix is
   preserved exactly. Unknown success descriptions fail closed as unavailable.
@@ -193,8 +205,8 @@ contract without launching or supervising agents.
   read-only verification lane.
 - Canonical bootstrap compatibility is deliberately broader than ordinary
   protected-command compatibility: `kit init` restores its complete scaffold
-  duty, but no removed feature, prompt, dispatch, review, or lifecycle command
-  returns.
+  duty, while `kit pr fix` is the sole restored prompt fallback. No dispatch,
+  loop, broader PR, feature, review, or lifecycle command returns.
 - Kit writes deterministic valid starters and resolves a declarative
   `repository-bootstrap` contract; the coding agent, not Kit, infers project
   truth from repository evidence.
@@ -282,9 +294,9 @@ contract without launching or supervising agents.
 - `kit contract resolve --workflow implementation-delivery --path README.md`
   returned ready schema-v1 JSON, the explicit workflow, mandatory rules, the
   path-selected README rule, provenance, states, reasons, and next action.
-- The CLI allowlist test proves only `init`, `reconcile`, `contract`,
-  `registry`, and `rules` roots exist; a direct removed-command smoke test
-  rejects `kit spec`.
+- The CLI allowlist test proves only `init`, `reconcile`, `contract`, `pr`,
+  `registry`, and `rules` roots exist; `pr` exposes only `fix`, and a direct
+  removed-command smoke test rejects `kit spec`.
 - `git diff -- cmd/git-wt internal/worktree` is empty, proving the separate
   binary implementation is unchanged.
 - The complete version-control-eligible handwritten source and test audit found
@@ -307,19 +319,32 @@ contract without launching or supervising agents.
   wakeups, collection pagination, human sources, fingerprints, prompt and
   trusted-comment markers, late collect mode, dependency drift, and hard
   timeout/request/page/head/pass ceilings.
+- Protected-adapter tests cover all accepted target forms, interactive
+  selection, human and CodeRabbit filtering, prompt extraction and
+  deduplication, exact writable-head lane checks, NUL-safe dirty paths,
+  clipboard/output/editor controls, subagent bounds, prompt-only behavior,
+  structured wait failures, and explicit current-thread resolution.
+- Self-hosted one-shot collection against PR #134 found no active thread,
+  review-body, or marked-comment feedback and kept `--output-only` stdout
+  empty. Bounded await classified the live successful CodeRabbit context as
+  `skipped-with-reason`, preserved its exact `Review skipped: 541 files exceed
+  the limit of 300` reason and rate evidence in schema-v1 JSON, and exited 2.
+- `gosec ./internal/prfix ./pkg/agentcli` reported zero issues. The whole-tree
+  scan retained six pre-existing findings only in unchanged `internal/registry`
+  and `internal/worktree` paths; no finding points to the restored adapter.
 - `kit contract resolve --workflow pr-feedback-repair` returned ready local-only
   JSON containing the workflow, `agent-team-orchestration`, GitHub delivery,
   safety, work-lane, testing, and source-size dependencies. The exact CLI
-  allowlist test still rejects the removed `pr` root.
+  allowlist exposes only the protected `pr fix` path under the `pr` root.
 - Final validation passed `go test ./...`, focused race tests, `go vet ./...`,
   `golangci-lint run ./...` with zero issues, `govulncheck ./...` with zero
   reachable vulnerabilities, both direct binary builds, `goreleaser check`,
   and the full snapshot build matrix.
-- Ready PR #134 was opened from exact pushed head
-  `59cf7dea0d0b7328fa77abcb32c19804c36faf92`; GitHub reported it mergeable,
-  issue and PR assignment to `jamesonstone`, a passing auto-assign check, and a
-  passing CodeRabbit check whose review was explicitly skipped because the
-  change exceeded its 300-file service limit.
+- Ready PR #134 remains the single delivery lane for the original major reset
+  and its accepted bootstrap and `pr fix` corrections. GitHub reports the
+  issue and PR assigned to `jamesonstone`; exact pushed-head and hosted-state
+  evidence is refreshed after every update rather than treating a successful
+  CodeRabbit context as completed review.
 
 ## OUTCOME
 
@@ -343,7 +368,9 @@ contract without launching or supervising agents.
   bounded await and late collect intake, fail-closed terminal states,
   rate-conscious GitHub observation, active human feedback, deterministic
   fingerprints, bounded repair passes, and the former `kit pr fix` supervisor
-  semantics. Kit still performs no GitHub access or agent supervision.
+  semantics. The restored adapter performs only explicit bounded GitHub intake,
+  lane preparation, prompt delivery, and confirmed named-thread resolution;
+  Kit still performs no agent supervision or repair execution.
 - `repository-bootstrap` restores the former init prompt's semantic duty through
   a local resolved workflow: the coding agent progressively inspects evidence
   and populates only verified Constitution, progress, testing, tooling,

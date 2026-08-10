@@ -37,7 +37,7 @@ func TestPRFeedbackWorkflowContract(t *testing.T) {
 		contract.Collection.MaxPages != 20 {
 		t.Fatalf("collection contract = %#v", contract.Collection)
 	}
-	wantFingerprint := []string{"kind", "node_id", "path", "line", "author", "url", "body"}
+	wantFingerprint := []string{"normalized_task", "path", "line"}
 	if !sameStrings(contract.Collection.FingerprintFields, wantFingerprint) ||
 		contract.Collection.PromptMarker != "Prompt for AI Agents" ||
 		contract.Collection.TrustedCommentMarker != "<!-- kit:pr-feedback -->" {

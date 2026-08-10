@@ -13,10 +13,11 @@ deterministic projection. Kit does not launch, supervise, or select agents.
 ## Major update
 
 This is an intentional semantic-version major reset. The `kit` CLI has been
-reduced to the rules, registry, reconciliation, and contract surfaces. Existing
-projects must preview the schema-v2 migration with `kit reconcile --diff`
-before applying it with `kit reconcile --apply`, then run `kit init` to restore
-the complete coding-agent bootstrap without overwriting project-owned files.
+reduced to the contract and rules lifecycle plus one narrow PR-feedback
+fallback. Existing projects must preview the schema-v2 migration with
+`kit reconcile --diff` before applying it with `kit reconcile --apply`, then
+run `kit init` to restore the complete coding-agent bootstrap without
+overwriting project-owned files.
 
 See the [major-release migration guide](docs/migrations/coding-agent-first-major.md)
 and [release notes](docs/releases/coding-agent-first-major.md).
@@ -45,11 +46,17 @@ The init prompt routes the coding agent through the local
 `repository-bootstrap` workflow; Kit supplies starters but does not infer
 project truth.
 
-For asynchronous pull-request review repair, resolve
-`kit contract resolve --workflow pr-feedback-repair`. The local workflow
-defines bounded CodeRabbit and human-feedback intake while the coding agent or
-host owns `gh`, waiting, repair, and delivery; no legacy `kit pr fix` command
-or agent runtime is restored.
+For asynchronous or late pull-request feedback, `kit pr fix` collects active
+human and provider review, pins the exact writable PR-head lane, and emits the
+coding-agent supervisor prompt:
+
+```bash
+kit pr fix --pr 134 --output-only
+```
+
+The prompt resolves `pr-feedback-repair`. Kit never launches the agent or
+performs the repair, commit, push, or merge; thread resolution is a separate
+explicit exact-head operation.
 
 ## Protected rules lifecycle
 
@@ -64,10 +71,12 @@ release. Their flags and presentation may change.
 | `kit rules list` | List rulesets with availability, state, and provenance. |
 | `kit rules view` | Inspect local, registry, or diff views of a ruleset. |
 | `kit registry status` | Report freshness, conflicts, and required actions. |
+| `kit pr fix` | Collect active PR feedback and produce the pinned repair prompt. |
 
 Typed artifact administration is available through `kit registry
-list|view|add|status`. Coding agents consume `kit contract resolve`; it never
-uses the network, writes files, runs Git, or infers intent from task prose.
+list|view|add|status`. Coding agents consume `kit contract resolve`; resolution
+never uses the network, writes files, runs Git, or infers intent from task
+prose.
 
 See the [command guide](docs/commands.md) for flags, JSON behavior, and exit
 codes.

@@ -80,21 +80,23 @@ Only these existing names and core purposes are protected:
 - `kit rules list`
 - `kit rules view`
 - `kit registry status`
+- `kit pr fix`
 
 Flags, text output, and incidental Kit 1.x behavior are not compatibility
 contracts.
 
 ## Removed surfaces
 
-Feature/spec lifecycle, prompt generation, loop and dispatch execution, review,
-CI and pull-request helpers, health, capabilities, config, AWS, status and map,
+Feature/spec lifecycle, general prompt generation, loop and dispatch execution,
+the broader review/CI/pull-request family, health, capabilities, config, AWS, status and map,
 verification and replay, state, improvement, scaffold, skill, and legacy
 commands have been removed. Use the coding agent's native tools and
 repository-owned automation for those responsibilities.
 
-The strategic supervisor contract formerly rendered by `kit pr fix` is now the
-registry-backed `pr-feedback-repair` workflow. Resolve it with `kit contract
-resolve --workflow pr-feedback-repair`; there is no compatibility command and
-Kit still does not launch agents or access GitHub during resolution.
+`kit pr fix` is the sole restored PR helper. It collects active feedback,
+prepares the exact writable PR-head lane, and renders the registry-backed
+`pr-feedback-repair` supervisor prompt. It does not launch agents or perform
+repairs or delivery. Contract resolution itself still performs no GitHub
+access. No dispatch, loop, or broader legacy PR family is restored.
 
 The separate `git-wt` executable is unchanged.

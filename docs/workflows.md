@@ -46,14 +46,16 @@ Kit does not manage that process.
 ## Repair asynchronous PR feedback
 
 ```bash
-kit contract resolve --workflow pr-feedback-repair
+kit pr fix --pr owner/repo#123 --output-only
 ```
 
-The selected local workflow has two intake modes: bounded `await` for expected
-CodeRabbit feedback and event-triggered or one-shot `collect` for late provider
-or human feedback. The host or coding agent runs the single token-free `gh`
-observer, preserves exact head and rate-limit evidence, and performs repair;
-Kit does not wait, access GitHub, launch agents, or mutate review threads.
+The protected adapter resolves the local workflow and offers two intake modes:
+bounded `--wait` for expected CodeRabbit feedback and immediate one-shot
+collection for late provider or human feedback. It runs a token-free,
+rate-bounded `gh` observer, preserves exact head and lane evidence, and emits
+the agent prompt. Kit does not launch the agent or perform repairs or delivery.
+Thread resolution requires a separate explicit `--resolve --head --thread
+--yes` invocation after pushed-head verification.
 
 `SUCCESS / Review completed` and `SUCCESS / Review skipped: <reason>` are
 different terminal outcomes. Pending, skipped, timeout, unavailable, provider

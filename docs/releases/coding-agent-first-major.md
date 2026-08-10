@@ -22,6 +22,9 @@ memory, prompt, or agent-execution harness.
 - A `pr-feedback-repair` workflow with bounded asynchronous CodeRabbit and
   human-review intake, exact terminal states, rate-aware observation, and an
   explicit agent-team dependency.
+- The protected `kit pr fix` prompt fallback with active human/CodeRabbit
+  collection, exact writable-head lane pinning, bounded wait, and explicit
+  verified thread resolution.
 
 ## Protected command paths
 
@@ -31,6 +34,7 @@ memory, prompt, or agent-execution harness.
 - `kit rules list`
 - `kit rules view`
 - `kit registry status`
+- `kit pr fix`
 
 Protection covers names and core outcomes only, not legacy flags or output.
 `kit init` is the deliberate exception where its complete historical bootstrap
@@ -38,10 +42,10 @@ duty is part of the protected core outcome.
 
 ## Removed
 
-All other Kit 1.x commands, runtime packages, prompt templates, improvement
+All other Kit 1.x commands, runtime packages, general prompt templates, improvement
 evaluations, command metadata, and command-specific automation were removed.
-The former `kit pr fix` prompt semantics live in the declarative workflow; its
-command and any agent-launching behavior are not restored.
+Only the narrow `kit pr fix` adapter is restored; dispatch, loop, the broader
+legacy PR family, and agent-launching behavior remain removed.
 The separate `git-wt` binary and implementation remain unchanged.
 
 ## Required migration

@@ -7,6 +7,7 @@ kit
 ├── init
 ├── reconcile
 ├── contract resolve
+├── pr fix
 ├── registry add|list|status|view
 └── rules add|list|view
 ```
@@ -51,6 +52,35 @@ does not wait for or collect network feedback.
 
 Blocked required artifacts still produce diagnostic JSON and exit with status
 2. Input or project errors exit with status 1.
+
+## `kit pr fix`
+
+This protected fallback collects current unresolved, non-outdated PR feedback,
+prepares the exact writable same-repository PR-head lane, and emits a coding-
+agent supervisor prompt. It never launches agents or edits, stages, commits,
+pushes, comments, or merges. Without `--pr`, select from current-repository
+open PRs. `--pr` accepts a GitHub URL, Markdown link, `owner/repo#number`, or
+current-repository number.
+
+- `--output-only`, `--copy`: control prompt delivery; clipboard-first remains
+  the default.
+- `--edit`, `--editor`, `--vim`: explicitly edit normalized findings before
+  prompt generation.
+- `--coderabbit`: exclude human feedback and keep CodeRabbit-authored input.
+- `--max-subagents`: default 3, hard maximum 4.
+- `--include-dirty` or `--exclude-dirty`: explicitly assign pre-existing lane
+  changes; overlap with excluded findings fails closed.
+- `--wait [--timeout]`: use bounded, rate-aware CodeRabbit observation from the
+  local `pr-feedback-repair` contract before collecting.
+- `--resolve --head <sha> --thread <id> --yes`: after exact pushed-head
+  verification, resolve only explicitly named current active review threads.
+
+Wait failures emit pure
+[`pr-feedback-await-v1`](../schemas/pr-feedback-await-v1.schema.json) JSON to
+stdout, diagnostics to stderr, and exit with status 2. One-shot invocation
+remains the path for late or human feedback. `kit contract resolve` remains
+local-only; all network and worktree behavior is confined to this explicit
+adapter.
 
 ## `kit reconcile`
 

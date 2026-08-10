@@ -29,7 +29,8 @@ The canonical declarative workflow is
 
 ## Pull-request feedback repair
 
-1. Resolve `pr-feedback-repair` for one exact writable PR-head lane.
+1. Run `kit pr fix` or resolve `pr-feedback-repair` natively for one exact
+   writable PR-head lane.
 2. Use a host wakeup or the bounded token-free `gh` await mode; use one-shot
    collect for late or human feedback.
 3. Verify every active finding against current `HEAD`, repair only valid
@@ -37,8 +38,10 @@ The canonical declarative workflow is
 4. Refresh the exact pushed head and resolve only verified addressed threads.
 
 The canonical declarative workflow is
-[`pr-feedback-repair.md`](../references/workflows/pr-feedback-repair.md). Kit
-does not execute its GitHub, waiting, agent, or delivery steps.
+[`pr-feedback-repair.md`](../references/workflows/pr-feedback-repair.md). The
+fallback adapter executes only bounded intake, lane preparation, prompt output,
+and explicitly confirmed thread resolution; it never executes repair or
+delivery.
 
 ## Contract maintenance
 

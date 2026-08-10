@@ -22,7 +22,9 @@ machine interface, not a second source of truth.
 Published schema files are
 [`registry-catalog-v1`](../schemas/registry-catalog-v1.schema.json),
 [`project-config-v2`](../schemas/project-config-v2.schema.json), and
-[`resolved-contract-v1`](../schemas/resolved-contract-v1.schema.json).
+[`resolved-contract-v1`](../schemas/resolved-contract-v1.schema.json). The
+narrow PR await adapter emits
+[`pr-feedback-await-v1`](../schemas/pr-feedback-await-v1.schema.json).
 
 ## Artifact types
 
@@ -34,8 +36,9 @@ Both types carry a version and digest and may declare applicability tags, path
 patterns, dependencies, visibility, and read policy.
 
 The `pr-feedback-repair` workflow adds a structured asynchronous-review
-contract. Kit resolves it locally; a coding-agent host uses native GitHub tools
-or event wakeups for bounded waiting, collection, repair, and thread updates.
+contract. Kit resolves it locally. The explicit `kit pr fix` fallback may use
+native GitHub APIs for bounded waiting, active collection, lane preparation,
+and verified named-thread resolution; it never performs the repair itself.
 
 ## Trust boundaries
 
@@ -60,7 +63,8 @@ repositories.
 
 ## Product boundary
 
-Kit does not implement features, infer a task from prose, run prompts, dispatch
-subagents, execute validation, manage CI or pull requests, or supervise an
-agent loop. The coding agent and repository-native tooling own those actions.
+Kit does not implement features, infer a task from prose, dispatch subagents,
+execute validation, manage CI, or supervise an agent loop. Except for the
+narrow prompt-producing `kit pr fix` intake/resolution adapter, the coding
+agent and repository-native tooling own pull-request actions.
 The separate `git-wt` binary remains available outside this boundary.

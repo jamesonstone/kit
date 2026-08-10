@@ -52,7 +52,7 @@ pr_feedback:
     include_human_threads: true
     prompt_marker: Prompt for AI Agents
     trusted_comment_marker: "<!-- kit:pr-feedback -->"
-    fingerprint_fields: [kind, node_id, path, line, author, url, body]
+    fingerprint_fields: [normalized_task, path, line]
 ---
 
 # Workflow: PR Feedback Repair
@@ -64,11 +64,13 @@ collecting asynchronous pull-request feedback, verifying it against the
 current head, repairing valid findings, and closing only proven addressed
 threads.
 
-Kit resolves this repository-local workflow and its rules. It does not call
-GitHub, wait, launch or supervise agents, mutate a pull request, or add network
-behavior to `kit contract resolve`. The removed `kit pr fix` command generated
-the supervisor prompt described here; it did not itself launch agents. This
-workflow preserves those strategic semantics without restoring that command.
+`kit contract resolve` reads this repository-local workflow and its rules
+without GitHub, network, write, or Git activity. The protected `kit pr fix`
+fallback may explicitly collect GitHub feedback, wait within this contract,
+prepare the exact writable PR-head lane, emit the supervisor prompt, and
+resolve only confirmed named threads. It does not launch or supervise agents
+or perform repair, staging, commit, push, comment, merge, or implicit thread
+resolution.
 
 ## Intake Modes
 
@@ -83,10 +85,9 @@ Both modes enter the same repair phases after collecting feedback:
   immediately and never requires a preceding provider wait.
 
 Deduplicate active watchers by `repository + pull request number + expected
-head SHA`. Persist the watcher key, request count, last provider fingerprint,
-and feedback fingerprints in the host state directory, not in tracked project
-files. Use an atomic per-key lock so a second watcher reuses or reports the
-existing observation instead of polling again.
+head SHA`. Persist status and feedback fingerprints in the host state
+directory, not in tracked project files. Use an atomic per-key lock so a
+second watcher reports the existing observation instead of polling again.
 
 ## Deterministic Await
 
@@ -160,11 +161,12 @@ Status state and description form one decision; `SUCCESS` alone is unsafe.
 | `timed-out` | The bounded await expires while pending. Pending or timeout is never clean completion. |
 | `rate-limited` | HTTP 403/429, request budget exhaustion, or the configured reserve is reached. Preserve retry/reset evidence. |
 
-Emit one structured result containing schema version, mode, terminal state,
-repository, pull-request number, expected and observed heads, provider state
-and description, exact reason, request count, rate budget, timestamps,
-feedback fingerprints, and next action. Fingerprint status from head, context
-state, and exact description so repeated wakeups do not create duplicate work.
+Emit a `pr-feedback-await-v1` structured result containing schema version,
+mode, terminal state, repository, pull-request number, expected and observed
+heads, provider state and description, exact reason, retry/reset evidence,
+request count, and returned rate-budget evidence. Fingerprint status from head,
+context state, and exact description so repeated wakeups remain observable
+without persisting provider bodies.
 
 ## Feedback Collection
 
@@ -187,11 +189,11 @@ when an `OWNER`, `MEMBER`, or `COLLABORATOR` author includes the exact
 `<!-- kit:pr-feedback -->` marker. Preserve path and line as null when that
 source has no inline location.
 
-Deduplicate by stable node ID and by a SHA-256 fingerprint of kind, node ID,
-path, line, author, URL, and normalized body. Persist fingerprints per watcher
-key so late one-shot intake returns only new or materially changed active
-feedback while still reporting the complete active count. Hitting a page or
-request bound is `unavailable`, not a partial clean collection.
+Deduplicate by a SHA-256 fingerprint of normalized task, source path, and line.
+Preserve node and thread IDs, author, URL, and body as evidence on the retained
+item. Persist fingerprints per watcher key without persisting feedback bodies.
+Hitting a page or request bound is `unavailable`, not a partial clean
+collection.
 
 ## Supervisor And Lane Preflight
 
@@ -260,4 +262,5 @@ instead of creating an infinite review-and-push loop.
   provider failure, unavailable context, rate reserve, HTTP 403/429, bounded
   scheduling, quiet confirmation, pagination bounds, deduplication fields,
   human feedback sources, and late collect mode.
-- The public Kit command tree remains unchanged; `kit pr fix` is not restored.
+- Command-tree and prompt goldens prove `kit pr fix` is the sole protected PR
+  fallback and that dispatch, loop, and the broader PR family remain absent.

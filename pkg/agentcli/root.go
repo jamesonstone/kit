@@ -34,6 +34,7 @@ func NewRoot() *cobra.Command {
 	root.AddCommand(newRulesCommand())
 	root.AddCommand(newRegistryCommand())
 	root.AddCommand(newContractCommand())
+	root.AddCommand(newPRCommand())
 	return root
 }
 

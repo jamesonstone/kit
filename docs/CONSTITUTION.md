@@ -19,8 +19,10 @@ contract without launching, supervising, or reasoning on behalf of an agent.
 - Agent routing points to `kit contract resolve` and local artifacts.
 - Selection uses explicit feature, path, applicability, and workflow hints.
 - Workflows declare execution phases and gates but do not manage processes.
-- Workflows may define asynchronous GitHub intake and repair contracts, while
-  the coding agent or host owns every network request, wait, and mutation.
+- Workflows define asynchronous GitHub intake and repair contracts. The narrow
+  `kit pr fix` adapter may collect feedback, wait within those bounds, prepare
+  the exact lane, and resolve explicitly verified threads; the coding agent
+  owns repair and delivery.
 - Human commands exist to initialize, inspect, install, and reconcile the
   contract.
 - `kit init` is the canonical full repository bootstrap and emits one bounded
@@ -116,6 +118,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
    runtime.
 8. Structured workflow-specific front matter is validated during catalog
    materialization before repository mutation.
+9. `internal/prfix` owns the narrow protected PR-feedback adapter; it never
+   launches agents or performs repair, staging, commit, push, or merge work.
 
 ### Public CLI allowlist
 
@@ -124,6 +128,7 @@ The `kit` command tree is limited to:
 - `init`
 - `reconcile`
 - `contract resolve`
+- `pr fix`
 - `registry add|list|status|view`
 - `rules add|list|view`
 
@@ -133,10 +138,12 @@ Kit does not:
 
 - launch, dispatch, supervise, evaluate, or retry coding agents;
 - infer applicability from natural-language task text;
-- generate general feature, repair, or lifecycle prompt libraries; the one
-  init bootstrap prompt only routes an agent into the local resolved contract;
-- run CI, review, pull-request, cloud, or deployment workflows;
-- maintain hidden databases, remote state, credentials, or telemetry;
+- generate general feature or lifecycle prompt libraries; init and `pr fix`
+  emit only their bounded contract-routing prompts;
+- run CI, repair, pull-request delivery, cloud, or deployment workflows;
+- maintain project-local hidden databases, remote state, credentials, or
+  telemetry; `pr fix` stores only bounded fingerprints and watcher locks in the
+  user state directory;
 - overwrite project customization by default;
 - retain broad Kit 1.x CLI compatibility.
 

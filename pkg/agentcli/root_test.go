@@ -16,14 +16,15 @@ import (
 
 func TestRootExposesOnlyMajorReleaseSurface(t *testing.T) {
 	root := NewRoot()
-	assertCommandNames(t, root, []string{"contract", "init", "reconcile", "registry", "rules"})
+	assertCommandNames(t, root, []string{"contract", "init", "pr", "reconcile", "registry", "rules"})
 	assertCommandNames(t, commandNamed(t, root, "contract"), []string{"resolve"})
+	assertCommandNames(t, commandNamed(t, root, "pr"), []string{"fix"})
 	assertCommandNames(t, commandNamed(t, root, "rules"), []string{"add", "list", "view"})
 	assertCommandNames(t, commandNamed(t, root, "registry"), []string{"add", "list", "status", "view"})
 
 	removed := []string{
 		"aws", "capabilities", "check", "config", "dispatch", "health", "improve", "instructions",
-		"legacy", "loop", "map", "plan", "pr", "prompt", "replay", "review", "scaffold", "skill",
+		"legacy", "loop", "map", "plan", "prompt", "replay", "review", "scaffold", "skill",
 		"spec", "state", "status", "verify",
 	}
 	for _, name := range removed {
@@ -44,7 +45,7 @@ func TestReadmeDocumentsMajorReleaseAndPrimaryFlow(t *testing.T) {
 	readme := string(content)
 	required := []string{
 		"Major update", "kit init", "kit contract resolve", "agent implementation", "kit reconcile",
-		"complete coding-agent bootstrap", "repository-bootstrap",
+		"complete coding-agent bootstrap", "repository-bootstrap", "kit pr fix",
 		"docs/migrations/coding-agent-first-major.md",
 	}
 	for _, phrase := range required {
