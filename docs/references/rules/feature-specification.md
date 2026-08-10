@@ -18,7 +18,7 @@ read_policy_default: must
 ## Purpose
 
 - Preserve the accepted plan, evidence, decisions, discoveries, validation,
-  outcome, and delivery history for every non-trivial feature.
+  outcome, and delivery history for every feature.
 - Give future coding agents a durable, progressively disclosed account that
   code and tests alone cannot reconstruct.
 - Separate deterministic contract enforcement from semantic authoring: Kit
@@ -30,12 +30,13 @@ read_policy_default: must
 - A coding agent implements a feature or another non-trivial behavior change.
 - The task changes architecture, public behavior, cross-file responsibilities,
   migration behavior, or an accepted implementation plan.
-- Genuinely trivial mechanical maintenance may omit a feature spec only when it
-  has no material feature behavior, rationale, or historical consequence.
+- Genuinely trivial mechanical maintenance may omit a feature spec only through
+  the explicit `--work-type maintenance` classification.
 
-Resolve feature work with both `--workflow implementation-delivery` and
-`--feature <feature-directory>`. Do not omit the feature hint to bypass this
-rule.
+Resolve feature work with `--workflow implementation-delivery`,
+`--work-type feature`, and `--feature <feature-directory>`. Missing or
+contradictory classification is blocked; Kit never infers maintenance from an
+omitted hint.
 
 ## Rules
 
@@ -96,9 +97,6 @@ rule.
 - Keep feature-specific history in the feature spec. Put demonstrated durable
   project-wide truth in `docs/CONSTITUTION.md`, reusable practice in
   `docs/references/`, and domain truth in its canonical documentation.
-- Do not use `docs/notes` as an active Kit convention. Existing project-owned
-  note directories and historical specifications are not migration deletion
-  targets and must not be rewritten merely because the convention retired.
 - Kit does not author the spec, infer project truth, execute the accepted plan,
   or launch or supervise an agent.
 
@@ -107,10 +105,11 @@ rule.
 - Treating an empty `docs/specs/` directory as preserved feature history.
 - Starting source edits from an in-memory or chat-only plan.
 - Adding headings with empty bodies solely to satisfy structural validation.
-- Omitting `--feature` from resolution to avoid a blocked spec state.
+- Omitting or misclassifying `--work-type` or `--feature` to avoid a blocked
+  spec state.
 - Reconstructing decisions, validation, or delivery evidence after context is
   lost, or silently claiming unobserved validation passed.
-- Deleting downstream notes or rewriting historical specs during migration.
+- Rewriting historical specs during migration.
 
 ## Verification
 
@@ -127,6 +126,7 @@ rule.
 ```bash
 kit contract resolve \
   --workflow implementation-delivery \
+  --work-type feature \
   --feature 0058-coding-agent-first \
   --json
 ```

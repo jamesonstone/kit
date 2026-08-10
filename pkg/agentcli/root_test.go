@@ -18,6 +18,10 @@ func TestRootExposesOnlyMajorReleaseSurface(t *testing.T) {
 	root := NewRoot()
 	assertCommandNames(t, root, []string{"contract", "init", "pr", "reconcile", "registry", "rules"})
 	assertCommandNames(t, commandNamed(t, root, "contract"), []string{"resolve"})
+	resolve := commandNamed(t, commandNamed(t, root, "contract"), "resolve")
+	if resolve.Flags().Lookup("work-type") == nil {
+		t.Fatal("contract resolve is missing --work-type")
+	}
 	assertCommandNames(t, commandNamed(t, root, "pr"), []string{"fix"})
 	assertCommandNames(t, commandNamed(t, root, "rules"), []string{"add", "list", "view"})
 	assertCommandNames(t, commandNamed(t, root, "registry"), []string{"add", "list", "status", "view"})
@@ -46,7 +50,7 @@ func TestReadmeDocumentsMajorReleaseAndPrimaryFlow(t *testing.T) {
 	required := []string{
 		"Major update", "kit init", "kit contract resolve", "agent implementation", "kit reconcile",
 		"complete coding-agent bootstrap", "repository-bootstrap", "kit pr fix",
-		"living V3", "--feature 0059-example",
+		"living V3", "--work-type feature", "--feature 0059-example",
 		"docs/migrations/coding-agent-first-major.md",
 	}
 	for _, phrase := range required {

@@ -9,6 +9,7 @@ import (
 )
 
 type contractOptions struct {
+	workType      string
 	feature       string
 	paths         []string
 	applicability []string
@@ -32,6 +33,7 @@ func newContractResolveCommand() *cobra.Command {
 			return runContractResolve(command, *options)
 		},
 	}
+	command.Flags().StringVar(&options.workType, "work-type", "", "explicit work classification: feature or maintenance")
 	command.Flags().StringVar(&options.feature, "feature", "", "canonical living feature directory")
 	command.Flags().StringArrayVar(&options.paths, "path", nil, "task path hint; repeat as needed")
 	command.Flags().StringArrayVar(&options.applicability, "applies-to", nil, "applicability tag; repeat as needed")
@@ -46,7 +48,7 @@ func runContractResolve(command *cobra.Command, options contractOptions) error {
 		return err
 	}
 	resolved, err := contract.Resolve(root, contract.Hints{
-		Feature: options.feature, Paths: options.paths,
+		WorkType: options.workType, Feature: options.feature, Paths: options.paths,
 		Applicability: options.applicability, Workflows: options.workflows,
 	})
 	if err != nil {

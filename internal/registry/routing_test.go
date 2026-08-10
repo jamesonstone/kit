@@ -11,7 +11,8 @@ func TestRoutingRequiresFeatureSpecBeforeSourceEdits(t *testing.T) {
 		{Kind: KindWorkflow, Slug: "implementation-delivery"},
 	})
 	for _, required := range []string{
-		"--workflow implementation-delivery --feature <feature>",
+		"--workflow implementation-delivery --work-type feature --feature <feature>",
+		"--work-type maintenance",
 		"living V3 spec", "re-resolve before source edits",
 	} {
 		if !strings.Contains(content, required) {

@@ -179,6 +179,9 @@ func TestRepositoryCatalogRequiresFeatureSpecificationForDelivery(t *testing.T) 
 		if artifact.Digest != HashContent(string(document)) {
 			t.Fatalf("catalog digest for %s is stale", ArtifactKey(artifact.Kind, artifact.Slug))
 		}
+		if strings.Contains(string(document), "docs/notes") {
+			t.Fatalf("active artifact %s still references retired notes path", ArtifactKey(artifact.Kind, artifact.Slug))
+		}
 		doc, parseErr := ParseMarkdown(string(document))
 		if parseErr != nil {
 			t.Fatal(parseErr)

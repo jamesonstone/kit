@@ -13,7 +13,7 @@ interface; `kit contract resolve` selects applicable installed rules for coding
 agents.
 
 - [Feature specification](rules/feature-specification.md) — mandatory living V3
-  history and pre-source/pre-delivery phase gates for non-trivial features.
+  history and pre-source/pre-delivery phase gates for features.
 
 ## Workflows
 

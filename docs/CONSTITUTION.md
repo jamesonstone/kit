@@ -11,7 +11,7 @@ contract without launching, supervising, or reasoning on behalf of an agent.
 - Materialized Markdown is canonical and directly reviewable.
 - Resolved JSON is a reproducible machine projection, never a competing source
   of truth.
-- Every non-trivial feature has a complete living V3 specification before
+- Every feature has a complete living V3 specification before
   source implementation and maintains it through delivery and curation.
 - Historical specifications remain progressively discoverable repository
   evidence even when their runtime surface is removed.
@@ -19,7 +19,9 @@ contract without launching, supervising, or reasoning on behalf of an agent.
 ### 2. Coding-agent-first interfaces
 
 - Agent routing points to `kit contract resolve` and local artifacts.
-- Selection uses explicit feature, path, applicability, and workflow hints.
+- Selection uses explicit work type, feature, path, applicability, and workflow
+  hints. Implementation delivery fails closed without a `feature` or
+  `maintenance` classification.
 - Workflows declare execution phases and gates but do not manage processes.
 - Workflows define asynchronous GitHub intake and repair contracts. The narrow
   `kit pr fix` adapter may collect feedback, wait within those bounds, prepare
@@ -45,6 +47,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
   calls, or task-text inference.
 - Invalid or unresolved required artifacts block the contract with actionable
   diagnostics.
+- Feature work requires its canonical feature hint; maintenance is the only
+  explicit feature-spec exemption and is never inferred from omitted input.
 - Feature-spec authoring remains allowed while a missing or incomplete spec
   blocks source implementation and delivery.
 

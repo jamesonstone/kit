@@ -12,7 +12,8 @@ and resolves the deterministic subset applicable to a task.
    managed sections, then emits the `repository-bootstrap` agent prompt.
 3. `.kit.yaml` records source identity, revision, digests, section hashes,
    paths, and artifact state.
-4. `kit contract resolve` selects ordered local artifacts from explicit hints.
+4. `kit contract resolve` selects ordered local artifacts from explicit hints,
+   including a fail-closed feature or maintenance work classification.
 5. Feature resolution projects living V3 spec structure, historical links,
    and phase permissions; spec authoring remains agent-owned.
 6. `kit reconcile` compares local, installed, and current registry state and
@@ -38,10 +39,14 @@ Both types carry a version and digest and may declare applicability tags, path
 patterns, dependencies, visibility, and read policy.
 
 `feature-specification` is a mandatory dependency of implementation delivery.
-Every non-trivial feature has a living V3 spec before source edits and keeps it
+Every feature has a living V3 spec before source edits and keeps it
 current through decisions, discoveries, validation, outcome, delivery, and
 repository-memory curation. Historical specs remain repository evidence, not
 legacy runtime compatibility.
+
+Implementation delivery requires explicit `work_type: feature|maintenance`.
+Feature work also requires its canonical feature hint; maintenance is the sole
+feature-spec exemption and must be recorded rather than inferred.
 
 The `pr-feedback-repair` workflow adds a structured asynchronous-review
 contract. Kit resolves it locally. The explicit `kit pr fix` fallback may use

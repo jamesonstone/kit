@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: spec
 workflow_version: 3
-phase: complete
+phase: deliver
 feature:
   id: 0058
   slug: coding-agent-first
@@ -70,6 +70,13 @@ contract without launching or supervising agents.
   conditional on whether an agent judged rationale to be material and removed
   the former detailed template enforcement. An empty `docs/specs/` bootstrap
   plus advisory wording is insufficient to preserve feature history.
+- The first hard feature-spec gate can still be bypassed by resolving
+  `implementation-delivery` without `--feature`; the returned contract is
+  ready and has no feature-spec state. Work must therefore be classified
+  explicitly as `feature` or `maintenance` before implementation delivery.
+- The mandatory feature-specification artifact still names the retired
+  `docs/notes` convention. Active runtime contracts must describe only the
+  replacement destinations while historical specifications remain unchanged.
 
 ## SOURCE EVIDENCE AND HISTORICAL RELATIONSHIPS
 
@@ -95,6 +102,10 @@ contract without launching or supervising agents.
   projection of the effective agent contract.
 - Accept explicit feature, path, applicability-tag, and workflow hints without
   task-text or model inference.
+- Accept an explicit `feature` or `maintenance` work-type hint. An explicit
+  `implementation-delivery` resolution without a valid work type is blocked;
+  feature work also requires `--feature`, while maintenance must not provide a
+  feature hint.
 - Block resolution when a required artifact is missing, invalid, conflicted,
   or has an unresolved dependency while still emitting diagnostic JSON.
 - Make `kit init` materialize every downstream-visible ruleset and workflow,
@@ -176,6 +187,9 @@ contract without launching or supervising agents.
 - Remove `docs/notes` and `ruleset/feature-notes` from Kit's active product
   model and generated guidance without deleting downstream project-owned notes
   or rewriting historical specifications that mention them.
+- Remove the final active `docs/notes` reference from the mandatory
+  feature-specification contract; retain only generic canonical repository
+  memory destinations in current runtime guidance.
 
 ## NON-GOALS
 
@@ -187,6 +201,8 @@ contract without launching or supervising agents.
   existing downstream `docs/notes`, or mechanically rewrite historical specs.
 - Do not turn historical specifications into current CLI documentation; agents
   use them as progressively disclosed rationale alongside current evidence.
+- Do not infer work type from task prose or treat an omitted classification as
+  maintenance; fail closed and require the coding agent or host to classify it.
 
 ## ACCEPTANCE CRITERIA
 
@@ -194,6 +210,9 @@ contract without launching or supervising agents.
 - Resolving `implementation-delivery` selects `feature-specification`
   transitively; resolving with `--feature` exposes deterministic feature-spec
   state and relevant historical specification paths.
+- Resolving `implementation-delivery` without `--work-type` is blocked.
+  `--work-type feature` requires `--feature`, and `--work-type maintenance`
+  records an explicit exemption and rejects a simultaneous feature hint.
 - Missing, invalid, or structurally incomplete feature specs keep spec
   authoring allowed while source implementation and delivery are blocked;
   a structurally complete V3 spec unlocks those phases after re-resolution.
@@ -247,6 +266,10 @@ contract without launching or supervising agents.
 13. Tighten routing, workflow, migration, release, and command documentation;
     remove active `docs/notes` guidance; and add focused/golden coverage for the
     feature-history harness without rewriting historical specifications.
+14. Close the remaining feature-gate bypass with an explicit work-type hint,
+    fail-closed implementation-delivery classification, schema and routing
+    updates, and focused contract tests; remove the retired notes path from the
+    mandatory runtime artifact.
 
 ## ARCHITECTURE AND DECISIONS
 
@@ -303,8 +326,12 @@ contract without launching or supervising agents.
   guides remain excluded.
 - A non-trivial feature is represented by an explicit feature hint and the
   implementation-delivery workflow. The resolver does not infer feature scope
-  from prose; agents must resolve with `--feature <feature>` before feature
-  source work.
+  from prose; agents must resolve with
+  `--work-type feature --feature <feature>` before feature source work.
+- Work classification is an explicit machine-facing contract input rather
+  than an agent-side convention. `feature` activates the living-spec gate;
+  `maintenance` is the only feature-spec exemption and is visible in resolved
+  hints. Missing, unknown, or contradictory classification fails closed.
 - Feature-spec authoring and source implementation are distinct phases in one
   resolved contract. Missing or incomplete SPEC content blocks source and
   delivery, but never blocks the documentation work needed to satisfy the gate.
@@ -375,6 +402,17 @@ contract without launching or supervising agents.
   catalog at 14 rulesets and four workflows while changing implementation
   delivery from five to six explicit dependencies. Reconcile retires only the
   old managed artifact record and does not scan or delete downstream notes.
+- Because `implementation-delivery` is mandatory, it appears in broad default
+  resolutions used for bootstrap and discovery. The work-type gate therefore
+  applies when that workflow is explicitly requested, and independently when
+  a feature hint is supplied; this closes implementation bypasses without
+  blocking read-only generic contract discovery.
+- A normalized `work_type` hint preserves the classification in resolved JSON.
+  `maintenance` returns no feature-spec projection, while missing, unknown, or
+  contradictory classifications fail closed with deterministic diagnostics.
+- The last active retired-notes reference was inside the mandatory
+  feature-specification ruleset itself. Removing it leaves historical specs and
+  migration records intact while keeping current runtime artifacts canonical.
 
 ## VALIDATION PLAN AND MAP
 
@@ -385,6 +423,9 @@ contract without launching or supervising agents.
   complete feature specs; spec-authoring/source/delivery permissions; stable
   required-section diagnostics; deterministic historical discovery; and
   strictly local read-only behavior.
+- Work-type tests cover omitted, unknown, feature-without-directory,
+  maintenance-with-feature, valid maintenance exemption, and feature-hint
+  bypass cases, plus published schema and CLI flag exposure.
 - Bootstrap and command-tree tests prove fresh init creates only the empty
   specs container and no removed feature lifecycle surface returns.
 - Documentation and routing assertions prove the pre-source, live-update,
@@ -512,6 +553,34 @@ contract without launching or supervising agents.
   `e9d6c5f825c2ee5074d9393c8123d54416b6817c`. CodeRabbit returned successful
   context state with the terminal non-clean description `Review skipped: 579
   files exceed the limit of 300`; it was not classified as completed review.
+- Work-type unit tests prove that explicit implementation delivery blocks on
+  omitted or unknown classification, feature-without-directory, feature hints
+  without classification, and maintenance-with-feature contradictions. Valid
+  maintenance remains ready without a feature-spec projection, and valid
+  feature work retains the complete living-spec gate.
+- The CLI exposes `--work-type`; resolved-contract schema v1 publishes the
+  `feature|maintenance` enum; routing, starter, command, overview,
+  Constitution, migration, release, and README assertions use the explicit
+  feature flow and maintenance exemption.
+- A fresh external fixture created `docs/specs/` with zero invented specs and
+  no retired notes path, resolved repository bootstrap as ready, returned exit
+  2 for omitted work type, returned ready maintenance JSON with a null
+  feature-spec projection, and returned exit 2 plus spec-authoring-only state
+  for a missing feature SPEC.
+- This correction passed `go test ./...`, affected-package race tests,
+  `go vet ./...`, `golangci-lint run ./...`, `govulncheck ./...`, focused gosec
+  with zero findings, gitleaks with no leaks, both direct builds,
+  `goreleaser check`, the snapshot build matrix, JSON-schema parsing, and the
+  full version-control-eligible 300-line source/test audit.
+- The full race suite reproduced only the unchanged `internal/worktree` PTY
+  cancellation timing failure. A broader gosec scan reported five pre-existing
+  findings in unchanged registry source files; no finding points to the new
+  resolver, CLI, bootstrap, or test code, and `git diff -- cmd/git-wt
+  internal/worktree` remains empty.
+- Self-reconciliation refreshed the two changed catalog digests, schema-v2
+  provenance, and four bounded routing sections, then reported `current` with
+  no diagnostics. Active runtime artifacts contain no retired notes-path
+  reference.
 
 ## OUTCOME
 
@@ -543,11 +612,14 @@ contract without launching or supervising agents.
   and populates only verified Constitution, progress, testing, tooling,
   integration, Makefile, and README content. Kit itself does not infer that
   truth or read secrets.
-- Every non-trivial feature now resolves a mandatory living V3 specification
-  contract. Missing or incomplete specs expose authoring permission but block
-  source and delivery; complete specs unlock source, and only deliver/complete
-  phases unlock delivery. Relevant historical specs remain progressively
-  discoverable without restoring `kit spec` or the active `docs/notes` model.
+- Every feature now resolves a mandatory living V3 specification contract.
+  Explicit `work_type: feature` also requires its canonical feature hint;
+  missing or incomplete specs expose authoring permission but block source and
+  delivery. Only explicit `work_type: maintenance` records the feature-spec
+  exemption. Missing, unknown, or contradictory classification fails closed.
+- Current runtime contracts no longer name the retired notes path. Relevant
+  historical specs remain progressively discoverable without restoring
+  `kit spec` or mechanically rewriting historical repository memory.
 - Implementation, local acceptance, ready pull-request delivery, exact-head
   verification, and hosted-check observation are complete on `GH-133` and PR
   #134. Human review and merge remain external repository actions.

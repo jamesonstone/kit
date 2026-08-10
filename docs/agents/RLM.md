@@ -7,6 +7,8 @@ Use explicit hints to keep context narrow:
 ```bash
 kit contract resolve \
   --workflow implementation-delivery \
+  --work-type feature \
+  --feature 0059-example \
   --path internal/registry/catalog.go \
   --applies-to registry
 ```

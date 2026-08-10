@@ -11,9 +11,10 @@
 ## Repository Memory Gate
 
 - Before implementation, inspect relevant code and existing repository memory
-- For every non-trivial feature, resolve `implementation-delivery` with `--feature <feature>`, then create or adopt the complete living V3 `docs/specs/<feature>/SPEC.md` from the accepted native plan before editing implementation/source or test files
+- Classify implementation delivery explicitly: resolve features with `--work-type feature --feature <feature>` and use `--work-type maintenance` only for genuinely mechanical maintenance
+- For every feature, create or adopt the complete living V3 `docs/specs/<feature>/SPEC.md` from the accepted native plan before editing implementation/source or test files
 - Treat missing or incomplete feature specs as a source-implementation block while keeping spec authoring allowed; re-resolve after every gate-relevant spec update
-- Genuinely trivial mechanical maintenance may record `not required` only when it has no material feature behavior, rationale, or historical consequence
+- Genuinely trivial mechanical maintenance may record `not required` only when its resolved contract records the maintenance classification
 - During implementation, keep decisions, discoveries, validation mapping, and actual outcome current in the spec
 - After implementation and validation, load `docs/references/rules/constitution-curation.md`; curate feature rationale into `SPEC.md`, demonstrated project invariants into `docs/CONSTITUTION.md`, reusable practices into `docs/references/` or `docs/references/rules/`, and domain knowledge into its existing canonical documentation
 - Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
@@ -70,7 +71,7 @@
 
 ## Knowledge Map
 
-- `docs/specs/<feature>/SPEC.md` — mandatory living history for non-trivial features
+- `docs/specs/<feature>/SPEC.md` — mandatory living history for features
 - `docs/CONSTITUTION.md` — project invariants
 - `docs/references/` — reusable repo-wide knowledge and practices
 - domain documentation — canonical domain behavior and interfaces
@@ -85,7 +86,8 @@
 ## Kit Agent Contract
 
 - Run `kit contract resolve --json` before implementation and whenever task scope materially changes.
-- Resolve non-trivial feature work with `--workflow implementation-delivery --feature <feature>`; author the reported living V3 spec and re-resolve before source edits.
+- Classify implementation delivery explicitly: use `--workflow implementation-delivery --work-type feature --feature <feature>` for features or `--work-type maintenance` only for genuinely mechanical maintenance.
+- For feature work, author the reported living V3 spec and re-resolve before source edits.
 - Treat repository-local rulesets and workflows returned by the resolver as the authoritative contract.
 - The resolver is local-only and read-only; use `kit registry status` for remote freshness and `kit reconcile` to preview drift.
 - Installed contract: 14 ruleset(s), 4 workflow(s).

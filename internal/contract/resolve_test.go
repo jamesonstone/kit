@@ -119,6 +119,8 @@ func writeContractProject(t *testing.T) string {
 		contractRecord("ruleset", "work-lane", "docs/references/rules/work-lane.md", "conditional", []string{"lane"}, nil, nil),
 		contractRecord("workflow", "delivery", "docs/references/workflows/delivery.md", "conditional", []string{"delivery"}, nil,
 			[]string{"ruleset/base", "ruleset/feature-specification"}),
+		contractRecord("workflow", "implementation-delivery", "docs/references/workflows/implementation-delivery.md", "conditional", []string{"implementation"}, nil,
+			[]string{"ruleset/base", "ruleset/feature-specification"}),
 		contractRecord("workflow", "pr-feedback-repair", "docs/references/workflows/pr-feedback-repair.md", "conditional", []string{"review"}, nil,
 			[]string{"ruleset/agent-team", "ruleset/github-delivery", "ruleset/work-lane"}),
 	}

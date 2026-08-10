@@ -60,6 +60,7 @@
     "hints": {
       "type": "object",
       "properties": {
+        "work_type": { "enum": ["feature", "maintenance"] },
         "feature": { "type": "string" },
         "paths": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
         "applicability": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },

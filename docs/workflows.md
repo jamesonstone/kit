@@ -38,7 +38,7 @@ mandatory rules and workflow dependencies are included automatically. A
 missing, invalid, conflicted, or unresolved required artifact returns blocked
 JSON and a nonzero status.
 
-For a non-trivial feature, resolution also reports the canonical living V3
+For a feature, resolution also reports the canonical living V3
 spec path, required and missing sections, related historical specs, RLM
 indices, and phase permissions. A missing or incomplete spec permits authoring
 that spec but blocks source implementation. The agent writes it from the

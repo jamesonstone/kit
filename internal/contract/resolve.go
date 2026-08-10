@@ -55,7 +55,8 @@ func Resolve(root string, hints Hints) (Resolved, error) {
 			resolved.Diagnostics = append(resolved.Diagnostics, fmt.Sprintf("requested workflow %q is not installed", workflow))
 		}
 	}
-	if resolved.Hints.Feature != "" {
+	applyWorkTypeGate(&resolved)
+	if resolved.Hints.Feature != "" && resolved.Hints.WorkType != WorkTypeMaintenance {
 		featureSpec, diagnostic := inspectFeatureSpec(root, resolved.Hints.Feature)
 		resolved.FeatureSpec = &featureSpec
 		if !hasRule(resolved.Rules, "feature-specification") {
@@ -71,7 +72,7 @@ func Resolve(root string, hints Hints) (Resolved, error) {
 				resolved.NextActions = appendUnique(resolved.NextActions,
 					fmt.Sprintf("create or update %s from the accepted native plan; spec authoring remains allowed", featureSpec.Path))
 				resolved.NextActions = appendUnique(resolved.NextActions,
-					fmt.Sprintf("re-run `kit contract resolve --feature %s --workflow implementation-delivery --json` before source implementation", resolved.Hints.Feature))
+					fmt.Sprintf("re-run `kit contract resolve --work-type feature --feature %s --workflow implementation-delivery --json` before source implementation", resolved.Hints.Feature))
 			}
 		}
 	}
@@ -232,6 +233,7 @@ func sortResolved(resolved *Resolved) {
 }
 
 func normalizedHints(hints Hints) Hints {
+	hints.WorkType = strings.ToLower(strings.TrimSpace(hints.WorkType))
 	hints.Feature = strings.TrimSpace(hints.Feature)
 	hints.Paths = uniqueSorted(hints.Paths)
 	hints.Applicability = uniqueSorted(hints.Applicability)

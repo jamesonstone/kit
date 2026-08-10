@@ -32,6 +32,7 @@ kit init
 # Give a coding agent the stable, local-only contract for its task.
 kit contract resolve \
   --workflow implementation-delivery \
+  --work-type feature \
   --feature 0059-example \
   --path internal/example.go
 
@@ -49,7 +50,7 @@ The init prompt routes the coding agent through the local
 `repository-bootstrap` workflow; Kit supplies starters but does not infer
 project truth.
 
-For every non-trivial feature, the agent creates or adopts the reported living V3
+For every feature, the agent creates or adopts the reported living V3
 `docs/specs/<feature>/SPEC.md` from its accepted native plan before source edits.
 Missing or incomplete specs permit spec authoring but block source work until
 the agent re-resolves the local contract. Historical specs remain progressively

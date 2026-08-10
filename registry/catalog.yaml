@@ -47,7 +47,7 @@ artifacts:
     source_path: docs/references/rules/feature-specification.md
     target_path: docs/references/rules/feature-specification.md
     version: 1
-    digest: sha256:a2f60277d60bd891fc17761d9ab2fb09eef43fa411b0f6fe82a0a19a97ee189d
+    digest: sha256:d2d92f880d497e69963708df3d54c8e4a68360949b425599c9fb20e73bcaf5f0
     read_policy: must
     applies_to: [coding-agent, feature, implementation, planning, repository-memory]
   - kind: ruleset
@@ -150,7 +150,7 @@ artifacts:
     source_path: docs/references/workflows/implementation-delivery.md
     target_path: docs/references/workflows/implementation-delivery.md
     version: 1
-    digest: sha256:24e4736e639f8208566869aa09f00b11aec727b0ab8652ec784f22acc8d91876
+    digest: sha256:c902ae239feac5bbbb5ffb1b320f755287726c5ad2a93aa6b943fbcf255ac624
     read_policy: must
     applies_to: [coding-agent, implementation, delivery]
     dependencies:

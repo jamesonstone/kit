@@ -14,8 +14,9 @@ The canonical declarative workflow is
 
 ## Implementation delivery
 
-1. Resolve the local contract with `implementation-delivery`, explicit task
-   hints, and `--feature <feature>` for every non-trivial feature.
+1. Classify the work explicitly. Resolve features with
+   `implementation-delivery --work-type feature --feature <feature>`; use
+   `--work-type maintenance` only for genuinely mechanical maintenance.
 2. Read the returned routing entrypoints, workflow, mandatory rules, and
    conditional rules before mutation.
 3. Inspect repository state, relevant code, tests, and durable rationale.
@@ -59,8 +60,10 @@ The canonical declarative workflow is
 
 ## Repository memory
 
-Every non-trivial feature requires `docs/specs/<feature>/SPEC.md` before source
+Every feature requires `docs/specs/<feature>/SPEC.md` before source
 edits. The spec remains live through decisions, discoveries, validation,
 outcome, delivery, and curation. Use the project progress summary, explicit
 relationships, and repository evidence to load relevant historical specs
 progressively; preserve them even when their former runtime surface is removed.
+Maintenance is exempt only when its resolved hints explicitly record
+`work_type: maintenance`; omitted classification fails closed.

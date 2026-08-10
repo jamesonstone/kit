@@ -33,28 +33,34 @@ repository changes without making Kit an agent runtime.
 
 ## Workflow
 
-1. Inspect the request, repository state, relevant code, historical-spec
+1. Classify the work explicitly as `feature` or `maintenance`; do not infer a
+   maintenance exemption from missing hints.
+2. Inspect the request, repository state, relevant code, historical-spec
    indices, and repository-local contract before mutation.
-2. For every non-trivial feature, resolve with `--feature`, create or adopt the
+3. For every feature, resolve with `--work-type feature --feature <feature>`, create or adopt the
    complete living V3 `docs/specs/<feature>/SPEC.md` from the accepted native
    plan, and re-resolve before any source or test edit.
-3. Establish the repository-owned issue, branch, worktree, identity, and
+4. For genuinely mechanical maintenance, resolve with
+   `--work-type maintenance`; this explicit resolved hint is the sole
+   feature-spec exemption.
+5. Establish the repository-owned issue, branch, worktree, identity, and
    mutation boundaries before implementation.
-4. Implement the smallest complete production-ready change while keeping the
+6. Implement the smallest complete production-ready change while keeping the
    spec's decisions, discoveries, validation map, tests, and canonical
    documentation current.
-5. Run focused and complete validation appropriate to the changed boundaries;
+7. Run focused and complete validation appropriate to the changed boundaries;
    report exact results and separate baseline debt.
-6. Reconcile the living spec against the integrated diff, record literal
+8. Reconcile the living spec against the integrated diff, record literal
    validation and actual outcome, curate durable repository memory, explicitly
    stage intended files, commit with the human identity, and deliver through
    the repository pull-request contract.
 
 ## Gates
 
-- Before source implementation: the explicit feature resolution reports a
-  structurally complete living V3 spec and permits source implementation.
-  Spec authoring remains allowed when this gate is blocked.
+- Before source implementation: the resolution contains an explicit valid work
+  type. Feature work reports a structurally complete living V3 spec and permits
+  source implementation; spec authoring remains allowed when this gate is
+  blocked. Maintenance proceeds only with its explicit exemption recorded.
 - Before mutation: relevant artifacts have been read, repository state is
   known, and the authorized work lane is clear.
 - Before delivery: the spec is in `deliver` or `complete` phase, applicable

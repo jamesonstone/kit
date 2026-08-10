@@ -43,6 +43,8 @@ read-only, and performs no Git operation or model inference.
 
 - `--feature <directory>`: inspect the canonical living V3 feature spec and
   expose its structural state, historical links, and phase permissions.
+- `--work-type feature|maintenance`: explicitly classify implementation work;
+  Kit never infers maintenance from an omitted hint.
 - `--path <path>`: add a path hint; repeatable.
 - `--applies-to <tag>`: add an applicability tag; repeatable.
 - `--workflow <slug>`: request a workflow; repeatable.
@@ -54,8 +56,11 @@ does not wait for or collect network feedback.
 Blocked required artifacts still produce diagnostic JSON and exit with status
 2. Input or project errors exit with status 1.
 
-For non-trivial features, combine `--workflow implementation-delivery` with
-`--feature`. A missing, invalid, or incomplete spec keeps
+For features, combine `--workflow implementation-delivery` with
+`--work-type feature --feature <feature>`. Genuinely mechanical maintenance
+uses `--work-type maintenance`; this recorded hint is the sole feature-spec
+exemption. Missing, invalid, unknown, or contradictory classification blocks
+the contract. A missing, invalid, or incomplete feature spec keeps
 `feature_spec.phase_permissions.spec_authoring` true while source
 implementation and delivery remain false. Create or repair the reported
 `docs/specs/<feature>/SPEC.md`, then re-run the same local resolution before

@@ -24,7 +24,7 @@ scope changes materially. Repository-local Markdown is authoritative.
 - ` + "`TOOLING.md`" + ` — Kit and native-tool ownership.
 - ` + "`docs/CONSTITUTION.md`" + ` — demonstrated durable project invariants.
 - ` + "`docs/specs/<feature>/SPEC.md`" + ` — mandatory living history for every
-  non-trivial feature.
+  feature.
 `
 
 const workflowsStarter = `# Agent Workflows
@@ -36,9 +36,11 @@ evidence progressively and populate only verified project context and commands.
 
 ## Implementation
 
-Resolve ` + "`implementation-delivery`" + ` with ` + "`--feature <feature>`" + `, create or
-adopt the complete living V3 spec from the accepted native plan, re-resolve,
-then implement, validate, curate repository memory, and deliver.
+Classify work explicitly. For a feature, resolve ` + "`implementation-delivery`" + ` with
+` + "`--work-type feature --feature <feature>`" + `. Create or adopt the complete living V3 spec
+from the accepted native plan, and re-resolve. Use
+` + "`--work-type maintenance`" + ` only for genuinely mechanical maintenance. Then
+implement, validate, curate repository memory, and deliver.
 
 ## Reconciliation
 
@@ -53,7 +55,7 @@ const rlmStarter = `# Progressive Context Loading
 3. For feature work, inspect the current spec, progress summary, explicitly
    related historical specs, and only relevant repository evidence.
 4. Expand context only when a decision or newly discovered scope requires it.
-5. Re-resolve with explicit path, applicability, feature, or workflow hints
+5. Re-resolve with explicit work type, path, applicability, feature, or workflow hints
    when scope changes.
 
 Do not load the entire repository or documentation tree by default.

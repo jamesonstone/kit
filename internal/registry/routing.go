@@ -57,7 +57,8 @@ func routingBlock(records []ArtifactRecord) string {
 ## Kit Agent Contract
 
 - Run `+"`kit contract resolve --json`"+` before implementation and whenever task scope materially changes.
-- Resolve non-trivial feature work with `+"`--workflow implementation-delivery --feature <feature>`"+`; author the reported living V3 spec and re-resolve before source edits.
+- Classify implementation delivery explicitly: use `+"`--workflow implementation-delivery --work-type feature --feature <feature>`"+` for features or `+"`--work-type maintenance`"+` only for genuinely mechanical maintenance.
+- For feature work, author the reported living V3 spec and re-resolve before source edits.
 - Treat repository-local rulesets and workflows returned by the resolver as the authoritative contract.
 - The resolver is local-only and read-only; use `+"`kit registry status`"+` for remote freshness and `+"`kit reconcile`"+` to preview drift.
 - Installed contract: %d ruleset(s), %d workflow(s).

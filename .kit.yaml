@@ -5,7 +5,7 @@ registry:
         branch: main
         path: .
         catalog_path: registry/catalog.yaml
-        revision: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+        revision: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
     artifacts:
         - kind: ruleset
           slug: agent-team-orchestration
@@ -20,7 +20,7 @@ registry:
             - subagent
             - verification
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/agent-team-orchestration.md
           installed_hash: sha256:b2339f4adf3c688a9eb1b9d84827858f3a450287e80e1a019eb0e4ed685e68db
           content_hash: sha256:b2339f4adf3c688a9eb1b9d84827858f3a450287e80e1a019eb0e4ed685e68db
@@ -56,7 +56,7 @@ registry:
             - repository
             - coding-agent
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/backend-service-architecture.md
           installed_hash: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
           content_hash: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
@@ -88,7 +88,7 @@ registry:
             - session
             - thread
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/codex-thread-initialization.md
           installed_hash: sha256:5cab73a2486ee949d964f656f1c82ad5e613fb486f8ad2822be63fc28a78723e
           content_hash: sha256:5cab73a2486ee949d964f656f1c82ad5e613fb486f8ad2822be63fc28a78723e
@@ -121,7 +121,7 @@ registry:
             - repository-memory
             - constitution
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/constitution-curation.md
           installed_hash: sha256:e629aca7f43c59bf10ead70a88918ba43d1cfa03e43baa73642d740e76182d4d
           content_hash: sha256:e629aca7f43c59bf10ead70a88918ba43d1cfa03e43baa73642d740e76182d4d
@@ -154,24 +154,24 @@ registry:
             - planning
             - repository-memory
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/feature-specification.md
-          installed_hash: sha256:a2f60277d60bd891fc17761d9ab2fb09eef43fa411b0f6fe82a0a19a97ee189d
-          content_hash: sha256:a2f60277d60bd891fc17761d9ab2fb09eef43fa411b0f6fe82a0a19a97ee189d
+          installed_hash: sha256:d2d92f880d497e69963708df3d54c8e4a68360949b425599c9fb20e73bcaf5f0
+          content_hash: sha256:d2d92f880d497e69963708df3d54c8e4a68360949b425599c9fb20e73bcaf5f0
           state: managed
           sections:
             - key: __preamble__
               hash: sha256:ba7b128daf701b85953f4c3dfef8ba2e66915ed20b312187d81773bd27f0a9b5
             - key: anti-patterns
-              hash: sha256:2e70d089afc6cf0bd4ed63e80171be74c3ea0027fcffecd0f1f447d90ad3ca1b
+              hash: sha256:9fdf5657fc9c2ad697de0c1cf20533b6bd748e6d21dfec35ee602b3a68f3ed2f
             - key: applies when
-              hash: sha256:44f2f39f449cf4da3d07801527a8baa2931ad7c27cf5255111807a1618fc5993
+              hash: sha256:eb08512dab5d718ddf70786ac44080d3e2942031995642d61681da755d8c31c6
             - key: examples
-              hash: sha256:f0ecfa6a5666e7af44c7244aa0d6c7e71f65b5bcaa0d96f34f7b5af577fe5041
+              hash: sha256:8085091e6d37c6985f79f87c45495207fb262c44868adfef3a0e917899ec20e0
             - key: purpose
-              hash: sha256:c41d3db41c7f877a6ef1636ef87db5ae697dc0390905bced931bc690daef906a
+              hash: sha256:57ed2efe58189d235b0dc3651a64ec405a4fe5f8b6af4f8d93e94ac31578dc44
             - key: rules
-              hash: sha256:87b546d23fb52b9e76389fcc23cbbb09bee402d8fbdc1ece4f002120d2182001
+              hash: sha256:301b4d63bc18db83ea7e95936bdf0c0d58b8d512edacac8e1e9187330f02a139
             - key: verification
               hash: sha256:ba83757b1fd2f7500d421d0039ea0fdc618e2be65a464f5973beeee9dc0dd8c6
         - kind: ruleset
@@ -191,7 +191,7 @@ registry:
             - component
             - coding-agent
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/frontend-application-architecture.md
           installed_hash: sha256:31fafc0f1b1bf2690e88d6f713603f9eee178de14e4d1dffe880272523ee073c
           content_hash: sha256:31fafc0f1b1bf2690e88d6f713603f9eee178de14e4d1dffe880272523ee073c
@@ -227,7 +227,7 @@ registry:
           paths:
             - .github/**
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/github-pr-delivery.md
           installed_hash: sha256:183ebc6ef9b2cff3d4b4e89a2fbfaca4cf79280f981c00d25b32e5b9bbed0975
           content_hash: sha256:183ebc6ef9b2cff3d4b4e89a2fbfaca4cf79280f981c00d25b32e5b9bbed0975
@@ -264,7 +264,7 @@ registry:
             - deployment
             - coding-agent
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/infrastructure-change-approval.md
           installed_hash: sha256:876b5f569dbec518a4b9b0475af3b0e84be854e4de528dee0989986f0d4a84ce
           content_hash: sha256:876b5f569dbec518a4b9b0475af3b0e84be854e4de528dee0989986f0d4a84ce
@@ -302,7 +302,7 @@ registry:
             - llms.txt
             - '**/llms.txt'
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/llms-txt.md
           installed_hash: sha256:4aaa326493395e357b1cd28ed2dda4c2c454e0fe7fa31fffdeea753bd6fb5884
           content_hash: sha256:4aaa326493395e357b1cd28ed2dda4c2c454e0fe7fa31fffdeea753bd6fb5884
@@ -338,7 +338,7 @@ registry:
             - README.md
             - '**/README.md'
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/readme-header-tagline.md
           installed_hash: sha256:062443de22fe7f99f17aeec03c8db15739cdbad64800716daeedb8b47aa63761
           content_hash: sha256:062443de22fe7f99f17aeec03c8db15739cdbad64800716daeedb8b47aa63761
@@ -370,7 +370,7 @@ registry:
             - safety
             - coding-agent
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/safety-guardrails.md
           installed_hash: sha256:13f1fcfa492d4797fc1eb5d99d1a3e2946ecbd5acd5662f60261b59ed732153b
           content_hash: sha256:13f1fcfa492d4797fc1eb5d99d1a3e2946ecbd5acd5662f60261b59ed732153b
@@ -405,7 +405,7 @@ registry:
             - reconcile
             - maintenance
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/source-file-size.md
           installed_hash: sha256:3438e448623737d2ca500c24be07f6f2813a30ccc475da518a7c86918f6ecac6
           content_hash: sha256:3438e448623737d2ca500c24be07f6f2813a30ccc475da518a7c86918f6ecac6
@@ -441,7 +441,7 @@ registry:
             - end-to-end
             - browser-testing
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/testing-and-environment-validation.md
           installed_hash: sha256:8e5786045643a8b8548a92efe7d63940f566331929f06d74c94e6c77d52a4c46
           content_hash: sha256:8e5786045643a8b8548a92efe7d63940f566331929f06d74c94e6c77d52a4c46
@@ -473,7 +473,7 @@ registry:
             - workflow
             - coding-agent
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/rules/work-lane-gating.md
           installed_hash: sha256:34f8dd58c9b3190a83d3440788c96f2e82fba7812d51b41115074961e1c9429e
           content_hash: sha256:34f8dd58c9b3190a83d3440788c96f2e82fba7812d51b41115074961e1c9429e
@@ -511,10 +511,10 @@ registry:
             - ruleset/source-file-size
             - ruleset/constitution-curation
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/workflows/implementation-delivery.md
-          installed_hash: sha256:24e4736e639f8208566869aa09f00b11aec727b0ab8652ec784f22acc8d91876
-          content_hash: sha256:24e4736e639f8208566869aa09f00b11aec727b0ab8652ec784f22acc8d91876
+          installed_hash: sha256:c902ae239feac5bbbb5ffb1b320f755287726c5ad2a93aa6b943fbcf255ac624
+          content_hash: sha256:c902ae239feac5bbbb5ffb1b320f755287726c5ad2a93aa6b943fbcf255ac624
           state: managed
           sections:
             - key: __preamble__
@@ -524,13 +524,13 @@ registry:
             - key: completion
               hash: sha256:8a781b8d274390fe7daddbee473b9dda7e36799ccf5600cf24d0a6b68647c133
             - key: gates
-              hash: sha256:c95dfb9aabdca261e5c32274e7271deb9e51c04f0e80d1906c066e43b41acad9
+              hash: sha256:2d951d4be7bde8e32133518b4afc92da06cace9eb825389080dd2de04a8db822
             - key: purpose
               hash: sha256:9528ed50446f3fc071eab1f4c2e21c800a7e29ca0d9e1fa4ce79d01664d9492b
             - key: verification
               hash: sha256:0dfc1ff484ff362535be0aeea650382c106851ca561399178dec7e04854fb4bc
             - key: workflow
-              hash: sha256:cba755f02db2977bf5dc7432d6560999d60ac28b80fd228b3d03c96715211a5f
+              hash: sha256:6732da711c2c8a472ffc0f0110819337e7e5f4c5a21c083deb5188f375bd4c5d
         - kind: workflow
           slug: pr-feedback-repair
           description: Collects asynchronous pull-request feedback and drives bounded coding-agent repair.
@@ -553,7 +553,7 @@ registry:
             - ruleset/testing-and-environment-validation
             - ruleset/source-file-size
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/workflows/pr-feedback-repair.md
           installed_hash: sha256:c1e82f03a6810aa5af8a02cedf3c9eed43840f23aea018fecf963aad7c368c3b
           content_hash: sha256:c1e82f03a6810aa5af8a02cedf3c9eed43840f23aea018fecf963aad7c368c3b
@@ -593,7 +593,7 @@ registry:
           dependencies:
             - ruleset/safety-guardrails
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/workflows/registry-maintenance.md
           installed_hash: sha256:646aae8d2d4a02d608478a67f14578319a199bff9418233835628f6717b215d3
           content_hash: sha256:646aae8d2d4a02d608478a67f14578319a199bff9418233835628f6717b215d3
@@ -633,7 +633,7 @@ registry:
             - ruleset/constitution-curation
             - ruleset/readme-header-tagline
           source_branch: main
-          source_commit: local-f8bd91edea3a1068c645478eb480bcec8eb7fe4268f3eef7b3408a72ed037137
+          source_commit: local-a2f114e12c281e2213fcf9def22fd611236efbbb7d377e195496b0ee40c342ef
           source_path: docs/references/workflows/repository-bootstrap.md
           installed_hash: sha256:a1a6eec16d8b2fc2fdc407eac1e7691b6e775f29cc9d44b08e377989ef983a9a
           content_hash: sha256:a1a6eec16d8b2fc2fdc407eac1e7691b6e775f29cc9d44b08e377989ef983a9a

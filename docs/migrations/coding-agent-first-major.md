@@ -24,7 +24,7 @@ retained.
 6. Resolve the local agent contract:
 
    ```bash
-   kit contract resolve --workflow implementation-delivery
+   kit contract resolve --json
    ```
 
 7. Restore any missing canonical bootstrap starters and receive the
@@ -46,17 +46,18 @@ retained.
 - Retired managed artifacts are removed only when their installed content is
   unchanged. Customized retired files are preserved.
 - The retired `feature-notes` ruleset is replaced by mandatory
-  `feature-specification`. Existing downstream `docs/notes` content remains
-  project-owned and is not automatically deleted; historical specs are not
-  rewritten.
+  `feature-specification`. Historical specs and project-owned content are not
+  mechanically rewritten or deleted.
 
 ## Feature-history correction
 
 The initial coding-agent-first implementation made feature specs advisory.
-That was incomplete. Every non-trivial feature must now resolve with an
-explicit feature directory and create or adopt a complete living V3
+That was incomplete. Every feature must now resolve with
+`--work-type feature` and an explicit feature directory, then create or adopt a complete living V3
 `docs/specs/<feature>/SPEC.md` before source edits. Missing or incomplete specs
 allow spec authoring but block source implementation until re-resolution.
+Genuinely mechanical maintenance must use `--work-type maintenance`; omitted
+classification is blocked rather than treated as an exemption.
 Fresh init still creates only the empty `docs/specs/` container and never
 invents a feature or restores `0000_INIT_PROJECT.md` downstream.
 

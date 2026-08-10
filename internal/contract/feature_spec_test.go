@@ -12,7 +12,7 @@ import (
 
 func TestResolveFeatureSpecBlocksSourceButPermitsAuthoring(t *testing.T) {
 	root := writeContractProject(t)
-	hints := Hints{Feature: "0059-example", Workflows: []string{"delivery"}}
+	hints := Hints{WorkType: WorkTypeFeature, Feature: "0059-example", Workflows: []string{"delivery"}}
 
 	missing := resolveFeature(t, root, hints)
 	assertFeatureBlocked(t, missing, "missing")
@@ -39,7 +39,7 @@ func TestResolveCompleteFeatureSpecUnlocksSourceAndDiscoversHistory(t *testing.T
 	path := filepath.Join(root, "docs/specs/0059-example/SPEC.md")
 	writeContractFile(t, path, featureSpecDocument("0059-example", "ready", requiredFeatureSpecSections, []string{"0042-history"}))
 
-	resolved := resolveFeature(t, root, Hints{Feature: "0059-example", Workflows: []string{"delivery"}})
+	resolved := resolveFeature(t, root, Hints{WorkType: WorkTypeFeature, Feature: "0059-example", Workflows: []string{"delivery"}})
 	if resolved.State != "ready" || resolved.FeatureSpec.State != "ready" {
 		t.Fatalf("resolved state = %s, feature spec = %#v", resolved.State, resolved.FeatureSpec)
 	}
@@ -57,7 +57,7 @@ func TestResolveCompleteFeatureSpecUnlocksSourceAndDiscoversHistory(t *testing.T
 	assertFeatureSpecGolden(t, resolved.FeatureSpec)
 
 	writeContractFile(t, path, featureSpecDocument("0059-example", "deliver", requiredFeatureSpecSections, nil))
-	deliver := resolveFeature(t, root, Hints{Feature: "0059-example", Workflows: []string{"delivery"}})
+	deliver := resolveFeature(t, root, Hints{WorkType: WorkTypeFeature, Feature: "0059-example", Workflows: []string{"delivery"}})
 	if !deliver.FeatureSpec.PhasePermissions.Delivery {
 		t.Fatalf("delivery permission = %#v", deliver.FeatureSpec.PhasePermissions)
 	}
@@ -96,7 +96,7 @@ func TestRepositoryFeatureSpecExemplarIsStructurallyComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	resolved := resolveFeature(t, root, Hints{
-		Feature: "0058-coding-agent-first", Workflows: []string{"implementation-delivery"},
+		WorkType: WorkTypeFeature, Feature: "0058-coding-agent-first", Workflows: []string{"implementation-delivery"},
 	})
 	if resolved.State != "ready" || resolved.FeatureSpec.State != "ready" ||
 		len(resolved.FeatureSpec.MissingSections) != 0 || !resolved.FeatureSpec.PhasePermissions.SourceImplementation {
@@ -108,7 +108,7 @@ func TestRepositoryFeatureSpecExemplarIsStructurallyComplete(t *testing.T) {
 }
 
 func TestResolveRejectsUnsafeFeatureHint(t *testing.T) {
-	resolved := resolveFeature(t, writeContractProject(t), Hints{Feature: "../escape", Workflows: []string{"delivery"}})
+	resolved := resolveFeature(t, writeContractProject(t), Hints{WorkType: WorkTypeFeature, Feature: "../escape", Workflows: []string{"delivery"}})
 	assertFeatureBlocked(t, resolved, "invalid")
 	if resolved.FeatureSpec.Path != "" {
 		t.Fatalf("unsafe feature path = %q", resolved.FeatureSpec.Path)

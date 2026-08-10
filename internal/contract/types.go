@@ -3,6 +3,7 @@ package contract
 import "github.com/jamesonstone/kit/internal/registry"
 
 type Hints struct {
+	WorkType      string   `json:"work_type,omitempty"`
 	Feature       string   `json:"feature,omitempty"`
 	Paths         []string `json:"paths,omitempty"`
 	Applicability []string `json:"applicability,omitempty"`

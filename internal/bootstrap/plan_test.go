@@ -81,7 +81,9 @@ func TestFreshPlanCreatesExactBootstrapAndResolvableWorkflow(t *testing.T) {
 	assertResolvedRule(t, resolved, "testing-and-environment-validation")
 	assertResolvedRule(t, resolved, "readme-header-tagline")
 	agentWorkflow := readFile(t, project, "docs/agents/WORKFLOWS.md")
-	if !strings.Contains(agentWorkflow, "complete living V3 spec") || !strings.Contains(agentWorkflow, "--feature <feature>") {
+	if !strings.Contains(agentWorkflow, "complete living V3 spec") ||
+		!strings.Contains(agentWorkflow, "--work-type feature --feature <feature>") ||
+		!strings.Contains(agentWorkflow, "--work-type maintenance") {
 		t.Fatalf("generated implementation routing is incomplete: %s", agentWorkflow)
 	}
 }
