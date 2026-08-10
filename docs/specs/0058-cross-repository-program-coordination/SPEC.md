@@ -177,6 +177,9 @@ one agent's context, or an overloaded task checklist.
 - Reconciliation guidance can test the V3 root gate, RLM route, and tooling
   frontier independently, making weakened activation or execution guidance
   observable without duplicating the full rule in generated instructions.
+- Pull-request review exposed that V2 reconciliation covered the RLM route but
+  not the generated tooling frontier. V2 and V3 tooling now have symmetric
+  stale-guidance expectations and focused removal tests.
 - The deterministic prompt-system suite remained unchanged and fully stable;
   the new rule is repository instruction context rather than a new prompt or
   command implementation.
@@ -203,6 +206,8 @@ one agent's context, or an overloaded task checklist.
   determinism rate.
 - PASS: `gitleaks git --redact --no-banner` scanned 299 commits and found no
   leaks.
+- PASS: review repair added V2 tooling-frontier reconciliation coverage; its
+  focused template and CLI tests passed before the complete validation rerun.
 - EXPECTED UNRELATED MANAGED REFRESH: `kit status` and the reviewed
   `kit reconcile --include-files --dry-run --diff --output-only` preview only
   existing `.kit.yaml` registry metadata updates from Kit's current `main`.

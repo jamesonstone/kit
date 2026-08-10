@@ -19,6 +19,9 @@ func v2GuidanceExpectations() map[string][]string {
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
 			"Load `docs/references/rules/cross-repository-program-coordination.md` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff",
 		},
+		"docs/agents/TOOLING.md": {
+			"When `cross-repository-program-coordination` applies, dispatch only the canonical program ledger's reconciled ready frontier and checkpoint program state after each material transition or handoff",
+		},
 		"docs/agents/WORKFLOWS.md": {
 			"Authority order:",
 			"Execution order for feature work:",

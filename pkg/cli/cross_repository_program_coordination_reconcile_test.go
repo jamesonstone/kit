@@ -22,6 +22,13 @@ func TestReconcileFindsStaleCrossRepositoryProgramCoordinationGuidance(t *testin
 			audit:   auditV2SupportGuidance,
 		},
 		{
+			name:    "V2 tooling frontier",
+			version: config.InstructionScaffoldVersionTOC,
+			path:    "docs/agents/TOOLING.md",
+			snippet: "When `cross-repository-program-coordination` applies, dispatch only the canonical program ledger's reconciled ready frontier and checkpoint program state after each material transition or handoff",
+			audit:   auditV2SupportGuidance,
+		},
+		{
 			name:    "V3 root gate",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
