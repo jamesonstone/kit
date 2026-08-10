@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: spec
 workflow_version: 3
-phase: deliver
+phase: complete
 feature:
   id: 0058
   slug: coding-agent-first
@@ -507,6 +507,11 @@ contract without launching or supervising agents.
 - Diff assertions confirm no historical specification other than living SPEC
   0058 changed, active routing does not reference `feature-notes` or
   `docs/notes`, and the reduced command tree still rejects `kit spec`.
+- After pushing the correction implementation, local `HEAD`,
+  `origin/GH-133`, the hosted branch ref, and PR #134 head matched
+  `e9d6c5f825c2ee5074d9393c8123d54416b6817c`. CodeRabbit returned successful
+  context state with the terminal non-clean description `Review skipped: 579
+  files exceed the limit of 300`; it was not classified as completed review.
 
 ## OUTCOME
 
@@ -556,8 +561,15 @@ contract without launching or supervising agents.
   GitHub branch ref, and PR head all matched
   `87d9de4d01990d1ae278c0697b2c352f0d647f69`; the issue and PR were open and
   assigned to `jamesonstone`, and the PR remained mergeable.
-- The correction's exact pushed head and hosted-check state are recorded after
-  push. Human review and merge remain external actions.
+- The correction implementation commit
+  `e9d6c5f825c2ee5074d9393c8123d54416b6817c` was pushed and verified as the
+  exact local, remote, and PR head before this final specification-curation
+  commit. The final pushed head is verified in the pull-request update and task
+  handoff because a commit cannot contain its own object ID.
+- CodeRabbit skipped the pushed correction with the exact reason `Review
+  skipped: 579 files exceed the limit of 300`; this is terminal non-clean
+  hosted evidence, not completed feedback review. Human review and merge remain
+  external actions.
 
 ## REPOSITORY MEMORY
 
