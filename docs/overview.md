@@ -7,8 +7,9 @@ and resolves the deterministic subset applicable to a task.
 ## Product model
 
 1. A versioned registry catalog indexes `ruleset` and `workflow` artifacts.
-2. `kit init` materializes every downstream-visible artifact and bounded
-   routing block into a project.
+2. `kit init` validates and transactionally materializes safe repository
+   starters, full RLM routing, every downstream-visible artifact, and bounded
+   managed sections, then emits the `repository-bootstrap` agent prompt.
 3. `.kit.yaml` records source identity, revision, digests, section hashes,
    paths, and artifact state.
 4. `kit contract resolve` selects ordered local artifacts from explicit hints.
@@ -41,7 +42,8 @@ or event wakeups for bounded waiting, collection, repair, and thread updates.
 - Contract resolution is local-only and read-only.
 - Registry administration may read the configured source.
 - Initialization validates the complete catalog and write plan before changing
-  the project.
+  the project, never reads `.env`, and separately snapshots the preserved
+  `~/.config/kit/.kit.yaml` defaults boundary.
 - Reconciliation is read-only by default, applies only explicit conflict-free
   plans, and requires an exact artifact acceptance to replace customization.
 - Materialized paths are confined to the project and managed routing is bounded

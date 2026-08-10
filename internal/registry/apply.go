@@ -14,19 +14,23 @@ type appliedChange struct {
 
 func ApplyPlan(root string, plan Plan) error {
 	var applied []appliedChange
+	var createdDirectories []string
 	for _, change := range plan.Changes {
 		path, err := confinedPath(root, change.Path)
 		if err != nil {
 			rollback(root, applied)
+			rollbackCreatedDirectories(createdDirectories)
 			return err
 		}
 		current, exists, err := ReadOptional(root, change.Path)
 		if err != nil {
 			rollback(root, applied)
+			rollbackCreatedDirectories(createdDirectories)
 			return err
 		}
 		if current != change.Before {
 			rollback(root, applied)
+			rollbackCreatedDirectories(createdDirectories)
 			return fmt.Errorf("%s changed after planning; rerun the command", change.Path)
 		}
 		mode := os.FileMode(0o644)
@@ -36,12 +40,31 @@ func ApplyPlan(root string, plan Plan) error {
 			}
 		}
 		applied = append(applied, appliedChange{change: change, exists: exists, mode: mode})
+		createdDirectories = append(createdDirectories, missingDirectories(root, filepath.Dir(path))...)
 		if err := applyFile(path, change, mode); err != nil {
 			rollback(root, applied)
+			rollbackCreatedDirectories(createdDirectories)
 			return fmt.Errorf("apply %s: %w", change.Path, err)
 		}
 	}
 	return nil
+}
+
+func missingDirectories(root, directory string) []string {
+	root, _ = filepath.Abs(root)
+	var result []string
+	for current := directory; current != root && current != filepath.Dir(current); current = filepath.Dir(current) {
+		if _, err := os.Stat(current); os.IsNotExist(err) {
+			result = append([]string{current}, result...)
+		}
+	}
+	return result
+}
+
+func rollbackCreatedDirectories(paths []string) {
+	for index := len(paths) - 1; index >= 0; index-- {
+		_ = os.Remove(paths[index])
+	}
 }
 
 func applyFile(path string, change Change, mode os.FileMode) error {

@@ -4,7 +4,8 @@
 
 - `kit contract resolve`: deterministic local contract selection; no network,
   write, Git, subprocess, or model activity.
-- `kit init`: validated full materialization for a fresh project.
+- `kit init`: validated canonical repository bootstrap and evidence-gathering
+  prompt; it never reads `.env` or infers project truth.
 - `kit reconcile`: read-only drift and migration planning by default; explicit
   apply for conflict-free changes.
 - `kit registry list|view|add|status`: remote catalog inspection and typed

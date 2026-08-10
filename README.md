@@ -15,7 +15,8 @@ deterministic projection. Kit does not launch, supervise, or select agents.
 This is an intentional semantic-version major reset. The `kit` CLI has been
 reduced to the rules, registry, reconciliation, and contract surfaces. Existing
 projects must preview the schema-v2 migration with `kit reconcile --diff`
-before applying it with `kit reconcile --apply`.
+before applying it with `kit reconcile --apply`, then run `kit init` to restore
+the complete coding-agent bootstrap without overwriting project-owned files.
 
 See the [major-release migration guide](docs/migrations/coding-agent-first-major.md)
 and [release notes](docs/releases/coding-agent-first-major.md).
@@ -23,7 +24,8 @@ and [release notes](docs/releases/coding-agent-first-major.md).
 ## Primary flow
 
 ```bash
-# Materialize every project-visible rule, workflow, routing block, and provenance record.
+# Bootstrap local environment starters, GitHub support, repository memory,
+# RLM routing, references, rules, workflows, and provenance.
 kit init
 
 # Give a coding agent the stable, local-only contract for its task.
@@ -39,6 +41,10 @@ kit reconcile --apply
 In short: `kit init` → `kit contract resolve` → agent implementation →
 `kit reconcile`.
 
+The init prompt routes the coding agent through the local
+`repository-bootstrap` workflow; Kit supplies starters but does not infer
+project truth.
+
 For asynchronous pull-request review repair, resolve
 `kit contract resolve --workflow pr-feedback-repair`. The local workflow
 defines bounded CodeRabbit and human-feedback intake while the coding agent or
@@ -52,7 +58,7 @@ release. Their flags and presentation may change.
 
 | Command | Purpose |
 | --- | --- |
-| `kit init` | Materialize project-visible rulesets, workflows, routing, and provenance. |
+| `kit init` | Canonically bootstrap the full repository contract and safe project starters. |
 | `kit reconcile` | Preview and safely apply registry, migration, and routing drift. |
 | `kit rules add` | Install a registry-backed or project-local ruleset. |
 | `kit rules list` | List rulesets with availability, state, and provenance. |

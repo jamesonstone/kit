@@ -1,5 +1,17 @@
 # Agent Workflows
 
+## Repository bootstrap
+
+1. Run `kit init` and review every created, merged, or preserved disposition.
+2. Resolve `repository-bootstrap` and follow `RLM.md` from routing and indices
+   into only relevant repository evidence.
+3. Populate Constitution, progress summary, testing, tooling, integrations,
+   Makefile, and bounded README sections only from verified evidence.
+4. Validate safe populated commands and report unresolved evidence gaps.
+
+The canonical declarative workflow is
+[`repository-bootstrap.md`](../references/workflows/repository-bootstrap.md).
+
 ## Implementation delivery
 
 1. Resolve the local contract with explicit workflow and task hints.

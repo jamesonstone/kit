@@ -189,3 +189,19 @@ artifacts:
     applies_to: [coding-agent, registry, reconcile, maintenance]
     dependencies:
       - ruleset/safety-guardrails
+  - kind: workflow
+    slug: repository-bootstrap
+    description: Populates deterministic Kit starters from verified repository evidence using progressive context loading.
+    visibility: downstream
+    source_path: docs/references/workflows/repository-bootstrap.md
+    target_path: docs/references/workflows/repository-bootstrap.md
+    version: 1
+    digest: sha256:a1a6eec16d8b2fc2fdc407eac1e7691b6e775f29cc9d44b08e377989ef983a9a
+    read_policy: conditional
+    applies_to: [coding-agent, bootstrap, repository-memory, rlm, tooling, testing]
+    dependencies:
+      - ruleset/safety-guardrails
+      - ruleset/testing-and-environment-validation
+      - ruleset/source-file-size
+      - ruleset/constitution-curation
+      - ruleset/readme-header-tagline

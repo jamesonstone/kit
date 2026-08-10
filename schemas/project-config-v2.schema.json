@@ -6,6 +6,15 @@
   "required": ["schema_version", "registry"],
   "properties": {
     "schema_version": { "const": 2 },
+    "bootstrap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scaffold_version", "workflow"],
+      "properties": {
+        "scaffold_version": { "const": 1 },
+        "workflow": { "const": "repository-bootstrap" }
+      }
+    },
     "registry": {
       "type": "object",
       "additionalProperties": false,

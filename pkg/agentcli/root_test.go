@@ -44,6 +44,7 @@ func TestReadmeDocumentsMajorReleaseAndPrimaryFlow(t *testing.T) {
 	readme := string(content)
 	required := []string{
 		"Major update", "kit init", "kit contract resolve", "agent implementation", "kit reconcile",
+		"complete coding-agent bootstrap", "repository-bootstrap",
 		"docs/migrations/coding-agent-first-major.md",
 	}
 	for _, phrase := range required {
@@ -61,7 +62,8 @@ func TestReadmeDocumentsMajorReleaseAndPrimaryFlow(t *testing.T) {
 	}
 }
 
-func TestInitIsIdempotentButDefersDriftToReconcile(t *testing.T) {
+func TestInitBackfillsBootstrapAndPreservesRoutingDrift(t *testing.T) {
+	t.Setenv("KIT_CONFIG_HOME", t.TempDir())
 	registryRoot := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(registryRoot, "registry"), 0o755); err != nil {
 		t.Fatal(err)
@@ -94,8 +96,20 @@ func TestInitIsIdempotentButDefersDriftToReconcile(t *testing.T) {
 	if err := command.Execute(); err != nil {
 		t.Fatalf("repeat init: %v", err)
 	}
-	if !strings.Contains(output.String(), `"state": "current"`) {
+	if !strings.Contains(output.String(), `"state": "planned"`) || !strings.Contains(output.String(), `"applied": false`) {
 		t.Fatalf("repeat init output = %s", output)
+	}
+	if _, err := os.Stat(filepath.Join(project, "Makefile")); !os.IsNotExist(err) {
+		t.Fatalf("JSON init wrote Makefile: %v", err)
+	}
+	command = NewRoot()
+	command.SetOut(&bytes.Buffer{})
+	command.SetArgs([]string{"init", "--output-only"})
+	if err := command.Execute(); err != nil {
+		t.Fatalf("backfill init: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(project, "Makefile")); err != nil {
+		t.Fatalf("backfill did not create Makefile: %v", err)
 	}
 
 	agentsPath := filepath.Join(project, "AGENTS.md")
@@ -103,10 +117,11 @@ func TestInitIsIdempotentButDefersDriftToReconcile(t *testing.T) {
 		t.Fatal(err)
 	}
 	command = NewRoot()
-	command.SetArgs([]string{"init"})
+	command.SetOut(&bytes.Buffer{})
+	command.SetArgs([]string{"init", "--output-only"})
 	err = command.Execute()
-	if err == nil || !strings.Contains(err.Error(), "use `kit reconcile`") {
-		t.Fatalf("drift init error = %v", err)
+	if err != nil {
+		t.Fatalf("repeat init with routing drift: %v", err)
 	}
 	content, _ := os.ReadFile(agentsPath)
 	if string(content) != "project-owned drift\n" {

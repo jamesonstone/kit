@@ -114,6 +114,43 @@ func TestRepositoryCatalogIncludesPRFeedbackRepairDependencies(t *testing.T) {
 	}
 }
 
+func TestRepositoryCatalogIncludesRepositoryBootstrapDependencies(t *testing.T) {
+	content, err := os.ReadFile("../../registry/catalog.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := ParseCatalog(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact, found := FindArtifact(catalog, KindWorkflow, "repository-bootstrap")
+	if !found {
+		t.Fatal("workflow/repository-bootstrap is missing")
+	}
+	want := []string{
+		"ruleset/constitution-curation", "ruleset/readme-header-tagline",
+		"ruleset/safety-guardrails", "ruleset/source-file-size",
+		"ruleset/testing-and-environment-validation",
+	}
+	if !sameStrings(artifact.Dependencies, want) {
+		t.Fatalf("dependencies = %v, want %v", artifact.Dependencies, want)
+	}
+	workflow, err := os.ReadFile("../../" + artifact.SourcePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if artifact.Digest != HashContent(string(workflow)) {
+		t.Fatalf("catalog digest %s does not match workflow", artifact.Digest)
+	}
+	doc, err := ParseMarkdown(string(workflow))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ValidateDocument(doc, artifact); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func testCatalogArtifact(kind, slug string, dependencies []string) CatalogArtifact {
 	directory := "rules"
 	target := "docs/references/rules/"

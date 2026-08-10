@@ -27,6 +27,13 @@ retained.
    kit contract resolve --workflow implementation-delivery
    ```
 
+7. Restore any missing canonical bootstrap starters and receive the
+   evidence-gathering prompt:
+
+   ```bash
+   kit init
+   ```
+
 ## What migration changes
 
 - `.kit.yaml` becomes schema v2 and records the configured catalog source and
@@ -38,6 +45,17 @@ retained.
   sections; surrounding text remains project-owned.
 - Retired managed artifacts are removed only when their installed content is
   unchanged. Customized retired files are preserved.
+
+## Canonical init correction
+
+The initial Kit 2.0 implementation materialized only registry artifacts and
+routing. That was incomplete. `kit init` again owns the full safe bootstrap:
+environment and Makefile starters, CodeRabbit and GitHub support, bounded
+README and Constitution sections, `docs/PROJECT_PROGRESS_SUMMARY.md`, the
+complete RLM support tree, project references, rules, workflows, and
+provenance. It preserves existing content and emits the
+`repository-bootstrap` coding-agent prompt. It does not restore removed
+feature-lifecycle commands or files.
 
 ## Conflict handling
 

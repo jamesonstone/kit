@@ -15,6 +15,10 @@ memory, prompt, or agent-execution harness.
 - Transactional initialization and section-aware reconciliation over one
   reusable registry core.
 - Bounded provider-routing sections that preserve project-owned content.
+- Canonical `kit init` bootstrap compatibility: deterministic environment,
+  GitHub, repository-memory, RLM, reference, registry, and provenance starters;
+  an evidence-based `repository-bootstrap` prompt; and safe user defaults at
+  `~/.config/kit/.kit.yaml`.
 - A `pr-feedback-repair` workflow with bounded asynchronous CodeRabbit and
   human-review intake, exact terminal states, rate-aware observation, and an
   explicit agent-team dependency.
@@ -29,6 +33,8 @@ memory, prompt, or agent-execution harness.
 - `kit registry status`
 
 Protection covers names and core outcomes only, not legacy flags or output.
+`kit init` is the deliberate exception where its complete historical bootstrap
+duty is part of the protected core outcome.
 
 ## Removed
 
@@ -43,7 +49,8 @@ The separate `git-wt` binary and implementation remain unchanged.
 Existing projects must run `kit reconcile --json --diff`, review the complete
 schema-v2 and artifact plan, then run `kit reconcile --apply`. Local
 customization and routing text are preserved unless an exact artifact is
-explicitly accepted from the registry.
+explicitly accepted from the registry. After migration, run `kit init` to
+backfill missing bootstrap starters without reconciling registry drift.
 
 See the [migration guide](../migrations/coding-agent-first-major.md) and
 [command guide](../commands.md).

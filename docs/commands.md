@@ -13,14 +13,27 @@ kit
 
 ## `kit init`
 
-Materializes every downstream-visible registry artifact, provider routing
-sections, and schema-v2 provenance. The complete catalog and write plan are
-validated before mutation.
+Canonically bootstraps the repository: safe local-environment and Makefile
+starters, review and GitHub support, bounded README and Constitution sections,
+the project progress summary, provider routers, the complete `docs/agents/`
+RLM tree, project references, every downstream-visible registry artifact, and
+schema-v2 provenance. The complete project and user-config plans are validated
+before mutation.
 
 - `--dry-run`: validate and render a plan without writing.
-- `--json`: emit the versioned plan as JSON.
+- `--json`: emit the versioned plan, file dispositions, prompt, diagnostics,
+  and next actions without writing.
+- `--output-only`: apply initialization and emit only the raw
+  repository-bootstrap prompt.
+- `--copy`: copy the prompt, including when combined with `--output-only`.
 - `--registry-repo`, `--registry-branch`, `--catalog`: configure a GitHub source.
 - `--registry-path`: use a local registry root.
+
+Default prompt delivery is clipboard-first. The prompt directs the coding
+agent to resolve `repository-bootstrap`; Kit itself never reads `.env`, grants
+direnv trust, infers project truth, or launches an agent. Repeated init
+backfills missing starters in schema-v2 projects while leaving registry drift
+to `kit reconcile`; schema-v1 projects must migrate first.
 
 ## `kit contract resolve`
 

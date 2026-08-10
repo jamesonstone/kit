@@ -4,9 +4,21 @@
 
 Run `kit init`. Kit fetches and validates the entire configured catalog,
 downloads every downstream-visible artifact, checks all target paths, and
-builds one materialization plan before writing. It then installs rules,
-workflows, bounded routing sections, and schema-v2 provenance. Repeating the
-equivalent operation through reconciliation is idempotent.
+builds one materialization plan before writing. It then installs safe
+environment, GitHub, repository-memory, RLM, and reference starters alongside
+rules, workflows, bounded sections, and schema-v2 provenance. Repeated init is
+idempotent and preserves project-owned files.
+
+After materialization, give the emitted prompt to a coding agent. It begins
+with:
+
+```bash
+kit contract resolve --workflow repository-bootstrap --json
+```
+
+The agent progressively inspects repository evidence and populates only
+verified project context and commands. Kit never reads `.env`, infers project
+truth, launches an agent, or grants direnv trust.
 
 ## Resolve an agent contract
 

@@ -58,6 +58,13 @@ contract without launching or supervising agents.
 - `kit init`, `kit reconcile`, `kit rules add|list|view`, and
   `kit registry status` are the exhaustive protected legacy command paths.
 - The separate `git-wt` binary remains unchanged.
+- The first major-release implementation narrowed `kit init` too far: it
+  materialized registry artifacts and routing, but omitted the complete
+  repository bootstrap that existing users depend on.
+- The accepted correction makes `kit init` the canonical bootstrap command.
+  Its compatibility boundary includes the historical scaffold footprint and
+  semantic coding-agent bootstrap prompt, even though the rest of the legacy
+  CLI remains intentionally removed.
 
 ## REQUIREMENTS
 
@@ -108,6 +115,24 @@ contract without launching or supervising agents.
   paginated active-feedback collection, durable fingerprints, watcher
   deduplication, and bounded head epochs and repair passes as a structured,
   testable workflow contract.
+- Make fresh init create or boundedly merge `.gitignore`, `.env`, `.envrc`,
+  `Makefile`, `.coderabbit.yaml`, GitHub templates and auto-assignment,
+  `README.md`, `docs/CONSTITUTION.md`,
+  `docs/PROJECT_PROGRESS_SUMMARY.md`, `docs/specs/`, provider routers, the
+  complete `docs/agents/` RLM tree, and project reference starters.
+- Preserve existing project-owned content. Empty environment files and safe
+  starters are create-if-missing; ignore patterns are append-only; README,
+  Constitution, and routing changes are bounded managed sections.
+- Restore safe user defaults at `~/.config/kit/.kit.yaml`, preserve unrelated
+  existing keys, and consume those defaults for bootstrap and registry source
+  selection without moving project provenance out of project `.kit.yaml`.
+- Add the registry-backed `repository-bootstrap` workflow. The init prompt
+  directs a coding agent to resolve it locally, progressively inspect actual
+  repository evidence, and populate only demonstrated project context and
+  verified command entrypoints.
+- Preserve clipboard-first init prompt behavior through `--output-only` and
+  `--copy`, while keeping `--dry-run` and `--json` strictly write-free and
+  secret-free.
 
 ## ACCEPTED PLAN
 
@@ -128,6 +153,13 @@ contract without launching or supervising agents.
    validate its structured state classifier, request budget, dependencies,
    feedback sources, and resolver selection, then reconcile Kit's own catalog
    provenance and routing counts.
+8. Add a bootstrap planner around the registry init plan so the complete
+   repository scaffold, empty specs directory, project provenance, and
+   separately reversible user-config merge are validated before mutation and
+   applied atomically from the user's perspective.
+9. Restore deterministic starter templates and the semantic bootstrap prompt,
+   register `repository-bootstrap`, and cover the exact path allowlist,
+   preservation, secrecy, rollback, idempotency, and prompt-output modes.
 
 ## DECISIONS
 
@@ -159,6 +191,23 @@ contract without launching or supervising agents.
   independent repair lanes, with a hard maximum of four. Shared files are
   serialized, excess work is queued, and nontrivial repairs receive a
   read-only verification lane.
+- Canonical bootstrap compatibility is deliberately broader than ordinary
+  protected-command compatibility: `kit init` restores its complete scaffold
+  duty, but no removed feature, prompt, dispatch, review, or lifecycle command
+  returns.
+- Kit writes deterministic valid starters and resolves a declarative
+  `repository-bootstrap` contract; the coding agent, not Kit, infers project
+  truth from repository evidence.
+- `.env` is never read by bootstrap planning, prompt rendering, provenance, or
+  JSON output. Existing `.env` and `.envrc` content is never overwritten, and
+  Kit never grants direnv trust.
+- Existing schema-v2 projects may use repeated init to backfill missing
+  bootstrap starters without reconciling registry or routing drift. Schema-v1
+  projects still fail closed into a previewed reconcile migration.
+- Legacy `BRAINSTORM.md`, `PLAN.md`, `TASKS.md`,
+  `docs/specs/0000_INIT_PROJECT.md`, runtime state/evidence, transcripts,
+  mined skills, Kit-internal fixtures, and downstream copies of Kit product
+  guides remain excluded.
 
 ## DISCOVERIES
 
@@ -194,13 +243,22 @@ contract without launching or supervising agents.
   status and description, and rate budget at a verified current cost of one;
   the durable contract still consumes the returned cost rather than assuming
   that cost permanently.
+- Historical init behavior was clipboard-first and append-only for
+  `.gitignore`; it created an empty `.env`, a non-trusting `.envrc`, and a
+  `.DEFAULT_GOAL := help` Makefile without guessed project commands. Those
+  semantics remain appropriate for deterministic starters.
 
 ## VALIDATION
 
 - `go test ./...` passed for `cmd/kit`, `cmd/git-wt`, `internal/contract`,
   `internal/registry`, `internal/worktree`, and `pkg/agentcli`.
-- `go test -race ./internal/registry ./internal/contract ./pkg/agentcli`
-  passed.
+- `go test -race ./internal/bootstrap ./internal/registry
+  ./internal/contract ./pkg/agentcli` passed.
+- The all-package race attempt reached the unchanged `internal/worktree` PTY
+  cancellation helper and failed twice because the selector returned before
+  cancellation. The normal complete suite passes and
+  `git diff -- cmd/git-wt internal/worktree` remains empty; no out-of-scope
+  timing change was made.
 - `go vet ./...` and `golangci-lint run ./...` passed with zero issues.
 - `goreleaser check` validated the release configuration and updated Kit
   version injection path.
@@ -218,9 +276,9 @@ contract without launching or supervising agents.
   idempotency, schema-v1 migration, routing preservation, remote-only,
   local-only, missing, moved, retired, disjoint-section, conflicting-section,
   and exact-accept reconciliation states.
-- The repository migrated itself through a local-catalog reconcile preview and
-  explicit apply; follow-up `kit registry status --json` reported `current`
-  with 17 artifacts and zero changes.
+- The repository reconciled itself through a local-catalog preview and explicit
+  apply; follow-up `kit registry status --json` reported `current` with 18
+  artifacts and zero changes.
 - `kit contract resolve --workflow implementation-delivery --path README.md`
   returned ready schema-v1 JSON, the explicit workflow, mandatory rules, the
   path-selected README rule, provenance, states, reasons, and next action.
@@ -231,6 +289,18 @@ contract without launching or supervising agents.
   binary implementation is unchanged.
 - The complete version-control-eligible handwritten source and test audit found
   no file above 300 physical lines.
+- Bootstrap tests assert the exact 24-file fresh-init allowlist plus
+  `docs/specs/`, create-if-missing preservation, append-only ignore updates,
+  bounded README/Constitution/routing sections, local-custom preservation,
+  `.env` secrecy, `.envrc` no-trust behavior, user-default consumption,
+  schema-v1 fail-closed handling, rollback, idempotency, prompt golden output,
+  and write-free JSON and dry-run modes.
+- A self-hosted fresh fixture initialized from the local catalog, created an
+  empty `.env`, resolved `repository-bootstrap` as ready, reported registry
+  state `current`, and returned a write-free repeated-init plan with exactly 24
+  bootstrap file dispositions.
+- `gosec ./internal/bootstrap ./pkg/agentcli` reported zero issues and
+  `gitleaks dir . --redact` found no leaks.
 - PR-feedback tests cover completed versus skipped successful contexts, unknown
   success, provider failure, head change, timeout, HTTP 403/429 retry evidence,
   rate reserve, bounded schedule and quiet confirmation, watcher keys and host
@@ -256,9 +326,10 @@ contract without launching or supervising agents.
 - Kit now exposes a coding-agent-first contract architecture with a typed
   catalog, schema-v2 project provenance, stable resolved-contract v1 JSON,
   declarative workflows, bounded routing, and a reusable registry core.
-- Fresh initialization installs all 14 downstream rulesets and three workflows;
-  repeat initialization is idempotent and delegates drift maintenance to
-  reconcile.
+- Fresh initialization installs all 14 downstream rulesets and four workflows
+  plus the complete deterministic environment, GitHub, repository-memory, RLM,
+  and reference bootstrap. Repeat initialization backfills missing starters,
+  preserves customization, and delegates registry drift to reconcile.
 - Reconciliation is preview-first, section-aware, transactional on failure,
   conflict-preserving, path-move-aware, and exact-accept only for overwrites.
 - The broad Kit 1.x runtime, commands, prompt templates, evaluations,
@@ -273,6 +344,11 @@ contract without launching or supervising agents.
   rate-conscious GitHub observation, active human feedback, deterministic
   fingerprints, bounded repair passes, and the former `kit pr fix` supervisor
   semantics. Kit still performs no GitHub access or agent supervision.
+- `repository-bootstrap` restores the former init prompt's semantic duty through
+  a local resolved workflow: the coding agent progressively inspects evidence
+  and populates only verified Constitution, progress, testing, tooling,
+  integration, Makefile, and README content. Kit itself does not infer that
+  truth or read secrets.
 - Implementation, local acceptance, ready pull-request delivery, exact-head
   verification, and hosted-check observation are complete on `GH-133` and PR
   #134. Human review and merge remain external repository actions.

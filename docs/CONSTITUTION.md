@@ -23,6 +23,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
   the coding agent or host owns every network request, wait, and mutation.
 - Human commands exist to initialize, inspect, install, and reconcile the
   contract.
+- `kit init` is the canonical full repository bootstrap and emits one bounded
+  evidence-gathering prompt; the coding agent still owns project inference.
 
 ### 3. Provider neutrality
 
@@ -49,6 +51,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
 - Registry content replaces customization only through an exact targeted
   acceptance.
 - Managed routing changes only inside marker-delimited sections.
+- Initialization never reads `.env`, grants direnv trust, or overwrites
+  create-if-missing project starters.
 
 ### 6. Narrow product boundary
 
@@ -90,7 +94,8 @@ contract without launching, supervising, or reasoning on behalf of an agent.
    source and target paths, positive version, digest, read policy, and valid
    dependencies.
 2. Catalog dependency graphs are complete and acyclic.
-3. Fresh initialization installs every downstream-visible artifact.
+3. Fresh initialization installs every downstream-visible artifact and the
+   complete deterministic repository bootstrap.
 4. Schema-v2 is the only runtime project schema; v1 is only a reconcile input.
 5. Repeated initialization or reconciliation against unchanged state is
    idempotent.
@@ -103,11 +108,13 @@ contract without launching, supervising, or reasoning on behalf of an agent.
    live in `internal/registry`.
 3. Local-only selection and resolved-contract projection live in
    `internal/contract`.
-4. Handwritten source and test files do not exceed 300 physical lines.
-5. Errors include context and never silently continue after partial state.
-6. `cmd/git-wt` and `internal/worktree` remain independent of the Kit contract
+4. Bootstrap templates, preservation planning, the semantic init prompt, and
+   composite transaction coordination live in `internal/bootstrap`.
+5. Handwritten source and test files do not exceed 300 physical lines.
+6. Errors include context and never silently continue after partial state.
+7. `cmd/git-wt` and `internal/worktree` remain independent of the Kit contract
    runtime.
-7. Structured workflow-specific front matter is validated during catalog
+8. Structured workflow-specific front matter is validated during catalog
    materialization before repository mutation.
 
 ### Public CLI allowlist
@@ -126,7 +133,8 @@ Kit does not:
 
 - launch, dispatch, supervise, evaluate, or retry coding agents;
 - infer applicability from natural-language task text;
-- generate prompts or manage feature/spec lifecycles;
+- generate general feature, repair, or lifecycle prompt libraries; the one
+  init bootstrap prompt only routes an agent into the local resolved contract;
 - run CI, review, pull-request, cloud, or deployment workflows;
 - maintain hidden databases, remote state, credentials, or telemetry;
 - overwrite project customization by default;

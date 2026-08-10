@@ -45,7 +45,13 @@ type CatalogArtifact struct {
 type ProjectConfig struct {
 	SchemaVersion int                    `yaml:"schema_version" json:"schema_version"`
 	Registry      ProjectRegistry        `yaml:"registry" json:"registry"`
+	Bootstrap     ProjectBootstrap       `yaml:"bootstrap,omitempty" json:"bootstrap,omitempty"`
 	Extra         map[string]interface{} `yaml:",inline" json:"-"`
+}
+
+type ProjectBootstrap struct {
+	ScaffoldVersion int    `yaml:"scaffold_version,omitempty" json:"scaffold_version,omitempty"`
+	Workflow        string `yaml:"workflow,omitempty" json:"workflow,omitempty"`
 }
 
 type ProjectRegistry struct {

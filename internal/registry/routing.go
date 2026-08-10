@@ -37,6 +37,12 @@ func PlanRouting(root string, records []ArtifactRecord) ([]Change, error) {
 	return changes, nil
 }
 
+// RoutingContent applies Kit's bounded contract block while preserving all
+// surrounding project-owned text.
+func RoutingContent(content string, records []ArtifactRecord) string {
+	return upsertManagedBlock(content, routingBlock(records))
+}
+
 func routingBlock(records []ArtifactRecord) string {
 	rules, workflows := 0, 0
 	for _, record := range records {

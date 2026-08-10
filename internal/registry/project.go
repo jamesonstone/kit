@@ -22,6 +22,10 @@ func DefaultSource() SourceConfig {
 func NewProjectConfig(source SourceConfig) ProjectConfig {
 	return ProjectConfig{
 		SchemaVersion: ProjectSchemaVersion,
+		Bootstrap: ProjectBootstrap{
+			ScaffoldVersion: 1,
+			Workflow:        "repository-bootstrap",
+		},
 		Registry: ProjectRegistry{
 			SchemaVersion: CatalogSchemaVersion,
 			Source:        normalizeSource(source),
@@ -52,6 +56,12 @@ func LoadProject(root string) (ProjectConfig, bool, error) {
 	if cfg.Registry.SchemaVersion == 0 {
 		cfg.Registry.SchemaVersion = CatalogSchemaVersion
 	}
+	if cfg.Bootstrap.ScaffoldVersion == 0 {
+		cfg.Bootstrap.ScaffoldVersion = 1
+	}
+	if cfg.Bootstrap.Workflow == "" {
+		cfg.Bootstrap.Workflow = "repository-bootstrap"
+	}
 	sortRecords(cfg.Registry.Artifacts)
 	return cfg, migration, nil
 }
@@ -70,6 +80,12 @@ func MarshalProject(cfg ProjectConfig) ([]byte, error) {
 	cfg.SchemaVersion = ProjectSchemaVersion
 	cfg.Registry.SchemaVersion = CatalogSchemaVersion
 	cfg.Registry.Source = normalizeSource(cfg.Registry.Source)
+	if cfg.Bootstrap.ScaffoldVersion == 0 {
+		cfg.Bootstrap.ScaffoldVersion = 1
+	}
+	if cfg.Bootstrap.Workflow == "" {
+		cfg.Bootstrap.Workflow = "repository-bootstrap"
+	}
 	sortRecords(cfg.Registry.Artifacts)
 	content, err := yaml.Marshal(cfg)
 	if err != nil {
