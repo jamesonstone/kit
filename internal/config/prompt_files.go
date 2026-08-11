@@ -168,7 +168,7 @@ func writeYAMLDocument(configPath string, doc *yaml.Node) error {
 	encoder := yaml.NewEncoder(&output)
 	encoder.SetIndent(2)
 	if err := encoder.Encode(doc); err != nil {
-		encoder.Close()
+		_ = encoder.Close()
 		return fmt.Errorf("failed to encode %s: %w", configPath, err)
 	}
 	if err := encoder.Close(); err != nil {

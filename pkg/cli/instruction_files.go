@@ -80,15 +80,6 @@ func appendInstructionFile(files []string, path string) []string {
 	return append(files, path)
 }
 
-func writeInstructionFile(projectRoot, relativePath string, overwrite bool) (instructionFileWriteResult, error) {
-	mode := instructionFileWriteModeSkipExisting
-	if overwrite {
-		mode = instructionFileWriteModeOverwrite
-	}
-
-	return writeInstructionFileWithMode(projectRoot, relativePath, mode, config.DefaultInstructionScaffoldVersion)
-}
-
 func writeInstructionFileWithMode(
 	projectRoot,
 	relativePath string,
@@ -101,55 +92,6 @@ func writeInstructionFileWithMode(
 	}
 
 	return applyInstructionFileWritePlan(plan)
-}
-
-func determineInstructionFileWriteMode(force, appendOnly bool) (instructionFileWriteMode, error) {
-	if force && appendOnly {
-		return "", fmt.Errorf("--append-only cannot be used with --force")
-	}
-
-	if appendOnly {
-		return instructionFileWriteModeAppendOnly, nil
-	}
-
-	if force {
-		return instructionFileWriteModeOverwrite, nil
-	}
-
-	return instructionFileWriteModeSkipExisting, nil
-}
-
-func existingInstructionFiles(projectRoot string, relativePaths []string) []string {
-	var existing []string
-	for _, relativePath := range relativePaths {
-		if document.Exists(filepath.Join(projectRoot, relativePath)) {
-			existing = append(existing, relativePath)
-		}
-	}
-
-	return existing
-}
-
-func planInstructionFileWrites(projectRoot string, relativePaths []string, mode instructionFileWriteMode) ([]instructionFileWritePlan, error) {
-	return planInstructionArtifactWrites(projectRoot, relativePaths, mode, config.DefaultInstructionScaffoldVersion)
-}
-
-func planInstructionArtifactWrites(
-	projectRoot string,
-	relativePaths []string,
-	mode instructionFileWriteMode,
-	version int,
-) ([]instructionFileWritePlan, error) {
-	plans := make([]instructionFileWritePlan, 0, len(relativePaths))
-	for _, relativePath := range relativePaths {
-		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, version)
-		if err != nil {
-			return nil, err
-		}
-		plans = append(plans, plan)
-	}
-
-	return plans, nil
 }
 
 func planInstructionFileWrite(

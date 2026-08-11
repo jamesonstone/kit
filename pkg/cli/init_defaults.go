@@ -5,7 +5,6 @@ import "github.com/jamesonstone/kit/internal/config"
 func defaultInitConfig() *config.Config {
 	cfg := config.Default()
 	cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
-	ensureInitLoopReviewConfig(cfg)
 	return cfg
 }
 
@@ -30,5 +29,5 @@ func projectInitDeliveryPaths(cfg *config.Config) []string {
 			instructionArtifactPaths(cfg, instructionFileSelection{}, version, true)...,
 		)
 	}
-	return paths
+	return appendContextWorkflowDeliveryPaths(paths, cfg)
 }

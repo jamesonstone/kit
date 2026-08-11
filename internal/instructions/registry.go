@@ -73,7 +73,7 @@ func InstructionDocs(cfg *config.Config, version int) []Doc {
 			RelativePath: relativePath,
 			Use:          use,
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		})
 	}
 
@@ -91,63 +91,63 @@ func SupportDocs(version int) []Doc {
 			RelativePath: "docs/agents/README.md",
 			Use:          "repo-local runtime routing index",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 		{
 			Label:        "WORKFLOWS",
 			RelativePath: "docs/agents/WORKFLOWS.md",
 			Use:          "spec-driven versus ad hoc routing",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 		{
 			Label:        "RLM",
 			RelativePath: "docs/agents/RLM.md",
 			Use:          "just-in-time context routing and progressive disclosure",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 		{
 			Label:        "TOOLING",
 			RelativePath: "docs/agents/TOOLING.md",
 			Use:          "skills, dispatch, project-directory workflow, and secondary globals",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 		{
 			Label:        "GUARDRAILS",
 			RelativePath: "docs/agents/GUARDRAILS.md",
 			Use:          "hard constraints and completion bar",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 		{
 			Label:        "REFERENCES",
 			RelativePath: "docs/references/README.md",
 			Use:          "repo-wide references index",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 		{
 			Label:        "TESTING REFERENCE",
 			RelativePath: "docs/references/testing.md",
 			Use:          "durable repo-wide testing guidance",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 		{
 			Label:        "TOOLING REFERENCE",
 			RelativePath: "docs/references/tooling.md",
 			Use:          "durable repo-wide tooling guidance",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 		{
 			Label:        "EXTERNAL SYSTEMS",
 			RelativePath: "docs/references/external-systems.md",
 			Use:          "durable external-system notes",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		},
 	}
 	if version == config.InstructionScaffoldVersionMemory {
@@ -156,7 +156,7 @@ func SupportDocs(version int) []Doc {
 			RelativePath: "docs/references/worktrees.md",
 			Use:          "portable native Git worktree workflow and safety model",
 			Required:     true,
-			ManagedBy:    "kit scaffold agents",
+			ManagedBy:    "kit init",
 		})
 	}
 	return docs

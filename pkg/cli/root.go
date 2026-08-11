@@ -4,15 +4,22 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
+
+	"github.com/jamesonstone/kit/internal/commandset"
+	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/internal/usage"
 )
 
 var Version = "dev"
 
 var rootCmd = &cobra.Command{
 	Use:               "kit",
-	Short:             "🧰 Kit preserves durable repository memory from agent work",
+	Short:             "🧰 Kit resolves repository-local evidence for coding agents",
 	Long:              rootLong(humanOutputStyle{}),
 	Version:           Version,
 	PersistentPreRunE: runAutomaticConfigCheck,
@@ -24,7 +31,11 @@ func init() {
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	pruneCommandTree(rootCmd, "")
+	started := time.Now()
+	executed, err := rootCmd.ExecuteC()
+	recordUsage(executed, err, time.Since(started))
+	if err != nil {
 		var exitErr *cliExitError
 		if errors.As(err, &exitErr) {
 			if !exitErr.silent {
@@ -38,6 +49,50 @@ func Execute() {
 		}
 		os.Exit(1)
 	}
+}
+
+func pruneCommandTree(parent *cobra.Command, parentPath string) {
+	for _, child := range append([]*cobra.Command(nil), parent.Commands()...) {
+		path := strings.TrimSpace(parentPath + " " + child.Name())
+		if !commandset.IsProtectedOrParent(path) {
+			parent.RemoveCommand(child)
+			continue
+		}
+		if path == "completion" {
+			continue
+		}
+		pruneCommandTree(child, path)
+	}
+}
+
+func recordUsage(executed *cobra.Command, commandErr error, elapsed time.Duration) {
+	if executed == nil {
+		return
+	}
+	path := strings.TrimPrefix(executed.CommandPath(), rootCmd.Name()+" ")
+	if strings.HasPrefix(path, "completion ") {
+		path = "completion"
+	}
+	if !commandset.IsTelemetryPath(path) {
+		return
+	}
+	exitCode := 0
+	if commandErr != nil {
+		exitCode = 1
+		var exitErr *cliExitError
+		if errors.As(commandErr, &exitErr) {
+			exitCode = exitErr.code
+		}
+	}
+	projectRoot, found, _ := config.FindProjectRootOptional()
+	if !found {
+		projectRoot = ""
+	}
+	_ = usage.Record(usage.RecordInput{
+		Command: path, Version: Version, ExitCode: exitCode, Elapsed: elapsed,
+		ProjectRoot: projectRoot,
+		Interactive: term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd())),
+	})
 }
 
 type silentCLIError struct {

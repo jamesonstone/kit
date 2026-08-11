@@ -48,13 +48,9 @@ func TestFormatRulesetStateTokenUsesColorWhenEnabled(t *testing.T) {
 	}
 }
 
-func TestRulesCommandSupportsRuleAlias(t *testing.T) {
-	cmd, _, err := rootCmd.Find([]string{"rule", "list"})
-	if err != nil {
-		t.Fatalf("rootCmd.Find(rule list) error = %v", err)
-	}
-	if cmd != rulesListCmd {
-		t.Fatalf("expected rule list to resolve to rules list command, got %q", cmd.Name())
+func TestRulesCommandDoesNotRetainSingularAlias(t *testing.T) {
+	if _, _, err := rootCmd.Find([]string{"rule", "list"}); err == nil {
+		t.Fatal("expected removed singular rule alias to be rejected")
 	}
 }
 

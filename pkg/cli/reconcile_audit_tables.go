@@ -4,36 +4,7 @@ import (
 	"strings"
 
 	"github.com/jamesonstone/kit/internal/document"
-	"github.com/jamesonstone/kit/internal/templates"
 )
-
-func expectedSectionsFor(docType document.DocumentType) []string {
-	template := document.Parse(templateContentFor(docType), "", docType)
-	sections := make([]string, 0, len(template.Sections))
-	for _, section := range template.Sections {
-		sections = append(sections, section.Name)
-	}
-	return sections
-}
-
-func templateContentFor(docType document.DocumentType) string {
-	switch docType {
-	case document.TypeConstitution:
-		return templates.Constitution
-	case document.TypeBrainstorm:
-		return templates.BrainstormArtifact
-	case document.TypeSpec:
-		return templates.Spec
-	case document.TypePlan:
-		return templates.Plan
-	case document.TypeTasks:
-		return templates.Tasks
-	case document.TypeProgressSummary:
-		return templates.ProjectProgressSummary
-	default:
-		return ""
-	}
-}
 
 func tableExpectationsFor(docType document.DocumentType) []tableExpectation {
 	switch docType {

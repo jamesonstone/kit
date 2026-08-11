@@ -10,7 +10,7 @@ applies_to:
   - validation
   - repository-memory
   - constitution
-  - project-refresh
+  - repository-maintenance
 read_policy_default: must
 ---
 
@@ -27,7 +27,7 @@ read_policy_default: must
 - A coding agent finishes implementation and validation in a Kit-managed project.
 - The implemented work establishes, changes, or disproves a project-wide principle, constraint, non-goal, definition, vocabulary term, or workflow boundary.
 - A generated starter Constitution still contains only Kit-managed baseline rules and project-specific placeholders.
-- `kit project refresh` reports that a broader semantic Constitution review is due.
+- The repository-maintenance workflow identifies stale or missing project-wide invariants.
 
 ## Rules
 
@@ -53,11 +53,11 @@ read_policy_default: must
 - When current implementation disproves a constitutional rule, correct or remove the stale rule and retain material historical rationale in the relevant spec.
 - When no project-wide truth changed, leave the Constitution unchanged and report `Repository Memory` as `not required` with the evidence-based rationale.
 
-### Periodic Refresh
+### Periodic Maintenance
 
-- Treat project-refresh cadence as a trigger for reviewed semantic analysis, never as permission for automatic edits.
-- When refresh is due, use `kit project refresh` to look for missed, stale, or cross-feature patterns after completing the current change's normal curation gate.
-- Record a refresh with `kit project refresh --now` only after the reviewed semantic refresh is complete.
+- Resolve `kit context resolve --workflow repository-maintenance --json` when a broader semantic review is needed.
+- Treat scheduled maintenance as a trigger for reviewed analysis, never as permission for automatic edits.
+- Use current repository, specification, validation, and command evidence to identify missed, stale, or cross-feature patterns.
 
 ## Anti-Patterns
 

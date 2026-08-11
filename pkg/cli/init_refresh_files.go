@@ -57,6 +57,11 @@ func planRefreshInitScaffoldFiles(
 		}
 		changes = append(changes, change)
 	}
+	workflowChanges, err := planRefreshContextWorkflowFiles(projectRoot, opts, targets)
+	if err != nil {
+		return nil, err
+	}
+	changes = append(changes, workflowChanges...)
 	return changes, nil
 }
 
@@ -226,7 +231,7 @@ func planRefreshInitInstructionArtifacts(
 		notes = append(notes, "exact legacy V1 instruction artifacts were refreshed to instruction_scaffold_version 2")
 	}
 	if customizedV2Preserved {
-		notes = append(notes, "customized V2 instruction artifacts were preserved; review `kit reconcile --include-files` or run `kit scaffold agents --version 3 --force`")
+		notes = append(notes, "customized V2 instruction artifacts were preserved; preview a targeted replacement with `kit reconcile --include-files --force --dry-run --diff`")
 	}
 	return changes, notes, migrated, nil
 }

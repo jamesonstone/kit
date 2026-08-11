@@ -1,0 +1,32 @@
+schema_version: 1
+id: context-capability
+title: Context resolution safety is discoverable
+category: capabilities
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Inspect context-resolution capability metadata.
+expected_behavior: Capability metadata identifies local-only resolution and its versioned JSON flag.
+oracle: deterministic-cli
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} capabilities context resolve --json"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: '"command": "context resolve"'
+  - type: stdout_contains
+    command_index: 0
+    value: '"mutation_level": "none"'
+  - type: stdout_contains
+    command_index: 0
+    value: kit.context/v1
+  - type: git_diff_empty
+regression_tags:
+  - agent-contract
+held_out_eligible: false
+known_failure_modes:
+  - capabilities:context-safety-missing

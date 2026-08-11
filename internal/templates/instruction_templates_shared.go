@@ -55,7 +55,7 @@ Classify each request before implementation.
 
 Use when any apply:
 
-- request initiated through ` + "`kit spec`" + ` or explicit legacy staged ` + "`kit legacy`" + ` commands
+- request initiated through ` + "`kit spec`" + ` or continuation of existing historical staged artifacts
 - new feature or capability
 - substantial architectural or behavioral change
 - work touches code with existing feature specs under ` + "`docs/specs/<feature>/`" + `
@@ -70,7 +70,7 @@ Required flow:
 
 Use when all apply:
 
-- not initiated through ` + "`kit spec`" + ` or explicit legacy staged ` + "`kit legacy`" + ` commands
+- not initiated through ` + "`kit spec`" + ` and not continuing existing historical staged artifacts
 - bug fix, security review, refactor, dependency update, config change, or small refinement
 - scope is contained and can be verified directly
 
@@ -133,7 +133,7 @@ If ad hoc work touches a feature with existing specs:
 - Before writing code for spec-driven work, run the v2 readiness gates: adversarially challenge ` + "`CONSTITUTION.md`" + ` and ` + "`SPEC.md`" + ` for contradictions, ambiguity, hidden assumptions, missing failure modes, task gaps, validation gaps, delivery ambiguity, and scope creep. If a gate fails, update ` + "`SPEC.md`" + ` first, then continue.
 - Implement tasks from the ` + "`SPEC.md`" + ` task checklist and keep task status current there
 - Map validation 1:1 to ` + "`SPEC.md`" + ` acceptance criteria and record evidence in ` + "`SPEC.md`" + `
-- Legacy staged flows may still use ` + "`TASKS.md`" + ` and ` + "`kit legacy verify <feature> --task <task-id>`" + ` evidence when those artifacts are active
+- Historical staged flows may still retain ` + "`TASKS.md`" + ` evidence when those artifacts are active
 - Follow all code style guidelines and architectural standards
 - Ensure explicit error handling and input validation
 - Add or update tests required by the plan

@@ -52,19 +52,6 @@ func currentPromptProfile() promptProfile {
 	return selectedPromptProfile
 }
 
-func effectivePromptProfile(featurePath string) promptProfile {
-	if selectedPromptProfileExplicit || selectedPromptProfile != promptProfileNone {
-		return selectedPromptProfile
-	}
-	if strings.TrimSpace(featurePath) == "" {
-		return promptProfileNone
-	}
-	if featureHasActiveFrontendProfileDependency(featurePath) {
-		return promptProfileFrontend
-	}
-	return promptProfileNone
-}
-
 func appendPromptProfileSuffix(prompt string, profile promptProfile) string {
 	if profile != promptProfileFrontend || hasMarkdownHeading(prompt, "## Frontend Profile") {
 		return prompt

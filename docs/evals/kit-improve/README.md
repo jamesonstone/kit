@@ -18,11 +18,11 @@ verify small deterministic strings. A passing default run proves that those
 catalog entries remain discoverable; it does not exercise generated prompts,
 invoke a model, or measure coding-agent quality.
 
-`prompt-system` renders representative current and legacy prompt surfaces with
-the Kit executable selected by `--kit-binary`. It repeats every task three
-times, treats required-output assertions as hard correctness gates, records
-prompt/output size separately, and includes the generated loop model capability
-contract. Use it for identical-definition before/after comparisons:
+`prompt-system` retains its hosted suite name but now exercises the v2 coding-
+agent contract: local context resolution, usage and command capabilities, the
+living-spec boundary, PR repair, and the preserved dispatch prompt. It repeats
+every task three times and treats required-output assertions as hard correctness
+gates. Use it for identical-definition before/after comparisons:
 
 ```bash
 kit improve run --suite prompt-system --kit-binary /path/to/baseline/kit --json

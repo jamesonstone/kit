@@ -13,9 +13,6 @@ import (
 const Gitignore = `# Kit local generated environment, cache, and scratch artifacts
 .env
 .envrc
-.kit/runs/
-.kit/loops/
-.kit/state.json
 .kit/cache/
 .kit/tmp/
 .kit/temp/
@@ -58,7 +55,6 @@ const Constitution = `# CONSTITUTION
 <!-- BEGIN KIT-MANAGED BASELINE RULES -->
 - Treat ` + "`docs/CONSTITUTION.md`" + ` as the canonical project contract.
 - Keep ` + "`AGENTS.md`" + `, ` + "`CLAUDE.md`" + `, and ` + "`.github/copilot-instructions.md`" + ` aligned with the repo-local docs tree.
-- Treat ` + "`docs/notes/<feature>`" + ` as optional source material, not canonical truth; promote durable decisions into ` + "`SPEC.md`" + `, ` + "`docs/CONSTITUTION.md`" + `, or durable references.
 - Use native agent planning for research, clarification, design, and implementation planning.
 - Before implementation, inspect code and repository memory; create or adopt ` + "`SPEC.md`" + ` when material rationale exists.
 - After validation, curate feature rationale, project invariants, reusable practices, and domain knowledge into their scope-appropriate canonical documents.

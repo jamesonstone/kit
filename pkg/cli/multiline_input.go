@@ -42,6 +42,14 @@ func closeMultilineReadline(rl *readline.Instance) {
 	_ = rl.Close()
 }
 
+func readLineRL(rl *readline.Instance) string {
+	line, err := rl.Readline()
+	if err != nil {
+		return ""
+	}
+	return normalizeSpecAnswer(line)
+}
+
 func enableKeyboardProtocol(w io.Writer) {
 	_, _ = io.WriteString(w, keyboardProtocolEnable)
 }

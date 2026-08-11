@@ -33,7 +33,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"repository instruction file drift cannot be reconciled safely with append-only planning",
 				templateSource(projectRoot),
-				"inspect the file manually and add the missing Kit-managed sections, or use `kit scaffold agents --force` only if overwrite is acceptable",
+				fmt.Sprintf("inspect the file manually or preview a targeted replacement with `kit reconcile --include-files --force --dry-run --diff --file %s`", relativePath),
 				[]string{
 					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
 					fmt.Sprintf("sed -n '1,240p' %s", templateSource(projectRoot)),
@@ -49,8 +49,8 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"missing Kit-managed repository instruction file",
 				templateSource(projectRoot),
-				"prefer `kit scaffold agents --append-only` to create the missing file without replacing existing instruction files",
-				[]string{"kit scaffold agents --append-only"},
+				fmt.Sprintf("preview creation with `kit reconcile --include-files --dry-run --diff --file %s`, then apply only after review", relativePath),
+				[]string{fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath)},
 			))
 		case instructionFileMerged:
 			findings = append(findings, newFinding(
@@ -58,9 +58,9 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"repository instruction file is missing current Kit-managed sections",
 				templateSource(projectRoot),
-				"prefer `kit scaffold agents --append-only` to append the missing Kit-managed sections, then review the result",
+				fmt.Sprintf("preview the missing managed sections with `kit reconcile --include-files --dry-run --diff --file %s`, then apply only after review", relativePath),
 				[]string{
-					"kit scaffold agents --append-only",
+					fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath),
 					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
 				},
 			))
@@ -80,10 +80,10 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"missing repo-local instruction support document",
 				templateSource(projectRoot),
-				fmt.Sprintf("restore the instruction docs tree, typically with `kit scaffold agents --version %d --append-only` or `--force` if a full refresh is acceptable", version),
+				fmt.Sprintf("preview restoration with `kit reconcile --include-files --dry-run --diff --file %s`, using `--force` only after reviewing customized content", support.RelativePath),
 				[]string{
-					fmt.Sprintf("kit scaffold agents --version %d --append-only", version),
-					fmt.Sprintf("kit scaffold agents --version %d --force", version),
+					fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", support.RelativePath),
+					fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", support.RelativePath),
 				},
 			))
 		case config.InstructionScaffoldVersionVerbose:
@@ -95,9 +95,8 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 				absolutePath,
 				"v2 docs-tree artifact is present in a version 1 instruction model",
 				templateSource(projectRoot),
-				"remove the leftover v2 docs-tree artifact or rerun `kit scaffold agents --version 1 --force` to finish the downgrade",
+				"review and remove the leftover V2 support artifact only when it has no project-owned content",
 				[]string{
-					"kit scaffold agents --version 1 --force",
 					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
 				},
 			))
@@ -120,8 +119,8 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 			filepath.Join(projectRoot, config.ConfigFileName),
 			"customized V2 instruction artifacts are not eligible for automatic V3 migration",
 			templateSource(projectRoot),
-			"review reconciliation or explicitly run `kit scaffold agents --version 3 --force`; Kit will not overwrite customized V2 instructions automatically",
-			[]string{"kit reconcile --include-files --dry-run --diff", "kit scaffold agents --version 3 --force"},
+			"review `kit reconcile --include-files --force --dry-run --diff`; Kit will not overwrite customized V2 instructions automatically",
+			[]string{"kit reconcile --include-files --dry-run --diff", "kit reconcile --include-files --force --dry-run --diff"},
 		)
 		finding.NonBlocking = true
 		findings = append(findings, finding)
@@ -164,8 +163,8 @@ var vendorToolRequirementSnippets = []string{
 func auditInstructionEntrypoints(projectRoot string, alreadyAudited map[string]bool, version int) []reconcileFinding {
 	var findings []reconcileFinding
 	model := fmt.Sprintf("version %d", version)
-	scaffoldCommand := fmt.Sprintf("kit scaffold agents --version %d --append-only", version)
 	for _, relativePath := range v2RequiredRootInstructionPaths {
+		scaffoldCommand := fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath)
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
 		content, err := os.ReadFile(absolutePath)
 		if err != nil {

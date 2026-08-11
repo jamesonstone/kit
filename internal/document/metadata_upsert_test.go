@@ -209,12 +209,12 @@ feature:
 
 	_, changed, err := UpsertMetadata(content, TypeSpec, MetadataUpsert{
 		References: []MetadataReference{{
-			Name:       "Feature notes",
-			Type:       "notes",
-			Target:     "docs/notes/0001-alpha",
+			Name:       "Architecture reference",
+			Type:       "reference",
+			Target:     "docs/references/architecture.md",
 			Relation:   ReferenceRelationInforms,
 			ReadPolicy: ReferenceReadPolicyConditional,
-			UsedFor:    "optional pre-brainstorm input",
+			UsedFor:    "implementation boundary",
 			Status:     ReferenceStatusOptional,
 		}},
 	})

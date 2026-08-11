@@ -43,9 +43,8 @@ var (
 )
 
 var rulesCmd = &cobra.Command{
-	Use:     "rules",
-	Aliases: []string{"rule"},
-	Short:   "Manage durable repo-local rulesets",
+	Use:   "rules",
+	Short: "Manage durable repo-local rulesets",
 	Long: `Import, preview, create, list, and link durable repo-local rulesets.
 
 Rulesets live under docs/references/rules/ and are loaded through feature

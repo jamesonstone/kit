@@ -1,16 +1,16 @@
 # Workflows
 
-## Native Planning To Repository Memory
+## Agent-First Contract
 
-1. Inspect the request, relevant code, and existing repository memory.
-2. Use the host agent's native planning capability for research, clarification, design, and implementation planning.
-3. Before code, assess whether the work contains material rationale that code and tests cannot preserve.
-4. When it does, create or adopt `docs/specs/<feature>/SPEC.md` and translate the accepted native plan into it before implementation.
-5. Keep material decisions and discoveries current while implementing.
-6. Validate the implementation.
-7. Load `docs/references/rules/constitution-curation.md` and curate the spec and broader repository memory to match what was actually built.
+1. Establish Kit command safety with `kit capabilities <command> --json` when needed.
+2. Resolve the applicable local workflow with `kit context resolve --workflow <slug> --json`.
+3. Load required selected rules, specs, strategies, references, and source evidence.
+4. Use native planning for research, clarification, design, and the accepted plan.
+5. Before code, create or adopt `docs/specs/<feature>/SPEC.md` when material rationale must survive.
+6. Implement, validate, and keep consequential decisions and discoveries current.
+7. Curate repository memory to the actual integrated outcome, then rerun context resolution if scope changed.
 
-`kit spec [feature]` scaffolds or adopts the living spec and provides orientation. It does not replace native planning and does not ingest transcripts. The legacy V2 supervisor is compatibility-only.
+`kit spec [feature]` scaffolds or adopts the living V3 spec. It does not replace native planning, ingest transcripts, or launch an agent.
 
 ## Memory Decision
 
@@ -28,5 +28,4 @@
 
 - V1 and V2 specs remain readable and valid.
 - Never mechanically rewrite a V2 spec into V3; migration requires semantic curation.
-- Bare `kit loop` and `kit loop workflow` are deprecated V2 compatibility paths. V3 work uses native planning.
 - `kit dispatch` supports post-plan execution topology; it does not design the feature.

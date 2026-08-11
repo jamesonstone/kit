@@ -1,5 +1,11 @@
 # Tooling
 
+## Kit Evidence Sequence
+
+- Use `kit capabilities <command> --json` when side effects are not already established.
+- Resolve `kit context resolve --workflow <slug> --json` before coding-agent work and load the selected local evidence.
+- Rerun resolution after material scope changes; never treat resolved JSON as a new source of truth.
+
 ## Skills
 
 - Repo-local canonical skills live under `.agents/skills/*/SKILL.md`
@@ -9,8 +15,8 @@
 ## Command Capability Discovery
 
 - Use `kit capabilities` when choosing among Kit commands and the mutation, network, write, or git behavior is not already obvious.
-- Use `kit capabilities <command> --json` for one command path, including nested paths such as `rules add` or `skill mine`.
-- Use `kit capabilities --search <term> --json` for compact filtered discovery, and `kit capabilities --full --json` only when hidden or deprecated compatibility commands matter.
+- Use `kit capabilities <command> --json` for one command path, including nested paths such as `rules add` or `context resolve`.
+- Use `kit capabilities --search <term> --json` for compact filtered discovery, and `kit capabilities --full --json` only when full details are needed.
 - Treat `kit capabilities` itself as read-only: it does not require a Kit project root and does not load project config, write files, call the network, run subprocesses, or mutate git.
 - In downstream Kit-managed projects, load `docs/references/rules/kit-capabilities-usage.md` when command discovery affects the task.
 - Downstream projects should use `kit capabilities` for command discovery; do not maintain Kit's internal command catalog from a downstream project.
@@ -38,15 +44,9 @@
 - If the resolved lane is dirty, Kit asks whether those changes belong in the repair and records `include` or `exclude`, the porcelain status, remote/local head SHAs, and the exact push target in the prompt.
 - Pass `--edit` to review and change the task list in the default editor before copying; `--vim` and `--editor <cmd>` also opt into editing.
 - The generated PR-fix prompt requires a post-push reflection cycle before review-thread resolution: the coding agent must review the pushed diff in context, confirm the PR head still matches the commit it pushed, and only then resolve verified addressed conversations.
-- `kit pr fix` remains prompt-producing: except for preparing the writable worktree and its exact `.env` and `.envrc` links when needed, it does not run the loop agent, edit source files, write `.kit/loops` evidence, stage, commit, push, post PR comments, or resolve review threads.
-- Use `kit loop review` when changed code should be locally reviewed and repaired by the configured loop agent until the final response reports at least 95% correctness and ends with `done`.
-- Without `--pr`, `kit loop review` reviews current-branch changes relative to `origin/main`, falling back to local `main`, plus staged and unstaged changes.
-- Use `kit loop review --pr <target>` when current unresolved CodeRabbit PR feedback should be opportunistically folded into the repair loop; Kit runs the configured agent from the resolved writable PR-head worktree.
-- Use `kit loop review --pr <target> --watch` or `--wait-for-coderabbit` only when finalization should block for CodeRabbit completion.
-- Review prompts use one agent by default; pass `--subagents` to let the parent review agent pre-analyze the diff and choose subagents only when the lanes are clearly independent under `agent-team-orchestration` limits.
-- Use `kit dispatch --loop --pr <target>` when current unresolved CodeRabbit PR review feedback should become a human-reviewed dispatch prompt instead of an agent repair loop.
+- `kit pr fix` remains prompt-producing: except for preparing the writable worktree and its exact `.env` and `.envrc` links when needed, it does not launch an agent, edit source files, stage, commit, push, post PR comments, or resolve review threads.
+- Use `kit dispatch --loop --pr <target> --watch` only for bounded expected CodeRabbit intake; waiting is deterministic and model-free.
 - Use `kit dispatch --pr <target> --coderabbit` only when you need raw unresolved CodeRabbit review-thread intake without review-loop watch, classification, or summary behavior.
-- Treat `kit loop review` as local repair only: it may edit files through the configured agent and write `.kit/loops` evidence, but it must not stage, commit, push, post PR comments, or resolve review threads.
 - After fixes or no-op decisions are complete, validation has run, the repair is pushed, and reflection confirms no other code was pushed after the repair commit, resolve matching current unresolved review threads on the PR, including human reviewer and CodeRabbit feedback, with `kit dispatch --pr <target> --resolve --yes`.
 - Resolve only feedback verified as fixed or intentionally no-op; do not resolve unfixed, uncertain, stale, or unrelated feedback.
 - `kit dispatch --pr <target> --resolve --yes` is an explicit GitHub mutation and must not be run speculatively.

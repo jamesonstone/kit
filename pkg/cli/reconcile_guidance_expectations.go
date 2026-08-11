@@ -91,8 +91,9 @@ func v3GuidanceExpectations() map[string][]string {
 			"V1 and V2 artifacts remain supported legacy inputs",
 		},
 		"docs/agents/WORKFLOWS.md": {
-			"## Native Planning To Repository Memory",
-			"Before code, assess whether the work contains material rationale",
+			"## Agent-First Contract",
+			"kit context resolve --workflow <slug> --json",
+			"Before code, create or adopt `docs/specs/<feature>/SPEC.md` when material rationale must survive",
 			"Never mechanically rewrite a V2 spec into V3",
 			"`kit dispatch` supports post-plan execution topology",
 		},

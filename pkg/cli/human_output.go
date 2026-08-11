@@ -32,6 +32,18 @@ func isTerminalWriter(w io.Writer) bool {
 	return term.IsTerminal(int(fileLike.Fd()))
 }
 
+func terminalWidthOrDefault(w io.Writer, fallback int) int {
+	fileLike, ok := w.(interface{ Fd() uintptr })
+	if !ok {
+		return fallback
+	}
+	width, _, err := term.GetSize(int(fileLike.Fd()))
+	if err != nil || width <= 0 {
+		return fallback
+	}
+	return width
+}
+
 func (s humanOutputStyle) title(emoji, text string) string {
 	if !s.enabled {
 		return text
@@ -75,14 +87,6 @@ func (s humanOutputStyle) clipboardAcknowledgement() string {
 
 func (s humanOutputStyle) selectionTitle(text string) string {
 	return s.title("🧭", text)
-}
-
-func (s humanOutputStyle) selectionPrompt() string {
-	if !s.enabled {
-		return "Enter number: "
-	}
-
-	return whiteBold + "👉 Enter number: " + reset
 }
 
 func (s humanOutputStyle) nextStepsTitle() string {
@@ -196,21 +200,6 @@ Aliases:
 %s
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}
 `, header, commandsHeader, flagsHeader, globalFlagsHeader)
-}
-
-func printSelectionHeader(title string) {
-	printSelectionHeaderTo(os.Stdout, title)
-}
-
-func printSelectionHeaderTo(w io.Writer, title string) {
-	style := styleForWriter(w)
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, style.selectionTitle(title))
-	fmt.Fprintln(w)
-}
-
-func selectionPrompt(w io.Writer) string {
-	return styleForWriter(w).selectionPrompt()
 }
 
 func printNumberedNextSteps(steps []string) {

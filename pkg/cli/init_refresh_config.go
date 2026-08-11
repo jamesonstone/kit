@@ -68,9 +68,6 @@ func initRefreshConfig(
 		cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
 		configChanged = true
 	}
-	if ensureInitLoopReviewConfig(cfg) {
-		configChanged = true
-	}
 	if configChanged && shouldTouchConfig {
 		after, err := marshalInitRefreshConfig(cfg)
 		if err != nil {

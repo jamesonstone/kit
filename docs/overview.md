@@ -1,66 +1,63 @@
 # Kit Overview
 
-Kit is a repository-memory and specification harness for agent-driven work.
+Kit is a coding-agent-first repository contract and evidence harness. Humans
+bootstrap and maintain the repository contract; coding agents are the primary
+consumers of the resulting rules, workflows, specifications, strategies,
+references, and source evidence.
 
-The shipped command surface is packaged around repositories and software
-delivery, but the underlying model is broader: constraints, clarification,
-native planning, execution, verification, curated rationale, and transfer are
-useful in any serious domain.
+## Product Boundary
 
-## Principles
+Kit:
 
-- 🧰 **Harness-first, workflow-second** - Kit coordinates work without locking it to one agent vendor.
-- 📄 **Repositories own durable memory** - consequential decisions live in canonical files, not only in chat or transcripts.
-- 🧠 **Native planning owns design** - use the host agent's planning capability for research, clarification, design, and implementation planning.
-- 📐 **Specifications preserve material why** - create or adopt a living spec before code when future agents need rationale that code and tests cannot recover.
-- ⚡ **Ad hoc work stays lightweight** - small changes do not need a full feature workflow.
-- 🤝 **Portable by default** - generated prompts are meant for capable coding agents, not one runtime.
-- 🔍 **Explicit gates beat hidden automation** - issue, branch, PR, delivery, and validation boundaries stay visible.
-- 🔄 **Reflection closes the loop** - correctness, evidence, docs, and handoff matter after implementation.
+- materializes repository-local rules and declarative workflow contracts;
+- preserves living feature specifications and project references;
+- reports command capabilities and mutation boundaries;
+- resolves deterministic, ordered local evidence for an explicit workflow; and
+- provides bounded prompt adapters for dispatch and pull-request repair.
 
-## Cross-Domain Concepts
+Kit does not:
 
-| Kit Concept | In Software | In Research | In Strategy / Ops | In Writing / Policy |
-| --- | --- | --- | --- | --- |
-| `CONSTITUTION.md` | Engineering constraints | Study constraints | Operating principles | Editorial or policy constraints |
-| `SPEC.md` | Feature workflow artifact | Research question, study plan, proof | Decision brief, rollout, evidence | Argument, outline, revision evidence |
-| Requirements and observable acceptance | Behavior checks | Falsifiable success criteria | Decision or rollout gates | Editorial acceptance standards |
-| Validation and outcome | Tests, runtime checks, docs review | Result evidence and audit trail | Operational validation | Source/proof trail and revision notes |
-| Legacy `BRAINSTORM.md` / `PLAN.md` / `TASKS.md` | Historical staged artifacts | Historical staged artifacts | Historical staged artifacts | Historical staged artifacts |
-| `reconcile` / `resume` / `summarize` / `handoff` | Reconcile, resume, or transfer context | Resume investigation | Transfer project state | Transfer editorial context |
+- infer project truth;
+- call a model;
+- launch or supervise agents;
+- put network access or writes inside `kit context resolve`; or
+- replace native planning, Git, GitHub, test, or delivery authority.
 
-## Artifact Model
+## Evidence Flow
 
-Feature artifacts use typed YAML front matter for canonical metadata such as:
+1. Use `kit capabilities <command> --json` when command behavior is uncertain.
+2. Run `kit context resolve --workflow <slug> --json` with relevant feature
+   and path hints.
+3. Load required selected artifacts in order.
+4. Use native agent planning and repository evidence.
+5. Create or adopt a living `SPEC.md` when material rationale must survive.
+6. Implement, validate, and curate the actual integrated outcome.
+7. Rerun resolution after material scope changes.
 
-- artifact identity
-- feature identity
-- relationships
-- references
-- skills
-- summary or intent
-- workflow phase
+Repository-local Markdown and source remain authoritative. Resolved JSON is a
+reproducible projection, not a second source of truth.
 
-New feature memory uses a compact V3 `SPEC.md`: purpose, context, requirements,
-accepted plan, decisions, discoveries, validation, outcome, and repository
-memory. V1 and V2 artifacts remain readable compatibility inputs and are never
-mechanically rewritten into V3 because migration requires semantic curation.
+## Conservative Major Reset
 
-## Positioning
+Version 2 removes command families that duplicated native agent capabilities or
+had no durable role. It retains the bootstrap, specification, dispatch,
+rules-registry, reconciliation, health, inspection, validation, PR-repair, and
+utility surfaces. Historical specifications remain valid evidence; Kit does not
+mechanically rewrite them or delete downstream project-owned content.
 
-Kit is broader than a spec generator. It supports:
+Local bounded usage telemetry supplies future removal evidence without network
+collection. The weekly health task retains its repository-maintenance behavior
+and adds one overall usage analysis per run.
 
-- durable plan and decision capture after native planning
-- lightweight ad hoc execution when the change is contained
-- recovery tools such as `reconcile`, `resume`, `summarize`, and `handoff`
-- review and orchestration tools such as `code-review`, `dispatch`, and `loop review`
+## Core Artifacts
 
-The key judgment is semantic: persist the why when it matters, and prefer a
-clear `not required` decision when code and tests are sufficient.
-
-## Inspiration
-
-Kit is inspired by GitHub's [spec-kit](https://github.com/github/spec-kit),
-which pioneered specification-driven development. Kit keeps that discipline
-where it helps most, then broadens it into a lighter, more portable,
-general-purpose harness.
+| Artifact | Role |
+| --- | --- |
+| `.kit.yaml` | Project configuration, registry state, and optional project usage preference |
+| `docs/references/rules/*.md` | Durable just-in-time agent rules |
+| `docs/references/workflows/*.md` | Declarative execution contracts |
+| `docs/specs/<feature>/SPEC.md` | Living feature rationale, plan, validation, and outcome |
+| `docs/PROJECT_PROGRESS_SUMMARY.md` | Feature-history index |
+| `docs/CONSTITUTION.md` | Demonstrated project-wide invariants |
+| `docs/references/*.md` | Reusable repository evidence |
+| `AGENTS.md` and provider files | Thin routes into the repository contract |

@@ -168,7 +168,7 @@ func TestBuildReconcilePromptIncludesVerificationMigrationRules(t *testing.T) {
 		"do not mark legacy docs invalid",
 		"do not guess verification commands from prose",
 		"leave uncertain commands as `not yet declared`",
-		"run `kit legacy verify <feature> --dry-run`, refresh `.kit/state.json`, then rerun `kit check <feature>` and `kit check --project`",
+		"after migration, rerun `kit check <feature>` and `kit check --project`; retain executable verification details only as historical evidence",
 	}
 	for _, check := range checks {
 		if !strings.Contains(prompt, check) {
@@ -250,7 +250,7 @@ func TestBuildReconcilePrompt_UsesVersionedInstructionShortcut(t *testing.T) {
 	}
 
 	prompt := buildReconcilePrompt(report)
-	if !strings.Contains(prompt, "`kit scaffold agents --version 2 --append-only`") {
-		t.Fatalf("expected prompt to use versioned scaffold shortcut, got %q", prompt)
+	if !strings.Contains(prompt, "`kit reconcile --include-files --dry-run --diff`") {
+		t.Fatalf("expected prompt to use the supported reconcile shortcut, got %q", prompt)
 	}
 }

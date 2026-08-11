@@ -29,7 +29,7 @@ func skillPromptSuffix() string {
 		sb.WriteString("- Read the repository instruction entrypoints before acting.\n")
 	}
 	if len(paths) > 0 {
-		sb.WriteString(fmt.Sprintf("- Entrypoints: %s.\n", strings.Join(paths, ", ")))
+		fmt.Fprintf(&sb, "- Entrypoints: %s.\n", strings.Join(paths, ", "))
 	}
 	sb.WriteString("- Load only the repo docs and skills needed for the current decision; repo-local guidance precedes secondary global inputs.\n")
 	sb.WriteString("- For feature work, use canonical front matter `skills` (legacy `## SKILLS` only as fallback), and open every selected or explicitly provided `SKILL.md`.\n")

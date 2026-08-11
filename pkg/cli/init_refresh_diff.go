@@ -27,7 +27,7 @@ func printInitRefreshDryRun(changes []initRefreshFileChange, stats initRefreshSt
 	}
 
 	if !opts.diff {
-		fmt.Println("🔎 Kit project refresh dry run:")
+		fmt.Println("🔎 Kit managed refresh dry run:")
 		for _, change := range changes {
 			if change.result == instructionFileSkipped {
 				continue

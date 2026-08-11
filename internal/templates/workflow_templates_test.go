@@ -58,8 +58,6 @@ func TestConstitutionTemplateIncludesKitManagedBaselineRules(t *testing.T) {
 	for _, check := range []string{
 		"### Kit-Managed Baseline Rules",
 		"BEGIN KIT-MANAGED BASELINE RULES",
-		"docs/notes/<feature>",
-		"optional source material, not canonical truth",
 		"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		"whole-project reconcile and scheduled maintenance audit the entire repository",
 		"vendored dependencies, and proven generated files",
@@ -71,15 +69,14 @@ func TestConstitutionTemplateIncludesKitManagedBaselineRules(t *testing.T) {
 	}
 }
 
-func TestReferencesTemplateMentionsFeatureNotesRuleset(t *testing.T) {
+func TestReferencesTemplateOmitsRemovedFeatureNotesRuleset(t *testing.T) {
 	content := fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/references/README.md")
-	for _, check := range []string{
+	for _, forbidden := range []string{
 		"rules/feature-notes.md",
 		"docs/notes/<feature>",
-		"not canonical truth",
 	} {
-		if !strings.Contains(content, check) {
-			t.Fatalf("expected references README template to contain %q, got:\n%s", check, content)
+		if strings.Contains(content, forbidden) {
+			t.Fatalf("expected references README template to omit %q, got:\n%s", forbidden, content)
 		}
 	}
 }

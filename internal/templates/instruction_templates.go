@@ -12,7 +12,7 @@ const sharedRepositoryInstructions = sharedRepositoryInstructionsCore + sharedRe
 const copilotQuickRules = `## Fast rules for chat and code review
 
 - classify every request first
-  - **spec-driven**: ` + "`kit spec`" + ` work, explicit legacy staged ` + "`kit legacy`" + ` work, new capability, substantial behavioral or architectural change, existing spec-covered feature work, or cross-component/public-interface changes
+  - **spec-driven**: ` + "`kit spec`" + ` work, existing historical staged work, new capability, substantial behavioral or architectural change, existing spec-covered feature work, or cross-component/public-interface changes
   - **ad hoc**: contained bug fix, review, refactor, dependency update, config change, or small refinement
 - for spec-driven work:
   - read ` + "`SPEC.md`" + ` first for v2 feature work; it carries requirements, plan, task checklist, validation, reflection, delivery, and evidence

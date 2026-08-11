@@ -18,7 +18,7 @@
 | Workstream | Repository | Local spec | Issue | Branch | Pull request | Operational reference |
 | --- | --- | --- | --- | --- | --- | --- |
 | `WS-kura-distribution` | `jamesonstone/kura` | `docs/specs/0001-interactive-script-installer/SPEC.md` | `jamesonstone/kura#1` | `GH-1` | `jamesonstone/kura#2` | Kura README and catalog |
-| `WS-kit-removal` | `jamesonstone/kit` | `docs/specs/0059-git-wt-removal/SPEC.md` | `jamesonstone/kit#139` | `GH-139` | `jamesonstone/kit#140` | Kit release and command docs |
+| `WS-kit-removal` | `jamesonstone/kit` | `docs/specs/0060-git-wt-removal/SPEC.md` | `jamesonstone/kit#139` | `GH-139` | `jamesonstone/kit#140` | Kit release and command docs |
 
 ## Dependency Graph
 
@@ -40,24 +40,24 @@ WS-kura-distribution implementation and validation
 | Workstream | Implementation | GitHub delivery | Deployment/runtime | Validation |
 | --- | --- | --- | --- | --- |
 | `WS-kura-distribution` | complete at `195184cf25143a264cd549f7ab0880ca1cb0999c` | PR `jamesonstone/kura#2` merged as `2ec9cbe058bdf6da8a3a0e1f2b9f6dd717137239` | release and host installation unobserved | four PR checks and post-merge main CI passed |
-| `WS-kit-removal` | complete in repaired implementation commit `594ba9c4674da7287c02d477d131cb7639be940a` | ready PR `jamesonstone/kit#140` is `MERGEABLE/CLEAN`; validate and CodeRabbit passed | not applicable before merge; release unobserved | complete local matrix and hosted validation passed; three review findings repaired and resolved |
+| `WS-kit-removal` | v2 reconciliation locally complete from PR head `8df339a08a3541ed76523df42473876bb3d1fa8f` and main `0eb617e80839d3bc9ae326dbe3c63ddc5d0b0591`; delivery commit pending | ready PR `jamesonstone/kit#140` remains at old head `8df339a`; prior hosted checks are stale for the integrated result | not applicable before merge; release unobserved | integrated full Go/race/vet, builds, release snapshot, lint, improve, context, project, source-size, vulnerability, and secret checks passed locally |
 
 ## Milestones And Gates
 
 | ID | State | Evidence required to advance |
 | --- | --- | --- |
 | `M1-kura-ready` | satisfied | Kura PR #2 at `195184cf` is ready, mergeable, and all observed hosted checks passed |
-| `M2-kit-decommission` | satisfied | Kit implementation, complete local validation, ready PR, and observed hosted state |
+| `M2-kit-decommission` | in progress | Kit implementation reconciled with v2, complete local validation, ready PR, and observed hosted state |
 | `GATE-kura-merged` | satisfied | Kura PR #2 is `MERGED` at exact merge commit `2ec9cbe0`; post-merge main CI passed |
-| `GATE-kit-merge-ready` | satisfied | Ready Kit PR #140 is mergeable and clean with validate and CodeRabbit passing |
+| `GATE-kit-merge-ready` | pending revalidation | Updated Kit PR #140 is mergeable and clean with validate and CodeRabbit passing |
 | `M3-transition-complete` | blocked | Both PRs merged, release/runtime obligations observed or explicitly accepted, and final repository memory reconciled |
 
 ## Ready Frontier And Blockers
 
-- Ready frontier: human review and optional merge of ready Kit PR #140, followed
-  by explicit release/runtime reconciliation if desired.
+- Ready frontier: commit the validated ordinary merge, push `GH-139`, update
+  existing Kit PR #140, and observe fresh hosted validation.
 - `GATE-kura-merged` is satisfied. No cross-repository blocker remains for Kit
-  PR delivery; merge remains outside this task's authority.
+  PR delivery; Kit merge readiness is pending the current reconciliation.
 - No deployment or infrastructure mutation is authorized or required.
 
 ## Compatibility, Rollback, And Completion
@@ -74,16 +74,17 @@ WS-kura-distribution implementation and validation
 
 ## Current Checkpoint
 
-- Observed at: `2026-08-10T21:35:07Z`
+- Observed at: `2026-08-11T12:14:01Z`
 - Supervisor: `jamesonstone`
-- State changes: Kura PR #2 merged its reviewed head unchanged as `2ec9cbe0`
-  and post-merge main CI passed; Kit removal and local validation completed;
-  ready Kit PR #140 reached `MERGEABLE/CLEAN` at repaired implementation commit
-  `594ba9c4` with validate and CodeRabbit passing and all review threads resolved.
-- Ready frontier: human review and optional merge of Kit PR #140.
-- Blockers: none for delivery or merge readiness. Kit merge, release, and host
-  installation remain separate unperformed actions.
-- Next safe actions: merge Kit PR #140 when desired, then reconcile merge and
-  any release/runtime evidence before declaring the transition complete.
+- State changes: the six predicted conflicts are resolved, feature ID `0060`
+  replaces the colliding pre-integration allocation, the v2 context contract is
+  unblocked, and the complete integrated local validation matrix passes.
+- Ready frontier: commit the ordinary merge, push the existing `GH-139` lane,
+  update PR #140, and observe fresh hosted state.
+- Blockers: none for local delivery. Kit merge readiness is pending fresh
+  hosted evidence; merge, releases, and host installation remain separate
+  unperformed actions.
+- Next safe actions: commit and push the validated merge without rebase or
+  force, refresh PR #140's description, then reconcile hosted checks and review.
 - Live claims still required: Kit merge state, Kura and Kit release publication,
   and any actual host installation remain unobserved.

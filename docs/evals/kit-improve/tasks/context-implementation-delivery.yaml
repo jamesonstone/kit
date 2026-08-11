@@ -1,0 +1,29 @@
+schema_version: 1
+id: context-implementation-delivery
+title: Implementation workflow resolves local evidence
+category: context
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Resolve the implementation workflow without network access or mutation.
+expected_behavior: The versioned contract includes the selected workflow and mandatory context-usage rule.
+oracle: deterministic-cli
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} context resolve --workflow implementation-delivery --json"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: kit.context/v1
+  - type: stdout_contains
+    command_index: 0
+    value: coding-agent-context-usage
+  - type: git_diff_empty
+regression_tags:
+  - agent-contract
+held_out_eligible: false
+known_failure_modes:
+  - context:mandatory-rule-missing

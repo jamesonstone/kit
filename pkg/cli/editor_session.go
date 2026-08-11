@@ -19,7 +19,7 @@ func runEditorInput(inputCfg freeTextInputConfig, fieldName, initialContent stri
 	defer func() { _ = os.Remove(tempPath) }()
 
 	if _, err := tempFile.WriteString(initialContent); err != nil {
-		tempFile.Close()
+		_ = tempFile.Close()
 		return "", false, fmt.Errorf("failed to seed temp file for %s: %w", fieldName, err)
 	}
 	if err := tempFile.Close(); err != nil {

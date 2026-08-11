@@ -9,55 +9,11 @@ import (
 )
 
 var commandOrder = map[string]int{
-	"init":         1,
-	"agents":       7,
-	"scaffold":     8,
-	"legacy":       9,
-	"brainstorm":   1,
-	"backlog":      10,
-	"spec":         11,
-	"notes":        12,
-	"plan":         2,
-	"tasks":        3,
-	"loop":         14,
-	"resume":       15,
-	"implement":    4,
-	"reflect":      5,
-	"pause":        18,
-	"complete":     19,
-	"project":      20,
-	"status":       21,
-	"registry":     22,
-	"health":       23,
-	"map":          24,
-	"capabilities": 25,
-	"config":       26,
-	"aws":          27,
-	"rm":           28,
-	"remove":       28,
-	"check":        29,
-	"ci":           30,
-	"pr":           31,
-	"verify":       6,
-	"trace":        32,
-	"replay":       33,
-	"state":        34,
-	"eval":         35,
-	"improve":      36,
-	"rules":        37,
-	"code-review":  38,
-	"reconcile":    39,
-	"handoff":      40,
-	"summarize":    41,
-	"dispatch":     42,
-	"instructions": 43,
-	"prompt":       44,
-	"set":          45,
-	"skill":        46,
-	"upgrade":      88,
-	"version":      89,
-	"completion":   91,
-	"help":         92,
+	"init": 1, "spec": 2, "context": 3, "dispatch": 4,
+	"status": 10, "registry": 11, "health": 12, "capabilities": 13,
+	"config": 14, "aws": 15, "check": 16, "pr": 17, "improve": 18,
+	"rules": 19, "reconcile": 20, "usage": 21,
+	"instructions": 30, "upgrade": 31, "version": 32, "completion": 33, "help": 34,
 }
 
 type commandSection struct {
@@ -66,24 +22,9 @@ type commandSection struct {
 }
 
 var rootCommandSections = []commandSection{
-	{title: "Setup", commands: []string{"init", "scaffold"}},
-	{
-		title: "Workflow",
-		commands: []string{
-			"spec",
-			"notes",
-			"backlog",
-			"legacy",
-			"loop",
-			"resume",
-			"pause",
-			"complete",
-			"project",
-			"rm",
-		},
-	},
-	{title: "Inspect & Repair", commands: []string{"status", "registry", "health", "map", "capabilities", "config", "aws", "check", "ci", "pr", "trace", "replay", "state", "eval", "improve", "rules", "reconcile"}},
-	{title: "Prompt Utilities", commands: []string{"plan", "instructions", "prompt", "set", "handoff", "summarize", "dispatch", "code-review", "skill"}},
+	{title: "Agent Workflow", commands: []string{"init", "spec", "context", "dispatch"}},
+	{title: "Inspect & Repair", commands: []string{"status", "registry", "health", "capabilities", "config", "aws", "check", "pr", "improve", "rules", "reconcile", "usage"}},
+	{title: "Instructions", commands: []string{"instructions"}},
 	{title: "Utilities", commands: []string{"upgrade", "version", "completion", "help"}},
 }
 
@@ -93,10 +34,6 @@ func configureRootHelp() {
 		sortSubcommands(cmd)
 		if cmd == rootCmd {
 			_ = renderRootHelp(cmd)
-			return
-		}
-		if cmd == scaffoldAgentsCmd {
-			_ = renderScaffoldAgentsHelp(cmd)
 			return
 		}
 		cmd.SetHelpTemplate(helpTemplate(terminalWriterCheck(cmd.OutOrStdout())))

@@ -1,3 +1,5 @@
+# Kit
+
 ```text
 ██╗  ██╗██╗████████╗
 ██║ ██╔╝██║╚══██╔══╝
@@ -6,28 +8,77 @@
 ██║  ██╗██║   ██║
 ╚═╝  ╚═╝╚═╝   ╚═╝
 
-                    repository memory for coding agents
+              coding-agent context from repository evidence
 ```
 
-Kit is a portable, agent-agnostic repository-memory harness for coding agents.
-It keeps accepted plans, material decisions, discoveries, validation, and
-outcomes in the repository when code and tests cannot preserve the important
-why.
+Kit is a provider-neutral, repository-local evidence and contract harness for
+coding agents. It materializes durable rules and workflow contracts, preserves
+living specifications and project references, and deterministically resolves
+the smallest ordered evidence set an agent needs. Kit does not infer project
+truth, choose a model, or launch or supervise agents.
 
 <!-- BEGIN KIT-MANAGED README BADGES -->
 [![Last commit](https://img.shields.io/github/last-commit/jamesonstone/kit)](https://github.com/jamesonstone/kit/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/kit)](https://github.com/jamesonstone/kit/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/kit)](https://github.com/jamesonstone/kit/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/kit)](https://github.com/jamesonstone/kit/releases)
 <!-- END KIT-MANAGED README BADGES -->
 
-## Start Here
+## Major Update
 
-| Need | Go To |
+Kit 2.0 intentionally removes low-use and duplicative commands. Existing
+repositories keep their files and historical specifications, but should preview
+`kit reconcile --include-files --dry-run --diff` before applying managed-file
+updates. `kit reconcile` itself retains its existing behavior and remains the
+canonical drift-maintenance surface.
+
+See the [v2 migration guide](docs/migration-v2.md), [release
+notes](docs/releases/v2.0.0.md), and [command guide](docs/commands.md).
+
+## Primary Flow
+
+```bash
+kit init
+kit capabilities context resolve --json
+kit spec my-feature
+kit context resolve --workflow implementation-delivery --feature my-feature --json
+# coding agent plans, implements, validates, and curates repository memory
+kit check my-feature
+kit reconcile --all
+```
+
+Use `repository-bootstrap`, `implementation-delivery`,
+`repository-maintenance`, `pr-feedback-repair`, or
+`cross-repository-program-coordination` as the workflow slug. Resolution is
+local-only, read-only, deterministic, and non-networked. A blocked result is a
+hard evidence gap, not clean completion.
+
+## Supported Command Surface
+
+| Area | Commands |
 | --- | --- |
-| 🧭 Understand what Kit is | [docs/overview.md](docs/overview.md) |
-| ⚙️ Install and use commands | [docs/commands.md](docs/commands.md) |
-| 🔁 Understand the memory workflow | [docs/workflows.md](docs/workflows.md) |
-| 📚 Browse all documentation | [docs/README.md](docs/README.md) |
-| 🧱 Read project invariants | [docs/CONSTITUTION.md](docs/CONSTITUTION.md) |
-| 🤖 Read agent routing docs | [docs/agents/README.md](docs/agents/README.md) |
+| Bootstrap and memory | `kit init`, `kit spec`, `kit instructions` |
+| Agent evidence | `kit capabilities`, `kit context resolve` |
+| Execution prompts | `kit dispatch`, `kit pr fix` |
+| Rules and maintenance | `kit rules add|list|view|link`, `kit registry status`, `kit reconcile`, `kit health` |
+| Inspection and validation | `kit status`, `kit check`, `kit config check`, `kit aws verify` |
+| Local usage | `kit usage [report|status|refresh|clear|enable|disable]` |
+| Harness and utilities | `kit improve run`, `kit upgrade`, `kit version`, `kit completion` |
+
+## Local Usage Data
+
+Kit records minimal local command events by default so maintainers can identify
+unused surfaces using evidence rather than intuition. It never records command arguments, output, repository names, paths, file content, environment values, or secrets; project identity is local and pseudonymous. Data remains on the
+machine, is retained for at most 365 days, and is capped at 16 MiB total with
+2 MiB shards.
+
+```bash
+kit usage status
+kit usage report --since 90d
+kit usage refresh
+kit usage disable --global
+kit usage clear --all --yes
+```
+
+A global disable is absolute. Project-level enable or disable is stored in that
+repository's `.kit.yaml`. Usage commands do not record themselves.
 
 ## Install
 
@@ -35,101 +86,18 @@ why.
 go install github.com/jamesonstone/kit/cmd/kit@latest
 ```
 
-Or build from source:
+Or clone the repository and run `make build`. Enable repository-managed hooks
+for the clone with `make install-git-hooks`.
 
-```bash
-git clone https://github.com/jamesonstone/kit.git
-cd kit
-make build
-```
+## Documentation
 
-`make build` builds the Kit executable at `bin/kit`.
-
-Enable repository-managed hooks for this clone:
-
-```bash
-make install-git-hooks
-```
-
-## Quick Start
-
-```bash
-# initialize Kit in a repository
-kit init
-
-# scaffold durable feature memory after native planning
-kit spec my-feature
-
-# inspect progress
-kit status --all
-
-# check compact registry freshness, then apply safe Kit maintenance
-kit registry status
-kit health --dry-run --diff
-
-# reorient before continuing
-kit resume my-feature
-
-# inspect command behavior before choosing a command
-kit capabilities --search spec
-
-# validate or repair project configuration
-kit config check
-
-# verify a configured AWS identity before AWS work
-kit aws verify
-```
-
-The default feature workflow is:
-
-```text
-native agent plan → semantic memory decision → SPEC.md when required → implementation → validation → curated repository memory
-```
-
-`SPEC.md` is the durable home for material feature rationale. Project
-invariants belong in `CONSTITUTION.md`, reusable practices in references or
-rules, and domain knowledge in its existing canonical documentation. A
-justified `not required` memory decision is valid when code and tests preserve
-the complete durable truth.
-
-## Common Commands
-
-| Command | Purpose |
-| --- | --- |
-| `kit init` | Initialize or refresh project scaffolding, including a project-owned Makefile starter |
-| `kit spec <feature>` | Non-interactively scaffold, adopt, or orient a living specification |
-| `kit plan challenge` | Supplement a copied Codex for Mac `/plan` with a paste-ready adversarial review prompt |
-| `kit spec <feature> --legacy-supervisor` | Temporarily run the deprecated V2 lifecycle supervisor |
-| `kit loop workflow <feature>` | Deprecated V2 compatibility loop; V3 specs use native planning |
-| `kit loop review` | Review changed code until local correctness converges; PR mode resolves the exact writable head worktree |
-| `kit pr fix` | Select or target a PR, resolve its writable head worktree, and copy a review-feedback dispatch prompt |
-| `kit status --all` | Show project-wide feature state |
-| `kit registry status` | Show compact registry and Kit-managed file freshness; supports `--json` |
-| `kit health` | Apply safe Kit-managed updates and validate project health; preview with `--dry-run --diff` |
-| `kit map --all` | Show the project document map |
-| `kit capabilities --search <term>` | Inspect command behavior and mutation boundaries |
-| `kit config check` | Validate schema-versioned `.kit.yaml` and offer safe interactive repairs |
-| `kit aws verify` | Verify the configured AWS profile, account, and ARN against `.kit.yaml` |
-| `kit improve run --suite prompt-system` | Run deterministic prompt regression and size checks |
-| `kit instructions [--version=vN]` | Print current (`v3`) provider-neutral coding-agent instructions as raw Markdown; use `--version=vN` to retrieve an immutable version for reproducible use |
-| `kit prompt list` | List reusable prompt-library entries |
-| `kit legacy --help` | List v1 staged workflow commands retained for migration |
-
-See [docs/commands.md](docs/commands.md) for the full Kit command guide and
-[docs/references/worktrees.md](docs/references/worktrees.md) for the portable
-native Git worktree workflow.
-
-## Documentation Map
-
-- 🧭 [Overview](docs/overview.md) - product model, principles, positioning, and cross-domain concepts.
-- ⚙️ [Commands](docs/commands.md) - installation, command groups, prompt behavior, scaffold refresh, and prompt libraries.
-- 🔁 [Workflows](docs/workflows.md) - native planning, semantic memory decisions, living specs, compatibility, and curation.
-- 🧱 [Constitution](docs/CONSTITUTION.md) - project contract, invariants, and repository rules.
-- 🤖 [Agent Docs](docs/agents/README.md) - repo-local agent routing and RLM guidance.
-- 📌 [References](docs/references/README.md) - durable project references and rulesets.
-- 🌳 [Git Worktrees](docs/references/worktrees.md) - safe hierarchy, naming, commands, and lifecycle.
-- 🧪 [Testing Reference](docs/references/testing.md) - testing guidance.
-- 🛠️ [Tooling Reference](docs/references/tooling.md) - durable tooling notes.
+- [Overview](docs/overview.md)
+- [Commands](docs/commands.md)
+- [Coding-agent workflow](docs/workflows.md)
+- [Migration to v2](docs/migration-v2.md)
+- [Agent routing](docs/agents/README.md)
+- [Rules and references](docs/references/README.md)
+- [Project Constitution](docs/CONSTITUTION.md)
 
 ## License
 
@@ -137,4 +105,6 @@ MIT
 
 ## Maintainers
 
+<!-- BEGIN KIT-MANAGED README MAINTAINERS -->
 Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+<!-- END KIT-MANAGED README MAINTAINERS -->
