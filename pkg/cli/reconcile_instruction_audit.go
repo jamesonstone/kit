@@ -129,7 +129,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 	return findings
 }
 
-const rootInstructionMinimumMaxLines = 90
+const rootInstructionMinimumMaxLines = 100
 
 var v2RequiredRootInstructionPaths = []string{
 	instructions.AgentsMDPath,

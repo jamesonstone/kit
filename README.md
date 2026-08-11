@@ -45,9 +45,10 @@ kit reconcile --all
 ```
 
 Use `repository-bootstrap`, `implementation-delivery`,
-`repository-maintenance`, `pr-feedback-repair`, or
-`cross-repository-program-coordination` as the workflow slug. Resolution is
-local-only, read-only, deterministic, and non-networked. A blocked result is a
+`repository-maintenance`, `pr-feedback-repair`, `pull-request-merge`,
+`release-orchestration`, or `cross-repository-program-coordination` as the
+workflow slug. Resolution is local-only, read-only, deterministic, and
+non-networked. A blocked result is a
 hard evidence gap, not clean completion.
 
 ## Supported Command Surface
@@ -56,7 +57,7 @@ hard evidence gap, not clean completion.
 | --- | --- |
 | Bootstrap and memory | `kit init`, `kit spec`, `kit instructions` |
 | Agent evidence | `kit capabilities`, `kit context resolve` |
-| Execution prompts | `kit dispatch`, `kit pr fix` |
+| Execution prompts | `kit dispatch`, `kit pr fix`, `kit pr orchestrate` |
 | Rules and maintenance | `kit rules add|list|view|link`, `kit registry status`, `kit reconcile`, `kit health` |
 | Inspection and validation | `kit status`, `kit check`, `kit config check`, `kit aws verify` |
 | Local usage | `kit usage [report|status|refresh|clear|enable|disable]` |

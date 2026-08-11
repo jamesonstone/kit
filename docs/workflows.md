@@ -30,6 +30,8 @@ curated outcome and kit reconcile
 | `repository-maintenance` | Analyze and maintain repository health, including usage evidence. |
 | `pr-feedback-repair` | Collect, verify, repair, validate, and explicitly resolve current PR feedback. |
 | `cross-repository-program-coordination` | Coordinate a ledger-backed ready frontier across repositories. |
+| `pull-request-merge` | Reconcile exact merge authority, identity, policy, current-head readiness, dependencies, and effects. |
+| `release-orchestration` | Build and execute an authority-aware dependency graph through separate merge, deployment, and production gates. |
 
 Workflow documents are declarative contracts. Kit never runs phases or
 supervises agents.
@@ -63,6 +65,9 @@ kit reconcile --include-files --dry-run --diff
 
 `kit dispatch` turns an accepted native plan into bounded execution topology.
 `kit pr fix` turns current review feedback into a coding-agent repair prompt.
+`kit pr orchestrate` turns bounded repository scope into a deterministic,
+authority-aware release prompt. It does not enumerate PRs, merge, deploy,
+mutate infrastructure, or launch an agent.
 One supervisor remains accountable; low-overlap lanes are bounded, shared files
 are serialized, and nontrivial work receives read-only verification.
 

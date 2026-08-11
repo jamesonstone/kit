@@ -11,8 +11,8 @@ func TestCheckedInContextWorkflowsMatchEmbeddedArtifacts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(artifacts) != 5 {
-		t.Fatalf("workflow count = %d, want 5", len(artifacts))
+	if len(artifacts) != 7 {
+		t.Fatalf("workflow count = %d, want 7", len(artifacts))
 	}
 	for _, artifact := range artifacts {
 		path := filepath.Join("..", "..", filepath.FromSlash(artifact.Path))

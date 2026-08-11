@@ -75,8 +75,26 @@ instruction to report blockers instead of guessing.
 
 Subagents must not independently expand scope. Subagents must not mutate
 delivery state, create branches, stage files, commit, push, open PRs, resolve
-review threads, or mark the whole workflow complete unless explicitly assigned
-and allowed by the supervisor.
+review threads, merge, queue a merge, or mark the whole workflow complete
+unless the exact mutation is explicitly assigned, authorized, and allowed by
+the supervisor.
+
+### Merge-Wave Authority
+
+- Only the accountable supervisor owns merge-wave decisions, authorization
+  reconciliation, the global ready frontier, and global gate advancement.
+- A participant may merge only specifically assigned PR nodes from the exact
+  authorized `MERGE_READY` frontier. Subagent assignment alone never creates
+  merge authority.
+- A participant must not expand the approved PR set, change another node's
+  dependency or ownership, bypass a gate, or advance a program-wide state.
+- Read-only verification agents can never merge or queue a merge.
+- Independent authorized ready nodes may merge concurrently when their
+  repository and failure boundaries are independent. Dependency chains and
+  same-base sensitive operations remain serialized.
+- Every merge participant must load `github-pr-merge`; cross-repository
+  programs also reconcile the approved set and ready frontier from the
+  canonical ledger before each wave.
 
 ### File Overlap
 
@@ -105,7 +123,7 @@ runtime cannot spawn subagents, or the user requested single-agent execution.
 
 Verification agents must not edit files, stage changes, commit, push, close
 findings, mark acceptance criteria complete, resolve review threads, or mutate
-issue, branch, PR, or review-thread state.
+issue, branch, PR, merge, merge-queue, or review-thread state.
 
 Verification agents review the durable spec or task artifact, acceptance
 criteria, actual diff, tests and command output, runtime behavior when relevant,
@@ -154,6 +172,8 @@ single supervisor lane; no specialist or verification agents spawned
 - Do not allow subagents to expand scope independently.
 - Do not let verification agents mutate files, git state, GitHub state, or
   acceptance status.
+- Do not treat participant assignment as merge authority or let a participant
+  expand the authorized PR set or advance a global gate.
 - Do not claim subagents were used when only logical lanes were planned.
 
 ## Verification
@@ -170,6 +190,9 @@ single supervisor lane; no specialist or verification agents spawned
   explicitly accepts residual risk.
 - Confirm the final response reports actual subagents spawned or the exact
   single-lane sentence.
+- For merge waves, confirm only the supervisor decided the frontier, every
+  participant received exact authorized nodes, verifiers remained read-only,
+  and dependency or same-base operations were serialized.
 
 ## Examples
 
