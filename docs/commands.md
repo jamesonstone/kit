@@ -91,9 +91,6 @@ overrides project settings. Usage commands are excluded from their own data.
 - `kit completion`
 - normal `kit help`
 
-The separate `git-wt` executable and `git wt` helper remain unchanged and
-are not part of the reduced `kit` command tree.
-
 ## Removed In Version 2
 
 The following former top-level groups are absent: backlog, brainstorm, catchup,

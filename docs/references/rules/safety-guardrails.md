@@ -113,7 +113,6 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Never use stash, reset, clean, force removal, branch deletion, or substring-based target selection to make a worktree operation succeed.
 - List worktrees without pruning. Prune only through an explicit prune action after reviewing stale metadata.
 - Remove only an exact registered path after proving it is not the current checkout, contains no tracked, untracked, or ignored material other than verified expected `.env` and `.envrc` symlinks, and has no unpushed commits. Verify that each link targets the matching primary-checkout source, unlink only those symlinks before ordinary non-force `git worktree remove`, and restore them if removal fails.
-- Kit's explicit merged-lane sync may additionally discard one actual ignored repository-root `bin/` directory after same-repository merged-PR and exact-head proof. It must recheck immediately before deleting that exact directory; manual removal, nested `*/bin/` paths, symlinks, tracked changes, ordinary untracked files, and every other ignored path remain protected.
 - Keep runtime services, databases, ports, Temporal state, process supervision, and sibling-repository orchestration outside the worktree workflow.
 - Subagents may use only a worktree explicitly prepared and assigned by the supervisor. They may not independently create, switch, move, or remove worktrees.
 - Load `docs/references/worktrees.md` for command usage and the complete mental model.

@@ -62,6 +62,7 @@
 | 0059 | conservative-coding-agent-first | `docs/specs/0059-conservative-coding-agent-first` | deliver | no | 2026-08-10 | Ship Kit v2.0.0 as a conservative coding-agent-first release: retain the small, proven human and automation interfaces that own repository setup, memory, inspection, repair, and delivery while removing unused or duplicative workflow surfaces. Add deterministic local context resolution so coding agents can load the exact repository workflows, rules, specifications, strategies, and implementation evidence relevant to their work. Add bounded local usage telemetry so future command-removal decisions have evidence instead of guesses. |
 | 0060 | release-orchestration-prompt | `docs/specs/0060-release-orchestration-prompt` | deliver | no | 2026-08-11 | Add `kit pr orchestrate`, a first-class prompt-producing command that converts minimal user input, bounded repository discovery, and conservative defaults into a deterministic coding-agent prompt for dependency-aware multi-repository release delivery. The command prepares the release control contract; it never executes the release itself. |
 | 0061 | authorized-coding-agent-merge-autonomy | `docs/specs/0061-authorized-coding-agent-merge-autonomy` | deliver | no | 2026-08-11 | Define one repository-native authority model that lets coding agents merge an exact, policy-compliant pull-request set when a direct request or accepted bounded plan authorizes it, without allowing PR-delivery consent, a program ledger, subagent assignment, or successful checks to invent broader authority. |
+| 0062 | git-wt-removal | `docs/specs/0062-git-wt-removal` | deliver | no | 2026-08-11 | Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows. |
 
 ## PROJECT INTENT
 
@@ -595,6 +596,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: see SPEC.md
 - **POINTERS**: `docs/specs/0061-authorized-coding-agent-merge-autonomy/SPEC.md`
 
+### git-wt-removal
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows.
+- **APPROACH**: 1. Coordinate the Kura distribution and Kit removal through one Kit-owned program ledger with Kura PR #2 as the Kit merge prerequisite. 2. Retain only the native, output-free worktree preparation required by Kit repair workflows in `internal/worktreeprep`. 3. Remove the `git-wt` executable, command implementation, build, release, capability, manpage, and current user-documentation surfaces. 4. Keep canonical native worktree guidance and its embedded template aligned. 5. Reconcile the removal against coding-agent-first v2 and the release-orchestration additions, validate the integrated command surface, and update ready PR #140.
+- **OPEN ITEMS**: review and merge ready Kit PR #140 when desired; Kura PR #2 is merged, while Kit merge, releases, and host-installation evidence remain outside this delivery
+- **POINTERS**: `docs/specs/0062-git-wt-removal/SPEC.md`, `docs/programs/git-wt-extraction/PROGRAM.md`
+
 ## LAST UPDATED
 
-2026-08-11 08:52:30 EDT
+2026-08-11 10:04:38 EDT

@@ -31,7 +31,7 @@
 
 - Prefer the smallest complete, production-ready solution.
 - Keep command handlers thin and put reusable policy, parsing, and deterministic behavior in internal packages.
-- Keep the separate `git-wt` binary independent from Kit command-surface changes.
+- Keep target-aware worktree preparation internal to Kit; generic script distribution belongs outside Kit.
 - Preserve simple data formats and bounded local state over opaque runtimes.
 
 ## CONSTRAINTS
@@ -147,7 +147,6 @@
 - Kit does not treat generated JSON, telemetry, prompts, or agent transcripts as canonical repository memory.
 - Kit does not preserve every historical CLI path after v2.
 - Kit does not change `kit reconcile` semantics as part of the coding-agent-first pivot.
-- Kit does not alter the separate `git-wt` binary as part of this command-surface reset.
 - Kit does not execute pull-request merges or silently overwrite project-owned content; coding agents may merge only under the exact active authorization contract.
 
 ## DEFINITIONS

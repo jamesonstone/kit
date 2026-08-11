@@ -63,10 +63,6 @@ hard evidence gap, not clean completion.
 | Local usage | `kit usage [report|status|refresh|clear|enable|disable]` |
 | Harness and utilities | `kit improve run`, `kit upgrade`, `kit version`, `kit completion` |
 
-The separate `git-wt` binary remains available and unchanged. Kit rules use
-native `git worktree` as the portable authority; `git wt` is an optional
-manual convenience.
-
 ## Local Usage Data
 
 Kit records minimal local command events by default so maintainers can identify
@@ -89,7 +85,6 @@ repository's `.kit.yaml`. Usage commands do not record themselves.
 
 ```bash
 go install github.com/jamesonstone/kit/cmd/kit@latest
-GOBIN="$HOME/.local/bin" go install github.com/jamesonstone/kit/cmd/git-wt@latest
 ```
 
 Or clone the repository and run `make build`. Enable repository-managed hooks

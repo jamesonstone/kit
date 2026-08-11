@@ -22,7 +22,6 @@ func TestReadmeDocumentsV2BoundaryAndPrimaryFlow(t *testing.T) {
 		"never records command arguments",
 		"365 days",
 		"16 MiB total",
-		"The separate `git-wt` binary remains available and unchanged",
 	} {
 		if !strings.Contains(content, required) {
 			t.Errorf("README missing %q", required)
@@ -30,6 +29,11 @@ func TestReadmeDocumentsV2BoundaryAndPrimaryFlow(t *testing.T) {
 	}
 	if strings.Index(content, "kit spec my-feature") > strings.Index(content, "kit context resolve --workflow implementation-delivery") {
 		t.Error("README resolves a feature before creating or adopting its spec")
+	}
+	for _, removed := range []string{"git-wt", "git wt"} {
+		if strings.Contains(content, removed) {
+			t.Errorf("README still documents removed command %q", removed)
+		}
 	}
 }
 

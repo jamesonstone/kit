@@ -291,6 +291,17 @@ the wrong checkout.
 - Delivery uses issue #89 and branch `GH-89`; the ready pull request targets
   `main` and remains unmerged for review.
 
+### GH-139 ownership split
+
+- Feature 0059 removes Kit's independently installable `git-wt` product while
+  preserving this feature's target-aware preparation behavior in the narrower
+  `internal/worktreeprep` package.
+- The retained preparer continues to reuse or create the exact writable
+  same-repository PR head, link the primary checkout's environment files when
+  requested, and refuse fork, closed, or detached inspection lanes.
+- Kit repair remains implemented with native Git and GitHub CLI operations; it
+  does not depend on Kura or another external worktree wrapper.
+
 ## REPOSITORY MEMORY
 
 Decision: created
