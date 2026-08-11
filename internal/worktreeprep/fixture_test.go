@@ -1,11 +1,13 @@
 package worktreeprep
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 type repositoryFixture struct {
@@ -64,7 +66,9 @@ func (fixture repositoryFixture) createRemoteBranch(t *testing.T, branch string)
 
 func gitCommand(t *testing.T, cwd string, args ...string) string {
 	t.Helper()
-	command := exec.Command("git", args...)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	defer cancel()
+	command := exec.CommandContext(ctx, "git", args...)
 	command.Dir = cwd
 	output, err := command.CombinedOutput()
 	if err != nil {
