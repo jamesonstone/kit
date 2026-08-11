@@ -42,6 +42,7 @@ func TestToolingTemplateRoutesPROrchestration(t *testing.T) {
 		"`kit pr orchestrate`",
 		"`release-orchestration`",
 		"does not enumerate PRs, merge, deploy, mutate infrastructure, or launch an agent",
+		"PR delivery never implies merge consent. A direct user request or accepted bounded merge plan must name the exact authorized PR set.",
 	} {
 		if !strings.Contains(agentsTooling, check) {
 			t.Errorf("tooling template missing %q", check)

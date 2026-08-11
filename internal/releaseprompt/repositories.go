@@ -196,7 +196,7 @@ func githubIdentity(remote string) string {
 func cleanGitHubPath(path string) string {
 	path, _, _ = strings.Cut(path, "?")
 	path, _, _ = strings.Cut(path, "#")
-	path = strings.Trim(strings.TrimSuffix(path, ".git"), "/")
+	path = strings.TrimSuffix(strings.Trim(path, "/"), ".git")
 	parts := strings.Split(path, "/")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" || strings.ContainsAny(path, "\r\n\x00`") {
 		return ""

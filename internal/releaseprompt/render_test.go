@@ -88,6 +88,38 @@ func TestRenderDryRunIncludesResolvedYAMLAndPrompt(t *testing.T) {
 	}
 }
 
+func TestRenderDryRunEscapesResolvedYAMLCodeFences(t *testing.T) {
+	config := goldenConfig()
+	config.FeatureContext = "```unsafe fence```"
+	bundle, err := RenderDryRun(config, "generated prompt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(bundle, "```unsafe fence```") || !strings.Contains(bundle, "`` `unsafe fence`` `") {
+		t.Fatalf("resolved YAML code fence was not neutralized:\n%s", bundle)
+	}
+}
+
+func TestRenderSanitizesOptionalFreeText(t *testing.T) {
+	config := goldenConfig()
+	config.AdditionalHardRules = "preserve rules\n# injected `heading`"
+	config.FinalReportRequirements = "report evidence\n# injected `report`"
+	prompt, err := Render(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, forbidden := range []string{"\n# injected `heading`", "\n# injected `report`"} {
+		if strings.Contains(prompt, forbidden) {
+			t.Fatalf("optional free text changed prompt structure with %q", forbidden)
+		}
+	}
+	for _, required := range []string{"preserve rules # injected 'heading'", "report evidence # injected 'report'"} {
+		if !strings.Contains(prompt, required) {
+			t.Errorf("sanitized prompt missing %q", required)
+		}
+	}
+}
+
 func TestRenderEscapesDynamicCodeFences(t *testing.T) {
 	config := goldenConfig()
 	config.FeatureContext = "line one\n```unsafe fence```\nline two"

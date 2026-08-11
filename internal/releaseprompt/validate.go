@@ -43,6 +43,7 @@ func Validate(config Config) error {
 		config.Project, config.Organization, config.FeatureContext,
 		config.Infrastructure.Provider, config.Infrastructure.CLI,
 		config.Production.Environment, config.Production.Verification, config.IntegrationSuite,
+		config.AdditionalHardRules, config.FinalReportRequirements,
 	} {
 		if strings.ContainsRune(value, '\x00') {
 			return fmt.Errorf("configuration contains a NUL byte")
@@ -70,7 +71,7 @@ func validateTaggedValue(value string, allowNone bool) error {
 	}
 	allowed := "auto, command:, script:, endpoint:, or instruction:"
 	if allowNone {
-		allowed += ", or none"
+		allowed = "auto, command:, script:, endpoint:, instruction:, or none"
 	}
 	return fmt.Errorf("value must be %s", allowed)
 }

@@ -37,7 +37,7 @@ func RenderDryRun(config Config, prompt string) (string, error) {
 	document.Heading(1, "Release Orchestration Dry Run")
 	document.Paragraph("Read-only configuration resolution and prompt rendering. No release, repository, GitHub, deployment, infrastructure, agent, or clipboard mutation was performed by this generator.")
 	document.Heading(2, "Resolved Configuration")
-	document.CodeBlock("yaml", string(resolved))
+	document.CodeBlock("yaml", safeCode(string(resolved)))
 	document.Heading(2, "Generated Prompt")
 	document.Raw(strings.TrimSpace(prompt))
 	return document.String() + "\n", nil
@@ -75,7 +75,9 @@ func addContextContract(document *promptdoc.Document, config Config) {
 	)
 	document.Paragraph("Merge authority comes only from a direct merge request or an accepted bounded merge plan. PR-delivery consent, successful checks, subagent assignment, and a program ledger do not create it. Preserve compatible authority across revalidation and routine retries; obtain follow-up authorization only for material scope expansion or changed effects.")
 	document.Paragraph("Cross-repository coordination is conditional: create or adopt one canonical `docs/programs/<program>/PROGRAM.md` only when the work spans multiple repositories and also has dependent deliverables, staged deployment or activation, or expected agent/session handoff. The ledger records and reconciles the authorized PR set and frontier but never creates authority. Otherwise keep the Global Release Graph in the task's working report without inventing a program ledger.")
-	document.Paragraph(config.AdditionalHardRules)
+	if additionalRules := strings.TrimSpace(config.AdditionalHardRules); additionalRules != "" {
+		document.Paragraph(inline(additionalRules))
+	}
 }
 
 func addHardRules(document *promptdoc.Document, config Config) {

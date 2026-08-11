@@ -1,6 +1,10 @@
 package releaseprompt
 
-import "github.com/jamesonstone/kit/internal/promptdoc"
+import (
+	"strings"
+
+	"github.com/jamesonstone/kit/internal/promptdoc"
+)
 
 func addCompletionAndReport(document *promptdoc.Document, config Config) {
 	document.Heading(2, "Completion Gate")
@@ -47,7 +51,11 @@ func addCompletionAndReport(document *promptdoc.Document, config Config) {
 INFERRED
 NOT_APPLICABLE
 UNRESOLVED`)
-	document.Paragraph("Do not claim correctness beyond observed evidence. " + config.FinalReportRequirements)
+	correctness := "Do not claim correctness beyond observed evidence."
+	if requirements := strings.TrimSpace(config.FinalReportRequirements); requirements != "" {
+		correctness += " " + inline(requirements)
+	}
+	document.Paragraph(correctness)
 
 	document.Heading(3, "Remaining Risks")
 	document.Paragraph("List only genuine unresolved risks with the issue, impact, reason it remains unresolved, accountable owner when known, exact unblock condition, and recommended follow-up.")
