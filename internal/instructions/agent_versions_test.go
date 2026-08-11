@@ -121,11 +121,11 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 func TestAgentInstructionsRejectsUnavailableVersion(t *testing.T) {
 	_, err := AgentInstructions("v5")
 	if err == nil {
-		t.Fatal("AgentInstructions(\"v4\") expected an error")
+		t.Fatal("AgentInstructions(\"v5\") expected an error")
 	}
 	for _, want := range []string{`unsupported instructions version "v5"`, "available versions: v1, v2, v3, v4"} {
 		if !strings.Contains(err.Error(), want) {
-			t.Fatalf("AgentInstructions(\"v4\") error = %q, want %q", err, want)
+			t.Fatalf("AgentInstructions(\"v5\") error = %q, want %q", err, want)
 		}
 	}
 }

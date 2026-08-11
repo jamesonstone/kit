@@ -12,6 +12,8 @@ relationships:
     target: 0050-safe-worktree-workflow
   - type: builds_on
     target: 0059-conservative-coding-agent-first
+  - type: related_to
+    target: 0061-authorized-coding-agent-merge-autonomy
 references:
   - id: work-lane-gating
     name: Work lane gating rule
@@ -183,28 +185,35 @@ read-only and preserves user-owned state.
   into a later transfer workflow. The corrected guidance treats such snapshots
   only as command-owned evidence, trips the gate, and refuses automatic
   transfer, staging, restoration, or delivery.
+- Refreshed `origin/main` also introduced the complete authorized-merge model.
+  The integrated lane contract keeps issue, branch, push, and ready-PR delivery
+  distinct from merge authority and preserves the merge policy consistency
+  checks without restoring automatic lane consent.
 
 ## VALIDATION
 
-- Focused rule, template, versioned-instruction, managed-file, health, and init
-  regression tests passed across `internal/templates`,
-  `internal/instructions`, and `pkg/cli`.
-- `go test ./... -count=1` passed after the final policy alignment.
-- `go test -race ./... -count=1` passed, including the long-running
-  `internal/worktree` and `pkg/cli` suites.
-- `make fmt`, `make vet`, and
+- Focused rule, template, versioned-instruction, managed-file, health, init,
+  and merge-authority consistency tests passed after integrating current
+  `origin/main`.
+- `go test ./... -count=1` passed across every package, including
+  `internal/releaseprompt`, `internal/worktreeprep`, and `pkg/cli`.
+- `go test -race ./... -count=1` passed across every package.
+- `make fmt`, `make vet`, `go build ./cmd/kit`, and
   `golangci-lint run --new-from-rev=origin/main ./...` passed; lint reported
   `0 issues`.
-- `go build ./cmd/kit ./cmd/git-wt` and `git diff --check` passed.
+- `git diff --check origin/main...HEAD` passed.
 - `kit check explicit-work-lane-choice`, `kit check --all`, and
-  `kit check --project` passed; all 57 visible features and the project
+  `kit check --project` passed; all 60 visible features and the project
   contract were coherent.
 - `kit reconcile --all --output-only` reported no reconciliation needed and
-  audited 362 eligible handwritten source/test files with none above 300
-  physical lines.
-- `gitleaks dir --redact --no-banner .` scanned 4.38 MB with no leaks, and
-  `gitleaks git --pre-commit --redact --no-banner .` scanned the complete
-  uncommitted diff with no leaks.
+  audited 668 version-control-eligible candidates and 338 eligible handwritten
+  source/test files with none above 300 physical lines.
+- The default `kit instructions` payload hashed to
+  `607762ed53f64dd2c795efa51915cbc2a7a8187cde1d4639980e9c4f477277f2`,
+  matching immutable v4.
+- `gitleaks dir --redact --no-banner .` scanned 5.25 MB with no leaks, and
+  `gitleaks git --redact --no-banner --log-opts='origin/main..HEAD' .` scanned
+  the GH-143 commit range with no leaks.
 - Final staged-diff and hosted pull-request checks remain delivery steps and
   will be recorded separately after local completion.
 
@@ -228,6 +237,9 @@ read-only and preserves user-owned state.
 - Regression tests enforce the ruleset wording, root protection, generated and
   checked-in alignment, managed-command tripwire, new current version, and
   immutable historical versions.
+- The integrated result preserves current merge-autonomy, release-orchestration,
+  and git-wt-removal policy. Pull-request delivery still never implies merge
+  consent, and feature IDs 0060 through 0063 remain unique.
 - Remaining limitation: this is a repository and prompt contract, not an OS
   filesystem interceptor. Enforcement is deterministic in generated guidance,
   validation, and delivery prompts, but a non-compliant external agent could
