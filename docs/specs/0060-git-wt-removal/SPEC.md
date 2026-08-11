@@ -189,8 +189,15 @@ Non-goals:
   not call.
 - Before the v2 base integration, hosted Kit Improve validation and CodeRabbit
   passed at repaired implementation head `594ba9c4674da7287c02d477d131cb7639be940a`,
-  and all three valid review findings were resolved. Fresh hosted validation is
-  still required after the integrated head is pushed.
+  and all three valid review findings were resolved. Those pre-integration
+  results remain historical evidence only.
+- The first integrated PR head `eea9434fc08b2b4cbc6655237d48789b74fca437`
+  reached `MERGEABLE/CLEAN` with hosted validation and CodeRabbit passing.
+  CodeRabbit identified one new valid test-stability finding: real-Git fixture
+  commands were not context bounded. Commit
+  `3595b010bc313c11626415e4dbf705b49bf5b443` now uses `exec.CommandContext`
+  with `t.Context()` and a ten-second timeout; focused and full Go tests,
+  focused race tests, vet, both lint scopes, diff checks, and Gitleaks pass.
 
 ## OUTCOME
 
@@ -206,8 +213,9 @@ Non-goals:
   `GH-139` own the Kit companion delivery. The removal is locally reconciled
   against coding-agent-first v2 at ordinary merge commit
   `34bdc6b65e8ce5c84289089c9e4ddce1bf70723e`, and its stable feature identity
-  is now `0060`. PR #140's prior green hosted checks remain historical until the
-  integrated head is pushed and revalidated.
+  is now `0060`. The integrated head passed hosted validation and review, and
+  the resulting bounded-fixture follow-up is locally validated pending push and
+  fresh hosted observation.
 
 ## REPOSITORY MEMORY
 
