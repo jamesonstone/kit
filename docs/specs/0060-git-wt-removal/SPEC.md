@@ -198,6 +198,11 @@ Non-goals:
   `3595b010bc313c11626415e4dbf705b49bf5b443` now uses `exec.CommandContext`
   with `t.Context()` and a ten-second timeout; focused and full Go tests,
   focused race tests, vet, both lint scopes, diff checks, and Gitleaks pass.
+- Follow-up head `7a116b5534d9ff275754054f27ad93b51292c054`
+  reached `MERGEABLE/CLEAN`; hosted validation passed in 22 seconds, CodeRabbit
+  passed, and all four review threads are resolved. CodeRabbit automatically
+  marked the repaired fixture thread resolved and outdated after recognizing
+  commit `3595b010bc313c11626415e4dbf705b49bf5b443`.
 
 ## OUTCOME
 
@@ -213,9 +218,9 @@ Non-goals:
   `GH-139` own the Kit companion delivery. The removal is locally reconciled
   against coding-agent-first v2 at ordinary merge commit
   `34bdc6b65e8ce5c84289089c9e4ddce1bf70723e`, and its stable feature identity
-  is now `0060`. The integrated head passed hosted validation and review, and
-  the resulting bounded-fixture follow-up is locally validated pending push and
-  fresh hosted observation.
+  is now `0060`. Ready PR #140 at head
+  `7a116b5534d9ff275754054f27ad93b51292c054` is mergeable and clean with
+  hosted validation and CodeRabbit passing and every review thread resolved.
 
 ## REPOSITORY MEMORY
 
