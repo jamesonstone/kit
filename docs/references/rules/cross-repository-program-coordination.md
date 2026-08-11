@@ -100,9 +100,14 @@ The ledger must contain:
 
 - a participant repository table with owner, local spec, issue, branch, pull
   request, and operational-reference pointers when applicable;
+- the authorization source and exact approved PR set, authenticated GitHub
+  actor for each repository, expected PR head/base, merge method and repository
+  policy, and corrective or rollback owner;
 - a dependency graph that names each workstream's prerequisites and consumers;
 - the current ready frontier: only unblocked workstreams whose prerequisites
   and approvals are currently satisfied;
+- pre-merge evidence, post-merge gates, and known infrastructure or deployment
+  effects for every merge node;
 - milestone and gate state with the evidence needed to advance them;
 - interface, compatibility, migration, rollout, and rollback dependencies when
   they affect ordering or safety; and
@@ -152,7 +157,7 @@ program-level interpretation in the ledger. Redact secrets and protected data.
 
 - Keep one accountable program supervisor responsible for program scope,
   dependency ordering, ready-frontier decisions, integration, checkpoint
-  quality, global validation, and completion reporting.
+  quality, merge-wave decisions, global validation, and completion reporting.
 - Assign each workstream an accountable repository owner or agent. Participant
   agents report state and evidence for their assigned workstream; they may edit
   the coordinator ledger only when the supervisor explicitly assigns the exact
@@ -161,6 +166,14 @@ program-level interpretation in the ledger. Redact secrets and protected data.
   workstream's ownership, bypass a dependency or gate, or mark the whole
   program complete unless the program supervisor explicitly assigns that
   authority.
+- A participant may merge only specifically assigned PR nodes from the exact
+  approved `MERGE_READY` frontier. Participant or subagent assignment alone
+  does not create merge authority, and read-only verifiers never merge.
+- The accepted bounded plan or direct user request creates merge authority.
+  The ledger records and reconciles that authority; it never creates it.
+- Before every merge wave, the supervisor reconciles the authorization source,
+  approved PR set, actor, expected head/base, repository policy, current
+  evidence, approvals, and ready frontier against live sources.
 - Use `agent-team-orchestration` for the execution topology inside each ready
   wave. Its overlap, concurrency, verification, and delivery boundaries remain
   in force.
@@ -197,6 +210,11 @@ Before resume, handoff, dispatch, milestone advancement, or completion:
    instead of carrying them forward as fact; and
 5. checkpoint the reconciled state before assigning or performing more work.
 
+Before each merge wave, also resolve `pull-request-merge` and follow
+`github-pr-merge`. Revalidation of the already authorized set does not require
+another prompt; adding a target or materially changing actor, method,
+environment, infrastructure effect, or recovery does.
+
 A handoff must identify the coordinator and ledger, active milestone, current
 ready frontier, blockers and owners, material decisions, exact evidence,
 unobserved claims, next safe actions, and prohibited or deferred scope. A chat
@@ -222,6 +240,9 @@ The program supervisor may mark the program complete only when:
 - Continue to obey every participant repository's instructions and ownership
   boundaries. The program ledger does not grant cross-repository mutation
   authority.
+- The accepted plan or direct user request creates authority; the ledger only
+  records it. Never infer merge permission from ledger existence, a ready
+  frontier, participant assignment, or check success.
 - Infrastructure changes still require the applicable consolidated approval
   boundary, target verification, rollback plan, and provider-specific gates.
 - Never store secrets, credentials, customer data, raw logs, agent transcripts,
@@ -248,6 +269,7 @@ The program supervisor may mark the program complete only when:
   exact proof of deployed identity and runtime behavior.
 - Allowing a participant agent to change global scope or completion state
   without supervisor authority.
+- Treating the program ledger or participant assignment as merge authority.
 - Maintaining an append-only diary instead of a concise current checkpoint and
   material decision history.
 
@@ -265,6 +287,9 @@ The program supervisor may mark the program complete only when:
   literal observation times.
 - Confirm dispatch contains only the reconciled ready frontier and still obeys
   agent-team concurrency and overlap limits.
+- Confirm every merge wave contains only the exact authorized `MERGE_READY`
+  frontier, uses the expected actor/head/base/method, and resolves
+  `pull-request-merge` before mutation.
 - Confirm a checkpoint follows each material transition and every handoff.
 - Confirm resume, handoff, dispatch, and completion reconcile against live
   repository, GitHub, runtime, and validation sources.

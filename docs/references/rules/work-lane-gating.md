@@ -55,6 +55,24 @@ If non-implementation work later turns into actual code changes, re-evaluate at 
 - If clean-default-branch preflight satisfies the automatic new-lane conditions below, treat that as consent to allocate the required issue-number lane and proceed to `github-pr-delivery` without asking the gate question.
 - If the user explicitly asks to create an issue, branch, or PR for docs or any other non-code work, honor that. The non-implementation exclusions govern agent initiative, not explicit user instruction.
 
+PR-delivery consent never implies merge consent. Automatic clean-preflight
+lane allocation authorizes issue, branch, commit, push, and ready-PR delivery
+only; it never authorizes merging.
+
+### Merge Authorization
+
+- A direct merge request or accepted bounded merge plan routes to
+  `github-pr-merge` and the `pull-request-merge` context workflow.
+- The authorized set is exact. Adding a new PR, repository, base branch,
+  deployment target, infrastructure effect, merge method, or actor requires
+  follow-up authorization.
+- Revalidating an already authorized target, retrying a compatible path, or
+  using a repository-required merge queue does not require another prompt when
+  target, scope, intended effect, identity, and approval remain unchanged.
+- A gate decision, issue, branch, commit, push, ready PR, approval, passing
+  check, review-thread resolution, subagent assignment, or program ledger does
+  not create merge authority.
+
 ### New-Lane Definition
 
 Among implementation work, a new lane is any work that is either:
@@ -136,6 +154,9 @@ Do not gate when:
 - Confirm PR delivery only ran after explicit consent, an explicit PR request, or a proven automatic clean-preflight decision.
 - Confirm a continue-existing-work choice created or reused a separate issue for additional commits without replacing the existing branch or pull request.
 - Confirm documentation and spec artifacts were not forced into a branch or PR workflow on agent initiative.
+- Confirm PR-delivery consent and automatic clean-preflight allocation were not
+  treated as merge consent, and any direct merge request or accepted bounded
+  plan routed to `github-pr-merge`.
 
 ## Examples
 

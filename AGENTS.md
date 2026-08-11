@@ -82,9 +82,20 @@
 
 ## GitHub Delivery Hard Gate
 
-- Issue, branch, staging, commit, push, and PR actions are mutation boundaries
+- Issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries
 - Before a delivery mutation, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*` delivery rules
 - Repo-local Kit rules outrank generic GitHub or plugin defaults
+
+## GitHub Merge Authorization Hard Gate
+
+- Merge is a distinct mutation boundary. PR-delivery consent, automatic lane allocation, approval, check success, subagent assignment, and a program ledger never imply merge consent.
+- Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set.
+- Before any merge or merge-queue mutation, resolve `pull-request-merge` and load `docs/references/rules/github-pr-merge.md`.
+- Reconcile the authorization source, authenticated actor, expected head/base, repository merge policy, current reviews/checks, dependencies, and infrastructure or deployment effects before every wave.
+- Only exact current `MERGE_READY` nodes may merge. Pending, missing, stale-head, or policy-ineligible skipped checks are not passing.
+- Revalidating an authorized target does not require another prompt. Adding a target or materially changing actor, method, environment, infrastructure effect, or recovery requires follow-up authorization.
+- Never bypass protection, reviews, required checks, a merge queue, repository policy, or identity safeguards.
+- Report merge, hosted workflow, deployment/runtime, and production evidence as separate claims.
 
 ## Cross-Repository Program Coordination Gate
 

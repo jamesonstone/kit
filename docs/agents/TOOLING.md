@@ -51,6 +51,21 @@
 - Resolve only feedback verified as fixed or intentionally no-op; do not resolve unfixed, uncertain, stale, or unrelated feedback.
 - `kit dispatch --pr <target> --resolve --yes` is an explicit GitHub mutation and must not be run speculatively.
 
+## PR Merge
+
+- PR delivery never implies merge consent. A direct user request or accepted bounded merge plan must name the exact authorized PR set.
+- Before any merge or merge-queue mutation, resolve `pull-request-merge` and load `docs/references/rules/github-pr-merge.md`.
+- Merge only exact current `MERGE_READY` nodes from the authorized frontier; revalidate actor, head/base, repository policy, checks, dependencies, and infrastructure effects before every wave.
+- Revalidation and compatible retries do not require another prompt. Material scope expansion does.
+- Report merge, hosted workflow, deployment/runtime, and production evidence separately.
+
+## PR Release Orchestration
+
+- Use `kit pr orchestrate` to turn explicit repository scope into a deterministic dependency-aware release prompt; Kit does not enumerate PRs, merge, deploy, mutate infrastructure, or launch an agent.
+- Use repeatable `--repos` for exact repositories or `--root` for the root and immediate child repositories. Noninteractive use requires one of those scope flags.
+- Use `--dry-run` to inspect resolved configuration provenance and the full prompt without clipboard access.
+- Release agents resolve `release-orchestration` and, before any authorized merge, `pull-request-merge`. Preserve `MERGE_READY`, `BLOCKED`, and `UNKNOWN` literally.
+
 ## Project Worktrees
 
 - Work in the existing checkout when it already owns the requested lane
