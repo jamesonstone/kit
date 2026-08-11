@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jamesonstone/kit/internal/worktree"
+	"github.com/jamesonstone/kit/internal/worktreeprep"
 )
 
 func TestPreparePRRepairContextRecordsDirtyWorktreeDecision(t *testing.T) {
@@ -36,12 +36,12 @@ func TestPreparePRRepairContextRecordsDirtyWorktreeDecision(t *testing.T) {
 				_ context.Context,
 				cwd string,
 				number int,
-			) (worktree.PullRequestRepair, error) {
+			) (worktreeprep.PullRequest, error) {
 				if cwd != repo || number != 67 {
 					t.Fatalf("prepare target = %s#%d", cwd, number)
 				}
-				return worktree.PullRequestRepair{
-					PreparedWorktree: worktree.PreparedWorktree{
+				return worktreeprep.PullRequest{
+					Prepared: worktreeprep.Prepared{
 						Path:   repo,
 						Branch: "GH-67",
 					},
@@ -91,9 +91,9 @@ func TestPreparePRRepairContextRejectsAnotherRepository(t *testing.T) {
 		context.Context,
 		string,
 		int,
-	) (worktree.PullRequestRepair, error) {
+	) (worktreeprep.PullRequest, error) {
 		t.Fatal("repository mismatch must fail before worktree preparation")
-		return worktree.PullRequestRepair{}, nil
+		return worktreeprep.PullRequest{}, nil
 	}
 	t.Cleanup(func() { preparePullRequestWorktree = previousPrepare })
 

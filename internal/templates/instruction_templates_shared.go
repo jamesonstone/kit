@@ -20,7 +20,7 @@ const sharedRepositoryInstructionsCore = `## Source of truth
 
 ` + workLaneMutationHardGate + `## GitHub Delivery Hard Gate
 
-When the user asks to create or mutate an issue, branch, staging, commit, push, or pull request in a Kit-managed project, stop before any GitHub or git mutation. Issue, branch, staging, commit, push, and PR actions are mutation boundaries.
+When the user asks to create or mutate an issue, branch, staging, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation. Issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries.
 
 - A Kit-managed project is any repository containing ` + "`.kit.yaml`" + `, ` + "`docs/CONSTITUTION.md`" + `, or ` + "`docs/agents/README.md`" + `
 - Repo-local Kit rules outrank global GitHub/plugin defaults; delivery rules outrank global GitHub/plugin workflows
@@ -33,7 +33,7 @@ When the user asks to create or mutate an issue, branch, staging, commit, push, 
 
 ---
 
-` + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `---
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `---
 
 ## AWS Context Hard Gate
 

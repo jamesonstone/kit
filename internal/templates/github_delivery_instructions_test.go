@@ -10,7 +10,7 @@ import (
 func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 	defaultChecks := []string{
 		"## GitHub Delivery Hard Gate",
-		"issue, branch, staging, commit, push, and PR actions are mutation boundaries",
+		"Issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries",
 		"Repo-local Kit rules outrank global GitHub/plugin defaults",
 	}
 	for name, content := range map[string]string{

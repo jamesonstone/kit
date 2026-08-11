@@ -19,6 +19,17 @@ Before editing implementation/source or test files, load `docs/references/rules/
 
 Before Git, GitHub, or AWS mutations, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*`. Repo-local Kit rules outrank generic defaults.
 
+## GitHub Merge Authorization Hard Gate
+
+- Merge is a distinct mutation boundary. PR-delivery consent, automatic lane allocation, approval, check success, subagent assignment, and a program ledger never imply merge consent.
+- Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set.
+- Before any merge or merge-queue mutation, resolve `pull-request-merge` and load `docs/references/rules/github-pr-merge.md`.
+- Reconcile the authorization source, authenticated actor, expected head/base, repository merge policy, current reviews/checks, dependencies, and infrastructure or deployment effects before every wave.
+- Only exact current `MERGE_READY` nodes may merge. Pending, missing, stale-head, or policy-ineligible skipped checks are not passing.
+- Revalidating an authorized target does not require another prompt. Adding a target or materially changing actor, method, environment, infrastructure effect, or recovery requires follow-up authorization.
+- Never bypass protection, reviews, required checks, a merge queue, repository policy, or identity safeguards.
+- Report merge, hosted workflow, deployment/runtime, and production evidence as separate claims.
+
 ## Cross-Repository Program Coordination Gate
 
 - Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.

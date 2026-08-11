@@ -51,18 +51,18 @@ repository file, it must:
 
 ## GitHub Delivery Hard Gate
 
-When the user asks to create or mutate an issue, branch, commit, push, or pull request in a Kit-managed project, stop before any GitHub or git mutation.
+When the user asks to create or mutate an issue, branch, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation.
 
 A Kit-managed project is any repository containing `.kit.yaml`, `docs/CONSTITUTION.md`, or `docs/agents/README.md`.
 
-Before creating or mutating issues, branches, staging, commits, pushes, or PRs, agents must:
+Before creating or mutating issues, branches, staging, commits, pushes, PRs, or merges, agents must:
 
 1. Load repo-local workflow entrypoints:
    - `.kit.yaml`
    - `docs/agents/README.md`
    - `docs/agents/GUARDRAILS.md`
    - `docs/agents/TOOLING.md`
-   - any referenced `docs/references/rules/*` rulesets relevant to git, GitHub, branches, issues, commits, or PRs
+   - any referenced `docs/references/rules/*` rulesets relevant to git, GitHub, branches, issues, commits, PRs, or merges
    - `.github/pull_request_template.md` and issue templates when present
 2. Run delivery recon and report the result:
    - `pwd`
@@ -129,6 +129,17 @@ Do not create:
 - PRs that omit the repo template
 
 unless the repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
+
+## GitHub Merge Authorization Hard Gate
+
+- Merge is a distinct mutation boundary. PR-delivery consent, automatic lane allocation, approval, check success, subagent assignment, and a program ledger never imply merge consent.
+- Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set.
+- Before any merge or merge-queue mutation, resolve `pull-request-merge` and load `docs/references/rules/github-pr-merge.md`.
+- Reconcile the authorization source, authenticated actor, expected head/base, repository merge policy, current reviews/checks, dependencies, and infrastructure or deployment effects before every wave.
+- Only exact current `MERGE_READY` nodes may merge. Pending, missing, stale-head, or policy-ineligible skipped checks are not passing.
+- Revalidating an authorized target does not require another prompt. Adding a target or materially changing actor, method, environment, infrastructure effect, or recovery requires follow-up authorization.
+- Never bypass protection, reviews, required checks, a merge queue, repository policy, or identity safeguards.
+- Report merge, hosted workflow, deployment/runtime, and production evidence as separate claims.
 
 ## Infrastructure Change Approval Hard Gate
 

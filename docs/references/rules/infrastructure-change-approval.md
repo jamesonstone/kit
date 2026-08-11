@@ -41,6 +41,10 @@ read_policy_default: must
   tools.
 - Running a deployment path that directly performs one of those covered
   mutations.
+- Merging a pull request known to trigger deployment, Kubernetes,
+  public-cloud, or infrastructure-as-code mutation. The merge is part of the
+  covered mutation boundary even though the provider mutation occurs
+  indirectly in a workflow.
 
 This rule does not automatically cover adjacent infrastructure SaaS or general
 CI/CD configuration unless the operation directly invokes a covered
@@ -78,6 +82,19 @@ Before the first covered mutation, create one consolidated outline containing:
 
 The outline may cover multiple providers or tools only when every target and
 mutation is included in the same bounded batch.
+
+For a merge-triggered mutation, the outline must additionally identify:
+
+- the exact PR and triggering workflow;
+- target account, environment, region, cluster, project, or subscription;
+- expected infrastructure actions and material impact;
+- rollback, recovery, or corrective-PR ownership; and
+- the post-merge deployment, runtime, and provider evidence required.
+
+Unknown triggering effects block the merge until inspected. A single accepted
+plan may contain both the exact merge authorization and this infrastructure
+approval. Do not ask twice when that one complete plan satisfies both
+contracts.
 
 - When the task uses a plan, include the complete infrastructure outline in
   that plan instead of creating a separate approval ceremony.
@@ -164,6 +181,8 @@ confirmation boundary above.
 - Hiding uncertainty with generic language such as "minor cloud updates."
 - Treating a successful command exit as proof that the intended infrastructure
   state is correct.
+- Treating merge authorization as infrastructure approval, or starting a
+  merge with unknown covered deployment effects.
 
 ## Verification
 
@@ -182,6 +201,9 @@ confirmation boundary above.
 - Confirm no covered mutation occurred outside the approved batch.
 - Confirm additional required changes were consolidated into one follow-up
   batch and received one confirmation before their first mutation.
+- For a merge-triggered mutation, confirm the workflow, exact target, expected
+  actions and impact, recovery, and post-merge evidence were included before
+  the merge and that one complete accepted plan was not redundantly confirmed.
 
 ## Examples
 

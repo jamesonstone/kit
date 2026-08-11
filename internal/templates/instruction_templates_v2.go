@@ -28,11 +28,11 @@ func tocRepositoryInstructions(title string) string {
 
 ## GitHub Delivery Hard Gate
 
-- In Kit-managed projects, issue, branch, staging, commit, push, and PR actions are mutation boundaries
+- In Kit-managed projects, issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries
 - Before any GitHub delivery mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and the relevant ` + "`docs/references/rules/*`" + ` delivery rules
 - Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
 
-` + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
 - If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
 - Use the verified configured profile explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
@@ -94,11 +94,11 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 
 ## GitHub Delivery Hard Gate
 
-- In Kit-managed projects, issue, branch, staging, commit, push, and PR actions are mutation boundaries
+- In Kit-managed projects, issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries
 - Before any GitHub delivery mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and the relevant ` + "`docs/references/rules/*`" + ` delivery rules
 - Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
 
-` + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
 - If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
 - Use the verified configured profile explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
@@ -273,6 +273,7 @@ const agentsRLM = `# RLM
 - Load ` + "`docs/references/rules/frontend-application-architecture.md`" + ` before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components
 - Load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and ` + "`docs/references/testing.md`" + ` before implementation or validation, including browser automation and browser testing
 - Load ` + "`docs/references/rules/infrastructure-change-approval.md`" + ` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state
+- Load ` + "`docs/references/rules/github-pr-merge.md`" + ` and resolve ` + "`pull-request-merge`" + ` before any merge or merge-queue mutation
 - Load ` + "`docs/references/rules/cross-repository-program-coordination.md`" + ` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff
 - Load ` + "`docs/references/rules/agent-team-orchestration.md`" + ` only when the immediate decision includes execution topology, subagent lanes, or read-only verification; do not load it for trivial single-lane tasks
 - Use indices first: start with ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` and explicit SPEC relationships to shortlist candidate prior features under ` + "`docs/specs/`" + `

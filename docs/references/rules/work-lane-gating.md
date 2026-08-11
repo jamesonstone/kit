@@ -98,6 +98,22 @@ Pull-Request Landing Plan:
   changes materially, stop, refresh recon, and record a revised user choice
   and plan before further mutation.
 
+### Merge Authorization
+
+- PR-delivery consent never implies merge consent. It authorizes issue, branch,
+  commit, push, and ready-PR delivery only.
+- A direct merge request or accepted bounded merge plan routes to
+  `github-pr-merge` and the `pull-request-merge` context workflow.
+- The authorized set is exact. Adding a new PR, repository, base branch,
+  deployment target, infrastructure effect, merge method, or actor requires
+  follow-up authorization.
+- Revalidating an already authorized target, retrying a compatible path, or
+  using a repository-required merge queue does not require another prompt when
+  target, scope, intended effect, identity, and approval remain unchanged.
+- A gate decision, issue, branch, commit, push, ready PR, approval, passing
+  check, review-thread resolution, subagent assignment, or program ledger does
+  not create merge authority.
+
 ### New Lane
 
 When the user chooses a new lane:
@@ -198,6 +214,8 @@ root-checkout editing into the regular workflow.
   completion work did not.
 - Confirm tripwire state was preserved and no ungated change was staged,
   committed, pushed, discarded, or silently transferred.
+- Confirm PR-delivery consent was not treated as merge consent, and any direct
+  merge request or accepted bounded plan routed to `github-pr-merge`.
 
 ## Examples
 

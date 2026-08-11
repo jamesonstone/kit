@@ -18,18 +18,18 @@ const agentsGuardrails = `# Guardrails
 
 ` + workLaneMutationHardGate + `## GitHub Delivery Hard Gate
 
-When the user asks to create or mutate an issue, branch, commit, push, or pull request in a Kit-managed project, stop before any GitHub or git mutation.
+When the user asks to create or mutate an issue, branch, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation.
 
 A Kit-managed project is any repository containing ` + "`.kit.yaml`" + `, ` + "`docs/CONSTITUTION.md`" + `, or ` + "`docs/agents/README.md`" + `.
 
-Before creating or mutating issues, branches, staging, commits, pushes, or PRs, agents must:
+Before creating or mutating issues, branches, staging, commits, pushes, PRs, or merges, agents must:
 
 1. Load repo-local workflow entrypoints:
    - ` + "`.kit.yaml`" + `
    - ` + "`docs/agents/README.md`" + `
    - ` + "`docs/agents/GUARDRAILS.md`" + `
    - ` + "`docs/agents/TOOLING.md`" + `
-   - any referenced ` + "`docs/references/rules/*`" + ` rulesets relevant to git, GitHub, branches, issues, commits, or PRs
+   - any referenced ` + "`docs/references/rules/*`" + ` rulesets relevant to git, GitHub, branches, issues, commits, PRs, or merges
    - ` + "`.github/pull_request_template.md`" + ` and issue templates when present
 2. Run delivery recon and report the result:
    - ` + "`pwd`" + `
@@ -97,7 +97,7 @@ Do not create:
 
 unless the repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
 
-` + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
+` + githubPRMergeGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
 When .kit.yaml defines an enabled aws context, agents must:
 
@@ -163,6 +163,7 @@ const referencesREADME = `# References
 - Use ` + "`rules/kit-capabilities-usage.md`" + ` in downstream projects for Kit command discovery guidance
 - Use ` + "`rules/constitution-curation.md`" + ` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use ` + "`rules/cross-repository-program-coordination.md`" + ` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff
+- Use ` + "`rules/github-pr-merge.md`" + ` and resolve ` + "`pull-request-merge`" + ` before any authorized merge or merge-queue mutation
 - Use ` + "`rules/infrastructure-change-approval.md`" + ` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal
 - Use ` + "`rules/testing-and-environment-validation.md`" + ` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
 - Use ` + "`rules/source-file-size.md`" + ` before editing implementation/source or test files and for whole-project reconcile audits

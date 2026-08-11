@@ -130,7 +130,7 @@ func TestAuditV3SupportGuidanceFindsStaleSessionBrowserTestingAndWorktreeSemanti
 		},
 		{
 			path:    "docs/references/worktrees.md",
-			snippet: "The `PR#` column runs one batched `gh` lookup",
+			snippet: "Resolution proves the current clone owns the requested repository",
 		},
 	}
 
