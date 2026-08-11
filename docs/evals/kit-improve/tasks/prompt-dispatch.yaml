@@ -37,7 +37,7 @@ assertions:
     max: 1200
   - type: git_diff_empty
 regression_tags:
-  - prompt-system
+  - agent-contract
 held_out_eligible: false
 known_failure_modes:
   - prompt-routing:missing-overlap-plan

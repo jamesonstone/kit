@@ -119,7 +119,7 @@ func TestConstitutionCurationRegistryRulesetIsValid(t *testing.T) {
 	for _, check := range []string{
 		"Treat the exact generated Constitution starter as a valid bootstrap state",
 		"When no project-wide truth changed, leave the Constitution unchanged",
-		"Treat project-refresh cadence as a trigger for reviewed semantic analysis",
+		"Resolve `kit context resolve --workflow repository-maintenance --json` when a broader semantic review is needed",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected constitution-curation ruleset to contain %q", check)

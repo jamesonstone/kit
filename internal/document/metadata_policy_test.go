@@ -230,13 +230,13 @@ summary
 	updated, changed, err := UpsertMetadata(content, TypeSpec, MetadataUpsert{
 		DeliveryIntent: "idea_only",
 		References: []MetadataReference{{
-			ID:         "feature-notes",
-			Name:       "Feature notes",
-			Type:       "notes",
-			Target:     "docs/notes/0001-alpha",
+			ID:         "architecture-reference",
+			Name:       "Architecture reference",
+			Type:       "reference",
+			Target:     "docs/references/architecture.md",
 			Relation:   ReferenceRelationInforms,
 			ReadPolicy: ReferenceReadPolicyConditional,
-			UsedFor:    "optional pre-brainstorm input",
+			UsedFor:    "implementation boundary",
 			Status:     ReferenceStatusOptional,
 		}},
 	})
@@ -260,10 +260,10 @@ summary
 	if got := doc.DeliveryIntent(); got != "idea_only" {
 		t.Fatalf("DeliveryIntent() = %q, want idea_only", got)
 	}
-	if got := doc.References(); len(got) != 1 || got[0].Name != "Feature notes" || got[0].Target != "docs/notes/0001-alpha" {
+	if got := doc.References(); len(got) != 1 || got[0].Name != "Architecture reference" || got[0].Target != "docs/references/architecture.md" {
 		t.Fatalf("References() = %#v, want upserted reference", got)
 	}
-	if got := doc.References()[0].ID; got != "feature-notes" {
-		t.Fatalf("reference ID = %q, want feature-notes", got)
+	if got := doc.References()[0].ID; got != "architecture-reference" {
+		t.Fatalf("reference ID = %q, want architecture-reference", got)
 	}
 }

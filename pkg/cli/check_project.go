@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-	"strings"
-	"time"
 
 	"github.com/jamesonstone/kit/internal/config"
 	"github.com/jamesonstone/kit/internal/feature"
@@ -20,25 +18,8 @@ func checkProjectContractTo(out io.Writer, projectRoot string, cfg *config.Confi
 	if err != nil {
 		return err
 	}
-	refreshStatus, refreshErr := calculateProjectRefreshStatus(projectRoot, cfg, time.Now().UTC())
-
 	if len(report.Findings) == 0 {
 		if _, err := fmt.Fprintln(out, "  ✅ Project contract is coherent!"); err != nil {
-			return err
-		}
-		if refreshErr == nil {
-			if refreshStatus.Due {
-				if _, err := fmt.Fprintf(out, "  ⚠ Project refresh due: %s. Run `kit project refresh`.\n", strings.Join(refreshStatus.Reasons, "; ")); err != nil {
-					return err
-				}
-			} else {
-				if _, err := fmt.Fprintf(out, "  ℹ Project refresh %s.\n", formatProjectRefreshDueSummary(refreshStatus)); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-		if _, err := fmt.Fprintf(out, "  ⚠ Project refresh due status unavailable: %v\n", refreshErr); err != nil {
 			return err
 		}
 		return nil
@@ -68,16 +49,6 @@ func checkProjectContractTo(out io.Writer, projectRoot string, cfg *config.Confi
 			}
 		}
 	}
-	if refreshErr != nil {
-		if _, err := fmt.Fprintf(out, "\n⚠️ Project refresh due status unavailable: %v\n", refreshErr); err != nil {
-			return err
-		}
-	} else if refreshStatus.Due {
-		if _, err := fmt.Fprintf(out, "\n⚠️ Project refresh due: %s\n", formatProjectRefreshDueSummary(refreshStatus)); err != nil {
-			return err
-		}
-	}
-
 	if len(errors) > 0 {
 		if _, err := fmt.Fprintf(out, "\n❌ Errors (%d):\n", len(errors)); err != nil {
 			return err

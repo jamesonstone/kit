@@ -238,26 +238,6 @@ func relationshipSetKey(relationships []Relationship) string {
 	return sortedKey(parts)
 }
 
-func referenceSetKey(references []MetadataReference) string {
-	parts := make([]string, 0, len(references))
-	for _, reference := range references {
-		parts = append(parts, fmt.Sprintf(
-			"%s:%s:%s:%s:%s:%s:%s:%s:%s:%s",
-			normalizeMetadataCell(reference.ID),
-			normalizeMetadataCell(reference.Name),
-			normalizeMetadataCell(reference.Type),
-			normalizeMetadataCell(reference.Target),
-			normalizeMetadataCell(reference.SelectorType),
-			normalizeMetadataCell(reference.Selector),
-			normalizeMetadataCell(reference.Relation),
-			normalizeMetadataCell(reference.ReadPolicy),
-			normalizeMetadataCell(reference.UsedFor),
-			normalizeMetadataCell(reference.Status),
-		))
-	}
-	return sortedKey(parts)
-}
-
 func skillSetKey(skills []MetadataSkill) string {
 	parts := make([]string, 0, len(skills))
 	for _, skill := range skills {

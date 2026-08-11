@@ -5,6 +5,13 @@
 - Route agents from native planning through implementation to curated repository memory
 - Load only the guidance and repository context needed for the current decision
 
+## Start Here
+
+1. Use `kit capabilities <command> --json` when command safety is not already established.
+2. Run `kit context resolve --workflow <slug> --json` with relevant `--feature` and `--path` hints.
+3. Load the required selected evidence in order.
+4. Rerun resolution after a material scope change.
+
 ## Runtime Routing
 
 - `WORKFLOWS.md` — native-plan lifecycle and memory routing

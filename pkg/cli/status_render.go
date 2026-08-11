@@ -8,10 +8,6 @@ import (
 	"github.com/jamesonstone/kit/internal/feature"
 )
 
-func outputNoActiveFeature(w io.Writer, asJSON bool, version string, backlogCount int) error {
-	return outputNoActiveFeatureWithManagedStatus(w, asJSON, version, backlogCount, nil)
-}
-
 func outputNoActiveFeatureWithManagedStatus(
 	w io.Writer,
 	asJSON bool,
@@ -47,7 +43,7 @@ func outputNoActiveFeatureWithManagedStatus(
 	if backlogCount > 0 {
 		if _, err := fmt.Fprintln(
 			w,
-			style.muted("Run `kit backlog` to review deferred items or `kit resume <feature>` to resume one."),
+			style.muted("Run `kit status --all` to review deferred and historical feature state."),
 		); err != nil {
 			return err
 		}
@@ -67,10 +63,6 @@ func outputNoActiveFeatureWithManagedStatus(
 		return err
 	}
 	return outputStatusKitManagedSummaryForHuman(w, kitManaged)
-}
-
-func outputStatusJSON(w io.Writer, status *feature.FeatureStatus, version string) error {
-	return outputStatusJSONWithManagedStatus(w, status, version, nil)
 }
 
 func outputStatusJSONWithManagedStatus(
@@ -123,7 +115,7 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, version string
 		return err
 	}
 	if status.Paused {
-		if err := printStatusField(w, style, "Next", fmt.Sprintf("Run `kit resume %s` when ready", status.Name)); err != nil {
+		if err := printStatusField(w, style, "Next", "Review the legacy paused state and adopt current work through SPEC.md and `kit context resolve`"); err != nil {
 			return err
 		}
 		if err := printStatusField(w, style, "After resume", determineUnpausedNextAction(status)); err != nil {

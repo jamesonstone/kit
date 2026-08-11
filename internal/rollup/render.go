@@ -51,20 +51,9 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 		} else {
 			b.WriteString("- **PAUSED**: no\n")
 		}
-		if s.Removed && !s.RemovedAt.IsZero() {
-			writef(&b, "- **REMOVED AT**: %s\n", s.RemovedAt.Format("2006-01-02"))
-		}
 		writef(&b, "- **INTENT**: %s\n", s.Intent)
 		writef(&b, "- **APPROACH**: %s\n", s.Approach)
 		writef(&b, "- **OPEN ITEMS**: %s\n", s.OpenItems)
-		if s.Removed {
-			pointers := fmt.Sprintf("removed; original docs path was `%s`", s.Path)
-			if s.HasNotes {
-				pointers += fmt.Sprintf("; retained notes at `%s`", s.NotesPath)
-			}
-			writef(&b, "- **POINTERS**: %s\n\n", pointers)
-			continue
-		}
 		var pointers []string
 		if s.HasBrainstorm {
 			pointers = append(pointers, fmt.Sprintf("`%s/BRAINSTORM.md`", s.Path))
@@ -87,7 +76,7 @@ func generateContent(summaries []FeatureSummary, cfg *config.Config) string {
 }
 
 func projectIntentSummary() string {
-	return "Kit is a repository-memory and specification harness. Native agent planning owns research and design; Kit preserves consequential rationale, accepted plans, decisions, validation, and outcomes in canonical repository documents when code and tests alone are insufficient."
+	return "Kit is a coding-agent-first repository contract and evidence harness. Native agent planning owns research and design; Kit resolves local workflows and rules while canonical repository documents preserve consequential rationale, validation, and outcomes."
 }
 
 func writef(b *strings.Builder, format string, args ...any) {
@@ -105,9 +94,6 @@ func formatSummaryTableCell(summary string) string {
 }
 
 func featureSummaryStatus(summary FeatureSummary) string {
-	if summary.Removed {
-		return "removed"
-	}
 	return string(summary.Phase)
 }
 

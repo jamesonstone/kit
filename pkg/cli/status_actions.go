@@ -9,21 +9,14 @@ import (
 
 func determineNextAction(status *feature.FeatureStatus) string {
 	if status.Removed {
-		if status.Notes != nil && status.Notes.Exists {
-			return fmt.Sprintf("Feature is removed. Retained notes are available at %s for follow-up work.", status.Notes.Path)
-		}
-		return "Feature is removed. No retained notes are available."
+		return "Feature is recorded as removed in legacy project state."
 	}
 	nextAction := determineUnpausedNextAction(status)
 	if !status.Paused {
 		return nextAction
 	}
 
-	return fmt.Sprintf(
-		"Feature is paused. Run `kit resume %s` when ready. Suggested next step after resume: %s",
-		status.Name,
-		nextAction,
-	)
+	return "Feature is paused in legacy project state. Adopt current work through SPEC.md and `kit context resolve`. Suggested next step: " + nextAction
 }
 
 func determineUnpausedNextAction(status *feature.FeatureStatus) string {
@@ -49,7 +42,7 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 		case feature.PhaseReflect:
 			return "Curate the actual outcome and route durable knowledge into the correct repository memory"
 		case feature.PhaseDeliver:
-			return fmt.Sprintf("Repository memory is curated. Complete the feature with `kit complete %s` after any requested delivery mutation is resolved", status.Name)
+			return "Repository memory is curated. Complete requested delivery and record the actual outcome in SPEC.md"
 		case feature.PhaseBlocked:
 			return "Resolve the blocker recorded in SPEC.md or ask for the missing material decision"
 		case feature.PhaseComplete:
@@ -70,7 +63,7 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 		case feature.PhaseReflect:
 			return "Record reflection notes, documentation sync status, and remaining risks in SPEC.md"
 		case feature.PhaseDeliver:
-			return fmt.Sprintf("Delivery gate is ready. Complete the feature with `kit complete %s` after any requested delivery mutation is resolved", status.Name)
+			return "Delivery gate is ready. Complete requested delivery and record the actual outcome in SPEC.md"
 		case feature.PhaseBlocked:
 			return "Feature is blocked. Resolve the blocker recorded in SPEC.md or ask the user for the missing decision"
 		case feature.PhaseComplete:
@@ -80,11 +73,11 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 
 	// Legacy staged fallback.
 	if !status.Files["plan"].Exists {
-		return fmt.Sprintf("Legacy staged feature: create implementation plan with `kit legacy plan %s`", status.Name)
+		return "Legacy staged feature: inspect historical artifacts and adopt a V3 SPEC.md before new implementation"
 	}
 
 	if !status.Files["tasks"].Exists {
-		return fmt.Sprintf("Legacy staged feature: create task list with `kit legacy tasks %s`", status.Name)
+		return "Legacy staged feature: preserve historical artifacts and adopt current work into the V3 SPEC.md contract"
 	}
 
 	// tasks exist, check progress
@@ -93,7 +86,7 @@ func determineUnpausedNextAction(status *feature.FeatureStatus) string {
 		if incomplete > 0 {
 			return fmt.Sprintf("Complete %d remaining task(s) in %s", incomplete, status.Files["tasks"].Path)
 		}
-		return fmt.Sprintf("All tasks are marked complete. If legacy staged coding has not started, run `kit legacy implement %s`; otherwise review and validate implementation.", status.Name)
+		return "All historical tasks are marked complete. Review and validate the actual implementation through the current context contract."
 	}
 
 	// tasks file exists but no checkboxes found

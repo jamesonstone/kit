@@ -3,8 +3,6 @@ package cli
 import (
 	"fmt"
 	"strings"
-
-	"github.com/jamesonstone/kit/internal/config"
 )
 
 func shortActionForFinding(finding reconcileFinding) string {
@@ -104,12 +102,6 @@ func hasInstructionFileFinding(findings []reconcileFinding) bool {
 	return false
 }
 
-func reconcileInstructionShortcut(projectRoot string) string {
-	cfg := config.LoadOrDefault(projectRoot)
-	version := detectInstructionScaffoldVersion(projectRoot, cfg)
-	if config.IsInstructionScaffoldVersionSupported(version) {
-		return fmt.Sprintf("kit scaffold agents --version %d --append-only", version)
-	}
-
-	return "kit scaffold agents --append-only"
+func reconcileInstructionShortcut(_ string) string {
+	return "kit reconcile --include-files --dry-run --diff"
 }

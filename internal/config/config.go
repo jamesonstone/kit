@@ -4,14 +4,12 @@ package config
 const ConfigFileName = ".kit.yaml"
 
 const (
-	CurrentSchemaVersion                 = 1
-	InstructionScaffoldVersionVerbose    = 1
-	InstructionScaffoldVersionTOC        = 2
-	InstructionScaffoldVersionMemory     = 3
-	DefaultInstructionScaffoldVersion    = InstructionScaffoldVersionMemory
-	DefaultLoopMaxIterations             = 20
-	DefaultProjectRefreshFeatureInterval = 5
-	DefaultProjectRefreshMaxAgeDays      = 30
+	CurrentSchemaVersion              = 1
+	InstructionScaffoldVersionVerbose = 1
+	InstructionScaffoldVersionTOC     = 2
+	InstructionScaffoldVersionMemory  = 3
+	DefaultInstructionScaffoldVersion = InstructionScaffoldVersionMemory
+	DefaultLoopMaxIterations          = 20
 )
 
 // Config represents the .kit.yaml configuration file.
@@ -31,9 +29,20 @@ type Config struct {
 	Prompts                    map[string]map[string]Prompt     `yaml:"prompts,omitempty"`
 	Registry                   RegistryConfig                   `yaml:"registry,omitempty"`
 	Health                     *HealthConfig                    `yaml:"health,omitempty"`
+	Usage                      *UsageConfig                     `yaml:"usage,omitempty"`
 	GitHub                     GitHubConfig                     `yaml:"github,omitempty"`
 	AWS                        *AWSConfig                       `yaml:"aws,omitempty"`
 	ProjectRefresh             ProjectRefreshConfig             `yaml:"project_refresh,omitempty"`
+}
+
+// UsageConfig controls local, private Kit command usage collection. A missing
+// value is enabled by default; only an explicit false opts out.
+type UsageConfig struct {
+	Enabled *bool `yaml:"enabled,omitempty"`
+}
+
+func (c *Config) IsUsageEnabled() bool {
+	return c == nil || c.Usage == nil || c.Usage.Enabled == nil || *c.Usage.Enabled
 }
 
 type AWSConfig struct {
@@ -155,22 +164,12 @@ type FeatureNaming struct {
 // Default returns a Config with default values per the spec.
 func Default() *Config {
 	return &Config{
-		SchemaVersion:    CurrentSchemaVersion,
-		GoalPercentage:   95,
-		SpecsDir:         "docs/specs",
-		SkillsDir:        ".agents/skills",
-		ConstitutionPath: "docs/CONSTITUTION.md",
-		AllowOutOfOrder:  false,
-		Loop: LoopConfig{
-			MinConfidence: 95,
-			MaxIterations: DefaultLoopMaxIterations,
-		},
-		ProjectRefresh: ProjectRefreshConfig{
-			Constitution: ConstitutionRefreshConfig{
-				FeatureInterval: DefaultProjectRefreshFeatureInterval,
-				MaxAgeDays:      DefaultProjectRefreshMaxAgeDays,
-			},
-		},
+		SchemaVersion:              CurrentSchemaVersion,
+		GoalPercentage:             95,
+		SpecsDir:                   "docs/specs",
+		SkillsDir:                  ".agents/skills",
+		ConstitutionPath:           "docs/CONSTITUTION.md",
+		AllowOutOfOrder:            false,
 		Agents:                     []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
 		InstructionScaffoldVersion: DefaultInstructionScaffoldVersion,
 		FeatureNaming: FeatureNaming{

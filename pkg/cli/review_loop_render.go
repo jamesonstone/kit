@@ -94,13 +94,13 @@ func renderReviewLoopSummary(
 		counts[finding.Kind]++
 	}
 
-	fmt.Fprintf(out, "Review loop summary for PR #%d", ctx.Target.Number)
+	_, _ = fmt.Fprintf(out, "Review loop summary for PR #%d", ctx.Target.Number)
 	if strings.TrimSpace(ctx.URL) != "" {
-		fmt.Fprintf(out, " (%s)", ctx.URL)
+		_, _ = fmt.Fprintf(out, " (%s)", ctx.URL)
 	}
-	fmt.Fprintln(out)
-	fmt.Fprintf(out, "Head: %s\n", ctx.HeadRefOID)
-	fmt.Fprintf(out, "FIX: %d | VALID_OUT_OF_SCOPE: %d | FALSE_POSITIVE: %d | STALE: %d | NEEDS_HUMAN: %d\n",
+	_, _ = fmt.Fprintln(out)
+	_, _ = fmt.Fprintf(out, "Head: %s\n", ctx.HeadRefOID)
+	_, _ = fmt.Fprintf(out, "FIX: %d | VALID_OUT_OF_SCOPE: %d | FALSE_POSITIVE: %d | STALE: %d | NEEDS_HUMAN: %d\n",
 		counts[reviewLoopFix],
 		counts[reviewLoopValidOutOfScope],
 		counts[reviewLoopFalsePositive],
@@ -110,15 +110,15 @@ func renderReviewLoopSummary(
 
 	for _, finding := range classified {
 		task := finding.Finding.Task
-		fmt.Fprintf(out, "- [%s] %s\n", finding.Kind, reviewLoopSourceLabel(task))
+		_, _ = fmt.Fprintf(out, "- [%s] %s\n", finding.Kind, reviewLoopSourceLabel(task))
 		if strings.TrimSpace(finding.Reason) != "" {
-			fmt.Fprintf(out, "  Reason: %s\n", finding.Reason)
+			_, _ = fmt.Fprintf(out, "  Reason: %s\n", finding.Reason)
 		}
 		if strings.TrimSpace(task.Author) != "" {
-			fmt.Fprintf(out, "  Author: %s\n", task.Author)
+			_, _ = fmt.Fprintf(out, "  Author: %s\n", task.Author)
 		}
 		if strings.TrimSpace(task.URL) != "" {
-			fmt.Fprintf(out, "  URL: %s\n", task.URL)
+			_, _ = fmt.Fprintf(out, "  URL: %s\n", task.URL)
 		}
 	}
 }

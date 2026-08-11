@@ -55,7 +55,7 @@ const SpecV2 = `# SPEC
 
 ## EVIDENCE
 
-<!-- TODO: summarize validation evidence and link detailed logs or run artifacts such as .kit/runs entries -->
+<!-- TODO: summarize literal validation commands, results, and relevant durable evidence -->
 `
 
 // Spec is the compact v3 living-spec template used with native agent planning.

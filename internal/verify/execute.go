@@ -190,12 +190,12 @@ func exitCode(err error) int {
 
 func RunSummary(run Run) string {
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("run %s: %s", run.RunID, run.Status))
+	fmt.Fprintf(&builder, "run %s: %s", run.RunID, run.Status)
 	if len(run.TaskIDs) > 0 {
-		builder.WriteString(fmt.Sprintf(" tasks=%s", strings.Join(run.TaskIDs, ",")))
+		fmt.Fprintf(&builder, " tasks=%s", strings.Join(run.TaskIDs, ","))
 	}
 	if len(run.Results) > 0 {
-		builder.WriteString(fmt.Sprintf(" commands=%d", len(run.Results)))
+		fmt.Fprintf(&builder, " commands=%d", len(run.Results))
 	}
 	return builder.String()
 }

@@ -132,7 +132,7 @@ func selectRegistryRulesetsRaw(in *os.File, out io.Writer, entries []registrySel
 	if err != nil {
 		return fmt.Errorf("failed to enter raw terminal mode: %w", err)
 	}
-	defer term.Restore(int(in.Fd()), state)
+	defer func() { _ = term.Restore(int(in.Fd()), state) }()
 
 	fd := in.Fd()
 	if fdProvider, ok := out.(interface{ Fd() uintptr }); ok {

@@ -58,7 +58,7 @@ func newCapabilitiesCommand() *cobra.Command {
 List Kit command capabilities, mutation behavior, network use, and important
 flags. The command is read-only and does not require a Kit project root.
 
-Use a command path such as "legacy verify" or "rules add" for a detailed record.
+Use a command path such as "context resolve" or "rules add" for a detailed record.
 `),
 		Args: cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -66,7 +66,7 @@ Use a command path such as "legacy verify" or "rules add" for a detailed record.
 		},
 	}
 	cmd.Flags().BoolVar(&options.json, "json", false, "emit machine-readable JSON")
-	cmd.Flags().BoolVar(&options.full, "full", false, "include detailed hidden and deprecated command records")
+	cmd.Flags().BoolVar(&options.full, "full", false, "include detailed records for every supported command")
 	cmd.Flags().StringVar(&options.search, "search", "", "search visible command capability metadata")
 	return cmd
 }

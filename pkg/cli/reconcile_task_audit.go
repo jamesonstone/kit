@@ -111,7 +111,6 @@ func auditExecutableVerificationAdvisory(projectRoot string, feat *feature.Featu
 		"add `VERIFY`, `EXPECTED FILES`, `RISK`, and `ROLLBACK` to active task details where commands are known; if acceptance criteria are prose-only, propose runnable checks separately from confirmed checks and leave uncertain commands as `not yet declared`",
 		[]string{
 			fmt.Sprintf("sed -n '1,260p' %s", tasksPath),
-			fmt.Sprintf("kit legacy verify %s --dry-run", feat.Slug),
 			fmt.Sprintf("kit check %s", feat.Slug),
 		},
 	)}

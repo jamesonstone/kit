@@ -92,7 +92,7 @@ func downloadBytes(url, current string) ([]byte, error) {
 		}
 		return nil, fmt.Errorf("network error while checking for updates: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	switch resp.StatusCode {
 	case http.StatusOK:
 	case http.StatusForbidden, http.StatusTooManyRequests:
@@ -223,7 +223,7 @@ func extractBinary(archiveBytes []byte, goos string) ([]byte, error) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to open kit.exe in archive: %w", err)
 			}
-			defer rc.Close()
+			defer func() { _ = rc.Close() }()
 			return io.ReadAll(rc)
 		}
 		return nil, fmt.Errorf("kit.exe not found in release archive")
@@ -232,7 +232,7 @@ func extractBinary(archiveBytes []byte, goos string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read tar.gz archive: %w", err)
 	}
-	defer gzr.Close()
+	defer func() { _ = gzr.Close() }()
 	tr := tar.NewReader(gzr)
 	for {
 		header, err := tr.Next()

@@ -18,13 +18,10 @@ const (
 
 func rootLong(style humanOutputStyle) string {
 	return rootBanner(style) + `
-Kit is a repository-memory and specification harness for agent-driven work.
-Native agent planning owns research and design; Kit preserves consequential
-rationale, validation, and outcomes in canonical repository documents.
-
-The current command surface is packaged around repository and software
-workflows, but the underlying harness patterns generalize to research,
-strategy, operations, writing, policy, and other structured fields.
+Kit is a repository-local contract and evidence harness for coding agents.
+It materializes durable rules, workflows, specifications, strategies, and
+implementation patterns, then resolves only the evidence needed for the work.
+Kit does not choose a model, infer project truth, or launch an agent.
 
 ` + flowDiagram(style)
 }
@@ -53,41 +50,28 @@ func rootBanner(style humanOutputStyle) string {
 		result += "                                        " + rootColor(style, colors[i], line) + "\n"
 	}
 	result += "\n"
-	result += "                                      " + rootMuted(style, "Kit Repository-Memory Harness") + "\n"
+	result += "                                      " + rootMuted(style, "Kit Coding-Agent Contract") + "\n"
 	return result
 }
 
 func flowDiagram(style humanOutputStyle) string {
-	idea := rootColor(style, brainstorm, "Request")
-	nativePlan := rootColor(style, plan, "Native Agent Plan")
-	specCommand := rootColor(style, spec, "kit spec <feature>")
-	implementLane := rootColor(style, implement, "Implementation")
-	validateLane := rootColor(style, tasks, "Validation")
-	evidence := rootColor(style, constitution, "Curated Repository Memory")
+	capabilities := rootColor(style, brainstorm, "kit capabilities <command> --json")
+	context := rootColor(style, plan, "kit context resolve --workflow <slug> --json")
+	agent := rootColor(style, implement, "Coding Agent")
+	reconcile := rootColor(style, constitution, "kit reconcile")
 
 	lines := []string{
-		rootHeading(style, "🧱 Project Initialization") + rootMuted(style, " (run once, update as needed):"),
-		rootColor(style, gray, "┌──────────────┐"),
-		rootColor(style, gray, "│ ") + rootColor(style, constitution, "Constitution") + rootColor(style, gray, " │  ← ") + rootMuted(style, "global constraints, principles, priors"),
-		rootColor(style, gray, "└──────────────┘"),
+		rootHeading(style, "🔁 Agent-First Workflow"),
+		"  " + capabilities + rootMuted(style, " → establish command safety"),
+		"    " + rootArrow(style),
+		"  " + context + rootMuted(style, " → select ordered local evidence"),
+		"    " + rootArrow(style),
+		"  " + agent + rootMuted(style, " → plan, implement, validate, and curate memory"),
+		"    " + rootArrow(style),
+		"  " + reconcile + rootMuted(style, " → detect and safely curate drift"),
 		"",
-		rootHeading(style, "🔁 Native Plan To Repository Memory") + rootMuted(style, " (default):"),
-		"  " + idea + rootMuted(style, " / input"),
-		"    " + rootArrow(style),
-		"  " + nativePlan + rootMuted(style, " → research, clarification, design, accepted plan"),
-		"    " + rootArrow(style),
-		"  " + specCommand + rootMuted(style, " → create/adopt SPEC.md when material rationale exists"),
-		"    " + rootArrow(style),
-		"  " + implementLane,
-		"    " + rootArrow(style),
-		"  " + validateLane + rootMuted(style, " → observable acceptance and exact evidence"),
-		"    " + rootArrow(style),
-		"  " + evidence + rootMuted(style, " → spec, invariants, references, domain docs, or not required"),
-		"",
-		rootHeading(style, "🗂️ Durable Artifacts"),
-		"  1. " + rootColor(style, constitution, "CONSTITUTION.md") + rootMuted(style, " — project contract and invariants"),
-		"  2. " + rootColor(style, spec, "SPEC.md") + rootMuted(style, "         — material feature rationale and living history"),
-		"  3. " + rootColor(style, brainstorm, "REFERENCES / DOMAIN DOCS") + rootMuted(style, " — reusable and scope-specific knowledge"),
+		rootHeading(style, "🗂️ Canonical Inputs"),
+		"  " + rootColor(style, spec, "SPEC.md") + rootMuted(style, " · rules · workflows · Constitution · references · source evidence"),
 	}
 
 	return strings.Join(lines, "\n")

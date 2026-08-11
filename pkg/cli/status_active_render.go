@@ -13,13 +13,6 @@ type statusWorkflowItem struct {
 	color string
 }
 
-func formatPhaseValue(style humanOutputStyle, phase feature.Phase) string {
-	if !style.enabled {
-		return string(phase)
-	}
-	return phaseColumnColor(phase) + string(phase) + reset
-}
-
 func formatCurrentStepValue(style humanOutputStyle, phase feature.Phase) string {
 	label := string(phase)
 	switch phase {

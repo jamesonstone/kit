@@ -1,132 +1,86 @@
-# Kit Workflows
+# Coding-Agent Workflow
 
-Kit connects native agent planning to implementation and curated repository
-memory. It does not replace the host agent's planning capability.
+Kit's workflow is capability discovery, deterministic evidence resolution,
+native planning, implementation, validation, and repository-memory curation.
 
-## Native Plan To Repository Memory
+## Primary Sequence
 
 ```text
-request
-  → native agent research, clarification, design, and accepted plan
-  → semantic repository-memory decision
-  → create or adopt SPEC.md before code when material rationale exists
-  → implementation with live decisions and discoveries
-  → validation
-  → curate actual outcome into canonical repository memory
+kit capabilities
+        ↓
+kit context resolve
+        ↓
+load selected repository evidence
+        ↓
+native agent plan
+        ↓
+living SPEC when rationale must survive
+        ↓
+implementation and validation
+        ↓
+curated outcome and kit reconcile
 ```
 
-For Codex, use `/plan`. Other capable agents may expose an equivalent planning
-surface. Kit does not ingest transcripts or automatically copy a
-`<proposed_plan>` response. The same-thread implementation agent semantically
-translates the accepted plan into repository language.
+## Workflow Contracts
 
-## Repository Memory Gate
-
-Before implementation:
-
-1. Inspect relevant code and existing repository documentation.
-2. Decide whether the work contains consequential rationale that code and tests
-   cannot preserve.
-3. If yes, run `kit spec <feature>` and capture the accepted plan in the living
-   spec before editing implementation files.
-4. If no, continue without a documentation change and explain `not required`
-   in the final Repository Memory report.
-
-After implementation and validation, curate durable knowledge by scope:
-
-| Knowledge | Canonical home |
+| Slug | Use |
 | --- | --- |
-| Feature rationale, choices, discoveries, and actual outcome | `docs/specs/<feature>/SPEC.md` |
-| Project invariants | `docs/CONSTITUTION.md` |
-| Reusable practices and rules | `docs/references/` or `docs/references/rules/` |
-| Domain behavior and interfaces | Existing canonical domain documentation |
-| Transient research input | `docs/notes/<feature>/` until promoted or discarded |
+| `repository-bootstrap` | Populate starter repository memory from verified project evidence after `kit init`. |
+| `implementation-delivery` | Plan, implement, validate, curate, and deliver feature work. |
+| `repository-maintenance` | Analyze and maintain repository health, including usage evidence. |
+| `pr-feedback-repair` | Collect, verify, repair, validate, and explicitly resolve current PR feedback. |
+| `cross-repository-program-coordination` | Coordinate a ledger-backed ready frontier across repositories. |
 
-Keep material superseded decisions with rationale. Remove transient planning
-chatter and details that are fully recoverable from code.
+Workflow documents are declarative contracts. Kit never runs phases or
+supervises agents.
 
-## `kit spec`
+## Living Specifications
 
-Plain `kit spec <feature>` is non-interactive. It allocates or adopts the
-feature, ensures its notes scaffold, updates the project index, preserves an
-existing spec, and prints concise native-planning orientation.
-The orientation includes a non-blocking reminder to run `kit status` and follow
-any Kit-managed refresh action before implementation.
+For consequential feature work, create or adopt
+`docs/specs/<feature>/SPEC.md` before source implementation. The agent keeps
+purpose, context, evidence, requirements, non-goals, observable acceptance,
+accepted plan, decisions, discoveries, validation, actual outcome, delivery
+evidence, and repository-memory disposition current.
 
-New specs use `workflow_version: 3` and these sections:
+Historical V1 and V2 specifications remain discoverable through
+`docs/PROJECT_PROGRESS_SUMMARY.md`, explicit relationships, and progressive
+disclosure. Do not mechanically rewrite history.
 
-- `PURPOSE`
-- `CONTEXT`
-- `REQUIREMENTS` including non-goals and observable acceptance
-- `ACCEPTED PLAN`
-- `DECISIONS`
-- `DISCOVERIES`
-- `VALIDATION`
-- `OUTCOME`
-- `REPOSITORY MEMORY`
+Contained mechanical work may use a justified `not required` repository-memory
+decision when code and tests preserve the durable truth.
 
-The V3 gate is phase-aware. Before implementation, purpose, context,
-requirements, and accepted plan must be populated. Completion additionally
-requires resolved decisions and discoveries, exact validation, actual outcome,
-repository-memory assessment, and no pending TODO placeholders.
+## Reconciliation
 
-## Final Response Contract
-
-Every implementation final response in a V3-instructed repository includes:
-
-```text
-Repository Memory
-Decision: created | updated | refactored | deleted | not required
-Rationale: <why this is the correct persistence decision>
-Artifacts: <paths or none>
-```
-
-## Compatibility
-
-- V1 and V2 specs remain readable and valid.
-- `kit complete` preserves the document's workflow version and applies its
-  version-specific completion gate. After success, it prints a non-blocking
-  reminder to run `kit status` and follow any Kit-managed refresh action before
-  final delivery.
-- V2 specs are never deterministically migrated to V3.
-- `kit spec <feature> --legacy-supervisor` retains the V2 supervisor during the
-  compatibility period. Former supervisor-only flags imply that mode and warn.
-- Bare `kit loop` and `kit loop workflow` are deprecated V2 compatibility
-  paths. They warn on V2 and reject V3 with native-planning guidance.
-- `kit loop review`, validation, evidence, repair, status, and delivery
-  utilities remain supported.
-- `kit dispatch` is post-plan execution-topology support, not feature design.
-
-## Instruction Migration
-
-New projects default to `instruction_scaffold_version: 3`. On full refresh,
-Kit atomically upgrades V2 instruction artifacts only when every managed file
-exactly matches the generated V2 templates. Customized V2 instructions remain
-untouched and on V2; review `kit reconcile --include-files` or explicitly run:
+`kit reconcile` keeps its established interface and behavior. It remains the
+surface for auditing and optionally refreshing Kit-managed files, rules, and
+documents. Preview write-capable managed refreshes first:
 
 ```bash
-kit scaffold agents --version 3 --force
+kit reconcile --include-files --dry-run --diff
 ```
 
-V1 and V2 instruction scaffolds remain supported legacy inputs, with migration
-advisories reported as warnings.
+## Dispatch And PR Repair
 
-## Project Structure
+`kit dispatch` turns an accepted native plan into bounded execution topology.
+`kit pr fix` turns current review feedback into a coding-agent repair prompt.
+One supervisor remains accountable; low-overlap lanes are bounded, shared files
+are serialized, and nontrivial work receives read-only verification.
 
-```text
-.kit.yaml
-docs/
-  CONSTITUTION.md
-  PROJECT_PROGRESS_SUMMARY.md
-  agents/
-  notes/
-    0001-my-feature/
-  references/
-    rules/
-  specs/
-    0001-my-feature/
-      SPEC.md
+GitHub intake and bounded waiting stay in these explicit adapters. They never
+move network behavior into `kit context resolve`.
+
+## Weekly Maintenance
+
+The weekly health task retains its existing repository scan and safe maintenance
+behavior. Once per overall run, it also reads:
+
+```bash
+kit capabilities usage --json
+kit usage status --json
+kit usage report --since 90d --json
 ```
 
-Local generated evidence under `.kit/runs/`, `.kit/loops/`, and `.kit/state.json`
-is inspectable but non-authoritative. Markdown remains the durable source.
+The task reports top commands, zero-use supported commands, failures, coverage,
+storage diagnostics, and whether evidence is sufficient for a future removal
+decision. It does not treat absence outside the recorded coverage window as
+proof of non-use.

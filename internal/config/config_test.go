@@ -210,20 +210,14 @@ func TestUpdateProjectSchemaAndAWSPreservesUnknownFields(t *testing.T) {
 	}
 }
 
-func TestDefaultIncludesLoopPolicy(t *testing.T) {
+func TestDefaultOmitsRetiredRuntimeConfiguration(t *testing.T) {
 	cfg := Default()
 
-	if cfg.Loop.MinConfidence != 95 {
-		t.Fatalf("Loop.MinConfidence = %d, want 95", cfg.Loop.MinConfidence)
+	if !cfg.Loop.IsZero() {
+		t.Fatalf("Loop = %#v, want zero retired compatibility field", cfg.Loop)
 	}
-	if cfg.Loop.MaxIterations != 20 {
-		t.Fatalf("Loop.MaxIterations = %d, want 20", cfg.Loop.MaxIterations)
-	}
-	if cfg.ProjectRefresh.Constitution.FeatureInterval != 5 {
-		t.Fatalf("ProjectRefresh.Constitution.FeatureInterval = %d, want 5", cfg.ProjectRefresh.Constitution.FeatureInterval)
-	}
-	if cfg.ProjectRefresh.Constitution.MaxAgeDays != 30 {
-		t.Fatalf("ProjectRefresh.Constitution.MaxAgeDays = %d, want 30", cfg.ProjectRefresh.Constitution.MaxAgeDays)
+	if cfg.ProjectRefresh.Constitution != (ConstitutionRefreshConfig{}) {
+		t.Fatalf("ProjectRefresh = %#v, want zero retired compatibility field", cfg.ProjectRefresh)
 	}
 }
 

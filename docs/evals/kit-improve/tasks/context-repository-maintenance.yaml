@@ -1,0 +1,29 @@
+schema_version: 1
+id: context-repository-maintenance
+title: Maintenance workflow preserves reconcile ownership
+category: context
+fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
+persona: coding-agent
+timeout_seconds: 30
+input_prompt: Resolve semantic maintenance guidance without invoking reconcile.
+expected_behavior: The local contract selects repository maintenance evidence and performs no workspace mutation.
+oracle: deterministic-cli
+mutation_policy: read-only
+allowed_surfaces: []
+commands:
+  - "{{kit}} context resolve --workflow repository-maintenance --json"
+assertions:
+  - type: command_succeeds
+    command_index: 0
+  - type: stdout_contains
+    command_index: 0
+    value: repository-maintenance
+  - type: stdout_contains
+    command_index: 0
+    value: docs/CONSTITUTION.md
+  - type: git_diff_empty
+regression_tags:
+  - agent-contract
+held_out_eligible: false
+known_failure_modes:
+  - context:maintenance-contract-missing

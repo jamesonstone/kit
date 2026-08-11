@@ -23,7 +23,7 @@ read_policy_default: conditional
 ## Applies When
 
 - A coding agent is working in a Kit-managed downstream project and is unsure which Kit command, subcommand, flag, or alias applies.
-- A task involves choosing between Kit commands such as `kit map`, `kit check`, `kit legacy verify`, `kit ci`, `kit pr fix`, `kit dispatch`, `kit loop review`, or `kit rules`.
+- A task involves choosing between supported commands such as `kit context resolve`, `kit check`, `kit pr fix`, `kit dispatch`, `kit reconcile`, or `kit rules`.
 - Project docs, scripts, or prompts mention Kit command behavior and should avoid stale assumptions.
 
 ## Rules
@@ -32,9 +32,9 @@ read_policy_default: conditional
 - Prefer targeted JSON after narrowing the command:
   - `kit capabilities <command> --json`
   - `kit capabilities rules add --json`
-  - `kit capabilities skill mine --json`
+  - `kit capabilities context resolve --json`
 - Use `kit capabilities --search <term> --json` for compact workflow discovery.
-- Use `kit capabilities --full --json` only when hidden or deprecated compatibility command metadata is specifically needed.
+- Use `kit capabilities --full --json` only when detailed metadata for the complete supported surface is specifically needed.
 - Treat `kit capabilities` as read-only command metadata: it does not load `.kit.yaml`, write project files, call the network, execute subprocesses, or mutate git.
 - Do not maintain Kit's internal command catalog from a downstream project.
 - If downstream project guidance conflicts with `kit capabilities`, prefer the live command metadata for command behavior and update the downstream documentation.
@@ -64,7 +64,7 @@ Choosing a command:
 ```bash
 kit capabilities --search "pr review repair" --json
 kit capabilities pr fix --json
-kit capabilities loop review --json
+kit capabilities context resolve --json
 ```
 
 Checking command safety before use:

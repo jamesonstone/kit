@@ -3,9 +3,7 @@ package cli
 import (
 	"fmt"
 	"io"
-	"path/filepath"
 	"sort"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -33,51 +31,6 @@ Use --all for a project-wide overview.`,
 	RunE: runStatus,
 }
 
-func attachFeatureNotesStatus(projectRoot string, status *feature.FeatureStatus, dirName string) {
-	if status == nil || dirName == "" {
-		return
-	}
-
-	status.Notes = &feature.FileStatus{
-		Exists: featureNotesPathExists(projectRoot, dirName),
-		Path:   featureNotesPath(projectRoot, dirName),
-	}
-}
-
-func removedFeatureStatus(projectRoot string, cfg *config.Config, removed config.RemovedFeature) *feature.FeatureStatus {
-	number := removed.Number
-	slug := removed.Slug
-	if number == 0 || slug == "" {
-		parsedNumber, parsedSlug, ok := feature.ParseDirName(removed.DirName)
-		if ok {
-			if number == 0 {
-				number = parsedNumber
-			}
-			if slug == "" {
-				slug = parsedSlug
-			}
-		}
-	}
-
-	featurePath := filepath.Join(projectRoot, cfg.SpecsDir, removed.DirName)
-	status := &feature.FeatureStatus{
-		ID:        formatStatusFeatureID(number),
-		Name:      slug,
-		Path:      featurePath,
-		Phase:     feature.PhaseRemoved,
-		Removed:   true,
-		RemovedAt: removed.RemovedAt,
-		Files: map[string]feature.FileStatus{
-			"brainstorm": {Exists: false, Path: filepath.Join(featurePath, "BRAINSTORM.md")},
-			"spec":       {Exists: false, Path: filepath.Join(featurePath, "SPEC.md")},
-			"plan":       {Exists: false, Path: filepath.Join(featurePath, "PLAN.md")},
-			"tasks":      {Exists: false, Path: filepath.Join(featurePath, "TASKS.md")},
-		},
-	}
-	attachFeatureNotesStatus(projectRoot, status, removed.DirName)
-	return status
-}
-
 func sortAllFeatureStatusEntries(entries []allFeatureStatusEntry) {
 	sort.SliceStable(entries, func(i, j int) bool {
 		if entries[i].Status.ID != entries[j].Status.ID {
@@ -85,10 +38,6 @@ func sortAllFeatureStatusEntries(entries []allFeatureStatusEntry) {
 		}
 		return entries[i].Status.Name < entries[j].Status.Name
 	})
-}
-
-func formatStatusFeatureID(number int) string {
-	return fmt.Sprintf("%04d", number)
 }
 
 func init() {
@@ -100,7 +49,6 @@ func init() {
 type allFeatureStatusEntry struct {
 	Status     *feature.FeatureStatus `json:"status"`
 	IsBacklog  bool                   `json:"is_backlog"`
-	IsRemoved  bool                   `json:"is_removed,omitempty"`
 	NextAction string                 `json:"next_action"`
 }
 
@@ -136,11 +84,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	}
 
 	if feat == nil {
-		backlog, backlogErr := feature.ListBacklogFeatures(specsDir, cfg)
-		if backlogErr != nil {
-			return fmt.Errorf("failed to list backlog items: %w", backlogErr)
-		}
-		if err := outputNoActiveFeatureWithManagedStatus(cmd.OutOrStdout(), jsonOutput, version, len(backlog), kitManaged); err != nil {
+		if err := outputNoActiveFeatureWithManagedStatus(cmd.OutOrStdout(), jsonOutput, version, 0, kitManaged); err != nil {
 			return err
 		}
 		return outputProjectStatusSummariesForHuman(cmd.OutOrStdout(), projectRoot, cfg, jsonOutput, nil)
@@ -151,8 +95,6 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get feature status: %w", err)
 	}
-	attachFeatureNotesStatus(projectRoot, status, feat.DirName)
-
 	if jsonOutput {
 		return outputStatusJSONWithManagedStatus(cmd.OutOrStdout(), status, version, kitManaged)
 	}
@@ -183,7 +125,6 @@ func runStatusAll(
 		if err != nil {
 			return fmt.Errorf("failed to get active feature status: %w", err)
 		}
-		attachFeatureNotesStatus(projectRoot, activeStatus, activeFeat.DirName)
 	}
 
 	entries, backlogCount, err := buildAllFeatureStatusEntries(projectRoot, specsDir, cfg)
@@ -214,22 +155,10 @@ func outputProjectStatusSummariesForHuman(
 	if err := outputStatusKitManagedSummaryForHuman(out, kitManaged); err != nil {
 		return err
 	}
-	return outputProjectRefreshStatusForHuman(out, projectRoot, cfg, jsonOutput)
+	return nil
 }
 
-func outputProjectRefreshStatusForHuman(out io.Writer, projectRoot string, cfg *config.Config, jsonOutput bool) error {
-	if jsonOutput {
-		return nil
-	}
-	status, err := calculateProjectRefreshStatus(projectRoot, cfg, time.Now().UTC())
-	if err != nil {
-		_, writeErr := fmt.Fprintf(out, "  ⚠ Project refresh due status unavailable: %v\n", err)
-		return writeErr
-	}
-	return printProjectRefreshStatusSummary(out, status)
-}
-
-func buildAllFeatureStatusEntries(projectRoot string, specsDir string, cfg *config.Config) ([]allFeatureStatusEntry, int, error) {
+func buildAllFeatureStatusEntries(_ string, specsDir string, cfg *config.Config) ([]allFeatureStatusEntry, int, error) {
 	features, err := feature.ListFeaturesWithState(specsDir, cfg)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list features: %w", err)
@@ -237,38 +166,14 @@ func buildAllFeatureStatusEntries(projectRoot string, specsDir string, cfg *conf
 
 	entries := make([]allFeatureStatusEntry, 0, len(features))
 	backlogCount := 0
-	liveFeatureDirs := make(map[string]struct{}, len(features))
 	for i := range features {
-		liveFeatureDirs[features[i].DirName] = struct{}{}
 		status, err := feature.GetFeatureStatus(&features[i])
 		if err != nil {
 			return nil, 0, fmt.Errorf("failed to get feature status for %s: %w", features[i].DirName, err)
 		}
-		attachFeatureNotesStatus(projectRoot, status, features[i].DirName)
-
-		isBacklog := feature.IsBacklogItem(features[i])
-		if isBacklog {
-			backlogCount++
-		}
-
 		entries = append(entries, allFeatureStatusEntry{
 			Status:     status,
-			IsBacklog:  isBacklog,
-			NextAction: determineNextAction(status),
-		})
-	}
-	for _, removed := range cfg.RemovedFeatures {
-		if removed.DirName == "" {
-			continue
-		}
-		if _, exists := liveFeatureDirs[removed.DirName]; exists {
-			continue
-		}
-
-		status := removedFeatureStatus(projectRoot, cfg, removed)
-		entries = append(entries, allFeatureStatusEntry{
-			Status:     status,
-			IsRemoved:  true,
+			IsBacklog:  false,
 			NextAction: determineNextAction(status),
 		})
 	}

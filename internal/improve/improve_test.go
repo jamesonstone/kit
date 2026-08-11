@@ -240,7 +240,7 @@ func TestRunFailsWhenCommandFailsEvenIfStdoutAssertionPasses(t *testing.T) {
 	root := fixtureProjectRoot(t)
 	binary := filepath.Join(t.TempDir(), "kit")
 	content := "#!/bin/sh\n" +
-		"printf '%s\\n' '\"command\": \"capabilities\"' 'CodeRabbit' 'Kit-managed refresh state' 'github' '--refresh' '.kit/improve' 'private repositories skip' 'rules view'\n" +
+		"printf '%s\\n' '\"command\": \"capabilities\"' 'CodeRabbit' '\"command\": \"status\"' 'github' '\"command\": \"init\"' '--refresh' '--dry-run' '.kit/improve' '\"command\": \"rules add\"' 'writes_files'\n" +
 		"exit 7\n"
 	if err := os.WriteFile(binary, []byte(content), 0o755); err != nil {
 		t.Fatalf("write failing Kit binary: %v", err)

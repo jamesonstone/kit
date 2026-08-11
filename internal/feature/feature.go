@@ -39,8 +39,7 @@ const (
 	PhaseBlocked   Phase = "blocked"
 	PhaseRemoved   Phase = "removed"
 
-	// Legacy staged phases are retained only for existing v1 artifacts and
-	// explicit `kit legacy` commands.
+	// Legacy staged phases are retained only for existing v1 artifacts.
 	PhaseBrainstorm Phase = "brainstorm"
 	PhaseSpec       Phase = "spec"
 	PhasePlan       Phase = "plan"

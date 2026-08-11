@@ -159,7 +159,7 @@ func renderDispatchTasks(tasks []dispatchTask) string {
 
 func appendDispatchTasks(sb *strings.Builder, tasks []dispatchTask) {
 	for _, task := range tasks {
-		sb.WriteString(fmt.Sprintf("### %s\n", task.ID))
+		fmt.Fprintf(sb, "### %s\n", task.ID)
 		sb.WriteString("```text\n")
 		sb.WriteString(task.Body)
 		if !strings.HasSuffix(task.Body, "\n") {

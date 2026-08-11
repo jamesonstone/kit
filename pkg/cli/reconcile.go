@@ -92,7 +92,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 
 	promptOnly := promptOnlyEnabled(cmd)
 	includeFiles := reconcileIncludeFiles || reconcileForce || reconcileDryRun || reconcileDiff || len(reconcileRefreshFiles) > 0
-	outputPrompt := !(reconcileDryRun || reconcileDiff)
+	outputPrompt := !reconcileDryRun && !reconcileDiff
 	if shouldPromptReconcileMenu(cmd, len(args) > 0, promptOnly) {
 		choice, err := promptReconcileMenu(cmd.InOrStdin(), cmd.OutOrStdout())
 		if err != nil {
@@ -145,7 +145,9 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	if len(report.Findings) == 0 && !report.ReferenceMigration && !report.VerificationMigration {
 		if outputPrompt && includeFiles && !reconcileDryRun {
 			if !reconcileOutputOnly {
-				fmt.Fprintln(cmd.OutOrStdout(), "\nCoding-agent prompt:")
+				if _, err := fmt.Fprintln(cmd.OutOrStdout(), "\nCoding-agent prompt:"); err != nil {
+					return err
+				}
 			}
 			return outputPromptWithClipboardDefault(
 				buildInitRefreshDocumentationPrompt(projectRoot, cfg, deliverySnapshot),

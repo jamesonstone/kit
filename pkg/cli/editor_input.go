@@ -237,7 +237,7 @@ func waitForEditorLaunchConfirmation(input *os.File, output io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("failed to enter raw mode for editor launch: %w", err)
 	}
-	defer term.Restore(fd, state)
+	defer func() { _ = term.Restore(fd, state) }()
 
 	var key [1]byte
 	if _, err := input.Read(key[:]); err != nil {

@@ -85,7 +85,7 @@ func acquireAllocatorLock(lockPath string) (func(), error) {
 		file, err := os.OpenFile(lockPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 		if err == nil {
 			if _, writeErr := fmt.Fprintf(file, "pid=%d\ncreated_at=%s\n", os.Getpid(), time.Now().UTC().Format(time.RFC3339Nano)); writeErr != nil {
-				file.Close()
+				_ = file.Close()
 				_ = os.Remove(lockPath)
 				return nil, fmt.Errorf("failed to initialize feature allocator lock: %w", writeErr)
 			}
