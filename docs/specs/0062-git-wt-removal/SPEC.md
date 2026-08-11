@@ -228,8 +228,9 @@ Non-goals:
   `GH-139` own the Kit companion delivery. The removal is locally reconciled
   against coding-agent-first v2 and release orchestration at ordinary merge
   commit `10093a85526f6473c5dc7f34c83ee4988fd5c403`, and its stable feature
-  identity is now `0062`. PR #140 remains the delivery lane; its final pushed
-  head requires fresh hosted validation before merge readiness is reclaimed.
+  identity is now `0062`. PR #140 reached `MERGEABLE/CLEAN` at pushed delivery
+  head `7c5ded6c70edf0a1e873bcc17f17a3b8722e1b5d`; validate and CodeRabbit passed,
+  and no unresolved review threads remain.
 
 ## REPOSITORY MEMORY
 
