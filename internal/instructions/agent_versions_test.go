@@ -30,7 +30,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 		{version: "v1", sha256: "50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5"},
 		{version: "v2", sha256: "811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc"},
 		{version: "v3", sha256: "a75fb2b02d37a7fbdc5926b9c71130210c6e929366b09707b410ab2f5b90792f"},
-		{version: "v4", sha256: "70bfd8cda65c506e1c10d0185a9ad9e894213cb682ab2f97f5d4460dc751e416"},
+		{version: "v4", sha256: "96fc2b3bbd4f458ef55ae32910d737dd1ea35110d6443d6ee8e03d389d851986"},
 	}
 
 	for _, test := range tests {
@@ -124,6 +124,16 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 		"`kit context resolve --workflow <slug> --json` with relevant",
 		"`--feature` and `--path` hints",
 		"every selected artifact that is required",
+		"Use native planning for research, clarification, design, and the accepted",
+		"decide whether material rationale requires creating or adopting",
+		"`docs/specs/<feature>/SPEC.md`",
+		"capture the accepted native",
+		"plan there before editing implementation files",
+		"`docs/references/rules/testing-and-environment-validation.md`",
+		"the project's `docs/references/testing.md`.",
+		"`docs/references/rules/source-file-size.md`.",
+		"300 physical lines or fewer",
+		"complete affected scope before delivery",
 		"Do not infer the choice from a clean default branch",
 		"every other repository file",
 		"issue, branch, worktree, staging, commit, push, pull-request",
@@ -146,6 +156,10 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 		{before: "Before every repository mutation", after: "Load `docs/agents/GUARDRAILS.md`"},
 		{before: "`docs/agents/GUARDRAILS.md`", after: "`docs/references/rules/work-lane-gating.md`"},
 		{before: "`kit capabilities context resolve --json`", after: "`kit context resolve --workflow <slug> --json`"},
+		{before: "`kit context resolve --workflow <slug> --json`", after: "Use native planning for research, clarification, design, and the accepted"},
+		{before: "every selected artifact that is required", after: "`docs/references/rules/testing-and-environment-validation.md`"},
+		{before: "`docs/references/rules/testing-and-environment-validation.md`", after: "`docs/references/rules/source-file-size.md`"},
+		{before: "`docs/references/rules/source-file-size.md`", after: "Own the requested outcome"},
 	} {
 		beforeIndex := strings.Index(content, order.before)
 		afterIndex := strings.Index(content, order.after)

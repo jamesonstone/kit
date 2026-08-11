@@ -200,6 +200,10 @@ read-only and preserves user-owned state.
   resolution, or the separate merge-authority boundary demonstrated by
   features 0055 and 0061. These are instruction-contract gaps rather than
   changes to the work-lane policy itself.
+- Final hosted review found that v4 also stopped after context selection without
+  carrying forward the repository's native-planning and living-spec decision,
+  testing-environment rule loads, or source-file-size gate. The published
+  contract now preserves those pre-implementation boundaries explicitly.
 - V2 root-instruction auditing deliberately keeps routing entrypoints thin.
   The implementation therefore uses a compact always-loaded hard gate and
   keeps the full operational contract in Guardrails and the normative ruleset.
@@ -231,7 +235,7 @@ read-only and preserves user-owned state.
   audited 668 version-control-eligible candidates and 338 eligible handwritten
   source/test files with none above 300 physical lines.
 - The default `kit instructions` payload hashed to
-  `70bfd8cda65c506e1c10d0185a9ad9e894213cb682ab2f97f5d4460dc751e416`,
+  `96fc2b3bbd4f458ef55ae32910d737dd1ea35110d6443d6ee8e03d389d851986`,
   matching immutable v4.
 - PR-review repair passed focused instruction, template, and CLI tests; complete
   tests and race tests; build, vet, and changed-code lint; feature, all-feature,
@@ -245,6 +249,11 @@ read-only and preserves user-owned state.
   whole-project reconcile. Reconcile again found 0 of 338 eligible handwritten
   source/test files above 300 physical lines, and the 5.99 MB working-tree
   secret scan found no leaks.
+- Final hosted-review repair passed focused and complete tests, the complete
+  race suite, formatting, build, vet, changed-code lint, all 60 feature checks,
+  the project-contract check, and whole-project reconcile. Reconcile found 0
+  of 338 eligible handwritten source/test files above 300 physical lines, and
+  the 6.53 MB working-tree secret scan found no leaks.
 - Initial delivery `gitleaks dir --redact --no-banner .` scanned 5.25 MB with no leaks, and
   `gitleaks git --redact --no-banner --log-opts='origin/main..HEAD' .` scanned
   the GH-143 commit range with no leaks.
@@ -278,6 +287,9 @@ read-only and preserves user-owned state.
   unknown context-resolve behavior through capabilities; and states explicitly
   that a landing lane never authorizes a merge outside the exact bounded
   `MERGE_READY` contract.
+- Final review repair completes v4's execution preconditions by requiring native
+  planning, the semantic living-spec decision and accepted plan when material,
+  testing-environment rule loads, and the source-file-size gate before coding.
 - Regression tests enforce the ruleset wording, root protection, generated and
   checked-in alignment, managed-command tripwire, new current version, and
   immutable historical versions.
