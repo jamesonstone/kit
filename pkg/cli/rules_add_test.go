@@ -13,7 +13,7 @@ import (
 	"github.com/jamesonstone/kit/internal/templates"
 )
 
-func TestWorkLaneGatingRulesetUsesAutonomousRecoveryAndCleanPreflight(t *testing.T) {
+func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
 	path := filepath.Join("..", "..", "docs", "references", "rules", "work-lane-gating.md")
 	ruleset, err := parseRulesetFile(path)
 	if err != nil {
@@ -23,21 +23,27 @@ func TestWorkLaneGatingRulesetUsesAutonomousRecoveryAndCleanPreflight(t *testing
 		t.Fatalf("work-lane-gating ruleset issues = %#v", issues)
 	}
 	for _, check := range []string{
-		"autonomous failure recovery",
-		"when it can be proven safely",
-		"request only the missing lane decision",
-		"automatic clean-preflight decision",
-		"Do not ask whether to create a new issue, branch, and pull request or continue existing work",
-		"No existing issue, branch, or pull request covers the requested work",
-		"create or reuse a separate human-assigned issue for the additional scope",
-		"keep the existing branch and pull request",
+		"Before I make any repository changes",
+		"canonical worktree, and pull request for this work",
+		"Pull-Request Landing Plan",
+		"source, tests, documentation, specs, plans, notes, generated",
+		"Do not infer the choice from a clean default branch",
+		"Treat that exact checkout as read-only",
+		"Never use the primary checkout as a temporary edit location",
+		"Do not repeatedly ask",
+		"Do not stage, commit, push",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected work-lane-gating ruleset to contain %q", check)
 		}
 	}
-	if strings.Contains(ruleset.Body, "leave changes in the working tree, and await instruction") {
-		t.Fatal("expected work-lane-gating ruleset to omit blanket await-instruction behavior")
+	for _, forbidden := range []string{
+		"automatic clean-preflight decision",
+		"Do not ask whether to create a new issue",
+	} {
+		if strings.Contains(ruleset.Body, forbidden) {
+			t.Fatalf("expected work-lane-gating ruleset to omit %q", forbidden)
+		}
 	}
 }
 

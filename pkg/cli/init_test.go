@@ -51,7 +51,7 @@ func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 			"Do not leave TODO recipes, echo-only placeholders, guessed commands, or duplicated build logic",
 			"Run `make help` and each added target that is safe to execute",
 			"Delivery of command-created files:",
-			"Treat only this exact command-owned snapshot as transferable",
+			"Treat only this exact snapshot as command-owned evidence",
 			"`AGENTS.md` (create; pre-command absent; expected sha256:",
 			"explicitly stage only the captured paths (including deleted paths)",
 			"create or update the ready pull request",

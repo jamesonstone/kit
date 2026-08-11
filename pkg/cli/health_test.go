@@ -116,9 +116,10 @@ func TestRunHealthAppliesSafeRegistryUpdateAndChecksProject(t *testing.T) {
 	}
 	nextActions := strings.Join(report.NextActions, " ")
 	for _, check := range []string{
-		"Treat only this exact command-owned snapshot as transferable",
-		"abort if a captured destination path has staged, working-tree, or untracked changes",
-		"restore each captured root path to its exact pre-command state",
+		"Treat only this exact snapshot as command-owned evidence",
+		"Pull-Request Landing Plan",
+		"trigger the work-lane tripwire",
+		"do not adopt, transfer, stage, commit, push, restore, discard",
 		"create or update the ready pull request",
 	} {
 		if !strings.Contains(nextActions, check) {

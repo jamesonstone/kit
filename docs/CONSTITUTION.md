@@ -13,6 +13,12 @@
 ### Evidence Before Mutation
 
 - Inspect repository state, durable memory, work-lane ownership, and applicable safety rules before mutation.
+- Before any coding-agent repository mutation, require the human to choose a
+  new issue/branch/worktree/pull-request lane or explicitly continue the
+  existing pull-request lane, then record the exact landing plan.
+- Perform coding-agent repository changes only in the selected non-primary
+  writable worktree. The clone's primary checkout remains read-only regardless
+  of branch, cleanliness, file type, or planned delivery.
 - Validate findings against current source and current external state before acting.
 - Preserve unrelated and project-owned changes. Fail closed when ownership, target identity, or mutation scope is ambiguous.
 - Report validation literally; planning evidence, local checks, hosted checks, deployment, and production proof are distinct claims.

@@ -83,6 +83,11 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 		"restore them if removal fails",
 		"runtime services, databases, ports, Temporal state",
 		"Remove only an exact registered path",
+		"Obtain and record the explicit `work-lane-gating` choice",
+		"exact primary/root checkout as read-only",
+		"Never edit the primary checkout with a plan to move the",
+		"diff later",
+		"explicit work-lane choice is a mandatory permission boundary",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected safety-guardrails ruleset to contain %q", check)

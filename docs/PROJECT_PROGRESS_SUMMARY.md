@@ -60,6 +60,7 @@
 | 0057 | infrastructure-change-approval | `docs/specs/0057-infrastructure-change-approval` | complete | no | 2026-08-10 | Require Kit-managed coding agents to outline public-cloud, Kubernetes, and infrastructure-as-code mutations and obtain user confirmation before changing them, while allowing each approved bounded batch to run to completion in one pass without routine approval interruptions and always confirming deletion or removal after its summary. |
 | 0058 | cross-repository-program-coordination | `docs/specs/0058-cross-repository-program-coordination` | complete | no | 2026-08-10 | Ensure that an accepted plan spanning multiple repositories, dependent deliverables, staged deployments, or agent handoffs retains enough operational state to resume safely and transfer accountability without relying on one chat, one agent's context, or an overloaded task checklist. |
 | 0059 | conservative-coding-agent-first | `docs/specs/0059-conservative-coding-agent-first` | deliver | no | 2026-08-10 | Ship Kit v2.0.0 as a conservative coding-agent-first release: retain the small, proven human and automation interfaces that own repository setup, memory, inspection, repair, and delivery while removing unused or duplicative workflow surfaces. Add deterministic local context resolution so coding agents can load the exact repository workflows, rules, specifications, strategies, and implementation evidence relevant to their work. Add bounded local usage telemetry so future command-removal decisions have evidence instead of guesses. |
+| 0063 | explicit-work-lane-choice | `docs/specs/0063-explicit-work-lane-choice` | deliver | no | 2026-08-11 | Require an explicit user-selected pull-request lane before every coding-agent repository mutation, keep the primary checkout read-only, and default current provider-neutral instructions to immutable v4. |
 
 ## PROJECT INTENT
 
@@ -575,6 +576,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: see SPEC.md
 - **POINTERS**: `docs/specs/0059-conservative-coding-agent-first/SPEC.md`
 
+### explicit-work-lane-choice
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Require an explicit pull-request landing lane before every coding-agent repository mutation.
+- **APPROACH**: Gate all writes on a user choice and complete landing plan, protect the primary checkout, align active guidance, and publish immutable instruction version v4.
+- **OPEN ITEMS**: deliver GH-143 through its ready pull request
+- **POINTERS**: `docs/specs/0063-explicit-work-lane-choice/SPEC.md`
+
 ## LAST UPDATED
 
-2026-08-10 16:46:43 EDT
+2026-08-11 10:26:50 EDT

@@ -30,6 +30,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 		{version: "v1", sha256: "50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5"},
 		{version: "v2", sha256: "811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc"},
 		{version: "v3", sha256: "a75fb2b02d37a7fbdc5926b9c71130210c6e929366b09707b410ab2f5b90792f"},
+		{version: "v4", sha256: "607762ed53f64dd2c795efa51915cbc2a7a8187cde1d4639980e9c4f477277f2"},
 	}
 
 	for _, test := range tests {
@@ -86,12 +87,43 @@ func TestAgentInstructionsV3EncodesLaneAllocationPolicy(t *testing.T) {
 	}
 }
 
+func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
+	content, err := AgentInstructions("v4")
+	if err != nil {
+		t.Fatalf("AgentInstructions(\"v4\") error = %v", err)
+	}
+
+	for _, want := range []string{
+		"Before I make any repository changes, should I create a new GitHub issue",
+		"canonical worktree, and pull request for this work",
+		"Pull-Request Landing Plan",
+		"Do not infer the choice from a clean default branch",
+		"every other repository file",
+		"Treat the clone's primary/root checkout as read-only",
+		"Never edit, generate, stage, commit, or switch branches there",
+		"one planned ready pull",
+		"Do not stage, commit, push, stash, reset, clean, discard, or silently transfer",
+	} {
+		if !strings.Contains(content, want) {
+			t.Fatalf("v4 instructions do not contain %q", want)
+		}
+	}
+	for _, forbidden := range []string{
+		"Do not ask whether to create a new issue",
+		"automatic clean-preflight",
+	} {
+		if strings.Contains(content, forbidden) {
+			t.Fatalf("v4 instructions contain forbidden automatic-lane policy %q", forbidden)
+		}
+	}
+}
+
 func TestAgentInstructionsRejectsUnavailableVersion(t *testing.T) {
-	_, err := AgentInstructions("v4")
+	_, err := AgentInstructions("v5")
 	if err == nil {
 		t.Fatal("AgentInstructions(\"v4\") expected an error")
 	}
-	for _, want := range []string{`unsupported instructions version "v4"`, "available versions: v1, v2, v3"} {
+	for _, want := range []string{`unsupported instructions version "v5"`, "available versions: v1, v2, v3, v4"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Fatalf("AgentInstructions(\"v4\") error = %q, want %q", err, want)
 		}
@@ -100,8 +132,8 @@ func TestAgentInstructionsRejectsUnavailableVersion(t *testing.T) {
 
 func TestAgentInstructionVersionsReturnsCopy(t *testing.T) {
 	versions := AgentInstructionVersions()
-	if len(versions) != 3 || versions[0] != "v1" || versions[1] != "v2" || versions[2] != "v3" {
-		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2 v3]", versions)
+	if len(versions) != 4 || versions[0] != "v1" || versions[1] != "v2" || versions[2] != "v3" || versions[3] != "v4" {
+		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2 v3 v4]", versions)
 	}
 	if versions[len(versions)-1] != CurrentAgentVersion {
 		t.Fatalf("last available version = %q, want current %q", versions[len(versions)-1], CurrentAgentVersion)

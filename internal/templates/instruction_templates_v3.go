@@ -10,6 +10,7 @@ func memoryRepositoryInstructions(title string) string {
 - Use native agent planning for research, clarification, design, and implementation planning
 - Treat repo-local markdown under ` + "`docs/`" + ` as persistent repository memory
 
+` + workLaneMutationRoutingGate + `
 ## Coding Agent Context Gate
 
 - When Kit command behavior is not already established, run ` + "`kit capabilities <command> --json`" + ` before choosing the command
@@ -118,6 +119,7 @@ Before implementation or validation, including browser automation and browser te
 
 Before editing implementation/source or test files, load ` + "`docs/references/rules/source-file-size.md`" + `. Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less, audit the complete affected scope before delivery, and audit the entire repository during whole-project reconcile and scheduled maintenance.
 
+` + workLaneMutationRoutingGate + `
 Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults.
 
 ` + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## Final Response
@@ -145,7 +147,9 @@ func memoryInstructionSupportContent(relativePath string) string {
 1. Use ` + "`kit capabilities <command> --json`" + ` when command safety is not already established.
 2. Run ` + "`kit context resolve --workflow <slug> --json`" + ` with relevant ` + "`--feature`" + ` and ` + "`--path`" + ` hints.
 3. Load the required selected evidence in order.
-4. Rerun resolution after a material scope change.
+4. Before any repository write, obtain the explicit work-lane choice and
+   record its Pull-Request Landing Plan.
+5. Rerun resolution after a material scope change.
 
 ## Runtime Routing
 
@@ -172,11 +176,16 @@ func memoryInstructionSupportContent(relativePath string) string {
 2. Resolve the applicable local workflow with ` + "`kit context resolve --workflow <slug> --json`" + `.
 3. Load required selected rules, specs, strategies, references, and source evidence.
 4. Use native planning for research, clarification, design, and the accepted plan.
-5. Before code, create or adopt ` + "`docs/specs/<feature>/SPEC.md`" + ` when material rationale must survive.
-6. Implement, validate, and keep consequential decisions and discoveries current.
-7. Curate repository memory to the actual integrated outcome, then rerun context resolution if scope changed.
+5. Before any repository write, obtain the user's explicit new-lane versus
+   continue-existing choice, record the Pull-Request Landing Plan, and enter
+   the selected non-primary writable worktree.
+6. Before code, create or adopt ` + "`docs/specs/<feature>/SPEC.md`" + ` when material rationale must survive.
+7. Implement, validate, and keep consequential decisions and discoveries current.
+8. Curate repository memory to the actual integrated outcome, then rerun context resolution if scope changed.
 
-` + "`kit spec [feature]`" + ` scaffolds or adopts the living V3 spec. It does not replace native planning, ingest transcripts, or launch an agent.
+` + "`kit spec [feature]`" + ` scaffolds or adopts the living V3 spec and is
+write-capable, so run it only after the lane gate in the selected worktree. It
+does not replace native planning, ingest transcripts, or launch an agent.
 
 ## Memory Decision
 

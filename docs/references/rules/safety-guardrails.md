@@ -15,13 +15,15 @@ read_policy_default: must
 
 ## Purpose
 
-- Define always-on safety checks for all GitHub and git operations.
+- Define always-on safety checks for repository, GitHub, and git operations.
 - Run before work-lane decisions or PR delivery workflow.
-- Prevent unsafe writes, identity mistakes, protected-branch mutations, blind retries, and unauthorized deletion.
+- Prevent primary-checkout edits, unsafe writes, identity mistakes,
+  protected-branch mutations, blind retries, and unauthorized deletion.
 
 ## Applies When
 
-- Always active for all GitHub and git operations, regardless of PR consent.
+- Always active before any coding-agent repository, GitHub, or git mutation,
+  regardless of PR consent.
 - Runs first, before `work-lane-gating`.
 - Applies before assessing lane, branch, import-graph, or PR workflow questions.
 
@@ -29,9 +31,11 @@ read_policy_default: must
 
 ### Execution Order
 
-1. Run `safety-guardrails` recon and identity checks.
-2. Run `work-lane-gating` decision.
-3. Run `github-pr-delivery` only after consent.
+1. Run read-only `safety-guardrails` recon and identity checks.
+2. Obtain and record the explicit `work-lane-gating` choice.
+3. Record the complete Pull-Request Landing Plan.
+4. Establish or verify the non-primary writable worktree.
+5. Run `github-pr-delivery` only inside that lane.
 
 Do not evaluate lane or import-graph questions before recon completes. The current branch scope cannot be assessed without knowing the branch.
 
@@ -56,11 +60,13 @@ pwd
 git status --short --branch
 git remote -v
 git rev-parse --abbrev-ref HEAD
+git worktree list --porcelain
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
 ```
 
-- Identify current branch, default/base branch, and repository owner/name.
+- Identify current branch, default/base branch, repository owner/name, and the
+  exact primary checkout.
 - Identify active pull requests for the current branch before editing, committing, pushing, or mutating any PR.
 - Confirm the active directory, branch, remote, and PR head branch match the intended work lane.
 - Repeat this recon after thread resumes, user redirects, branch changes, or any sign that another thread may have moved the work forward.
@@ -69,7 +75,8 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Do not overwrite, revert, or mix unrelated user changes.
 - If unrelated dirty files exist, leave them alone.
 - If dirty files overlap the requested work, preserve them and resolve the overlap autonomously when ownership and intent are evident; otherwise complete unblocked work and request the smallest clarification needed without discarding changes.
-- Work in the existing checkout when it already owns the requested lane.
+- Work in the existing checkout only when it is the exact non-primary worktree
+  that owns the user-selected writable lane.
 - When the current checkout contains unrelated work or another active lane, preserve it and use a separate canonical worktree rather than switching, stashing, resetting, cleaning, or mixing branches.
 
 ### Worktree Lane Selection
@@ -81,7 +88,12 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Keep one active branch in one worktree. Do not bypass Git's branch ownership check.
 - Treat working files, the index, and `HEAD` as worktree-local. Treat objects, refs, remotes, most configuration, and stash entries as shared clone state.
 - Never create linked worktrees inside a project directory, including `.worktrees/`.
-- Keep the root checkout on the protected default branch and perform issue work directly in the assigned durable worktree.
+- Treat the exact primary/root checkout as read-only for coding-agent work,
+  even when it is clean, on a feature branch, or has a pull-request plan. Do
+  not edit files, generate artifacts, stage, commit, or switch branches there.
+- Perform every repository mutation directly in the user-selected non-primary
+  durable worktree. Never edit the primary checkout with a plan to move the
+  diff later.
 - Use native `git worktree` commands and ordinary filesystem operations as the portable authority. Rules and reconciled guidance must not require `git-wt`, an alias, plugin, or other wrapper.
 - For a writable lane, link the clone's primary checkout repository-root `.env` and `.envrc` by default when each source exists. Create only exact symlinks after proving the destinations do not exist, or accept already-matching symlinks during reuse; omit both links when isolation is required.
 - Never copy environment contents or overwrite destination environment material. Preserve a repository- or user-supplied `.envrc`; because `.envrc` is executable shell configuration, review the primary source and retain path-specific direnv approval.
@@ -158,10 +170,17 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Do not blindly repeat the same failed command. Retry only after diagnosis or a material change in evidence, state, parameters, or tool path.
 - Do not use `--force`, `--force-with-lease`, `git rebase`, `git reset --hard`, `git add -A`, `git add .`, an amend to an already-pushed commit, or branch/issue/PR recreation as a recovery shortcut.
 - Missing credentials, ambiguous identity or target, conflicting user-owned changes, unavailable external dependencies, or required external authorization are genuine blockers. Complete unblocked work, report the evidence, and request only the smallest missing input; do not frame this as permission for a routine retry.
+- Autonomous recovery never supplies a missing work-lane choice, Pull-Request
+  Landing Plan, or exact ownership proof. Preserve ungated and primary-checkout
+  changes under the work-lane tripwire instead of staging, committing, pushing,
+  discarding, or silently transferring them.
 
 ### Permission Boundary
 
 - Resolve all in-scope implementation, validation, and delivery issues autonomously and continue until the requested goal is fully complete or a genuine external blocker remains.
+- The explicit work-lane choice is a mandatory permission boundary. Obtain it
+  before any repository file or delivery mutation; do not infer it from the
+  general instruction to complete the task.
 - Honor explicit repo-local approval gates. For covered public-cloud, Kubernetes, or infrastructure-as-code mutations, follow `infrastructure-change-approval` before mutation; use one plan-level confirmation per complete batch, then execute that batch and compatible retries without re-prompting; consolidate additional required changes into one follow-up batch, and always obtain post-outline confirmation for deletion or removal.
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files.
 - Before requesting deletion permission, resolve the exact targets, scope, sensitivity, and recoverability with read-only inspection; prefer recoverable deletion where practical.
@@ -175,6 +194,9 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Do not put worktrees inside repositories, improvise flat paths outside the project hierarchy, edit detached `PR-<number>` views, or force worktree cleanup.
 - Do not stage secrets, `.env` files, tokens, private keys, or machine-local config.
 - Do not proceed to lane gating before branch and repository recon is complete.
+- Do not mutate the primary checkout or use it as a temporary edit location.
+- Do not infer the user's lane choice from clean state, current branch, issue
+  references, or a generic request for a pull request.
 - Do not commit when author or committer identity is missing, ambiguous, or not the human user's.
 - Do not ask the user to authorize a compatible `gh` or connector retry that preserves the already-authorized mutation.
 - Do not treat autonomous failure recovery as permission to bypass an explicit infrastructure-change approval gate.
@@ -185,8 +207,14 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 
 - Confirm `pwd`, `git status --short --branch`, `git remote -v`, and `git rev-parse --abbrev-ref HEAD` were run and shown.
 - Confirm current branch, default/base branch, and repository owner/name were identified.
+- Confirm `git worktree list --porcelain` identified the exact primary checkout
+  and intended writable worktree.
 - Confirm active PRs for the current branch were checked, or that an unavailable PR lookup was explicitly reported before mutation.
 - Confirm the active directory, branch, remote, and PR state matched the intended work lane before editing, committing, pushing, or mutating a PR.
+- Confirm the explicit lane choice and complete Pull-Request Landing Plan were
+  recorded before any repository file or delivery mutation.
+- Confirm the primary checkout received no coding-agent file, index, commit, or
+  branch mutation.
 - Confirm protected or assumed-protected branches were not written to.
 - Confirm overlapping dirty files were preserved and either resolved safely from evidence or reported as a genuine blocker without destructive cleanup.
 - Confirm every separate lane reused or created the exact `~/worktrees/<owner>/<repository>/<lane>` path, and that no nested worktree or duplicate branch checkout was created.

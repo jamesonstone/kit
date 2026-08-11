@@ -45,3 +45,29 @@ func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 		}
 	}
 }
+
+func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T) {
+	checks := []string{
+		"## Work Lane Mutation Hard Gate",
+		"Before I make any repository changes",
+		"canonical worktree, and pull request for this work",
+		"Pull-Request Landing Plan",
+		"primary/root checkout as read-only",
+		"Do not stage, commit, push, stash, reset, clean, discard, or silently transfer",
+	}
+	for name, content := range map[string]string{
+		"V1 AGENTS.md":            LegacyAgentsMD,
+		"V2 AGENTS.md":            AgentsMD,
+		"V2 CLAUDE.md":            ClaudeMD,
+		"V2 Copilot instructions": CopilotInstructionsMD,
+		"V3 AGENTS.md":            MemoryAgentsMD,
+		"V3 CLAUDE.md":            MemoryClaudeMD,
+		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
+	} {
+		for _, check := range checks {
+			if !strings.Contains(content, check) {
+				t.Fatalf("expected %s to contain %q", name, check)
+			}
+		}
+	}
+}

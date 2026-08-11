@@ -89,8 +89,9 @@ func TestRunInitRefresh_PrintsManagedFileDeliveryStepsAfterWrite(t *testing.T) {
 
 	for _, check := range []string{
 		"`Makefile` (create; pre-command absent; expected sha256:",
-		"abort if a captured destination path has staged, working-tree, or untracked changes",
-		"restore each captured root path to its exact pre-command state",
+		"Pull-Request Landing Plan",
+		"trigger the work-lane tripwire",
+		"do not adopt, transfer, stage, commit, push, restore, discard",
 		"create or update the ready pull request",
 	} {
 		if !strings.Contains(output, check) {

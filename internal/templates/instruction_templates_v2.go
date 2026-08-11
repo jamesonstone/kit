@@ -20,6 +20,7 @@ func tocRepositoryInstructions(title string) string {
 - ` + "`docs/agents/RLM.md`" + ` — just-in-time context loading when broad context would be noisy
 - ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary inputs
 
+` + workLaneMutationRoutingGate + `
 ## Testing And Validation Gate
 
 - Before implementation or validation, including browser automation and browser testing, load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and the project's ` + "`docs/references/testing.md`" + `
@@ -85,6 +86,7 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - ` + "`docs/agents/RLM.md`" + ` — just-in-time context routing
 - ` + "`docs/agents/TOOLING.md`" + ` — skills, dispatch, project-directory workflow, and secondary inputs
 
+` + workLaneMutationRoutingGate + `
 ## Testing And Validation Gate
 
 - Before implementation or validation, including browser automation and browser testing, load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and the project's ` + "`docs/references/testing.md`" + `
@@ -158,6 +160,14 @@ const agentsREADME = `# Agents Docs
 `
 
 const agentsWorkflows = `# Workflows
+
+## Work Lane Precondition
+
+- Read-only discovery and planning may run before a lane exists
+- Before any repository write, obtain the explicit new-lane versus
+  continue-existing choice and record the complete pull-request landing plan
+- Create or update feature artifacts only inside the selected non-primary
+  writable worktree
 
 ## Spec-Driven Work
 
@@ -254,6 +264,7 @@ const agentsRLM = `# RLM
 
 ## Rules
 
+- Load ` + "`docs/references/rules/work-lane-gating.md`" + ` before any coding-agent repository file or delivery mutation
 - Keep map work file-scoped or narrowly bounded so synthesis stays deterministic
 - Prefer repo-local docs before secondary global inputs
 - For v2 feature-scoped work, keep must-read inputs small: the current ` + "`SPEC.md`" + ` section or decision, plus directly linked references, relationships, rules, evidence, or historical staged artifacts only when they affect that decision

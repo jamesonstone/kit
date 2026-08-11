@@ -49,7 +49,12 @@ const agentsTooling = `# Tooling
 
 ## Project Worktrees
 
-- Work in the existing checkout when it already owns the requested lane
+- Ask and record the new-lane versus continue-existing choice before any
+  coding-agent repository file or delivery mutation
+- Record the repository, issue, branch, non-primary worktree, protected base,
+  and create-or-update pull-request target before editing files
+- Work in the existing checkout only when it is the exact non-primary linked
+  worktree that owns the user-selected lane
 - For a separate lane, reuse or create ` + "`~/worktrees/<owner>/<repository>/<lane>`" + `; never put a worktree inside a repository
 - Use exact ` + "`GH-<number>`" + ` for durable issue lanes and uppercase detached ` + "`PR-<number>`" + ` only for temporary pull-request inspection
 - Reuse the pull request head branch for writable repair; never edit the detached ` + "`PR-<number>`" + ` view
@@ -57,7 +62,10 @@ const agentsTooling = `# Tooling
 - When Kit reports a dirty target lane, ask whether its existing changes belong in the repair and carry that explicit include-or-exclude decision into the generated agent instructions
 - Use native ` + "`git worktree`" + ` commands as the portable authority for creation, reuse, detached inspection, repair, removal, pruning, and migration; do not require ` + "`git-wt`" + `, an alias, or another wrapper
 - Optional wrappers are manual conveniences only and must preserve the same path and safety contract
-- Keep the root checkout on the protected default branch and work directly in the assigned durable lane
+- Treat the primary/root checkout as read-only for coding-agent work regardless
+  of branch or cleanliness; never edit there with a plan to move the diff later
+- Work directly in the user-selected durable lane and re-open the choice before
+  materially new or tangential scope
 - Do not stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
 - Link the primary checkout's ` + "`.env`" + ` and ` + "`.envrc`" + ` into writable lanes by default when each exists, using only exact verified symlinks; omit both links when isolation is required
 - Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied ` + "`.envrc`" + `, and remember that direnv approval remains path-specific; worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories
