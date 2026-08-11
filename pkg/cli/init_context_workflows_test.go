@@ -16,8 +16,8 @@ func TestRunInitMaterializesEveryContextWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(artifacts) != 5 {
-		t.Fatalf("workflow count = %d, want 5", len(artifacts))
+	if len(artifacts) != 7 {
+		t.Fatalf("workflow count = %d, want 7", len(artifacts))
 	}
 	for _, artifact := range artifacts {
 		content, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(artifact.Path)))

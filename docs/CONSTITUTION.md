@@ -16,6 +16,8 @@
 - Validate findings against current source and current external state before acting.
 - Preserve unrelated and project-owned changes. Fail closed when ownership, target identity, or mutation scope is ambiguous.
 - Report validation literally; planning evidence, local checks, hosted checks, deployment, and production proof are distinct claims.
+- Pull-request merge is a distinct mutation boundary. Only a direct request or accepted bounded merge plan authorizes the exact PR set; delivery consent, checks, assignments, and ledgers never create authority.
+- Only current `MERGE_READY` nodes may merge, and merge success is not deployment, runtime, production, or integrated-system proof.
 
 ### Durable Repository Memory
 
@@ -64,6 +66,7 @@
   - `kit aws verify`
   - `kit check`
   - `kit pr fix`
+  - `kit pr orchestrate`
   - `kit improve run`
   - `kit rules add`, `list`, `view`, and `link`
   - `kit reconcile`
@@ -79,7 +82,7 @@
 - `kit context resolve` emits schema `kit.context/v1`.
 - Resolution is deterministic, local-only, and read-only: no network access, writes, Git mutation, model inference, or agent launch.
 - Workflows under `docs/references/workflows/` declare ordered dependencies, required rules, evidence, phases, and completion gates.
-- The supported workflow set is repository bootstrap, implementation delivery, repository maintenance, PR feedback repair, and cross-repository program coordination.
+- The supported workflow set is repository bootstrap, implementation delivery, repository maintenance, PR feedback repair, pull-request merge, release orchestration, and cross-repository program coordination.
 - Required missing or invalid evidence blocks resolution with a nonzero exit; optional gaps remain explicit diagnostics.
 - Feature and path hints narrow evidence selection without changing canonical documents.
 
@@ -144,7 +147,7 @@
 - Kit does not treat generated JSON, telemetry, prompts, or agent transcripts as canonical repository memory.
 - Kit does not preserve every historical CLI path after v2.
 - Kit does not change `kit reconcile` semantics as part of the coding-agent-first pivot.
-- Kit does not automatically merge pull requests or silently overwrite project-owned content.
+- Kit does not execute pull-request merges or silently overwrite project-owned content; coding agents may merge only under the exact active authorization contract.
 
 ## DEFINITIONS
 

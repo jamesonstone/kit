@@ -4,9 +4,9 @@ artifact: "spec"
 workflow_version: 3
 phase: "deliver"
 feature:
-  id: "0060"
+  id: "0062"
   slug: "git-wt-removal"
-  dir: "0060-git-wt-removal"
+  dir: "0062-git-wt-removal"
 relationships:
   - type: builds_on
     target: 0051-resolve-pr-repair-worktrees
@@ -16,7 +16,7 @@ references:
   - id: "feature-notes"
     name: "Feature notes"
     type: "notes"
-    target: "docs/notes/0060-git-wt-removal"
+    target: "docs/notes/0062-git-wt-removal"
     relation: "informs"
     read_policy: "conditional"
     used_for: "optional pre-brainstorm research input"
@@ -61,6 +61,11 @@ flows.
   while replacing substantial command, context, documentation, and test
   surfaces, so this removal must be reconciled on top of v2 rather than
   preserving the older pre-v2 layout.
+- Kit `main` then advanced to
+  `52483d60bbb38cfde84e6c9b8e19c9bc0e3d4527` with release orchestration and
+  authorized merge-policy features allocated as `0060` and `0061`. This
+  removal therefore owns `0062` and preserves those new command and authority
+  contracts while removing only Kit's generic `git-wt` product.
 
 ## REQUIREMENTS
 
@@ -121,9 +126,11 @@ Non-goals:
 - The removal PR may be implemented and reviewed while Kura PR #2 is open, but
   its merge is blocked until Kura is merged. This keeps implementation work
   parallel without creating a distribution gap.
-- Main's v2 feature already owns stable feature ID `0059`; this removal is
-  renumbered from its pre-integration `0059` allocation to `0060` so both
-  historical specifications remain addressable without an identity collision.
+- Main's v2 feature already owned stable feature ID `0059`, so this removal was
+  first renumbered from its pre-integration `0059` allocation to `0060`.
+  Release orchestration and merge autonomy then claimed `0060` and `0061` on
+  main, so this removal is now `0062`; all three specifications remain uniquely
+  addressable.
 
 ## DISCOVERIES
 
@@ -181,7 +188,7 @@ Non-goals:
   was clean; four managed-file refresh candidates remain pending and were not
   applied.
 - `kit context resolve` is unblocked for workflow `implementation-delivery`,
-  feature `0060-git-wt-removal`, the program ledger, and worktree preparer.
+  feature `0062-git-wt-removal`, the program ledger, and worktree preparer.
   `kit check git-wt-removal`, `kit check --project`, canonical/template byte
   equality, `git diff --check`, and repeated Gitleaks directory scans passed.
 - `govulncheck ./...` reports zero vulnerabilities affecting called code. It
@@ -218,7 +225,7 @@ Non-goals:
   `GH-139` own the Kit companion delivery. The removal is locally reconciled
   against coding-agent-first v2 at ordinary merge commit
   `34bdc6b65e8ce5c84289089c9e4ddce1bf70723e`, and its stable feature identity
-  is now `0060`. Ready PR #140 at head
+  is now `0062`. Ready PR #140 at head
   `7a116b5534d9ff275754054f27ad93b51292c054` is mergeable and clean with
   hosted validation and CodeRabbit passing and every review thread resolved.
 
@@ -232,7 +239,7 @@ material rationale that code and tests cannot preserve alone.
 
 Artifacts:
 
-- `docs/specs/0060-git-wt-removal/SPEC.md`
+- `docs/specs/0062-git-wt-removal/SPEC.md`
 - `docs/programs/git-wt-extraction/PROGRAM.md`
 - `docs/specs/0051-resolve-pr-repair-worktrees/SPEC.md`
 - `docs/specs/0052-worktree-sync/SPEC.md`

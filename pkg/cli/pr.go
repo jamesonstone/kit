@@ -55,10 +55,10 @@ func init() {
 func newPRCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "pr",
-		Short:         "Run pull-request repair workflows",
+		Short:         "Generate pull-request repair and release prompts",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Long: `Run pull-request repair workflows.
+		Long: `Generate pull-request repair and release-orchestration prompts.
 
 Use kit pr fix to select or target a pull request, ingest current PR review
 feedback, and copy the resulting agent prompt. Editing the review tasks is
@@ -69,9 +69,14 @@ records the answer explicitly in the prompt. Kit itself does not edit source
 files, stage, commit, push, post PR comments, or resolve review threads from
 this path. After fixes or no-op decisions are complete, pushed, and reflected
 against the PR head, resolve handled review threads explicitly with
-kit dispatch --pr <target> --resolve --yes.`,
+kit dispatch --pr <target> --resolve --yes.
+
+Use kit pr orchestrate to resolve bounded repository scope and conservative
+release configuration into a dependency-aware coding-agent prompt. Kit does
+not enumerate the release set, merge, deploy, mutate infrastructure, or launch
+an agent from that command.`,
 	}
-	cmd.AddCommand(newPRFixCommand())
+	cmd.AddCommand(newPRFixCommand(), newPROrchestrateCommand())
 	return cmd
 }
 

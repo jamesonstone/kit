@@ -35,11 +35,35 @@ read_policy_default: must
 
 Do not evaluate lane or import-graph questions before recon completes. The current branch scope cannot be assessed without knowing the branch.
 
+### Canonical Authority Model
+
+Use this matrix instead of inventing an authority boundary in each workflow:
+
+| Action | Required authority |
+| --- | --- |
+| Read-only discovery | Implied by the task |
+| In-scope implementation and safe recovery | Current accepted task |
+| Issue, branch, commit, push, and ready PR | PR-delivery consent |
+| Review-thread mutation | Explicitly assigned repair/resolution authority |
+| PR merge | Direct merge request or accepted bounded merge plan |
+| Multi-repository merge program | Approved plan plus reconciled program ledger |
+| Deployment or infrastructure mutation | Applicable infrastructure/deployment approval |
+| Protection bypass, admin override, identity substitution | Prohibited |
+
+- Authority is bounded by repository, target, action, intended effect, actor,
+  and applicable environment. Revalidation and compatible retries preserve an
+  unchanged authority boundary; material scope expansion requires follow-up
+  authorization.
+- PR-delivery consent, automatic lane allocation, subagent assignment, check
+  success, and program-ledger existence never imply merge authority.
+- Before an authorized merge, resolve the `pull-request-merge` workflow and
+  follow `github-pr-merge`.
+
 ### Prohibited Actions
 
 GitHub access is never permission to:
 
-- Merge.
+- Merge without a direct request or accepted bounded merge plan.
 - Force-push protected branches.
 - Delete branches.
 - Change repository settings.
@@ -164,7 +188,7 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Honor explicit repo-local approval gates. For covered public-cloud, Kubernetes, or infrastructure-as-code mutations, follow `infrastructure-change-approval` before mutation; use one plan-level confirmation per complete batch, then execute that batch and compatible retries without re-prompting; consolidate additional required changes into one follow-up batch, and always obtain post-outline confirmation for deletion or removal.
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files.
 - Before requesting deletion permission, resolve the exact targets, scope, sensitivity, and recoverability with read-only inspection; prefer recoverable deletion where practical.
-- This permission boundary does not authorize actions prohibited above. Never ask for permission to bypass protected branches, review, identity, secret, force-push, merge, or repository-setting safeguards.
+- This permission boundary does not authorize actions prohibited above. Never ask for permission to bypass protected branches, review, identity, secret, force-push, merge-authorization, or repository-setting safeguards.
 
 ## Anti-Patterns
 
@@ -179,6 +203,8 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Do not treat autonomous failure recovery as permission to bypass an explicit infrastructure-change approval gate.
 - Do not blindly repeat a failed mutation without new evidence or a revised recovery path.
 - Do not perform large-scale deletion or delete sensitive files without explicit permission.
+- Do not treat delivery consent, agent assignment, successful checks, or a
+  program ledger as authority to merge.
 
 ## Verification
 
@@ -197,6 +223,9 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Confirm compatible authenticated tool-path changes did not trigger routine permission requests.
 - Confirm explicit repo-local approval gates were satisfied before their covered mutations.
 - Confirm large-scale deletion and sensitive-file deletion did not occur without explicit permission.
+- Before any merge, confirm a direct request or accepted bounded plan created
+  authority for the exact PR set and `pull-request-merge` resolved without a
+  required evidence gap.
 
 ## Examples
 

@@ -52,10 +52,13 @@ kit reconcile --include-files
 | --- | --- |
 | `kit dispatch` | Produce an Agent Team Plan prompt after native planning; optional PR/watch modes remain bounded. |
 | `kit pr fix` | Select or target a PR and produce a repair prompt from current unresolved review feedback. |
+| `kit pr orchestrate` | Resolve bounded repository scope into a deterministic dependency-aware release prompt; Kit does not execute the release. |
 
 These commands may perform their documented GitHub or exact-lane preparation,
 but do not launch or supervise coding agents. Resolve
-`pr-feedback-repair` context before agent repair work.
+`pr-feedback-repair` context before agent repair work. Release agents resolve
+`release-orchestration` and then `pull-request-merge` before any authorized
+merge or merge-queue mutation.
 
 ## Inspection And Validation
 

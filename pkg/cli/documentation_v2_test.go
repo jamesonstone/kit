@@ -16,6 +16,8 @@ func TestReadmeDocumentsV2BoundaryAndPrimaryFlow(t *testing.T) {
 		"kit capabilities context resolve --json",
 		"kit spec my-feature",
 		"kit context resolve --workflow implementation-delivery --feature my-feature --json",
+		"`release-orchestration`",
+		"`kit pr orchestrate`",
 		"kit usage disable --global",
 		"never records command arguments",
 		"365 days",

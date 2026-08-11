@@ -18,7 +18,7 @@
 | Workstream | Repository | Local spec | Issue | Branch | Pull request | Operational reference |
 | --- | --- | --- | --- | --- | --- | --- |
 | `WS-kura-distribution` | `jamesonstone/kura` | `docs/specs/0001-interactive-script-installer/SPEC.md` | `jamesonstone/kura#1` | `GH-1` | `jamesonstone/kura#2` | Kura README and catalog |
-| `WS-kit-removal` | `jamesonstone/kit` | `docs/specs/0060-git-wt-removal/SPEC.md` | `jamesonstone/kit#139` | `GH-139` | `jamesonstone/kit#140` | Kit release and command docs |
+| `WS-kit-removal` | `jamesonstone/kit` | `docs/specs/0062-git-wt-removal/SPEC.md` | `jamesonstone/kit#139` | `GH-139` | `jamesonstone/kit#140` | Kit release and command docs |
 
 ## Dependency Graph
 

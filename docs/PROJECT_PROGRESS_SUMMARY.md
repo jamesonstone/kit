@@ -60,7 +60,9 @@
 | 0057 | infrastructure-change-approval | `docs/specs/0057-infrastructure-change-approval` | complete | no | 2026-08-10 | Require Kit-managed coding agents to outline public-cloud, Kubernetes, and infrastructure-as-code mutations and obtain user confirmation before changing them, while allowing each approved bounded batch to run to completion in one pass without routine approval interruptions and always confirming deletion or removal after its summary. |
 | 0058 | cross-repository-program-coordination | `docs/specs/0058-cross-repository-program-coordination` | complete | no | 2026-08-10 | Ensure that an accepted plan spanning multiple repositories, dependent deliverables, staged deployments, or agent handoffs retains enough operational state to resume safely and transfer accountability without relying on one chat, one agent's context, or an overloaded task checklist. |
 | 0059 | conservative-coding-agent-first | `docs/specs/0059-conservative-coding-agent-first` | deliver | no | 2026-08-10 | Ship Kit v2.0.0 as a conservative coding-agent-first release: retain the small, proven human and automation interfaces that own repository setup, memory, inspection, repair, and delivery while removing unused or duplicative workflow surfaces. Add deterministic local context resolution so coding agents can load the exact repository workflows, rules, specifications, strategies, and implementation evidence relevant to their work. Add bounded local usage telemetry so future command-removal decisions have evidence instead of guesses. |
-| 0060 | git-wt-removal | `docs/specs/0060-git-wt-removal` | deliver | no | 2026-08-11 | Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows. |
+| 0060 | release-orchestration-prompt | `docs/specs/0060-release-orchestration-prompt` | deliver | no | 2026-08-11 | Add `kit pr orchestrate`, a first-class prompt-producing command that converts minimal user input, bounded repository discovery, and conservative defaults into a deterministic coding-agent prompt for dependency-aware multi-repository release delivery. The command prepares the release control contract; it never executes the release itself. |
+| 0061 | authorized-coding-agent-merge-autonomy | `docs/specs/0061-authorized-coding-agent-merge-autonomy` | deliver | no | 2026-08-11 | Define one repository-native authority model that lets coding agents merge an exact, policy-compliant pull-request set when a direct request or accepted bounded plan authorizes it, without allowing PR-delivery consent, a program ledger, subagent assignment, or successful checks to invent broader authority. |
+| 0062 | git-wt-removal | `docs/specs/0062-git-wt-removal` | deliver | no | 2026-08-11 | Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows. |
 
 ## PROJECT INTENT
 
@@ -576,15 +578,33 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: see SPEC.md
 - **POINTERS**: `docs/specs/0059-conservative-coding-agent-first/SPEC.md`
 
+### release-orchestration-prompt
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Add `kit pr orchestrate`, a first-class prompt-producing command that converts minimal user input, bounded repository discovery, and conservative defaults into a deterministic coding-agent prompt for dependency-aware multi-repository release delivery. The command prepares the release control contract; it never executes the release itself.
+- **APPROACH**: 1. Add the exact v2 command admission, telemetry, capability, parent-help, and public command-tree changes for `pr orchestrate`. 2. Create `internal/releaseprompt` with typed input/config/provenance models, bounded Git/GitHub discovery, deterministic precedence and validation, and responsibility-split prompt rendering. 3. Add a thin Cobra adapter for flags, terminal-only conditional questions, exact stdout/stderr routing, clipboard behavior, and dry-run output. 4. Add and embed the `release-orchestration` downstream workflow, including initialization refresh coverage and explicit fallback instructions for repositories that have not materialized it. 5. Consume the authorized merge-autonomy contract in the rendered prompt and keep capability metadata explicit that Kit generates instructions while the coding agent performs any separately authorized GitHub mutation. 6. Update the Constitution, README, command/overview documentation, feature memory, and prompt golden as one integration set. 7. Run focused tests, complete Go tests, vet, lint, builds, project checks, manual CLI flows, source-size and diff audits, then explicitly stage, commit, push, and open a ready pull request.
+- **OPEN ITEMS**: see SPEC.md
+- **POINTERS**: `docs/specs/0060-release-orchestration-prompt/SPEC.md`
+
+### authorized-coding-agent-merge-autonomy
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Define one repository-native authority model that lets coding agents merge an exact, policy-compliant pull-request set when a direct request or accepted bounded plan authorizes it, without allowing PR-delivery consent, a program ledger, subagent assignment, or successful checks to invent broader authority.
+- **APPROACH**: 1. Define `github-pr-merge` and `pull-request-merge` as the canonical bounded merge contract, then align safety, delivery, lane, team, program, infrastructure, validation, Constitution, routing, and generated guidance. 2. Add deterministic active-policy consistency checks and focused scenario tests that make contradictory consent, authority, evidence, identity, and infrastructure semantics fail closed. 3. Complete `kit pr orchestrate` so its rendered prompt consumes the authority model and produces a reconciled, dependency-aware merge plan while Kit itself remains prompt-only. 4. Keep historical 0046, 0058, and 0059 specifications unchanged; link this V3 spec and release-prompt spec to record the superseding active policy. 5. Validate focused policy, templates, workflow materialization, command behavior, complete Go/static/build checks, source size, project context, and deterministic manual flows before explicit delivery on `GH-141`.
+- **OPEN ITEMS**: see SPEC.md
+- **POINTERS**: `docs/specs/0061-authorized-coding-agent-merge-autonomy/SPEC.md`
+
 ### git-wt-removal
 
 - **STATUS**: deliver
 - **PAUSED**: no
 - **INTENT**: Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows.
-- **APPROACH**: 1. Coordinate the Kura distribution and Kit removal through one Kit-owned program ledger with Kura PR #2 as the Kit merge prerequisite. 2. Retain only the native, output-free worktree preparation required by Kit repair workflows in `internal/worktreeprep`. 3. Remove the `git-wt` executable, command implementation, build, release, capability, manpage, and current user-documentation surfaces. 4. Keep canonical native worktree guidance and its embedded template aligned. 5. Reconcile the removal against coding-agent-first v2, validate the integrated command surface, and update ready PR #140.
+- **APPROACH**: 1. Coordinate the Kura distribution and Kit removal through one Kit-owned program ledger with Kura PR #2 as the Kit merge prerequisite. 2. Retain only the native, output-free worktree preparation required by Kit repair workflows in `internal/worktreeprep`. 3. Remove the `git-wt` executable, command implementation, build, release, capability, manpage, and current user-documentation surfaces. 4. Keep canonical native worktree guidance and its embedded template aligned. 5. Reconcile the removal against coding-agent-first v2 and the release-orchestration additions, validate the integrated command surface, and update ready PR #140.
 - **OPEN ITEMS**: review and merge ready Kit PR #140 when desired; Kura PR #2 is merged, while Kit merge, releases, and host-installation evidence remain outside this delivery
-- **POINTERS**: `docs/specs/0060-git-wt-removal/SPEC.md`, `docs/programs/git-wt-extraction/PROGRAM.md`
+- **POINTERS**: `docs/specs/0062-git-wt-removal/SPEC.md`, `docs/programs/git-wt-extraction/PROGRAM.md`
 
 ## LAST UPDATED
 
-2026-08-11 08:28:35 EDT
+2026-08-11 10:04:38 EDT

@@ -13,7 +13,8 @@ Kit:
 - preserves living feature specifications and project references;
 - reports command capabilities and mutation boundaries;
 - resolves deterministic, ordered local evidence for an explicit workflow; and
-- provides bounded prompt adapters for dispatch and pull-request repair.
+- provides bounded prompt adapters for dispatch, pull-request repair, and
+  authority-aware release orchestration.
 
 Kit does not:
 

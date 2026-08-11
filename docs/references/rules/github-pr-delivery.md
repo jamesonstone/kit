@@ -27,14 +27,17 @@ read_policy_default: conditional
 - The user explicitly asks for a PR end state.
 - `safety-guardrails` is already active for identity, protected-branch, secret-scan, and failure handling.
 - This ruleset sequences and verifies PR delivery; it does not relax safety checks.
+- This ruleset never creates merge authority. A direct merge request or
+  accepted bounded merge plan must resolve `pull-request-merge` and follow
+  `github-pr-merge` separately.
 
 ## Rules
 
 ### Kit Delivery Hard Gate
 
-- In a Kit-managed project, repo-local Kit delivery rules outrank every global GitHub/plugin workflow before any issue, branch, staging, commit, push, or PR mutation.
+- In a Kit-managed project, repo-local Kit delivery rules outrank every global GitHub/plugin workflow before any issue, branch, staging, commit, push, PR, or merge mutation.
 - A Kit-managed project is any repository containing `.kit.yaml`, `docs/CONSTITUTION.md`, or `docs/agents/README.md`.
-- Treat issue, branch, staging, commit, push, and PR operations as mutation boundaries. Even if implementation is already complete, reload and resolve the delivery rules at that boundary.
+- Treat issue, branch, staging, commit, push, PR, and merge operations as distinct mutation boundaries. Even if implementation is already complete, reload and resolve the applicable delivery or merge rules at that boundary.
 - Before any GitHub delivery mutation, load repo-local workflow entrypoints:
   - `.kit.yaml`
   - `docs/agents/README.md`
@@ -88,6 +91,20 @@ Delivery Contract:
 - Do not create `codex/*` branches, ad hoc issue bodies, ad hoc PR bodies, draft PRs by default, commits using generic messages, or PRs that omit the repo template unless repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
 - The `PR title format` field must resolve to the Conventional Commits title shape with the GitHub issue as scope:
   `<type>(<issue_number>): <gitmoji> <short title message>`.
+
+### Merge Is A Separate Boundary
+
+- PR-delivery consent authorizes issue, branch, commit, push, and ready-PR
+  delivery only. It never implies merge consent.
+- Automatic clean-preflight lane allocation, issue assignment, PR creation,
+  approval, passing checks, or documentation-only eligibility never authorizes
+  merge.
+- A direct merge request or accepted bounded merge plan routes to
+  `github-pr-merge` and `pull-request-merge`.
+- Adding a merge target requires follow-up authorization. Revalidating an
+  already authorized target or using a repository-required merge queue does
+  not require another prompt when scope, identity, and intended effect remain
+  unchanged.
 
 ### Author And Committer Invariant
 
@@ -358,6 +375,10 @@ git log -1 --format='%an <%ae> | %cn <%ce>'
 
 ### Squash-And-Merge Preservation
 
+This section applies only after `github-pr-merge` establishes authority and
+readiness for the exact pull request. Documentation-only delivery and skip
+eligibility do not create merge authority.
+
 - GitHub synthesizes a new commit when a pull request is squash-merged. Its default title and body depend on repository settings and the number of source commits, so a qualifying pull request must carry `[skip ci]` in both its pull request title and source commit titles.
 - Before selecting `Confirm squash and merge`, inspect the generated squash commit title and body and confirm that at least one contains the literal `[skip ci]`.
 - If the generated message does not contain `[skip ci]`, add the literal suffix before confirming the squash merge without otherwise weakening the repository's commit-message contract.
@@ -429,12 +450,14 @@ Include:
 - Do not remove `[skip ci]` from the generated commit message while squash-merging a qualifying documentation-only pull request.
 - Do not add agent or tool attribution to commits or PR bodies.
 - Do not force-push, rebase, or amend already-pushed commits to recover from failure.
+- Do not treat PR-delivery consent, automatic lane allocation, ready state,
+  passing checks, or documentation-only eligibility as merge authorization.
 
 ## Verification
 
 - Confirm `safety-guardrails` ran first.
 - Confirm PR workflow consent or explicit PR request was recorded.
-- Confirm the Kit Delivery Hard Gate ran before any issue, branch, staging, commit, push, or PR mutation.
+- Confirm the Kit Delivery Hard Gate ran before any issue, branch, staging, commit, push, PR, or merge mutation, and that merge routed separately to `github-pr-merge`.
 - Confirm the Delivery Contract was resolved and no unknown fields remained before mutation.
 - Confirm branch/status/staleness recon ran at the GitHub delivery boundary.
 - Confirm base branch was discovered instead of assumed.

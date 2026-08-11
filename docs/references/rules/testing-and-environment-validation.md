@@ -105,6 +105,31 @@ deployment environment or external integration for a project that has none.
   Never commit raw run evidence or let CI automatically edit the tracked
   status map.
 
+### Merge Readiness
+
+Classify each authorized pull-request node from exact current-head evidence:
+
+- `MERGE_READY`: every required pre-merge gate has acceptable, attributable
+  evidence for the expected head, base, target, actor, and repository policy;
+- `BLOCKED`: a required gate failed or an explicit dependency or approval is
+  unmet; or
+- `UNKNOWN`: evidence is missing, stale, unavailable, ambiguous, or cannot be
+  attributed to the current head or target.
+
+Only `MERGE_READY` may enter a merge frontier. Never treat these as passing:
+
+- pending checks;
+- missing expected checks;
+- skipped checks without verified policy eligibility;
+- checks from an earlier head;
+- local tests substituted for required hosted checks; or
+- successful merge as deployment, runtime, integration, or production
+  evidence.
+
+Head or base drift invalidates readiness and requires revalidation. Preserve
+local, hosted, merge, deployment, runtime, and production results as separate
+claims.
+
 ### High-Level Suite Layout
 
 - Put high-level executable suites under the repository-root `tests`
@@ -306,6 +331,8 @@ kit-e2e-<project>-<environment>-<run-id>-<resource>[-<ordinal>]
   `tests/live-integration`.
 - Claiming 100 percent correctness, production validation, or hosted CI success
   from partial or unobserved evidence.
+- Treating pending, missing, stale-head, or policy-ineligible skipped checks as
+  merge-ready, or substituting local tests for required hosted checks.
 - Running only happy paths or using line coverage as the sole quality signal.
 - Hiding flaky tests with retries, long sleeps, weak assertions, or permanent
   skips.
@@ -342,6 +369,8 @@ kit-e2e-<project>-<environment>-<run-id>-<resource>[-<ordinal>]
   cleanup proof.
 - Confirm unavailable safe production writes produce read-only `PARTIAL`
   evidence and non-deployable projects use `NOT_APPLICABLE`.
+- Before merge, confirm only exact current-head `MERGE_READY` nodes enter the
+  frontier and that `BLOCKED` and `UNKNOWN` remain distinct.
 - Run the project commands documented in `docs/references/testing.md` and
   record any skipped or blocked validation.
 
