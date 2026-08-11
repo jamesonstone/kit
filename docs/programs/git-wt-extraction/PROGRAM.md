@@ -40,7 +40,7 @@ WS-kura-distribution implementation and validation
 | Workstream | Implementation | GitHub delivery | Deployment/runtime | Validation |
 | --- | --- | --- | --- | --- |
 | `WS-kura-distribution` | complete at `195184cf25143a264cd549f7ab0880ca1cb0999c` | PR `jamesonstone/kura#2` merged as `2ec9cbe058bdf6da8a3a0e1f2b9f6dd717137239` | release and host installation unobserved | four PR checks and post-merge main CI passed |
-| `WS-kit-removal` | v2 reconciliation locally complete from PR head `8df339a08a3541ed76523df42473876bb3d1fa8f` and main `0eb617e80839d3bc9ae326dbe3c63ddc5d0b0591`; delivery commit pending | ready PR `jamesonstone/kit#140` remains at old head `8df339a`; prior hosted checks are stale for the integrated result | not applicable before merge; release unobserved | integrated full Go/race/vet, builds, release snapshot, lint, improve, context, project, source-size, vulnerability, and secret checks passed locally |
+| `WS-kit-removal` | v2 reconciliation complete at ordinary merge commit `34bdc6b65e8ce5c84289089c9e4ddce1bf70723e` from PR head `8df339a08a3541ed76523df42473876bb3d1fa8f` and main `0eb617e80839d3bc9ae326dbe3c63ddc5d0b0591` | ready PR `jamesonstone/kit#140` remains at old remote head `8df339a`; push and fresh hosted checks pending | not applicable before merge; release unobserved | integrated full Go/race/vet, builds, release snapshot, lint, improve, context, project, source-size, vulnerability, and secret checks passed locally; exact-commit improve and release provenance recorded |
 
 ## Milestones And Gates
 
@@ -74,17 +74,18 @@ WS-kura-distribution implementation and validation
 
 ## Current Checkpoint
 
-- Observed at: `2026-08-11T12:14:01Z`
+- Observed at: `2026-08-11T12:17:01Z`
 - Supervisor: `jamesonstone`
-- State changes: the six predicted conflicts are resolved, feature ID `0060`
-  replaces the colliding pre-integration allocation, the v2 context contract is
-  unblocked, and the complete integrated local validation matrix passes.
-- Ready frontier: commit the ordinary merge, push the existing `GH-139` lane,
-  update PR #140, and observe fresh hosted state.
+- State changes: ordinary merge commit `34bdc6b6` now contains the six resolved
+  conflicts, stable feature ID `0060`, the unblocked v2 context contract, and
+  the clean integrated implementation. Exact-commit improve runs and the clean
+  GoReleaser snapshot passed.
+- Ready frontier: commit this evidence checkpoint, push the existing `GH-139`
+  lane, update PR #140, and observe fresh hosted state.
 - Blockers: none for local delivery. Kit merge readiness is pending fresh
   hosted evidence; merge, releases, and host installation remain separate
   unperformed actions.
-- Next safe actions: commit and push the validated merge without rebase or
-  force, refresh PR #140's description, then reconcile hosted checks and review.
+- Next safe actions: commit this checkpoint, push without force, refresh PR
+  #140's description, then reconcile hosted checks and review.
 - Live claims still required: Kit merge state, Kura and Kit release publication,
   and any actual host installation remain unobserved.
