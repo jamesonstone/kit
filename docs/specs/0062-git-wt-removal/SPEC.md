@@ -156,19 +156,22 @@ Non-goals:
   terminal cancellation test inside the generic worktree package. Both
   delete/modify conflicts resolve to deletion because the package and its old
   test surface remain outside Kit after extraction.
-- Reconciliation against v2 preserves its local context resolver, reduced
-  command tree, usage telemetry, workflow evidence, and release behavior while
-  removing only the separately shipped `git-wt` artifact and ownership claims.
+- Reconciliation against v2 and release orchestration preserves the local
+  context resolver, reduced command tree, usage telemetry, new orchestration
+  command, merge-authority policy, workflow evidence, and release behavior
+  while removing only the separately shipped `git-wt` artifact and ownership
+  claims.
 
 ## VALIDATION
 
-- Focused real-Git preparation, repair-context, v2 documentation, context, and
-  feature-resolution tests passed after the base merge. The complete
+- Focused real-Git preparation, repair-context, release-prompt, template,
+  documentation, context, and feature-resolution tests passed after merging
+  current main at `10093a85526f6473c5dc7f34c83ee4988fd5c403`. The complete
   `go test ./... -count=1`, `go test -race ./... -count=1`, and `go vet ./...`
   suites also passed on Go 1.25.12.
 - `make build`, `make build-windows`, `goreleaser check`, and
   `goreleaser release --snapshot --clean` passed. All six snapshot archives
-  produced from clean merge commit `34bdc6b65e8ce5c84289089c9e4ddce1bf70723e`
+  produced from clean merge commit `10093a85526f6473c5dc7f34c83ee4988fd5c403`
   contain only `README.md` plus `kit` or `kit.exe`; no `git-wt` artifact exists.
 - Changed-path and whole-repository GolangCI-Lint 2.11.2 both report zero
   issues. The full lint run exposed one orphaned v2 capability test helper after
@@ -177,15 +180,15 @@ Non-goals:
 - Built-binary `capabilities --search 'git wt' --json` returns an empty command
   list. Only `cmd/kit/main.go` remains under `cmd/`, and release output contains
   no file named for `git-wt`.
-- Improve run `20260811T121642.831412000Z-73940e` passed the default suite with
+- Improve run `20260811T141220.916082000Z-ee1c1a` passed the default suite with
   8/8 task runs and 18/18 assertions. Run
-  `20260811T121642.839737000Z-17830e` passed the prompt-system suite with 24/24
+  `20260811T141220.948490000Z-1527dd` passed the prompt-system suite with 24/24
   task runs, 114/114 assertions, and determinism rate 1.0. Both runs record
-  merge commit `34bdc6b65e8ce5c84289089c9e4ddce1bf70723e` as provenance.
-- Whole-project reconcile reported a complete source-file-size audit of 647
-  version-control-eligible candidates and 314 eligible handwritten source/test
+  merge commit `10093a85526f6473c5dc7f34c83ee4988fd5c403` as provenance.
+- Whole-project reconcile reported a complete source-file-size audit of 678
+  version-control-eligible candidates and 337 eligible handwritten source/test
   files, with zero above 300 physical lines. Its semantic documentation audit
-  was clean; four managed-file refresh candidates remain pending and were not
+  was clean; three managed-file refresh candidates remain pending and were not
   applied.
 - `kit context resolve` is unblocked for workflow `implementation-delivery`,
   feature `0062-git-wt-removal`, the program ledger, and worktree preparer.
@@ -223,11 +226,10 @@ Non-goals:
   explicit decommission notes instead of erasing the prior delivery.
 - Kura PR #2 is merged and its post-merge CI passed. Issue #139 and branch
   `GH-139` own the Kit companion delivery. The removal is locally reconciled
-  against coding-agent-first v2 at ordinary merge commit
-  `34bdc6b65e8ce5c84289089c9e4ddce1bf70723e`, and its stable feature identity
-  is now `0062`. Ready PR #140 at head
-  `7a116b5534d9ff275754054f27ad93b51292c054` is mergeable and clean with
-  hosted validation and CodeRabbit passing and every review thread resolved.
+  against coding-agent-first v2 and release orchestration at ordinary merge
+  commit `10093a85526f6473c5dc7f34c83ee4988fd5c403`, and its stable feature
+  identity is now `0062`. PR #140 remains the delivery lane; its final pushed
+  head requires fresh hosted validation before merge readiness is reclaimed.
 
 ## REPOSITORY MEMORY
 
