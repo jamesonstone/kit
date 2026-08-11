@@ -45,3 +45,53 @@ func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 		}
 	}
 }
+
+func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T) {
+	checks := []string{
+		"## Work Lane Mutation Hard Gate",
+		"docs/agents/GUARDRAILS.md",
+		"work-lane-gating",
+		"Before I make any repository changes",
+		"canonical worktree, and pull request for this work",
+		"Pull-Request Landing Plan",
+		"repository file or delivery mutation",
+		"issue, branch, staging, commit, push, worktree, and pull-request mutations",
+		"before every mutation",
+		"primary/root checkout as read-only",
+		"Do not stage, commit, push, stash, reset, clean, discard, or silently transfer",
+	}
+	orderedChecks := []string{
+		"docs/agents/GUARDRAILS.md",
+		"work-lane-gating",
+		"read-only safety recon",
+		"Before I make any repository changes",
+		"Wait for",
+		"Pull-Request Landing Plan",
+	}
+	for name, content := range map[string]string{
+		"V1 AGENTS.md":            LegacyAgentsMD,
+		"V1 CLAUDE.md":            LegacyClaudeMD,
+		"V1 Copilot instructions": LegacyCopilotInstructionsMD,
+		"V2 AGENTS.md":            AgentsMD,
+		"V2 CLAUDE.md":            ClaudeMD,
+		"V2 Copilot instructions": CopilotInstructionsMD,
+		"V3 AGENTS.md":            MemoryAgentsMD,
+		"V3 CLAUDE.md":            MemoryClaudeMD,
+		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
+	} {
+		normalizedContent := strings.Join(strings.Fields(content), " ")
+		for _, check := range checks {
+			if !strings.Contains(normalizedContent, check) {
+				t.Fatalf("expected %s to contain %q", name, check)
+			}
+		}
+		previousIndex := -1
+		for _, check := range orderedChecks {
+			index := strings.Index(normalizedContent, check)
+			if index <= previousIndex {
+				t.Fatalf("expected %s to contain %q after the preceding gate step", name, check)
+			}
+			previousIndex = index
+		}
+	}
+}

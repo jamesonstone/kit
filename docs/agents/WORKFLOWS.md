@@ -6,11 +6,16 @@
 2. Resolve the applicable local workflow with `kit context resolve --workflow <slug> --json`.
 3. Load required selected rules, specs, strategies, references, and source evidence.
 4. Use native planning for research, clarification, design, and the accepted plan.
-5. Before code, create or adopt `docs/specs/<feature>/SPEC.md` when material rationale must survive.
-6. Implement, validate, and keep consequential decisions and discoveries current.
-7. Curate repository memory to the actual integrated outcome, then rerun context resolution if scope changed.
+5. Before any repository write, obtain the user's explicit new-lane versus
+   continue-existing choice, record the Pull-Request Landing Plan, and enter
+   the selected non-primary writable worktree.
+6. Before code, create or adopt `docs/specs/<feature>/SPEC.md` when material rationale must survive.
+7. Implement, validate, and keep consequential decisions and discoveries current.
+8. Curate repository memory to the actual integrated outcome, then rerun context resolution if scope changed.
 
-`kit spec [feature]` scaffolds or adopts the living V3 spec. It does not replace native planning, ingest transcripts, or launch an agent.
+`kit spec [feature]` scaffolds or adopts the living V3 spec and is
+write-capable, so run it only after the lane gate in the selected worktree. It
+does not replace native planning, ingest transcripts, or launch an agent.
 
 ## Memory Decision
 

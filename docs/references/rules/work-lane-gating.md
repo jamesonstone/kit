@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: work-lane-gating
-description: Gates new implementation lanes so agents do not mix unrelated work or force docs into PR workflow.
+description: Requires an explicit user-selected pull-request lane before any coding-agent repository mutation.
 status: active
 applies_to:
   - git
@@ -15,52 +15,93 @@ read_policy_default: must
 
 ## Purpose
 
-Detect whether requested work is implementation work and whether it constitutes a new lane of work, then gate before writing code.
+- Require the user to choose the delivery lane before a coding agent changes
+  repository files or delivery state.
+- Ensure every coding-agent change has a concrete pull-request landing plan.
+- Keep the clone's primary checkout read-only and preserve every existing lane.
 
 ## Applies When
 
-- Always active after `safety-guardrails` recon.
-- Runs before any implementation work.
-- Runs before `github-pr-delivery`, unless the user already explicitly requested a PR end state.
-- Does not gate non-implementation work and does not create issues, branches, commits, pushes, or PRs for non-implementation work unless the user explicitly asks.
+- Always active after read-only `safety-guardrails` recon and before any
+  coding-agent repository mutation.
+- Applies to source, tests, documentation, specs, plans, notes, generated
+  artifacts, configuration, dependencies, workflows, migrations, and every
+  other version-control-eligible repository file.
+- Applies before issue, branch, worktree, staging, commit, push, or pull-request
+  mutation. After the user chooses a new lane, issue, branch, and worktree
+  creation may establish that lane before file edits.
+- Applies to implementation, maintenance, repository bootstrap, PR repair,
+  documentation-only work, and commands such as `kit spec`, `kit init`, or
+  `kit reconcile` that can write repository files.
+- Does not block read-only discovery, safety recon, capability inspection,
+  context resolution, review, explanation, or native planning that creates no
+  repository or delivery mutation.
+- Governs coding-agent actions. It does not prohibit a human from editing
+  repository files manually.
 
 ## Rules
 
-### What Counts As Implementation Work
+### Mutation Boundary
 
-Gate only when the work will mutate source code or production-affecting config. Concretely, gate when the task will:
+A repository mutation is any coding-agent action that creates, edits, deletes,
+moves, formats, or generates a repository file, changes the Git index or refs,
+or mutates a GitHub issue or pull request for the work.
 
-- Add, edit, or delete code files, including application, library, infrastructure-as-code, schema, or migration files.
-- Change build, CI, dependency, or runtime configuration that ships.
-- Otherwise produce a diff intended to land on a branch and become a PR.
+Before the first mutation, the agent must have both:
 
-### Non-Implementation Work
+1. the user's explicit lane choice for the current unit of work; and
+2. a recorded Pull-Request Landing Plan that proves where the change will be
+   reviewed.
 
-Never ask the gate question, and never create an issue, branch, commit, push, or PR for:
+A generic request to implement, commit, push, fix a PR, or produce a pull
+request is not a substitute for the binary lane choice. A prior choice counts
+only when it clearly covers the same unit of work in the current task.
 
-- `kit` pipeline phases: `BRAINSTORM`, `SPEC`, `PLAN`, and `TASKS`.
-- `REFLECT` and any retrospective or analysis pass.
-- Documentation writing or editing, including `.md`, ADRs, READMEs, design docs, and notes, when done on its own outside a code-change lane.
-- Read-only, planning-only, review-only, or exploratory work.
-- Ad-hoc work the user is driving manually.
+### Required User Choice
 
-Documentation and spec artifacts may be written and committed manually by the user at any time, untied to a `GH-123` branch. Never force docs/specs into a branch or PR workflow on your own initiative because doing so needlessly creates conflicts.
+After read-only recon, stop and ask:
 
-If non-implementation work later turns into actual code changes, re-evaluate at that transition and gate then.
+> Before I make any repository changes, should I create a new GitHub issue, `GH-<issue-number>` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
 
-### Trigger and Consent
+- Wait for an explicit answer unless the user already answered this exact
+  choice for the same scope, for example `new worktree` or `continue existing`.
+- Do not infer the choice from a clean default branch, a dirty feature branch,
+  an issue reference, a generic pull-request end state, or an agent's opinion
+  about the most convenient lane.
+- One recorded choice covers the accepted work plus directly required tests,
+  documentation, validation fixes, review fixes, and delivery.
+- Ask again before materially new or tangential scope. Do not repeatedly ask
+  for routine subtasks that remain inside the recorded lane and pull-request
+  plan.
 
-- Before beginning implementation, determine whether the requested work is implementation work according to this ruleset's definitions.
-- If the user already explicitly asked for a PR end state, treat that as consent and proceed to `github-pr-delivery`.
-- If clean-default-branch preflight satisfies the automatic new-lane conditions below, treat that as consent to allocate the required issue-number lane and proceed to `github-pr-delivery` without asking the gate question.
-- If the user explicitly asks to create an issue, branch, or PR for docs or any other non-code work, honor that. The non-implementation exclusions govern agent initiative, not explicit user instruction.
+### Pull-Request Landing Plan
 
-PR-delivery consent never implies merge consent. Automatic clean-preflight
-lane allocation authorizes issue, branch, commit, push, and ready-PR delivery
-only; it never authorizes merging.
+Before file mutation, record these fields in-thread:
+
+```text
+Pull-Request Landing Plan:
+- Choice: new lane | continue existing
+- Repository:
+- Issue: create | reuse <number/link>
+- Branch:
+- Worktree:
+- Protected base:
+- Pull request: create ready PR | update <number/link>
+- Scope match:
+- Unknowns/blockers:
+```
+
+- Every field must be known and mutually consistent before file mutation.
+- A plan is not permission to merge. It is the proven route from the writable
+  worktree to one reviewable pull request.
+- If scope, repository, issue, branch, worktree, base, or pull-request target
+  changes materially, stop, refresh recon, and record a revised user choice
+  and plan before further mutation.
 
 ### Merge Authorization
 
+- PR-delivery consent never implies merge consent. It authorizes issue, branch,
+  commit, push, and ready-PR delivery only.
 - A direct merge request or accepted bounded merge plan routes to
   `github-pr-merge` and the `pull-request-merge` context workflow.
 - The authorized set is exact. Adding a new PR, repository, base branch,
@@ -73,119 +114,138 @@ only; it never authorizes merging.
   check, review-thread resolution, subagent assignment, or program ledger does
   not create merge authority.
 
-### New-Lane Definition
+### New Lane
 
-Among implementation work, a new lane is any work that is either:
+When the user chooses a new lane:
 
-- Net-new to the current thread, with no existing issue, branch, or PR covering it.
-- Tangential enough that bundling it into the current branch would mix unrelated concerns, review surfaces, blast radius, or revertability.
+- Search for an exact matching issue and reusable lane before creating
+  anything. Do not create duplicates.
+- Create or reuse one human-assigned GitHub issue for the unit of work.
+- Use exact `GH-<issue-number>` for the branch.
+- Create or reuse its canonical linked worktree at
+  `~/worktrees/<owner>/<repository>/GH-<issue-number>` from the refreshed
+  remote protected base.
+- Verify the new worktree owns the issue branch and is not the primary
+  checkout before editing files.
+- Plan one ready pull request from that branch to the protected base. Create it
+  after implementation and validation unless repository rules require an
+  earlier draft or the user explicitly requests one.
 
-### Gate
+### Continue Existing
 
-Before asking the gate question, check for an automatic clean new lane. All of these conditions must be proven:
+When the user chooses to continue the existing lane:
 
-- The request is implementation work in a new lane.
-- The current branch is the repository's default branch.
-- The working tree is clean.
-- The local default branch matches the freshly fetched remote default branch.
-- No existing issue, branch, or pull request covers the requested work.
-- Repository, GitHub identity, issue assignment, base branch, and delivery rules are unambiguous.
+- Prove the current non-protected branch, its exact owning linked worktree,
+  issue scope, remote, protected base, and existing or planned pull request.
+- Reuse the existing pull request when one exists. Do not create a replacement
+  branch or second pull request for the same lane.
+- If the additional scope needs separate issue traceability, create or reuse a
+  human-assigned issue, scope its commits to that issue, and update the same
+  pull request's issue references.
+- A detached `PR-<number>` view, protected branch, primary checkout, branch
+  owned by another worktree, missing pull-request route, or ambiguous dirty
+  state is not a writable existing lane. Fail closed and request the smallest
+  decision needed to establish a valid lane.
 
-When every condition is satisfied:
+### Primary Checkout Protection
 
-- Record the automatic clean-preflight decision in-thread.
-- Do not ask whether to create a new issue, branch, and pull request or continue existing work; there is no existing work to continue.
-- Proceed directly to `github-pr-delivery`, which searches once more for a matching issue, creates the human-assigned issue when none exists, and creates the exact issue-number branch from the refreshed remote default branch.
+- Resolve the clone's primary checkout from `git worktree list --porcelain`.
+- Treat that exact checkout as read-only for coding-agent work, regardless of
+  its current branch, cleanliness, file type, or planned pull request.
+- The primary checkout may be inspected and may supply exact `.env` and
+  `.envrc` symlink targets to writable lanes. Do not edit files, generate
+  artifacts, stage, commit, switch branches, or perform implementation there.
+- Never use the primary checkout as a temporary edit location followed by a
+  later copy or transfer. Establish the writable lane first and run mutating
+  commands there.
 
-When implementation work in a new lane is detected and the automatic clean-preflight conditions are not all satisfied, stop before writing code and ask exactly:
+### Gate Tripwire And Recovery
 
-> It appears you are doing implementation work. Would you like to create a new issue, branch, and PR for this work, or continue on the existing branch with the existing work?
+If a repository file was changed before the lane choice and Pull-Request
+Landing Plan, or any coding-agent change appeared in the primary checkout:
 
-- Wait for an explicit answer.
-- Do not proceed until the user chooses.
-- If the user chooses a new lane, proceed to the normal one-issue, exact issue-number branch, and pull-request workflow.
-- If the user chooses to continue work already in progress, create or reuse a separate human-assigned issue for the additional scope, keep the existing branch and pull request, scope the new commits to the additional issue, and update the pull request's issue references and validation description under `github-pr-delivery`.
+1. Stop immediately and report the exact path, checkout, branch, and observed
+   state.
+2. Preserve every working-tree and index change. Do not stage, commit, push,
+   stash, reset, clean, switch branches, overwrite, delete, or silently
+   transfer the ungated change.
+3. Ask the required lane question if it has not been answered.
+4. After the user chooses, prove exact ownership and recovery boundaries before
+   recreating or transferring any command-owned change into the writable lane.
+   Never infer ownership from post-change status alone.
+5. Keep unrelated or ambiguous changes untouched. If exact recovery cannot be
+   proven, report the blocker and the smallest user action required.
 
-### Gate Tripwire
-
-- A gate decision must be recorded in-thread as either a proven automatic clean-preflight decision or the user's explicit choice before the first source-code edit.
-- If code has been edited or staged without a recorded gate decision for that lane, treat it as a violation:
-  - Stop immediately.
-  - Report the violation.
-  - Do not commit or push the ungated work.
-  - Preserve the working tree and use `safety-guardrails` autonomous failure recovery to establish the correct lane when it can be proven safely; otherwise request only the missing lane decision. Do not discard, commit, or push the ungated work.
-
-### Detection Heuristics
-
-Any one of these triggers the gate for implementation work only:
-
-- Touches files or modules outside the current change's import graph.
-- Introduces a new feature, subsystem, or dependency unrelated to the active task.
-- Requires a new migration, API surface, or config not in the current scope.
-- The user's phrasing pivots with terms such as "also", "while you're at it", "separately", or "new thing".
-- The commit message for the current work would need "and" to describe both efforts.
-
-### Do Not Gate
-
-Do not gate when:
-
-- The work is non-implementation work according to this ruleset's exclusions.
-- The automatic clean-preflight conditions are all satisfied; proceed directly to `github-pr-delivery` instead.
-- The work is a direct sub-task of the active branch's purpose.
-- The work is a fix or refactor required to complete the current task.
-- The work falls within the existing issue or PR description's scope.
+The tripwire is a fail-closed recovery boundary, not permission to normalize
+root-checkout editing into the regular workflow.
 
 ## Anti-Patterns
 
-- Do not ask the gate question for `kit` pipeline phases, reflection, retrospectives, standalone docs edits, read-only work, planning-only work, review-only work, exploratory work, or ad-hoc work the user is driving manually.
-- Do not ask the gate question on a proven clean, current default branch with no existing issue, branch, or pull request covering the implementation work.
-- Do not auto-create an issue, branch, commit, push, or PR for non-implementation work.
-- Do not force docs or specs into a `GH-123` branch or PR workflow on agent initiative.
-- Do not hide tangential implementation work in the current branch.
-- Do not proceed after a gate tripwire violation by committing, pushing, resetting, rebasing, or otherwise mutating the working tree.
+- Automatically allocating a lane because the default branch is clean or
+  current.
+- Treating a request for a pull request as the user's new-versus-existing lane
+  choice.
+- Writing a spec, plan, README, generated file, or configuration before the
+  lane choice because it is not application code.
+- Editing the primary checkout with the intention of moving the diff later.
+- Continuing on a feature branch without proving its owning worktree and
+  create-or-update pull-request route.
+- Asking again for every test or documentation subtask already inside the
+  accepted scope.
+- Hiding tangential work in the current lane without a new choice.
+- Staging, committing, pushing, resetting, cleaning, stashing, or silently
+  transferring work after a tripwire violation.
 
 ## Verification
 
-- Confirm `safety-guardrails` recon ran first.
-- Confirm the requested work was classified as implementation or non-implementation using this ruleset's definitions.
-- Confirm non-implementation work did not trigger the gate and did not auto-create issue, branch, commit, push, or PR state.
-- Confirm clean-default-branch autonomy was used only when every automatic condition was proven.
-- Confirm any new-lane decision for implementation work was recorded in-thread before source-code edits, either as the automatic clean-preflight result or the user's explicit choice.
-- Confirm PR delivery only ran after explicit consent, an explicit PR request, or a proven automatic clean-preflight decision.
-- Confirm a continue-existing-work choice created or reused a separate issue for additional commits without replacing the existing branch or pull request.
-- Confirm documentation and spec artifacts were not forced into a branch or PR workflow on agent initiative.
-- Confirm PR-delivery consent and automatic clean-preflight allocation were not
-  treated as merge consent, and any direct merge request or accepted bounded
-  plan routed to `github-pr-merge`.
+- Confirm read-only `safety-guardrails` recon ran before the lane decision.
+- Confirm the user explicitly chose new or existing for the current scope.
+- Confirm the Pull-Request Landing Plan was complete before the first file
+  mutation.
+- Confirm a new lane used one human-assigned issue, exact issue branch,
+  canonical non-primary worktree, protected base, and one ready-PR plan.
+- Confirm an existing lane proved its non-protected branch, owning worktree,
+  issue scope, base, and create-or-update pull-request plan.
+- Confirm the primary checkout received no coding-agent file, index, commit, or
+  branch mutation.
+- Confirm documentation, specs, configuration, and generated files followed
+  the same gate as source code.
+- Confirm materially new scope re-opened the choice while routine in-scope
+  completion work did not.
+- Confirm tripwire state was preserved and no ungated change was staged,
+  committed, pushed, discarded, or silently transferred.
+- Confirm PR-delivery consent was not treated as merge consent, and any direct
+  merge request or accepted bounded plan routed to `github-pr-merge`.
 
 ## Examples
 
-Automatic delivery for a clean new implementation lane:
+Required choice before any repository write:
 
 ```text
-Preflight is clean: the default branch matches its refreshed remote, the working tree is clean, and no issue, branch, or pull request covers this work. Proceed directly to issue and exact issue-number branch creation without asking for a lane choice.
+Before I make any repository changes, should I create a new GitHub issue, `GH-<issue-number>` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
 ```
 
-Required gate question when implementation work is already in progress or the lane is otherwise ambiguous:
+Valid new-lane plan:
 
 ```text
-It appears you are doing implementation work. Would you like to create a new issue, branch, and PR for this work, or continue on the existing branch with the existing work?
+Choice: new lane
+Issue: #143
+Branch: GH-143
+Worktree: ~/worktrees/jamesonstone/kit/GH-143
+Protected base: main
+Pull request: create one ready PR
 ```
 
-Non-implementation work that must not gate:
+Valid in-scope continuation:
 
 ```text
-Update a standalone Markdown ruleset, README, ADR, design doc, note, BRAINSTORM, SPEC, PLAN, TASKS, or REFLECT artifact.
+The user already chose GH-143 for this unit of work. A test fix required by
+that same pull request does not require another lane question.
 ```
 
-Direct implementation sub-task that does not require a new lane:
+Tripwire:
 
 ```text
-Fix a failing test introduced by the current branch's implementation.
-```
-
-New implementation lane that requires the gate:
-
-```text
-While implementing the current docs change, also add a new deployment workflow.
+An ungated README edit exists in the primary checkout. Stop, preserve it, ask
+the lane question, and do not stage, commit, push, discard, or silently move it.
 ```

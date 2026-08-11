@@ -52,12 +52,15 @@ func TestManagedFileDeliverySnapshotFromInitRefreshCapturesExactBoundary(t *test
 
 	instructions := strings.Join(managedFileDeliveryInstructions(projectRoot, snapshot), "\n")
 	for _, expected := range []string{
+		"Treat only this exact snapshot as command-owned evidence",
 		"`AGENTS.md` (update; pre-command sha256:",
 		"never expand the command-owned boundary from post-command status",
-		"abort if a captured destination path has staged, working-tree, or untracked changes",
-		"destination index is not empty",
+		"user explicitly chose a new lane or to continue the existing lane",
+		"Pull-Request Landing Plan",
+		"snapshot came from the primary checkout",
+		"do not adopt, transfer, stage, commit, push, restore, discard",
+		"already selected writable lane",
 		"contain exactly the captured command-owned change",
-		"restore each captured root path to its exact pre-command state",
 	} {
 		if !strings.Contains(instructions, expected) {
 			t.Fatalf("expected delivery instructions to contain %q, got:\n%s", expected, instructions)
@@ -90,9 +93,8 @@ func TestManagedFileDeliveryInstructionsCarryRemovalOnlyChange(t *testing.T) {
 	for _, expected := range []string{
 		"`docs/agents/README.md` (remove; pre-command sha256:",
 		"expected absent",
-		"remove captured deleted paths",
+		"trigger the work-lane tripwire",
 		"explicitly stage only the captured paths (including deleted paths)",
-		"restoring command-updated or command-removed files",
 	} {
 		if !strings.Contains(instructions, expected) {
 			t.Fatalf("expected removal-only delivery instructions to contain %q, got:\n%s", expected, instructions)
@@ -107,6 +109,9 @@ func TestManagedFileDeliveryInstructionsWithoutSnapshotRequiresFreshBoundary(t *
 	for _, expected := range []string{
 		"No exact command-owned path snapshot is present",
 		"apply only the listed manual findings until a fresh snapshot exists",
+		"explicit new-lane or continue-existing choice",
+		"complete Pull-Request Landing Plan",
+		"canonical non-primary writable worktree",
 		"rerun the write-capable Kit command",
 		"require the rerun to emit a new exact command-owned snapshot",
 		"if it cannot, do not adopt managed-file changes and report the blocker",
@@ -118,8 +123,8 @@ func TestManagedFileDeliveryInstructionsWithoutSnapshotRequiresFreshBoundary(t *
 		}
 	}
 	for _, forbidden := range []string{
-		"Before transfer, verify every captured source path",
-		"restore each captured root path",
+		"Only when the snapshot was produced",
+		"trigger the work-lane tripwire",
 	} {
 		if strings.Contains(instructions, forbidden) {
 			t.Fatalf("no-snapshot instructions require unavailable state %q:\n%s", forbidden, instructions)

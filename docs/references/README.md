@@ -6,6 +6,9 @@
 - Keep long-lived background context here instead of in injected top-level instruction files
 - Link these files from feature front matter references when they materially shape work
 - Store durable rulesets under `rules/<slug>.md` and link them with `kit rules link` instead of copying rules into agent instruction files
+- Use `rules/work-lane-gating.md` before any coding-agent repository file or
+  delivery mutation to require the explicit lane choice, pull-request landing
+  plan, and read-only primary checkout
 - Use `rules/kit-capabilities-usage.md` in downstream projects for Kit command discovery guidance
 - Use `rules/constitution-curation.md` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use `rules/cross-repository-program-coordination.md` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff
@@ -55,7 +58,7 @@ are:
 | `safety-guardrails` | git, GitHub, safety | Recon, identity, worktree, secret, protected-branch, and failure-recovery boundaries. |
 | `source-file-size` | implementation, testing, validation, refactor, reconcile, maintenance | Exact 300-line handwritten source/test limit, exclusions, semantic splits, and verification. |
 | `testing-and-environment-validation` | implementation, testing, validation, CI, deployment, local, production, browser automation, browser testing | Code-level PR checks, high-level environment suites, browser lifecycle ownership, immutable evidence, status reporting, and safe production validation. |
-| `work-lane-gating` | git, GitHub, workflow | Separates non-implementation documentation work from implementation delivery lanes. |
+| `work-lane-gating` | git, GitHub, workflow | Requires an explicit user-selected pull-request lane before every coding-agent repository mutation. |
 
 `command-capabilities` is a Kit-maintainer-only local ruleset. It requires
 changes to `kit capabilities` metadata when Kit command behavior changes and is

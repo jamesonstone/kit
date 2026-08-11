@@ -63,6 +63,7 @@
 | 0060 | release-orchestration-prompt | `docs/specs/0060-release-orchestration-prompt` | deliver | no | 2026-08-11 | Add `kit pr orchestrate`, a first-class prompt-producing command that converts minimal user input, bounded repository discovery, and conservative defaults into a deterministic coding-agent prompt for dependency-aware multi-repository release delivery. The command prepares the release control contract; it never executes the release itself. |
 | 0061 | authorized-coding-agent-merge-autonomy | `docs/specs/0061-authorized-coding-agent-merge-autonomy` | deliver | no | 2026-08-11 | Define one repository-native authority model that lets coding agents merge an exact, policy-compliant pull-request set when a direct request or accepted bounded plan authorizes it, without allowing PR-delivery consent, a program ledger, subagent assignment, or successful checks to invent broader authority. |
 | 0062 | git-wt-removal | `docs/specs/0062-git-wt-removal` | deliver | no | 2026-08-11 | Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows. |
+| 0063 | explicit-work-lane-choice | `docs/specs/0063-explicit-work-lane-choice` | deliver | no | 2026-08-11 | Require an explicit user-selected pull-request lane before every coding-agent repository mutation, keep the primary checkout read-only, and default current provider-neutral instructions to immutable v4. |
 
 ## PROJECT INTENT
 
@@ -605,6 +606,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: review and merge ready Kit PR #140 when desired; Kura PR #2 is merged, while Kit merge, releases, and host-installation evidence remain outside this delivery
 - **POINTERS**: `docs/specs/0062-git-wt-removal/SPEC.md`, `docs/programs/git-wt-extraction/PROGRAM.md`
 
+### explicit-work-lane-choice
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Require an explicit pull-request landing lane before every coding-agent repository mutation.
+- **APPROACH**: Gate all writes on a user choice and complete landing plan, protect the primary checkout, align active guidance, and publish immutable instruction version v4.
+- **OPEN ITEMS**: deliver GH-143 through its ready pull request
+- **POINTERS**: `docs/specs/0063-explicit-work-lane-choice/SPEC.md`
+
 ## LAST UPDATED
 
-2026-08-11 10:04:38 EDT
+2026-08-11 10:35:00 EDT
