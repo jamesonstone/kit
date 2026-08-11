@@ -174,6 +174,12 @@ read-only and preserves user-owned state.
   has no persisted caller identity or Pull-Request Landing Plan to validate, so
   executable enforcement requires a separately designed attestation contract
   rather than silently changing these command interfaces.
+- Retained during follow-up review: feature 0055's fail-visible thread
+  initialization fallback. Title and pin operations are blocking, ordered
+  pre-response actions, but unsupported, unavailable, or failed host operations
+  must report exact status and then allow substantive work to continue. Making
+  only unsupported operations non-blocking would contradict that durable
+  provider-specific contract.
 
 ## DISCOVERIES
 
@@ -189,6 +195,11 @@ read-only and preserves user-owned state.
   Resumed sessions and delivery mutations therefore needed explicit coverage in
   the generated instruction contract even though the canonical rule already
   required both.
+- Follow-up review found that v4 had not yet inherited repository-start routing,
+  thread-operation result verification, capability discovery for context
+  resolution, or the separate merge-authority boundary demonstrated by
+  features 0055 and 0061. These are instruction-contract gaps rather than
+  changes to the work-lane policy itself.
 - V2 root-instruction auditing deliberately keeps routing entrypoints thin.
   The implementation therefore uses a compact always-loaded hard gate and
   keeps the full operational contract in Guardrails and the normative ruleset.
@@ -220,7 +231,7 @@ read-only and preserves user-owned state.
   audited 668 version-control-eligible candidates and 338 eligible handwritten
   source/test files with none above 300 physical lines.
 - The default `kit instructions` payload hashed to
-  `9a2887de2a10d14415d33f3fead3eccebf1231f4be243e703a55b1b2e22eaa53`,
+  `70bfd8cda65c506e1c10d0185a9ad9e894213cb682ab2f97f5d4460dc751e416`,
   matching immutable v4.
 - PR-review repair passed focused instruction, template, and CLI tests; complete
   tests and race tests; build, vet, and changed-code lint; feature, all-feature,
@@ -229,6 +240,11 @@ read-only and preserves user-owned state.
   files with none above 300 physical lines.
 - The repaired working tree passed `gitleaks dir --redact --no-banner .`, which
   scanned 5.62 MB with no leaks.
+- Follow-up v4 repair passed focused instruction tests, complete tests and race
+  tests, build, vet, changed-code lint, all feature/project checks, and
+  whole-project reconcile. Reconcile again found 0 of 338 eligible handwritten
+  source/test files above 300 physical lines, and the 5.99 MB working-tree
+  secret scan found no leaks.
 - Initial delivery `gitleaks dir --redact --no-banner .` scanned 5.25 MB with no leaks, and
   `gitleaks git --redact --no-banner --log-opts='origin/main..HEAD' .` scanned
   the GH-143 commit range with no leaks.
@@ -257,6 +273,11 @@ read-only and preserves user-owned state.
   workflows, and keeps generated compact/full guidance ordered across rule
   loading, recon, explicit choice, and plan verification for file and delivery
   mutations.
+- Follow-up repair makes thread title and pin operations ordered, verified, and
+  fail-visible; starts repository work at the routing entrypoint; discovers
+  unknown context-resolve behavior through capabilities; and states explicitly
+  that a landing lane never authorizes a merge outside the exact bounded
+  `MERGE_READY` contract.
 - Regression tests enforce the ruleset wording, root protection, generated and
   checked-in alignment, managed-command tripwire, new current version, and
   immutable historical versions.

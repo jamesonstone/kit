@@ -30,7 +30,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 		{version: "v1", sha256: "50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5"},
 		{version: "v2", sha256: "811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc"},
 		{version: "v3", sha256: "a75fb2b02d37a7fbdc5926b9c71130210c6e929366b09707b410ab2f5b90792f"},
-		{version: "v4", sha256: "9a2887de2a10d14415d33f3fead3eccebf1231f4be243e703a55b1b2e22eaa53"},
+		{version: "v4", sha256: "70bfd8cda65c506e1c10d0185a9ad9e894213cb682ab2f97f5d4460dc751e416"},
 	}
 
 	for _, test := range tests {
@@ -94,15 +94,36 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 	}
 
 	for _, want := range []string{
+		"blocking pre-response gate",
+		"before the first commentary message",
+		"After the title action resolves, invoke the available thread-pin operation",
+		"Verify each result from returned host state when that state is available",
+		"unsupported or unavailable capability",
+		"operation failure",
+		"Thread initialization: rename <status>; pin <status>.",
+		"continue the user's substantive request",
+		"must not deadlock unrelated work",
+		"working-directory context supplied by the host",
+		"Do not inspect the repository",
+		"Start repository work at `docs/agents/README.md` when present",
 		"Before every repository mutation in a newly created or resumed session",
 		"Load `docs/agents/GUARDRAILS.md`",
 		"`docs/references/rules/work-lane-gating.md`",
+		"when each is present and relevant",
 		"Before I make any repository changes, should I create a new GitHub issue",
 		"canonical worktree, and pull request for this work",
 		"Record or verify a complete Pull-Request Landing Plan before every",
 		"Pull-Request Landing Plan",
+		"A Pull-Request Landing Plan proves a delivery lane; it does not authorize",
+		"direct user request or an accepted bounded merge",
+		"exact pull-request set",
+		"resolve `pull-request-merge`",
+		"`docs/references/rules/github-pr-merge.md`",
+		"Only exact current `MERGE_READY` nodes may merge",
+		"`kit capabilities context resolve --json`",
 		"`kit context resolve --workflow <slug> --json` with relevant",
 		"`--feature` and `--path` hints",
+		"every selected artifact that is required",
 		"Do not infer the choice from a clean default branch",
 		"every other repository file",
 		"issue, branch, worktree, staging, commit, push, pull-request",
@@ -115,9 +136,27 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 			t.Fatalf("v4 instructions do not contain %q", want)
 		}
 	}
+	for _, order := range []struct {
+		before string
+		after  string
+	}{
+		{before: "Invoke the available thread-title operation", after: "After the title action resolves, invoke the available thread-pin operation"},
+		{before: "After the title action resolves, invoke the available thread-pin operation", after: "Verify each result from returned host state"},
+		{before: "Start repository work at `docs/agents/README.md`", after: "Before every repository mutation"},
+		{before: "Before every repository mutation", after: "Load `docs/agents/GUARDRAILS.md`"},
+		{before: "`docs/agents/GUARDRAILS.md`", after: "`docs/references/rules/work-lane-gating.md`"},
+		{before: "`kit capabilities context resolve --json`", after: "`kit context resolve --workflow <slug> --json`"},
+	} {
+		beforeIndex := strings.Index(content, order.before)
+		afterIndex := strings.Index(content, order.after)
+		if beforeIndex < 0 || afterIndex < 0 || beforeIndex >= afterIndex {
+			t.Fatalf("v4 instructions must place %q before %q", order.before, order.after)
+		}
+	}
 	for _, forbidden := range []string{
 		"Do not ask whether to create a new issue",
 		"automatic clean-preflight",
+		"Never stop or delay work if renaming or pinning is unsupported or fails",
 	} {
 		if strings.Contains(content, forbidden) {
 			t.Fatalf("v4 instructions contain forbidden automatic-lane policy %q", forbidden)
