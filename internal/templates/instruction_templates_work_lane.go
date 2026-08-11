@@ -2,31 +2,36 @@ package templates
 
 const workLaneMutationRoutingGate = `## Work Lane Mutation Hard Gate
 
-- Before any coding-agent repository mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and ` + "`work-lane-gating`" + `, then ask exactly: "Before I make any repository changes, should I create a new GitHub issue, GH-<issue-number> branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?"
-- Wait for the explicit choice and record a Pull-Request Landing Plan covering the repository, issue, branch, canonical non-primary worktree, protected base, and create-or-update PR target. Never infer the choice from clean state or a generic PR request.
+- Before any coding-agent repository file or delivery mutation, including issue, branch, staging, commit, push, worktree, and pull-request mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and ` + "`work-lane-gating`" + ` first, complete read-only safety recon, then ask exactly: "Before I make any repository changes, should I create a new GitHub issue, GH-<issue-number> branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?"
+- Wait for the explicit choice and record a Pull-Request Landing Plan covering the repository, issue, branch, canonical non-primary worktree, protected base, and create-or-update PR target. Verify that plan still matches before every mutation. Never infer the choice from clean state or a generic PR request.
 - Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it.
 
 `
 
 const workLaneMutationHardGate = `## Work Lane Mutation Hard Gate
 
-Before a coding agent creates, edits, deletes, moves, formats, or generates any
-repository file, it must:
+Before a coding agent performs any repository file or delivery mutation, it
+must:
 
-1. Complete read-only safety recon, including the current branch, dirty state,
+1. Load ` + "`docs/agents/GUARDRAILS.md`" + ` and
+   ` + "`docs/references/rules/work-lane-gating.md`" + `.
+2. Complete read-only safety recon, including the current branch, dirty state,
    remote, active pull requests, registered worktrees, and exact primary
    checkout.
-2. Ask exactly:
+3. Ask exactly:
 
    > Before I make any repository changes, should I create a new GitHub issue, ` + "`GH-<issue-number>`" + ` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
-3. Wait for the user's explicit choice unless that exact choice is already
+4. Wait for the user's explicit choice unless that exact choice is already
    recorded for the same unit of work.
-4. Record a Pull-Request Landing Plan with the repository, issue, branch,
-   non-primary worktree, protected base, and create-or-update PR target.
+5. Record a Pull-Request Landing Plan with the repository, issue, branch,
+   non-primary worktree, protected base, and create-or-update PR target, then
+   verify that plan still matches before every mutation.
 
 - This gate covers source, tests, documentation, specs, plans, generated files,
-  configuration, and every other repository file. Read-only discovery and
-  planning may precede it; write-capable commands such as ` + "`kit spec`" + `,
+  configuration, and every other repository file. It also covers every delivery
+  mutation, including issue, branch, staging, commit, push, worktree, and
+  pull-request mutations, as well as merges. Read-only discovery and planning
+  may precede it; write-capable commands such as ` + "`kit spec`" + `,
   ` + "`kit init`" + `, and ` + "`kit reconcile`" + ` may not.
 - Never infer the choice from a clean default branch, an issue reference, or a
   generic request to produce a pull request.

@@ -168,6 +168,12 @@ read-only and preserves user-owned state.
 - Rejected: allow edits in a clean primary checkout with a later transfer plan.
   That makes user-owned root state depend on recovery and permits an ungated
   diff to exist before its pull-request lane exists.
+- Rejected during PR review: add unconditional runtime rejection to `kit init`,
+  `kit health`, and init refresh. The lane gate governs coding-agent actions,
+  while these commands also support direct human use and non-Git bootstrap. Kit
+  has no persisted caller identity or Pull-Request Landing Plan to validate, so
+  executable enforcement requires a separately designed attestation contract
+  rather than silently changing these command interfaces.
 
 ## DISCOVERIES
 
@@ -178,6 +184,11 @@ read-only and preserves user-owned state.
 - `kit spec` currently mutates repository memory immediately. Under the new
   contract, agents must select and establish the writable lane before invoking
   it; capability inspection may still run read-only beforehand.
+- PR review found that immutable v4 scoped the lane gate inside new-session
+  initialization and that the shared full template described only file writes.
+  Resumed sessions and delivery mutations therefore needed explicit coverage in
+  the generated instruction contract even though the canonical rule already
+  required both.
 - V2 root-instruction auditing deliberately keeps routing entrypoints thin.
   The implementation therefore uses a compact always-loaded hard gate and
   keeps the full operational contract in Guardrails and the normative ruleset.
@@ -209,9 +220,16 @@ read-only and preserves user-owned state.
   audited 668 version-control-eligible candidates and 338 eligible handwritten
   source/test files with none above 300 physical lines.
 - The default `kit instructions` payload hashed to
-  `607762ed53f64dd2c795efa51915cbc2a7a8187cde1d4639980e9c4f477277f2`,
+  `9a2887de2a10d14415d33f3fead3eccebf1231f4be243e703a55b1b2e22eaa53`,
   matching immutable v4.
-- `gitleaks dir --redact --no-banner .` scanned 5.25 MB with no leaks, and
+- PR-review repair passed focused instruction, template, and CLI tests; complete
+  tests and race tests; build, vet, and changed-code lint; feature, all-feature,
+  and project checks; and whole-project reconcile. Reconcile audited 667
+  version-control-eligible candidates and 338 eligible handwritten source/test
+  files with none above 300 physical lines.
+- The repaired working tree passed `gitleaks dir --redact --no-banner .`, which
+  scanned 5.62 MB with no leaks.
+- Initial delivery `gitleaks dir --redact --no-banner .` scanned 5.25 MB with no leaks, and
   `gitleaks git --redact --no-banner --log-opts='origin/main..HEAD' .` scanned
   the GH-143 commit range with no leaks.
 - Final staged-diff and hosted pull-request checks remain delivery steps and
@@ -234,6 +252,11 @@ read-only and preserves user-owned state.
 - Generated current AGENTS, Claude, Copilot, workflow, Guardrails, RLM, and
   Tooling guidance carries the new gate. `kit instructions` now defaults to
   immutable v4; the byte hashes of published v1-v3 remain unchanged.
+- PR-review repair makes the gate unconditional in newly created and resumed
+  v4 sessions, requires repository context resolution before write-capable
+  workflows, and keeps generated compact/full guidance ordered across rule
+  loading, recon, explicit choice, and plan verification for file and delivery
+  mutations.
 - Regression tests enforce the ruleset wording, root protection, generated and
   checked-in alignment, managed-command tripwire, new current version, and
   immutable historical versions.

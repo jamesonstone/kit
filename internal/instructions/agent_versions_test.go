@@ -30,7 +30,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 		{version: "v1", sha256: "50cbfd80732e7b1912dc65f160cbf8555d2da95cb79079f33d7131cd51a86be5"},
 		{version: "v2", sha256: "811842c5c87a1b8c7f82831c7c76739071921583c44b0ab9c5dc62cbc08b27fc"},
 		{version: "v3", sha256: "a75fb2b02d37a7fbdc5926b9c71130210c6e929366b09707b410ab2f5b90792f"},
-		{version: "v4", sha256: "607762ed53f64dd2c795efa51915cbc2a7a8187cde1d4639980e9c4f477277f2"},
+		{version: "v4", sha256: "9a2887de2a10d14415d33f3fead3eccebf1231f4be243e703a55b1b2e22eaa53"},
 	}
 
 	for _, test := range tests {
@@ -94,11 +94,18 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 	}
 
 	for _, want := range []string{
+		"Before every repository mutation in a newly created or resumed session",
+		"Load `docs/agents/GUARDRAILS.md`",
+		"`docs/references/rules/work-lane-gating.md`",
 		"Before I make any repository changes, should I create a new GitHub issue",
 		"canonical worktree, and pull request for this work",
+		"Record or verify a complete Pull-Request Landing Plan before every",
 		"Pull-Request Landing Plan",
+		"`kit context resolve --workflow <slug> --json` with relevant",
+		"`--feature` and `--path` hints",
 		"Do not infer the choice from a clean default branch",
 		"every other repository file",
+		"issue, branch, worktree, staging, commit, push, pull-request",
 		"Treat the clone's primary/root checkout as read-only",
 		"Never edit, generate, stage, commit, or switch branches there",
 		"one planned ready pull",
