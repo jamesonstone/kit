@@ -36,6 +36,9 @@ read_policy_default: conditional
 - Use `kit capabilities --search <term> --json` for compact workflow discovery.
 - Use `kit capabilities --full --json` only when detailed metadata for the complete supported surface is specifically needed.
 - Treat `kit capabilities` as read-only command metadata: it does not load `.kit.yaml`, write project files, call the network, execute subprocesses, or mutate git.
+- Read root-persistent options such as `--profile` and `--single-agent` from
+  the JSON payload's `global_flags`; command records contain only flags owned
+  by that command or inherited from a non-root parent.
 - Do not maintain Kit's internal command catalog from a downstream project.
 - If downstream project guidance conflicts with `kit capabilities`, prefer the live command metadata for command behavior and update the downstream documentation.
 - If the Kit command catalog appears stale or wrong, fix it in the `jamesonstone/kit` repository or report it upstream.
@@ -45,7 +48,8 @@ read_policy_default: conditional
 - Do not guess Kit command flags from memory when `kit capabilities <command> --json` can answer the question.
 - Do not run `kit capabilities --full --json` repeatedly as persistent context.
 - Do not copy Kit command contracts into downstream always-loaded instruction files when a targeted lookup would be enough.
-- Do not tell downstream projects to edit `pkg/cli/capabilities_catalog.go`.
+- Do not tell downstream projects to edit Kit's internal capability catalog
+  files under `pkg/cli/`.
 - Do not treat `kit capabilities` as a project policy source; use repo-local docs and rulesets for project policy.
 
 ## Verification

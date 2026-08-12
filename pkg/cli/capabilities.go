@@ -18,6 +18,7 @@ type capabilitiesIndexPayload struct {
 	SchemaVersion int                       `json:"schema_version"`
 	Kind          string                    `json:"kind"`
 	GeneratedBy   string                    `json:"generated_by"`
+	GlobalFlags   []capabilityFlag          `json:"global_flags"`
 	Commands      []capabilityCompactRecord `json:"commands"`
 }
 
@@ -25,6 +26,7 @@ type capabilityDetailPayload struct {
 	SchemaVersion int                    `json:"schema_version"`
 	Kind          string                 `json:"kind"`
 	GeneratedBy   string                 `json:"generated_by"`
+	GlobalFlags   []capabilityFlag       `json:"global_flags"`
 	Command       capabilityDetailRecord `json:"command"`
 }
 
@@ -32,6 +34,7 @@ type capabilitiesFullPayload struct {
 	SchemaVersion int                      `json:"schema_version"`
 	Kind          string                   `json:"kind"`
 	GeneratedBy   string                   `json:"generated_by"`
+	GlobalFlags   []capabilityFlag         `json:"global_flags"`
 	Commands      []capabilityDetailRecord `json:"commands"`
 }
 
@@ -40,6 +43,7 @@ type capabilitiesSearchPayload struct {
 	Kind          string                    `json:"kind"`
 	GeneratedBy   string                    `json:"generated_by"`
 	Query         string                    `json:"query"`
+	GlobalFlags   []capabilityFlag          `json:"global_flags"`
 	Commands      []capabilityCompactRecord `json:"commands"`
 }
 
@@ -90,6 +94,7 @@ func runCapabilities(cmd *cobra.Command, args []string, options capabilitiesOpti
 			SchemaVersion: capabilitiesSchemaVersion,
 			Kind:          "capability_detail",
 			GeneratedBy:   "kit capabilities",
+			GlobalFlags:   capabilityGlobalFlags(),
 			Command:       record.detail(),
 		}
 		if options.json {
@@ -105,6 +110,7 @@ func runCapabilities(cmd *cobra.Command, args []string, options capabilitiesOpti
 			Kind:          "capabilities_search",
 			GeneratedBy:   "kit capabilities",
 			Query:         search,
+			GlobalFlags:   capabilityGlobalFlags(),
 			Commands:      compactCapabilityRecords(records),
 		}
 		if options.json {
@@ -118,6 +124,7 @@ func runCapabilities(cmd *cobra.Command, args []string, options capabilitiesOpti
 			SchemaVersion: capabilitiesSchemaVersion,
 			Kind:          "capabilities_full",
 			GeneratedBy:   "kit capabilities",
+			GlobalFlags:   capabilityGlobalFlags(),
 			Commands:      detailCapabilityRecords(capabilityCatalog()),
 		}
 		if options.json {
@@ -130,6 +137,7 @@ func runCapabilities(cmd *cobra.Command, args []string, options capabilitiesOpti
 		SchemaVersion: capabilitiesSchemaVersion,
 		Kind:          "capabilities_index",
 		GeneratedBy:   "kit capabilities",
+		GlobalFlags:   capabilityGlobalFlags(),
 		Commands:      compactCapabilityRecords(capabilityCatalog()),
 	}
 	if options.json {

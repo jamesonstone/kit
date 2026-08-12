@@ -307,6 +307,10 @@ Kit already has document-context routing through `kit map` and repo-local RLM do
 - Keep the command itself read-only: no file writes, no `.kit` artifacts, no `.kit.yaml` changes, no network calls, no git commands, and no delegated execution of other Kit commands.
 - Update agent-facing and user-facing docs so agents use `kit capabilities` as a discovery index only when command choice is uncertain.
 - Add validation that keeps capability records aligned with registered commands and root help visibility.
+- Expose root-persistent flags once as machine-readable global metadata while
+  keeping each command record limited to its own and non-root inherited flags.
+- Validate exact command invocation behavior so read-only parent groups do not
+  inherit their child commands' mutation claims.
 
 ## NON-GOALS
 
@@ -396,7 +400,15 @@ References are tracked in front matter.
 - [SPEC-28] The implementation must preserve existing command behavior and existing command JSON payloads outside the new `capabilities` surface.
 - [SPEC-29] Inside the Kit source repository, every new or changed Kit command, subcommand, flag, alias, prompt surface, or command behavior extension must update `kit capabilities` in the same change.
 - [SPEC-30] Human detail output must include agent-readable guidance for safe command choice, including when to use the command, when not to use it, examples, caveats when present, important flag safety notes, and related commands.
-- [SPEC-31] Downstream Kit-managed projects must receive `kit-capabilities-usage` guidance through registry refresh and must not receive the maintainer-only obligation to edit `pkg/cli/capabilities_catalog.go`.
+- [SPEC-31] Downstream Kit-managed projects must receive `kit-capabilities-usage` guidance through registry refresh and must not receive the maintainer-only obligation to edit Kit's internal capability catalog files.
+- [SPEC-32] Every JSON payload kind must expose root-persistent flags once in a
+  top-level `global_flags` collection; command records must contain only flags
+  owned by that command or inherited from a non-root parent.
+- [SPEC-33] Tests must compare every visible command's actual Cobra flags with
+  capability metadata and reject mutating leaf records that omit applicable
+  network, file-write, or Git side-effect summaries.
+- [SPEC-34] A parent command record must describe invocation of that exact
+  parent, not aggregate mutations performed only by its subcommands.
 
 ## ACCEPTANCE
 
@@ -418,6 +430,11 @@ References are tracked in front matter.
 - [ACCEPT-16] Tests prove visible command records include agent guidance fields and targeted human detail output renders them.
 - [ACCEPT-17] Repository rules document that command-surface changes must update `kit capabilities`.
 - [ACCEPT-18] Tests prove downstream registry refresh installs `kit-capabilities-usage` without installing the maintainer-only `command-capabilities` rule.
+- [ACCEPT-19] Index, targeted, full, and search JSON expose the exact current
+  root-persistent flags through `global_flags` without per-command duplication.
+- [ACCEPT-20] Capability tests fail when a command flag is missing, a removed
+  flag remains advertised, a mutating leaf omits its applicable side-effect
+  summary, or a read-only parent reports child-only mutation.
 
 ## EDGE-CASES
 
@@ -436,7 +453,19 @@ References are tracked in front matter.
 - Human text output is requested without `--json`.
 - The implementation worktree contains local commands not present in the current release, such as `ci`.
 - Future commands are added without updating capability metadata.
+- A root-persistent flag is added without becoming discoverable in capability
+  JSON, or is duplicated into every command record.
+- A command group is assigned the mutation level of a child even though
+  invoking the group itself only renders help or a read-only report.
 
 ## OPEN-QUESTIONS
 
 none
+
+## MAINTENANCE
+
+- The 2026 Kit v2 catalog split preserved the command implementations but
+  reduced several capability records to generic defaults. The repair keeps
+  schema version 1 because `global_flags` is an additive field, restores exact
+  flags and side effects from the live Cobra surface, and adds drift tests so
+  command-path inventory alone cannot mask contract regressions.
