@@ -49,5 +49,10 @@ func reconcileCapabilityRecord() capabilityRecord {
 		withGitMutation("none"),
 		withFlags(flag("--include-files", "include managed refresh"), flag("--all", "whole-project audit"), flag("--force", "force selected managed refresh"), flag("--dry-run", "preview without writes", "read-only"), flag("--diff", "show dry-run diff", "read-only"), flag("--file", "limit managed paths"), flag("--output-only", "print prompt"), flag("--copy", "copy prompt"), flag("--migrate-references", "include legacy reference migration guidance"), flag("--migrate-verification", "include legacy verification guidance"), flag("--prompt-only", "generate guidance without mutation", "read-only")),
 		withRelated(related("health", "applies safe scheduled maintenance"), related("context resolve", "loads repository-maintenance evidence")),
-		withCaveats("The existing conflict-aware reconcile behavior and flags are preserved."))
+		withWhenToUse("Use whole-project reconcile to audit every version-control-eligible handwritten source and test file against the exact 300-physical-line limit."),
+		withCaveats(
+			"The existing conflict-aware reconcile behavior and flags are preserved.",
+			"V3 whole-project reconciliation checks `AGENTS.md` for the ordered Codex pre-response thread-title and thread-pin gate, including fail-visible first-commentary semantics.",
+			"Whole-project output emits literal `source-file-size audit: complete` evidence with candidate, eligible-file, and violation counts; missing or incomplete evidence cannot support a clean result.",
+		))
 }

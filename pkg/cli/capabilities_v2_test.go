@@ -68,3 +68,33 @@ func TestContextAndUsageCapabilitiesExposeSafetyBoundaries(t *testing.T) {
 		t.Fatalf("usage capability = %#v", usageRecord)
 	}
 }
+
+func TestReconcileCapabilityExposesMaintenanceContracts(t *testing.T) {
+	cmd := newCapabilitiesCommand()
+	output := &bytes.Buffer{}
+	cmd.SetOut(output)
+	cmd.SetArgs([]string{"reconcile", "--json"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	var payload capabilityDetailPayload
+	if err := json.Unmarshal(output.Bytes(), &payload); err != nil {
+		t.Fatal(err)
+	}
+	whenToUse := strings.Join(payload.Command.WhenToUse, " ")
+	if !strings.Contains(whenToUse, "exact 300-physical-line limit") {
+		t.Fatalf("reconcile when_to_use omits source-size limit: %#v", payload.Command.WhenToUse)
+	}
+	caveats := strings.Join(payload.Command.Caveats, " ")
+	for _, contract := range []string{
+		"ordered Codex pre-response thread-title and thread-pin gate",
+		"fail-visible first-commentary semantics",
+		"source-file-size audit: complete",
+		"candidate, eligible-file, and violation counts",
+	} {
+		if !strings.Contains(caveats, contract) {
+			t.Errorf("reconcile caveats omit %q: %#v", contract, payload.Command.Caveats)
+		}
+	}
+}
