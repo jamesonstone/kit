@@ -46,9 +46,9 @@ registry:
           path: docs/references/rules/agent-team-orchestration.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
           source_path: docs/references/rules/agent-team-orchestration.md
-          installed_hash: sha256:1ddad317c3cd1fd48caae3cb9122e29f876f672df8c600e5e1fb743afa6559c8
+          installed_hash: sha256:f39e2cec902646a6549d2aa34cdc5f36757b7eda103671ba74ca77a0896c5a5d
           state: managed
         - kind: ruleset
           slug: backend-service-architecture
@@ -73,18 +73,28 @@ registry:
           path: docs/references/rules/coding-agent-context-usage.md
           source_repo: jamesonstone/kit
           source_branch: main
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
           source_path: docs/references/rules/coding-agent-context-usage.md
           installed_hash: sha256:7a1b8c2e89ca8fd04e4f22b04e70d3c9d34b0499332cac7fa5efcc6a76218971
-          state: local-custom
+          state: managed
         - kind: ruleset
           slug: constitution-curation
           path: docs/references/rules/constitution-curation.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
           source_path: docs/references/rules/constitution-curation.md
-          installed_hash: sha256:e462fa2563a35bfbb300e54f1e9ecc60f17f983c00d89731a0efa255edb28895
-          state: local-custom
+          installed_hash: sha256:4063859e65860dc89135cb4fa7b629e4544d82052e157a177e317d7168205767
+          state: managed
+        - kind: ruleset
+          slug: cross-repository-program-coordination
+          path: docs/references/rules/cross-repository-program-coordination.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
+          source_path: docs/references/rules/cross-repository-program-coordination.md
+          installed_hash: sha256:5ced0bcd2213ac6f8eff36dc5526dd8c2f8ee2288eb87d4b55f7cd14283293b5
+          state: managed
         - kind: ruleset
           slug: frontend-application-architecture
           path: docs/references/rules/frontend-application-architecture.md
@@ -99,19 +109,37 @@ registry:
           path: docs/references/rules/github-pr-delivery.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 84bc11c469bd7573cda7568c08c094983d5ab09a
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
           source_path: docs/references/rules/github-pr-delivery.md
-          installed_hash: sha256:f300d5d397aec24f9a16f64b6d12ce904d907dafbaf73a1c75498040dbcfcc77
+          installed_hash: sha256:db7bb5a91acca0ab15af5b52d079df9698ad5dc410003823c69799393d59b7af
+          state: managed
+        - kind: ruleset
+          slug: github-pr-merge
+          path: docs/references/rules/github-pr-merge.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
+          source_path: docs/references/rules/github-pr-merge.md
+          installed_hash: sha256:719ada5f7417f1f04c2083cd6c45f39f1908e40f1170f0ce4b8bed5ea4a64b79
+          state: managed
+        - kind: ruleset
+          slug: infrastructure-change-approval
+          path: docs/references/rules/infrastructure-change-approval.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
+          source_path: docs/references/rules/infrastructure-change-approval.md
+          installed_hash: sha256:8d1df391a61993ddb21127b1f6dd89c909dc97f0530ead34b9c9c281df3a66d1
           state: managed
         - kind: ruleset
           slug: kit-capabilities-usage
           path: docs/references/rules/kit-capabilities-usage.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
           source_path: docs/references/rules/kit-capabilities-usage.md
-          installed_hash: sha256:b48b8687f4dac7b59b7c0492739e8a0e97b1769226f15cfb7f997b78fef17207
-          state: local-custom
+          installed_hash: sha256:90c5876250b2140d8a08369e10dae1ab368db50a2595d17c36bea06064b7b094
+          state: managed
         - kind: ruleset
           slug: llms-txt
           path: docs/references/rules/llms-txt.md
@@ -135,9 +163,9 @@ registry:
           path: docs/references/rules/safety-guardrails.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
           source_path: docs/references/rules/safety-guardrails.md
-          installed_hash: sha256:ea73163fd33875ef9f91baefafc6983090695b7a9ec2406cdd1e41abb350371b
+          installed_hash: sha256:29a665884feaacaba32aecab0a7b055a18cb84f0e77f852dd628c00cce246016
           state: managed
         - kind: ruleset
           slug: source-file-size
@@ -153,18 +181,18 @@ registry:
           path: docs/references/rules/testing-and-environment-validation.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 8f01671a053c69658c13aba879695722f6064af2
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
           source_path: docs/references/rules/testing-and-environment-validation.md
-          installed_hash: sha256:3e0187674f8cb661ee76aa9fcf9c864fe46946502928ef4dc40ea1045f3d8177
+          installed_hash: sha256:bd0675c68e700e23f322e3d85fcd303c354c61de8d24e5ca59fe336aa1771b6c
           state: managed
         - kind: ruleset
           slug: work-lane-gating
           path: docs/references/rules/work-lane-gating.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 366eec660a3c973c49bd35ae6500fed1487590d8
+          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
           source_path: docs/references/rules/work-lane-gating.md
-          installed_hash: sha256:34f8dd58c9b3190a83d3440788c96f2e82fba7812d51b41115074961e1c9429e
+          installed_hash: sha256:0dec6143204a0e5b7616fd1015fef064dbbe3f2fb53d71950ee67595def53450
           state: managed
 health:
     managed: true

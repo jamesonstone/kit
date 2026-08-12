@@ -106,6 +106,4 @@ MIT
 
 ## Maintainers
 
-<!-- BEGIN KIT-MANAGED README MAINTAINERS -->
 Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
-<!-- END KIT-MANAGED README MAINTAINERS -->
