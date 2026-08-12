@@ -34,7 +34,10 @@ This rule is maintainer-only. Downstream Kit-managed projects should use `kit-ca
 ## Rules
 
 - Every Kit command or command extension must update `kit capabilities` in the same change.
-- Update `pkg/cli/capabilities_catalog.go` whenever the command surface changes.
+- Update the relevant split catalog file under
+  `pkg/cli/capabilities_catalog_*.go` whenever the command surface changes;
+  change shared capability types or query behavior only when the contract
+  itself changes.
 - For every visible canonical command, the capability catalog must describe:
   - command name and category
   - concise summary
@@ -51,6 +54,9 @@ This rule is maintainer-only. Downstream Kit-managed projects should use `kit-ca
 - For hidden or deprecated commands, the catalog must mark the command as hidden or deprecated and explain the replacement.
 - For aliases, the catalog must either include an alias on the canonical record or include a hidden/deprecated compatibility record, whichever best matches the command behavior.
 - For flag-dependent behavior, explicitly distinguish default behavior from behavior enabled by flags.
+- Keep command-specific flags aligned with the live Cobra command tree. Expose
+  root-persistent flags once through the machine-readable `global_flags`
+  collection instead of duplicating them in every command record.
 - For risky flags, include the safety boundary in the flag metadata.
 - Keep the JSON schema stable unless a schema change is intentional and tested.
 - Human text output should expose enough best-practice guidance for a coding agent to choose the command without requiring a separate README scan.
@@ -66,6 +72,9 @@ Before completing a Kit command-surface change, verify:
 - `kit capabilities --search <term> --json` can discover the command by its key workflow terms.
 - Root help and capabilities metadata agree about visible commands.
 - Tests cover command-catalog drift so visible commands cannot be added without capability metadata.
+- Tests compare every visible command's local and inherited non-global flags
+  with its capability record and reject mutating leaf records that omit their
+  applicable network, file-write, or Git side-effect summary.
 - Downstream registry refresh installs `kit-capabilities-usage` and does not install this maintainer-only rule.
 
 Recommended commands:
@@ -101,4 +110,5 @@ examples, caveats, and related-command guidance.
 - Do not describe command behavior in prose that conflicts with capability metadata.
 - Do not hide network, file-write, git, GitHub, editor, clipboard, or subprocess side effects.
 - Do not add risky flags without documenting their safety boundary.
-- Do not tell downstream projects to edit `pkg/cli/capabilities_catalog.go`.
+- Do not tell downstream projects to edit Kit's internal capability catalog
+  files under `pkg/cli/`.

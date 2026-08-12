@@ -192,3 +192,10 @@ func flag(name, summary string, safety ...string) capabilityFlag {
 func related(command, note string) capabilityRelatedCommand {
 	return capabilityRelatedCommand{Command: command, Note: note}
 }
+
+func capabilityGlobalFlags() []capabilityFlag {
+	return []capabilityFlag{
+		flag("--profile", "for prompt-producing commands, append a supported profile to generated agent instructions; currently frontend"),
+		flag("--single-agent", "for prompt-producing commands, omit default subagent-orchestration guidance from generated agent prompts"),
+	}
+}
