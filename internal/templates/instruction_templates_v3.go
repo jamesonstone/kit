@@ -68,12 +68,7 @@ func memoryRepositoryInstructions(title string) string {
 - Before a delivery mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + ` delivery rules
 - Repo-local Kit rules outrank generic GitHub or plugin defaults
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
-
-- If ` + "`.kit.yaml`" + ` defines an enabled AWS context, run ` + "`kit aws verify`" + ` before the first AWS-dependent command and again immediately before AWS mutation
-- Use only the verified configured profile; stop on missing credentials, incomplete configuration, or identity mismatch
-
-## Knowledge Map
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + `## Knowledge Map
 
 - ` + "`docs/specs/<feature>/SPEC.md`" + ` — material feature rationale and living implementation history
 - ` + "`docs/CONSTITUTION.md`" + ` — project invariants
@@ -122,7 +117,7 @@ Before editing implementation/source or test files, load ` + "`docs/references/r
 ` + workLaneMutationRoutingGate + `
 Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults.
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## Final Response
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + `## Final Response
 
 Every implementation final response must include:
 

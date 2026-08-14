@@ -64,6 +64,7 @@
 | 0061 | authorized-coding-agent-merge-autonomy | `docs/specs/0061-authorized-coding-agent-merge-autonomy` | deliver | no | 2026-08-11 | Define one repository-native authority model that lets coding agents merge an exact, policy-compliant pull-request set when a direct request or accepted bounded plan authorizes it, without allowing PR-delivery consent, a program ledger, subagent assignment, or successful checks to invent broader authority. |
 | 0062 | git-wt-removal | `docs/specs/0062-git-wt-removal` | deliver | no | 2026-08-11 | Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows. |
 | 0063 | explicit-work-lane-choice | `docs/specs/0063-explicit-work-lane-choice` | deliver | no | 2026-08-11 | Require an explicit user-selected pull-request lane before every coding-agent repository mutation, keep the primary checkout read-only, and default current provider-neutral instructions to immutable v4. |
+| 0064 | aws-agent-toolkit-guidance | `docs/specs/0064-aws-agent-toolkit-guidance` | deliver | no | 2026-08-14 | Integrate AWS Agent Toolkit guidance into Kit-managed projects so coding agents use current AWS skills and official documentation, prefer the AWS MCP Server when available, and fall back to the AWS CLI without weakening Kit's existing identity, infrastructure-approval, delivery, or secret-safety boundaries. |
 
 ## PROJECT INTENT
 
@@ -615,6 +616,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: deliver GH-143 through its ready pull request
 - **POINTERS**: `docs/specs/0063-explicit-work-lane-choice/SPEC.md`
 
+### aws-agent-toolkit-guidance
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Integrate AWS Agent Toolkit guidance into Kit-managed projects so coding agents use current AWS skills and official documentation, prefer the AWS MCP Server when available, and fall back to the AWS CLI without weakening Kit's existing identity, infrastructure-approval, delivery, or secret-safety boundaries.
+- **APPROACH**: 1. Add a durable downstream AWS Agent Toolkit guidance ruleset that links AWS-owned current sources. 2. Add one compact shared routing gate to active generated provider instructions and guardrails. 3. Route the rule through RLM, references, mandatory refresh adoption, and reconcile expectations. 4. Add focused ruleset, template, refresh, and reconcile tests. 5. Validate, curate repository memory, and deliver issue #149 through one ready pull request.
+- **OPEN ITEMS**: deliver GH-149 through its ready pull request
+- **POINTERS**: `docs/specs/0064-aws-agent-toolkit-guidance/SPEC.md`
+
 ## LAST UPDATED
 
-2026-08-11 10:35:00 EDT
+2026-08-14 08:06:28 EDT

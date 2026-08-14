@@ -47,6 +47,11 @@ Before Git, GitHub, or AWS mutations, load `docs/agents/GUARDRAILS.md` and relev
 - If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.
 - Treat a material change to target identity, environment, region or cluster, resource set, action type, impact, or recovery as a follow-up batch; compatible tools, commands, and retries inside the approved boundary do not require another prompt.
 
+## AWS Context Hard Gate
+
+- Before AWS-dependent work, load `docs/references/rules/aws-agent-toolkit-guidance.md` and use its current AWS skill, official documentation, AWS MCP Server or CLI fallback, identity, infrastructure-approval, and secret-safety routing; repo-local Kit gates remain authoritative. If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation
+- Use only the verified configured profile; stop on missing credentials, incomplete configuration, or identity mismatch
+
 ## Final Response
 
 Every implementation final response must include:

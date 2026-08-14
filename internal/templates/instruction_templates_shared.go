@@ -37,7 +37,7 @@ When the user asks to create or mutate an issue, branch, staging, commit, push, 
 
 ## AWS Context Hard Gate
 
-When .kit.yaml defines an enabled aws context:
+` + awsAgentToolkitGuidanceRoute + ` When .kit.yaml defines an enabled aws context:
 
 - Run kit aws verify before the first AWS-dependent command in each task and again immediately before any AWS mutation
 - Treat the verified account and ARN as authoritative, not the profile name alone
