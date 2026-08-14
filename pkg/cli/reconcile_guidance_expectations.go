@@ -70,6 +70,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"When I explicitly authorize an external browser, terminate and verify all",
 			"task-owned browser and automation processes before finishing.",
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
+			"Use only the verified configured profile and Region",
 			"Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 			"Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.",
 			"Put one consolidated outline of the target context, resource actions, execution boundary, material impact and risk, rollback or recovery, and validation evidence into the task plan when planning is used; otherwise present it once before the first covered mutation. Obtain one explicit user confirmation for the complete bounded batch.",
@@ -81,6 +82,7 @@ func v3GuidanceExpectations() map[string][]string {
 		".github/copilot-instructions.md": {
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
 			"If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation",
+			"Use only the verified configured profile and Region",
 			"Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 			"Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.",
 			"Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
@@ -126,6 +128,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"docs/references/rules/source-file-size.md",
 			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
+			"Treat the returned account ID, ARN, and Region as authoritative",
 			"Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 			"Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
 			"If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",

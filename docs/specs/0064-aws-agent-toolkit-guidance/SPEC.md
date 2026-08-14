@@ -37,6 +37,22 @@ references:
     read_policy: must
     used_for: project-bound AWS identity verification and profile behavior
     status: active
+  - id: aws-cli-profile-region
+    name: AWS CLI profile configuration
+    type: documentation
+    target: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
+    relation: informs
+    read_policy: must
+    used_for: project default-Region semantics and profile Region preference
+    status: active
+  - id: aws-enabled-regions
+    name: AWS CLI describe-regions reference
+    type: documentation
+    target: https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-regions.html
+    relation: informs
+    read_policy: must
+    used_for: live account-enabled Region discovery
+    status: active
   - id: infrastructure-approval
     name: Infrastructure change approval rule
     type: rule
@@ -71,7 +87,9 @@ delivery_intent: issue_branch_pr_ready
 Integrate AWS Agent Toolkit guidance into Kit-managed projects so coding agents
 use current AWS skills and official documentation, prefer the AWS MCP Server
 when available, and fall back to the AWS CLI without weakening Kit's existing
-identity, infrastructure-approval, delivery, or secret-safety boundaries.
+identity, infrastructure-approval, delivery, or secret-safety boundaries. Bind
+each enabled project AWS context to one explicit default Region selected through
+the existing interactive initialization and reconciliation experience.
 
 ## CONTEXT
 
@@ -91,6 +109,14 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
 - Kit already owns project-bound AWS identity through `.kit.yaml` and
   `kit aws verify`. That gate is stricter and more specific than the vendor's
   generic STS verification and must remain authoritative when configured.
+- The existing AWS schema binds a project to a verified profile and account but
+  does not persist a Region. A valid profile/account pair therefore takes the
+  local-only fast path even though AWS CLI calls still lack the project default
+  Region required by the upstream setup and current AWS CLI guidance.
+- `kit init` invokes interactive configuration remediation directly, while an
+  interactive `kit reconcile` reaches the same remediation through Kit's root
+  preflight. Extending that shared path keeps both experiences aligned without
+  adding a second Region prompt implementation.
 - Kit already owns public-cloud and infrastructure-as-code mutation approval
   through `infrastructure-change-approval`; Agent Toolkit guidance must not
   create separate or implied mutation consent.
@@ -127,7 +153,23 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
   guessing when authoritative documentation cannot be reached.
 - Preserve Kit's AWS context hard gate. When `.kit.yaml` enables AWS, run
   `kit aws verify` before the first AWS-dependent command and again immediately
-  before AWS mutation, then use only the verified configured profile.
+  before AWS mutation, then use only the verified configured profile and
+  Region.
+- Advance the project-config schema to version 2 and require a valid
+  `aws.region` whenever AWS context is enabled. Preserve `aws.enabled: false` as
+  a complete opt-out with no profile, account, or Region prompt.
+- When an enabled profile/account binding lacks a Region, use the verified
+  profile and AWS CLI `ec2 describe-regions` response to present a numbered
+  selector of Regions currently enabled for that account. Do not guess from
+  repository ownership, a profile name, ambient variables, or a copied list.
+- Use the same shared remediation from interactive `kit init`, `kit reconcile`,
+  and `kit config check`. Noninteractive, JSON, output-only, and dry-run paths
+  must remain prompt-free and must not write configuration.
+- Preserve the complete local-only fast path after profile, account, and Region
+  are valid. Region discovery and STS verification run only during accepted
+  interactive remediation or explicit `kit aws verify`.
+- Make `kit aws verify` pass the configured Region explicitly to STS and report
+  Region alongside the verified profile, account, and ARN.
 - When no enabled Kit AWS context exists but an AWS interaction is required,
   verify caller identity with STS and reconcile the account, ARN, region, and
   intended environment explicitly. Never silently accept ambient credentials
@@ -154,9 +196,11 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
   current AWS-source, skill, MCP/CLI, identity, IaC, documentation, approval,
   and secret-safety requirements.
 - Non-goals: installing or authenticating Agent Toolkit in this task, mutating
-  AWS resources, changing `.kit.yaml` schema or `kit aws verify`, vendoring the
-  complete AWS rule text, hard-coding current Agent Toolkit regions or flags,
-  adding a new Kit command, or replacing infrastructure approval.
+  AWS resources, writing the selected Region into the user's AWS CLI profile,
+  supporting multiple default Regions per project, vendoring the complete AWS
+  rule text, hard-coding a static Region catalog or current Agent Toolkit
+  regions or flags, adding a new Kit command, or replacing infrastructure
+  approval.
 
 ## ACCEPTED PLAN
 
@@ -171,12 +215,17 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
    downstream mandatory-rule adoption, and reconcile expectations.
 4. Add focused tests for ruleset metadata and semantics, generated instruction
    parity, support-doc routing, refresh adoption, and managed guidance checks.
-5. Reconcile the checked-in generated artifacts, minimize unrelated generated
+5. Extend project-config schema version 2 with required `aws.region`, add live
+   enabled-Region discovery and numbered selection to shared interactive
+   remediation, and make verification use and report the configured Region.
+6. Add schema, persistence, selector, init/reconcile-preflight, fast-path,
+   verification, capability, and compatibility regression coverage.
+7. Reconcile the checked-in generated artifacts, minimize unrelated generated
    summary churn, then run formatting, focused tests, full tests, race tests,
    vet, lint, builds, Kit checks, source-size, secret, and whitespace audits.
-6. Curate the actual outcome into this spec and demonstrated project invariants
+8. Curate the actual outcome into this spec and demonstrated project invariants
    only where appropriate, explicitly stage GH-149 paths, commit and push as
-   Jameson Stone, and open one ready pull request assigned to Jameson Stone.
+   Jameson Stone, and update ready pull request #150 assigned to Jameson Stone.
 
 ## DECISIONS
 
@@ -192,6 +241,15 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
   skill interfaces.
 - Accepted: preserve Kit's stricter local gates. Vendor tooling guidance can
   narrow behavior but cannot weaken project identity or user approval.
+- Accepted: version the required Region as project-config schema 2. Existing
+  schema-1 projects remain readable and receive the existing accepted migration
+  prompt before Region selection instead of being silently rewritten.
+- Accepted: discover enabled Regions live through the selected AWS profile.
+  A static catalog would drift, while all-Region discovery could offer Regions
+  the account has not enabled.
+- Accepted: prompt only when enabled AWS context is incomplete. Requiring a
+  Region choice on every reconcile would turn a one-time configuration repair
+  into recurring noise and would destroy the current local-only fast path.
 - Rejected: paste the complete AWS experience rule into every root instruction
   file. That duplicates policy, expands always-loaded context, and bypasses the
   registry and reconciliation model.
@@ -205,6 +263,10 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
   default AWS Region from the toolkit service Region. This reinforces the
   decision to retrieve the current setup document rather than persist today's
   region behavior in Kit.
+- Official AWS CLI documentation defines the profile Region as the default for
+  requests and documents `ec2 describe-regions` as the account-enabled Region
+  inventory. The project Region is therefore distinct from the Agent Toolkit
+  service Region and must not be inferred from it.
 - Agent Toolkit skills are visible through the current host skill catalog, but
   the upstream `retrieve_skill` operation is not a portable Kit interface.
 - Kit's registry enumerates downstream rules from
@@ -221,28 +283,46 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
   skill-first guidance, documentation verification, MCP preference with CLI
   fallback, infrastructure as code, Well-Architected practice, and secret-safe
   runtime resolution.
-- `go test ./internal/templates ./pkg/cli -count=1` and the complete
-  `go test ./... -count=1` suite passed.
-- `go test -race ./internal/templates ./pkg/cli -count=1` passed for the
-  complete affected packages.
+- Verified the current official AWS CLI profile-configuration and EC2
+  `describe-regions` references. They establish the profile Region as a
+  request default and `describe-regions` as the account-enabled Region
+  inventory used by the selector.
+- `go test ./internal/config ./internal/templates ./pkg/cli -count=1` and the
+  complete `go test ./... -count=1` suite passed. Focused coverage includes
+  schema validation and persistence, existing profile/account migration,
+  account-enabled Region choices including `us-east-1`, `us-east-2`, and
+  `us-west-1`, explicit choice persistence, EOF no-write behavior, reconcile
+  preflight routing, complete-context no-subprocess behavior, and Region-bound
+  STS verification.
+- `go test -race ./internal/config ./internal/templates ./pkg/cli -count=1`
+  passed for the complete affected packages.
 - `go fmt ./...`, `go vet ./...`, `go build ./...`, and
   `golangci-lint run --new-from-rev=origin/main ./...` passed with no issues.
+- `go run ./cmd/kit config check --json` reported schema 2, current, valid,
+  and the repository's explicit disabled AWS context. Capability inspection
+  reports live enabled-Region discovery for interactive repair and configured
+  profile-plus-Region use for `kit aws verify`.
 - `kit check 0064-aws-agent-toolkit-guidance` and `kit check --project`
   passed. `kit rules list` parses the new active downstream rule and reports it
   as locally untracked until publication from GitHub `main` after merge.
 - `kit reconcile --all --output-only` reported no reconciliation needed and a
-  complete source-file-size audit: 672 version-control-eligible candidates,
-  341 eligible handwritten source/test files, and zero above 300 physical
+  complete source-file-size audit: 675 version-control-eligible candidates,
+  344 eligible handwritten source/test files, and zero above 300 physical
   lines.
 - `gitleaks git --redact --no-banner` scanned 331 commits and approximately
-  12.15 MB with no leaks; the final `gitleaks dir --redact --no-banner .`
-  working-tree scan checked approximately 4.06 MB with no leaks.
+  12.15 MB with no leaks for the guidance baseline; the final
+  `gitleaks dir --redact --no-banner .` working-tree scan checked approximately
+  4.44 MB with no leaks.
   `git diff --check` passed.
-- AWS setup, authentication, AWS API interaction, deployment, runtime, and
-  production acceptance were not applicable: this delivery changes project
-  guidance and performs no AWS-dependent command or AWS mutation.
+- Live AWS setup, authentication, Region discovery, deployment, runtime, and
+  production acceptance were not performed: this repository's AWS context is
+  disabled, the CLI interactions are covered with controlled subprocess
+  stubs, and this delivery performs no AWS-dependent command or AWS mutation.
 
 ## OUTCOME
+
+AWS Agent Toolkit routing and project default-Region configuration are
+implemented on the GH-149 / PR #150 lane.
 
 - Kit now owns one active downstream `aws-agent-toolkit-guidance` rule that
   routes AWS work through current Agent Toolkit skills and official
@@ -255,6 +335,16 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
 - The new rule preserves `kit aws verify` as the authoritative identity gate
   for enabled project contexts and preserves the existing infrastructure
   approval rule as the authority for AWS and infrastructure-as-code mutation.
+- Project config schema 2 requires `aws.region` for enabled AWS contexts. The
+  checked-in `.kit.yaml` is migrated to schema 2 while retaining its explicit
+  disabled AWS opt-out without profile, account, or Region bindings.
+- Interactive `kit init`, `kit reconcile`, and `kit config check` share one
+  remediation flow. Existing verified profile/account bindings skip profile
+  reselection, fetch the account-enabled Region inventory live, and present a
+  numbered default-Region selector; complete bindings remain local-only.
+- `kit aws verify` rejects missing or invalid Regions, passes the configured
+  profile and Region explicitly to STS, and reports Region with account and
+  ARN evidence.
 - Secret handling fails closed on the current `aws-secrets-manager` skill and
   prohibits secret-value retrieval into agent context while retaining the
   upstream dynamic-reference and `asm-exec` runtime-resolution boundary.
@@ -264,8 +354,8 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
 - Focused regression tests enforce ruleset metadata and semantics, every
   supported instruction scaffold, V3 Copilot identity parity, support-document
   routing, registry adoption, and managed-guidance reconciliation.
-- No AWS CLI, Agent Toolkit, MCP server, shell configuration, user credentials,
-  `.kit.yaml` context, cloud resource, or infrastructure state was installed,
+- No AWS CLI, Agent Toolkit, MCP server, shell configuration, user AWS profile,
+  credentials, cloud resource, or infrastructure state was installed,
   authenticated, or changed by this repository delivery.
 
 ## REPOSITORY MEMORY
@@ -273,10 +363,11 @@ identity, infrastructure-approval, delivery, or secret-safety boundaries.
 Decision: created
 
 Rationale: The vendor-freshness boundary, host-portable skill loading,
-MCP-versus-CLI selection, and precedence of Kit identity, approval, and secret
-safety are material project rationale that code and tests cannot preserve
-alone. The Constitution remains unchanged because this feature applies the
-existing registry-backed-rule, evidence-before-mutation, and generated-scaffold
+MCP-versus-CLI selection, live enabled-Region discovery, project-local Region
+ownership, and precedence of Kit identity, approval, and secret safety are
+material project rationale that code and tests cannot preserve alone. The
+Constitution remains unchanged because this feature applies the existing
+registry-backed-rule, evidence-before-mutation, and generated-scaffold
 invariants rather than establishing a new project-wide constitutional rule.
 
 Artifacts:

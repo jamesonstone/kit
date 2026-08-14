@@ -32,6 +32,7 @@ type awsVerifyReport struct {
 	SchemaVersion int    `json:"schema_version"`
 	Profile       string `json:"profile"`
 	AccountID     string `json:"account_id"`
+	Region        string `json:"region"`
 	ARN           string `json:"arn"`
 	UserID        string `json:"user_id,omitempty"`
 }
@@ -65,11 +66,12 @@ func runAWSVerify(cmd *cobra.Command, args []string) error {
 	if !cfg.AWS.IsEnabled() {
 		return fmt.Errorf("AWS context is disabled in .kit.yaml")
 	}
-	if !validAWSAccountID(cfg.AWS.AccountID) || strings.TrimSpace(cfg.AWS.Profile) == "" {
+	if !validAWSAccountID(cfg.AWS.AccountID) || strings.TrimSpace(cfg.AWS.Profile) == "" || !config.ValidAWSRegion(cfg.AWS.Region) {
 		return fmt.Errorf("AWS context is incomplete; run `kit config check`")
 	}
 
 	profile := strings.TrimSpace(cfg.AWS.Profile)
+	region := strings.TrimSpace(cfg.AWS.Region)
 	if environmentProfile := strings.TrimSpace(os.Getenv("AWS_PROFILE")); environmentProfile != "" && environmentProfile != profile {
 		return fmt.Errorf(
 			"AWS_PROFILE %q does not match .kit.yaml profile %q; unset it or select the configured project profile",
@@ -77,7 +79,7 @@ func runAWSVerify(cmd *cobra.Command, args []string) error {
 			profile,
 		)
 	}
-	identity, err := resolveAWSIdentity(profile)
+	identity, err := resolveAWSIdentity(profile, region)
 	if err != nil {
 		return err
 	}
@@ -93,6 +95,7 @@ func runAWSVerify(cmd *cobra.Command, args []string) error {
 		SchemaVersion: config.CurrentSchemaVersion,
 		Profile:       profile,
 		AccountID:     identity.Account,
+		Region:        region,
 		ARN:           identity.ARN,
 		UserID:        identity.UserID,
 	}
@@ -101,9 +104,10 @@ func runAWSVerify(cmd *cobra.Command, args []string) error {
 	}
 	_, err = fmt.Fprintf(
 		cmd.OutOrStdout(),
-		"✅ AWS context verified\n  Profile: %s\n  Account: %s\n  ARN: %s\n",
+		"✅ AWS context verified\n  Profile: %s\n  Account: %s\n  Region: %s\n  ARN: %s\n",
 		report.Profile,
 		report.AccountID,
+		report.Region,
 		report.ARN,
 	)
 	return err

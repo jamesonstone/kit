@@ -53,6 +53,11 @@ read_policy_default: must
   supported operating systems, authentication flow, setup flags, toolkit
   service Region, skill-catalog verification, credential lifetime, and error
   recovery. Do not preserve those changing details as Kit invariants.
+- For project default-Region behavior, use the current official AWS CLI
+  configuration and EC2 `describe-regions` references:
+  `https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html`
+  and
+  `https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-regions.html`.
 - If either required source is unavailable, report the evidence gap and stop
   the affected setup or refresh path. Do not substitute remembered commands.
 - Explain each installation or authentication mutation and its purpose. Never
@@ -95,14 +100,31 @@ read_policy_default: must
 - Use explicit Regions for Region-scoped operations and use ASCII hyphens, not
   em dashes, in AWS resource names and descriptions.
 
+### Project AWS Context
+
+- An enabled `.kit.yaml` AWS context must bind one `profile`, quoted
+  `account_id`, and default `region`. An explicitly disabled context stores no
+  profile, account, or Region binding.
+- During interactive `kit init`, `kit reconcile`, or `kit config check`, repair
+  an incomplete enabled context through the shared selector flow. Verify the
+  profile and account first, query `aws ec2 describe-regions` for Regions
+  enabled for that account, and let the user choose the project default.
+- Prefer the selected profile's configured Region as the selector default when
+  it is enabled. Do not maintain a static Region catalog, present Regions the
+  account cannot use, or write the selection into the user's AWS CLI config.
+- A complete profile, account, and Region binding is a local fast path. Do not
+  invoke AWS or re-prompt during ordinary init or reconcile unless the context
+  is missing, invalid, or explicitly being changed.
+
 ### Identity And Mutation Authority
 
 - When `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before
   the first AWS-dependent command in the task and again immediately before an
   AWS or AWS-backed deployment mutation.
-- Treat the verified account ID and ARN as authoritative. Use only the
-  configured verified profile for AWS CLI, SDK, CDK, CloudFormation,
-  Terraform, deployment, and project-script operations where supported.
+- Treat the verified account ID, ARN, and Region as authoritative. Use only the
+  configured verified profile and Region for AWS CLI, SDK, CDK,
+  CloudFormation, Terraform, deployment, and project-script operations where
+  supported.
 - After Kit verification fails, never fall back to default, ambient, or another
   discovered profile.
 - When no enabled Kit AWS context exists but AWS access is required, run an STS

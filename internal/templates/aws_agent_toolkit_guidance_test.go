@@ -46,7 +46,7 @@ func TestMemoryCopilotPreservesAWSIdentityGate(t *testing.T) {
 		"## AWS Context Hard Gate",
 		"If `.kit.yaml` defines an enabled AWS context",
 		"run `kit aws verify` before the first AWS-dependent command",
-		"Use only the verified configured profile",
+		"Use only the verified configured profile and Region",
 	} {
 		if !strings.Contains(MemoryCopilotInstructionsMD, check) {
 			t.Errorf("expected V3 Copilot instructions to contain %q", check)

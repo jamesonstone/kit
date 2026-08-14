@@ -44,6 +44,7 @@ type configCheckAWS struct {
 	Enabled    bool   `json:"enabled"`
 	Profile    string `json:"profile,omitempty"`
 	AccountID  string `json:"account_id,omitempty"`
+	Region     string `json:"region,omitempty"`
 }
 
 type configRemediationOptions struct {
@@ -110,6 +111,7 @@ func buildConfigCheckReport(cfg *config.Config, inspection config.Inspection) co
 		aws.Enabled = cfg.AWS.IsEnabled()
 		aws.Profile = cfg.AWS.Profile
 		aws.AccountID = cfg.AWS.AccountID
+		aws.Region = cfg.AWS.Region
 	}
 	return configCheckReport{
 		SchemaVersion:        inspection.SchemaVersion,
@@ -130,7 +132,7 @@ func printConfigCheckReport(out io.Writer, report configCheckReport) {
 	case !report.AWS.Enabled:
 		_, _ = fmt.Fprintln(out, "  AWS: disabled")
 	default:
-		_, _ = fmt.Fprintf(out, "  AWS: profile=%s account=%s\n", report.AWS.Profile, report.AWS.AccountID)
+		_, _ = fmt.Fprintf(out, "  AWS: profile=%s account=%s region=%s\n", report.AWS.Profile, report.AWS.AccountID, report.AWS.Region)
 	}
 	for _, finding := range report.Findings {
 		_, _ = fmt.Fprintf(out, "  - [%s] %s: %s\n", finding.Severity, finding.Field, finding.Message)

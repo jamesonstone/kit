@@ -55,7 +55,7 @@ func discoverAWSProfiles() ([]string, error) {
 	return profiles, nil
 }
 
-func resolveAWSIdentity(profile string) (awsIdentity, error) {
+func resolveAWSIdentity(profile, region string) (awsIdentity, error) {
 	profile = strings.TrimSpace(profile)
 	if profile == "" {
 		return awsIdentity{}, fmt.Errorf("AWS profile is required")
@@ -66,14 +66,12 @@ func resolveAWSIdentity(profile string) (awsIdentity, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), awsIdentityTimeout)
 	defer cancel()
-	output, err := awsCombinedOutput(
-		ctx,
-		path,
-		"sts", "get-caller-identity",
-		"--profile", profile,
-		"--output", "json",
-		"--no-cli-pager",
-	)
+	args := []string{"sts", "get-caller-identity", "--profile", profile}
+	if region = strings.TrimSpace(region); region != "" {
+		args = append(args, "--region", region)
+	}
+	args = append(args, "--output", "json", "--no-cli-pager")
+	output, err := awsCombinedOutput(ctx, path, args...)
 	if err != nil {
 		return awsIdentity{}, fmt.Errorf("verify AWS profile %q: %w", profile, err)
 	}

@@ -34,11 +34,15 @@ func stubAWSContext(t *testing.T, profiles, identity string) {
 		switch {
 		case strings.Contains(joined, "configure list-profiles"):
 			return []byte(profiles), nil
+		case strings.Contains(joined, "configure get region"):
+			return []byte("us-east-1\n"), nil
 		case strings.Contains(joined, "sts get-caller-identity"):
 			if identity == "" {
 				return nil, errors.New("unexpected STS call")
 			}
 			return []byte(identity), nil
+		case strings.Contains(joined, "ec2 describe-regions"):
+			return []byte("us-east-1\tus-east-2\tus-west-1\tus-west-2\n"), nil
 		default:
 			return nil, errors.New("unexpected AWS command: " + joined)
 		}
