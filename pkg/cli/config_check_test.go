@@ -17,7 +17,7 @@ func TestAWSConfigRemediationSingleProfileDefaultsYes(t *testing.T) {
 
 	changed, err := remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
 		Interactive: true,
-		Input:       strings.NewReader("\n"),
+		Input:       strings.NewReader("\n\n"),
 		Output:      &out,
 	})
 	if err != nil {
@@ -29,12 +29,17 @@ func TestAWSConfigRemediationSingleProfileDefaultsYes(t *testing.T) {
 	if !strings.Contains(out.String(), `Use the only AWS profile "dev" for this project? [Y/n]:`) {
 		t.Fatalf("output missing default-yes prompt:\n%s", out.String())
 	}
+	for _, region := range []string{"us-east-1", "us-east-2", "us-west-1", "us-west-2"} {
+		if !strings.Contains(out.String(), region) {
+			t.Fatalf("output missing enabled Region %q:\n%s", region, out.String())
+		}
+	}
 
 	updated, _, err := config.LoadWithInspection(root)
 	if err != nil {
 		t.Fatalf("LoadWithInspection() error = %v", err)
 	}
-	if updated.AWS == nil || updated.AWS.Profile != "dev" || updated.AWS.AccountID != "012345678901" {
+	if updated.AWS == nil || updated.AWS.Profile != "dev" || updated.AWS.AccountID != "012345678901" || updated.AWS.Region != "us-east-1" {
 		t.Fatalf("AWS = %#v, want verified dev context", updated.AWS)
 	}
 }
@@ -70,7 +75,7 @@ func TestAWSConfigRemediationMultipleProfilesRequiresSelection(t *testing.T) {
 
 	changed, err := remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
 		Interactive: true,
-		Input:       strings.NewReader("2\n"),
+		Input:       strings.NewReader("2\n\n"),
 		Output:      &out,
 	})
 	if err != nil {
@@ -142,7 +147,7 @@ func TestAWSConfigRemediationMismatchDoesNotWrite(t *testing.T) {
 
 	_, err = remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
 		Interactive: true,
-		Input:       strings.NewReader("\n"),
+		Input:       strings.NewReader("\n\n"),
 		Output:      &bytes.Buffer{},
 	})
 	if err == nil || !strings.Contains(err.Error(), "expects 999900001111") {
@@ -168,7 +173,7 @@ func TestAWSConfigRemediationRepairsInvalidAccountID(t *testing.T) {
 
 	changed, err := remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
 		Interactive: true,
-		Input:       strings.NewReader("\n"),
+		Input:       strings.NewReader("\n\n"),
 		Output:      &bytes.Buffer{},
 	})
 	if err != nil {
@@ -185,7 +190,7 @@ func TestAWSConfigRemediationRepairsInvalidAccountID(t *testing.T) {
 	if updatedInspection.HasErrors() {
 		t.Fatalf("updated findings = %#v, want valid config", updatedInspection.Findings)
 	}
-	if updated.AWS == nil || updated.AWS.Profile != "dev" || updated.AWS.AccountID != "012345678901" {
+	if updated.AWS == nil || updated.AWS.Profile != "dev" || updated.AWS.AccountID != "012345678901" || updated.AWS.Region != "us-east-1" {
 		t.Fatalf("AWS = %#v, want repaired verified context", updated.AWS)
 	}
 }
@@ -193,7 +198,7 @@ func TestAWSConfigRemediationRepairsInvalidAccountID(t *testing.T) {
 func TestAWSConfigRemediationQuotesUnquotedAccountID(t *testing.T) {
 	root, _, _ := setupConfigCheckProject(t)
 	path := filepath.Join(root, config.ConfigFileName)
-	content := "schema_version: 1\naws:\n  profile: dev\n  account_id: 012345678901\n"
+	content := "schema_version: 2\naws:\n  profile: dev\n  account_id: 012345678901\n  region: us-east-1\n"
 	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}

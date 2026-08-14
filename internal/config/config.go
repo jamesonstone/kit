@@ -4,7 +4,7 @@ package config
 const ConfigFileName = ".kit.yaml"
 
 const (
-	CurrentSchemaVersion              = 1
+	CurrentSchemaVersion              = 2
 	InstructionScaffoldVersionVerbose = 1
 	InstructionScaffoldVersionTOC     = 2
 	InstructionScaffoldVersionMemory  = 3
@@ -49,6 +49,7 @@ type AWSConfig struct {
 	Enabled   *bool  `yaml:"enabled,omitempty"`
 	Profile   string `yaml:"profile,omitempty"`
 	AccountID string `yaml:"account_id,omitempty"`
+	Region    string `yaml:"region,omitempty"`
 }
 
 func (c *AWSConfig) IsEnabled() bool {

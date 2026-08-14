@@ -170,7 +170,7 @@ func TestRunConfigCheckJSONIsReadOnly(t *testing.T) {
 func TestAutomaticConfigCheckFastPathRunsNoAWSSubprocess(t *testing.T) {
 	root, cfg, _ := setupConfigCheckProject(t)
 	t.Chdir(root)
-	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901"}
+	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901", Region: "us-east-1"}
 	if err := config.UpdateProjectSchemaAndAWS(root, cfg); err != nil {
 		t.Fatalf("UpdateProjectSchemaAndAWS() error = %v", err)
 	}
@@ -210,7 +210,7 @@ func TestAutomaticConfigCheckFastPathRunsNoAWSSubprocess(t *testing.T) {
 func TestAutomaticConfigCheckRejectsNewerSchema(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
-	if err := os.WriteFile(filepath.Join(root, config.ConfigFileName), []byte("schema_version: 2\n"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, config.ConfigFileName), []byte("schema_version: 3\n"), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 	parent := &cobra.Command{Use: "kit"}
@@ -225,7 +225,7 @@ func TestAutomaticConfigCheckRejectsNewerSchema(t *testing.T) {
 func TestRunAWSVerifyMatchesConfiguredAccount(t *testing.T) {
 	root, cfg, _ := setupConfigCheckProject(t)
 	t.Chdir(root)
-	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901"}
+	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901", Region: "us-east-1"}
 	if err := config.UpdateProjectSchemaAndAWS(root, cfg); err != nil {
 		t.Fatalf("UpdateProjectSchemaAndAWS() error = %v", err)
 	}
@@ -241,7 +241,7 @@ func TestRunAWSVerifyMatchesConfiguredAccount(t *testing.T) {
 	if err := runAWSVerify(cmd, nil); err != nil {
 		t.Fatalf("runAWSVerify() error = %v", err)
 	}
-	for _, want := range []string{"AWS context verified", "Profile: dev", "Account: 012345678901", "assumed-role/Developer"} {
+	for _, want := range []string{"AWS context verified", "Profile: dev", "Account: 012345678901", "Region: us-east-1", "assumed-role/Developer"} {
 		if !strings.Contains(out.String(), want) {
 			t.Fatalf("output missing %q:\n%s", want, out.String())
 		}
@@ -251,7 +251,7 @@ func TestRunAWSVerifyMatchesConfiguredAccount(t *testing.T) {
 func TestRunAWSVerifyRejectsConflictingEnvironmentProfile(t *testing.T) {
 	root, cfg, _ := setupConfigCheckProject(t)
 	t.Chdir(root)
-	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901"}
+	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901", Region: "us-east-1"}
 	if err := config.UpdateProjectSchemaAndAWS(root, cfg); err != nil {
 		t.Fatalf("UpdateProjectSchemaAndAWS() error = %v", err)
 	}
@@ -266,7 +266,7 @@ func TestRunAWSVerifyRejectsConflictingEnvironmentProfile(t *testing.T) {
 func TestRunAWSVerifyRejectsUnquotedAccountID(t *testing.T) {
 	root, _, _ := setupConfigCheckProject(t)
 	t.Chdir(root)
-	content := "schema_version: 1\naws:\n  profile: dev\n  account_id: 012345678901\n"
+	content := "schema_version: 2\naws:\n  profile: dev\n  account_id: 012345678901\n  region: us-east-1\n"
 	if err := os.WriteFile(filepath.Join(root, config.ConfigFileName), []byte(content), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}

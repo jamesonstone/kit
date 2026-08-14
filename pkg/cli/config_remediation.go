@@ -11,6 +11,8 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 )
 
+var errAWSRegionRemediation = errors.New("AWS Region remediation failed")
+
 func remediateProjectConfig(
 	projectRoot string,
 	cfg *config.Config,
@@ -59,6 +61,9 @@ func remediateProjectConfig(
 		persistAWS = awsChanged || persistAWS
 		remediationErr = err
 	}
+	if errors.Is(remediationErr, errAWSRegionRemediation) {
+		return false, remediationErr
+	}
 	if !changed {
 		return false, remediationErr
 	}
@@ -92,18 +97,25 @@ func remediateAWSConfig(reader *bufio.Reader, out io.Writer, cfg *config.Config)
 	if cfg.AWS != nil && !cfg.AWS.IsEnabled() {
 		return false, nil
 	}
-	if cfg.AWS != nil && strings.TrimSpace(cfg.AWS.Profile) != "" && validAWSAccountID(cfg.AWS.AccountID) {
+	if cfg.AWS != nil && strings.TrimSpace(cfg.AWS.Profile) != "" &&
+		validAWSAccountID(cfg.AWS.AccountID) && config.ValidAWSRegion(cfg.AWS.Region) {
 		return false, nil
 	}
 
 	profile := ""
+	configuredRegion := ""
 	if cfg.AWS != nil {
 		profile = strings.TrimSpace(cfg.AWS.Profile)
+		configuredRegion = strings.TrimSpace(cfg.AWS.Region)
 	}
+	originalProfile := profile
+	profileComplete := profile != "" && cfg.AWS != nil && validAWSAccountID(cfg.AWS.AccountID)
 	if profile != "" {
-		ok, err := readDefaultYes(reader, out, fmt.Sprintf("Verify and complete AWS profile %q? [Y/n]: ", profile))
-		if err != nil || !ok {
-			return false, err
+		if !profileComplete {
+			ok, err := readDefaultYes(reader, out, fmt.Sprintf("Verify and complete AWS profile %q? [Y/n]: ", profile))
+			if err != nil || !ok {
+				return false, err
+			}
 		}
 	} else {
 		profiles, err := discoverAWSProfiles()
@@ -139,7 +151,11 @@ func remediateAWSConfig(reader *bufio.Reader, out io.Writer, cfg *config.Config)
 		}
 	}
 
-	identity, err := resolveAWSIdentity(profile)
+	identityRegion := ""
+	if profile == originalProfile && config.ValidAWSRegion(configuredRegion) {
+		identityRegion = configuredRegion
+	}
+	identity, err := resolveAWSIdentity(profile, identityRegion)
 	if err != nil {
 		return false, err
 	}
@@ -158,7 +174,18 @@ func remediateAWSConfig(reader *bufio.Reader, out io.Writer, cfg *config.Config)
 			configuredAccountID,
 		)
 	}
-	cfg.AWS = &config.AWSConfig{Profile: profile, AccountID: identity.Account}
+	region := configuredRegion
+	if !config.ValidAWSRegion(region) || profile != originalProfile {
+		regions, defaultRegion, err := discoverEnabledAWSRegions(profile)
+		if err != nil {
+			return false, fmt.Errorf("%w: %w", errAWSRegionRemediation, err)
+		}
+		region, err = selectAWSRegion(reader, out, regions, defaultRegion)
+		if err != nil {
+			return false, fmt.Errorf("%w: %w", errAWSRegionRemediation, err)
+		}
+	}
+	cfg.AWS = &config.AWSConfig{Profile: profile, AccountID: identity.Account, Region: region}
 	return true, nil
 }
 

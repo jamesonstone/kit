@@ -68,7 +68,7 @@ func TestRunInitRefreshForcePreservesAWSContext(t *testing.T) {
 	setWorkingDirectory(t, root)
 	cfg := config.Default()
 	cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
-	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901"}
+	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901", Region: "us-east-1"}
 	if err := config.Save(root, cfg); err != nil {
 		t.Fatalf("Save() error = %v", err)
 	}
@@ -89,7 +89,7 @@ func TestRunInitRefreshForcePreservesAWSContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
-	if updated.AWS == nil || updated.AWS.Profile != "dev" || updated.AWS.AccountID != "012345678901" {
+	if updated.AWS == nil || updated.AWS.Profile != "dev" || updated.AWS.AccountID != "012345678901" || updated.AWS.Region != "us-east-1" {
 		t.Fatalf("AWS = %#v, want preserved dev context", updated.AWS)
 	}
 }
@@ -99,7 +99,7 @@ func TestRunInitRejectsNewerConfigWithoutWriting(t *testing.T) {
 	setupInitHome(t)
 	setWorkingDirectory(t, root)
 	path := filepath.Join(root, config.ConfigFileName)
-	content := []byte("schema_version: 2\ngoal_percentage: automatic\n")
+	content := []byte("schema_version: 3\ngoal_percentage: automatic\n")
 	if err := os.WriteFile(path, content, 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
@@ -119,7 +119,7 @@ func TestRunInitRefreshRejectsNewerConfigWithoutWriting(t *testing.T) {
 	setupInitHome(t)
 	setWorkingDirectory(t, root)
 	path := filepath.Join(root, config.ConfigFileName)
-	content := []byte("schema_version: 2\ngoal_percentage: automatic\n")
+	content := []byte("schema_version: 3\ngoal_percentage: automatic\n")
 	if err := os.WriteFile(path, content, 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}

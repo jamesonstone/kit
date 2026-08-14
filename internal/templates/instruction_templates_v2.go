@@ -34,10 +34,10 @@ func tocRepositoryInstructions(title string) string {
 
 ` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
-- If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
-- Use the verified configured profile explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
+- ` + awsAgentToolkitGuidanceRoute + ` If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
+- Use the verified configured profile and Region explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
 - After verification, never use default, another discovered profile, or ambient credentials
-- Treat the verified account and ARN as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
+- Treat the verified account, ARN, and Region as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
 
 ## Conditional Context
 
@@ -100,10 +100,10 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 
 ` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
-- If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
-- Use the verified configured profile explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
+- ` + awsAgentToolkitGuidanceRoute + ` If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
+- Use the verified configured profile and Region explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
 - After verification, never use default, another discovered profile, or ambient credentials
-- Treat the verified account and ARN as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
+- Treat the verified account, ARN, and Region as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
 
 ## Non-Negotiable Rules
 
@@ -272,6 +272,7 @@ const agentsRLM = `# RLM
 - Load ` + "`docs/references/rules/backend-service-architecture.md`" + ` before implementing API or backend routes, controllers or handlers, application services, repositories, persistence adapters, or gateways
 - Load ` + "`docs/references/rules/frontend-application-architecture.md`" + ` before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components
 - Load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and ` + "`docs/references/testing.md`" + ` before implementation or validation, including browser automation and browser testing
+- Load ` + "`docs/references/rules/aws-agent-toolkit-guidance.md`" + ` before AWS-dependent work
 - Load ` + "`docs/references/rules/infrastructure-change-approval.md`" + ` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state
 - Load ` + "`docs/references/rules/github-pr-merge.md`" + ` and resolve ` + "`pull-request-merge`" + ` before any merge or merge-queue mutation
 - Load ` + "`docs/references/rules/cross-repository-program-coordination.md`" + ` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff

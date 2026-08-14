@@ -116,6 +116,7 @@ func TestRunInitRefresh_InstallsDownstreamCapabilitiesUsageRuleNotMaintainerRule
 
 func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 	slugs := []string{
+		"aws-agent-toolkit-guidance",
 		"backend-service-architecture",
 		"codex-thread-initialization",
 		"cross-repository-program-coordination",

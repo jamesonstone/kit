@@ -66,8 +66,8 @@ merge or merge-queue mutation.
 | --- | --- |
 | `kit status` | Show current feature and Kit-managed state. |
 | `kit check` | Validate feature or project documents. |
-| `kit config check` | Validate and safely repair `.kit.yaml`. |
-| `kit aws verify` | Verify the configured AWS identity. |
+| `kit config check` | Validate and safely repair `.kit.yaml`, including interactive AWS profile, account, and enabled-Region selection. |
+| `kit aws verify` | Verify the configured AWS profile, account, and Region. |
 | `kit improve run` | Run deterministic Kit harness benchmark suites. |
 
 ## Local Usage

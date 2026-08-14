@@ -99,12 +99,12 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 
 ` + githubPRMergeGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
-When .kit.yaml defines an enabled aws context, agents must:
+` + awsAgentToolkitGuidanceRoute + ` When .kit.yaml defines an enabled aws context, agents must:
 
 1. Run kit aws verify before the first AWS-dependent command in the task.
 2. Run kit aws verify again immediately before any command that can mutate AWS resources or deploy through AWS-backed tooling.
-3. Treat the returned account ID and ARN as authoritative. A profile name alone is not proof of identity because environment credentials can change resolution.
-4. Use the verified configured profile explicitly for AWS CLI, SDK, Terraform, CDK, deployment, and project scripts where supported.
+3. Treat the returned account ID, ARN, and Region as authoritative. A profile name alone is not proof of identity because environment credentials can change resolution.
+4. Use the verified configured profile and Region explicitly for AWS CLI, SDK, Terraform, CDK, deployment, and project scripts where supported.
 5. Stop on missing AWS CLI, expired or unavailable credentials, incomplete .kit.yaml AWS fields, or an account mismatch. Read .kit.yaml and ask the user when the intended context remains ambiguous.
 6. Never fall back to default, another discovered profile, or ambient credentials after verification fails.
 
@@ -165,6 +165,7 @@ const referencesREADME = `# References
 - Use ` + "`rules/cross-repository-program-coordination.md`" + ` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff
 - Use ` + "`rules/github-pr-merge.md`" + ` and resolve ` + "`pull-request-merge`" + ` before any authorized merge or merge-queue mutation
 - Use ` + "`rules/infrastructure-change-approval.md`" + ` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal
+- Use ` + "`rules/aws-agent-toolkit-guidance.md`" + ` before AWS-dependent work to select current Agent Toolkit skills, official documentation, the AWS MCP Server or CLI fallback, verified identity, infrastructure approval, and secret-safe handling
 - Use ` + "`rules/testing-and-environment-validation.md`" + ` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
 - Use ` + "`rules/source-file-size.md`" + ` before editing implementation/source or test files and for whole-project reconcile audits
 - Use ` + "`rules/codex-thread-initialization.md`" + ` to preserve Codex's ordered pre-response rename and pin gate during instruction refresh and reconciliation

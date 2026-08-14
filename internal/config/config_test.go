@@ -73,8 +73,8 @@ func TestLoadWithInspectionDistinguishesSchemaStates(t *testing.T) {
 	}{
 		{name: "missing", content: "goal_percentage: 95\n", state: SchemaStateMissing},
 		{name: "older", content: "schema_version: 0\n", state: SchemaStateOlder},
-		{name: "current", content: "schema_version: 1\n", state: SchemaStateCurrent},
-		{name: "newer", content: "schema_version: 2\n", state: SchemaStateNewer},
+		{name: "current", content: "schema_version: 2\n", state: SchemaStateCurrent},
+		{name: "newer", content: "schema_version: 3\n", state: SchemaStateNewer},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -98,7 +98,7 @@ func TestLoadWithInspectionDistinguishesSchemaStates(t *testing.T) {
 
 func TestLoadWithInspectionReportsNewerSchemaBeforeTypedDecode(t *testing.T) {
 	root := t.TempDir()
-	content := "schema_version: 2\ngoal_percentage: automatic\n"
+	content := "schema_version: 3\ngoal_percentage: automatic\n"
 	if err := os.WriteFile(filepath.Join(root, ConfigFileName), []byte(content), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
@@ -117,7 +117,7 @@ func TestLoadWithInspectionReportsNewerSchemaBeforeTypedDecode(t *testing.T) {
 
 func TestLoadWithInspectionValidatesAWSContext(t *testing.T) {
 	root := t.TempDir()
-	content := "schema_version: 1\naws:\n  profile: dev\n  account_id: not-an-account\n"
+	content := "schema_version: 2\naws:\n  profile: dev\n  account_id: not-an-account\n  region: us-east-1\n"
 	if err := os.WriteFile(filepath.Join(root, ConfigFileName), []byte(content), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
@@ -147,7 +147,7 @@ func TestLoadWithInspectionRequiresQuotedAWSAccountID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			root := t.TempDir()
-			content := "schema_version: 1\naws:\n  profile: dev\n  account_id: " + tt.accountID + "\n"
+			content := "schema_version: 2\naws:\n  profile: dev\n  account_id: " + tt.accountID + "\n  region: us-east-1\n"
 			if err := os.WriteFile(filepath.Join(root, ConfigFileName), []byte(content), 0644); err != nil {
 				t.Fatalf("WriteFile() error = %v", err)
 			}
@@ -193,7 +193,7 @@ func TestUpdateProjectSchemaAndAWSPreservesUnknownFields(t *testing.T) {
 		t.Fatalf("LoadWithInspection() error = %v", err)
 	}
 	cfg.SchemaVersion = CurrentSchemaVersion
-	cfg.AWS = &AWSConfig{Profile: "dev", AccountID: "012345678901"}
+	cfg.AWS = &AWSConfig{Profile: "dev", AccountID: "012345678901", Region: "us-east-1"}
 	if err := UpdateProjectSchemaAndAWS(root, cfg); err != nil {
 		t.Fatalf("UpdateProjectSchemaAndAWS() error = %v", err)
 	}
@@ -203,7 +203,7 @@ func TestUpdateProjectSchemaAndAWSPreservesUnknownFields(t *testing.T) {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
 	text := string(updated)
-	for _, want := range []string{"schema_version: 1", "custom_root:", "keep: true", "profile: dev", `account_id: "012345678901"`} {
+	for _, want := range []string{"schema_version: 2", "custom_root:", "keep: true", "profile: dev", `account_id: "012345678901"`, "region: us-east-1"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("updated config missing %q:\n%s", want, text)
 		}

@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: infrastructure-change-approval
-description: Requires one plan-level confirmation and one-pass execution per infrastructure batch, with explicit deletion confirmation.
+description: Requires one plan-level confirmation and one-pass execution per infrastructure batch, with name-aware material AWS targets and explicit deletion confirmation.
 status: active
 registry_scope: downstream
 applies_to:
@@ -101,6 +101,26 @@ contracts.
 - Use read-only discovery to make the outline complete before asking. Do not
   split known changes into several summaries or approval prompts.
 
+### Name-Aware Material AWS Targets
+
+- Treat an AWS infrastructure batch as large or materially risky when it
+  affects production or shared infrastructure, spans accounts, Regions, or a
+  substantial resource set, or can materially change IAM or security, network
+  routing, persistent data, availability, cost, or recovery.
+- For such a batch, follow `aws-agent-toolkit-guidance` during read-only
+  discovery to resolve the current account display name and Region long name
+  where the verified identity, partition, API availability, and permissions
+  allow it.
+- Show the target once in the consolidated outline as
+  `account name (account ID)` and `Region long name (Region code)`. Keep the
+  STS-verified account ID, ARN, and Region code authoritative; names are
+  display-only operator aids.
+- If a name cannot be resolved, state `display name unavailable` beside the
+  stable ID or code. Do not guess, change credentials, or broaden IAM access to
+  obtain a label.
+- Fold this evidence into the existing consolidated outline and its one
+  confirmation. Do not create a separate identity prompt or approval ceremony.
+
 ### One Confirmation And One-Pass Execution
 
 - Obtain one explicit user confirmation of the complete outline before editing
@@ -188,6 +208,10 @@ confirmation boundary above.
 
 - Confirm the outline identifies target, actions, execution boundary, impact,
   rollback or recovery, and validation before the first mutation.
+- For a large or materially risky AWS batch, confirm the outline includes the
+  resolved account and Region names where available, always includes the
+  stable account ID and Region code, and reports unavailable display labels
+  explicitly without broadening access.
 - Confirm the user approved the plan or outline once for the complete batch, or
   supplied a qualifying initial request for a non-deletion batch.
 - Confirm every deletion or removal received explicit confirmation after its
@@ -222,11 +246,11 @@ Proceed with this bounded batch?
 Detailed non-deletion initial request that can count as confirmation:
 
 ```text
-In AWS account 123456789012, region us-east-1, update only the existing staging
-ECS service desired count from 2 to 3. This adds one task and its normal cost,
-does not change data or IAM, and can be rolled back to 2. Verify the account,
-service deployment, ready task count, and health check. Proceed with exactly
-that change.
+In AWS account payments-production (123456789012), Region US East
+(N. Virginia) (us-east-1), update only the existing staging ECS service desired
+count from 2 to 3. This adds one task and its normal cost, does not change data
+or IAM, and can be rolled back to 2. Verify the account, service deployment,
+ready task count, and health check. Proceed with exactly that change.
 ```
 
 Planned deletion that always requires confirmation after the summary:

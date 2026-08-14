@@ -144,7 +144,14 @@ func isQuotedYAMLString(node *yaml.Node) bool {
 	return node.Style == yaml.SingleQuotedStyle || node.Style == yaml.DoubleQuotedStyle
 }
 
-var awsAccountIDPattern = regexp.MustCompile(`^[0-9]{12}$`)
+var (
+	awsAccountIDPattern = regexp.MustCompile(`^[0-9]{12}$`)
+	awsRegionPattern    = regexp.MustCompile(`^[a-z][a-z0-9]*(?:-[a-z0-9]+)+-[0-9]+$`)
+)
+
+func ValidAWSRegion(value string) bool {
+	return awsRegionPattern.MatchString(strings.TrimSpace(value))
+}
 
 func semanticFindings(cfg *Config) []Finding {
 	var findings []Finding
@@ -182,6 +189,9 @@ func semanticFindings(cfg *Config) []Finding {
 	if !awsAccountIDPattern.MatchString(strings.TrimSpace(cfg.AWS.AccountID)) {
 		findings = append(findings, Finding{Field: "aws.account_id", Severity: FindingError, Message: "aws.account_id must be a quoted 12-digit string", Repairable: true})
 	}
+	if !ValidAWSRegion(cfg.AWS.Region) {
+		findings = append(findings, Finding{Field: "aws.region", Severity: FindingError, Message: "aws.region must be a valid AWS Region code", Repairable: true})
+	}
 	return findings
 }
 
@@ -208,10 +218,12 @@ func UpdateProjectSchemaAndAWS(projectRoot string, cfg *Config) error {
 			setTypedScalar(aws, "enabled", "false", "!!bool", 0)
 			removeKey(aws, "profile")
 			removeKey(aws, "account_id")
+			removeKey(aws, "region")
 		} else {
 			removeKey(aws, "enabled")
 			setTypedScalar(aws, "profile", strings.TrimSpace(cfg.AWS.Profile), "!!str", 0)
 			setTypedScalar(aws, "account_id", strings.TrimSpace(cfg.AWS.AccountID), "!!str", yaml.DoubleQuotedStyle)
+			setTypedScalar(aws, "region", strings.TrimSpace(cfg.AWS.Region), "!!str", 0)
 		}
 	}
 

@@ -147,18 +147,18 @@ func TestInstructionTemplatesIncludeAWSContextHardGate(t *testing.T) {
 			"kit aws verify",
 			"before the first AWS-dependent command",
 			"before any AWS mutation",
-			"verified configured profile explicitly for every AWS-dependent command",
+			"verified configured profile and Region explicitly for every AWS-dependent command",
 			"including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts",
 			"After verification, never use default, another discovered profile, or ambient credentials",
 		}
 		if version == config.InstructionScaffoldVersionVerbose {
 			wants = append(wants,
-				"Treat the verified account and ARN as authoritative, not the profile name alone",
+				"Treat the verified account, ARN, and Region as authoritative, not the profile name alone",
 				"If verification fails, config is incomplete, credentials are unavailable, or the account mismatches, stop and ask",
 			)
 		} else {
 			wants = append(wants,
-				"Treat the verified account and ARN as authoritative; on missing credentials, incomplete config, or mismatch, stop",
+				"Treat the verified account, ARN, and Region as authoritative; on missing credentials, incomplete config, or mismatch, stop",
 			)
 		}
 		for _, path := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
@@ -172,7 +172,7 @@ func TestInstructionTemplatesIncludeAWSContextHardGate(t *testing.T) {
 	}
 
 	guardrails := fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/agents/GUARDRAILS.md")
-	for _, want := range []string{"## AWS Context Hard Gate", "account ID and ARN as authoritative", "Never fall back to default"} {
+	for _, want := range []string{"## AWS Context Hard Gate", "account ID, ARN, and Region as authoritative", "Never fall back to default"} {
 		if !strings.Contains(guardrails, want) {
 			t.Fatalf("GUARDRAILS.md missing %q", want)
 		}
