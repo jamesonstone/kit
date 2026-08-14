@@ -58,6 +58,12 @@ read_policy_default: must
   `https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html`
   and
   `https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-regions.html`.
+- For human-readable AWS target labels, use the current official Account
+  Management `get-account-information` and Systems Manager public-parameter
+  references:
+  `https://docs.aws.amazon.com/cli/latest/reference/account/get-account-information.html`
+  and
+  `https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-public-parameters-global-infrastructure.html`.
 - If either required source is unavailable, report the evidence gap and stop
   the affected setup or refresh path. Do not substitute remembered commands.
 - Explain each installation or authentication mutation and its purpose. Never
@@ -131,6 +137,26 @@ read_policy_default: must
   caller-identity check through the selected AWS execution path and reconcile
   the account, ARN, Region, and intended environment. Ambient credentials alone
   are not proof that the target is correct.
+- Treat an AWS infrastructure batch as large or materially risky when it
+  affects production or shared infrastructure, spans accounts, Regions, or a
+  substantial resource set, or can materially change IAM or security, network
+  routing, persistent data, availability, cost, or recovery.
+- During read-only discovery for such a batch, use the verified profile to
+  resolve the current AWS account display name through the documented Account
+  Management `aws account get-account-information` operation where permission
+  allows. Require its returned account ID to match the STS-verified account ID.
+- Resolve the configured Region's current long name through the documented
+  Systems Manager public parameter
+  `/aws/service/global-infrastructure/regions/<region>/longName` where the
+  partition, query Region, and permissions support it. Do not maintain or trust
+  a copied Region-name map.
+- Present a resolved target as `account name (account ID)` and
+  `Region long name (Region code)`. Treat names as display-only operator aids;
+  the verified account ID, ARN, and Region code remain authoritative.
+- If either name cannot be resolved, state that the display label is
+  unavailable and show the stable ID or code. Do not broaden IAM permissions,
+  change credentials, guess a name, or block a safe outline solely to obtain a
+  display label.
 - Before mutating AWS resources or infrastructure-as-code source,
   configuration, or state, load and follow
   `docs/references/rules/infrastructure-change-approval.md`. Skill, MCP, CLI,
@@ -183,6 +209,10 @@ read_policy_default: must
 - Record whether the AWS MCP Server or AWS CLI was selected and why.
 - Confirm the exact AWS account, ARN, Region, environment, and profile source
   before any AWS-dependent mutation.
+- For a large or materially risky AWS infrastructure batch, confirm the single
+  consolidated approval outline shows the account and Region names where they
+  were resolvable, the stable account ID and Region code in every case, and an
+  explicit unavailable label for any unresolved name.
 - Confirm `kit aws verify` ran at both required boundaries when the project has
   enabled AWS context.
 - Confirm infrastructure approval was recorded before AWS or
@@ -214,4 +244,11 @@ Identity boundary:
 ```text
 .kit.yaml AWS enabled -> kit aws verify -> read-only AWS work -> kit aws verify
 again -> approved AWS mutation.
+```
+
+Name-aware material target:
+
+```text
+Account: payments-production (123456789012)
+Region: US East (N. Virginia) (us-east-1)
 ```

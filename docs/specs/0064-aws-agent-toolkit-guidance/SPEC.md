@@ -53,6 +53,22 @@ references:
     read_policy: must
     used_for: live account-enabled Region discovery
     status: active
+  - id: aws-account-information
+    name: AWS CLI account information reference
+    type: documentation
+    target: https://docs.aws.amazon.com/cli/latest/reference/account/get-account-information.html
+    relation: informs
+    read_policy: must
+    used_for: best-effort account display-name resolution for material infrastructure approval
+    status: active
+  - id: aws-global-infrastructure-parameters
+    name: AWS Systems Manager global infrastructure public parameters
+    type: documentation
+    target: https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-public-parameters-global-infrastructure.html
+    relation: informs
+    read_policy: must
+    used_for: best-effort Region long-name resolution for material infrastructure approval
+    status: active
   - id: infrastructure-approval
     name: Infrastructure change approval rule
     type: rule
@@ -120,6 +136,10 @@ the existing interactive initialization and reconciliation experience.
 - Kit already owns public-cloud and infrastructure-as-code mutation approval
   through `infrastructure-change-approval`; Agent Toolkit guidance must not
   create separate or implied mutation consent.
+- Human-readable account and Region names materially reduce operator selection
+  mistakes during large AWS changes, but they are mutable labels and may be
+  unavailable under least-privilege access. Stable STS account IDs, ARNs, and
+  Region codes must therefore remain the authoritative identity boundary.
 - Repository rules are downstream registry artifacts. A new rule placed under
   `docs/references/rules/` becomes available through Kit's existing GitHub
   registry and is installed during downstream refresh without a new command or
@@ -177,6 +197,15 @@ the existing interactive initialization and reconciliation experience.
 - Preserve `infrastructure-change-approval` for AWS resource and
   infrastructure-as-code mutations. Agent Toolkit, skill, documentation, MCP,
   or CLI availability never implies mutation authority.
+- For large or materially risky AWS infrastructure batches, resolve the
+  account display name and Region long name during read-only discovery where
+  current official APIs, the partition, and least-privilege permissions allow.
+  Present names with stable IDs and codes in the existing consolidated
+  approval outline; state when a name is unavailable and never guess or expand
+  permissions merely to obtain a label.
+- Keep the name-aware target inside the existing one-confirmation
+  infrastructure approval UX. Do not add another command, flag, prompt, or
+  approval boundary.
 - Prefer AWS CDK or CloudFormation for infrastructure creation and apply the
   AWS Well-Architected Framework, while preserving stronger repository-local
   architecture and infrastructure rules.
@@ -220,10 +249,13 @@ the existing interactive initialization and reconciliation experience.
    remediation, and make verification use and report the configured Region.
 6. Add schema, persistence, selector, init/reconcile-preflight, fast-path,
    verification, capability, and compatibility regression coverage.
-7. Reconcile the checked-in generated artifacts, minimize unrelated generated
+7. Add name-aware target guidance to the AWS and infrastructure-approval
+   rules, keeping stable identifiers authoritative and the existing single
+   approval outline as the only user confirmation.
+8. Reconcile the checked-in generated artifacts, minimize unrelated generated
    summary churn, then run formatting, focused tests, full tests, race tests,
    vet, lint, builds, Kit checks, source-size, secret, and whitespace audits.
-8. Curate the actual outcome into this spec and demonstrated project invariants
+9. Curate the actual outcome into this spec and demonstrated project invariants
    only where appropriate, explicitly stage GH-149 paths, commit and push as
    Jameson Stone, and update ready pull request #150 assigned to Jameson Stone.
 
@@ -250,6 +282,13 @@ the existing interactive initialization and reconciliation experience.
 - Accepted: prompt only when enabled AWS context is incomplete. Requiring a
   Region choice on every reconcile would turn a one-time configuration repair
   into recurring noise and would destroy the current local-only fast path.
+- Accepted: use account and Region names as display-first operator aids for
+  material AWS batches while retaining IDs, ARNs, and Region codes as the
+  fail-closed identity boundary. Names can change and least-privilege roles may
+  not be able to resolve them.
+- Accepted: fold name-aware evidence into the existing consolidated
+  infrastructure outline. A new Kit command, flag, or prompt would add routine
+  UX without strengthening mutation authority.
 - Rejected: paste the complete AWS experience rule into every root instruction
   file. That duplicates policy, expands always-loaded context, and bypasses the
   registry and reconciliation model.
@@ -273,6 +312,12 @@ the existing interactive initialization and reconciliation experience.
   `docs/references/rules/` on GitHub `main`; adding the rule file is sufficient
   to publish it after merge, while refresh installs downstream rules and records
   provenance in each consuming project's `.kit.yaml`.
+- The current AWS Account Management operation returns both `AccountName` and
+  `AccountId` but requires `account:GetAccountInformation`; absence of that
+  permission must not encourage an IAM expansion solely for display context.
+- AWS documents its global-infrastructure public-parameter hierarchy and the
+  supported query Regions. Region long names can therefore be resolved live
+  where available instead of copied into a Kit-owned static catalog.
 
 ## VALIDATION
 
@@ -287,6 +332,15 @@ the existing interactive initialization and reconciliation experience.
   `describe-regions` references. They establish the profile Region as a
   request default and `describe-regions` as the account-enabled Region
   inventory used by the selector.
+- Verified the current official Account Management CLI reference returns
+  `AccountName` with `AccountId` and requires
+  `account:GetAccountInformation`. Verified the Systems Manager global
+  infrastructure reference documents live public parameters and the supported
+  query Regions used for best-effort Region long-name resolution.
+- Focused ruleset tests prove large or materially risky AWS batches resolve
+  names only as display context, always retain stable IDs and Region codes,
+  report unavailable labels without permission expansion, and reuse the single
+  consolidated infrastructure approval rather than adding a prompt.
 - `go test ./internal/config ./internal/templates ./pkg/cli -count=1` and the
   complete `go test ./... -count=1` suite passed. Focused coverage includes
   schema validation and persistence, existing profile/account migration,
@@ -343,6 +397,10 @@ implemented on the GH-149 / PR #150 lane.
 - The new rule preserves `kit aws verify` as the authoritative identity gate
   for enabled project contexts and preserves the existing infrastructure
   approval rule as the authority for AWS and infrastructure-as-code mutation.
+- Large or materially risky AWS batches now add best-effort account and Region
+  display names to that rule's single consolidated outline. Stable account IDs,
+  ARNs, and Region codes remain authoritative, and unavailable labels are
+  reported without guessing, changing credentials, or expanding IAM access.
 - Project config schema 2 requires `aws.region` for enabled AWS contexts. The
   checked-in `.kit.yaml` is migrated to schema 2 while retaining its explicit
   disabled AWS opt-out without profile, account, or Region bindings.
@@ -379,7 +437,8 @@ Decision: created
 
 Rationale: The vendor-freshness boundary, host-portable skill loading,
 MCP-versus-CLI selection, live enabled-Region discovery, project-local Region
-ownership, and precedence of Kit identity, approval, and secret safety are
+ownership, display-name-versus-stable-identity boundary, minimal name-aware
+approval UX, and precedence of Kit identity, approval, and secret safety are
 material project rationale that code and tests cannot preserve alone. The
 Constitution remains unchanged because this feature applies the existing
 registry-backed-rule, evidence-before-mutation, and generated-scaffold
@@ -389,4 +448,5 @@ Artifacts:
 
 - `docs/specs/0064-aws-agent-toolkit-guidance/SPEC.md`
 - `docs/references/rules/aws-agent-toolkit-guidance.md`
+- `docs/references/rules/infrastructure-change-approval.md`
 - `docs/references/README.md`
