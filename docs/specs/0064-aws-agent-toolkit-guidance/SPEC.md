@@ -296,11 +296,14 @@ the existing interactive initialization and reconciliation experience.
   STS verification.
 - `go test -race ./internal/config ./internal/templates ./pkg/cli -count=1`
   passed for the complete affected packages.
-- Verified the single CodeRabbit identity-contract finding against the current
-  V3 templates and fixed it. Every generated root instruction variant now
-  makes the verified account, ARN, and Region authoritative, requires the
-  configured profile and Region explicitly where supported, and forbids
-  default, discovered-profile, or ambient-credential fallback.
+- Verified all CodeRabbit findings against current behavior and fixed the
+  valid gaps. Every generated root instruction variant now makes the verified
+  account, ARN, and Region authoritative, requires the configured profile and
+  Region explicitly where supported, and forbids default, discovered-profile,
+  or ambient-credential fallback. Region-selector coverage asserts every
+  stubbed option, and a failed Region remediation is atomic even after the user
+  accepts schema migration; unrelated AWS failures retain the established
+  accepted-schema persistence behavior.
 - `go fmt ./...`, `go vet ./...`, `go build ./...`, and
   `golangci-lint run --new-from-rev=origin/main ./...` passed with no issues.
 - `go run ./cmd/kit config check --json` reported schema 2, current, valid,
@@ -350,6 +353,9 @@ implemented on the GH-149 / PR #150 lane.
 - `kit aws verify` rejects missing or invalid Regions, passes the configured
   profile and Region explicitly to STS, and reports Region with account and
   ARN evidence.
+- Region discovery and selection fail without persisting a partial schema or
+  AWS binding, including when schema migration was accepted earlier in the
+  same interactive flow.
 - Secret handling fails closed on the current `aws-secrets-manager` skill and
   prohibits secret-value retrieval into agent context while retaining the
   upstream dynamic-reference and `asm-exec` runtime-resolution boundary.

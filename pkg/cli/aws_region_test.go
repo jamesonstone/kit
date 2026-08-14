@@ -95,25 +95,21 @@ func TestSelectAWSRegionRejectsEmptyEOF(t *testing.T) {
 }
 
 func TestAWSConfigRemediationRegionEOFDoesNotWrite(t *testing.T) {
-	root, cfg, _ := setupConfigCheckProject(t)
-	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901"}
-	if err := config.UpdateProjectSchemaAndAWS(root, cfg); err != nil {
-		t.Fatalf("UpdateProjectSchemaAndAWS() error = %v", err)
+	root := t.TempDir()
+	path := filepath.Join(root, config.ConfigFileName)
+	content := []byte("schema_version: 1\naws:\n  profile: dev\n  account_id: \"012345678901\"\n")
+	if err := os.WriteFile(path, content, 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
 	}
 	cfg, inspection, err := config.LoadWithInspection(root)
 	if err != nil {
 		t.Fatalf("LoadWithInspection() error = %v", err)
 	}
 	stubAWSContext(t, "", `{"Account":"012345678901","Arn":"arn:aws:sts::012345678901:assumed-role/Developer/test"}`)
-	path := filepath.Join(root, config.ConfigFileName)
-	before, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("ReadFile() error = %v", err)
-	}
 
 	changed, err := remediateProjectConfig(root, cfg, inspection, configRemediationOptions{
 		Interactive: true,
-		Input:       strings.NewReader(""),
+		Input:       strings.NewReader("\n"),
 		Output:      io.Discard,
 	})
 	if !errors.Is(err, io.EOF) || changed {
@@ -123,7 +119,7 @@ func TestAWSConfigRemediationRegionEOFDoesNotWrite(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
-	if !bytes.Equal(before, after) {
+	if !bytes.Equal(content, after) {
 		t.Fatal("Region selection EOF modified .kit.yaml")
 	}
 }

@@ -11,6 +11,8 @@ import (
 	"github.com/jamesonstone/kit/internal/config"
 )
 
+var errAWSRegionRemediation = errors.New("AWS Region remediation failed")
+
 func remediateProjectConfig(
 	projectRoot string,
 	cfg *config.Config,
@@ -58,6 +60,9 @@ func remediateProjectConfig(
 		changed = awsChanged || changed
 		persistAWS = awsChanged || persistAWS
 		remediationErr = err
+	}
+	if errors.Is(remediationErr, errAWSRegionRemediation) {
+		return false, remediationErr
 	}
 	if !changed {
 		return false, remediationErr
@@ -173,11 +178,11 @@ func remediateAWSConfig(reader *bufio.Reader, out io.Writer, cfg *config.Config)
 	if !config.ValidAWSRegion(region) || profile != originalProfile {
 		regions, defaultRegion, err := discoverEnabledAWSRegions(profile)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("%w: %w", errAWSRegionRemediation, err)
 		}
 		region, err = selectAWSRegion(reader, out, regions, defaultRegion)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("%w: %w", errAWSRegionRemediation, err)
 		}
 	}
 	cfg.AWS = &config.AWSConfig{Profile: profile, AccountID: identity.Account, Region: region}

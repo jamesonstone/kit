@@ -29,7 +29,7 @@ func TestAWSConfigRemediationSingleProfileDefaultsYes(t *testing.T) {
 	if !strings.Contains(out.String(), `Use the only AWS profile "dev" for this project? [Y/n]:`) {
 		t.Fatalf("output missing default-yes prompt:\n%s", out.String())
 	}
-	for _, region := range []string{"us-east-1", "us-east-2", "us-west-1"} {
+	for _, region := range []string{"us-east-1", "us-east-2", "us-west-1", "us-west-2"} {
 		if !strings.Contains(out.String(), region) {
 			t.Fatalf("output missing enabled Region %q:\n%s", region, out.String())
 		}
