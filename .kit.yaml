@@ -51,6 +51,15 @@ registry:
           installed_hash: sha256:f39e2cec902646a6549d2aa34cdc5f36757b7eda103671ba74ca77a0896c5a5d
           state: managed
         - kind: ruleset
+          slug: aws-agent-toolkit-guidance
+          path: docs/references/rules/aws-agent-toolkit-guidance.md
+          source_repo: jamesonstone/kit
+          source_branch: main
+          source_commit: 78228da330fbc4ec411431c4858c8d819523ecb1
+          source_path: docs/references/rules/aws-agent-toolkit-guidance.md
+          installed_hash: sha256:448122b59b65bf6de0bcba96b4f04e61eb686d71b9e8f957164c5b60da641e59
+          state: managed
+        - kind: ruleset
           slug: backend-service-architecture
           path: docs/references/rules/backend-service-architecture.md
           source_repo: jamesonstone/kit
@@ -127,9 +136,9 @@ registry:
           path: docs/references/rules/infrastructure-change-approval.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 231e471dd8cc9c53c8acc883446f13513e9da975
+          source_commit: 78228da330fbc4ec411431c4858c8d819523ecb1
           source_path: docs/references/rules/infrastructure-change-approval.md
-          installed_hash: sha256:8d1df391a61993ddb21127b1f6dd89c909dc97f0530ead34b9c9c281df3a66d1
+          installed_hash: sha256:5da2ebf818eb6c9274a93b5b7f01d6e0b5f766b3fd7589c68e679f3af4158fb4
           state: managed
         - kind: ruleset
           slug: kit-capabilities-usage
