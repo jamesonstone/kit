@@ -12,6 +12,10 @@ func TestInstructionTemplatesRouteAWSAgentToolkitGuidance(t *testing.T) {
 		"docs/references/rules/aws-agent-toolkit-guidance.md",
 		"current AWS skill, official documentation, AWS MCP Server or CLI fallback",
 		"repo-local Kit gates remain authoritative",
+		"Treat the verified account",
+		"ARN, and Region as authoritative",
+		"verified configured profile and Region explicitly",
+		"never use default, another discovered profile, or ambient credentials",
 	}
 	for name, content := range map[string]string{
 		"V1 AGENTS.md":            LegacyAgentsMD,
@@ -23,10 +27,6 @@ func TestInstructionTemplatesRouteAWSAgentToolkitGuidance(t *testing.T) {
 		"V3 AGENTS.md":            MemoryAgentsMD,
 		"V3 CLAUDE.md":            MemoryClaudeMD,
 		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
-		"V3 GUARDRAILS.md": fileContentByPath(
-			InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
-			"docs/agents/GUARDRAILS.md",
-		),
 	} {
 		for _, check := range required {
 			if !strings.Contains(content, check) {
@@ -41,15 +41,23 @@ func TestInstructionTemplatesRouteAWSAgentToolkitGuidance(t *testing.T) {
 	}
 }
 
-func TestMemoryCopilotPreservesAWSIdentityGate(t *testing.T) {
+func TestMemoryInstructionsPreserveAWSIdentityGate(t *testing.T) {
 	for _, check := range []string{
 		"## AWS Context Hard Gate",
 		"If `.kit.yaml` defines an enabled AWS context",
 		"run `kit aws verify` before the first AWS-dependent command",
-		"Use only the verified configured profile and Region",
+		"Treat the verified account, ARN, and Region as authoritative",
+		"Use the verified configured profile and Region explicitly",
+		"After verification, never use default, another discovered profile, or ambient credentials",
 	} {
-		if !strings.Contains(MemoryCopilotInstructionsMD, check) {
-			t.Errorf("expected V3 Copilot instructions to contain %q", check)
+		for name, content := range map[string]string{
+			"AGENTS.md":               MemoryAgentsMD,
+			"CLAUDE.md":               MemoryClaudeMD,
+			"copilot-instructions.md": MemoryCopilotInstructionsMD,
+		} {
+			if !strings.Contains(content, check) {
+				t.Errorf("expected V3 %s to contain %q", name, check)
+			}
 		}
 	}
 }
@@ -67,6 +75,16 @@ func TestInstructionSupportRoutesAWSAgentToolkitGuidance(t *testing.T) {
 		references := fileContentByPath(files, "docs/references/README.md")
 		if !strings.Contains(references, "Use `rules/aws-agent-toolkit-guidance.md` before AWS-dependent work") {
 			t.Errorf("expected version %d references index to route AWS Agent Toolkit guidance", version)
+		}
+		guardrails := fileContentByPath(files, "docs/agents/GUARDRAILS.md")
+		for _, check := range []string{
+			"Treat the returned account ID, ARN, and Region as authoritative",
+			"Use the verified configured profile and Region explicitly",
+			"Never fall back to default, another discovered profile, or ambient credentials",
+		} {
+			if !strings.Contains(guardrails, check) {
+				t.Errorf("expected version %d guardrails to contain %q", version, check)
+			}
 		}
 	}
 }

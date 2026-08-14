@@ -5,6 +5,9 @@ const awsAgentToolkitGuidanceRoute = `Before AWS-dependent work, load ` + "`docs
 const memoryAWSContextHardGate = `## AWS Context Hard Gate
 
 - ` + awsAgentToolkitGuidanceRoute + ` If ` + "`.kit.yaml`" + ` defines an enabled AWS context, run ` + "`kit aws verify`" + ` before the first AWS-dependent command and again immediately before AWS mutation
-- Use only the verified configured profile and Region; stop on missing credentials, incomplete configuration, or identity mismatch
+- Treat the verified account, ARN, and Region as authoritative; a profile name alone is not proof of identity
+- Use the verified configured profile and Region explicitly for every AWS-dependent command where supported
+- After verification, never use default, another discovered profile, or ambient credentials
+- Stop on missing credentials, incomplete configuration, or identity mismatch
 
 `

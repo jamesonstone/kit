@@ -296,6 +296,11 @@ the existing interactive initialization and reconciliation experience.
   STS verification.
 - `go test -race ./internal/config ./internal/templates ./pkg/cli -count=1`
   passed for the complete affected packages.
+- Verified the single CodeRabbit identity-contract finding against the current
+  V3 templates and fixed it. Every generated root instruction variant now
+  makes the verified account, ARN, and Region authoritative, requires the
+  configured profile and Region explicitly where supported, and forbids
+  default, discovered-profile, or ambient-credential fallback.
 - `go fmt ./...`, `go vet ./...`, `go build ./...`, and
   `golangci-lint run --new-from-rev=origin/main ./...` passed with no issues.
 - `go run ./cmd/kit config check --json` reported schema 2, current, valid,
@@ -351,6 +356,10 @@ implemented on the GH-149 / PR #150 lane.
 - Canonical templates, active checked-in Codex/Claude/Copilot instructions,
   generated Guardrails, RLM routing, the references index, reconcile
   expectations, and mandatory downstream refresh adoption are aligned.
+- V3 root instructions retain the complete verified-identity contract rather
+  than relying on a profile name alone: account, ARN, and Region are
+  authoritative, explicit project bindings are required, and ambient or
+  default credential fallback is prohibited.
 - Focused regression tests enforce ruleset metadata and semantics, every
   supported instruction scaffold, V3 Copilot identity parity, support-document
   routing, registry adoption, and managed-guidance reconciliation.
