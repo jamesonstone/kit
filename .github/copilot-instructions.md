@@ -13,6 +13,7 @@ Before editing implementation/source or test files, load `docs/references/rules/
 ## Work Lane Mutation Hard Gate
 
 - Before any coding-agent repository file or delivery mutation, including issue, branch, staging, commit, push, worktree, and pull-request mutations, load `docs/agents/GUARDRAILS.md` and `work-lane-gating` first, complete read-only safety recon, then ask exactly: "Before I make any repository changes, should I create a new GitHub issue, GH-<issue-number> branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?"
+- Interpret a leading standalone response token case-insensitively: `c` means continue existing; `n` or `y` means new lane. In a longer response, shorthand is the primary lane choice and the remaining text is supplemental lane instructions. Full-form choices remain valid; ambiguous or contradictory responses fail closed.
 - Wait for the explicit choice and record a Pull-Request Landing Plan covering the repository, issue, branch, canonical non-primary worktree, protected base, and create-or-update PR target. Verify that plan still matches before every mutation. Never infer the choice from clean state or a generic PR request.
 - Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it.
 

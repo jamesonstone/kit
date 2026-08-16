@@ -22,6 +22,13 @@ must:
 3. Ask exactly:
 
    > Before I make any repository changes, should I create a new GitHub issue, `GH-<issue-number>` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
+
+   Interpret the response's first standalone token after trimming surrounding
+   whitespace, case-insensitively: `c` means continue existing, while
+   `n` or `y` means new lane. When shorthand leads a longer response,
+   shorthand is the primary lane choice and the remaining text is supplemental
+   lane instructions. Continue accepting explicit full-form choices; ambiguous
+   or contradictory responses fail closed.
 4. Wait for the user's explicit choice unless that exact choice is already
    recorded for the same unit of work.
 5. Record a Pull-Request Landing Plan with the repository, issue, branch,

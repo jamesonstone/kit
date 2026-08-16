@@ -10,7 +10,6 @@ func TestAgentInstructionsV5RequiresDeletionSafety(t *testing.T) {
 	if err != nil {
 		t.Fatalf("AgentInstructions(\"v5\") error = %v", err)
 	}
-
 	for _, want := range []string{
 		"# Deletion safety",
 		"docs/references/rules/deletion-safety.md",
@@ -43,7 +42,36 @@ func TestAgentInstructionsV5RequiresDeletionSafety(t *testing.T) {
 	}
 }
 
-func TestAgentInstructionsV5PreservesV4OutsideDeletionSection(t *testing.T) {
+func TestAgentInstructionsV5AcceptsWorkLaneShorthand(t *testing.T) {
+	content, err := AgentInstructions("v5")
+	if err != nil {
+		t.Fatalf("AgentInstructions(\"v5\") error = %v", err)
+	}
+	normalizedContent := strings.Join(strings.Fields(content), " ")
+
+	for _, want := range []string{
+		"first standalone token after trimming surrounding",
+		"`c` means continue existing",
+		"`n` or `y` means new lane",
+		"primary lane choice",
+		"remaining text is supplemental lane instructions",
+		"explicit full-form choices",
+		"ambiguous or contradictory responses fail closed",
+	} {
+		if !strings.Contains(normalizedContent, want) {
+			t.Fatalf("v5 instructions do not contain %q", want)
+		}
+	}
+
+	question := strings.Index(content, "Before I make any repository changes")
+	shorthand := strings.Index(content, "first standalone token")
+	wait := strings.Index(content, "Wait for the user's explicit choice")
+	if question < 0 || shorthand <= question || wait <= shorthand {
+		t.Fatal("v5 shorthand semantics must follow the question and precede the wait step")
+	}
+}
+
+func TestAgentInstructionsV5PreservesV4OutsideAdditiveSections(t *testing.T) {
 	v4, err := AgentInstructions("v4")
 	if err != nil {
 		t.Fatal(err)
@@ -52,13 +80,23 @@ func TestAgentInstructionsV5PreservesV4OutsideDeletionSection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := strings.Index(v5, "\n# Deletion safety\n")
-	end := strings.Index(v5, "\n# Execution\n")
-	if start < 0 || end < 0 || start >= end {
+	shorthandStart := strings.Index(v5, "\n   Interpret the response's first standalone token")
+	if shorthandStart < 0 {
+		t.Fatal("v5 shorthand section start is missing")
+	}
+	shorthandEnd := strings.Index(v5[shorthandStart:], "\n4. Wait for the user's explicit choice")
+	if shorthandEnd < 0 {
+		t.Fatal("v5 shorthand section boundaries are missing")
+	}
+	withoutShorthand := v5[:shorthandStart] + v5[shorthandStart+shorthandEnd:]
+
+	deletionStart := strings.Index(withoutShorthand, "\n# Deletion safety\n")
+	deletionEnd := strings.Index(withoutShorthand, "\n# Execution\n")
+	if deletionStart < 0 || deletionEnd < 0 || deletionStart >= deletionEnd {
 		t.Fatal("v5 deletion section boundaries are missing")
 	}
-	withoutDeletion := v5[:start] + v5[end:]
+	withoutDeletion := withoutShorthand[:deletionStart] + withoutShorthand[deletionEnd:]
 	if withoutDeletion != v4 {
-		t.Fatal("v5 changed content outside the additive deletion-safety section")
+		t.Fatal("v5 changed content outside the additive deletion and shorthand sections")
 	}
 }
