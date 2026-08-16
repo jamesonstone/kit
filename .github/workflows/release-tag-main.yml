@@ -21,6 +21,7 @@ jobs:
     outputs:
       next_tag: ${{ steps.select_tag.outputs.next_tag }}
       mode: ${{ steps.select_tag.outputs.mode }}
+      head_sha: ${{ steps.select_tag.outputs.head_sha }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -43,34 +44,27 @@ jobs:
         shell: bash
         run: .github/scripts/release-next-tag.sh HEAD >> "${GITHUB_OUTPUT}"
 
-      - name: Create and push release tag
+      - name: Write release notes
+        id: release_notes
         shell: bash
         env:
-          HEAD_SHA: ${{ steps.select_tag.outputs.head_sha }}
-          MODE: ${{ steps.select_tag.outputs.mode }}
-          NEXT_TAG: ${{ steps.select_tag.outputs.next_tag }}
+          TAG: ${{ steps.select_tag.outputs.next_tag }}
         run: |
           set -euo pipefail
+          notes_file="${RUNNER_TEMP}/kit-release-notes.md"
+          printf '# %s\n\nKit %s release.\n' "${TAG}" "${TAG}" > "${notes_file}"
+          echo "path=${notes_file}" >> "${GITHUB_OUTPUT}"
 
-          if [[ "${MODE}" == "reuse" ]]; then
-            echo "Reusing ${NEXT_TAG} on ${HEAD_SHA} for publication recovery."
-            exit 0
-          fi
-
-          if git rev-parse --verify --quiet "refs/tags/${NEXT_TAG}" >/dev/null; then
-            tag_sha="$(git rev-list -n 1 "refs/tags/${NEXT_TAG}")"
-            if [[ "${tag_sha}" != "${HEAD_SHA}" ]]; then
-              echo "Tag ${NEXT_TAG} points to ${tag_sha}; refusing to move it." >&2
-              exit 1
-            fi
-            exit 0
-          fi
-
-          git config user.name "jamesonstone"
-          git config user.email "4779701+jamesonstone@users.noreply.github.com"
-
-          git tag -a "${NEXT_TAG}" -m "Release ${NEXT_TAG}"
-          git push origin "${NEXT_TAG}"
+      - name: Create or reuse immutable release tag with Mint
+        id: mint_tag
+        uses: jamesonstone/mint@v0.2.1
+        with:
+          command: release-tag
+          release-tag: ${{ steps.select_tag.outputs.next_tag }}
+          target-sha: ${{ steps.select_tag.outputs.head_sha }}
+          release-notes-file: ${{ steps.release_notes.outputs.path }}
+          release-remote: origin
+          release-push: "true"
 
   publish-release:
     needs: prepare-release
@@ -107,12 +101,47 @@ jobs:
           install-only: true
 
       - name: Build artifacts with GoReleaser
-        # publish is intentionally skipped so gh can create release with --generate-notes.
+        # Mint owns GitHub Release state; GoReleaser owns artifact production.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goreleaser release --clean --skip=publish --skip=announce
 
-      - name: Publish GitHub release with generated notes
+      - name: Validate GoReleaser artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(dist/*.tar.gz dist/*.zip dist/checksums.txt)
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No release artifacts found in dist/." >&2
+            exit 1
+          fi
+
+      - name: Write GitHub Release notes
+        id: publish_notes
+        shell: bash
+        env:
+          TAG: ${{ needs.prepare-release.outputs.next_tag }}
+        run: |
+          set -euo pipefail
+          notes_file="${RUNNER_TEMP}/kit-release-notes.md"
+          printf '# %s\n\nKit %s release.\n' "${TAG}" "${TAG}" > "${notes_file}"
+          echo "path=${notes_file}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create or reuse GitHub Release with Mint
+        id: mint_release
+        uses: jamesonstone/mint@v0.2.1
+        with:
+          command: github-release
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          release-tag: ${{ needs.prepare-release.outputs.next_tag }}
+          target-sha: ${{ needs.prepare-release.outputs.head_sha }}
+          release-title: ${{ needs.prepare-release.outputs.next_tag }}
+          release-notes-file: ${{ steps.publish_notes.outputs.path }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release artifacts
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -127,8 +156,4 @@ jobs:
             exit 1
           fi
 
-          if gh release view "${TAG}" >/dev/null 2>&1; then
-            gh release upload "${TAG}" "${files[@]}" --clobber
-          else
-            gh release create "${TAG}" "${files[@]}" --generate-notes --title "${TAG}"
-          fi
+          gh release upload "${TAG}" "${files[@]}" --clobber

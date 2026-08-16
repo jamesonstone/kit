@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 func TestReleaseNextTag(t *testing.T) {
@@ -92,29 +94,103 @@ func TestReleaseWorkflowOrdersAndRecoversSafely(t *testing.T) {
 		"paths-ignore:",
 		"- .kit.yaml",
 		".github/scripts/release-next-tag.sh HEAD",
-		"Reusing ${NEXT_TAG}",
-		"refusing to move it",
+		"head_sha: ${{ steps.select_tag.outputs.head_sha }}",
+		"command: release-tag",
+		"release-push: \"true\"",
+		"command: github-release",
 		"needs.prepare-release.outputs.next_tag != ''",
 		"GITHUB_TOKEN do not trigger a second",
 		"gh release upload",
-		"gh release create",
 	} {
 		if !strings.Contains(workflow, want) {
 			t.Errorf("release workflow missing %q", want)
 		}
 	}
+	assertMintActionRefs(t, workflow, 2)
+	for _, forbidden := range []string{
+		"gh release create",
+		"git tag -a",
+		"command: release-publish",
+		"command: release-resolve",
+	} {
+		if strings.Contains(workflow, forbidden) {
+			t.Errorf("main release workflow must not contain %q", forbidden)
+		}
+	}
 	quality := strings.Index(workflow, "Run release quality gates")
-	create := strings.Index(workflow, "Create and push release tag")
+	create := strings.Index(workflow, "Create or reuse immutable release tag with Mint")
 	if quality < 0 || create < 0 || quality > create {
 		t.Error("release quality gates must run before tag creation")
+	}
+	selector := strings.Index(workflow, ".github/scripts/release-next-tag.sh HEAD")
+	if selector < 0 || selector > create {
+		t.Error("Kit's exact v3 selector must run before Mint owns tag state")
+	}
+	release := strings.Index(workflow, "Create or reuse GitHub Release with Mint")
+	upload := strings.Index(workflow, "gh release upload")
+	if release < 0 || upload < 0 || release > upload {
+		t.Error("Mint must establish GitHub Release state before Kit uploads artifacts")
 	}
 }
 
 func TestExternalReleasePublisherAcceptsOnlyV3Tags(t *testing.T) {
 	workflow := readRepositoryFile(t, ".github/workflows/release-publish.yml")
-	for _, want := range []string{`- "v3.*"`, `^v3\.[0-9]+\.[0-9]+$`, "queue: max"} {
+	for _, want := range []string{
+		`- "v3.*"`,
+		`^v3\.[0-9]+\.[0-9]+$`,
+		"queue: max",
+		"command: release-tag",
+		"release-push: \"false\"",
+		"command: github-release",
+		"gh release upload",
+	} {
 		if !strings.Contains(workflow, want) {
 			t.Errorf("external publisher missing %q", want)
+		}
+	}
+	assertMintActionRefs(t, workflow, 2)
+	for _, forbidden := range []string{
+		"gh release create",
+		"git tag -a",
+		"command: release-publish",
+		"command: release-resolve",
+	} {
+		if strings.Contains(workflow, forbidden) {
+			t.Errorf("external publisher must not contain %q", forbidden)
+		}
+	}
+	quality := strings.Index(workflow, "Run release quality gates")
+	verify := strings.Index(workflow, "Verify immutable release tag with Mint")
+	if quality < 0 || verify < 0 || quality > verify {
+		t.Error("external release quality gates must run before Mint verifies release state")
+	}
+}
+
+func TestReleaseWorkflowsParseAsYAML(t *testing.T) {
+	for _, path := range []string{
+		".github/workflows/release-tag-main.yml",
+		".github/workflows/release-publish.yml",
+	} {
+		t.Run(path, func(t *testing.T) {
+			var document map[string]any
+			workflow := readRepositoryFile(t, path)
+			if err := yaml.Unmarshal([]byte(workflow), &document); err != nil {
+				t.Fatalf("parse workflow YAML: %v", err)
+			}
+		})
+	}
+}
+
+func assertMintActionRefs(t *testing.T, workflow string, want int) {
+	t.Helper()
+	const exact = "uses: jamesonstone/mint@v0.2.1"
+	if got := strings.Count(workflow, exact); got != want {
+		t.Errorf("workflow uses exact Mint v0.2.1 ref %d times, want %d", got, want)
+	}
+	for _, line := range strings.Split(workflow, "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "uses: jamesonstone/mint@") && line != exact {
+			t.Errorf("workflow contains unsupported Mint action ref %q", line)
 		}
 	}
 }

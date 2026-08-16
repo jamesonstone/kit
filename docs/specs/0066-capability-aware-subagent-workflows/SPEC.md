@@ -194,6 +194,11 @@ idempotently without silently advancing tags.
   move a conflicting tag.
 - Run required quality gates before tag creation and permit idempotent release
   publication recovery without creating a second patch.
+- Use `jamesonstone/mint@v0.2.1` in the two release workflows for immutable Git
+  tag and GitHub Release state. Keep Kit's exact v3 selector, GoReleaser
+  artifact and checksum production, and idempotent artifact upload; do not use
+  Mint's conventional-commit resolver where it could change Kit's release
+  selection policy.
 - Serialize release-sensitive main work with `concurrency.queue: max` while
   treating third-party schemas that lag hosted GitHub syntax as a documented
   validation exception, not proof the hosted workflow is invalid.
@@ -261,6 +266,10 @@ idempotently without silently advancing tags.
   unversioned module path.
 - Preserve repository-origin URLs and historical specs; the migration changes
   Go import identities and active release/install contracts only.
+- Delegate immutable release-tag and GitHub Release state to Mint v0.2.1 while
+  retaining Kit's exact first-v3.0.0-then-patch selector and GoReleaser artifact
+  boundary. Keep creation, reuse, build, and upload recovery in the main
+  workflow because a workflow-token tag push cannot trigger the tag workflow.
 - Keep post-merge provenance in a separately authorized PR so the feature
   branch does not predict a merge SHA or accidentally create a second release.
 
@@ -278,6 +287,11 @@ idempotently without silently advancing tags.
   second workflow run. The main release workflow therefore must publish both
   newly created and reused same-SHA tags itself; relying on the tag workflow
   would allow a green v3.0.0 tagging run with no GitHub Release artifacts.
+- Mint v0.2.1 provides the required immutable tag reuse/conflict behavior and
+  idempotent GitHub Release creation, but its conventional-commit resolver can
+  select major or minor bumps. Kit therefore keeps `release-next-tag.sh` as the
+  release-policy authority and calls only Mint's `release-tag` and
+  `github-release` state operations.
 - Go v3 required more than self-import replacement: the module declaration,
   linker symbol paths, installation and upgrade guidance, release selection,
   and publication recovery all had to move together. Repository, API, and
@@ -319,6 +333,11 @@ idempotently without silently advancing tags.
 - Both release workflows parse as YAML; the tag selector passes syntax,
   first-v3, patch, same-SHA reuse, conflict, and stale-tag tests. Dedicated
   tests require main-workflow publication for both create and reuse modes.
+- Both release workflows use only `jamesonstone/mint@v0.2.1` for tag and
+  GitHub Release state, retain Kit's selector and GoReleaser upload boundary,
+  and contain no manual tag or GitHub Release creation. A bounded Mint v0.2.1
+  smoke created a tag, reused it on the same commit, and rejected moving it to
+  a different commit.
 - `kit check 0066-capability-aware-subagent-workflows`, `kit check --all`,
   `kit check --project`, source-size audit, reconcile output-only, dry-run
   reconcile review, module tidiness, diff checks, and active-source residue
@@ -362,9 +381,11 @@ second ruleset or provider agent files.
 
 The CLI cap flags and fixed scheduling policy are removed, common prompts are
 provider-neutral, the module is a valid `/v3` module, and the release workflow
-can establish and idempotently publish v3.0.0. Delivery stops at `PR_READY`;
-merge, release verification, and the separate provenance PR retain their own
-authorization and evidence gates.
+can establish and idempotently publish v3.0.0. Mint v0.2.1 now owns immutable
+tag and GitHub Release state while Kit retains exact version selection,
+GoReleaser builds and checksums, and idempotent artifact upload. Delivery stops
+at `PR_READY`; merge, release verification, and the separate provenance PR
+retain their own authorization and evidence gates.
 
 ## REPOSITORY MEMORY
 
