@@ -285,6 +285,12 @@ read-only and preserves user-owned state.
   passed, reconcile audited 683 version-control-eligible candidates and 349
   eligible handwritten source/test files with none above 300 physical lines,
   and the 5.43 MB working-tree secret scan found no leaks.
+- The managed-propagation follow-up passed focused health, reconcile, registry,
+  and existing-section drift tests; complete tests and race tests; formatting,
+  build, vet, and changed-code lint; all 62 feature checks; project validation;
+  and whole-project reconcile. Reconcile audited 684 version-control-eligible
+  candidates and 350 eligible handwritten source/test files with none above 300
+  physical lines, and the 6.16 MB working-tree secret scan found no leaks.
 - Current v5 instructions hash to
   `cf68ece8fe95d51733fa835460e0788b89392d22fb4c46522c543f91f3ba6dc7`;
   immutable v1-v4 hashes remain unchanged.
@@ -324,6 +330,11 @@ read-only and preserves user-owned state.
 - Regression tests enforce the ruleset wording, `c`/`n`/`y` shorthand semantics,
   root protection, generated and checked-in alignment, managed-command
   tripwire, current-version behavior, and immutable historical versions.
+- Managed-health and `kit reconcile --include-files` regression coverage proves
+  missing root/provider guidance and Guardrails are restored with shorthand
+  semantics. Reconcile also reports existing-section shorthand drift for
+  reviewed semantic curation instead of silently treating structural freshness
+  as current guidance.
 - The integrated result preserves current merge-autonomy, release-orchestration,
   and git-wt-removal policy. Pull-request delivery still never implies merge
   consent, and feature IDs 0060 through 0065 remain unique.
@@ -352,3 +363,5 @@ read-only and preserves user-owned state.
   durable workflow behavior. The Constitution remains unchanged because the
   shorthand specializes the existing explicit-choice invariant rather than
   introducing a new project-wide invariant.
+- The work-lane ruleset now declares downstream registry scope explicitly so
+  scheduled health and reconcile refreshes install it in every managed project.

@@ -3,6 +3,7 @@ kind: ruleset
 slug: work-lane-gating
 description: Requires an explicit user-selected pull-request lane before any coding-agent repository mutation.
 status: active
+registry_scope: downstream
 applies_to:
   - git
   - github

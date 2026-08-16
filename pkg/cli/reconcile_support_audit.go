@@ -101,6 +101,66 @@ func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
 	return findings
 }
 
+func auditWorkLaneShorthandGuidance(projectRoot string) []reconcileFinding {
+	expectations := map[string][]string{
+		"AGENTS.md": {
+			"case-insensitively",
+			"`c` means continue existing",
+			"`n` or `y` means new lane",
+			"shorthand is the primary lane choice",
+			"remaining text is supplemental lane instructions",
+		},
+		"CLAUDE.md": {
+			"case-insensitively",
+			"`c` means continue existing",
+			"`n` or `y` means new lane",
+			"shorthand is the primary lane choice",
+			"remaining text is supplemental lane instructions",
+		},
+		".github/copilot-instructions.md": {
+			"case-insensitively",
+			"`c` means continue existing",
+			"`n` or `y` means new lane",
+			"shorthand is the primary lane choice",
+			"remaining text is supplemental lane instructions",
+		},
+		"docs/agents/GUARDRAILS.md": {
+			"case-insensitively",
+			"`c` means continue existing",
+			"`n` or `y` means new lane",
+			"shorthand is the primary lane choice",
+			"remaining text is supplemental",
+		},
+	}
+
+	var findings []reconcileFinding
+	for relativePath, snippets := range expectations {
+		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+		content, err := os.ReadFile(absolutePath)
+		if err != nil {
+			continue
+		}
+		for _, snippet := range snippets {
+			if strings.Contains(string(content), snippet) {
+				continue
+			}
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				fmt.Sprintf("managed work-lane guidance is missing shorthand semantics %q", snippet),
+				templateSource(projectRoot),
+				"integrate the missing shorthand semantics manually while preserving project-specific guidance",
+				[]string{
+					fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath),
+					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
+				},
+			))
+			break
+		}
+	}
+	return findings
+}
+
 func auditInstructionPromptEntrypoints(projectRoot string, cfg *config.Config, version int) []reconcileFinding {
 	if repoKnowledgeEntrypointPath(projectRoot, cfg) != "" {
 		return nil

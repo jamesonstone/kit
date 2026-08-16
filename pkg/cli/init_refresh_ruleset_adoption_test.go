@@ -125,6 +125,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"infrastructure-change-approval",
 		"source-file-size",
 		"testing-and-environment-validation",
+		"work-lane-gating",
 	}
 	registry := make([]registryRuleset, 0, len(slugs))
 	expectedContent := make(map[string]string, len(slugs))

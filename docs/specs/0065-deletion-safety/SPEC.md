@@ -262,6 +262,13 @@ confirms the exact current targets after seeing the complete consequences.
 - Hosted pull-request checks remain separate delivery evidence and must be
   revalidated on the final pushed head; they do not substitute for local
   validation.
+- The managed-propagation follow-up passed focused `kit health`,
+  `kit reconcile --include-files`, mandatory downstream-rule adoption, and
+  existing-section drift tests plus complete tests, race tests, formatting,
+  build, vet, changed-code lint, all 62 feature checks, project validation, and
+  whole-project reconcile. Reconcile audited 684 version-control-eligible
+  candidates and 350 eligible handwritten source/test files with none above 300
+  physical lines; the 6.16 MB working-tree secret scan found no leaks.
 
 ## OUTCOME
 
@@ -278,6 +285,9 @@ confirms the exact current targets after seeing the complete consequences.
 - Preserved immutable instruction versions v1-v4 and made additive v5 current.
 - No downstream data model was mass-migrated. New and refreshed Kit projects
   receive the rule, and later deletion work must apply it to existing systems.
+- Focused propagation coverage proves both `kit health` and
+  `kit reconcile --include-files` install the downstream deletion rule alongside
+  the managed work-lane guidance used by scheduled Kit health maintenance.
 
 ## REPOSITORY MEMORY
 
