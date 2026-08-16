@@ -111,16 +111,22 @@ backup or snapshot deletion, cryptographic erasure, and irreversible cascades.
 - Expose hard delete only through a separate privileged operation with
   server-side authorization and confirmation enforcement. A client-side modal
   or CLI prompt alone is insufficient when the server can still purge directly.
-- Bind any confirmation token or approval record to the actor, exact target or
-  bounded selector, resolved target count, action, environment, material
-  consequences, and a short expiry. Make it single-use.
+- Bind any confirmation token or approval record to the actor, exact targets,
+  action, environment, material consequences, and a short expiry. For a
+  bounded selector, bind the confirmation to materialized target IDs or an
+  immutable snapshot or version token as well as the resolved count. Make the
+  confirmation single-use.
 - Reject absent, expired, reused, mismatched, or stale confirmation evidence.
+- Immediately before execution, compare the current target set or immutable
+  version with the confirmed snapshot. Abort on any difference, refresh the
+  outline, and obtain new confirmation.
 
 ### Specific Manual Confirmation Before Hard Delete
 
 Before every hard-delete batch, use read-only inspection to resolve and present:
 
-1. exact target identities or a bounded selector and current resolved count;
+1. exact target identities or a bounded selector, current resolved count, and
+   materialized target IDs or an immutable snapshot or version token;
 2. repository, tenant, site, environment, account, project, or Region as
    applicable;
 3. dependent cascades and externally affected resources;
@@ -143,9 +149,10 @@ The following never count as hard-delete confirmation:
 - earlier confirmation for different targets, counts, cascades, or environments;
 - a broad instruction such as delete everything, clean up, or start over.
 
-Target drift, a larger count, expanded cascades, a different environment or
-actor, or changed recovery consequences invalidates the confirmation. Stop,
-refresh the outline, and obtain a new specific manual confirmation.
+Target-set or version drift, including changed identities with the same count,
+expanded cascades, a different environment or actor, or changed recovery
+consequences invalidates the confirmation. Stop, refresh the outline, and
+obtain a new specific manual confirmation.
 
 ### Composition With Other Gates
 
@@ -182,7 +189,8 @@ refresh the outline, and obtain a new specific manual confirmation.
 - Automatically purging when retention expires without a specific manual
   confirmation for the resolved targets.
 - Using a broad prefix, wildcard, account, directory, or tenant as deletion
-  authority without resolving the exact bounded result.
+  authority without materializing the exact bounded result or binding it to an
+  immutable snapshot or version.
 - Relying on a typed client phrase while leaving an unguarded server purge API.
 - Calling a destructive replacement safe because a new resource will be
   created afterward.
@@ -197,7 +205,10 @@ refresh the outline, and obtain a new specific manual confirmation.
 - Confirm retention expiry does not itself execute an irreversible purge.
 - Confirm hard delete has a separate privileged server-enforced surface.
 - Confirm the pre-delete outline resolves exact targets, count, cascades,
-  environment, recovery loss, and policy consequences.
+  environment, recovery loss, policy consequences, and materialized IDs or an
+  immutable snapshot or version for every bounded selector.
+- Confirm execution aborts when the current target set or immutable version
+  differs from the confirmed snapshot, even if the target count is unchanged.
 - Confirm a human manually approved those exact current targets after the
   outline and that drift invalidates the approval.
 - Confirm audit evidence records actor, scope, confirmation, result, failures,

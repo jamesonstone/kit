@@ -36,6 +36,13 @@ func TestReconcileFindsStaleDeletionSafetyGuidance(t *testing.T) {
 			audit:   auditV3SupportGuidance,
 		},
 		{
+			name:    "V3 root bounded-selector snapshot",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "materialized target IDs or an immutable snapshot/version token",
+			audit:   auditV3SupportGuidance,
+		},
+		{
 			name:    "V3 guardrails route",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "docs/agents/GUARDRAILS.md",

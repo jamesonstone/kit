@@ -21,10 +21,11 @@ func TestAgentInstructionsV5RequiresDeletionSafety(t *testing.T) {
 		"retention expiry",
 		"separate privileged, auditable, server-enforced action",
 		"resolve and present exact targets or a bounded",
+		"materialized target IDs or an immutable",
 		"why soft delete is",
 		"After that outline, obtain a specific manual confirmation from the human",
 		"Initial requests, general task or plan approval, automation",
-		"Target or impact drift requires a new outline and confirmation",
+		"compare the current target set or version with the confirmed",
 		"One post-outline confirmation may satisfy multiple",
 	} {
 		if !strings.Contains(content, want) {

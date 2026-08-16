@@ -16,9 +16,10 @@ func TestInstructionTemplatesRequireDeletionSafety(t *testing.T) {
 		"retention expiry",
 		"separate privileged, auditable, server-enforced action",
 		"exact targets or bounded selector",
+		"materialized target IDs or an immutable snapshot/version token",
 		"obtain a specific manual confirmation from the human",
 		"Initial requests, general task or plan approval, automation",
-		"Target or impact drift requires a new outline and confirmation",
+		"compare the current target set or version with the confirmed snapshot",
 		"One post-outline confirmation may satisfy multiple deletion gates",
 	}
 	for name, content := range map[string]string{

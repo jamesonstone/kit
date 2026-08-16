@@ -130,6 +130,11 @@ confirms the exact current targets after seeing the complete consequences.
 - Bind confirmation to the resolved current targets, actor, action, environment,
   and material consequences. Target drift, expanded cascades, a new environment,
   or a changed recovery posture requires a new outline and confirmation.
+- For a bounded selector, bind confirmation to materialized target IDs or an
+  immutable snapshot or version token as well as the resolved count. Immediately
+  before execution, compare the current target set or version with the
+  confirmed snapshot; abort on any difference, including identity changes with
+  the same count, and require a new outline and confirmation.
 - Product hard-delete flows must enforce an equivalent separate human act and
   record actor, time, target scope, and confirmation evidence. Client-side
   prompts alone are insufficient when the server can still purge directly.
@@ -201,6 +206,9 @@ confirms the exact current targets after seeing the complete consequences.
   Ambiguous files or resources are covered and therefore default to soft delete.
 - Preserve prior instruction versions and publish v5 rather than mutating the
   immutable v4 contract.
+- Bind bounded hard-delete selectors to materialized identities or an immutable
+  snapshot/version so target-set drift cannot detach confirmation from the
+  records that were actually outlined.
 
 ## DISCOVERIES
 
@@ -216,6 +224,10 @@ confirms the exact current targets after seeing the complete consequences.
   `kit instructions` uses a separate immutable version registry.
 - Synthetic production cleanup currently authorizes exact-run cleanup but does
   not distinguish soft from hard deletion; it must defer to this new rule.
+- CodeRabbit identified that resolved counts alone cannot detect a bounded
+  selector changing to different targets. The contract now requires
+  materialized identities or an immutable snapshot/version token and an
+  immediate pre-execution comparison.
 - The generated V2 root instructions had relied on the remaining space below a
   fixed 100-line threshold for small project-owned additions. The mandatory
   gate consumed that incidental space, so reconciliation now uses the current
@@ -242,11 +254,13 @@ confirms the exact current targets after seeing the complete consequences.
   and a complete source-file-size audit: 683 version-control-eligible
   candidates, 349 eligible handwritten source/test files, and zero files above
   300 physical lines.
-- SHA-256 verification preserved v1-v4 byte-for-byte and registered v5 as
-  `be90847abb2a065b3d585a9de6b71d7b28bc483ca354891e6341145df0c93fd3`.
-- `gitleaks dir --no-banner --redact .` scanned 4.34 MB and found no leaks.
-- Hosted pull-request checks remain delivery evidence and will be reported
-  separately after the ready pull request exists.
+- SHA-256 verification preserved v1-v4 byte-for-byte and registered the final
+  snapshot-bound v5 as
+  `67122fe42ce3bcb65a9b1f355271395ebe4c65d43fef5b1b9632580cacf5e3d6`.
+- `gitleaks dir --no-banner --redact .` scanned 4.70 MB and found no leaks.
+- Hosted pull-request checks remain separate delivery evidence and must be
+  revalidated on the final pushed head; they do not substitute for local
+  validation.
 
 ## OUTCOME
 
@@ -254,6 +268,8 @@ confirms the exact current targets after seeing the complete consequences.
   now defaults to a supported recoverable lifecycle, while hard delete remains
   a separate privileged action prohibited until a human specifically confirms
   the exact current targets after the complete consequence outline.
+- Bounded-selector confirmation is snapshot-bound and execution must abort on
+  any target-set or version drift, even when the resolved count is unchanged.
 - Routed the contract through all generated provider instructions, checked-in
   V3 guidance, the Constitution baseline, support references, all seven context
   workflows, refresh adoption, reconciliation expectations, and testing and
