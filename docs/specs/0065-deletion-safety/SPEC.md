@@ -130,11 +130,12 @@ confirms the exact current targets after seeing the complete consequences.
 - Bind confirmation to the resolved current targets, actor, action, environment,
   and material consequences. Target drift, expanded cascades, a new environment,
   or a changed recovery posture requires a new outline and confirmation.
-- For a bounded selector, bind confirmation to materialized target IDs or an
-  immutable snapshot or version token as well as the resolved count. Immediately
-  before execution, compare the current target set or version with the
-  confirmed snapshot; abort on any difference, including identity changes with
-  the same count, and require a new outline and confirmation.
+- For a bounded selector, first resolve the exact current target set, then bind
+  confirmation to its materialized target IDs or an immutable snapshot or
+  version token as well as the resolved count. Immediately before execution,
+  compare the current target set or version with the confirmed snapshot; abort
+  on any difference, including identity changes with the same count, and
+  require a new outline and confirmation.
 - Product hard-delete flows must enforce an equivalent separate human act and
   record actor, time, target scope, and confirmation evidence. Client-side
   prompts alone are insufficient when the server can still purge directly.
@@ -256,8 +257,8 @@ confirms the exact current targets after seeing the complete consequences.
   300 physical lines.
 - SHA-256 verification preserved v1-v4 byte-for-byte and registered the final
   snapshot-bound v5 as
-  `67122fe42ce3bcb65a9b1f355271395ebe4c65d43fef5b1b9632580cacf5e3d6`.
-- `gitleaks dir --no-banner --redact .` scanned 4.70 MB and found no leaks.
+  `015797fc25571eea3e479d4dd3ac13824c060ba869e448fa7d21c98710f58165`.
+- `gitleaks dir --no-banner --redact .` scanned 5.07 MB and found no leaks.
 - Hosted pull-request checks remain separate delivery evidence and must be
   revalidated on the final pushed head; they do not substitute for local
   validation.

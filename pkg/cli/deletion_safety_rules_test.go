@@ -52,7 +52,7 @@ func TestDeletionSafetyRegistryRulesetIsValid(t *testing.T) {
 		"materialized target IDs or an immutable snapshot or version token",
 		"compare the current target set or immutable version with the confirmed snapshot",
 		"### Specific Manual Confirmation Before Hard Delete",
-		"exact target identities or a bounded selector, current resolved count",
+		"bounded selector first resolved to the exact current target set",
 		"why soft delete or continued quarantine is insufficient",
 		"ask the human to confirm irreversible deletion of those exact targets",
 		"the initial request, even when it asked to delete or destroy",

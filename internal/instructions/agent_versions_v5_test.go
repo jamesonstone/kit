@@ -20,7 +20,7 @@ func TestAgentInstructionsV5RequiresDeletionSafety(t *testing.T) {
 		"Treat ambiguous state as covered",
 		"retention expiry",
 		"separate privileged, auditable, server-enforced action",
-		"resolve and present exact targets or a bounded",
+		"selector first resolved to the exact current target set",
 		"materialized target IDs or an immutable",
 		"why soft delete is",
 		"After that outline, obtain a specific manual confirmation from the human",

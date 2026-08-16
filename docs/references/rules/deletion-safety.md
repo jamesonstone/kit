@@ -125,8 +125,9 @@ backup or snapshot deletion, cryptographic erasure, and irreversible cascades.
 
 Before every hard-delete batch, use read-only inspection to resolve and present:
 
-1. exact target identities or a bounded selector, current resolved count, and
-   materialized target IDs or an immutable snapshot or version token;
+1. exact target identities, or a bounded selector first resolved to the exact
+   current target set with its current count and materialized target IDs or an
+   immutable snapshot or version token;
 2. repository, tenant, site, environment, account, project, or Region as
    applicable;
 3. dependent cascades and externally affected resources;
