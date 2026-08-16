@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/verify"
+	"github.com/jamesonstone/kit/v3/internal/verify"
 )
 
 func TestEvaluateAssertionsReportsOutputMetricsAndActualCause(t *testing.T) {

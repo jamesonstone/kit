@@ -1,7 +1,8 @@
 # Kit Commands
 
-Kit 2.0 exposes a deliberately reduced command tree. Command names below are
-supported; flags and output formats remain command-specific.
+Kit 3.0 preserves the deliberately reduced command tree while making its
+subagent prompts capability-aware. Command names below are supported; flags
+and output formats remain command-specific.
 
 ## Agent Evidence
 
@@ -59,6 +60,10 @@ but do not launch or supervise coding agents. Resolve
 `pr-feedback-repair` context before agent repair work. Release agents resolve
 `release-orchestration` and then `pull-request-merge` before any authorized
 merge or merge-queue mutation.
+
+`kit dispatch` and `kit pr fix` no longer accept `--max-subagents`. The active
+coding-agent host owns capacity and scheduling; `--single-agent` remains the
+explicit root-level opt-out from shared subagent guidance.
 
 ## Inspection And Validation
 

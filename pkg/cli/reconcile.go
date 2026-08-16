@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/feature"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )

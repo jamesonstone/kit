@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func TestRepositoryMemoryWorkflowFixturesCoverMaterialAndCodeSufficientOutcomes(t *testing.T) {
@@ -227,7 +227,7 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"safe Agent Team Plan",
 			"agent-team-orchestration.md",
 			"Use subagents when the work cleanly separates into low-overlap lanes after discovery",
-			"Default to at most 3 concurrent lanes; never exceed 4",
+			"Let the host govern concurrency; never invent a static numeric cap",
 			"Keep broad or noisy discovery in RLM first",
 			"Use `kit pr fix` as the default PR review feedback entrypoint",
 			"uses the prompt-producing `kit dispatch --pr` path",

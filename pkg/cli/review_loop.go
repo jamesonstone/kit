@@ -19,10 +19,6 @@ func runReviewLoop(cmd *cobra.Command, opts reviewLoopOptions) error {
 	if strings.TrimSpace(opts.PRRef) == "" {
 		return fmt.Errorf("--pr is required")
 	}
-	if err := validateDispatchMaxSubagents(opts.MaxSubagents); err != nil {
-		return err
-	}
-
 	cwd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)

@@ -29,10 +29,44 @@
 - Keep one accountable supervisor responsible for scope, integration, validation, evidence, delivery gating, and final reporting
 - Use subagents when the work cleanly separates into low-overlap lanes after discovery
 - Keep single-lane work in one supervisor lane when the task is trivial, tightly coupled, high-overlap, high-ambiguity, cannot spawn subagents, or the user requested single-agent execution
-- Default to at most 3 concurrent lanes; never exceed 4
+- Let the host govern concurrency; never invent a static numeric cap
 - Keep broad or noisy discovery in RLM first; use dispatch or direct subagent execution only after the relevant workstreams are narrow enough to predict overlap
 - Predict overlap conservatively before parallelizing
 - Use read-only verification subagents by default after implementation unless a recorded exception applies
+
+## Capability-Aware Host Adapter
+
+Use `docs/references/rules/agent-team-orchestration.md` for the canonical topology and lifecycle. This adapter translates semantic profiles into controls confirmed by the active host; host and model examples are illustrative, not fixed requirements.
+
+| Profile | Capability target |
+| --- | --- |
+| `architect` | strongest justified architecture and systems reasoning |
+| `orchestrator` | decomposition, dependency, risk, and overlap analysis |
+| `mapper` | efficient read-heavy discovery and codebase mapping |
+| `specialist` | bounded implementation with established contracts |
+| `precision` | high-risk or ambiguous work requiring deeper judgment |
+| `verifier` | fresh independent review with enough strength to challenge the implementation |
+
+### Capability Negotiation
+
+- Before delegation, inspect the host's confirmed child-launch, per-child model and effort, same-agent follow-up, wait or join, live roster or capacity, and fresh-verifier controls. Record confirmed absence as unavailable and unexposed controls as `unknown`.
+- Let the host govern concurrency. When parallel capacity is unconfirmed, do not invent a numeric cap or launch a child to probe it; a confirmed child primitive may still be used serially.
+- If the host exposes no child primitive, use one supervisor with logical lanes. Never report a role prompt, task list, handoff, or manually opened conversation as a child.
+- Resolve profiles against the live roster. Fall back to an equal-or-stronger eligible configuration, then a narrower low-risk lane with stronger verification, then a runtime-selected configuration reported as unverified; otherwise report `BLOCKED`. An unavailable exact user model or effort pin remains blocked until the user changes it.
+- If capacity changes or a spawn fails, keep unadmitted lanes pending, preserve accepted work, recompute the ready frontier from confirmed capacity, and report the failure and degradation. Do not retry indefinitely or let children create descendants.
+- Report actual and logical lanes separately, requested and effective profiles plus model and effort when exposed, confirmed or unknown parallelism, continuity or replacement, verifier independence, and every fallback.
+
+### Illustrative Current Mappings
+
+| Host | Example profile mapping |
+| --- | --- |
+| Codex | strongest justified live configuration for `architect` and `precision`; balanced read-heavy configuration for `orchestrator` and `mapper`; fast configuration for bounded `specialist` work; fresh strong configuration for `verifier` |
+| Claude Code | Opus-class for architecture, precision, and strong verification; Sonnet-class for orchestration, mapping, and general implementation; Haiku-class only for narrow low-risk bounded work |
+| GitHub Copilot | request semantic profiles conservatively and record the effective model or agent controls the host confirms; do not infer child continuation, parallelism, or per-child selection |
+| Warp/Oz | use native parent-child orchestration, continuation, and per-child model controls only when exposed; parallelism and admission remain host-owned |
+| Unknown or single-agent host | serialize logical lanes in the supervisor and perform a distinct self-review, reporting that no child or independent verifier was confirmed |
+
+Current provider references: [Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Claude Code subagents](https://code.claude.com/docs/en/sub-agents), [GitHub Copilot custom-agent invocation](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/invoke-custom-agents), [Warp orchestration](https://docs.warp.dev/platform/orchestration/), and [Warp project rules](https://docs.warp.dev/agents/capabilities/rules/). Treat these as evidence sources to re-check, not as pinned capability promises.
 
 ## PR Review Feedback
 

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func TestMergeInstructionFileContent_FailsOnDuplicateRecognizedSections(t *testing.T) {

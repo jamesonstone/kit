@@ -1,6 +1,6 @@
 package feature
 
-import "github.com/jamesonstone/kit/internal/config"
+import "github.com/jamesonstone/kit/v3/internal/config"
 
 // ApplyLifecycleState remains as a compatibility hook. Legacy lifecycle fields
 // are parsed for one major release but no longer alter current feature state.

@@ -1,7 +1,7 @@
 package releaseprompt
 
 import (
-	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/v3/internal/promptdoc"
 )
 
 func addDiscoveryAndGraph(document *promptdoc.Document, config Config) {
@@ -62,7 +62,7 @@ INDEPENDENT_OF`)
 
 func addPreparationAndCompatibility(document *promptdoc.Document, config Config) {
 	document.Heading(2, "Phase 2: Prepare PRs Safely")
-	document.Paragraph("Prepare independent nodes concurrently when the execution environment and repository rules permit it. Keep one supervisor accountable, predict file overlap before delegation, use no more than three concurrent lanes by default and never more than four, and serialize overlapping implementation. Continue preparing independent future nodes while bounded checks or deployments run.")
+	document.Paragraph("Prepare independent nodes concurrently only when the active host confirms separate execution, parallel scheduling, and current capacity. Keep one supervisor accountable, predict file overlap before delegation, let the host govern admission, and serialize overlapping implementation. Continue preparing independent future nodes while bounded checks or deployments run.")
 	document.BulletList(
 		"inspect code and dependencies",
 		"classify and remediate review feedback",

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 // TaskProgress holds task completion statistics.

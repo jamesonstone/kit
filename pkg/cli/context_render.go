@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	contextcontract "github.com/jamesonstone/kit/internal/context"
+	contextcontract "github.com/jamesonstone/kit/v3/internal/context"
 )
 
 func renderContextContract(cmd *cobra.Command, contract contextcontract.Contract) error {

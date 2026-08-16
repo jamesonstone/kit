@@ -23,14 +23,20 @@ truth, choose a model, or launch or supervise agents.
 
 ## Major Update
 
-Kit 2.0 intentionally removes low-use and duplicative commands. Existing
-repositories keep their files and historical specifications, but should preview
-`kit reconcile --include-files --dry-run --diff` before applying managed-file
-updates. `kit reconcile` itself retains its existing behavior and remains the
-canonical drift-maintenance surface.
+Kit 3.0 makes subagent orchestration capability-aware and moves the Go module
+to its required `/v3` identity. Existing repositories keep their files and
+historical specifications, but should preview this command before applying
+managed-file updates:
 
-See the [v2 migration guide](docs/migration-v2.md), [release
-notes](docs/releases/v2.0.0.md), and [command guide](docs/commands.md).
+```bash
+kit reconcile --include-files --dry-run --diff
+```
+
+`kit reconcile` itself retains its existing behavior and remains the canonical
+drift-maintenance surface.
+
+See the [v3 migration guide](docs/migration-v3.md), [release
+notes](docs/releases/v3.0.0.md), and [command guide](docs/commands.md).
 
 ## Primary Flow
 
@@ -84,7 +90,7 @@ repository's `.kit.yaml`. Usage commands do not record themselves.
 ## Install
 
 ```bash
-go install github.com/jamesonstone/kit/cmd/kit@latest
+go install github.com/jamesonstone/kit/v3/cmd/kit@latest
 ```
 
 Or clone the repository and run `make build`. Enable repository-managed hooks
@@ -95,7 +101,8 @@ for the clone with `make install-git-hooks`.
 - [Overview](docs/overview.md)
 - [Commands](docs/commands.md)
 - [Coding-agent workflow](docs/workflows.md)
-- [Migration to v2](docs/migration-v2.md)
+- [Migration to v3](docs/migration-v3.md)
+- [Historical v2 migration](docs/migration-v2.md)
 - [Agent routing](docs/agents/README.md)
 - [Rules and references](docs/references/README.md)
 - [Project Constitution](docs/CONSTITUTION.md)

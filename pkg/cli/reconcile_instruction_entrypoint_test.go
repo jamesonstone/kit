@@ -3,9 +3,9 @@ package cli
 import (
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/instructions"
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/instructions"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func TestRootInstructionMaxLinesIncludesCurrentGeneratedContract(t *testing.T) {

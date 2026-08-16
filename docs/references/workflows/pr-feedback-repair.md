@@ -35,9 +35,9 @@ evidence:
 ## Phases
 
 1. Use `kit pr fix` for bounded current feedback intake and lane evidence.
-2. Record an Agent Team Plan before spawning; use at most three independent low-overlap lanes, never more than four, and serialize shared files.
+2. Negotiate host-confirmed agent controls and record an Agent Team Plan that distinguishes actual agents from logical and omitted lanes, requested from effective profiles, confirmed from unconfirmed parallelism, and reused agents from replacement rebriefs; serialize shared files.
 3. Verify every finding against current HEAD and fix only still-valid issues.
-4. Run complete validation and a read-only verification lane after nontrivial repair.
+4. Run complete validation and use a fresh independent read-only verifier when supported; otherwise perform and disclose a distinct supervisor self-review.
 5. Review the full integrated diff, push one coherent batch, verify the exact remote head, reflect, then explicitly resolve only addressed threads.
 
 ## Completion Gates

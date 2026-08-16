@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func TestRunRulesAddCreatesRuleset(t *testing.T) {

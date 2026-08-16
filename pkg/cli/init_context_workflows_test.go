@@ -6,8 +6,8 @@ import (
 	stdreflect "reflect"
 	"testing"
 
-	contextcontract "github.com/jamesonstone/kit/internal/context"
-	"github.com/jamesonstone/kit/internal/templates"
+	contextcontract "github.com/jamesonstone/kit/v3/internal/context"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func TestRunInitMaterializesEveryContextWorkflow(t *testing.T) {

@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/document"
-	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/v3/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/feature"
 )
 
 func auditTaskAlignment(path, projectRoot string) []reconcileFinding {

@@ -9,9 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
-	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/feature"
 )
 
 func runRulesView(cmd *cobra.Command, args []string) error {

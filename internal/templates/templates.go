@@ -4,7 +4,7 @@ package templates
 import (
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 // Gitignore is the default Kit-local ignore block for repositories initialized

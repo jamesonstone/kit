@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {

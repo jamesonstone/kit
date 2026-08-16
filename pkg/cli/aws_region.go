@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 const awsRegionDiscoveryTimeout = 15 * time.Second

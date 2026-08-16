@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/usage"
+	"github.com/jamesonstone/kit/v3/internal/usage"
 )
 
 func TestRunUsageReportEmitsAggregatedVersionedJSON(t *testing.T) {

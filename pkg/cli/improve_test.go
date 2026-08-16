@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/improve"
+	"github.com/jamesonstone/kit/v3/internal/improve"
 )
 
 type errorWriter struct {

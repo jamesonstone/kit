@@ -11,8 +11,8 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func buildRegistrySelectorEntries(projectRoot string, registry []registryRuleset) ([]registrySelectorEntry, error) {

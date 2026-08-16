@@ -42,7 +42,7 @@ func TestReviewLoopRenderIncludesOnlyFixTasks(t *testing.T) {
 	}
 
 	out := &bytes.Buffer{}
-	err := runReviewLoopPrompt(out, reviewLoopOptions{MaxSubagents: 2}, ctx, classified, coderabbitSharedReviewInstruction)
+	err := runReviewLoopPrompt(out, reviewLoopOptions{}, ctx, classified, coderabbitSharedReviewInstruction)
 	if err != nil {
 		t.Fatalf("runReviewLoopPrompt() error = %v", err)
 	}
@@ -78,7 +78,7 @@ func TestReviewLoopRenderNoActionableSkipsEditor(t *testing.T) {
 	ctx := reviewLoopPRContext{Target: dispatchPRTarget{Number: 67}, HeadRefOID: "abc123"}
 
 	out := &bytes.Buffer{}
-	if err := runReviewLoopPrompt(out, reviewLoopOptions{MaxSubagents: 1, OutputOnly: true}, ctx, classified, ""); err != nil {
+	if err := runReviewLoopPrompt(out, reviewLoopOptions{OutputOnly: true}, ctx, classified, ""); err != nil {
 		t.Fatalf("runReviewLoopPrompt() error = %v", err)
 	}
 	if !strings.Contains(out.String(), "No actionable current review feedback found.") {

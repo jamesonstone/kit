@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/commandset"
+	"github.com/jamesonstone/kit/v3/internal/commandset"
 )
 
 func TestV2CommandTreeMatchesProtectedSurface(t *testing.T) {

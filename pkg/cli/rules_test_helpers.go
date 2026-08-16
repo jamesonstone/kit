@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func stubRulesetRegistry(t *testing.T, rulesets ...registryRuleset) {
