@@ -53,6 +53,7 @@ func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T)
 		"work-lane-gating",
 		"Before I make any repository changes",
 		"canonical worktree, and pull request for this work",
+		"case-insensitively",
 		"`c` means continue existing",
 		"`n` or `y` means new lane",
 		"shorthand is the primary lane choice",

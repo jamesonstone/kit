@@ -26,6 +26,7 @@ func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
 	for _, check := range []string{
 		"Before I make any repository changes",
 		"canonical worktree, and pull request for this work",
+		"case-insensitively",
 		"`c` means continue existing",
 		"`n` or `y` means new lane",
 		"shorthand leads a longer response",
