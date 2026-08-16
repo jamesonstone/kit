@@ -62,7 +62,7 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 		"parallel execution only when the host confirms overlap",
 		"stable agent reference",
 		"continuity loss",
-		"fresh independent read-only verifier",
+		"fresh independent read-only verification by a verifier",
 		"supervisor self-review",
 		"verification was not independent",
 		"verification_independent: true | false | unknown",

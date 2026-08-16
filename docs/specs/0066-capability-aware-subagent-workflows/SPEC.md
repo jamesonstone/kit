@@ -299,6 +299,11 @@ idempotently without silently advancing tags.
   canonical rule, but feature delivery intentionally leaves `.kit.yaml`
   untouched. Exact post-release provenance remains a separate issue, lane,
   and ready pull request after v3.0.0 is verified.
+- The first hosted prompt-system check exposed an exact compatibility phrase
+  that narrower Go tests did not cover: the dispatch benchmark requires
+  `read-only verification`, while the new prompt initially said `read-only
+  verifier`. Restoring the durable phrase in both shared prompt surfaces and
+  asserting it directly made all 114 prompt-system assertions pass.
 
 ## VALIDATION
 
@@ -339,6 +344,8 @@ idempotently without silently advancing tags.
   unexercised parallel, continuation, and effort axes remained unknown.
 - Fresh policy/adapter and Go-release verifiers both report PASS after repairs.
   Neither verifier mutated repository or GitHub state.
+- The deterministic prompt-system suite passes all 24 task runs and all 114
+  assertions after the hosted compatibility repair.
 - Hosted pull-request checks are recorded separately after the ready pull
   request exists. No merge, GitHub Release, proxy installation, upgrade, or
   post-release provenance claim is made by source validation.

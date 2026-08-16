@@ -43,7 +43,7 @@ func buildDispatchPrompt(
 			"Route lanes with provider-neutral requested profiles such as `architect`, `orchestrator`, `mapper`, `specialist`, `precision`, and `verifier`. Record requested and effective profiles separately; when the runtime does not confirm model or effort, report `runtime-selected/unverified` and never claim an exact assignment.",
 			"Use only host-confirmed capacity and parallel execution. Run actual agents sequentially when overlap is not confirmed; when no child primitive is confirmed, execute logical lanes in the supervisor.",
 			"Reuse a stable agent reference for discovery follow-up, implementation rebrief, and repair when supported. Otherwise fully rebrief a replacement and report the continuity loss; never describe a replacement as the same agent.",
-			"Use a fresh independent read-only verifier after nontrivial implementation when supported. Otherwise perform a distinct read-only supervisor self-review and report that verification was not independent.",
+			"Use fresh independent read-only verification by a verifier after nontrivial implementation when supported. Otherwise perform a distinct read-only supervisor self-review and report that verification was not independent.",
 			"Keep each task in its assigned checkout or prepared worktree. Subagents may not independently create, switch, move, or remove worktrees, expand scope, or mutate Git/GitHub delivery state unless explicitly assigned and authorized.",
 		)
 		doc.Heading(2, "Agent Team Plan Output")

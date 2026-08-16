@@ -32,7 +32,7 @@ func TestBuildDispatchPrompt(t *testing.T) {
 		"parallel execution",
 		"stable agent reference",
 		"continuity loss",
-		"fresh independent read-only verifier",
+		"fresh independent read-only verification by a verifier",
 		"supervisor self-review",
 		"assigned checkout or prepared worktree",
 		"may not independently create, switch, move, or remove worktrees",
