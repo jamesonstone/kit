@@ -142,6 +142,11 @@ contracts.
 
 ### Deletion And Removal Exception
 
+- Follow `deletion-safety` first: default the resource lifecycle to a
+  recoverable soft-delete, disablement, quarantine, retained snapshot, or
+  provider recovery control. If hard deletion remains necessary, combine the
+  deletion-safety and infrastructure fields into one outline and one exact
+  post-outline manual confirmation.
 - Deleting, destroying, or removing infrastructure always requires explicit
   user confirmation after the consolidated outline, even when the initial
   request already asked for or authorized the deletion.

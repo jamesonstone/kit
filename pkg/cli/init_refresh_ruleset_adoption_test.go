@@ -120,10 +120,12 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"backend-service-architecture",
 		"codex-thread-initialization",
 		"cross-repository-program-coordination",
+		"deletion-safety",
 		"frontend-application-architecture",
 		"infrastructure-change-approval",
 		"source-file-size",
 		"testing-and-environment-validation",
+		"work-lane-gating",
 	}
 	registry := make([]registryRuleset, 0, len(slugs))
 	expectedContent := make(map[string]string, len(slugs))

@@ -27,6 +27,7 @@
 
 - List credential and secret names without values
 - Document synthetic-data naming, rate and cost limits, cleanup, and retention
+- Follow `rules/deletion-safety.md` for cleanup: default retained state to recoverable deletion and require exact post-outline manual confirmation before hard delete
 
 ## Evidence And Retention
 

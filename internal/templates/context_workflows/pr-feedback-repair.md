@@ -7,6 +7,8 @@ dependencies:
 rules:
   - slug: coding-agent-context-usage
     required: true
+  - slug: deletion-safety
+    required: true
   - slug: agent-team-orchestration
     required: true
   - slug: github-pr-delivery

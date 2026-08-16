@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const CurrentAgentVersion = "v4"
+const CurrentAgentVersion = "v5"
 
 type agentInstructionVersion struct {
 	name string
@@ -18,6 +18,7 @@ var agentInstructionVersions = []agentInstructionVersion{
 	{name: "v2", path: "versions/v2.md"},
 	{name: "v3", path: "versions/v3.md"},
 	{name: "v4", path: "versions/v4.md"},
+	{name: "v5", path: "versions/v5.md"},
 }
 
 //go:embed versions/*.md
