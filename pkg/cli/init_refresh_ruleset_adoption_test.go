@@ -120,6 +120,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"backend-service-architecture",
 		"codex-thread-initialization",
 		"cross-repository-program-coordination",
+		"deletion-safety",
 		"frontend-application-architecture",
 		"infrastructure-change-approval",
 		"source-file-size",

@@ -65,6 +65,7 @@
 | 0062 | git-wt-removal | `docs/specs/0062-git-wt-removal` | deliver | no | 2026-08-11 | Remove the generic `git wt` product from Kit after its implementation moved to Kura, while preserving Kit's narrow internal worktree preparation for pull-request repair flows. |
 | 0063 | explicit-work-lane-choice | `docs/specs/0063-explicit-work-lane-choice` | deliver | no | 2026-08-11 | Require an explicit user-selected pull-request lane before every coding-agent repository mutation, keep the primary checkout read-only, and default current provider-neutral instructions to immutable v4. |
 | 0064 | aws-agent-toolkit-guidance | `docs/specs/0064-aws-agent-toolkit-guidance` | deliver | no | 2026-08-14 | Integrate AWS Agent Toolkit guidance into Kit-managed projects so coding agents use current AWS skills and official documentation, prefer the AWS MCP Server when available, and fall back to the AWS CLI without weakening Kit's existing identity, infrastructure-approval, delivery, or secret-safety boundaries. Bind each enabled project AWS context to one explicit default Region selected through the existing interactive initialization and reconciliation experience. |
+| 0065 | deletion-safety | `docs/specs/0065-deletion-safety` | deliver | no | 2026-08-16 | Make recoverability the default deletion behavior in every Kit-managed project. An unqualified delete must preserve a supported restore path, and an irreversible hard delete must remain prohibited until a human manually confirms the exact current targets after seeing the complete consequences. |
 
 ## PROJECT INTENT
 
@@ -625,6 +626,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: see SPEC.md
 - **POINTERS**: `docs/specs/0064-aws-agent-toolkit-guidance/SPEC.md`
 
+### deletion-safety
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Make recoverability the default deletion behavior in every Kit-managed project. An unqualified delete must preserve a supported restore path, and an irreversible hard delete must remain prohibited until a human manually confirms the exact current targets after seeing the complete consequences.
+- **APPROACH**: Add one mandatory downstream deletion-safety ruleset, compose its concise hard gate into every managed instruction and workflow surface, preserve immutable instruction versions v1-v4 while adding current v5, validate registry and reconciliation behavior, and deliver GH-153 through one ready pull request.
+- **OPEN ITEMS**: ready pull-request review and an explicitly authorized merge
+- **POINTERS**: `docs/specs/0065-deletion-safety/SPEC.md`, `docs/references/rules/deletion-safety.md`
+
 ## LAST UPDATED
 
-2026-08-14 08:51:21 EDT
+2026-08-16 09:06:42 EDT

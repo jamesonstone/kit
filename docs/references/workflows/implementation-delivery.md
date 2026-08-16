@@ -5,6 +5,8 @@ description: Route a feature from accepted native planning through implementatio
 rules:
   - slug: coding-agent-context-usage
     required: true
+  - slug: deletion-safety
+    required: true
   - slug: testing-and-environment-validation
     required: true
   - slug: source-file-size

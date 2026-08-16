@@ -5,6 +5,8 @@ description: Review structural and semantic repository drift without changing ki
 rules:
   - slug: coding-agent-context-usage
     required: true
+  - slug: deletion-safety
+    required: true
   - slug: constitution-curation
     required: true
   - slug: testing-and-environment-validation

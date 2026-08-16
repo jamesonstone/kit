@@ -146,6 +146,17 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 - Never bypass protection, reviews, required checks, a merge queue, repository policy, or identity safeguards.
 - Report merge, hosted workflow, deployment/runtime, and production evidence as separate claims.
 
+## Deletion Safety Hard Gate
+
+- Before designing deletion behavior or deleting persistent project, user, business, or external-system state, load `docs/references/rules/deletion-safety.md`.
+- An unqualified delete means soft delete: use a reversible lifecycle state with a supported, authorized, and tested restore path. Task-owned ephemeral scratch that never became authoritative state is outside this retained-state definition; ambiguity remains covered.
+- Treat purge, destroy, force deletion, empty-trash operations, destructive replacement, history rewrite, retention expiry, backup or snapshot deletion, cryptographic erasure, and irreversible cascades as hard delete.
+- Make the normal product and operational path soft-delete by default. Keep hard delete as a separate privileged, auditable, server-enforced action; a client prompt or `force` flag alone is insufficient.
+- Before any hard delete, resolve and present the exact targets or bounded selector, current count, environment, cascades, why soft delete is insufficient, the loss of restore, backup state, retention or legal impact, and verification plan.
+- After that outline, obtain a specific manual confirmation from the human for those exact current targets. Initial requests, general task or plan approval, automation, retention schedules, prior soft-delete approval, and broad cleanup language do not count.
+- Bind confirmation to the actor, action, exact targets, environment, and consequences. Target or impact drift requires a new outline and confirmation.
+- Preserve stricter repository, legal, privacy, security, infrastructure, and provider controls. One post-outline confirmation may satisfy multiple deletion gates only when the combined outline contains every required field.
+
 ## Infrastructure Change Approval Hard Gate
 
 - Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.
@@ -204,6 +215,7 @@ Before AWS-dependent work, load `docs/references/rules/aws-agent-toolkit-guidanc
 - Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied `.envrc`, and remember that direnv approval remains path-specific; keep runtime services, databases, ports, Temporal state, process supervision, and sibling repositories outside the worktree workflow
 - Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
 - Do not ask for routine approval to switch supported tools, including authenticated `gh`, when the authorized mutation is unchanged
+- Follow `docs/references/rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state; default to soft delete and obtain post-outline specific manual confirmation before every hard delete
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files
 - Treat missing credentials, ambiguous identity or target, conflicting user-owned changes, and required external authorization as blockers requiring the smallest missing input, not as routine retry-permission requests
 - Do not run `coderabbit --prompt-only` unless explicitly requested or approved
