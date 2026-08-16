@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/instructions"
+	"github.com/jamesonstone/kit/v3/internal/instructions"
 )
 
 var instructionsCmd = newInstructionsCommand()

@@ -23,7 +23,7 @@ import (
 
 const (
 	releasesAPIBase   = "https://api.github.com/repos/jamesonstone/kit/releases"
-	manualInstallHint = "go install github.com/jamesonstone/kit/cmd/kit@latest"
+	manualInstallHint = "go install github.com/jamesonstone/kit/v3/cmd/kit@latest"
 )
 
 var (

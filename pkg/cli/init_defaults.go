@@ -1,6 +1,6 @@
 package cli
 
-import "github.com/jamesonstone/kit/internal/config"
+import "github.com/jamesonstone/kit/v3/internal/config"
 
 func defaultInitConfig() *config.Config {
 	cfg := config.Default()

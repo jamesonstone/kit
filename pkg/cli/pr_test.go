@@ -28,10 +28,8 @@ func TestPRFixCommandIsRegistered(t *testing.T) {
 	if flag := cmd.Flags().Lookup("edit"); flag == nil {
 		t.Fatal("expected pr fix to expose --edit")
 	}
-	if flag := cmd.Flags().Lookup("max-subagents"); flag == nil {
-		t.Fatal("expected pr fix to expose --max-subagents")
-	} else if flag.DefValue != "3" || !strings.Contains(flag.Usage, "hard ceiling 4") {
-		t.Fatalf("unexpected --max-subagents flag metadata: def=%q usage=%q", flag.DefValue, flag.Usage)
+	if flag := cmd.Flags().Lookup("max-subagents"); flag != nil {
+		t.Fatalf("expected pr fix not to expose --max-subagents, got %#v", flag)
 	}
 	if !strings.Contains(cmd.Long, "only active (unresolved, non-outdated) review threads") {
 		t.Fatalf("expected pr fix help to document active review-thread filtering, got:\n%s", cmd.Long)
@@ -65,7 +63,6 @@ func TestRunPRFixCommandRoutesExplicitPRToDispatchPrompt(t *testing.T) {
 		"--output-only",
 		"--copy",
 		"--edit",
-		"--max-subagents", "3",
 		"--editor", "vim",
 	})
 
@@ -78,8 +75,17 @@ func TestRunPRFixCommandRoutesExplicitPRToDispatchPrompt(t *testing.T) {
 	if !gotOpts.CodeRabbitOnly || !gotOpts.OutputOnly || !gotOpts.Copy || !gotOpts.Edit {
 		t.Fatalf("expected dispatch prompt flags to be forwarded: %#v", gotOpts)
 	}
-	if gotOpts.MaxSubagents != 3 || gotOpts.Editor != "vim" {
+	if gotOpts.Editor != "vim" {
 		t.Fatalf("dispatch prompt options not forwarded: %#v", gotOpts)
+	}
+}
+
+func TestPRFixCommandRejectsRemovedMaxSubagentsFlag(t *testing.T) {
+	cmd := newPRFixCommand()
+	cmd.SetArgs([]string{"--max-subagents", "2"})
+	err := cmd.Execute()
+	if err == nil || !strings.Contains(err.Error(), "unknown flag: --max-subagents") {
+		t.Fatalf("expected removed flag to be rejected as unknown, got %v", err)
 	}
 }
 
@@ -108,8 +114,7 @@ func TestRunPRFixDispatchPromptCopiesWithoutEditingByDefault(t *testing.T) {
 
 	cmd := newPRFixCommand()
 	if err := runPRFixDispatchPrompt(cmd, prFixDispatchOptions{
-		PRRef:        "67",
-		MaxSubagents: defaultDispatchMaxSubagents,
+		PRRef: "67",
 	}); err != nil {
 		t.Fatalf("runPRFixDispatchPrompt() error = %v", err)
 	}
@@ -155,9 +160,8 @@ func TestRunPRFixDispatchPromptEditsWhenRequested(t *testing.T) {
 
 	cmd := newPRFixCommand()
 	if err := runPRFixDispatchPrompt(cmd, prFixDispatchOptions{
-		PRRef:        "67",
-		Edit:         true,
-		MaxSubagents: defaultDispatchMaxSubagents,
+		PRRef: "67",
+		Edit:  true,
 	}); err != nil {
 		t.Fatalf("runPRFixDispatchPrompt() error = %v", err)
 	}

@@ -10,8 +10,10 @@ repository evidence, and a reduced human maintenance surface.
 | [Overview](overview.md) | Product boundary and evidence model. |
 | [Commands](commands.md) | Exact supported command groups and removed surfaces. |
 | [Workflows](workflows.md) | Agent evidence, native planning, implementation, and maintenance flow. |
-| [Migration to v2](migration-v2.md) | Conservative major-upgrade procedure. |
-| [v2.0.0 release notes](releases/v2.0.0.md) | Breaking changes and activation sequence. |
+| [Migration to v3](migration-v3.md) | Capability-aware orchestration and Go module migration. |
+| [v3.0.0 release notes](releases/v3.0.0.md) | Breaking changes and release boundary. |
+| [Historical migration to v2](migration-v2.md) | Prior conservative major-upgrade procedure. |
+| [Historical v2.0.0 release notes](releases/v2.0.0.md) | Prior breaking changes and activation sequence. |
 
 ## Project Contract
 

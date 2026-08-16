@@ -138,7 +138,7 @@ If evidence is insufficient, investigate further. Do not mutate merely to answer
 
 ## Phase 2: Prepare PRs Safely
 
-Prepare independent nodes concurrently when the execution environment and repository rules permit it. Keep one supervisor accountable, predict file overlap before delegation, use no more than three concurrent lanes by default and never more than four, and serialize overlapping implementation. Continue preparing independent future nodes while bounded checks or deployments run.
+Prepare independent nodes concurrently only when the active host confirms separate execution, parallel scheduling, and current capacity. Keep one supervisor accountable, predict file overlap before delegation, let the host govern admission, and serialize overlapping implementation. Continue preparing independent future nodes while bounded checks or deployments run.
 
 - inspect code and dependencies
 - classify and remediate review feedback

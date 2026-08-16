@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func TestRunInit_AppendsMissingGitignoreEntries(t *testing.T) {

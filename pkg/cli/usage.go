@@ -13,9 +13,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/commandset"
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/usage"
+	"github.com/jamesonstone/kit/v3/internal/commandset"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/usage"
 )
 
 type usageReportOptions struct {

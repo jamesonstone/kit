@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/v3/internal/promptdoc"
 )
 
 type reconcileFileSummary struct {

@@ -46,11 +46,13 @@ func subagentPromptSuffix() string {
 		"## Subagent Orchestration",
 		"- Preserve the command's scope, phase, safety, and mutation boundaries.",
 		"- The supervisor owns scope, integration, validation, evidence, delivery gates, and the final report.",
-		"- When work separates into low-overlap areas, load `docs/references/rules/agent-team-orchestration.md`, predict touched files, and record an Agent Team Plan before spawning.",
-		"- Use one lane for trivial, tightly coupled, ambiguous, or high-overlap work. In normal operation, run at most 3 independent lanes and serialize shared files or interfaces.",
-		"- A fourth lane requires explicit exceptional authorization from the supervisor, clearly low file overlap, and an independent validation surface; never exceed 4 lanes.",
-		"- After nontrivial implementation, use a read-only verification agent unless the task is documentation-only, tightly coupled, explicitly single-agent, or the runtime cannot spawn agents.",
+		"- Before assigning lanes, enter `CAPABILITY_NEGOTIATING` and build a Capability Manifest from only the agent controls exposed by the active runtime. Record host-confirmed child execution, parallelism, stable references and follow-up, model and effort selection, fresh verification, waiting or status controls, effective capacity, selected topology, delegation depth, degradations, and evidence basis. Preserve `unknown` literally, treat it as unavailable for routing, and never spawn only to probe capability.",
+		"- Load `docs/references/rules/agent-team-orchestration.md`, predict touched files, and record an Agent Team Plan. Use one supervisor lane for trivial, tightly coupled, ambiguous, high-overlap, explicitly single-agent work, or when no child primitive is confirmed. Only the root supervisor may launch agents; child agents must not delegate further.",
+		"- Count a lane as an actual agent only when the runtime creates a separate execution and returns a separate result. Report logical-only and omitted lanes separately; role prompts, task lists, editor modes, handoffs, and manually opened conversations are not spawned agents.",
+		"- Record requested and effective provider-neutral profiles separately. If the runtime does not confirm model or effort, report `runtime-selected/unverified`; claim parallel execution only when the host confirms overlap, otherwise report sequential or unconfirmed execution.",
+		"- Reuse the same stable agent reference for follow-up when supported. Otherwise fully rebrief a replacement and report continuity loss; never describe a replacement as the same agent.",
+		"- After nontrivial implementation, use a fresh independent read-only verifier when supported. Otherwise perform a distinct read-only supervisor self-review and state that verification was not independent.",
 		"- Subagents may use only a supervisor-prepared, explicitly assigned worktree; they may not create, switch, move, or remove worktrees, expand scope, or mutate Git/GitHub delivery state without explicit supervisor authorization.",
-		"- Report actual agents used and omitted lanes. If none ran, state: `single supervisor lane; no specialist or verification agents spawned`.",
+		"- Final reporting must distinguish task outcome from orchestration conformance and list actual agents, logical lanes, omitted lanes, requested and effective profiles, confirmed or unconfirmed parallelism, continuity replacements, and `verification_independent: true | false | unknown`. If none ran, state: `single supervisor lane; no specialist or verification agents spawned`.",
 	}, "\n")
 }

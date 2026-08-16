@@ -113,7 +113,7 @@ func TestRunReviewLoopDoesNotCallMutatingGitHubCommands(t *testing.T) {
 
 	cmd := &cobra.Command{}
 	cmd.SetOut(io.Discard)
-	err := runReviewLoop(cmd, reviewLoopOptions{PRRef: "Patient-Driven-Care/cortex#67", MaxSubagents: 1})
+	err := runReviewLoop(cmd, reviewLoopOptions{PRRef: "Patient-Driven-Care/cortex#67"})
 	if err != nil {
 		t.Fatalf("runReviewLoop() error = %v", err)
 	}

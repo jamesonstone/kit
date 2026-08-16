@@ -7,11 +7,13 @@ import (
 	"testing"
 )
 
-func TestReadmeDocumentsV2BoundaryAndPrimaryFlow(t *testing.T) {
+func TestReadmeDocumentsV3BoundaryAndPrimaryFlow(t *testing.T) {
 	content := readRepositoryFile(t, "README.md")
 	for _, required := range []string{
 		"## Major Update",
-		"Kit 2.0 intentionally removes",
+		"Kit 3.0 makes subagent orchestration capability-aware",
+		"github.com/jamesonstone/kit/v3/cmd/kit@latest",
+		"docs/migration-v3.md",
 		"kit reconcile --include-files --dry-run --diff",
 		"kit capabilities context resolve --json",
 		"kit spec my-feature",
@@ -37,6 +39,22 @@ func TestReadmeDocumentsV2BoundaryAndPrimaryFlow(t *testing.T) {
 	}
 }
 
+func TestMigrationV3DocumentsBreakingBoundary(t *testing.T) {
+	content := readRepositoryFile(t, "docs/migration-v3.md")
+	for _, required := range []string{
+		"github.com/jamesonstone/kit/v3",
+		"`--max-subagents`",
+		"`--single-agent`",
+		"exactly three default instruction targets",
+		"Logical roles, plans, task lists",
+		"Historical v1 and v2 specifications",
+	} {
+		if !strings.Contains(content, required) {
+			t.Errorf("v3 migration guide missing %q", required)
+		}
+	}
+}
+
 func TestMigrationDocumentsWeeklyHealthCompatibilityBoundary(t *testing.T) {
 	content := readRepositoryFile(t, "docs/migration-v2.md")
 	for _, required := range []string{
@@ -53,12 +71,14 @@ func TestMigrationDocumentsWeeklyHealthCompatibilityBoundary(t *testing.T) {
 	}
 }
 
-func TestReleaseWorkflowEstablishesV2ThenResumesPatchBumps(t *testing.T) {
+func TestReleaseWorkflowEstablishesV3ThenResumesPatchBumps(t *testing.T) {
 	content := readRepositoryFile(t, ".github/workflows/release-tag-main.yml")
 	for _, required := range []string{
-		`next_tag="v2.0.0"`,
-		"if (( major < 2 )); then",
-		`next_tag="v${major}.${minor}.$((patch + 1))"`,
+		"queue: max",
+		".github/scripts/release-next-tag.sh HEAD",
+		"Reusing ${NEXT_TAG}",
+		"refusing to move it",
+		"needs.prepare-release.outputs.next_tag != ''",
 	} {
 		if !strings.Contains(content, required) {
 			t.Errorf("release workflow missing %q", required)

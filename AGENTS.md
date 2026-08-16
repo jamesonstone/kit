@@ -22,6 +22,12 @@
 - When I explicitly authorize an external browser, terminate and verify all
   task-owned browser and automation processes before finishing.
 
+## Conditional Codex Subagent Binding
+
+- Apply this section only when the active coding host is Codex. Warp/Oz and every other host that reads `AGENTS.md` must skip it.
+- Before delegating, inspect the live Codex roster with `list_agents`. The root supervisor may use `spawn_agent` with host-exposed `model` and `reasoning_effort` controls, `followup_task` for same-agent continuation, and `wait_agent` for status and joining; children must not spawn descendants.
+- Resolve profiles from the live roster rather than static model IDs or a presumed capacity. If a native control is unavailable or fails, follow the shared host-adapter fallback and report the requested and effective profile, model, effort, continuity, and degradation.
+
 ## Purpose
 
 - This file is a routing table, not the full manual

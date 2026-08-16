@@ -1,0 +1,142 @@
+fixtures:
+  - scenario: full_codex_controls
+    evidence_basis: [live tool schema, runtime child references]
+    separate_execution: confirmed
+    parallel_execution: confirmed
+    stable_agent_references: confirmed
+    same_agent_follow_up: confirmed
+    model_selection: confirmed
+    effort_selection: confirmed
+    fresh_verification: confirmed
+    wait_status_controls: confirmed
+    effective_capacity: "4"
+    selected_topology: root-with-children
+    delegation_depth: one
+    execution_kind: actual_agent
+    routing_action: parallel-confirmed
+    task_outcome: success
+    orchestration_conformance: full
+    verification_independent: "true"
+    degradations: []
+
+  - scenario: limited_routing_or_continuation
+    evidence_basis: [runtime child result, absent routing controls]
+    separate_execution: confirmed
+    parallel_execution: unavailable
+    stable_agent_references: unavailable
+    same_agent_follow_up: unavailable
+    model_selection: unknown
+    effort_selection: unknown
+    fresh_verification: unknown
+    wait_status_controls: confirmed
+    effective_capacity: host-managed
+    selected_topology: root-with-children
+    delegation_depth: one
+    execution_kind: actual_agent
+    routing_action: serialize
+    task_outcome: success
+    orchestration_conformance: degraded
+    verification_independent: unknown
+    degradations: [parallelism-unavailable, continuity-unavailable, routing-unconfirmed]
+
+  - scenario: host_managed_copilot_or_warp
+    evidence_basis: [host-managed orchestration result]
+    separate_execution: confirmed
+    parallel_execution: unknown
+    stable_agent_references: unknown
+    same_agent_follow_up: unknown
+    model_selection: unknown
+    effort_selection: unknown
+    fresh_verification: unknown
+    wait_status_controls: unknown
+    effective_capacity: host-managed
+    selected_topology: host-managed
+    delegation_depth: one
+    execution_kind: actual_agent
+    routing_action: serialize
+    task_outcome: success
+    orchestration_conformance: degraded
+    verification_independent: unknown
+    degradations: [parallelism-unconfirmed, routing-unconfirmed, continuity-unconfirmed]
+
+  - scenario: unknown_capacity
+    evidence_basis: [child primitive exposed, capacity not exposed]
+    separate_execution: confirmed
+    parallel_execution: unknown
+    stable_agent_references: confirmed
+    same_agent_follow_up: confirmed
+    model_selection: confirmed
+    effort_selection: confirmed
+    fresh_verification: confirmed
+    wait_status_controls: confirmed
+    effective_capacity: unknown
+    selected_topology: root-with-children
+    delegation_depth: one
+    execution_kind: actual_agent
+    routing_action: serialize
+    task_outcome: success
+    orchestration_conformance: degraded
+    verification_independent: "true"
+    degradations: [capacity-unknown, parallelism-unconfirmed]
+
+  - scenario: no_child_primitive
+    evidence_basis: [host tool schema]
+    separate_execution: unavailable
+    parallel_execution: unavailable
+    stable_agent_references: unavailable
+    same_agent_follow_up: unavailable
+    model_selection: unavailable
+    effort_selection: unavailable
+    fresh_verification: unavailable
+    wait_status_controls: unavailable
+    effective_capacity: unavailable
+    selected_topology: single-supervisor
+    delegation_depth: zero
+    execution_kind: logical_lane
+    routing_action: serialize
+    task_outcome: success
+    orchestration_conformance: degraded
+    verification_independent: "false"
+    degradations: [no-child-primitive, no-independent-verifier]
+
+  - scenario: unavailable_exact_model_pin
+    evidence_basis: [requested pin, live roster]
+    separate_execution: confirmed
+    parallel_execution: confirmed
+    stable_agent_references: confirmed
+    same_agent_follow_up: confirmed
+    model_selection: unavailable
+    effort_selection: confirmed
+    fresh_verification: unknown
+    wait_status_controls: confirmed
+    effective_capacity: "4"
+    selected_topology: root-with-children
+    delegation_depth: one
+    execution_kind: omitted
+    routing_action: block
+    task_outcome: BLOCKED
+    orchestration_conformance: unsatisfied
+    verification_independent: unknown
+    degradations: [exact-model-pin-unavailable]
+
+  - scenario: replacement_after_continuity_loss
+    evidence_basis: [expired agent reference, replacement result]
+    separate_execution: confirmed
+    parallel_execution: confirmed
+    stable_agent_references: unavailable
+    same_agent_follow_up: unavailable
+    model_selection: confirmed
+    effort_selection: confirmed
+    fresh_verification: confirmed
+    wait_status_controls: confirmed
+    effective_capacity: "4"
+    selected_topology: root-with-children
+    delegation_depth: one
+    execution_kind: actual_agent
+    routing_action: replace-and-rebrief
+    task_outcome: success
+    orchestration_conformance: degraded
+    verification_independent: "true"
+    degradations: [continuity-loss]
+    continuity_loss: true
+    replacement_rebrief: required

@@ -90,6 +90,7 @@ func TestCompareVersions(t *testing.T) {
 		{name: "dev build upgrades", current: "dev", latest: "v1.2.3", want: -1},
 		{name: "equal versions", current: "v1.2.3", latest: "v1.2.3", want: 0},
 		{name: "major increment", current: "v1.2.3", latest: "v2.0.0", want: -1},
+		{name: "v2 to v3", current: "v2.0.6", latest: "v3.0.0", want: -1},
 		{name: "minor increment", current: "v1.2.3", latest: "v1.3.0", want: -1},
 		{name: "patch increment", current: "v1.2.3", latest: "v1.2.4", want: -1},
 		{name: "current newer", current: "v2.0.0", latest: "v1.9.9", want: 1},
@@ -103,6 +104,13 @@ func TestCompareVersions(t *testing.T) {
 				t.Fatalf("compareVersions() = %d, want %d", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestManualInstallHintUsesV3ModulePath(t *testing.T) {
+	const want = "go install github.com/jamesonstone/kit/v3/cmd/kit@latest"
+	if manualInstallHint != want {
+		t.Fatalf("manualInstallHint = %q, want %q", manualInstallHint, want)
 	}
 }
 

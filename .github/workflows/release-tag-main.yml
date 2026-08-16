@@ -4,99 +4,28 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - .kit.yaml
 
 permissions:
   contents: write
 
 concurrency:
   group: release-tag-main
-  cancel-in-progress: false
+  queue: max
 
 jobs:
-  tag-next-version:
+  prepare-release:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     outputs:
-      next_tag: ${{ steps.semver.outputs.next_tag }}
-      tag_created: ${{ steps.create_tag.outputs.created }}
+      next_tag: ${{ steps.select_tag.outputs.next_tag }}
+      mode: ${{ steps.select_tag.outputs.mode }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
-      - name: Compute next semantic version tag
-        id: semver
-        shell: bash
-        run: |
-          set -euo pipefail
-          # The conservative coding-agent-first reset is the v2 boundary.
-          # After v2 exists, every push to main resumes patch increments.
-
-          latest_tag="$(
-            git tag --list 'v*' --sort=-v:refname \
-              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
-              | head -n 1 || true
-          )"
-
-          if [[ -z "${latest_tag}" ]]; then
-            next_tag="v2.0.0"
-          else
-            if [[ ! "${latest_tag}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-              echo "Invalid semantic tag format: ${latest_tag}" >&2
-              exit 1
-            fi
-            major="${BASH_REMATCH[1]}"
-            minor="${BASH_REMATCH[2]}"
-            patch="${BASH_REMATCH[3]}"
-            if (( major < 2 )); then
-              next_tag="v2.0.0"
-            else
-              next_tag="v${major}.${minor}.$((patch + 1))"
-            fi
-          fi
-
-          echo "next_tag=${next_tag}" >> "${GITHUB_OUTPUT}"
-
-      - name: Create and push release tag
-        id: create_tag
-        shell: bash
-        env:
-          NEXT_TAG: ${{ steps.semver.outputs.next_tag }}
-        run: |
-          set -euo pipefail
-
-          if git rev-parse "${NEXT_TAG}" >/dev/null 2>&1; then
-            echo "Tag ${NEXT_TAG} already exists; skipping tag creation."
-            echo "created=false" >> "${GITHUB_OUTPUT}"
-            exit 0
-          fi
-
-          git config user.name "jamesonstone"
-          git config user.email "4779701+jamesonstone@users.noreply.github.com"
-
-          git tag -a "${NEXT_TAG}" -m "Release ${NEXT_TAG}"
-          git push origin "${NEXT_TAG}"
-          echo "created=true" >> "${GITHUB_OUTPUT}"
-
-  publish-release:
-    needs: tag-next-version
-    if: needs.tag-next-version.outputs.tag_created == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Checkout release tag
-        shell: bash
-        env:
-          TAG: ${{ needs.tag-next-version.outputs.next_tag }}
-        run: |
-          set -euo pipefail
-          git fetch --tags --force
-          git checkout "tags/${TAG}"
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -108,6 +37,67 @@ jobs:
         run: |
           make vet
           make test
+
+      - name: Select v3 release tag
+        id: select_tag
+        shell: bash
+        run: .github/scripts/release-next-tag.sh HEAD >> "${GITHUB_OUTPUT}"
+
+      - name: Create and push release tag
+        shell: bash
+        env:
+          HEAD_SHA: ${{ steps.select_tag.outputs.head_sha }}
+          MODE: ${{ steps.select_tag.outputs.mode }}
+          NEXT_TAG: ${{ steps.select_tag.outputs.next_tag }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${MODE}" == "reuse" ]]; then
+            echo "Reusing ${NEXT_TAG} on ${HEAD_SHA} for publication recovery."
+            exit 0
+          fi
+
+          if git rev-parse --verify --quiet "refs/tags/${NEXT_TAG}" >/dev/null; then
+            tag_sha="$(git rev-list -n 1 "refs/tags/${NEXT_TAG}")"
+            if [[ "${tag_sha}" != "${HEAD_SHA}" ]]; then
+              echo "Tag ${NEXT_TAG} points to ${tag_sha}; refusing to move it." >&2
+              exit 1
+            fi
+            exit 0
+          fi
+
+          git config user.name "jamesonstone"
+          git config user.email "4779701+jamesonstone@users.noreply.github.com"
+
+          git tag -a "${NEXT_TAG}" -m "Release ${NEXT_TAG}"
+          git push origin "${NEXT_TAG}"
+
+  publish-release:
+    needs: prepare-release
+    # Tags pushed with this workflow's GITHUB_TOKEN do not trigger a second
+    # workflow run, so this job publishes both newly created and reused tags.
+    if: needs.prepare-release.outputs.next_tag != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Checkout release tag
+        shell: bash
+        env:
+          TAG: ${{ needs.prepare-release.outputs.next_tag }}
+        run: |
+          set -euo pipefail
+          git fetch --tags
+          git checkout "tags/${TAG}"
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
 
       - name: Setup GoReleaser
         uses: goreleaser/goreleaser-action@v6
@@ -126,7 +116,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ needs.tag-next-version.outputs.next_tag }}
+          TAG: ${{ needs.prepare-release.outputs.next_tag }}
         run: |
           set -euo pipefail
           shopt -s nullglob

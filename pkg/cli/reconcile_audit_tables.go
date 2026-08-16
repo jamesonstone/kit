@@ -3,7 +3,7 @@ package cli
 import (
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func tableExpectationsFor(docType document.DocumentType) []tableExpectation {

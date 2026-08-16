@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/worktreeprep"
+	"github.com/jamesonstone/kit/v3/internal/worktreeprep"
 )
 
 type repairChangeDisposition string

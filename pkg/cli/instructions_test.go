@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/instructions"
+	"github.com/jamesonstone/kit/v3/internal/instructions"
 )
 
 func TestInstructionsCommandPrintsCurrentVersionByDefault(t *testing.T) {

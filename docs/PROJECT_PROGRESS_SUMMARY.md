@@ -66,6 +66,7 @@
 | 0063 | explicit-work-lane-choice | `docs/specs/0063-explicit-work-lane-choice` | deliver | no | 2026-08-11 | Require an explicit user-selected pull-request lane before every coding-agent repository mutation, keep the primary checkout read-only, and default current provider-neutral instructions to immutable v4. |
 | 0064 | aws-agent-toolkit-guidance | `docs/specs/0064-aws-agent-toolkit-guidance` | deliver | no | 2026-08-14 | Integrate AWS Agent Toolkit guidance into Kit-managed projects so coding agents use current AWS skills and official documentation, prefer the AWS MCP Server when available, and fall back to the AWS CLI without weakening Kit's existing identity, infrastructure-approval, delivery, or secret-safety boundaries. Bind each enabled project AWS context to one explicit default Region selected through the existing interactive initialization and reconciliation experience. |
 | 0065 | deletion-safety | `docs/specs/0065-deletion-safety` | deliver | no | 2026-08-16 | Make recoverability the default deletion behavior in every Kit-managed project. An unqualified delete must preserve a supported restore path, and an irreversible hard delete must remain prohibited until a human manually confirms the exact current targets after seeing the complete consequences. |
+| 0066 | capability-aware-subagent-workflows | `docs/specs/0066-capability-aware-subagent-workflows` | deliver | no | 2026-08-16 | Make Kit's existing subagent orchestration rule capability-aware and usable across coding-agent hosts while optimizing the adapter for Codex's native model, effort, child-thread, follow-up, waiting, and parallel-execution controls. Kit remains prompt-only: it defines truthful negotiation and routing behavior but never selects a model, launches a child, or supervises execution. |
 
 ## PROJECT INTENT
 
@@ -635,6 +636,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: ready pull-request review and an explicitly authorized merge
 - **POINTERS**: `docs/specs/0065-deletion-safety/SPEC.md`, `docs/references/rules/deletion-safety.md`
 
+### capability-aware-subagent-workflows
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Make Kit's existing subagent orchestration rule capability-aware and usable across coding-agent hosts while optimizing the adapter for Codex's native model, effort, child-thread, follow-up, waiting, and parallel-execution controls. Kit remains prompt-only: it defines truthful negotiation and routing behavior but never selects a model, launches a child, or supervises execution.
+- **APPROACH**: 1. Extend the canonical orchestration rule with capability negotiation, lifecycle states, profiles, continuity, degradation, convergence, and truthful two-axis reporting; capture the durable contract in this spec. 2. Add the conditional Codex AGENTS binding and generic TOOLING adapter, retain Claude/Copilot routing, and keep Warp on AGENTS without generating WARP.md. 3. Remove max-subagent CLI and prompt plumbing, make common prompts provider-neutral, and update workflow/template/golden mirrors. 4. Propagate stabilized policy wording through embedded and checked-in generated documents and reconciliation expectations. 5. Migrate exact self-imports across internal code, CLI production code, and tests only after semantic files stabilize. 6. Migrate the module/release boundary, including go.mod, linker paths, install and upgrade guidance, v3 notes, and tag/publication workflows. 7. Integrate centrally: format, tidy, reconcile generated artifacts, run the complete validation matrix, and curate repository memory. 8. Use fresh policy/adapter and Go-release verification passes. Return repairs to the lane that owns the affected surface. 9. Explicitly stage only issue #156 changes, commit and push as Jameson Stone, and create one ready pull request assigned to Jameson Stone. Stop before merge pending separate authorization.
+- **OPEN ITEMS**: see SPEC.md
+- **POINTERS**: `docs/specs/0066-capability-aware-subagent-workflows/SPEC.md`
+
 ## LAST UPDATED
 
-2026-08-16 09:06:42 EDT
+2026-08-16 14:52:04 EDT

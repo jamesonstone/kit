@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/v3/internal/feature"
 )
 
 func outputAllFeaturesStatusText(

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/commandset"
+	"github.com/jamesonstone/kit/v3/internal/commandset"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

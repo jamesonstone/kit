@@ -15,7 +15,7 @@ import (
 )
 
 func TestReviewLoopCommandRequiresPR(t *testing.T) {
-	err := runReviewLoop(&cobra.Command{}, reviewLoopOptions{MaxSubagents: 1})
+	err := runReviewLoop(&cobra.Command{}, reviewLoopOptions{})
 	if err == nil || !strings.Contains(err.Error(), "--pr is required") {
 		t.Fatalf("expected --pr error, got %v", err)
 	}
@@ -79,9 +79,8 @@ func TestReviewLoopResolvesRepairContextBeforeRemoteReviewWork(t *testing.T) {
 	cmd.SetErr(io.Discard)
 	cmd.SetIn(strings.NewReader(""))
 	if err := runReviewLoop(cmd, reviewLoopOptions{
-		PRRef:        "90",
-		Watch:        true,
-		MaxSubagents: 1,
+		PRRef: "90",
+		Watch: true,
 	}); err != nil {
 		t.Fatalf("runReviewLoop() error = %v", err)
 	}
@@ -117,8 +116,7 @@ func TestReviewLoopStopsBeforeRemoteReviewWorkWhenRepairContextFails(t *testing.
 	}
 
 	err := runReviewLoop(&cobra.Command{}, reviewLoopOptions{
-		PRRef:        "90",
-		MaxSubagents: 1,
+		PRRef: "90",
 	})
 	if !errors.Is(err, wantErr) {
 		t.Fatalf("runReviewLoop() error = %v, want %v", err, wantErr)
@@ -132,7 +130,6 @@ func TestDispatchLoopRoutesToReviewLoop(t *testing.T) {
 	previousWatch := dispatchWatch
 	previousFile := dispatchFile
 	previousCopy := dispatchCopy
-	previousMax := dispatchMaxSubagents
 	defer func() {
 		reviewLoopExecutor = previousExecutor
 		dispatchPR = previousPR
@@ -140,7 +137,6 @@ func TestDispatchLoopRoutesToReviewLoop(t *testing.T) {
 		dispatchWatch = previousWatch
 		dispatchFile = previousFile
 		dispatchCopy = previousCopy
-		dispatchMaxSubagents = previousMax
 	}()
 
 	dispatchPR = "67"
@@ -148,7 +144,6 @@ func TestDispatchLoopRoutesToReviewLoop(t *testing.T) {
 	dispatchWatch = true
 	dispatchFile = ""
 	dispatchCopy = true
-	dispatchMaxSubagents = 4
 
 	var got reviewLoopOptions
 	reviewLoopExecutor = func(_ *cobra.Command, opts reviewLoopOptions) error {
@@ -159,7 +154,7 @@ func TestDispatchLoopRoutesToReviewLoop(t *testing.T) {
 	if err := runDispatchReviewLoopAlias(&cobra.Command{}, true); err != nil {
 		t.Fatalf("dispatch --loop alias error = %v", err)
 	}
-	if got.PRRef != "67" || !got.CodeRabbitOnly || !got.Watch || !got.Copy || !got.OutputOnly || got.MaxSubagents != 4 {
+	if got.PRRef != "67" || !got.CodeRabbitOnly || !got.Watch || !got.Copy || !got.OutputOnly {
 		t.Fatalf("unexpected alias options: %#v", got)
 	}
 }
