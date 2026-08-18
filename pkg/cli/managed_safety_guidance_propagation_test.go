@@ -67,6 +67,7 @@ func TestAuditWorkLaneShorthandGuidanceFindsExistingSectionDrift(t *testing.T) {
 		{path: ".github/copilot-instructions.md", snippet: "remaining text is supplemental lane instructions"},
 		{path: "docs/agents/GUARDRAILS.md", snippet: "shorthand is the primary lane choice"},
 		{path: "AGENTS.md", snippet: "`new lane`, `new work lane`, `new worklane`, and `new worktree`"},
+		{path: "AGENTS.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
 		{path: "CLAUDE.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
 		{path: ".github/copilot-instructions.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
 		{path: "docs/agents/GUARDRAILS.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
