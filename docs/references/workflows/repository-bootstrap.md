@@ -5,6 +5,8 @@ description: Establish repository-local evidence and durable project memory from
 rules:
   - slug: coding-agent-context-usage
     required: true
+  - slug: agent-completion-output
+    required: true
   - slug: deletion-safety
     required: true
   - slug: constitution-curation

@@ -449,7 +449,9 @@ gh run list --commit "$HEAD_SHA" \
 
 ### Final Response
 
-Include:
+Follow `agent-completion-output` with the implementation/delivery profile.
+Map each item below into the Delivery table without omitting or collapsing
+identity, assignment, or hosted-state evidence:
 
 - Issue number.
 - Branch name in `GH-123` form.

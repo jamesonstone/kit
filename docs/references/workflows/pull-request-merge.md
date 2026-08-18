@@ -5,6 +5,8 @@ description: Reconcile authority, policy, identity, current-head evidence, infra
 rules:
   - slug: safety-guardrails
     required: true
+  - slug: agent-completion-output
+    required: true
   - slug: deletion-safety
     required: true
   - slug: github-pr-merge

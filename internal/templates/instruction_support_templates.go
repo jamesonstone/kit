@@ -108,7 +108,7 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 5. Stop on missing AWS CLI, expired or unavailable credentials, incomplete .kit.yaml AWS fields, or an account mismatch. Read .kit.yaml and ask the user when the intended context remains ambiguous.
 6. Never fall back to default, another discovered profile, or ambient credentials after verification fails.
 
-## Completion Bar
+` + agentCompletionOutputGate + `## Completion Bar
 
 - For v2 feature work, populate all required ` + "`SPEC.md`" + ` sections and keep front matter ` + "`workflow_version`" + `, ` + "`phase`" + `, references, relationships, and skills current
 - For legacy staged workflows, populate all required sections in the staged artifact being used
@@ -158,6 +158,7 @@ const referencesREADME = `# References
 - Keep long-lived background context here instead of in injected top-level instruction files
 - Link these files from feature front matter references when they materially shape work
 - Store durable rulesets under ` + "`rules/<slug>.md`" + ` and link them with ` + "`kit rules link`" + ` instead of copying rules into agent instruction files
+- Use ` + "`rules/agent-completion-output.md`" + ` before every terminal task completion or handoff response to require a literal status, immediate action table, and task-specific evidence profile
 - Use ` + "`rules/work-lane-gating.md`" + ` before any coding-agent repository
   file or delivery mutation to require the explicit lane choice, pull-request
   landing plan, and read-only primary checkout

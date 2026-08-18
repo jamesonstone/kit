@@ -104,10 +104,12 @@ func stubManagedSafetyRulesetRegistry(t *testing.T) {
 	t.Helper()
 	workLane := readRepositoryFile(t, "docs/references/rules/work-lane-gating.md")
 	deletionSafety := readRepositoryFile(t, "docs/references/rules/deletion-safety.md")
+	completionOutput := readRepositoryFile(t, "docs/references/rules/agent-completion-output.md")
 	stubRulesetRegistry(
 		t,
 		registryRulesetWithContentForTest("work-lane-gating", workLane, "test-work-lane"),
 		registryRulesetWithContentForTest("deletion-safety", deletionSafety, "test-deletion-safety"),
+		registryRulesetWithContentForTest("agent-completion-output", completionOutput, "test-completion-output"),
 	)
 }
 
@@ -130,11 +132,21 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)
 			}
 		}
+		for _, snippet := range []string{
+			"## Agent Completion Output Contract",
+			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
+			"Type | Action required | Why | Continue with",
+		} {
+			if !strings.Contains(content, snippet) {
+				t.Errorf("%s does not contain %q", relativePath, snippet)
+			}
+		}
 	}
 
 	for _, relativePath := range []string{
 		"docs/references/rules/work-lane-gating.md",
 		"docs/references/rules/deletion-safety.md",
+		"docs/references/rules/agent-completion-output.md",
 	} {
 		content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath)))
 		if !strings.Contains(content, "registry_scope: downstream") {

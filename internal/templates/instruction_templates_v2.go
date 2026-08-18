@@ -39,7 +39,7 @@ func tocRepositoryInstructions(title string) string {
 - After verification, never use default, another discovered profile, or ambient credentials
 - Treat the verified account, ARN, and Region as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
 
-## Conditional Context
+` + agentCompletionOutputGate + `## Conditional Context
 
 - ` + "`docs/specs/<feature>/`" + ` — active feature artifacts only
 - ` + "`docs/references/README.md`" + ` — durable repo references only when relevant
@@ -105,7 +105,7 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - After verification, never use default, another discovered profile, or ambient credentials
 - Treat the verified account, ARN, and Region as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
 
-## Non-Negotiable Rules
+` + agentCompletionOutputGate + `## Non-Negotiable Rules
 
 - Repo-local docs under ` + "`docs/`" + ` are the source of truth
 - Always update affected documentation and keep touched docs properly formatted
@@ -278,6 +278,7 @@ const agentsRLM = `# RLM
 - Load ` + "`docs/references/rules/github-pr-merge.md`" + ` and resolve ` + "`pull-request-merge`" + ` before any merge or merge-queue mutation
 - Load ` + "`docs/references/rules/cross-repository-program-coordination.md`" + ` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff
 - Load ` + "`docs/references/rules/agent-team-orchestration.md`" + ` only when the immediate decision includes execution topology, subagent lanes, or read-only verification; do not load it for trivial single-lane tasks
+- Load ` + "`docs/references/rules/agent-completion-output.md`" + ` before a terminal task completion or handoff response
 - Use indices first: start with ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` and explicit SPEC relationships to shortlist candidate prior features under ` + "`docs/specs/`" + `
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
 - Do not load every ruleset by default; feature front matter references determine when a ruleset is must-read, conditional, evidence, or skipped

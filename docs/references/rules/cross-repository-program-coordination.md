@@ -235,6 +235,10 @@ The program supervisor may mark the program complete only when:
 - a final reconciled checkpoint records the actual outcome and remaining
   operational obligations.
 
+Render the terminal program result through the `agent-completion-output`
+coordination/handoff profile. Preserve repository, owner, dependency,
+deployment, runtime, and acceptance evidence as separate workstream rows.
+
 ### Safety And Existing Gates
 
 - Continue to obey every participant repository's instructions and ownership
