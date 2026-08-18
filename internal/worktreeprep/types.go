@@ -25,6 +25,14 @@ type Prepared struct {
 	Created bool
 }
 
+// Location describes the current checkout and its primary-worktree ownership.
+type Location struct {
+	Path        string
+	PrimaryPath string
+	InsideGit   bool
+	IsPrimary   bool
+}
+
 // PullRequest describes a prepared same-repository pull-request head.
 type PullRequest struct {
 	Prepared

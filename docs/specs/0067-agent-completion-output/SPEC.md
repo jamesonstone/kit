@@ -242,7 +242,8 @@ delivery, orchestration, or repository-memory requirements.
   contract were coherent.
 - V1 through V5 SHA-256 hashes remained unchanged. V6 is current, preserves V5
   as an exact prefix, and has SHA-256
-  `77ea2d59321f411a160cb8ef18b4b821e0e08ccd2170ec7f047825cdf5ba93a0`.
+  `6e46f43483957a434c6e3e7e9982f45807e499f486f21061307d74e2538f6e91`
+  after integration with the additive full-form work-lane contract.
 - Focused propagation coverage passed for both `kit health` and
   `kit reconcile --include-files`. The live read-only previews correctly
   reported branch-versus-main registry drift; reconcile's semantic audit was

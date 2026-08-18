@@ -47,6 +47,12 @@ kit reconcile --include-files --dry-run --diff
 kit reconcile --include-files
 ```
 
+When an included non-dry-run refresh is requested from the clone's primary
+checkout, Kit preserves that checkout and emits the existing delivery prompt;
+run the same write-capable reconciliation in the selected canonical worktree.
+An invocation already running in a linked writable worktree applies the refresh
+directly as before.
+
 ## Agent Execution Adapters
 
 | Command | Purpose |

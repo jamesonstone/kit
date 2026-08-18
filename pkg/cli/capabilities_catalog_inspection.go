@@ -83,6 +83,7 @@ func reconcileCapabilityRecord() capabilityRecord {
 		withWhenToUse("Use whole-project reconcile to audit every version-control-eligible handwritten source and test file against the exact 300-physical-line limit."),
 		withCaveats(
 			"The existing conflict-aware reconcile behavior and flags are preserved.",
+			"A non-dry-run included refresh requested from the primary checkout is deferred to the existing canonical-worktree delivery workflow; linked worktrees apply it directly.",
 			"V3 whole-project reconciliation checks `AGENTS.md` for the ordered Codex pre-response thread-title and thread-pin gate, including fail-visible first-commentary semantics.",
 			"Whole-project output emits literal `source-file-size audit: complete` evidence with candidate, eligible-file, and violation counts; missing or incomplete evidence cannot support a clean result.",
 		))
