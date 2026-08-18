@@ -94,11 +94,12 @@ func TestBuildDeferredReconcileCommandPreservesWriteIntent(t *testing.T) {
 		reconcileRefreshFiles = []string{"docs/rules/owner's-rule.md", "AGENTS.md"}
 		reconcileMigrateReferences = true
 		reconcileMigrateVerification = true
+		reconcileCopy = true
 
 		got := buildDeferredReconcileCommand([]string{"sample feature"})
 		want := "kit reconcile 'sample feature' --include-files --force " +
 			"--file 'docs/rules/owner'\"'\"'s-rule.md' --file 'AGENTS.md' " +
-			"--migrate-references --migrate-verification --profile='frontend' --single-agent --output-only"
+			"--migrate-references --migrate-verification --profile='frontend' --single-agent --copy --output-only"
 		if got != want {
 			t.Fatalf("buildDeferredReconcileCommand() = %q, want %q", got, want)
 		}

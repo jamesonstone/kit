@@ -40,6 +40,9 @@ func buildDeferredReconcileCommand(args []string) string {
 	if singleAgent {
 		command = append(command, "--single-agent")
 	}
+	if reconcileCopy {
+		command = append(command, "--copy")
+	}
 	command = append(command, "--output-only")
 	return strings.Join(command, " ")
 }

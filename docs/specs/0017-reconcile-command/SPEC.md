@@ -240,7 +240,7 @@ references:
 - The transfer guidance must restore only the captured command-owned source delta to its exact pre-command state, preserve unrelated dirty files, exclude secrets and machine-local or ignored files, and forbid stash, reset, clean, bulk staging, protected-branch commits, and silent overwrite of worktree content.
 - Before applying a non-dry-run included refresh, reconcile must inspect the current Git worktree and distinguish the primary checkout from a linked writable worktree.
 - A requested non-dry-run refresh in the primary checkout must not call the managed-file apply path. It must retain the refresh intent, force the existing coding-agent-prompt path when necessary, and render the established no-snapshot delivery instructions that require the write-capable command to be rerun in the selected canonical worktree.
-- The deferred delivery instructions must render one exact shell-safe rerun command that preserves whole-project or feature scope, force, file filters, reference and verification migrations, prompt profile, and single-agent selection while using `--output-only` so the coding agent can consume the post-refresh instructions.
+- The deferred delivery instructions must render one exact shell-safe rerun command that preserves whole-project or feature scope, force, file filters, reference and verification migrations, prompt profile, single-agent selection, and explicit clipboard copying while using `--output-only` so the coding agent can consume the post-refresh instructions.
 - Reconcile must not add new prompt sections, response fields, status formats, or public flags for primary-checkout deferral. Existing prompt-only, output-only, clipboard, summary, and response contracts remain authoritative.
 - Included dry-runs remain read-only and available in the primary checkout. Included refreshes in non-primary linked worktrees and non-Git project roots retain their existing direct-apply behavior.
 - The prompt must require verification after documentation changes with:
@@ -325,6 +325,7 @@ references:
 - The built GH-160 binary passed `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all`. A live primary-checkout `reconcile --all --include-files --output-only` emitted the existing post-refresh/no-snapshot prompt and left root `main` clean.
 - The final GH-160 managed dry-run planned zero Kit-managed changes and reported a complete source-file-size audit of 699 version-control-eligible candidates, 361 eligible handwritten source/test files, and 0 violations.
 - A fresh read-only verifier identified lost deferred invocation flags and fail-open nested Git inspection in the initial GH-160 implementation. After repair, the same verifier confirmed exact shell-safe rerun preservation, fail-closed ancestor metadata handling, focused test success, diff cleanliness, and source-size compliance with no remaining actionable findings.
+- CodeRabbit identified that an explicit `--copy` choice was omitted from the deferred rerun. GH-160 preserved the flag, added command-builder coverage, aligned the tracking issue with deferred delivery, and reran the complete Go, race, vet, lint, and build validation successfully.
 
 ## OUTCOME
 
@@ -341,7 +342,7 @@ references:
 - Ruleset refresh now retains an artifact's prior `source_commit` when its installed normalized hash and source repository, branch, and path remain unchanged, eliminating repository-head-only `.kit.yaml` churn.
 - Changed rulesets advance to the current registry commit, while conflict and local-custom outcomes that retain the prior installed hash also retain the prior registry checkpoint for future comparison and merge recovery.
 - Reconcile now inspects worktree ownership before a requested non-dry-run managed refresh. Primary-checkout requests retain refresh intent but skip the apply path and emit the existing no-snapshot delivery workflow, while linked worktrees continue through the unchanged refresh, snapshot, audit, and prompt renderers.
-- Deferred refresh guidance carries the exact shell-safe write-capable invocation, including force, file filters, feature scope, migration flags, prompt profile, and single-agent selection, and forces raw prompt output for the coding-agent rerun.
+- Deferred refresh guidance carries the exact shell-safe write-capable invocation, including force, file filters, feature scope, migration flags, prompt profile, single-agent selection, and explicit clipboard copying, and forces raw prompt output for the coding-agent rerun.
 - The primary-checkout deferral adds no public flag, prompt section, response field, Git mutation, or GitHub mutation. Dry-runs and non-Git projects preserve their prior behavior, and the generated workflow remains responsible for establishing the canonical issue lane before the write-capable rerun.
 
 ## REPOSITORY MEMORY
