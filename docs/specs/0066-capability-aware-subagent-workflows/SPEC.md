@@ -194,6 +194,9 @@ idempotently without silently advancing tags.
   move a conflicting tag.
 - Run required quality gates before tag creation and permit idempotent release
   publication recovery without creating a second patch.
+- Expose `workflow_dispatch` on the main release workflow so a skipped push
+  event can re-enter the same quality-gated Mint and GoReleaser path without
+  manual tag creation or a second release implementation.
 - Use `jamesonstone/mint@v0.2.1` in the two release workflows for immutable Git
   tag and GitHub Release state. Keep Kit's exact v3 selector, GoReleaser
   artifact and checksum production, and idempotent artifact upload; do not use
@@ -222,6 +225,8 @@ idempotently without silently advancing tags.
   behavior remains intact. Active sources have no obsolete numeric policy.
 - Module, import, linker, install, release-transition, tag-conflict, same-SHA,
   and publication-recovery tests pass for the v3 boundary.
+- Release workflow tests require both ordinary main-push activation and the
+  supported manual recovery trigger.
 - Bounded compatibility smokes report literal PASS or PARTIAL for Codex,
   Claude Code, Copilot CLI, and Warp/Oz based on runtime availability and
   authentication; documentation or prompt assertions are not runtime proof.
@@ -318,6 +323,11 @@ idempotently without silently advancing tags.
   `read-only verification`, while the new prompt initially said `read-only
   verifier`. Restoring the durable phrase in both shared prompt surfaces and
   asserting it directly made all 114 prompt-system assertions pass.
+- A later mixed maintenance squash retained `[skip ci]` from an old source
+  commit in the synthesized commit body, so GitHub created no main-push release
+  run even after the PR title was corrected. The repository had no supported
+  way to recover that absent run. `workflow_dispatch` now re-enters the same
+  release workflow without bypassing Mint, quality gates, or artifact checks.
 
 ## VALIDATION
 
@@ -332,7 +342,8 @@ idempotently without silently advancing tags.
   binary identity and first-v3 transition.
 - Both release workflows parse as YAML; the tag selector passes syntax,
   first-v3, patch, same-SHA reuse, conflict, and stale-tag tests. Dedicated
-  tests require main-workflow publication for both create and reuse modes.
+  tests require main-workflow publication for both create and reuse modes and
+  require the manual recovery trigger.
 - Both release workflows use only `jamesonstone/mint@v0.2.1` for tag and
   GitHub Release state, retain Kit's selector and GoReleaser upload boundary,
   and contain no manual tag or GitHub Release creation. A bounded Mint v0.2.1
@@ -383,9 +394,11 @@ The CLI cap flags and fixed scheduling policy are removed, common prompts are
 provider-neutral, the module is a valid `/v3` module, and the release workflow
 can establish and idempotently publish v3.0.0. Mint v0.2.1 now owns immutable
 tag and GitHub Release state while Kit retains exact version selection,
-GoReleaser builds and checksums, and idempotent artifact upload. Delivery stops
-at `PR_READY`; merge, release verification, and the separate provenance PR
-retain their own authorization and evidence gates.
+GoReleaser builds and checksums, and idempotent artifact upload. The same
+quality-gated path is now available through `workflow_dispatch` when a push
+workflow was skipped before a run existed. The recovery change is delivered
+through issue #164 and its separately authorized pull request; merge and
+release verification retain their own evidence gates.
 
 ## REPOSITORY MEMORY
 
@@ -395,6 +408,8 @@ retain their own authorization and evidence gates.
   tooling/instruction guidance rather than creating competing policy bodies.
 - Added focused v3 migration and release notes for the public module and CLI
   boundary.
+- Updated the existing release-workflow rationale for the supported manual
+  recovery entrypoint; no parallel tag or release implementation was added.
 - Historical specs remain unchanged.
 - Constitution curation found no additional change necessary: Kit's prompt-only
   boundary already exists as project-wide truth, while capability profiles,
