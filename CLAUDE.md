@@ -33,13 +33,17 @@
 - After implementation and validation, load `docs/references/rules/constitution-curation.md`; curate feature rationale into `SPEC.md`, demonstrated project invariants into `docs/CONSTITUTION.md`, reusable practices into `docs/references/` or `docs/references/rules/`, and domain knowledge into its existing canonical documentation
 - Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
 
-## Final Response Contract
+## Agent Completion Output Contract
 
-- Every implementation final response must include:
-  - `Repository Memory`
-  - `Decision: created | updated | refactored | deleted | not required`
-  - `Rationale: <why this is the correct persistence decision>`
-  - `Artifacts: <paths or none>`
+- Before a terminal task response, load `docs/references/rules/agent-completion-output.md` when present. This contract does not apply to progress commentary or focused clarification questions.
+- Make the first human-readable line `# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>`. A required host wrapper may surround the response, but no human-readable preamble may precede the status.
+- Immediately follow with a table whose columns are `Type | Action required | Why | Continue with`. Order rows Blocker, Incomplete, Next, Optional, then None; every PASS includes a None row.
+- Make required follow-ups copy-ready. Never leave table cells blank or hide blockers and incomplete work below completed detail.
+- Use PASS only for complete scope and required validation, PARTIAL for usable incomplete work, BLOCKED for a specific external dependency, and FAIL for an unresolved known failure without an external stopping dependency.
+- Preserve native evidence states such as PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE literally.
+- After the action table, use left-aligned headings and CommonMark list or key/value blocks. Do not use another Markdown pipe table unless a higher-priority schema requires it.
+- Select one primary profile from the requested deliverable: implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback. Start each detail item with a short bold lead label and put long rationale on indented continuation lines.
+- Preserve every field required by active delivery, validation, repository-memory, orchestration, program, and environment contracts inside the canonical profile blocks.
 
 ## Runtime Routing
 

@@ -80,6 +80,7 @@ func TestFreshInitResolvesRepositoryBootstrapContract(t *testing.T) {
 	constitutionRule := readRepositoryFile(t, "docs/references/rules/constitution-curation.md")
 	capabilitiesRule := readRepositoryFile(t, "docs/references/rules/kit-capabilities-usage.md")
 	deletionRule := readRepositoryFile(t, "docs/references/rules/deletion-safety.md")
+	completionRule := readRepositoryFile(t, "docs/references/rules/agent-completion-output.md")
 	root := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, root)
@@ -88,6 +89,7 @@ func TestFreshInitResolvesRepositoryBootstrapContract(t *testing.T) {
 		registryRulesetWithContentForTest("constitution-curation", constitutionRule, "test-constitution"),
 		registryRulesetWithContentForTest("kit-capabilities-usage", capabilitiesRule, "test-capabilities"),
 		registryRulesetWithContentForTest("deletion-safety", deletionRule, "test-deletion"),
+		registryRulesetWithContentForTest("agent-completion-output", completionRule, "test-completion"),
 	)
 	withInitFlags(t, func() {
 		initOutputOnly = true
@@ -107,6 +109,7 @@ func TestFreshInitResolvesRepositoryBootstrapContract(t *testing.T) {
 		"docs/references/rules/constitution-curation.md",
 		"docs/references/rules/kit-capabilities-usage.md",
 		"docs/references/rules/deletion-safety.md",
+		"docs/references/rules/agent-completion-output.md",
 	} {
 		if !contractEvidencePathPresent(contract, path) {
 			t.Errorf("bootstrap contract missing %s", path)

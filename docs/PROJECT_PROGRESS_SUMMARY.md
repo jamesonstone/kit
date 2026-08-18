@@ -67,6 +67,7 @@
 | 0064 | aws-agent-toolkit-guidance | `docs/specs/0064-aws-agent-toolkit-guidance` | deliver | no | 2026-08-14 | Integrate AWS Agent Toolkit guidance into Kit-managed projects so coding agents use current AWS skills and official documentation, prefer the AWS MCP Server when available, and fall back to the AWS CLI without weakening Kit's existing identity, infrastructure-approval, delivery, or secret-safety boundaries. Bind each enabled project AWS context to one explicit default Region selected through the existing interactive initialization and reconciliation experience. |
 | 0065 | deletion-safety | `docs/specs/0065-deletion-safety` | deliver | no | 2026-08-16 | Make recoverability the default deletion behavior in every Kit-managed project. An unqualified delete must preserve a supported restore path, and an irreversible hard delete must remain prohibited until a human manually confirms the exact current targets after seeing the complete consequences. |
 | 0066 | capability-aware-subagent-workflows | `docs/specs/0066-capability-aware-subagent-workflows` | deliver | no | 2026-08-16 | Make Kit's existing subagent orchestration rule capability-aware and usable across coding-agent hosts while optimizing the adapter for Codex's native model, effort, child-thread, follow-up, waiting, and parallel-execution controls. Kit remains prompt-only: it defines truthful negotiation and routing behavior but never selects a model, launches a child, or supervises execution. |
+| 0067 | agent-completion-output | `docs/specs/0067-agent-completion-output` | deliver | no | 2026-08-18 | Give every Kit-managed coding-agent task a terminal response that an operator can scan and act on immediately. Completion starts with one literal overall status, exposes blockers and unfinished work before detail, and uses a left-aligned task-specific evidence block without sacrificing existing validation, delivery, orchestration, or repository-memory requirements. |
 
 ## PROJECT INTENT
 
@@ -645,6 +646,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: see SPEC.md
 - **POINTERS**: `docs/specs/0066-capability-aware-subagent-workflows/SPEC.md`
 
+### agent-completion-output
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Give every Kit-managed coding-agent task a terminal response that an operator can scan and act on immediately. Completion starts with one literal overall status, exposes blockers and unfinished work before detail, and uses a left-aligned task-specific evidence block without sacrificing existing validation, delivery, orchestration, or repository-memory requirements.
+- **APPROACH**: Add one mandatory downstream ruleset with a universal status/action envelope, one operator action table, and required left-aligned goal-specific profiles; route it through managed instructions and workflows, add immutable instruction version v6, validate health and reconcile propagation, and deliver issue #162 through one ready pull request.
+- **OPEN ITEMS**: deliver issue #162 through its ready pull request; merge requires separate authorization
+- **POINTERS**: `docs/specs/0067-agent-completion-output/SPEC.md`, `docs/references/rules/agent-completion-output.md`
+
 ## LAST UPDATED
 
-2026-08-16 14:52:04 EDT
+2026-08-18 12:09:20 EDT

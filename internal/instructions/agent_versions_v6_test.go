@@ -33,12 +33,40 @@ func TestAgentInstructionsV6MapsFullFormNewLaneChoices(t *testing.T) {
 	if question < 0 || shorthand <= question || fullForm <= shorthand || wait <= fullForm {
 		t.Fatal("v6 full-form semantics must follow shorthand and precede the wait step")
 	}
+}
+
+func TestAgentInstructionsV6RequiresAgentCompletionOutput(t *testing.T) {
+	content, err := AgentInstructions("v6")
+	if err != nil {
+		t.Fatalf("AgentInstructions(\"v6\") error = %v", err)
+	}
+	for _, want := range []string{
+		"# Agent completion output",
+		"docs/references/rules/agent-completion-output.md",
+		"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
+		"Type | Action required | Why | Continue with",
+		"Order rows Blocker, Incomplete, Next, Optional, then None",
+		"Every PASS includes",
+		"a None row stating that no action is required",
+		"Make required follow-ups copy-ready",
+		"PENDING, UNKNOWN, SKIPPED, and",
+		"NOT_APPLICABLE literally",
+		"After the action table, use left-aligned headings and CommonMark list or",
+		"Do not use another Markdown pipe table unless a",
+		"implementation,",
+		"research, diagnosis, planning, validation, review, operations, coordination,",
+		"or fallback",
+	} {
+		if !strings.Contains(content, want) {
+			t.Fatalf("v6 instructions do not contain %q", want)
+		}
+	}
 	if CurrentAgentVersion != "v6" {
 		t.Fatalf("CurrentAgentVersion = %q, want v6", CurrentAgentVersion)
 	}
 }
 
-func TestAgentInstructionsV6PreservesV5OutsideFullFormMapping(t *testing.T) {
+func TestAgentInstructionsV6PreservesV5OutsideAdditiveSections(t *testing.T) {
 	v5, err := AgentInstructions("v5")
 	if err != nil {
 		t.Fatal(err)
@@ -56,7 +84,11 @@ func TestAgentInstructionsV6PreservesV5OutsideFullFormMapping(t *testing.T) {
 		t.Fatal("v6 full-form mapping boundary is missing")
 	}
 	withoutMapping := v6[:aliasStart] + v6[aliasStart+aliasEnd:]
-	if withoutMapping != v5 {
-		t.Fatal("v6 changed content outside the additive full-form mapping")
+	completionStart := strings.Index(withoutMapping, "\n# Agent completion output\n")
+	if completionStart < 0 {
+		t.Fatal("v6 completion contract start is missing")
+	}
+	if withoutMapping[:completionStart] != v5 {
+		t.Fatal("v6 changed content outside the additive full-form and completion sections")
 	}
 }

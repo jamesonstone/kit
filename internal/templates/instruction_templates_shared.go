@@ -45,7 +45,7 @@ When the user asks to create or mutate an issue, branch, staging, commit, push, 
 - After verification, never use default, another discovered profile, or ambient credentials
 - If verification fails, config is incomplete, credentials are unavailable, or the account mismatches, stop and ask; never fall back to another profile or default
 
----
+` + agentCompletionOutputGate + `---
 
 ## Change Classification (Required First Step)
 

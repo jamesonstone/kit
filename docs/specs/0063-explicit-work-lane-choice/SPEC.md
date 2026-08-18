@@ -329,7 +329,8 @@ read-only and preserves user-owned state.
   project contract. Current `kit instructions` renders the four equivalent
   full-form choices and capabilities advertise v6.
 - Immutable v1-v5 instruction hashes remained unchanged. Additive v6 hashes to
-  `251a444958d3dd5fc9e005ea9c1e2c004fb5aaf6f1482df6b0d5f08454517b62`.
+  `6e46f43483957a434c6e3e7e9982f45807e499f486f21061307d74e2538f6e91`
+  after integration with the additive completion-output contract.
 - The whole-project managed dry-run reported a complete source-size audit of
   701 version-control-eligible candidates, 362 eligible handwritten
   source/test files, and zero violations. Its sole planned `.kit.yaml` change

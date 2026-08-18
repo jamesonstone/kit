@@ -20,6 +20,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"Load `docs/references/rules/aws-agent-toolkit-guidance.md` before AWS-dependent work",
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
 			"Load `docs/references/rules/cross-repository-program-coordination.md` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff",
+			"Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response",
 		},
 		"docs/agents/TOOLING.md": {
 			"When `cross-repository-program-coordination` applies, dispatch only the canonical program ledger's reconciled ready frontier and checkpoint program state after each material transition or handoff",
@@ -38,6 +39,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		},
 		"docs/references/README.md": {
+			"`rules/agent-completion-output.md`",
 			"`rules/aws-agent-toolkit-guidance.md`",
 			"`rules/deletion-safety.md`",
 			"`rules/infrastructure-change-approval.md`",
@@ -59,6 +61,10 @@ func v2GuidanceExpectations() map[string][]string {
 func v3GuidanceExpectations() map[string][]string {
 	return map[string][]string{
 		"AGENTS.md": {
+			"## Agent Completion Output Contract",
+			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
+			"Type | Action required | Why | Continue with",
+			"After the action table, use left-aligned headings and CommonMark list or key/value blocks",
 			"## Codex Thread Initialization Hard Gate",
 			"before the first commentary message",
 			"First, call the available thread-title operation (`set_thread_title` when available)",
@@ -89,6 +95,10 @@ func v3GuidanceExpectations() map[string][]string {
 			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 		},
 		".github/copilot-instructions.md": {
+			"## Agent Completion Output Contract",
+			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
+			"Type | Action required | Why | Continue with",
+			"After the action table, use left-aligned headings and CommonMark list or key/value blocks",
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
 			"If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation",
 			"Treat the verified account, ARN, and Region as authoritative",
@@ -130,6 +140,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"Load `docs/references/rules/aws-agent-toolkit-guidance.md` before AWS-dependent work",
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
 			"Load `docs/references/rules/cross-repository-program-coordination.md` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff",
+			"Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response",
 		},
 		"docs/agents/TOOLING.md": {
 			"Use `kit dispatch` after native planning",
@@ -139,6 +150,9 @@ func v3GuidanceExpectations() map[string][]string {
 			"preserve a repository- or user-supplied `.envrc`",
 		},
 		"docs/agents/GUARDRAILS.md": {
+			"## Agent Completion Output Contract",
+			"After the action table, use left-aligned headings and CommonMark list or key/value blocks",
+			"implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
 			"## Repository Memory Completion Gate",
 			"Create or adopt a spec before code when material rationale exists",
 			"Every implementation final response must include `Repository Memory`",
@@ -153,6 +167,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
 		},
 		"docs/references/README.md": {
+			"`rules/agent-completion-output.md`",
 			"`rules/aws-agent-toolkit-guidance.md`",
 			"`rules/deletion-safety.md`",
 			"`rules/infrastructure-change-approval.md`",
