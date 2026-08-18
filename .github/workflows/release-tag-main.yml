@@ -1,6 +1,7 @@
 name: release-tag-main
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -16,7 +17,7 @@ concurrency:
 
 jobs:
   prepare-release:
-    if: github.actor != 'github-actions[bot]'
+    if: github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       next_tag: ${{ steps.select_tag.outputs.next_tag }}
