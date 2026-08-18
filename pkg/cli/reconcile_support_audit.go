@@ -109,6 +109,9 @@ func auditWorkLaneShorthandGuidance(projectRoot string) []reconcileFinding {
 			"`n` or `y` means new lane",
 			"shorthand is the primary lane choice",
 			"remaining text is supplemental lane instructions",
+			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+			"human-assigned GitHub issue",
+			"pull-request plan",
 		},
 		"CLAUDE.md": {
 			"case-insensitively",
@@ -116,6 +119,9 @@ func auditWorkLaneShorthandGuidance(projectRoot string) []reconcileFinding {
 			"`n` or `y` means new lane",
 			"shorthand is the primary lane choice",
 			"remaining text is supplemental lane instructions",
+			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+			"human-assigned GitHub issue",
+			"pull-request plan",
 		},
 		".github/copilot-instructions.md": {
 			"case-insensitively",
@@ -123,6 +129,9 @@ func auditWorkLaneShorthandGuidance(projectRoot string) []reconcileFinding {
 			"`n` or `y` means new lane",
 			"shorthand is the primary lane choice",
 			"remaining text is supplemental lane instructions",
+			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+			"human-assigned GitHub issue",
+			"pull-request plan",
 		},
 		"docs/agents/GUARDRAILS.md": {
 			"case-insensitively",
@@ -130,6 +139,9 @@ func auditWorkLaneShorthandGuidance(projectRoot string) []reconcileFinding {
 			"`n` or `y` means new lane",
 			"shorthand is the primary lane choice",
 			"remaining text is supplemental",
+			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+			"human-assigned GitHub issue",
+			"pull-request plan",
 		},
 	}
 

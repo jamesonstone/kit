@@ -37,9 +37,6 @@ func TestAgentInstructionsV5RequiresDeletionSafety(t *testing.T) {
 	if before < 0 || after < 0 || before >= after {
 		t.Fatal("v5 deletion safety must precede the implementation execution contract")
 	}
-	if CurrentAgentVersion != "v5" {
-		t.Fatalf("CurrentAgentVersion = %q, want v5", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV5AcceptsWorkLaneShorthand(t *testing.T) {

@@ -69,10 +69,16 @@ After read-only recon, stop and ask:
   or `y` means new lane.
 - When shorthand leads a longer response, shorthand is the primary lane choice
   and the remaining text is supplemental lane instructions.
-- Continue accepting explicit full-form answers, such as `new worktree` or
-  `continue existing`. Ambiguous or contradictory responses, including
-  trailing text that conflicts with the shorthand, fail closed and require
-  clarification before mutation.
+- Treat the case-insensitive full-form answers `new lane`, `new work lane`,
+  `new worklane`, and `new worktree` as the new-lane choice. Each means create
+  or reuse one human-assigned GitHub issue, exact `GH-<issue-number>` branch,
+  canonical non-primary worktree, and ready pull-request plan. When one leads
+  a longer response, retain the remaining text as supplemental lane
+  instructions unless it contradicts the new-lane choice.
+- Continue accepting other explicit full-form answers such as `continue
+  existing`. Ambiguous or contradictory responses, including trailing text
+  that conflicts with the shorthand or full-form choice, fail closed and
+  require clarification before mutation.
 - Wait for an explicit answer unless the user already answered this exact
   choice for the same scope.
 - Do not infer the choice from a clean default branch, a dirty feature branch,
@@ -249,6 +255,18 @@ y assign the new issue to me
 The first line selects the existing lane. The other two select a new lane. In
 each case, text after the leading shorthand token remains supplemental
 instructions for the selected lane.
+
+Equivalent full-form new-lane choices:
+
+```text
+new lane
+new work lane
+new worklane
+new worktree
+```
+
+Each phrase selects creation or reuse of the complete issue, exact issue
+branch, canonical non-primary worktree, and ready pull-request lane.
 
 Valid new-lane plan:
 

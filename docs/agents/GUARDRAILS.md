@@ -27,8 +27,10 @@ must:
    whitespace, case-insensitively: `c` means continue existing, while
    `n` or `y` means new lane. When shorthand leads a longer response,
    shorthand is the primary lane choice and the remaining text is supplemental
-   lane instructions. Continue accepting explicit full-form choices; ambiguous
-   or contradictory responses fail closed.
+   lane instructions. Treat the case-insensitive full-form answers `new lane`, `new work lane`, `new worklane`, and `new worktree` as the new-lane choice:
+   create or reuse the human-assigned GitHub issue, exact
+   `GH-<issue-number>` branch, canonical non-primary worktree, and ready
+   pull-request plan; ambiguous or contradictory responses fail closed.
 4. Wait for the user's explicit choice unless that exact choice is already
    recorded for the same unit of work.
 5. Record a Pull-Request Landing Plan with the repository, issue, branch,
