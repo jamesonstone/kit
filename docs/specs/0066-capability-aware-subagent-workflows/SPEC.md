@@ -196,7 +196,8 @@ idempotently without silently advancing tags.
   publication recovery without creating a second patch.
 - Expose `workflow_dispatch` on the main release workflow so a skipped push
   event can re-enter the same quality-gated Mint and GoReleaser path without
-  manual tag creation or a second release implementation.
+  manual tag creation or a second release implementation. Reject manual
+  dispatch from any ref other than `refs/heads/main`.
 - Use `jamesonstone/mint@v0.2.1` in the two release workflows for immutable Git
   tag and GitHub Release state. Keep Kit's exact v3 selector, GoReleaser
   artifact and checksum production, and idempotent artifact upload; do not use
@@ -226,7 +227,7 @@ idempotently without silently advancing tags.
 - Module, import, linker, install, release-transition, tag-conflict, same-SHA,
   and publication-recovery tests pass for the v3 boundary.
 - Release workflow tests require both ordinary main-push activation and the
-  supported manual recovery trigger.
+  supported main-only manual recovery trigger.
 - Bounded compatibility smokes report literal PASS or PARTIAL for Codex,
   Claude Code, Copilot CLI, and Warp/Oz based on runtime availability and
   authentication; documentation or prompt assertions are not runtime proof.

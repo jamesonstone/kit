@@ -91,6 +91,7 @@ func TestReleaseWorkflowOrdersAndRecoversSafely(t *testing.T) {
 	workflow := readRepositoryFile(t, ".github/workflows/release-tag-main.yml")
 	for _, want := range []string{
 		"workflow_dispatch:",
+		"github.ref == 'refs/heads/main'",
 		"queue: max",
 		"paths-ignore:",
 		"- .kit.yaml",
