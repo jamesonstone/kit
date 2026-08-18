@@ -71,6 +71,7 @@ func TestRunInitRefresh_PreservesGeneratedVerboseInstructionsAsLegacy(t *testing
 	for _, check := range []string{
 		"custom",
 		"### Kit-Managed Baseline Rules",
+		"Before a terminal task completion or handoff response, load `docs/references/rules/agent-completion-output.md` and use its literal status, immediate action table, and primary task profile.",
 		"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		"vendored dependencies, and proven generated files",
 	} {
