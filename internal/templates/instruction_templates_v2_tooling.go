@@ -25,12 +25,12 @@ const agentsTooling = `# Tooling
 - Keep one accountable supervisor responsible for scope, integration, validation, evidence, delivery gating, and final reporting
 - Use subagents when the work cleanly separates into low-overlap lanes after discovery
 - Keep single-lane work in one supervisor lane when the task is trivial, tightly coupled, high-overlap, high-ambiguity, cannot spawn subagents, or the user requested single-agent execution
-- Default to at most 3 concurrent lanes; never exceed 4
+- Let the host govern concurrency; never invent a static numeric cap
 - Keep broad or noisy discovery in RLM first; use dispatch or direct subagent execution only after the relevant workstreams are narrow enough to predict overlap
 - Predict overlap conservatively before parallelizing
 - Use read-only verification subagents by default after implementation unless a recorded exception applies
 
-## PR Review Feedback
+` + capabilityAwareHostAdapter + `## PR Review Feedback
 
 - Use ` + "`kit pr fix`" + ` as the default PR review feedback entrypoint when current PR review feedback should become a copied dispatch prompt.
 - With no ` + "`--pr`" + `, ` + "`kit pr fix`" + ` lists open pull requests in the current repository and asks which one to repair.

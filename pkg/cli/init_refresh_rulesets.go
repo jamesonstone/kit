@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func planRefreshInitRulesets(

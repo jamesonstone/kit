@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
@@ -53,6 +53,14 @@ func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T)
 		"work-lane-gating",
 		"Before I make any repository changes",
 		"canonical worktree, and pull request for this work",
+		"case-insensitively",
+		"`c` means continue existing",
+		"`n` or `y` means new lane",
+		"shorthand is the primary lane choice",
+		"remaining text is supplemental lane instructions",
+		"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+		"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
+		"ambiguous or contradictory responses fail closed",
 		"Pull-Request Landing Plan",
 		"repository file or delivery mutation",
 		"issue, branch, staging, commit, push, worktree, and pull-request mutations",
@@ -65,6 +73,7 @@ func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T)
 		"work-lane-gating",
 		"read-only safety recon",
 		"Before I make any repository changes",
+		"shorthand",
 		"Wait for",
 		"Pull-Request Landing Plan",
 	}

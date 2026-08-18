@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func applyRegistryRulesetSelection(projectRoot string, entries []registrySelectorEntry) (registrySelectorSummary, error) {

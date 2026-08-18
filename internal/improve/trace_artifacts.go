@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/verify"
+	"github.com/jamesonstone/kit/v3/internal/verify"
 )
 
 func writeCommandOutput(runDir, taskID string, repeat int, results []verify.CommandResult) ([]CommandTrace, error) {

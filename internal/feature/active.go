@@ -1,6 +1,6 @@
 package feature
 
-import "github.com/jamesonstone/kit/internal/config"
+import "github.com/jamesonstone/kit/v3/internal/config"
 
 // FindActiveFeatureWithState ignores inert legacy lifecycle configuration and
 // returns the newest feature whose document phase is not complete.

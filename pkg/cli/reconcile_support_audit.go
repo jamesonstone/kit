@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
@@ -96,6 +96,74 @@ func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
 				"rewrite the guidance as agent-agnostic instructions",
 				[]string{fmt.Sprintf("sed -n '1,180p' %s", absolutePath)},
 			))
+		}
+	}
+	return findings
+}
+
+func auditWorkLaneShorthandGuidance(projectRoot string) []reconcileFinding {
+	expectations := map[string][]string{
+		"AGENTS.md": {
+			"case-insensitively",
+			"`c` means continue existing",
+			"`n` or `y` means new lane",
+			"shorthand is the primary lane choice",
+			"remaining text is supplemental lane instructions",
+			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+			"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
+		},
+		"CLAUDE.md": {
+			"case-insensitively",
+			"`c` means continue existing",
+			"`n` or `y` means new lane",
+			"shorthand is the primary lane choice",
+			"remaining text is supplemental lane instructions",
+			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+			"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
+		},
+		".github/copilot-instructions.md": {
+			"case-insensitively",
+			"`c` means continue existing",
+			"`n` or `y` means new lane",
+			"shorthand is the primary lane choice",
+			"remaining text is supplemental lane instructions",
+			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+			"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
+		},
+		"docs/agents/GUARDRAILS.md": {
+			"case-insensitively",
+			"`c` means continue existing",
+			"`n` or `y` means new lane",
+			"shorthand is the primary lane choice",
+			"remaining text is supplemental",
+			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+			"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
+		},
+	}
+
+	var findings []reconcileFinding
+	for relativePath, snippets := range expectations {
+		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+		content, err := os.ReadFile(absolutePath)
+		if err != nil {
+			continue
+		}
+		for _, snippet := range snippets {
+			if strings.Contains(string(content), snippet) {
+				continue
+			}
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				fmt.Sprintf("managed work-lane guidance is missing shorthand semantics %q", snippet),
+				templateSource(projectRoot),
+				"integrate the missing shorthand semantics manually while preserving project-specific guidance",
+				[]string{
+					fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath),
+					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
+				},
+			))
+			break
 		}
 	}
 	return findings

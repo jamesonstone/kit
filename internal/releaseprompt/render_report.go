@@ -3,7 +3,7 @@ package releaseprompt
 import (
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/v3/internal/promptdoc"
 )
 
 func addCompletionAndReport(document *promptdoc.Document, config Config) {

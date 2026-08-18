@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
-	"github.com/jamesonstone/kit/internal/instructions"
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/instructions"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFinding {
@@ -113,6 +113,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 		findings = append(findings, auditInstructionPromptEntrypoints(projectRoot, cfg, version)...)
 		findings = append(findings, auditAlwaysLoadedCoreDocs(projectRoot)...)
 	}
+	findings = append(findings, auditWorkLaneShorthandGuidance(projectRoot)...)
 	if version == config.InstructionScaffoldVersionTOC && !exactGeneratedInstructionScaffold(projectRoot, cfg, version) {
 		finding := newFinding(
 			reconcileSeverityWarning,
@@ -129,7 +130,10 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 	return findings
 }
 
-const rootInstructionMinimumMaxLines = 100
+const (
+	rootInstructionMinimumMaxLines             = 100
+	rootInstructionCustomizationAllowanceLines = 20
+)
 
 var v2RequiredRootInstructionPaths = []string{
 	instructions.AgentsMDPath,
@@ -246,7 +250,8 @@ func auditInstructionEntrypoints(projectRoot string, alreadyAudited map[string]b
 }
 
 func rootInstructionMaxLines(relativePath string, version int) int {
-	generatedLines := countLines(templates.InstructionFileForVersion(relativePath, version))
+	generatedLines := countLines(templates.InstructionFileForVersion(relativePath, version)) +
+		rootInstructionCustomizationAllowanceLines
 	if generatedLines > rootInstructionMinimumMaxLines {
 		return generatedLines
 	}

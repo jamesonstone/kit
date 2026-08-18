@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/v3/internal/promptdoc"
 )
 
 type reconcileFileSummary struct {
@@ -138,7 +138,11 @@ func buildReconcilePrompt(report *reconcileReport) string {
 		doc.Paragraph("Rules:")
 		doc.BulletList(rules...)
 		doc.Paragraph("Delivery of command-created files:")
-		doc.BulletList(managedFileDeliveryInstructions(report.ProjectRoot, report.DeliverySnapshot)...)
+		doc.BulletList(managedFileDeliveryInstructionsForCommand(
+			report.ProjectRoot,
+			report.DeferredRefreshCommand,
+			report.DeliverySnapshot,
+		)...)
 		doc.Paragraph("Audit snapshot:")
 		doc.BulletList(snapshot...)
 		doc.Paragraph("Files to fix:")

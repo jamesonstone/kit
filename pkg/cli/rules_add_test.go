@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
@@ -22,9 +22,18 @@ func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
 	if issues := validateRulesetDocument(ruleset, "work-lane-gating"); len(issues) > 0 {
 		t.Fatalf("work-lane-gating ruleset issues = %#v", issues)
 	}
+	normalizedBody := strings.Join(strings.Fields(ruleset.Body), " ")
 	for _, check := range []string{
 		"Before I make any repository changes",
 		"canonical worktree, and pull request for this work",
+		"case-insensitively",
+		"`c` means continue existing",
+		"`n` or `y` means new lane",
+		"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+		"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
+		"shorthand leads a longer response",
+		"remaining text is supplemental lane instructions",
+		"Ambiguous or contradictory responses",
 		"Pull-Request Landing Plan",
 		"source, tests, documentation, specs, plans, notes, generated",
 		"Do not infer the choice from a clean default branch",
@@ -33,7 +42,7 @@ func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
 		"Do not repeatedly ask",
 		"Do not stage, commit, push",
 	} {
-		if !strings.Contains(ruleset.Body, check) {
+		if !strings.Contains(normalizedBody, check) {
 			t.Fatalf("expected work-lane-gating ruleset to contain %q", check)
 		}
 	}
@@ -41,7 +50,7 @@ func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
 		"automatic clean-preflight decision",
 		"Do not ask whether to create a new issue",
 	} {
-		if strings.Contains(ruleset.Body, forbidden) {
+		if strings.Contains(normalizedBody, forbidden) {
 			t.Fatalf("expected work-lane-gating ruleset to omit %q", forbidden)
 		}
 	}

@@ -3,14 +3,14 @@ name: release-publish
 on:
   push:
     tags:
-      - "v*"
+      - "v3.*"
 
 permissions:
   contents: write
 
 concurrency:
   group: release-publish-${{ github.ref_name }}
-  cancel-in-progress: false
+  queue: max
 
 jobs:
   publish:
@@ -22,8 +22,8 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          if [[ ! "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Tag ${TAG} is not semantic version format vMAJOR.MINOR.PATCH." >&2
+          if [[ ! "${TAG}" =~ ^v3\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag ${TAG} is not a Kit v3 semantic version." >&2
             exit 1
           fi
       - name: Checkout repository
@@ -42,6 +42,38 @@ jobs:
           make vet
           make test
 
+      - name: Resolve release target
+        id: release_target
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          target_sha="$(git rev-list -n 1 "refs/tags/${TAG}")"
+          echo "sha=${target_sha}" >> "${GITHUB_OUTPUT}"
+
+      - name: Write release notes
+        id: release_notes
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          notes_file="${RUNNER_TEMP}/kit-release-notes.md"
+          printf '# %s\n\nKit %s release.\n' "${TAG}" "${TAG}" > "${notes_file}"
+          echo "path=${notes_file}" >> "${GITHUB_OUTPUT}"
+
+      - name: Verify immutable release tag with Mint
+        id: mint_tag
+        uses: jamesonstone/mint@v0.2.1
+        with:
+          command: release-tag
+          release-tag: ${{ github.ref_name }}
+          target-sha: ${{ steps.release_target.outputs.sha }}
+          release-notes-file: ${{ steps.release_notes.outputs.path }}
+          release-remote: origin
+          release-push: "false"
+
       - name: Setup GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -50,12 +82,36 @@ jobs:
           install-only: true
 
       - name: Build artifacts with GoReleaser
-        # publish is intentionally skipped so gh can create release with --generate-notes.
+        # Mint owns GitHub Release state; GoReleaser owns artifact production.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goreleaser release --clean --skip=publish --skip=announce
 
-      - name: Publish GitHub release with generated notes
+      - name: Validate GoReleaser artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(dist/*.tar.gz dist/*.zip dist/checksums.txt)
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No release artifacts found in dist/." >&2
+            exit 1
+          fi
+
+      - name: Create or reuse GitHub Release with Mint
+        id: mint_release
+        uses: jamesonstone/mint@v0.2.1
+        with:
+          command: github-release
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          release-tag: ${{ github.ref_name }}
+          target-sha: ${{ steps.release_target.outputs.sha }}
+          release-title: ${{ github.ref_name }}
+          release-notes-file: ${{ steps.release_notes.outputs.path }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release artifacts
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,8 +126,4 @@ jobs:
             exit 1
           fi
 
-          if gh release view "${TAG}" >/dev/null 2>&1; then
-            gh release upload "${TAG}" "${files[@]}" --clobber
-          else
-            gh release create "${TAG}" "${files[@]}" --generate-notes --title "${TAG}"
-          fi
+          gh release upload "${TAG}" "${files[@]}" --clobber

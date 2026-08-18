@@ -3,6 +3,7 @@ package templates
 const workLaneMutationRoutingGate = `## Work Lane Mutation Hard Gate
 
 - Before any coding-agent repository file or delivery mutation, including issue, branch, staging, commit, push, worktree, and pull-request mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and ` + "`work-lane-gating`" + ` first, complete read-only safety recon, then ask exactly: "Before I make any repository changes, should I create a new GitHub issue, GH-<issue-number> branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?"
+- Interpret a leading standalone response token case-insensitively: ` + "`c`" + ` means continue existing; ` + "`n`" + ` or ` + "`y`" + ` means new lane. In a longer response, shorthand is the primary lane choice and the remaining text is supplemental lane instructions. Treat the case-insensitive full-form answers ` + "`new lane`" + `, ` + "`new work lane`" + `, ` + "`new worklane`" + `, and ` + "`new worktree`" + ` as the new-lane choice: create or reuse the human-assigned GitHub issue, exact ` + "`GH-<issue-number>`" + ` branch, canonical non-primary worktree, and ready pull-request plan; ambiguous or contradictory responses fail closed.
 - Wait for the explicit choice and record a Pull-Request Landing Plan covering the repository, issue, branch, canonical non-primary worktree, protected base, and create-or-update PR target. Verify that plan still matches before every mutation. Never infer the choice from clean state or a generic PR request.
 - Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it.
 
@@ -21,6 +22,14 @@ must:
 3. Ask exactly:
 
    > Before I make any repository changes, should I create a new GitHub issue, ` + "`GH-<issue-number>`" + ` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
+
+   Interpret the response's first standalone token after trimming surrounding
+   whitespace, case-insensitively: ` + "`c`" + ` means continue existing, while
+   ` + "`n`" + ` or ` + "`y`" + ` means new lane. When shorthand leads a longer response,
+   shorthand is the primary lane choice and the remaining text is supplemental
+   lane instructions. Treat the case-insensitive full-form answers ` + "`new lane`" + `, ` + "`new work lane`" + `, ` + "`new worklane`" + `, and ` + "`new worktree`" + ` as the new-lane choice:
+   create or reuse the human-assigned GitHub issue, exact ` + "`GH-<issue-number>`" + ` branch, canonical non-primary worktree, and ready pull-request plan;
+   ambiguous or contradictory responses fail closed.
 4. Wait for the user's explicit choice unless that exact choice is already
    recorded for the same unit of work.
 5. Record a Pull-Request Landing Plan with the repository, issue, branch,

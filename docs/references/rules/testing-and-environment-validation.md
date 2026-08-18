@@ -50,6 +50,9 @@ deployment environment or external integration for a project that has none.
 
 ### Confidence, Not Certainty
 
+- Follow `agent-completion-output` for terminal reporting. A validation task
+  uses its validation/testing profile; an implementation task carries the same
+  literal evidence in its left-aligned Validation list.
 - Treat “near 100% correctness” as a risk-based confidence objective backed by
   comprehensive evidence, not as a mathematical or absolute guarantee.
 - Map changed behavior and acceptance criteria to the narrowest tests that can
@@ -302,6 +305,11 @@ kit-e2e-<project>-<environment>-<run-id>-<resource>[-<ordinal>]
 - Operate only on synthetic resources carrying the execution's exact run ID.
   Cleanup must select both the `kit-e2e-` marker and exact run ID; a broad
   prefix alone is never deletion authority.
+- Follow `deletion-safety` for cleanup. Prefer a recoverable soft-delete,
+  quarantine, or provider-native recovery state. When the platform exposes
+  only hard deletion, inventory the exact created resources and obtain the
+  specific post-outline manual confirmation before purging them; pre-run test
+  approval or a generic cleanup policy does not count.
 - Record every created resource and the cleanup outcome in immutable evidence.
 - Never use customer data, reset production state, mutate infrastructure or
   shared configuration, weaken authentication, change unrelated records, or
@@ -345,6 +353,8 @@ kit-e2e-<project>-<environment>-<run-id>-<resource>[-<ordinal>]
   cleanup preflights pass.
 - Cleaning by broad prefix, touching unrelated records, changing
   infrastructure, or weakening authentication.
+- Treating test completion, exact-run ownership, or an expiry timestamp as
+  authority for unattended hard deletion.
 - Calling a read-only smoke probe complete end-to-end coverage.
 - Creating fake production suites for libraries or other non-deployable
   projects.

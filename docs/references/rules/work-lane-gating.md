@@ -3,6 +3,7 @@ kind: ruleset
 slug: work-lane-gating
 description: Requires an explicit user-selected pull-request lane before any coding-agent repository mutation.
 status: active
+registry_scope: downstream
 applies_to:
   - git
   - github
@@ -63,8 +64,23 @@ After read-only recon, stop and ask:
 
 > Before I make any repository changes, should I create a new GitHub issue, `GH-<issue-number>` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
 
+- After trimming surrounding whitespace, interpret the response's first
+  standalone token case-insensitively: `c` means continue existing, while `n`
+  or `y` means new lane.
+- When shorthand leads a longer response, shorthand is the primary lane choice
+  and the remaining text is supplemental lane instructions.
+- Treat the case-insensitive full-form answers `new lane`, `new work lane`,
+  `new worklane`, and `new worktree` as the new-lane choice. Each means create
+  or reuse one human-assigned GitHub issue, exact `GH-<issue-number>` branch,
+  canonical non-primary worktree, and ready pull-request plan. When one leads
+  a longer response, retain the remaining text as supplemental lane
+  instructions unless it contradicts the new-lane choice.
+- Continue accepting other explicit full-form answers such as `continue
+  existing`. Ambiguous or contradictory responses, including trailing text
+  that conflicts with the shorthand or full-form choice, fail closed and
+  require clarification before mutation.
 - Wait for an explicit answer unless the user already answered this exact
-  choice for the same scope, for example `new worktree` or `continue existing`.
+  choice for the same scope.
 - Do not infer the choice from a clean default branch, a dirty feature branch,
   an issue reference, a generic pull-request end state, or an agent's opinion
   about the most convenient lane.
@@ -200,6 +216,9 @@ root-checkout editing into the regular workflow.
 
 - Confirm read-only `safety-guardrails` recon ran before the lane decision.
 - Confirm the user explicitly chose new or existing for the current scope.
+- Confirm a leading standalone `c`, `n`, or `y` was interpreted
+  case-insensitively, with shorthand primary and remaining text retained as
+  supplemental instructions.
 - Confirm the Pull-Request Landing Plan was complete before the first file
   mutation.
 - Confirm a new lane used one human-assigned issue, exact issue branch,
@@ -224,6 +243,30 @@ Required choice before any repository write:
 ```text
 Before I make any repository changes, should I create a new GitHub issue, `GH-<issue-number>` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
 ```
+
+Valid shorthand choices:
+
+```text
+c keep the current PR title
+n use the existing milestone
+y assign the new issue to me
+```
+
+The first line selects the existing lane. The other two select a new lane. In
+each case, text after the leading shorthand token remains supplemental
+instructions for the selected lane.
+
+Equivalent full-form new-lane choices:
+
+```text
+new lane
+new work lane
+new worklane
+new worktree
+```
+
+Each phrase selects creation or reuse of the complete issue, exact issue
+branch, canonical non-primary worktree, and ready pull-request lane.
 
 Valid new-lane plan:
 

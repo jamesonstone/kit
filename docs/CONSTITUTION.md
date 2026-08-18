@@ -9,6 +9,12 @@
 - Native agent planning owns research, clarification, design, and implementation planning. Kit supplies evidence and guardrails; it does not infer project truth or launch or supervise agents.
 - Coding agents use `kit capabilities <command> --json` to establish command behavior and `kit context resolve --workflow <slug> --json` to select the smallest relevant local evidence set.
 - A blocked context contract is an evidence gap, never permission to guess.
+- When execution topology matters, the active coding agent negotiates only
+  host-confirmed capabilities, maps provider-neutral profiles to the live
+  roster, and treats unknown controls as unavailable for routing.
+- One accountable root owns delegation at depth one. Reporting distinguishes
+  actual children from logical lanes, continuity from replacement, and
+  independent verification from supervisor self-review.
 
 ### Evidence Before Mutation
 
@@ -51,15 +57,16 @@
 - Before implementation, inspect code and repository memory; create or adopt `SPEC.md` when material rationale exists.
 - After validation, curate feature rationale, project invariants, reusable practices, and domain knowledge into their scope-appropriate canonical documents.
 - Allow a justified `not required` repository-memory decision when code and tests preserve the complete durable truth.
+- Before a terminal task completion or handoff response, load `docs/references/rules/agent-completion-output.md` and use its literal status, immediate action table, and primary task profile.
 - Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less.
 - Before delivery, audit the complete affected source/test scope; whole-project reconcile and scheduled maintenance audit the entire repository.
 - Exclude documentation files, all `docs/**`, all `.kit/**`, `.kit.yaml`, ignored files, vendored dependencies, and proven generated files.
 - Split oversized files by semantic responsibility while preserving stable public entry points and behavior; never use minification or arbitrary numbered chunks to claim compliance.
 <!-- END KIT-MANAGED BASELINE RULES -->
 
-### Supported v2 Command Surface
+### Supported v3 Command Surface
 
-- The v2 major release intentionally keeps only these user-facing paths and their parent groups:
+- The v3 major release preserves only these user-facing paths and their parent groups:
   - `kit init`
   - `kit spec`
   - `kit context resolve`
@@ -80,7 +87,10 @@
   - `kit instructions`
   - `kit upgrade`, `version`, and `completion`
 - Removed command groups are absent, not hidden compatibility aliases.
-- Legacy loop, prompt, feature-state, removed-feature, and project-refresh configuration may parse for one major release but has no runtime effect and is not added to fresh configuration.
+- Legacy loop, prompt, feature-state, removed-feature, and project-refresh
+  configuration remains parse-compatible where represented by the current
+  schema, but retired command groups do not regain runtime behavior and forced
+  fresh configuration omits retired defaults.
 - `kit dispatch` remains a prompt-producing adapter. It does not become an agent runtime.
 
 ### Context Resolution
@@ -97,9 +107,11 @@
 - `kit init` is the canonical project bootstrap. It preserves existing project-owned content and materializes routing, references, registry-backed rules, and local workflow contracts.
 - `internal/templates` remains the canonical embedded scaffold architecture and must stay synchronized with checked-in generated artifacts.
 - Rules remain registry-backed, provenance-aware, and materialized under `docs/references/rules/`.
-- `kit reconcile` retains its established drift-detection, preview, inclusion, merge, and safety semantics in v2.
+- `kit reconcile` retains its established drift-detection, preview, inclusion, merge, and safety semantics in v3.
 - `kit health` retains its established maintenance interface, including the existing weekly scheduled-task behavior.
-- The weekly health task reads capabilities and bounded usage analysis once per overall run after v2 is installed; its repository set, cadence, maintenance actions, no-merge rule, and existing output remain unchanged.
+- The weekly health task reads capabilities and bounded usage analysis once per
+  overall run; its repository set, cadence, maintenance actions, no-merge
+  rule, and existing output remain unchanged.
 
 ### Local Usage Telemetry
 
@@ -130,8 +142,12 @@
 
 - Issue, branch, staging, commit, push, and pull-request operations follow the repository GitHub delivery rules.
 - Work happens on the exact owned writable lane. Subagents may not mutate Git or GitHub delivery state.
-- A v2 release is cut only after the major-release pull request merges and the exact merged head is verified.
-- Installing v2 and updating the external weekly automation are post-release activation steps, never pre-merge source changes.
+- Release quality gates run before tag creation. Mint owns immutable tag and
+  GitHub Release state; Kit retains exact version selection, GoReleaser builds
+  and checksums, and idempotent artifact upload.
+- Release verification must tie the exact merged source to the tag, hosted
+  workflow, GitHub Release, artifacts, checksums, and installed binary; none of
+  those claims is inferred from a merge or local build.
 
 ## CHANGE CLASSIFICATION
 
@@ -151,7 +167,7 @@
 - Kit does not choose models, launch coding agents, supervise agent processes, or replace native agent planning.
 - Kit does not fetch external evidence during context resolution.
 - Kit does not treat generated JSON, telemetry, prompts, or agent transcripts as canonical repository memory.
-- Kit does not preserve every historical CLI path after v2.
+- Kit does not preserve every historical CLI path across major releases.
 - Kit does not change `kit reconcile` semantics as part of the coding-agent-first pivot.
 - Kit does not execute pull-request merges or silently overwrite project-owned content; coding agents may merge only under the exact active authorization contract.
 

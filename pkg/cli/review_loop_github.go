@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 var (

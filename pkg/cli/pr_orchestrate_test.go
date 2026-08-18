@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/commandset"
-	"github.com/jamesonstone/kit/internal/releaseprompt"
+	"github.com/jamesonstone/kit/v3/internal/commandset"
+	"github.com/jamesonstone/kit/v3/internal/releaseprompt"
 )
 
 func TestPROrchestrateIsProtectedTelemeteredAndCapabilityDescribed(t *testing.T) {

@@ -7,6 +7,10 @@ dependencies:
 rules:
   - slug: coding-agent-context-usage
     required: true
+  - slug: agent-completion-output
+    required: true
+  - slug: deletion-safety
+    required: true
   - slug: github-pr-merge
     required: true
   - slug: testing-and-environment-validation

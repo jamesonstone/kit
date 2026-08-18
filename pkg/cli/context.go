@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/config"
-	contextcontract "github.com/jamesonstone/kit/internal/context"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	contextcontract "github.com/jamesonstone/kit/v3/internal/context"
 )
 
 type contextResolveOptions struct {

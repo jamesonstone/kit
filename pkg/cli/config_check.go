@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
-	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 var configCheckJSON bool

@@ -3,7 +3,7 @@ package cli
 import (
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 func TestRunInitRefresh_PreservesCustomLoopAgentConfig(t *testing.T) {

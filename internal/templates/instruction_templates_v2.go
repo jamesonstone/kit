@@ -32,14 +32,14 @@ func tocRepositoryInstructions(title string) string {
 - Before any GitHub delivery mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and the relevant ` + "`docs/references/rules/*`" + ` delivery rules
 - Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
 - ` + awsAgentToolkitGuidanceRoute + ` If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
 - Use the verified configured profile and Region explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
 - After verification, never use default, another discovered profile, or ambient credentials
 - Treat the verified account, ARN, and Region as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
 
-## Conditional Context
+` + agentCompletionOutputGate + `## Conditional Context
 
 - ` + "`docs/specs/<feature>/`" + ` — active feature artifacts only
 - ` + "`docs/references/README.md`" + ` — durable repo references only when relevant
@@ -98,14 +98,14 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - Before any GitHub delivery mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and the relevant ` + "`docs/references/rules/*`" + ` delivery rules
 - Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
 - ` + awsAgentToolkitGuidanceRoute + ` If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
 - Use the verified configured profile and Region explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
 - After verification, never use default, another discovered profile, or ambient credentials
 - Treat the verified account, ARN, and Region as authoritative; on missing credentials, incomplete config, or mismatch, stop and follow docs/agents/GUARDRAILS.md instead of falling back to another profile or default
 
-## Non-Negotiable Rules
+` + agentCompletionOutputGate + `## Non-Negotiable Rules
 
 - Repo-local docs under ` + "`docs/`" + ` are the source of truth
 - Always update affected documentation and keep touched docs properly formatted
@@ -272,11 +272,13 @@ const agentsRLM = `# RLM
 - Load ` + "`docs/references/rules/backend-service-architecture.md`" + ` before implementing API or backend routes, controllers or handlers, application services, repositories, persistence adapters, or gateways
 - Load ` + "`docs/references/rules/frontend-application-architecture.md`" + ` before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components
 - Load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and ` + "`docs/references/testing.md`" + ` before implementation or validation, including browser automation and browser testing
+- Load ` + "`docs/references/rules/deletion-safety.md`" + ` before designing deletion behavior or deleting persistent project, user, business, or external-system state
 - Load ` + "`docs/references/rules/aws-agent-toolkit-guidance.md`" + ` before AWS-dependent work
 - Load ` + "`docs/references/rules/infrastructure-change-approval.md`" + ` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state
 - Load ` + "`docs/references/rules/github-pr-merge.md`" + ` and resolve ` + "`pull-request-merge`" + ` before any merge or merge-queue mutation
 - Load ` + "`docs/references/rules/cross-repository-program-coordination.md`" + ` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff
 - Load ` + "`docs/references/rules/agent-team-orchestration.md`" + ` only when the immediate decision includes execution topology, subagent lanes, or read-only verification; do not load it for trivial single-lane tasks
+- Load ` + "`docs/references/rules/agent-completion-output.md`" + ` before a terminal task completion or handoff response
 - Use indices first: start with ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` and explicit SPEC relationships to shortlist candidate prior features under ` + "`docs/specs/`" + `
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
 - Do not load every ruleset by default; feature front matter references determine when a ruleset is must-read, conditional, evidence, or skipped

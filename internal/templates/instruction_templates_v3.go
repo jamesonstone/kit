@@ -3,7 +3,7 @@ package templates
 import "strings"
 
 func memoryRepositoryInstructions(title string) string {
-	return codexThreadInitializationGate(title) + codexBrowserPolicy(title) + `## Purpose
+	return codexThreadInitializationGate(title) + codexBrowserPolicy(title) + codexCapabilityAwareHostBinding(title) + `## Purpose
 
 - This file is a routing table, not the full manual
 - Start at ` + "`docs/agents/README.md`" + ` and load only the guidance needed for the current decision
@@ -29,15 +29,7 @@ func memoryRepositoryInstructions(title string) string {
 - After implementation and validation, load ` + "`docs/references/rules/constitution-curation.md`" + `; curate feature rationale into ` + "`SPEC.md`" + `, demonstrated project invariants into ` + "`docs/CONSTITUTION.md`" + `, reusable practices into ` + "`docs/references/`" + ` or ` + "`docs/references/rules/`" + `, and domain knowledge into its existing canonical documentation
 - Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
 
-## Final Response Contract
-
-- Every implementation final response must include:
-  - ` + "`Repository Memory`" + `
-  - ` + "`Decision: created | updated | refactored | deleted | not required`" + `
-  - ` + "`Rationale: <why this is the correct persistence decision>`" + `
-  - ` + "`Artifacts: <paths or none>`" + `
-
-## Runtime Routing
+` + agentCompletionOutputGate + `## Runtime Routing
 
 - ` + "`docs/agents/README.md`" + ` — classify the work and choose the next document
 - ` + "`docs/agents/WORKFLOWS.md`" + ` — native planning, implementation, and repository-memory lifecycle
@@ -68,7 +60,7 @@ func memoryRepositoryInstructions(title string) string {
 - Before a delivery mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + ` delivery rules
 - Repo-local Kit rules outrank generic GitHub or plugin defaults
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + `## Knowledge Map
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + `## Knowledge Map
 
 - ` + "`docs/specs/<feature>/SPEC.md`" + ` — material feature rationale and living implementation history
 - ` + "`docs/CONSTITUTION.md`" + ` — project invariants
@@ -102,7 +94,7 @@ func codexThreadInitializationGate(title string) string {
 `
 }
 
-const memoryCopilotInstructions = `# GitHub Copilot Repository Instructions
+var memoryCopilotInstructions = `# GitHub Copilot Repository Instructions
 
 ## Native Planning
 
@@ -117,15 +109,7 @@ Before editing implementation/source or test files, load ` + "`docs/references/r
 ` + workLaneMutationRoutingGate + `
 Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults.
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + `## Final Response
-
-Every implementation final response must include:
-
-- Repository Memory
-- Decision: created | updated | refactored | deleted | not required
-- Rationale: why this persistence decision is correct
-- Artifacts: paths or none
-`
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + strings.TrimSuffix(agentCompletionOutputGate, "\n")
 
 func memoryInstructionSupportContent(relativePath string) string {
 	switch relativePath {

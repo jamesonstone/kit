@@ -25,11 +25,11 @@ func workflowCapabilityRecords() []capabilityRecord {
 			withNetwork("none for file/stdin input", "--pr reads GitHub review data; --loop --watch performs bounded status polling"),
 			withFileWrites("generic prompt generation writes no project files", "PR mode may prepare the exact writable same-repository PR-head worktree"),
 			withGitMutation("none for generic input", "PR mode may fetch and attach/create the exact PR-head worktree; --resolve --yes explicitly resolves verified threads"),
-			withFlags(flag("--coderabbit", "with --pr, include only CodeRabbit-authored review comments"), flag("--copy", "copy the prompt even with --output-only"), flag("--editor", "open interactive input in a specific editor command"), flag("--file", "read task input from a file"), flag("--loop", "use asynchronous review-loop intake"), flag("--max-subagents", "default 3, hard ceiling 4"), flag("--output-only", "print prompt output"), flag("--pr", "ingest active PR review feedback"), flag("--resolve", "resolve verified handled threads", "GitHub mutation with --yes"), flag("--vim", "open interactive input in a vim-compatible editor"), flag("--watch", "with --loop, wait for current-head review completion"), flag("--yes", "confirm --resolve without prompting", "required for noninteractive thread resolution")),
+			withFlags(flag("--coderabbit", "with --pr, include only CodeRabbit-authored review comments"), flag("--copy", "copy the prompt even with --output-only"), flag("--editor", "open interactive input in a specific editor command"), flag("--file", "read task input from a file"), flag("--loop", "use asynchronous review-loop intake"), flag("--output-only", "print prompt output"), flag("--pr", "ingest active PR review feedback"), flag("--resolve", "resolve verified handled threads", "GitHub mutation with --yes"), flag("--vim", "open interactive input in a vim-compatible editor"), flag("--watch", "with --loop, wait for current-head review completion"), flag("--yes", "confirm --resolve without prompting", "required for noninteractive thread resolution")),
 			withRelated(related("pr fix", "friendly PR-feedback entrypoint"), related("context resolve", "loads pr-feedback-repair rules"))),
 		capability("instructions", "Agent Workflow", "Print immutable provider-neutral coding-agent instructions.", mutationNone,
 			withFlags(flag("--version", "select an exact instruction version")),
-			withExamples("kit instructions", "kit instructions --version v4"),
+			withExamples("kit instructions", "kit instructions --version v6"),
 			withCaveats("Output is raw Markdown on stdout and requires no project root.")),
 	}
 }

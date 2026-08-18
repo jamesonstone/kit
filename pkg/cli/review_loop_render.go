@@ -64,7 +64,7 @@ func runReviewLoopPrompt(
 		workingDirectory = ctx.Repair.WorktreePath
 		target = ctx.Repair.PRURL
 	}
-	prompt := buildDispatchPrompt(tasks, opts.MaxSubagents, workingDirectory, dispatchInputSourcePR, dispatchPromptOptions{
+	prompt := buildDispatchPrompt(tasks, workingDirectory, dispatchInputSourcePR, dispatchPromptOptions{
 		CodeRabbitOnly:          opts.CodeRabbitOnly,
 		CommonReviewInstruction: commonInstruction,
 		PRTarget:                target,

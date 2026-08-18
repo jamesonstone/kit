@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func TestRunInitRefresh_AdoptsExistingStatusOnlyRulesetAsManaged(t *testing.T) {
@@ -116,14 +116,17 @@ func TestRunInitRefresh_InstallsDownstreamCapabilitiesUsageRuleNotMaintainerRule
 
 func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 	slugs := []string{
+		"agent-completion-output",
 		"aws-agent-toolkit-guidance",
 		"backend-service-architecture",
 		"codex-thread-initialization",
 		"cross-repository-program-coordination",
+		"deletion-safety",
 		"frontend-application-architecture",
 		"infrastructure-change-approval",
 		"source-file-size",
 		"testing-and-environment-validation",
+		"work-lane-gating",
 	}
 	registry := make([]registryRuleset, 0, len(slugs))
 	expectedContent := make(map[string]string, len(slugs))

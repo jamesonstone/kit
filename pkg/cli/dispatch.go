@@ -9,23 +9,17 @@ import (
 )
 
 var (
-	dispatchCopy         bool
-	dispatchCodeRabbit   bool
-	dispatchEditor       string
-	dispatchFile         string
-	dispatchLoop         bool
-	dispatchOutputOnly   bool
-	dispatchPR           string
-	dispatchResolve      bool
-	dispatchUseVim       bool
-	dispatchWatch        bool
-	dispatchYes          bool
-	dispatchMaxSubagents int
-)
-
-const (
-	defaultDispatchMaxSubagents = 3
-	hardDispatchMaxSubagents    = 4
+	dispatchCopy       bool
+	dispatchCodeRabbit bool
+	dispatchEditor     string
+	dispatchFile       string
+	dispatchLoop       bool
+	dispatchOutputOnly bool
+	dispatchPR         string
+	dispatchResolve    bool
+	dispatchUseVim     bool
+	dispatchWatch      bool
+	dispatchYes        bool
 )
 
 var dispatchCmd = &cobra.Command{
@@ -66,12 +60,6 @@ func init() {
 		false,
 		"output prompt text to stdout instead of copying it to the clipboard",
 	)
-	dispatchCmd.Flags().IntVar(
-		&dispatchMaxSubagents,
-		"max-subagents",
-		defaultDispatchMaxSubagents,
-		"maximum concurrent subagents allowed in the generated prompt; default 3, hard ceiling 4",
-	)
 	rootCmd.AddCommand(dispatchCmd)
 }
 
@@ -91,10 +79,6 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 	}
 	if dispatchResolve {
 		return runDispatchPRResolve(cmd)
-	}
-
-	if err := validateDispatchMaxSubagents(dispatchMaxSubagents); err != nil {
-		return err
 	}
 
 	inputCfg := newFreeTextInputConfig(dispatchUseVim, dispatchEditor, false, true)
@@ -136,7 +120,7 @@ func runDispatch(cmd *cobra.Command, args []string) error {
 		promptOptions.RepairContext = repair
 	}
 
-	prompt := buildDispatchPrompt(tasks, dispatchMaxSubagents, workingDirectory, inputSource, promptOptions)
+	prompt := buildDispatchPrompt(tasks, workingDirectory, inputSource, promptOptions)
 	if err := outputPromptWithoutSubagentsWithClipboardDefault(prompt, outputOnly, dispatchCopy); err != nil {
 		return err
 	}
@@ -167,7 +151,6 @@ func runDispatchReviewLoopAlias(cmd *cobra.Command, outputOnly bool) error {
 		OutputOnly:     outputOnly,
 		UseVim:         dispatchUseVim,
 		Editor:         dispatchEditor,
-		MaxSubagents:   dispatchMaxSubagents,
 		InputConfig:    newFreeTextInputConfig(dispatchUseVim, dispatchEditor, false, true),
 	})
 }
@@ -190,15 +173,4 @@ func loadDispatchInputForCommand(
 
 	rawInput, inputSource, err := loadDispatchInput(dispatchFile, inputCfg)
 	return rawInput, inputSource, dispatchPromptOptions{}, true, err
-}
-
-func validateDispatchMaxSubagents(maxSubagents int) error {
-	if maxSubagents < 1 {
-		return fmt.Errorf("--max-subagents must be between 1 and %d", hardDispatchMaxSubagents)
-	}
-	if maxSubagents > hardDispatchMaxSubagents {
-		return fmt.Errorf("--max-subagents must be between 1 and %d", hardDispatchMaxSubagents)
-	}
-
-	return nil
 }

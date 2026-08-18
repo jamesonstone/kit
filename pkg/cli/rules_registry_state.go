@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 const registryArtifactSchemaVersion = 1

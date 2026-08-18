@@ -22,6 +22,12 @@
 - When I explicitly authorize an external browser, terminate and verify all
   task-owned browser and automation processes before finishing.
 
+## Conditional Codex Subagent Binding
+
+- Apply this section only when the active coding host is Codex. Warp/Oz and every other host that reads `AGENTS.md` must skip it.
+- Before delegating, inspect the live Codex roster with `list_agents`. The root supervisor may use `spawn_agent` with host-exposed `model` and `reasoning_effort` controls, `followup_task` for same-agent continuation, and `wait_agent` for status and joining; children must not spawn descendants.
+- Resolve profiles from the live roster rather than static model IDs or a presumed capacity. If a native control is unavailable or fails, follow the shared host-adapter fallback and report the requested and effective profile, model, effort, continuity, and degradation.
+
 ## Purpose
 
 - This file is a routing table, not the full manual
@@ -32,6 +38,7 @@
 ## Work Lane Mutation Hard Gate
 
 - Before any coding-agent repository file or delivery mutation, including issue, branch, staging, commit, push, worktree, and pull-request mutations, load `docs/agents/GUARDRAILS.md` and `work-lane-gating` first, complete read-only safety recon, then ask exactly: "Before I make any repository changes, should I create a new GitHub issue, GH-<issue-number> branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?"
+- Interpret a leading standalone response token case-insensitively: `c` means continue existing; `n` or `y` means new lane. In a longer response, shorthand is the primary lane choice and the remaining text is supplemental lane instructions. Treat the case-insensitive full-form answers `new lane`, `new work lane`, `new worklane`, and `new worktree` as the new-lane choice: create or reuse the human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan; ambiguous or contradictory responses fail closed.
 - Wait for the explicit choice and record a Pull-Request Landing Plan covering the repository, issue, branch, canonical non-primary worktree, protected base, and create-or-update PR target. Verify that plan still matches before every mutation. Never infer the choice from clean state or a generic PR request.
 - Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it.
 
@@ -54,13 +61,17 @@
 - After implementation and validation, load `docs/references/rules/constitution-curation.md`; curate feature rationale into `SPEC.md`, demonstrated project invariants into `docs/CONSTITUTION.md`, reusable practices into `docs/references/` or `docs/references/rules/`, and domain knowledge into its existing canonical documentation
 - Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
 
-## Final Response Contract
+## Agent Completion Output Contract
 
-- Every implementation final response must include:
-  - `Repository Memory`
-  - `Decision: created | updated | refactored | deleted | not required`
-  - `Rationale: <why this is the correct persistence decision>`
-  - `Artifacts: <paths or none>`
+- Before a terminal task response, load `docs/references/rules/agent-completion-output.md` when present. This contract does not apply to progress commentary or focused clarification questions.
+- Make the first human-readable line `# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>`. A required host wrapper may surround the response, but no human-readable preamble may precede the status.
+- Immediately follow with a table whose columns are `Type | Action required | Why | Continue with`. Order rows Blocker, Incomplete, Next, Optional, then None; every PASS includes a None row.
+- Make required follow-ups copy-ready. Never leave table cells blank or hide blockers and incomplete work below completed detail.
+- Use PASS only for complete scope and required validation, PARTIAL for usable incomplete work, BLOCKED for a specific external dependency, and FAIL for an unresolved known failure without an external stopping dependency.
+- Preserve native evidence states such as PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE literally.
+- After the action table, use left-aligned headings and CommonMark list or key/value blocks. Do not use another Markdown pipe table unless a higher-priority schema requires it.
+- Select one primary profile from the requested deliverable: implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback. Start each detail item with a short bold lead label and put long rationale on indented continuation lines.
+- Preserve every field required by active delivery, validation, repository-memory, orchestration, program, and environment contracts inside the canonical profile blocks.
 
 ## Runtime Routing
 
@@ -109,6 +120,17 @@
 - Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.
 - Designate one coordinator repository and create or adopt one canonical `docs/programs/<program>/PROGRAM.md` ledger before implementation; participant repositories remain authoritative for local specs, delivery state, runbooks, and evidence.
 - Dispatch only the reconciled ready frontier, checkpoint every material transition and handoff, and reconcile recorded claims against live repositories, GitHub, runtime, and validation evidence before resume or completion.
+
+## Deletion Safety Hard Gate
+
+- Before designing deletion behavior or deleting persistent project, user, business, or external-system state, load `docs/references/rules/deletion-safety.md`.
+- An unqualified delete means soft delete: use a reversible lifecycle state with a supported, authorized, and tested restore path. Task-owned ephemeral scratch that never became authoritative state is outside this retained-state definition; ambiguity remains covered.
+- Treat purge, destroy, force deletion, empty-trash operations, destructive replacement, history rewrite, retention expiry, backup or snapshot deletion, cryptographic erasure, and irreversible cascades as hard delete.
+- Make the normal product and operational path soft-delete by default. Keep hard delete as a separate privileged, auditable, server-enforced action; a client prompt or `force` flag alone is insufficient.
+- Before any hard delete, resolve and present the exact targets, or a bounded selector first resolved to the exact current target set with its current count and materialized target IDs or an immutable snapshot/version token, environment, cascades, why soft delete is insufficient, the loss of restore, backup state, retention or legal impact, and verification plan.
+- After that outline, obtain a specific manual confirmation from the human for those exact current targets. Initial requests, general task or plan approval, automation, retention schedules, prior soft-delete approval, and broad cleanup language do not count.
+- Bind confirmation to the actor, action, exact targets or immutable snapshot/version, environment, and consequences. Immediately before execution, compare the current target set or version with the confirmed snapshot; any difference requires a new outline and confirmation.
+- Preserve stricter repository, legal, privacy, security, infrastructure, and provider controls. One post-outline confirmation may satisfy multiple deletion gates only when the combined outline contains every required field.
 
 ## Infrastructure Change Approval Hard Gate
 

@@ -3,7 +3,7 @@ package cli
 import (
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/v3/internal/promptdoc"
 )
 
 func renderPromptDocument(build func(*promptdoc.Document)) string {

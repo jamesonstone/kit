@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/document"
-	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/feature"
 )
 
 type reconcileSeverity string
@@ -31,14 +31,15 @@ type reconcileFinding struct {
 }
 
 type reconcileReport struct {
-	ProjectRoot           string
-	Feature               *feature.Feature
-	Findings              []reconcileFinding
-	NeedsRollup           bool
-	ReferenceMigration    bool
-	VerificationMigration bool
-	DeliverySnapshot      []managedFileDeliverySnapshot
-	SourceFileAudit       *sourceFileAuditSummary
+	ProjectRoot            string
+	Feature                *feature.Feature
+	Findings               []reconcileFinding
+	NeedsRollup            bool
+	ReferenceMigration     bool
+	VerificationMigration  bool
+	DeliverySnapshot       []managedFileDeliverySnapshot
+	DeferredRefreshCommand string
+	SourceFileAudit        *sourceFileAuditSummary
 }
 
 func (r *reconcileReport) cleanResult() string {

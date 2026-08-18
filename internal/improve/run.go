@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jamesonstone/kit/internal/verify"
+	"github.com/jamesonstone/kit/v3/internal/verify"
 )
 
 type RunOptions struct {

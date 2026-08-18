@@ -1,7 +1,7 @@
 package releaseprompt
 
 import (
-	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/v3/internal/promptdoc"
 )
 
 func addReleaseAndInfrastructure(document *promptdoc.Document, config Config) {

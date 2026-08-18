@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 func TestPhysicalLineCount(t *testing.T) {

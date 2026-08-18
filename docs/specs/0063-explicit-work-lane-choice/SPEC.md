@@ -84,6 +84,13 @@ read-only and preserves user-owned state.
 - Published `kit instructions` versions v1 through v3 are immutable historical
   contracts. A new current version is required rather than rewriting those
   payloads.
+- The gate's fixed question currently requires a free-form explicit answer and
+  does not codify concise `c`, `n`, or `y` responses or mixed responses that
+  append lane-specific instructions.
+- User feedback on PR #161 showed that project coding agents still treated
+  `new worklane`, `new work lane`, and `new lane` as ambiguous prose instead of
+  the complete new issue, exact branch, canonical worktree, and pull-request
+  choice.
 - GitHub issue #143, branch `GH-143`, and canonical worktree
   `~/worktrees/jamesonstone/kit/GH-143` own this change. The planned end state
   is one ready pull request targeting `main`.
@@ -100,6 +107,17 @@ read-only and preserves user-owned state.
 - Remove automatic clean-default-branch consent and implicit consent from a
   generic request to produce a pull request. Only the user's recorded lane
   choice satisfies the gate.
+- After trimming surrounding whitespace, accept a case-insensitive leading
+  standalone `c` as continue existing and `n` or `y` as new lane. When the
+  response contains more text, the shorthand is the primary choice and the
+  remaining text is retained as supplemental instructions within that lane.
+- Preserve explicit full-form answers. Contradictory or unresolved responses
+  remain ambiguous and must fail closed before mutation.
+- Treat the case-insensitive full-form answers `new lane`, `new work lane`,
+  `new worklane`, and `new worktree` as equivalent new-lane choices. Each must
+  create or reuse the human-assigned issue, exact `GH-<issue-number>` branch,
+  canonical non-primary worktree, and ready pull-request plan; trailing text
+  remains supplemental unless it contradicts that choice.
 - One recorded choice covers the accepted unit of work and its required tests,
   documentation, validation fixes, and delivery. Materially new or tangential
   scope requires a new choice; routine subtasks do not repeatedly re-prompt.
@@ -151,6 +169,13 @@ read-only and preserves user-owned state.
 6. Explicitly stage only GH-143 files, commit as the human user, push
    `GH-143`, open one ready PR assigned to the human user, and report hosted
    checks separately from local validation.
+7. For issue #155 on the user-selected existing PR lane, add concise response
+   semantics to the canonical rule, active templates and mirrors, current v5
+   instructions, durable feature rationale, and focused regression coverage.
+8. For the GH-160 / PR #161 follow-up, map common full-form new-lane phrases
+   to the complete issue/branch/worktree/PR choice in the canonical rule,
+   active templates and mirrors, reconcile drift expectations, and additive
+   current v6 instructions while preserving immutable v1-v5 bytes.
 
 ## DECISIONS
 
@@ -168,6 +193,19 @@ read-only and preserves user-owned state.
 - Rejected: allow edits in a clean primary checkout with a later transfer plan.
   That makes user-owned root state depend on recovery and permits an ungated
   diff to exist before its pull-request lane exists.
+- Accepted for the follow-up: use the first standalone `c`, `n`, or `y` token
+  as the primary lane choice while preserving any trailing instructions. This
+  keeps the common response concise without discarding user constraints.
+- Retained for the follow-up: fail closed when trailing text contradicts the
+  shorthand or no binary choice can be resolved. Shorthand reduces input
+  ceremony but does not weaken the mutation gate.
+- Accepted for the GH-160 follow-up: normalize `new lane`, `new work lane`,
+  `new worklane`, and `new worktree` as explicit new-lane answers. Requiring
+  users to repeat the longer generated question after already naming the lane
+  adds friction and does not improve target authority.
+- Accepted for the GH-160 follow-up: publish additive v6 instructions instead
+  of changing immutable v5. Current generated guidance may advance, while
+  every published version remains byte-stable.
 - Rejected during PR review: add unconditional runtime rejection to `kit init`,
   `kit health`, and init refresh. The lane gate governs coding-agent actions,
   while these commands also support direct human use and non-Git bootstrap. Kit
@@ -215,6 +253,15 @@ read-only and preserves user-owned state.
   The integrated lane contract keeps issue, branch, push, and ready-PR delivery
   distinct from merge authority and preserves the merge policy consistency
   checks without restoring automatic lane consent.
+- The codified question is consumed through generated agent instructions; the
+  repository has no separate executable response parser for this gate. The
+  canonical template and ruleset therefore own shorthand interpretation, with
+  regression tests proving every active generated surface carries it.
+- Full-form lane interpretation has the same prompt-contract boundary as
+  shorthand. It must be repeated in the downstream ruleset, compact and full
+  templates, checked-in mirrors, current versioned instructions, and reconcile
+  semantic-drift expectations or projects can remain structurally current but
+  behaviorally ambiguous.
 
 ## VALIDATION
 
@@ -257,8 +304,47 @@ read-only and preserves user-owned state.
 - Initial delivery `gitleaks dir --redact --no-banner .` scanned 5.25 MB with no leaks, and
   `gitleaks git --redact --no-banner --log-opts='origin/main..HEAD' .` scanned
   the GH-143 commit range with no leaks.
+- Issue #155 shorthand follow-up passed focused template, instruction, and CLI
+  tests; complete tests and race tests; formatting, build, vet, and changed-code
+  lint; feature, all-feature, project, and reconcile checks. All 62 features
+  passed, reconcile audited 683 version-control-eligible candidates and 349
+  eligible handwritten source/test files with none above 300 physical lines,
+  and the 5.43 MB working-tree secret scan found no leaks.
+- The managed-propagation follow-up passed focused health, reconcile, registry,
+  and existing-section drift tests; complete tests and race tests; formatting,
+  build, vet, and changed-code lint; all 62 feature checks; project validation;
+  and whole-project reconcile. Reconcile audited 684 version-control-eligible
+  candidates and 350 eligible handwritten source/test files with none above 300
+  physical lines, and the 6.16 MB working-tree secret scan found no leaks.
+- Current v5 instructions hash to
+  `cf68ece8fe95d51733fa835460e0788b89392d22fb4c46522c543f91f3ba6dc7`;
+  immutable v1-v4 hashes remain unchanged.
 - Final staged-diff and hosted pull-request checks remain delivery steps and
   will be recorded separately after local completion.
+- GH-160 full-form mapping passed focused instruction, template, ruleset,
+  reconcile-drift, health, and managed-refresh propagation tests; complete Go
+  tests; race tests for instructions, templates, and CLI; formatting, vet,
+  changed-code lint, and build.
+- Built Kit checks passed for features 0063 and 0017, all 63 features, and the
+  project contract. Current `kit instructions` renders the four equivalent
+  full-form choices and capabilities advertise v6.
+- Immutable v1-v5 instruction hashes remained unchanged. Additive v6 hashes to
+  `6e46f43483957a434c6e3e7e9982f45807e499f486f21061307d74e2538f6e91`
+  after integration with the additive completion-output contract.
+- The whole-project managed dry-run reported a complete source-size audit of
+  701 version-control-eligible candidates, 362 eligible handwritten
+  source/test files, and zero violations. Its sole planned `.kit.yaml` change
+  marks the branch-ahead ruleset `local-custom`; that expected pre-merge
+  self-registry metadata change was not applied.
+- A fresh read-only verifier found no actionable issues and confirmed canonical
+  rule, compact/full template, checked-in mirror, reconcile drift, managed
+  propagation, additive v6, immutable v1-v5, focused-test, diff, formatting,
+  and source-size evidence.
+- CodeRabbit found that the first drift assertions could pass on generic issue
+  or PR wording without proving the exact branch/worktree/ready-plan clause.
+  GH-160 now requires one contiguous complete-lane clause in every managed
+  surface, removes that clause in per-file stale-guidance regressions, and
+  passes the complete Go, race, format, vet, lint, and build validation again.
 
 ## OUTCOME
 
@@ -275,8 +361,8 @@ read-only and preserves user-owned state.
   evidence and no longer instruct agents to transfer and restore root changes
   automatically.
 - Generated current AGENTS, Claude, Copilot, workflow, Guardrails, RLM, and
-  Tooling guidance carries the new gate. `kit instructions` now defaults to
-  immutable v4; the byte hashes of published v1-v3 remain unchanged.
+  Tooling guidance carries the gate. Current v5 instructions add deletion
+  safety and shorthand lane responses while immutable v1-v4 remain unchanged.
 - PR-review repair makes the gate unconditional in newly created and resumed
   v4 sessions, requires repository context resolution before write-capable
   workflows, and keeps generated compact/full guidance ordered across rule
@@ -290,12 +376,26 @@ read-only and preserves user-owned state.
 - Final review repair completes v4's execution preconditions by requiring native
   planning, the semantic living-spec decision and accepted plan when material,
   testing-environment rule loads, and the source-file-size gate before coding.
-- Regression tests enforce the ruleset wording, root protection, generated and
-  checked-in alignment, managed-command tripwire, new current version, and
-  immutable historical versions.
+- Regression tests enforce the ruleset wording, `c`/`n`/`y` shorthand semantics,
+  root protection, generated and checked-in alignment, managed-command
+  tripwire, current-version behavior, and immutable historical versions.
+- Managed-health and `kit reconcile --include-files` regression coverage proves
+  missing root/provider guidance and Guardrails are restored with shorthand
+  semantics. Reconcile also reports existing-section shorthand drift for
+  reviewed semantic curation instead of silently treating structural freshness
+  as current guidance.
+- The GH-160 follow-up makes `new lane`, `new work lane`, `new worklane`, and
+  `new worktree` exact case-insensitive synonyms for the complete new-lane
+  choice: one human-assigned issue, exact issue branch, canonical non-primary
+  worktree, and ready pull-request plan. Trailing instructions remain scoped to
+  that choice unless contradictory.
+- Compact and full generators, checked-in AGENTS/Claude/Copilot/Guardrails,
+  downstream reconcile drift detection, and managed health/reconcile refreshes
+  now carry the same mapping. Additive v6 is current while v1-v5 remain
+  immutable.
 - The integrated result preserves current merge-autonomy, release-orchestration,
   and git-wt-removal policy. Pull-request delivery still never implies merge
-  consent, and feature IDs 0060 through 0063 remain unique.
+  consent, and feature IDs 0060 through 0065 remain unique.
 - Remaining limitation: this is a repository and prompt contract, not an OS
   filesystem interceptor. Enforcement is deterministic in generated guidance,
   validation, and delivery prompts, but a non-compliant external agent could
@@ -316,3 +416,14 @@ read-only and preserves user-owned state.
 - Refreshed generated active instruction artifacts from their canonical
   templates. Preserved published v1-v3 instruction files unchanged and added
   v4 rather than rewriting history.
+- Issue #155 updated this spec, the work-lane ruleset, active generated guidance,
+  and current v5 regression coverage because concise response interpretation is
+  durable workflow behavior. The Constitution remains unchanged because the
+  shorthand specializes the existing explicit-choice invariant rather than
+  introducing a new project-wide invariant.
+- The work-lane ruleset now declares downstream registry scope explicitly so
+  scheduled health and reconcile refreshes install it in every managed project.
+- GH-160 updated this spec, the downstream ruleset, generated and checked-in
+  guidance, reconcile expectations, and additive v6 because ordinary full-form
+  lane vocabulary is durable workflow behavior. Constitution curation remains
+  not required: the aliases specialize the existing explicit-choice invariant.

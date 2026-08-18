@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jamesonstone/kit/internal/worktreeprep"
+	"github.com/jamesonstone/kit/v3/internal/worktreeprep"
 )
 
 func TestPreparePRRepairContextRecordsDirtyWorktreeDecision(t *testing.T) {

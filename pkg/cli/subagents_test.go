@@ -49,11 +49,23 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 		"agent-team-orchestration.md",
 		"The supervisor owns scope",
 		"Agent Team Plan",
-		"low-overlap areas",
-		"In normal operation, run at most 3 independent lanes",
-		"fourth lane requires explicit exceptional authorization from the supervisor",
-		"never exceed 4 lanes",
-		"read-only verification agent",
+		"CAPABILITY_NEGOTIATING",
+		"Capability Manifest",
+		"controls exposed by the active runtime",
+		"Preserve `unknown` literally",
+		"no child primitive is confirmed",
+		"Only the root supervisor may launch agents",
+		"actual agent only when the runtime creates a separate execution",
+		"logical-only and omitted lanes",
+		"requested and effective provider-neutral profiles",
+		"runtime-selected/unverified",
+		"parallel execution only when the host confirms overlap",
+		"stable agent reference",
+		"continuity loss",
+		"fresh independent read-only verification by a verifier",
+		"supervisor self-review",
+		"verification was not independent",
+		"verification_independent: true | false | unknown",
 		"single supervisor lane; no specialist or verification agents spawned",
 		"supervisor-prepared, explicitly assigned worktree",
 		"may not create, switch, move, or remove worktrees",
@@ -68,8 +80,10 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 	if strings.Count(got, "## Subagent Orchestration") != 1 {
 		t.Fatalf("expected one subagent section, got %q", got)
 	}
-	if strings.Contains(got, "at most 3 independent lanes (hard ceiling 4)") {
-		t.Fatalf("normal concurrency guidance should not imply an automatic fourth lane, got %q", got)
+	for _, retired := range []string{"at most 3", "hard ceiling", "fourth lane", "never exceed 4"} {
+		if strings.Contains(got, retired) {
+			t.Fatalf("expected shared prompt to omit retired fixed-cap policy %q, got %q", retired, got)
+		}
 	}
 }
 

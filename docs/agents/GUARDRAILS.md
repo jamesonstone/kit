@@ -22,6 +22,14 @@ must:
 3. Ask exactly:
 
    > Before I make any repository changes, should I create a new GitHub issue, `GH-<issue-number>` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
+
+   Interpret the response's first standalone token after trimming surrounding
+   whitespace, case-insensitively: `c` means continue existing, while
+   `n` or `y` means new lane. When shorthand leads a longer response,
+   shorthand is the primary lane choice and the remaining text is supplemental
+   lane instructions. Treat the case-insensitive full-form answers `new lane`, `new work lane`, `new worklane`, and `new worktree` as the new-lane choice:
+   create or reuse the human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan;
+   ambiguous or contradictory responses fail closed.
 4. Wait for the user's explicit choice unless that exact choice is already
    recorded for the same unit of work.
 5. Record a Pull-Request Landing Plan with the repository, issue, branch,
@@ -146,6 +154,17 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 - Never bypass protection, reviews, required checks, a merge queue, repository policy, or identity safeguards.
 - Report merge, hosted workflow, deployment/runtime, and production evidence as separate claims.
 
+## Deletion Safety Hard Gate
+
+- Before designing deletion behavior or deleting persistent project, user, business, or external-system state, load `docs/references/rules/deletion-safety.md`.
+- An unqualified delete means soft delete: use a reversible lifecycle state with a supported, authorized, and tested restore path. Task-owned ephemeral scratch that never became authoritative state is outside this retained-state definition; ambiguity remains covered.
+- Treat purge, destroy, force deletion, empty-trash operations, destructive replacement, history rewrite, retention expiry, backup or snapshot deletion, cryptographic erasure, and irreversible cascades as hard delete.
+- Make the normal product and operational path soft-delete by default. Keep hard delete as a separate privileged, auditable, server-enforced action; a client prompt or `force` flag alone is insufficient.
+- Before any hard delete, resolve and present the exact targets, or a bounded selector first resolved to the exact current target set with its current count and materialized target IDs or an immutable snapshot/version token, environment, cascades, why soft delete is insufficient, the loss of restore, backup state, retention or legal impact, and verification plan.
+- After that outline, obtain a specific manual confirmation from the human for those exact current targets. Initial requests, general task or plan approval, automation, retention schedules, prior soft-delete approval, and broad cleanup language do not count.
+- Bind confirmation to the actor, action, exact targets or immutable snapshot/version, environment, and consequences. Immediately before execution, compare the current target set or version with the confirmed snapshot; any difference requires a new outline and confirmation.
+- Preserve stricter repository, legal, privacy, security, infrastructure, and provider controls. One post-outline confirmation may satisfy multiple deletion gates only when the combined outline contains every required field.
+
 ## Infrastructure Change Approval Hard Gate
 
 - Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.
@@ -167,6 +186,18 @@ Before AWS-dependent work, load `docs/references/rules/aws-agent-toolkit-guidanc
 4. Use the verified configured profile and Region explicitly for AWS CLI, SDK, Terraform, CDK, deployment, and project scripts where supported.
 5. Stop on missing AWS CLI, expired or unavailable credentials, incomplete .kit.yaml AWS fields, or an account mismatch. Read .kit.yaml and ask the user when the intended context remains ambiguous.
 6. Never fall back to default, another discovered profile, or ambient credentials after verification fails.
+
+## Agent Completion Output Contract
+
+- Before a terminal task response, load `docs/references/rules/agent-completion-output.md` when present. This contract does not apply to progress commentary or focused clarification questions.
+- Make the first human-readable line `# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>`. A required host wrapper may surround the response, but no human-readable preamble may precede the status.
+- Immediately follow with a table whose columns are `Type | Action required | Why | Continue with`. Order rows Blocker, Incomplete, Next, Optional, then None; every PASS includes a None row.
+- Make required follow-ups copy-ready. Never leave table cells blank or hide blockers and incomplete work below completed detail.
+- Use PASS only for complete scope and required validation, PARTIAL for usable incomplete work, BLOCKED for a specific external dependency, and FAIL for an unresolved known failure without an external stopping dependency.
+- Preserve native evidence states such as PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE literally.
+- After the action table, use left-aligned headings and CommonMark list or key/value blocks. Do not use another Markdown pipe table unless a higher-priority schema requires it.
+- Select one primary profile from the requested deliverable: implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback. Start each detail item with a short bold lead label and put long rationale on indented continuation lines.
+- Preserve every field required by active delivery, validation, repository-memory, orchestration, program, and environment contracts inside the canonical profile blocks.
 
 ## Completion Bar
 
@@ -204,6 +235,7 @@ Before AWS-dependent work, load `docs/references/rules/aws-agent-toolkit-guidanc
 - Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied `.envrc`, and remember that direnv approval remains path-specific; keep runtime services, databases, ports, Temporal state, process supervision, and sibling repositories outside the worktree workflow
 - Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
 - Do not ask for routine approval to switch supported tools, including authenticated `gh`, when the authorized mutation is unchanged
+- Follow `docs/references/rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state; default to soft delete and obtain post-outline specific manual confirmation before every hard delete
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files
 - Treat missing credentials, ambiguous identity or target, conflicting user-owned changes, and required external authorization as blockers requiring the smallest missing input, not as routine retry-permission requests
 - Do not run `coderabbit --prompt-only` unless explicitly requested or approved

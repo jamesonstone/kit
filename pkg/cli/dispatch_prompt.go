@@ -5,12 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/v3/internal/promptdoc"
 )
 
 func buildDispatchPrompt(
 	tasks []dispatchTask,
-	maxSubagents int,
 	workingDirectory string,
 	inputSource dispatchInputSource,
 	options dispatchPromptOptions,
@@ -21,7 +20,6 @@ func buildDispatchPrompt(
 		doc.BulletList(
 			fmt.Sprintf("Working directory: `%s`", workingDirectory),
 			fmt.Sprintf("Input source: %s", inputSource),
-			fmt.Sprintf("Max concurrent subagents: %d (hard ceiling %d)", maxSubagents, hardDispatchMaxSubagents),
 		)
 		if options.RepairContext != nil {
 			appendDispatchRepairContext(doc, *options.RepairContext)
@@ -32,20 +30,28 @@ func buildDispatchPrompt(
 		}
 		doc.Heading(2, "Normalized Tasks")
 		doc.Raw(renderDispatchTasks(tasks))
+		doc.Heading(2, "Runtime Capability Negotiation")
+		doc.BulletList(
+			"Before assigning lanes, inspect only the agent controls exposed by the active runtime. Record host-confirmed separate execution, parallelism, stable references and follow-up, model and effort selection, fresh verification, wait or status controls, effective capacity, and evidence basis. Preserve `unknown` literally and treat it as unavailable for routing; never spawn an agent only to probe capability.",
+			"Count a lane as an actual agent only when the runtime explicitly creates a separate execution and returns a separate result. Role prompts, task lists, editor modes, handoffs, and manually opened conversations are logical-only lanes.",
+			"Choose `single-supervisor`, `root-with-children`, or `host-managed` topology from the Capability Manifest. Keep delegation depth at one: only the root supervisor may launch agents.",
+		)
 		doc.Heading(2, "Routing Task")
 		doc.BulletList(
 			"Act as the one accountable supervisor for scope, integration, validation, evidence, delivery gates, and reporting.",
 			"Inspect just enough repository structure to predict touched files/interfaces for each task. Cluster by file overlap; keep shared, ambiguous, or continuously coupled work in one serialized lane.",
-			fmt.Sprintf("Spawn only independent low-overlap clusters, at most %d concurrently. Queue excess clusters in original task order; use one supervisor lane when splitting would not improve correctness or throughput.", maxSubagents),
-			"Plan at least one read-only verification lane after nontrivial implementation unless the work is documentation-only, tightly coupled, explicitly single-agent, or the runtime cannot spawn agents.",
+			"Route lanes with provider-neutral requested profiles such as `architect`, `orchestrator`, `mapper`, `specialist`, `precision`, and `verifier`. Record requested and effective profiles separately; when the runtime does not confirm model or effort, report `runtime-selected/unverified` and never claim an exact assignment.",
+			"Use only host-confirmed capacity and parallel execution. Run actual agents sequentially when overlap is not confirmed; when no child primitive is confirmed, execute logical lanes in the supervisor.",
+			"Reuse a stable agent reference for discovery follow-up, implementation rebrief, and repair when supported. Otherwise fully rebrief a replacement and report the continuity loss; never describe a replacement as the same agent.",
+			"Use fresh independent read-only verification by a verifier after nontrivial implementation when supported. Otherwise perform a distinct read-only supervisor self-review and report that verification was not independent.",
 			"Keep each task in its assigned checkout or prepared worktree. Subagents may not independently create, switch, move, or remove worktrees, expand scope, or mutate Git/GitHub delivery state unless explicitly assigned and authorized.",
 		)
 		doc.Heading(2, "Agent Team Plan Output")
 		doc.BulletList(
-			"Supervisor responsibility and normalized task-to-lane mapping.",
-			"For each lane: actual or logical-only status, predicted files/interfaces, dependencies, overlap risk, and validation owner.",
-			"Max concurrency, serialized queue, omitted lanes with reasons, read-only verification plan, and remaining unknowns.",
-			"Publish the plan before spawning, then self-direct execution within it. Final reporting distinguishes actual agents from logical lanes; if none ran, state `single supervisor lane; no specialist or verification agents spawned`.",
+			"Capability Manifest: evidence basis, confirmed and unknown controls, effective capacity, selected topology, delegation depth, and degradations.",
+			"For each lane: `actual_agent`, `logical_lane`, or `omitted`; predicted files/interfaces; dependencies; overlap risk; agent reference when available; requested and effective profile; profile confirmation; continuity; and validation owner.",
+			"Execution order marked `parallel-confirmed`, `sequential`, or `unconfirmed`; omitted lanes with reasons; remaining unknowns; verification method; and `verification_independent: true | false | unknown`.",
+			"Publish the plan before spawning, then self-direct execution within it. Final reporting separates `task_outcome` from `orchestration_conformance: full | degraded | unsatisfied` and distinguishes actual agents from logical or omitted lanes. If none ran, state `single supervisor lane; no specialist or verification agents spawned`.",
 		)
 		if inputSource == dispatchInputSourcePR {
 			appendDispatchPRReflectionCycle(doc, options)

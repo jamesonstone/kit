@@ -22,7 +22,6 @@ type prFixOptions struct {
 	Copy           bool
 	Edit           bool
 	Editor         string
-	MaxSubagents   int
 	OutputOnly     bool
 	UseVim         bool
 }
@@ -33,7 +32,6 @@ type prFixDispatchOptions struct {
 	Copy           bool
 	Edit           bool
 	Editor         string
-	MaxSubagents   int
 	OutputOnly     bool
 	UseVim         bool
 }
@@ -114,7 +112,6 @@ reflection before resolving verified addressed review conversations.`,
 	cmd.Flags().StringVar(&opts.Editor, "editor", "", "open review tasks in a specific editor command before generating the prompt")
 	cmd.Flags().BoolVar(&opts.OutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	cmd.Flags().BoolVar(&opts.UseVim, "vim", false, "open review tasks in a vim-compatible editor before generating the prompt")
-	cmd.Flags().IntVar(&opts.MaxSubagents, "max-subagents", defaultDispatchMaxSubagents, "maximum concurrent subagents allowed in the generated prompt; default 3, hard ceiling 4")
 	return cmd
 }
 
@@ -134,17 +131,12 @@ func runPRFixCommand(cmd *cobra.Command, _ []string, opts prFixOptions) error {
 		Copy:           opts.Copy,
 		Edit:           opts.Edit,
 		Editor:         opts.Editor,
-		MaxSubagents:   opts.MaxSubagents,
 		OutputOnly:     opts.OutputOnly,
 		UseVim:         opts.UseVim,
 	})
 }
 
 func runPRFixDispatchPrompt(cmd *cobra.Command, opts prFixDispatchOptions) error {
-	if err := validateDispatchMaxSubagents(opts.MaxSubagents); err != nil {
-		return err
-	}
-
 	prInput, found, err := loadPRFixDispatchInput(opts)
 	if err != nil {
 		return err
@@ -176,7 +168,6 @@ func runPRFixDispatchPrompt(cmd *cobra.Command, opts prFixDispatchOptions) error
 
 	prompt := buildDispatchPrompt(
 		tasks,
-		opts.MaxSubagents,
 		repair.WorktreePath,
 		dispatchInputSourcePR,
 		dispatchPromptOptions{

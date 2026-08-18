@@ -204,9 +204,15 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - The explicit work-lane choice is a mandatory permission boundary. Obtain it
   before any repository file or delivery mutation; do not infer it from the
   general instruction to complete the task.
+- Follow `deletion-safety` before designing deletion behavior or deleting
+  persistent project, user, business, or external-system state. Default to
+  soft delete and obtain post-outline specific manual confirmation for the
+  exact current targets before every hard delete.
 - Honor explicit repo-local approval gates. For covered public-cloud, Kubernetes, or infrastructure-as-code mutations, follow `infrastructure-change-approval` before mutation; use one plan-level confirmation per complete batch, then execute that batch and compatible retries without re-prompting; consolidate additional required changes into one follow-up batch, and always obtain post-outline confirmation for deletion or removal.
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files.
-- Before requesting deletion permission, resolve the exact targets, scope, sensitivity, and recoverability with read-only inspection; prefer recoverable deletion where practical.
+- Before requesting hard-delete confirmation, resolve the exact targets, scope,
+  sensitivity, cascades, and recoverability with read-only inspection. An
+  unqualified deletion request never authorizes irreversible purge.
 - This permission boundary does not authorize actions prohibited above. Never ask for permission to bypass protected branches, review, identity, secret, force-push, merge-authorization, or repository-setting safeguards.
 
 ## Anti-Patterns
@@ -225,6 +231,8 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Do not treat autonomous failure recovery as permission to bypass an explicit infrastructure-change approval gate.
 - Do not blindly repeat a failed mutation without new evidence or a revised recovery path.
 - Do not perform large-scale deletion or delete sensitive files without explicit permission.
+- Do not hard-delete covered state without the exact post-outline manual
+  confirmation required by `deletion-safety`.
 - Do not treat delivery consent, agent assignment, successful checks, or a
   program ledger as authority to merge.
 
@@ -251,6 +259,8 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Confirm compatible authenticated tool-path changes did not trigger routine permission requests.
 - Confirm explicit repo-local approval gates were satisfied before their covered mutations.
 - Confirm large-scale deletion and sensitive-file deletion did not occur without explicit permission.
+- Confirm covered deletion defaulted to a recoverable lifecycle and every hard
+  delete had exact, current, post-outline manual confirmation.
 - Before any merge, confirm a direct request or accepted bounded plan created
   authority for the exact PR set and `pull-request-merge` resolved without a
   required evidence gap.

@@ -11,23 +11,38 @@ func TestBuildDispatchPrompt(t *testing.T) {
 		{ID: "D002", Index: 2, Body: "Refresh README"},
 	}
 
-	prompt := buildDispatchPrompt(tasks, defaultDispatchMaxSubagents, "/tmp/project", dispatchInputSourceEditor, dispatchPromptOptions{})
+	prompt := buildDispatchPrompt(tasks, "/tmp/project", dispatchInputSourceEditor, dispatchPromptOptions{})
 	checks := []string{
 		"Prepare an Agent Team Plan",
 		"Working directory: `/tmp/project`",
 		"Input source: editor",
-		"Max concurrent subagents: 3 (hard ceiling 4)",
 		"### D001",
 		"### D002",
 		"one accountable supervisor",
 		"predict touched files/interfaces",
 		"Cluster by file overlap",
-		"only independent low-overlap clusters",
-		"read-only verification lane",
+		"Runtime Capability Negotiation",
+		"host-confirmed separate execution",
+		"Preserve `unknown` literally",
+		"actual agent only when the runtime explicitly creates a separate execution",
+		"delegation depth at one",
+		"`single-supervisor`, `root-with-children`, or `host-managed`",
+		"requested and effective profiles separately",
+		"runtime-selected/unverified",
+		"parallel execution",
+		"stable agent reference",
+		"continuity loss",
+		"fresh independent read-only verification by a verifier",
+		"supervisor self-review",
 		"assigned checkout or prepared worktree",
 		"may not independently create, switch, move, or remove worktrees",
 		"Agent Team Plan Output",
-		"actual or logical-only status",
+		"Capability Manifest",
+		"`actual_agent`, `logical_lane`, or `omitted`",
+		"`parallel-confirmed`, `sequential`, or `unconfirmed`",
+		"verification_independent: true | false | unknown",
+		"task_outcome",
+		"orchestration_conformance",
 		"Publish the plan before spawning",
 		"single supervisor lane; no specialist or verification agents spawned",
 	}
@@ -47,15 +62,20 @@ func TestBuildDispatchPrompt(t *testing.T) {
 	if strings.Contains(prompt, "PR Reflection and Resolution Cycle") {
 		t.Fatalf("expected non-PR dispatch prompt to omit PR reflection cycle, got %q", prompt)
 	}
+	for _, retired := range []string{"Max concurrent subagents", "at most 3", "hard ceiling", "never exceed 4"} {
+		if strings.Contains(prompt, retired) {
+			t.Fatalf("expected prompt to omit retired fixed-cap policy %q, got %q", retired, prompt)
+		}
+	}
 }
 
-func TestDispatchCommandMaxSubagentsDefaultAndCeiling(t *testing.T) {
-	flag := dispatchCmd.Flags().Lookup("max-subagents")
-	if flag == nil {
-		t.Fatal("expected dispatch to expose --max-subagents")
+func TestDispatchCommandRejectsRemovedMaxSubagentsFlag(t *testing.T) {
+	if flag := dispatchCmd.Flags().Lookup("max-subagents"); flag != nil {
+		t.Fatalf("expected dispatch not to expose --max-subagents, got %#v", flag)
 	}
-	if flag.DefValue != "3" || !strings.Contains(flag.Usage, "hard ceiling 4") {
-		t.Fatalf("unexpected --max-subagents flag metadata: def=%q usage=%q", flag.DefValue, flag.Usage)
+	err := dispatchCmd.ParseFlags([]string{"--max-subagents", "2"})
+	if err == nil || !strings.Contains(err.Error(), "unknown flag: --max-subagents") {
+		t.Fatalf("expected removed flag to be rejected as unknown, got %v", err)
 	}
 }
 
@@ -66,7 +86,6 @@ func TestBuildDispatchPromptIncludesCommonReviewInstruction(t *testing.T) {
 
 	prompt := buildDispatchPrompt(
 		tasks,
-		4,
 		"/tmp/project",
 		dispatchInputSourcePR,
 		dispatchPromptOptions{CommonReviewInstruction: coderabbitSharedReviewInstruction},
@@ -92,7 +111,6 @@ func TestBuildDispatchPromptIncludesPRReflectionCycle(t *testing.T) {
 
 	prompt := buildDispatchPrompt(
 		tasks,
-		3,
 		"/tmp/project",
 		dispatchInputSourcePR,
 		dispatchPromptOptions{PRTarget: "14"},
@@ -121,7 +139,6 @@ func TestBuildDispatchPromptIncludesPRReflectionCycle(t *testing.T) {
 func TestBuildDispatchPromptCarriesResolvedRepairLane(t *testing.T) {
 	prompt := buildDispatchPrompt(
 		[]dispatchTask{{ID: "D001", Index: 1, Body: "Fix the review finding"}},
-		3,
 		"/tmp/kit/GH-67",
 		dispatchInputSourcePR,
 		dispatchPromptOptions{
@@ -166,7 +183,6 @@ func TestBuildDispatchPromptShellQuotesRepairWorktree(t *testing.T) {
 	worktreePath := "/tmp/kit/$(touch injected); lane's"
 	prompt := buildDispatchPrompt(
 		[]dispatchTask{{ID: "D001", Index: 1, Body: "Fix the review finding"}},
-		1,
 		worktreePath,
 		dispatchInputSourcePR,
 		dispatchPromptOptions{
@@ -194,7 +210,6 @@ func TestBuildDispatchPromptScopesPRReflectionCycleToCodeRabbit(t *testing.T) {
 
 	prompt := buildDispatchPrompt(
 		tasks,
-		3,
 		"/tmp/project",
 		dispatchInputSourcePR,
 		dispatchPromptOptions{CodeRabbitOnly: true, PRTarget: "14"},

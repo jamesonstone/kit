@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/promptdoc"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/promptdoc"
 )
 
 func outputInitRefreshDocumentationPrompt(
@@ -30,6 +30,15 @@ func outputInitRefreshDocumentationPrompt(
 func buildInitRefreshDocumentationPrompt(
 	projectRoot string,
 	cfg *config.Config,
+	snapshots ...[]managedFileDeliverySnapshot,
+) string {
+	return buildInitRefreshDocumentationPromptForCommand(projectRoot, cfg, "", snapshots...)
+}
+
+func buildInitRefreshDocumentationPromptForCommand(
+	projectRoot string,
+	cfg *config.Config,
+	rerunCommand string,
 	snapshots ...[]managedFileDeliverySnapshot,
 ) string {
 	constitutionPath := cfg.ConstitutionAbsPath(projectRoot)
@@ -85,7 +94,7 @@ func buildInitRefreshDocumentationPrompt(
 			"`git diff --check`",
 		)
 		doc.Paragraph("Delivery of command-created files:")
-		doc.BulletList(managedFileDeliveryInstructions(projectRoot, snapshots...)...)
+		doc.BulletList(managedFileDeliveryInstructionsForCommand(projectRoot, rerunCommand, snapshots...)...)
 		doc.Paragraph("Final response:")
 		doc.BulletList(
 			"`Findings`: stale or missing project documentation, or `none`",

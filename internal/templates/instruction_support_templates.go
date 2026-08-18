@@ -97,7 +97,7 @@ Do not create:
 
 unless the repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
 
-` + githubPRMergeGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
+` + githubPRMergeGate + deletionSafetyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
 ` + awsAgentToolkitGuidanceRoute + ` When .kit.yaml defines an enabled aws context, agents must:
 
@@ -108,7 +108,7 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 5. Stop on missing AWS CLI, expired or unavailable credentials, incomplete .kit.yaml AWS fields, or an account mismatch. Read .kit.yaml and ask the user when the intended context remains ambiguous.
 6. Never fall back to default, another discovered profile, or ambient credentials after verification fails.
 
-## Completion Bar
+` + agentCompletionOutputGate + `## Completion Bar
 
 - For v2 feature work, populate all required ` + "`SPEC.md`" + ` sections and keep front matter ` + "`workflow_version`" + `, ` + "`phase`" + `, references, relationships, and skills current
 - For legacy staged workflows, populate all required sections in the staged artifact being used
@@ -144,6 +144,7 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 - Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied ` + "`.envrc`" + `, and remember that direnv approval remains path-specific; keep runtime services, databases, ports, Temporal state, process supervision, and sibling repositories outside the worktree workflow
 - Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
 - Do not ask for routine approval to switch supported tools, including authenticated ` + "`gh`" + `, when the authorized mutation is unchanged
+- Follow ` + "`docs/references/rules/deletion-safety.md`" + ` before designing deletion behavior or deleting persistent project, user, business, or external-system state; default to soft delete and obtain post-outline specific manual confirmation before every hard delete
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files
 - Treat missing credentials, ambiguous identity or target, conflicting user-owned changes, and required external authorization as blockers requiring the smallest missing input, not as routine retry-permission requests
 - Do not run ` + "`coderabbit --prompt-only`" + ` unless explicitly requested or approved
@@ -157,6 +158,7 @@ const referencesREADME = `# References
 - Keep long-lived background context here instead of in injected top-level instruction files
 - Link these files from feature front matter references when they materially shape work
 - Store durable rulesets under ` + "`rules/<slug>.md`" + ` and link them with ` + "`kit rules link`" + ` instead of copying rules into agent instruction files
+- Use ` + "`rules/agent-completion-output.md`" + ` before every terminal task completion or handoff response to require a literal status, immediate action table, and task-specific evidence profile
 - Use ` + "`rules/work-lane-gating.md`" + ` before any coding-agent repository
   file or delivery mutation to require the explicit lane choice, pull-request
   landing plan, and read-only primary checkout
@@ -164,6 +166,7 @@ const referencesREADME = `# References
 - Use ` + "`rules/constitution-curation.md`" + ` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use ` + "`rules/cross-repository-program-coordination.md`" + ` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff
 - Use ` + "`rules/github-pr-merge.md`" + ` and resolve ` + "`pull-request-merge`" + ` before any authorized merge or merge-queue mutation
+- Use ` + "`rules/deletion-safety.md`" + ` before designing deletion behavior or deleting persistent project, user, business, or external-system state to require recoverable soft delete by default and exact manual confirmation before hard delete
 - Use ` + "`rules/infrastructure-change-approval.md`" + ` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal
 - Use ` + "`rules/aws-agent-toolkit-guidance.md`" + ` before AWS-dependent work to select current Agent Toolkit skills, official documentation, the AWS MCP Server or CLI fallback, verified identity, infrastructure approval, and secret-safe handling
 - Use ` + "`rules/testing-and-environment-validation.md`" + ` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
@@ -212,6 +215,7 @@ const referencesTesting = `# Testing Reference
 
 - List credential and secret names without values
 - Document synthetic-data naming, rate and cost limits, cleanup, and retention
+- Follow ` + "`rules/deletion-safety.md`" + ` for cleanup: default retained state to recoverable deletion and require exact post-outline manual confirmation before hard delete
 
 ## Evidence And Retention
 

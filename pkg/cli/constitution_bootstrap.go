@@ -3,7 +3,7 @@ package cli
 import (
 	"strings"
 
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func isBootstrapConstitution(content string) bool {

@@ -1,7 +1,8 @@
 # Kit Commands
 
-Kit 2.0 exposes a deliberately reduced command tree. Command names below are
-supported; flags and output formats remain command-specific.
+Kit 3.0 preserves the deliberately reduced command tree while making its
+subagent prompts capability-aware. Command names below are supported; flags
+and output formats remain command-specific.
 
 ## Agent Evidence
 
@@ -46,6 +47,12 @@ kit reconcile --include-files --dry-run --diff
 kit reconcile --include-files
 ```
 
+When an included non-dry-run refresh is requested from the clone's primary
+checkout, Kit preserves that checkout and emits the existing delivery prompt;
+run the same write-capable reconciliation in the selected canonical worktree.
+An invocation already running in a linked writable worktree applies the refresh
+directly as before.
+
 ## Agent Execution Adapters
 
 | Command | Purpose |
@@ -59,6 +66,10 @@ but do not launch or supervise coding agents. Resolve
 `pr-feedback-repair` context before agent repair work. Release agents resolve
 `release-orchestration` and then `pull-request-merge` before any authorized
 merge or merge-queue mutation.
+
+`kit dispatch` and `kit pr fix` no longer accept `--max-subagents`. The active
+coding-agent host owns capacity and scheduling; `--single-agent` remains the
+explicit root-level opt-out from shared subagent guidance.
 
 ## Inspection And Validation
 

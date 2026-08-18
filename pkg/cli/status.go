@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/feature"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/feature"
 )
 
 var statusCmd = &cobra.Command{

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/internal/config"
-	"github.com/jamesonstone/kit/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func TestRunInitRefresh_PreservesGeneratedVerboseInstructionsAsLegacy(t *testing.T) {
@@ -71,6 +71,7 @@ func TestRunInitRefresh_PreservesGeneratedVerboseInstructionsAsLegacy(t *testing
 	for _, check := range []string{
 		"custom",
 		"### Kit-Managed Baseline Rules",
+		"docs/references/rules/agent-completion-output.md",
 		"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		"vendored dependencies, and proven generated files",
 	} {

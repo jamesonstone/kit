@@ -19,7 +19,6 @@ type reviewLoopOptions struct {
 	OutputOnly     bool
 	UseVim         bool
 	Editor         string
-	MaxSubagents   int
 	InputConfig    freeTextInputConfig
 }
 
