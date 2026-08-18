@@ -17,6 +17,14 @@ func managedFileDeliveryInstructions(
 	projectRoot string,
 	snapshots ...[]managedFileDeliverySnapshot,
 ) []string {
+	return managedFileDeliveryInstructionsForCommand(projectRoot, "", snapshots...)
+}
+
+func managedFileDeliveryInstructionsForCommand(
+	projectRoot string,
+	rerunCommand string,
+	snapshots ...[]managedFileDeliverySnapshot,
+) []string {
 	var snapshot []managedFileDeliverySnapshot
 	if len(snapshots) > 0 {
 		for _, change := range snapshots[0] {
@@ -31,7 +39,7 @@ func managedFileDeliveryInstructions(
 	})
 
 	if len(snapshot) == 0 {
-		return managedFileDeliveryInstructionsWithoutSnapshot(projectRoot)
+		return managedFileDeliveryInstructionsWithoutSnapshot(projectRoot, rerunCommand)
 	}
 
 	entries := make([]string, 0, len(snapshot))
@@ -61,12 +69,16 @@ func managedFileDeliveryInstructions(
 	}
 }
 
-func managedFileDeliveryInstructionsWithoutSnapshot(projectRoot string) []string {
+func managedFileDeliveryInstructionsWithoutSnapshot(projectRoot string, rerunCommands ...string) []string {
+	rerunInstruction := "In that exact writable lane, rerun the write-capable Kit command."
+	if len(rerunCommands) > 0 && strings.TrimSpace(rerunCommands[0]) != "" {
+		rerunInstruction = "In that exact writable lane, rerun the write-capable Kit command with this exact shell-safe invocation: " + rerunCommands[0] + "."
+	}
 	return []string{
 		fmt.Sprintf("No exact command-owned path snapshot is present. Do not infer or transfer a managed-file delta from post-command Git status in `%s`; apply only the listed manual findings until a fresh snapshot exists.", projectRoot),
 		"Before any repository or delivery mutation, prove the user's explicit new-lane or continue-existing choice and record the complete Pull-Request Landing Plan.",
 		"For a new lane, create or reuse the human-assigned GitHub issue, exact `GH-<issue-number>` branch, and canonical non-primary writable worktree; for an existing lane, prove its exact branch, owning non-primary worktree, issue scope, and create-or-update pull-request target.",
-		"In that exact writable lane, rerun the write-capable Kit command. Before staging, require the rerun to emit a new exact command-owned snapshot containing every version-control-eligible path, action, pre-command state, and expected result state; if it cannot, do not adopt managed-file changes and report the blocker.",
+		rerunInstruction + " Before staging, require the rerun to emit a new exact command-owned snapshot containing every version-control-eligible path, action, pre-command state, and expected result state; if it cannot, do not adopt managed-file changes and report the blocker.",
 		"Adopt only paths in the new snapshot, verify each path against its captured states, explicitly stage only those paths, and require `git diff --cached --name-only` plus the staged patch to match the snapshot exactly.",
 		"Validate the complete diff, commit on the issue branch, push it, and create or update the ready pull request.",
 		"Never transfer or stage `.env`, secrets, ignored files, or machine-local configuration; never mutate the primary checkout, commit on the protected default branch, bulk-stage files, stash, reset, clean, overwrite destination work, or disturb unrelated root-checkout or worktree changes.",

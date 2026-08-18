@@ -91,6 +91,7 @@ references:
 - Existing commands cover validation (`check`), feature catch-up (`catchup`), and handoff preparation (`handoff`), but none are designed to migrate a project's docs forward to newer Kit semantics.
 - Users currently need to discover document drift manually, decide which canonical source defines the current contract, and invent search strategies for filling missing content.
 - Managed-file commands can write instruction files into a protected root checkout before the issue worktree exists. Follow-up guidance that ignores those unstaged files can leave the generated contract stale on the default branch and absent from the resulting pull request.
+- The current reconcile refresh can still create an exact managed-file snapshot in the primary checkout before the generated coding-agent instructions establish a writable lane. The later work-lane tripwire correctly preserves that state, but it also makes the command's own expected refresh look like an ownership violation and prevents the normal reconcile workflow from completing cleanly.
 - Append-only instruction refresh considers an existing top-level section preserved even when newer mandatory semantics were added inside that section or its preamble. Older V3 projects can therefore retain obsolete worktree behavior or omit the testing-validation route while a project-wide audit reports clean.
 - A managed-file dry-run can print a real structural diff and then end with the unqualified documentation-audit message `No reconciliation needed`, obscuring the distinction between pending file refreshes and semantic document findings.
 - Registry refresh currently advances every ruleset artifact's `source_commit` to the registry repository head even when that artifact's normalized content and `installed_hash` are unchanged. Scheduled maintenance therefore produces noisy `.kit.yaml` churn and can disconnect a retained base hash from the commit that actually supplied it.
@@ -111,6 +112,8 @@ references:
 - In project-wide interactive mode, ask whether to include managed files, force changes, and output the coding-agent prompt.
 - When managed files are included, reuse the init refresh planner to refresh `.kit.yaml`, README managed sections, rulesets, init scaffold artifacts, and instruction docs.
 - Carry command-created instruction-file changes into the canonical issue worktree and resulting pull request instead of leaving them unstaged in the protected root checkout.
+- Preserve the existing reconcile findings, prompt structure, clipboard behavior, raw output contract, refresh semantics, and flags while ensuring a write-capable managed refresh never applies in the primary checkout.
+- When a primary-checkout invocation requests a managed refresh, use the existing no-snapshot delivery path so the coding agent establishes the canonical lane and reruns the same write-capable reconciliation there; do not add a replacement reconcile output format or a second synchronization command.
 - Detect bounded semantic drift for current testing routes, testing-reference structure, worktree navigation, pull-request annotations, and writable-lane environment-link safety even when append-only section planning finds no missing headings.
 - Distinguish a clean semantic documentation audit from pending managed-file changes in dry-run output.
 - Keep per-artifact registry provenance stable when a refresh does not change the installed normalized content.
@@ -235,6 +238,11 @@ references:
 - Created, updated, merged, and removed paths must be verified and explicitly staged; removed paths must remain absent in the destination and be represented as deletions in the index.
 - Before clearing source state, the guidance must verify the destination result state and require the index to contain exactly the captured command-owned paths, including deletions.
 - The transfer guidance must restore only the captured command-owned source delta to its exact pre-command state, preserve unrelated dirty files, exclude secrets and machine-local or ignored files, and forbid stash, reset, clean, bulk staging, protected-branch commits, and silent overwrite of worktree content.
+- Before applying a non-dry-run included refresh, reconcile must inspect the current Git worktree and distinguish the primary checkout from a linked writable worktree.
+- A requested non-dry-run refresh in the primary checkout must not call the managed-file apply path. It must retain the refresh intent, force the existing coding-agent-prompt path when necessary, and render the established no-snapshot delivery instructions that require the write-capable command to be rerun in the selected canonical worktree.
+- The deferred delivery instructions must render one exact shell-safe rerun command that preserves whole-project or feature scope, force, file filters, reference and verification migrations, prompt profile, and single-agent selection while using `--output-only` so the coding agent can consume the post-refresh instructions.
+- Reconcile must not add new prompt sections, response fields, status formats, or public flags for primary-checkout deferral. Existing prompt-only, output-only, clipboard, summary, and response contracts remain authoritative.
+- Included dry-runs remain read-only and available in the primary checkout. Included refreshes in non-primary linked worktrees and non-Git project roots retain their existing direct-apply behavior.
 - The prompt must require verification after documentation changes with:
   - `kit check --all` for whole-project mode or `kit check <feature>` for feature mode
   - `kit rollup` when reconciled changes affect `PROJECT_PROGRESS_SUMMARY.md`
@@ -248,6 +256,9 @@ references:
 - When findings exist, the prompt remains compatible with native agent planning and does not embed a `/plan` trigger.
 - The prompt is documentation-scoped, includes exact file paths, and forbids unrelated code changes.
 - Command-created instruction files are present in the issue worktree and resulting pull request, while the protected root checkout no longer retains the transferred unstaged state.
+- A write-capable reconcile requested from the primary checkout leaves its files and index unchanged, emits the existing no-snapshot delivery workflow, and results in the managed refresh being rerun and captured in the canonical writable worktree.
+- The equivalent write-capable reconcile run in a linked non-primary worktree retains the existing managed refresh and rendered output behavior.
+- Primary-checkout dry-runs and non-Git refresh fixtures retain their existing behavior.
 - Unrelated root-checkout and worktree changes remain untouched throughout transfer and delivery.
 - The raw prompt stays compact by grouping findings by file, deduplicating search shortcuts, and avoiding repeated boilerplate.
 - The default prompt explicitly tells the coding agent to use subagents and queue work according to overlapping file changes, without conflicting with `--single-agent`.
@@ -275,6 +286,7 @@ references:
 - `PROJECT_PROGRESS_SUMMARY.md` exists but is missing a current feature row or summary heading.
 - The selected feature name resolves by slug or numeric prefix.
 - The command creates or updates tracked instruction files in the protected root checkout before an issue worktree exists.
+- A primary-checkout refresh is requested while the user disables coding-agent prompt output; reconcile must still emit the existing delivery prompt because deferral is the only safe path that preserves mandatory synchronization.
 - The root checkout contains unrelated dirty files alongside the command-created instruction files.
 - The exact issue branch or worktree already exists and must be reused rather than duplicated.
 - Existing support documents contain every expected top-level heading but predate mandatory testing or worktree semantics added within those headings.
@@ -288,9 +300,9 @@ references:
 
 ## PLAN
 
-- Add focused refresh regressions for a newer registry head with unchanged normalized content and for mixed unchanged/changed artifacts.
-- Preserve a tracked artifact's prior `source_commit` only when its source identity and retained `installed_hash` still match; otherwise record the current registry source commit.
-- Run focused registry tests, the complete Go validation suite, and Kit feature/project checks before delivery.
+- Add read-only worktree inspection that identifies the exact primary checkout without requiring a GitHub remote and preserves non-Git project behavior.
+- Route primary-checkout non-dry-run refresh requests through the existing no-snapshot prompt path without changing rendered reconcile contracts; keep direct apply for linked worktrees.
+- Add focused primary, linked-worktree, dry-run, and non-Git regressions, then run complete Go and Kit validation before delivery.
 
 ## VALIDATION
 
@@ -308,6 +320,11 @@ references:
 - GH-112 focused regressions confirmed that an unchanged ruleset retains its prior `source_commit` without rewriting `.kit.yaml`, changed content or source identity advances provenance, a mixed refresh leaves unrelated provenance stable, and a conflict retains its prior source checkpoint.
 - GH-112 passed `make fmt`, `make vet`, `go test ./... -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, `go test -race ./pkg/cli -count=1`, and an isolated `make build`.
 - The built GH-112 binary passed `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all`.
+- GH-160 focused Git fixtures proved that a requested non-dry-run refresh leaves the primary checkout clean, emits the established no-snapshot delivery workflow, and continues to apply managed files plus exact snapshot guidance in a linked worktree. Non-Git and primary dry-run decisions retained direct apply behavior.
+- GH-160 passed `make fmt`, `make vet`, `go test ./... -count=1`, `go test -race ./internal/worktreeprep ./pkg/cli -count=1`, `golangci-lint run --new-from-rev=origin/main ./...`, and `make build`.
+- The built GH-160 binary passed `kit check 0017-reconcile-command`, `kit check --project`, and `kit check --all`. A live primary-checkout `reconcile --all --include-files --output-only` emitted the existing post-refresh/no-snapshot prompt and left root `main` clean.
+- The final GH-160 managed dry-run planned zero Kit-managed changes and reported a complete source-file-size audit of 699 version-control-eligible candidates, 361 eligible handwritten source/test files, and 0 violations.
+- A fresh read-only verifier identified lost deferred invocation flags and fail-open nested Git inspection in the initial GH-160 implementation. After repair, the same verifier confirmed exact shell-safe rerun preservation, fail-closed ancestor metadata handling, focused test success, diff cleanliness, and source-size compliance with no remaining actionable findings.
 
 ## OUTCOME
 
@@ -323,12 +340,15 @@ references:
 - Kit-specific improvement and release workflows remain outside downstream reconcile scope; the existing auto-assign workflow remains the only Kit-managed downstream GitHub workflow.
 - Ruleset refresh now retains an artifact's prior `source_commit` when its installed normalized hash and source repository, branch, and path remain unchanged, eliminating repository-head-only `.kit.yaml` churn.
 - Changed rulesets advance to the current registry commit, while conflict and local-custom outcomes that retain the prior installed hash also retain the prior registry checkpoint for future comparison and merge recovery.
+- Reconcile now inspects worktree ownership before a requested non-dry-run managed refresh. Primary-checkout requests retain refresh intent but skip the apply path and emit the existing no-snapshot delivery workflow, while linked worktrees continue through the unchanged refresh, snapshot, audit, and prompt renderers.
+- Deferred refresh guidance carries the exact shell-safe write-capable invocation, including force, file filters, feature scope, migration flags, prompt profile, and single-agent selection, and forces raw prompt output for the coding-agent rerun.
+- The primary-checkout deferral adds no public flag, prompt section, response field, Git mutation, or GitHub mutation. Dry-runs and non-Git projects preserve their prior behavior, and the generated workflow remains responsible for establishing the canonical issue lane before the write-capable rerun.
 
 ## REPOSITORY MEMORY
 
 Decision: updated
 
-Rationale: The existing reconcile feature spec now preserves the per-artifact provenance and idempotency contract behind managed ruleset refresh. The behavior is feature-specific and fully demonstrated by code and regression tests, so no new project-wide Constitution rule or reusable reference is warranted.
+Rationale: The existing reconcile feature spec now preserves both per-artifact refresh provenance and the worktree-aware apply boundary. The behavior is feature-specific and fully demonstrated by code and regression tests; the Constitution already requires primary checkouts to remain read-only, so no new project-wide rule or reusable reference is warranted.
 
 Artifacts:
 
