@@ -32,7 +32,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 		{version: "v3", sha256: "a75fb2b02d37a7fbdc5926b9c71130210c6e929366b09707b410ab2f5b90792f"},
 		{version: "v4", sha256: "96fc2b3bbd4f458ef55ae32910d737dd1ea35110d6443d6ee8e03d389d851986"},
 		{version: "v5", sha256: "cf68ece8fe95d51733fa835460e0788b89392d22fb4c46522c543f91f3ba6dc7"},
-		{version: "v6", sha256: "9a1521c48d9a597f664dbebb7d050a2d0562e48bde325a664fcfd34fd19da078"},
+		{version: "v6", sha256: "77ea2d59321f411a160cb8ef18b4b821e0e08ccd2170ec7f047825cdf5ba93a0"},
 	}
 
 	for _, test := range tests {

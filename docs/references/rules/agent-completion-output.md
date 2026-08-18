@@ -142,8 +142,22 @@ incidental activities used to produce it:
 - Use the fallback profile only when none of the named profiles represents the
   requested result.
 
-Add a supplemental table only when another active contract requires its data
-or it materially improves the operator's next decision.
+Add a supplemental structure only when another active contract requires its
+data or it materially improves the operator's next decision.
+
+## Left-Aligned Detail Contract
+
+- Use the Operator Action Table as the only Markdown table in the normal
+  terminal response.
+- After that table, use left-aligned section headings and CommonMark list or
+  key/value blocks for the selected profile and every required supplement.
+- Start each result with a short bold lead label. Put supporting evidence,
+  rationale, scope, or limitations on indented continuation lines.
+- Do not use additional pipe tables merely to organize repeated fields. The
+  renderer can center each independently sized table, producing inconsistent
+  left edges and harder scanning.
+- A higher-priority output schema may still require another table or structured
+  object. Preserve its required shape while keeping this rule's semantic order.
 
 ## Required Profiles
 
@@ -152,15 +166,13 @@ or it materially improves the operator's next decision.
 ```markdown
 ## Completed
 
-| Item | Result | Evidence |
-| --- | --- | --- |
-| `<scope item>` | `<literal result>` | `<path, identifier, or observed behavior>` |
+- **`<literal result>` — `<scope item>`**
+  Evidence: `<path, identifier, or observed behavior>`
 
 ## Validation
 
-| Check | Status | Evidence |
-| --- | --- | --- |
-| `<command or layer>` | `<observed state>` | `<concise output or artifact>` |
+- **`<command or layer>`: `<observed state>`**
+  Evidence: `<concise output or artifact>`
 ```
 
 When Git or GitHub delivery occurred, include:
@@ -168,24 +180,22 @@ When Git or GitHub delivery occurred, include:
 ```markdown
 ## Delivery
 
-| Artifact | State | Evidence |
-| --- | --- | --- |
-| Issue | `<state and human assignee>` | `<number and URL>` |
-| Branch | `<state>` | `<exact branch>` |
-| Commit | `<state and human identity>` | `<full or short SHA>` |
-| Pull request | `<ready or draft and assignee>` | `<number and URL>` |
-| Hosted checks | `<literal observed state>` | `<check or run URLs>` |
+- **Issue:** `<state and human assignee>` — `<number and URL>`
+- **Branch:** `<state>` — `<exact branch>`
+- **Commit:** `<state and human identity>` — `<full or short SHA>`
+- **Pull request:** `<ready or draft and assignee>` — `<number and URL>`
+- **Hosted checks:** `<literal observed state>` — `<check or run URLs>`
 ```
 
 Every implementation response includes the existing repository-memory
-contract in table form:
+contract in a left-aligned key/value block:
 
 ```markdown
 ## Repository Memory
 
-| Decision | Rationale | Artifacts |
-| --- | --- | --- |
-| `created|updated|refactored|deleted|not required` | `<why>` | `<paths or none>` |
+- **Decision:** `created|updated|refactored|deleted|not required`
+- **Rationale:** `<why>`
+- **Artifacts:** `<paths or none>`
 ```
 
 ### Research And Discovery
@@ -193,9 +203,10 @@ contract in table form:
 ```markdown
 ## Findings
 
-| Question | Finding | Evidence and confidence | Implication |
-| --- | --- | --- | --- |
-| `<question>` | `<answer>` | `<source; confirmed, likely, or unknown>` | `<decision or effect>` |
+- **Question:** `<question>`
+  - **Finding:** `<answer>`
+  - **Evidence and confidence:** `<source; confirmed, likely, or unknown>`
+  - **Implication:** `<decision or effect>`
 ```
 
 Distinguish sourced facts, agent inference, and unresolved unknowns.
@@ -205,9 +216,10 @@ Distinguish sourced facts, agent inference, and unresolved unknowns.
 ```markdown
 ## Diagnosis
 
-| Symptom | Root cause or hypothesis | Evidence | Confidence and impact |
-| --- | --- | --- | --- |
-| `<observed symptom>` | `<confirmed cause or current hypothesis>` | `<diagnostic evidence>` | `<confidence; affected scope>` |
+- **Symptom:** `<observed symptom>`
+  - **Root cause or hypothesis:** `<confirmed cause or current hypothesis>`
+  - **Evidence:** `<diagnostic evidence>`
+  - **Confidence and impact:** `<confidence; affected scope>`
 ```
 
 Do not label a hypothesis as a confirmed root cause. If the request included a
@@ -218,9 +230,10 @@ fix, use the implementation profile and include diagnosis as evidence.
 ```markdown
 ## Decisions
 
-| Decision | Chosen approach | Rationale | Acceptance signal |
-| --- | --- | --- | --- |
-| `<material decision>` | `<decision-complete choice>` | `<tradeoff and evidence>` | `<observable completion>` |
+- **Decision:** `<material decision>`
+  - **Chosen approach:** `<decision-complete choice>`
+  - **Rationale:** `<tradeoff and evidence>`
+  - **Acceptance signal:** `<observable completion>`
 ```
 
 List unresolved material decisions in the action table. A plan is PASS only
@@ -231,9 +244,9 @@ when it is decision-complete for the requested scope.
 ```markdown
 ## Validation
 
-| Check | Scope | Status | Evidence or gap |
-| --- | --- | --- | --- |
-| `<command, suite, or acceptance layer>` | `<exact target>` | `<observed state>` | `<artifact, output, or missing evidence>` |
+- **`<command, suite, or acceptance layer>`: `<observed state>`**
+  - **Scope:** `<exact target>`
+  - **Evidence or gap:** `<artifact, output, or missing evidence>`
 ```
 
 Keep local, hosted, deployment, runtime, integration, physical, and business
@@ -244,9 +257,9 @@ acceptance claims separate. One layer never implies another.
 ```markdown
 ## Findings
 
-| Severity | Finding | Location or evidence | Required action |
-| --- | --- | --- | --- |
-| `<priority or none>` | `<actionable finding>` | `<tight path, line, or source>` | `<smallest complete remediation>` |
+- **`<priority or none>` — `<actionable finding>`**
+  - **Location or evidence:** `<tight path, line, or source>`
+  - **Required action:** `<smallest complete remediation>`
 ```
 
 Order findings by severity. If no actionable findings exist, include one
@@ -257,9 +270,9 @@ Order findings by severity. If no actionable findings exist, include one
 ```markdown
 ## Operational Result
 
-| Target | Action or observation | Status | Evidence or recovery |
-| --- | --- | --- | --- |
-| `<environment or resource>` | `<bounded action or observation>` | `<observed state>` | `<version, run, rollback, or next check>` |
+- **`<environment or resource>`: `<observed state>`**
+  - **Action or observation:** `<bounded action or observation>`
+  - **Evidence or recovery:** `<version, run, rollback, or next check>`
 ```
 
 Identify the exact target and version. Report deployment, runtime health,
@@ -270,9 +283,9 @@ integration behavior, and production acceptance as separate observations.
 ```markdown
 ## Workstreams
 
-| Workstream | Owner | State | Dependency or next handoff |
-| --- | --- | --- | --- |
-| `<bounded lane>` | `<accountable actor>` | `<literal state>` | `<dependency and exact handoff>` |
+- **`<bounded lane>`: `<literal state>`**
+  - **Owner:** `<accountable actor>`
+  - **Dependency or next handoff:** `<dependency and exact handoff>`
 ```
 
 When `agent-team-orchestration` applies, retain task outcome separately from
@@ -284,31 +297,31 @@ omitted lanes.
 ```markdown
 ## Result
 
-| Item | Result | Evidence or limitation |
-| --- | --- | --- |
-| `<requested item>` | `<result>` | `<supporting evidence or boundary>` |
+- **`<requested item>`: `<result>`**
+  Evidence or limitation: `<supporting evidence or boundary>`
 ```
 
 ## Readability Rules
 
-- Keep tables compact and normally at four columns or fewer.
-- Use one concern per row and short, concrete cells.
-- Put multi-paragraph explanation after the table it supports.
+- Keep the action table compact and use one concern per row.
+- Use one result per list item and short, concrete lead labels.
+- Put multi-paragraph explanation after the list item it supports.
 - Prefer exact identifiers, links, paths, commands, timestamps, and counts over
   vague claims.
 - Redact secrets, credentials, private customer data, and signed URLs.
-- Do not repeat the same fact in the action, result, and evidence tables unless
+- Do not repeat the same fact in the action table and detail blocks unless
   repetition is necessary to make a blocker actionable.
 
 ## Composition With Existing Contracts
 
-- `github-pr-delivery` fields map into Delivery rows; none may be omitted.
-- `testing-and-environment-validation` evidence maps into Validation rows and
-  retains literal unavailable, pending, skipped, partial, and blocked states.
+- `github-pr-delivery` fields map into Delivery list items; none may be omitted.
+- `testing-and-environment-validation` evidence maps into Validation list
+  items and retains literal unavailable, pending, skipped, partial, and
+  blocked states.
 - Repository-memory decision, rationale, and artifacts map into the required
-  Repository Memory table for implementation responses.
+  Repository Memory key/value block for implementation responses.
 - `agent-team-orchestration` two-axis reporting maps task success to the
-  heading and orchestration conformance to the coordination or evidence table.
+  heading and orchestration conformance to the coordination or evidence list.
 - Cross-repository program checkpoints retain repository, dependency,
   deployment, and acceptance evidence inside the coordination profile.
 - Higher-priority system, developer, client, tool, or host output schemas take
@@ -336,6 +349,15 @@ Completed implementation:
 | Type | Action required | Why | Continue with |
 | --- | --- | --- | --- |
 | None | No action required | Requested scope and required local validation are complete | Optional: `Review pull request #123.` |
+
+## Completed
+
+- **PASS — Canonical rule**
+  Evidence: Status/action envelope plus every required task profile.
+
+## Delivery
+
+- **Pull request:** Ready and assigned to the human user — `#123`
 ```
 
 Blocked diagnosis:
@@ -346,6 +368,13 @@ Blocked diagnosis:
 | Type | Action required | Why | Continue with |
 | --- | --- | --- | --- |
 | Blocker | User: grant read-only production log access | Current evidence ends at the service boundary | `Resume diagnosis using the authorized production logs.` |
+
+## Diagnosis
+
+- **Symptom:** Requests fail after reaching the service boundary.
+  - **Root cause or hypothesis:** Production dependency failure is unconfirmed.
+  - **Evidence:** Application logs end before the dependency response.
+  - **Confidence and impact:** Likely; production confirmation is blocked.
 ```
 
 ## Verification

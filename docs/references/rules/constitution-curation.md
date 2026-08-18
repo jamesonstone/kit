@@ -78,8 +78,8 @@ read_policy_default: must
 - Run `kit check --project` after changing the Constitution.
 - Review `git diff -- docs/CONSTITUTION.md docs/specs docs/references` before finalizing.
 - State the Constitution curation result in the `agent-completion-output`
-  Repository Memory table, including `not required` when no update was
-  warranted.
+  Repository Memory key/value block, including `not required` when no update
+  was warranted.
 
 ## Examples
 

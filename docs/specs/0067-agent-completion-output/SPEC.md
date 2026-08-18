@@ -52,7 +52,7 @@ delivery_intent: new_issue_branch_pr_ready
 Give every Kit-managed coding-agent task a terminal response that an operator
 can scan and act on immediately. Completion starts with one literal overall
 status, exposes blockers and unfinished work before detail, and uses a
-task-specific evidence table without sacrificing existing validation,
+task-specific evidence block without sacrificing existing validation,
 delivery, orchestration, or repository-memory requirements.
 
 ## CONTEXT
@@ -63,8 +63,8 @@ delivery, orchestration, or repository-memory requirements.
   Those requirements are scattered across root instructions and several
   rules, so agents can satisfy them in inconsistent orders and shapes.
 - The accepted implementation format is the action-first option: a literal
-  status heading, an immediate operator-action table, then compact evidence,
-  delivery, and memory tables when applicable.
+  status heading and an immediate operator-action table, followed by
+  left-aligned evidence, delivery, and memory blocks when applicable.
 - The same status and action envelope must support research, diagnosis,
   planning, validation, review, operations, coordination, and unclassified
   tasks. The requested deliverable, not incidental activity, selects one
@@ -113,8 +113,8 @@ delivery, orchestration, or repository-memory requirements.
 
 ### Required Primary Profiles
 
-- Implementation and delivery: Item, Result, Evidence; add Validation,
-  Delivery, and Repository Memory tables when applicable.
+- Implementation and delivery: Item, Result, Evidence; add left-aligned
+  Validation, Delivery, and Repository Memory blocks when applicable.
 - Research and discovery: Question, Finding, Evidence and confidence,
   Implication.
 - Diagnosis and troubleshooting: Symptom, Root cause or hypothesis, Evidence,
@@ -128,18 +128,20 @@ delivery, orchestration, or repository-memory requirements.
   handoff.
 - Fallback: Item, Result, Evidence or limitation.
 - Select exactly one primary profile from the requested deliverable. Add
-  supplemental tables only when another active contract requires their data.
+  supplemental structures only when another active contract requires their
+  data.
 
 ### Readability And Composition
 
-- Keep tables compact, normally at four columns, with one concern per row.
-  Put multi-paragraph rationale after the relevant table.
+- Keep only the operator action section as a Markdown table. Render every
+  task-specific profile with left-aligned CommonMark list or key/value blocks,
+  short bold lead labels, and indented supporting evidence.
 - Preserve all exact GitHub delivery, repository-memory, validation,
   orchestration-conformance, program-coordination, and environment-evidence
-  fields required by adjacent rules, mapped into the canonical tables.
+  fields required by adjacent rules, mapped into the canonical profile blocks.
 - Higher-priority system, developer, client, and host schemas retain
   precedence. Preserve semantic order inside their required wrapper or use the
-  closest structurally equivalent fields when Markdown tables are prohibited.
+  closest structurally equivalent fields when CommonMark lists are prohibited.
 - Do not change command behavior, add a CLI flag, or add a JSON schema.
 
 ### Observable Acceptance
@@ -151,6 +153,8 @@ delivery, orchestration, or repository-memory requirements.
 - Every managed context workflow selects the rule as required evidence.
 - Adjacent reporting rules retain their existing required information without
   defining a competing response order.
+- The action table is the only normal Markdown table; every selected profile
+  keeps a consistent left edge through headings and list or key/value blocks.
 - Health and `reconcile --include-files` install the rule and managed guidance;
   semantic drift in the terminal envelope is detected.
 - Instruction versions V1 through V5 remain byte-for-byte unchanged and V6 is
@@ -180,6 +184,9 @@ delivery, orchestration, or repository-memory requirements.
 - Make the implementation/delivery profile use the accepted action-first
   option. The action table remains present on PASS so the operator can
   distinguish completion from omitted follow-up reporting.
+- Keep tables only where they materially improve actionability. Renderer
+  evidence showed independently sized detail tables are centered separately,
+  so left-aligned profile blocks provide a more readable shared edge.
 - Select profiles by the requested outcome. An implementation task remains an
   implementation profile even when research, diagnosis, review, and testing
   occurred during execution.
@@ -192,6 +199,11 @@ delivery, orchestration, or repository-memory requirements.
 
 ## DISCOVERIES
 
+- The conversation renderer centers each Markdown table according to its
+  intrinsic width. Multiple detail tables therefore produce different left
+  edges even when every cell is left-aligned; Markdown alignment markers do
+  not control the table container. The stable solution is one action table
+  followed by ordinary left-aligned content.
 - V3 guardrails are derived from the shared guardrails template and then
   extended with repository-memory completion guidance. Composing the new gate
   in both layers created a duplicate recognized section; the final design
@@ -208,6 +220,10 @@ delivery, orchestration, or repository-memory requirements.
   and include-files previews consequently compare edited managed rules against
   current `main`; focused registry stubs prove the post-landing propagation
   behavior without fabricating live registry state.
+- CodeRabbit correctly identified two missing regression boundaries: literal
+  `NOT_APPLICABLE` coverage in both canonical and V6 assertions, and semantic
+  reconcile coverage for removing the completion rule from generated
+  references indices. Both gaps were valid and are now covered for V2 and V3.
 
 ## VALIDATION
 
@@ -226,20 +242,23 @@ delivery, orchestration, or repository-memory requirements.
   contract were coherent.
 - V1 through V5 SHA-256 hashes remained unchanged. V6 is current, preserves V5
   as an exact prefix, and has SHA-256
-  `9a1521c48d9a597f664dbebb7d050a2d0562e48bde325a664fcfd34fd19da078`.
+  `77ea2d59321f411a160cb8ef18b4b821e0e08ccd2170ec7f047825cdf5ba93a0`.
 - Focused propagation coverage passed for both `kit health` and
   `kit reconcile --include-files`. The live read-only previews correctly
   reported branch-versus-main registry drift; reconcile's semantic audit was
   clean and its source-size audit checked 703 version-control-eligible
   candidates and 362 handwritten source/test files with zero above 300
   physical lines.
-- `gitleaks dir --no-banner --redact .` scanned 4.51 MB and found no leaks.
+- Focused hybrid-format tests prove every managed provider contract requires
+  left-aligned detail blocks, canonical rule tests reject the former profile
+  table headers, and stale references-index routing is detected for V2 and V3.
+- `gitleaks dir --no-banner --redact .` scanned 5.24 MB and found no leaks.
 
 ## OUTCOME
 
 - Added the mandatory downstream `agent-completion-output` ruleset with a
-  four-state terminal heading, an immediate operator action table, eight
-  requested goal-specific profiles, and one fallback profile.
+  four-state terminal heading, one immediate operator action table, eight
+  requested left-aligned goal-specific profiles, and one fallback profile.
 - Routed the contract through V1, V2, and V3 provider instructions, current
   checked-in guidance, guardrails, RLM, the references index, the Constitution,
   all seven context workflows, registry adoption, health/reconcile propagation,
@@ -247,6 +266,10 @@ delivery, orchestration, or repository-memory requirements.
 - Consolidated GitHub delivery, validation, repository-memory, orchestration,
   and cross-repository program reporting into the canonical profiles without
   removing their required evidence.
+- Retained the operator action queue as the single normal Markdown table and
+  converted every task-specific detail profile to left-aligned CommonMark
+  lists or key/value blocks so independently sized tables cannot drift across
+  the response.
 - Preserved immutable instruction versions V1 through V5 and made additive V6
   current. No command, flag, or JSON schema was added.
 - Delivery remains at the authorized issue #162 branch and ready-pull-request

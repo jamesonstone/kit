@@ -22,6 +22,13 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			audit:   auditV2SupportGuidance,
 		},
 		{
+			name:    "V2 references index route",
+			version: config.InstructionScaffoldVersionTOC,
+			path:    "docs/references/README.md",
+			snippet: "`rules/agent-completion-output.md`",
+			audit:   auditV2SupportGuidance,
+		},
+		{
 			name:    "V3 root status heading",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
@@ -40,6 +47,13 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "docs/agents/GUARDRAILS.md",
 			snippet: "implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
+			audit:   auditV3SupportGuidance,
+		},
+		{
+			name:    "V3 references index route",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "docs/references/README.md",
+			snippet: "`rules/agent-completion-output.md`",
 			audit:   auditV3SupportGuidance,
 		},
 	}

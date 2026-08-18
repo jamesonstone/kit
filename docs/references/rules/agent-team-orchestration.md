@@ -306,7 +306,7 @@ allowed by the active repository rules.
 
 Follow `agent-completion-output` for terminal reporting. Map `task_outcome` to
 the overall status heading and retain the fields below in the coordination or
-evidence table. Never let a successful task heading hide degraded or
+evidence list. Never let a successful task heading hide degraded or
 unsatisfied orchestration conformance.
 
 Report task success separately from orchestration compliance:

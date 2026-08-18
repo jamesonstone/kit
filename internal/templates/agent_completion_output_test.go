@@ -17,6 +17,8 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 		"every PASS includes a None row",
 		"Make required follow-ups copy-ready",
 		"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE",
+		"After the action table, use left-aligned headings and CommonMark list or key/value blocks",
+		"Do not use another Markdown pipe table unless a higher-priority schema requires it",
 		"implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
 	}
 	for name, content := range map[string]string{

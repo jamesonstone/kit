@@ -237,7 +237,7 @@ The program supervisor may mark the program complete only when:
 
 Render the terminal program result through the `agent-completion-output`
 coordination/handoff profile. Preserve repository, owner, dependency,
-deployment, runtime, and acceptance evidence as separate workstream rows.
+deployment, runtime, and acceptance evidence as separate workstream items.
 
 ### Safety And Existing Gates
 

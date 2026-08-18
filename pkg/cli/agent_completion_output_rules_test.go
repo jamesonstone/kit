@@ -52,11 +52,25 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 		"### Operations, Deployment, And Monitoring",
 		"### Coordination And Handoff",
 		"### Fallback",
+		"## Left-Aligned Detail Contract",
+		"Use the Operator Action Table as the only Markdown table",
+		"left-aligned section headings and CommonMark list or key/value blocks",
+		"**Decision:** `created|updated|refactored|deleted|not required`",
 		"higher-priority host wrapper",
-		"`PENDING`, `UNKNOWN`, `SKIPPED`",
+		"`PENDING`, `UNKNOWN`, `SKIPPED`, `NOT_APPLICABLE`",
 	} {
 		if !strings.Contains(normalized, check) {
 			t.Errorf("expected %s ruleset to contain %q", slug, check)
+		}
+	}
+	for _, forbidden := range []string{
+		"| Item | Result | Evidence |",
+		"| Question | Finding | Evidence and confidence | Implication |",
+		"| Check | Scope | Status | Evidence or gap |",
+		"| Workstream | Owner | State | Dependency or next handoff |",
+	} {
+		if strings.Contains(ruleset.Body, forbidden) {
+			t.Errorf("%s ruleset still contains centered detail table %q", slug, forbidden)
 		}
 	}
 }
@@ -80,7 +94,7 @@ func TestAgentCompletionOutputIsIntegratedWithRelatedRules(t *testing.T) {
 			"`agent-completion-output` coordination/handoff profile",
 		},
 		"docs/references/rules/constitution-curation.md": {
-			"`agent-completion-output` Repository Memory table",
+			"`agent-completion-output` Repository Memory key/value block",
 		},
 	}
 	for path, required := range checks {

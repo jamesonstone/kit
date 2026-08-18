@@ -39,6 +39,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		},
 		"docs/references/README.md": {
+			"`rules/agent-completion-output.md`",
 			"`rules/aws-agent-toolkit-guidance.md`",
 			"`rules/deletion-safety.md`",
 			"`rules/infrastructure-change-approval.md`",
@@ -63,6 +64,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"## Agent Completion Output Contract",
 			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
 			"Type | Action required | Why | Continue with",
+			"After the action table, use left-aligned headings and CommonMark list or key/value blocks",
 			"## Codex Thread Initialization Hard Gate",
 			"before the first commentary message",
 			"First, call the available thread-title operation (`set_thread_title` when available)",
@@ -96,6 +98,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"## Agent Completion Output Contract",
 			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
 			"Type | Action required | Why | Continue with",
+			"After the action table, use left-aligned headings and CommonMark list or key/value blocks",
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
 			"If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation",
 			"Treat the verified account, ARN, and Region as authoritative",
@@ -148,6 +151,7 @@ func v3GuidanceExpectations() map[string][]string {
 		},
 		"docs/agents/GUARDRAILS.md": {
 			"## Agent Completion Output Contract",
+			"After the action table, use left-aligned headings and CommonMark list or key/value blocks",
 			"implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
 			"## Repository Memory Completion Gate",
 			"Create or adopt a spec before code when material rationale exists",
@@ -163,6 +167,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
 		},
 		"docs/references/README.md": {
+			"`rules/agent-completion-output.md`",
 			"`rules/aws-agent-toolkit-guidance.md`",
 			"`rules/deletion-safety.md`",
 			"`rules/infrastructure-change-approval.md`",

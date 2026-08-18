@@ -52,7 +52,7 @@ deployment environment or external integration for a project that has none.
 
 - Follow `agent-completion-output` for terminal reporting. A validation task
   uses its validation/testing profile; an implementation task carries the same
-  literal evidence in its Validation table.
+  literal evidence in its left-aligned Validation list.
 - Treat “near 100% correctness” as a risk-based confidence objective backed by
   comprehensive evidence, not as a mathematical or absolute guarantee.
 - Map changed behavior and acceptance criteria to the narrowest tests that can
