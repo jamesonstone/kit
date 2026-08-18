@@ -58,6 +58,8 @@ func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T)
 		"`n` or `y` means new lane",
 		"shorthand is the primary lane choice",
 		"remaining text is supplemental lane instructions",
+		"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+		"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
 		"ambiguous or contradictory responses fail closed",
 		"Pull-Request Landing Plan",
 		"repository file or delivery mutation",

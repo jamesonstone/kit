@@ -29,6 +29,8 @@ func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
 		"case-insensitively",
 		"`c` means continue existing",
 		"`n` or `y` means new lane",
+		"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
+		"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
 		"shorthand leads a longer response",
 		"remaining text is supplemental lane instructions",
 		"Ambiguous or contradictory responses",

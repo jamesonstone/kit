@@ -106,6 +106,17 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		includeFiles = false
 		outputPrompt = true
 	}
+	refreshRequested := includeFiles
+	refreshDecision, err := resolveReconcileRefreshDecision(projectRoot, includeFiles, reconcileDryRun)
+	if err != nil {
+		return err
+	}
+	includeFiles = refreshDecision.Apply
+	deferredRefreshCommand := ""
+	if refreshDecision.Deferred {
+		outputPrompt = true
+		deferredRefreshCommand = buildDeferredReconcileCommand(args)
+	}
 	var deliverySnapshot []managedFileDeliverySnapshot
 	if includeFiles {
 		deliverySnapshot, err = runInitRefreshWithSnapshot(projectRoot, initRefreshOptions{
@@ -133,6 +144,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	}
 	report.ReferenceMigration = reconcileMigrateReferences
 	report.VerificationMigration = reconcileMigrateVerification
+	report.DeferredRefreshCommand = deferredRefreshCommand
 	if !reconcileDryRun {
 		report.DeliverySnapshot = deliverySnapshot
 	}
@@ -143,14 +155,19 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(report.Findings) == 0 && !report.ReferenceMigration && !report.VerificationMigration {
-		if outputPrompt && includeFiles && !reconcileDryRun {
+		if outputPrompt && refreshRequested && !reconcileDryRun {
 			if !reconcileOutputOnly {
 				if _, err := fmt.Fprintln(cmd.OutOrStdout(), "\nCoding-agent prompt:"); err != nil {
 					return err
 				}
 			}
 			return outputPromptWithClipboardDefault(
-				buildInitRefreshDocumentationPrompt(projectRoot, cfg, deliverySnapshot),
+				buildInitRefreshDocumentationPromptForCommand(
+					projectRoot,
+					cfg,
+					deferredRefreshCommand,
+					deliverySnapshot,
+				),
 				reconcileOutputOnly,
 				reconcileCopy,
 			)

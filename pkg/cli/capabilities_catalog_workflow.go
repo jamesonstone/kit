@@ -29,7 +29,7 @@ func workflowCapabilityRecords() []capabilityRecord {
 			withRelated(related("pr fix", "friendly PR-feedback entrypoint"), related("context resolve", "loads pr-feedback-repair rules"))),
 		capability("instructions", "Agent Workflow", "Print immutable provider-neutral coding-agent instructions.", mutationNone,
 			withFlags(flag("--version", "select an exact instruction version")),
-			withExamples("kit instructions", "kit instructions --version v5"),
+			withExamples("kit instructions", "kit instructions --version v6"),
 			withCaveats("Output is raw Markdown on stdout and requires no project root.")),
 	}
 }

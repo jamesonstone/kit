@@ -32,6 +32,15 @@ func buildInitRefreshDocumentationPrompt(
 	cfg *config.Config,
 	snapshots ...[]managedFileDeliverySnapshot,
 ) string {
+	return buildInitRefreshDocumentationPromptForCommand(projectRoot, cfg, "", snapshots...)
+}
+
+func buildInitRefreshDocumentationPromptForCommand(
+	projectRoot string,
+	cfg *config.Config,
+	rerunCommand string,
+	snapshots ...[]managedFileDeliverySnapshot,
+) string {
 	constitutionPath := cfg.ConstitutionAbsPath(projectRoot)
 	summaryPath := cfg.ProgressSummaryPath(projectRoot)
 	specsPath := cfg.SpecsPath(projectRoot)
@@ -85,7 +94,7 @@ func buildInitRefreshDocumentationPrompt(
 			"`git diff --check`",
 		)
 		doc.Paragraph("Delivery of command-created files:")
-		doc.BulletList(managedFileDeliveryInstructions(projectRoot, snapshots...)...)
+		doc.BulletList(managedFileDeliveryInstructionsForCommand(projectRoot, rerunCommand, snapshots...)...)
 		doc.Paragraph("Final response:")
 		doc.BulletList(
 			"`Findings`: stale or missing project documentation, or `none`",
