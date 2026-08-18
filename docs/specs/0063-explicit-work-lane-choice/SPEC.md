@@ -339,6 +339,11 @@ read-only and preserves user-owned state.
   rule, compact/full template, checked-in mirror, reconcile drift, managed
   propagation, additive v6, immutable v1-v5, focused-test, diff, formatting,
   and source-size evidence.
+- CodeRabbit found that the first drift assertions could pass on generic issue
+  or PR wording without proving the exact branch/worktree/ready-plan clause.
+  GH-160 now requires one contiguous complete-lane clause in every managed
+  surface, removes that clause in per-file stale-guidance regressions, and
+  passes the complete Go, race, format, vet, lint, and build validation again.
 
 ## OUTCOME
 

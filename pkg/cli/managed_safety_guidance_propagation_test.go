@@ -67,8 +67,9 @@ func TestAuditWorkLaneShorthandGuidanceFindsExistingSectionDrift(t *testing.T) {
 		{path: ".github/copilot-instructions.md", snippet: "remaining text is supplemental lane instructions"},
 		{path: "docs/agents/GUARDRAILS.md", snippet: "shorthand is the primary lane choice"},
 		{path: "AGENTS.md", snippet: "`new lane`, `new work lane`, `new worklane`, and `new worktree`"},
-		{path: "CLAUDE.md", snippet: "human-assigned GitHub issue"},
-		{path: ".github/copilot-instructions.md", snippet: "pull-request plan"},
+		{path: "CLAUDE.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
+		{path: ".github/copilot-instructions.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
+		{path: "docs/agents/GUARDRAILS.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
 	} {
 		t.Run(tt.path, func(t *testing.T) {
 			projectRoot, _ := setupLifecycleTestProject(t)
@@ -129,8 +130,7 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 			"`n` or `y` means new lane",
 			"shorthand is the primary lane choice",
 			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
-			"human-assigned GitHub issue",
-			"pull-request plan",
+			"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)
