@@ -20,6 +20,7 @@
 - Use `rules/kit-capabilities-usage.md` in downstream projects for Kit command discovery guidance
 - Use `rules/constitution-curation.md` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use `rules/cross-repository-program-coordination.md` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff
+- Use `rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text so only the human user is displayed as author
 - Use `rules/github-pr-merge.md` and resolve `pull-request-merge` before any authorized merge or merge-queue mutation
 - Use `rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state to require recoverable soft delete by default and exact manual confirmation before hard delete
 - Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, name-aware material AWS targets, one-pass execution, and explicit confirmation for deletion or removal
@@ -63,6 +64,7 @@ are:
 | `frontend-application-architecture` | architecture, frontend, route, page, component, state | Responsibility and dependency boundaries for frontend routes, features, data adapters, state, and UI. |
 | `github-pr-delivery` | git, GitHub, pull-request, documentation | Issue-to-PR delivery sequencing and post-PR verification. |
 | `github-pr-merge` | git, GitHub, pull-request, merge, merge-queue, cross-repository | Exact authorized merge sets, current-head readiness, identity, repository policy, infrastructure effects, and literal wave evidence. |
+| `human-authorship` | git, GitHub, commit, pull-request, issue, attribution | Human-only displayed authorship on commits, pull requests, issues, comments, trailers, and other credits. |
 | `infrastructure-change-approval` | cloud, infrastructure-as-code, AWS, GCP, Azure, Kubernetes, Terraform, Pulumi, CloudFormation | One plan-level confirmation and one-pass execution per infrastructure batch, with name-aware material AWS targets and explicit confirmation for deletion or removal. |
 | `kit-capabilities-usage` | Kit command discovery in downstream projects | Targeted, read-only capability lookup without maintaining Kit's internal catalog downstream. |
 | `llms-txt` | web, website, API, documentation | `/llms.txt` contract for applicable public web and API surfaces. |

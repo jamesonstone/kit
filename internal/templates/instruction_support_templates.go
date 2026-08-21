@@ -165,6 +165,7 @@ const referencesREADME = `# References
 - Use ` + "`rules/kit-capabilities-usage.md`" + ` in downstream projects for Kit command discovery guidance
 - Use ` + "`rules/constitution-curation.md`" + ` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use ` + "`rules/cross-repository-program-coordination.md`" + ` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff
+- Use ` + "`rules/human-authorship.md`" + ` before any commit, pull request, issue, review comment, or other attribution text so only the human user is displayed as author
 - Use ` + "`rules/github-pr-merge.md`" + ` and resolve ` + "`pull-request-merge`" + ` before any authorized merge or merge-queue mutation
 - Use ` + "`rules/deletion-safety.md`" + ` before designing deletion behavior or deleting persistent project, user, business, or external-system state to require recoverable soft delete by default and exact manual confirmation before hard delete
 - Use ` + "`rules/infrastructure-change-approval.md`" + ` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal

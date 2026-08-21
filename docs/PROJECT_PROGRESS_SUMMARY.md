@@ -68,6 +68,7 @@
 | 0065 | deletion-safety | `docs/specs/0065-deletion-safety` | deliver | no | 2026-08-16 | Make recoverability the default deletion behavior in every Kit-managed project. An unqualified delete must preserve a supported restore path, and an irreversible hard delete must remain prohibited until a human manually confirms the exact current targets after seeing the complete consequences. |
 | 0066 | capability-aware-subagent-workflows | `docs/specs/0066-capability-aware-subagent-workflows` | deliver | no | 2026-08-16 | Make Kit's existing subagent orchestration rule capability-aware and usable across coding-agent hosts while optimizing the adapter for Codex's native model, effort, child-thread, follow-up, waiting, and parallel-execution controls. Kit remains prompt-only: it defines truthful negotiation and routing behavior but never selects a model, launches a child, or supervises execution. |
 | 0067 | agent-completion-output | `docs/specs/0067-agent-completion-output` | deliver | no | 2026-08-18 | Give every Kit-managed coding-agent task a terminal response that an operator can scan and act on immediately. Completion starts with one literal overall status, exposes blockers and unfinished work before detail, and uses a left-aligned task-specific evidence block without sacrificing existing validation, delivery, orchestration, or repository-memory requirements. |
+| 0068 | human-authorship | `docs/specs/0068-human-authorship` | deliver | no | 2026-08-20 | Make displayed authorship human-only in every Kit-managed project. Coding agents may implement the work, but commits, pull requests, issues, comments, trailers, and other attribution surfaces must show only the human user. |
 
 ## PROJECT INTENT
 
@@ -655,6 +656,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: deliver issue #162 through its ready pull request; merge requires separate authorization
 - **POINTERS**: `docs/specs/0067-agent-completion-output/SPEC.md`, `docs/references/rules/agent-completion-output.md`
 
+### human-authorship
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Make displayed authorship human-only in every Kit-managed project. Coding agents may implement the work, but commits, pull requests, issues, comments, trailers, and other attribution surfaces must show only the human user.
+- **APPROACH**: Add a conditional downstream `human-authorship` ruleset, install it through refresh/health/reconcile adoption, pointer-load it from delivery, safety, RLM, and the references index, keep immutable instruction versions unchanged, and deliver issue #166 through one ready pull request.
+- **OPEN ITEMS**: deliver issue #166 through its ready pull request; merge requires separate authorization
+- **POINTERS**: `docs/specs/0068-human-authorship/SPEC.md`, `docs/references/rules/human-authorship.md`
+
 ## LAST UPDATED
 
-2026-08-18 12:09:20 EDT
+2026-08-20 20:50:00 EDT

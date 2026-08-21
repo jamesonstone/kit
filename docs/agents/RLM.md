@@ -42,6 +42,7 @@
 ## Rules
 
 - Load `docs/references/rules/work-lane-gating.md` before any coding-agent repository file or delivery mutation
+- Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text
 - Keep map work file-scoped or narrowly bounded so synthesis stays deterministic
 - Prefer repo-local docs before secondary global inputs
 - For living-spec feature work, keep must-read inputs small: the current `SPEC.md` section or decision, plus directly linked references, relationships, rules, evidence, or historical staged artifacts only when they affect that decision

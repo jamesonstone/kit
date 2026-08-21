@@ -19,6 +19,8 @@ rules:
     required: false
   - slug: github-pr-delivery
     required: false
+  - slug: human-authorship
+    required: false
 evidence:
   - kind: routing
     path: docs/agents/README.md

@@ -123,6 +123,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"cross-repository-program-coordination",
 		"deletion-safety",
 		"frontend-application-architecture",
+		"human-authorship",
 		"infrastructure-change-approval",
 		"source-file-size",
 		"testing-and-environment-validation",
@@ -170,10 +171,14 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		if string(content) != expectedContent[slug] {
 			t.Errorf("installed %s ruleset differs from registry source", slug)
 		}
+		expectedPolicy := "read_policy_default: must"
+		if slug == "human-authorship" {
+			expectedPolicy = "read_policy_default: conditional"
+		}
 		for _, check := range []string{
 			"slug: " + slug,
 			"registry_scope: downstream",
-			"read_policy_default: must",
+			expectedPolicy,
 		} {
 			if !strings.Contains(string(content), check) {
 				t.Errorf("expected installed %s ruleset to contain %q", slug, check)
