@@ -58,6 +58,7 @@ func TestConstitutionTemplateIncludesKitManagedBaselineRules(t *testing.T) {
 	for _, check := range []string{
 		"### Kit-Managed Baseline Rules",
 		"BEGIN KIT-MANAGED BASELINE RULES",
+		"docs/references/rules/human-authorship.md",
 		"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		"whole-project reconcile and scheduled maintenance audit the entire repository",
 		"vendored dependencies, and proven generated files",

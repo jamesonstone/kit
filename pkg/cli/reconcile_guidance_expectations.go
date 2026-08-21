@@ -15,6 +15,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"## Context Budget Rules",
 			"specific section over full file",
 			"repo-local docs before global model/vendor instructions",
+			"Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text",
 			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
 			"Load `docs/references/rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state",
 			"Load `docs/references/rules/aws-agent-toolkit-guidance.md` before AWS-dependent work",
@@ -40,6 +41,7 @@ func v2GuidanceExpectations() map[string][]string {
 		},
 		"docs/references/README.md": {
 			"`rules/agent-completion-output.md`",
+			"`rules/human-authorship.md`",
 			"`rules/aws-agent-toolkit-guidance.md`",
 			"`rules/deletion-safety.md`",
 			"`rules/infrastructure-change-approval.md`",
@@ -135,6 +137,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"identify the immediate decision",
 			"stop loading once the decision is supported",
 			"## Context Budget Rules",
+			"Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text",
 			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
 			"Load `docs/references/rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state",
 			"Load `docs/references/rules/aws-agent-toolkit-guidance.md` before AWS-dependent work",
@@ -168,6 +171,7 @@ func v3GuidanceExpectations() map[string][]string {
 		},
 		"docs/references/README.md": {
 			"`rules/agent-completion-output.md`",
+			"`rules/human-authorship.md`",
 			"`rules/aws-agent-toolkit-guidance.md`",
 			"`rules/deletion-safety.md`",
 			"`rules/infrastructure-change-approval.md`",

@@ -110,11 +110,13 @@ func stubManagedSafetyRulesetRegistry(t *testing.T) {
 	workLane := readRepositoryFile(t, "docs/references/rules/work-lane-gating.md")
 	deletionSafety := readRepositoryFile(t, "docs/references/rules/deletion-safety.md")
 	completionOutput := readRepositoryFile(t, "docs/references/rules/agent-completion-output.md")
+	humanAuthorship := readRepositoryFile(t, "docs/references/rules/human-authorship.md")
 	stubRulesetRegistry(
 		t,
 		registryRulesetWithContentForTest("work-lane-gating", workLane, "test-work-lane"),
 		registryRulesetWithContentForTest("deletion-safety", deletionSafety, "test-deletion-safety"),
 		registryRulesetWithContentForTest("agent-completion-output", completionOutput, "test-completion-output"),
+		registryRulesetWithContentForTest("human-authorship", humanAuthorship, "test-human-authorship"),
 	)
 }
 
@@ -154,6 +156,7 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 		"docs/references/rules/work-lane-gating.md",
 		"docs/references/rules/deletion-safety.md",
 		"docs/references/rules/agent-completion-output.md",
+		"docs/references/rules/human-authorship.md",
 	} {
 		content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath)))
 		if !strings.Contains(content, "registry_scope: downstream") {

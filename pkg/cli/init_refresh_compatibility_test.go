@@ -72,6 +72,7 @@ func TestRunInitRefresh_PreservesGeneratedVerboseInstructionsAsLegacy(t *testing
 		"custom",
 		"### Kit-Managed Baseline Rules",
 		"Before a terminal task completion or handoff response, load `docs/references/rules/agent-completion-output.md` and use its literal status, immediate action table, and primary task profile.",
+		"Before commit, pull request, issue, comment, or other attribution text, load `docs/references/rules/human-authorship.md`. Only the human user may be displayed as author; do not attribute coding agents, tools, or bots.",
 		"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 		"vendored dependencies, and proven generated files",
 	} {
