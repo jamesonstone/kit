@@ -126,6 +126,13 @@ trailers, and other attribution surfaces must show only the human user.
   fetches.
 - Preserve immutable instruction versions. A one-line RLM/constitution pointer
   plus the ruleset is enough without a new instruction version.
+- Trim the pre-existing inline author/committer bullets from
+  `github-pr-delivery`'s "Author And Committer Invariant" and
+  `safety-guardrails`'s "Git Author Identity" once their pointer to
+  `human-authorship` landed, instead of leaving the load pointer stacked on
+  top of a third full copy. Kept the parts of `safety-guardrails` that
+  `human-authorship` does not cover: the identity-inspection commands and the
+  do-not-change-global-git-config guidance.
 
 ## DISCOVERIES
 
@@ -139,6 +146,11 @@ trailers, and other attribution surfaces must show only the human user.
   post-landing propagation without fabricating live GitHub `main` state.
 - `limina-dev/sortr` PR #42 added a project-local copy by mistake. The
   canonical rule belongs in this repository.
+- The first pass added the `human-authorship` pointer to `github-pr-delivery`
+  and `safety-guardrails` but left their original inline author/committer
+  bullets in place, leaving the same rule stated three times against the
+  stated intent in DECISIONS. No test asserted on that duplicate text, so it
+  was safe to remove without touching test fixtures.
 
 ## VALIDATION
 
@@ -146,12 +158,14 @@ trailers, and other attribution surfaces must show only the human user.
 - `make fmt`, `go vet ./pkg/cli ./internal/templates`, `make build`, and `git diff --check` passed.
 - `./bin/kit check 0068-human-authorship` and `./bin/kit check --project` passed.
 - Branch-local `kit rules list` is expected to show the new file as untracked until GitHub `main` publishes the registry listing.
+- Re-ran the same test, vet, build, and `kit check` commands after trimming the duplicate `github-pr-delivery` and `safety-guardrails` bullets; all passed unchanged.
 
 ## OUTCOME
 
 - Added the conditional downstream `human-authorship` ruleset covering git, GitHub, commit, pull-request, issue, and other attribution surfaces.
 - Refresh/health/reconcile adoption coverage installs it as a managed downstream rule.
 - RLM, the references index, Constitution baseline, `github-pr-delivery`, `safety-guardrails`, and optional `implementation-delivery` evidence now route to it.
+- `github-pr-delivery` and `safety-guardrails` carry only the load pointer for author/committer display rules; the full contract lives once in `human-authorship`.
 - Immutable instruction versions were not bumped. The full contract remains pointer-loaded.
 - Delivery remains at the authorized issue #166 branch and ready-pull-request boundary. Merge is not authorized.
 
