@@ -17,6 +17,8 @@ func TestActivePolicyUsesOneMergeAuthorityModel(t *testing.T) {
 			"Merge is a distinct mutation boundary",
 			"never imply merge consent",
 			"Only exact current `MERGE_READY` nodes may merge",
+			"Revalidating an unchanged authorized head",
+			"A changed head invalidates readiness and prior merge authority",
 			"Never bypass protection",
 		} {
 			if !strings.Contains(content, check) {
@@ -66,6 +68,8 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 		"program ledger creates merge authority",
 		"verification agents may merge",
 		"passing checks authorize merge",
+		"Revalidating an already authorized target",
+		"Revalidation of the already authorized set",
 	} {
 		if strings.Contains(combined, forbidden) {
 			t.Errorf("active policy contains contradictory authority %q", forbidden)

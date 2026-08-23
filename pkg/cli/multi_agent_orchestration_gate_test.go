@@ -34,15 +34,30 @@ func TestMultiAgentOrchestrationGatePresentAndOrderedBeforeWorkLaneGate(t *testi
 }
 
 func TestMultiAgentOrchestrationGateContent(t *testing.T) {
-	checks := []string{
+	instructionChecks := []string{
 		"load `docs/references/rules/agent-team-orchestration.md`",
 		"single-lane, because <reason>",
 		"never skip",
 		"skip the evaluation silently",
 	}
 
-	for _, path := range []string{"CLAUDE.md", "AGENTS.md", ".github/copilot-instructions.md"} {
+	for _, path := range []string{
+		"CLAUDE.md",
+		"AGENTS.md",
+		".github/copilot-instructions.md",
+		"docs/agents/GUARDRAILS.md",
+	} {
 		content := strings.ToLower(readRepositoryFile(t, path))
+		checks := instructionChecks
+		if path == "docs/agents/GUARDRAILS.md" {
+			checks = []string{
+				"load `docs/references/rules/agent-team-orchestration.md`",
+				"single-lane, because <reason>",
+				"this gate is mandatory",
+				"single mechanical edit, a direct question, or read-only research",
+				"never treat this evaluation as permission to force parallel execution",
+			}
+		}
 		for _, check := range checks {
 			if !strings.Contains(content, strings.ToLower(check)) {
 				t.Errorf("%s missing gate content %q", path, check)
