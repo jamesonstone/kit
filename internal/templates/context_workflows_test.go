@@ -39,7 +39,9 @@ func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.
 		for _, want := range []string{
 			"update the\n   existing pull-request head between waves",
 			"return it to `UNKNOWN` pending fresh checks, review",
-			"Reserve replacement pull\n   requests for material scope changes",
+			"revalidation, and exact-head authorization",
+			"Reserve replacement pull\n   requests for material scope changes, heads that cannot be updated safely",
+			"explicit repository-policy or user requirements",
 			"no changed head reuses readiness, review, checks, or merge authority",
 		} {
 			if !strings.Contains(artifact.Content, want) {

@@ -52,7 +52,8 @@ evidence:
 3. Remediate review, conflict, compatibility, migration, and validation
    blockers through repository-owned delivery lanes. Keep routine,
    scope-preserving repairs on their existing pull requests; reserve replacement
-   PRs for material scope changes or heads that cannot be updated safely.
+   PRs for material scope changes, heads that cannot be updated safely, or
+   explicit repository-policy or user requirements.
 4. Resolve `pull-request-merge`, recompute the current authorized `MERGE_READY` frontier, and execute only dependency-safe merge and deployment waves.
 5. Verify the exact merged and deployed identities, runtime behavior, and final integrated system; preserve partial, blocked, unknown, and intentionally open state literally.
 

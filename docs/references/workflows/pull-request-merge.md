@@ -51,7 +51,8 @@ evidence:
    existing pull-request head between waves, invalidate its prior head evidence
    and merge authority, and return it to `UNKNOWN` pending fresh checks, review,
    revalidation, and exact-head authorization. Reserve replacement pull
-   requests for material scope changes or heads that cannot be updated safely.
+   requests for material scope changes, heads that cannot be updated safely,
+   or explicit repository-policy or user requirements.
 5. Merge or queue only assigned `MERGE_READY` nodes, preserving partial state
    and isolating failures.
 6. Record merge, hosted workflow, deployment/runtime, and production evidence

@@ -30,6 +30,8 @@ func TestReleaseOrchestrationWorkflowPreservesAuthorityBoundaries(t *testing.T) 
 		"current authorized `MERGE_READY` frontier",
 		"Keep routine,\n   scope-preserving repairs on their existing pull requests",
 		"Every changed existing head received fresh checks, review, revalidation",
+		"exact-head authorization before merge",
+		"heads that cannot be updated safely, or\n   explicit repository-policy or user requirements",
 		"Merge success was never substituted",
 	} {
 		if !strings.Contains(workflow, check) {
