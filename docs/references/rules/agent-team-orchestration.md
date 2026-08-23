@@ -32,6 +32,12 @@ agent applies this contract using capabilities the host actually exposes.
 ## Applies When
 
 - A coding agent plans implementation, validation, review, or repair work.
+- Before finalizing any native implementation plan for a new feature, a
+  substantial architectural or behavioral change, or a multi-file refactor.
+  This first-pass evaluation is mandatory and does not wait for `kit
+  dispatch` or another subagent-capable workflow to already be in use; it
+  does not apply to a single mechanical edit, a direct question, or
+  read-only research that never forms an implementation plan.
 - Work may split into backend, frontend, CLI, tests, docs, data, security,
   compatibility, validation, or repository-research lanes.
 - `kit dispatch`, `kit pr fix`, a prompt-library dispatch prompt, CI dispatch,
@@ -46,6 +52,16 @@ verification remains unsatisfied when the host cannot provide it; logical
 decomposition is not a substitute.
 
 ## Rules
+
+### First-Pass Topology Decision
+
+Before `PLAN_READY`, the root supervisor must have evaluated and recorded a
+topology decision: a multi-lane Agent Team Plan, or one supervisor lane with
+the reason from Applies When. Recording the decision is mandatory even when
+the recorded outcome is one supervisor lane. The evaluation requirement never
+waives or narrows the single-lane criteria already defined in Applies When,
+and it never substitutes for host-confirmed capability evidence gathered
+during `CAPABILITY_NEGOTIATING`.
 
 ### Lifecycle And Root Accountability
 

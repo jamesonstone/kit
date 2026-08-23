@@ -18,7 +18,7 @@ const sharedRepositoryInstructionsCore = `## Source of truth
 
 ---
 
-` + workLaneMutationHardGate + `## GitHub Delivery Hard Gate
+` + multiAgentOrchestrationHardGate + workLaneMutationHardGate + `## GitHub Delivery Hard Gate
 
 When the user asks to create or mutate an issue, branch, staging, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation. Issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries.
 

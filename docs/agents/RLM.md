@@ -55,7 +55,7 @@
 - Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state
 - Load `docs/references/rules/github-pr-merge.md` and resolve `pull-request-merge` before any merge or merge-queue mutation
 - Load `docs/references/rules/cross-repository-program-coordination.md` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff
-- Load `docs/references/rules/agent-team-orchestration.md` only when the immediate decision includes execution topology, subagent lanes, or read-only verification; do not load it for trivial single-lane tasks
+- Load `docs/references/rules/agent-team-orchestration.md` as a mandatory first-pass evaluation before finalizing any native implementation plan for a new feature, a substantial architectural or behavioral change, or a multi-file refactor; the recorded decision may still be single-lane, but the evaluation itself is never skipped for those tasks
 - Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response
 - Use indices first: start with `docs/PROJECT_PROGRESS_SUMMARY.md` and explicit SPEC relationships to shortlist candidate prior features under `docs/specs/`
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only

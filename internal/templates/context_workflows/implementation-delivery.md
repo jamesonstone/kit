@@ -16,7 +16,7 @@ rules:
   - slug: work-lane-gating
     required: true
   - slug: agent-team-orchestration
-    required: false
+    required: true
   - slug: github-pr-delivery
     required: false
   - slug: human-authorship

@@ -33,6 +33,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 		{version: "v4", sha256: "96fc2b3bbd4f458ef55ae32910d737dd1ea35110d6443d6ee8e03d389d851986"},
 		{version: "v5", sha256: "cf68ece8fe95d51733fa835460e0788b89392d22fb4c46522c543f91f3ba6dc7"},
 		{version: "v6", sha256: "6e46f43483957a434c6e3e7e9982f45807e499f486f21061307d74e2538f6e91"},
+		{version: "v7", sha256: "08d95572a3327fca6dec46cdf16d8863618ba130f1328e1ca2f4bbe33d617158"},
 	}
 
 	for _, test := range tests {
@@ -181,21 +182,21 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 }
 
 func TestAgentInstructionsRejectsUnavailableVersion(t *testing.T) {
-	_, err := AgentInstructions("v7")
+	_, err := AgentInstructions("v8")
 	if err == nil {
-		t.Fatal("AgentInstructions(\"v7\") expected an error")
+		t.Fatal("AgentInstructions(\"v8\") expected an error")
 	}
-	for _, want := range []string{`unsupported instructions version "v7"`, "available versions: v1, v2, v3, v4, v5, v6"} {
+	for _, want := range []string{`unsupported instructions version "v8"`, "available versions: v1, v2, v3, v4, v5, v6, v7"} {
 		if !strings.Contains(err.Error(), want) {
-			t.Fatalf("AgentInstructions(\"v7\") error = %q, want %q", err, want)
+			t.Fatalf("AgentInstructions(\"v8\") error = %q, want %q", err, want)
 		}
 	}
 }
 
 func TestAgentInstructionVersionsReturnsCopy(t *testing.T) {
 	versions := AgentInstructionVersions()
-	if len(versions) != 6 || versions[0] != "v1" || versions[1] != "v2" || versions[2] != "v3" || versions[3] != "v4" || versions[4] != "v5" || versions[5] != "v6" {
-		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2 v3 v4 v5 v6]", versions)
+	if len(versions) != 7 || versions[0] != "v1" || versions[1] != "v2" || versions[2] != "v3" || versions[3] != "v4" || versions[4] != "v5" || versions[5] != "v6" || versions[6] != "v7" {
+		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2 v3 v4 v5 v6 v7]", versions)
 	}
 	if versions[len(versions)-1] != CurrentAgentVersion {
 		t.Fatalf("last available version = %q, want current %q", versions[len(versions)-1], CurrentAgentVersion)

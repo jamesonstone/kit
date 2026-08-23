@@ -80,6 +80,10 @@ func TestAgentTeamOrchestrationRegistryRulesetIsCapabilityAware(t *testing.T) {
 		"task_outcome: workflow-native outcome",
 		"orchestration_conformance: full | degraded | unsatisfied",
 		"Kit commands do not inspect a host's live agent roster",
+		"First-Pass Topology Decision",
+		"Before `PLAN_READY`, the root supervisor must have evaluated and recorded a",
+		"Recording the decision is mandatory even when",
+		"This first-pass evaluation is mandatory and does not wait for",
 	} {
 		if !strings.Contains(normalized, check) {
 			t.Errorf("expected %s ruleset to contain %q", slug, check)

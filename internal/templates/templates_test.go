@@ -213,6 +213,7 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"docs/PROJECT_PROGRESS_SUMMARY.md",
 			"conditional reads only",
 			"agent-team-orchestration.md",
+			"mandatory first-pass evaluation before finalizing any native implementation plan",
 			"shared interface or contract",
 			"Inspect at most 5 prior feature directories",
 			"discovery and context selection first",

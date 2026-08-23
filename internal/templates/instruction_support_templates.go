@@ -16,7 +16,7 @@ const agentsGuardrails = `# Guardrails
 - Never mix multiple features in one ` + "`docs/specs/<feature>/`" + ` directory
 - Update docs first when reality diverges from documented behavior
 
-` + workLaneMutationHardGate + `## GitHub Delivery Hard Gate
+` + multiAgentOrchestrationHardGate + workLaneMutationHardGate + `## GitHub Delivery Hard Gate
 
 When the user asks to create or mutate an issue, branch, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation.
 
