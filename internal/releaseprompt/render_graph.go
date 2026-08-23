@@ -23,7 +23,7 @@ func addDiscoveryAndGraph(document *promptdoc.Document, config Config) {
 	document.Paragraph("Construct a directed Global Release Graph. It is the release control plane and must be updated whenever evidence changes a dependency assumption.")
 	document.Paragraph("Model:")
 	document.BulletList(
-		"PR and corrective-PR nodes grouped into feature streams and repository boundaries",
+		"PR nodes with in-place remediation revisions, plus exceptional replacement-PR nodes, grouped into feature streams and repository boundaries",
 		"authorization source, exact authorized PR set, expected head and base, authenticated actor, merge method, repository policy, and post-merge gate",
 		"infrastructure, schema, API, contract, producer/consumer, frontend/backend, deployment, and validation prerequisites",
 		"conflicts, shared mutation surfaces, compatibility windows, convergence points, safe parallelism, and failure-containment boundaries",

@@ -48,8 +48,12 @@ ledger existence are also not authorization.
 
 - Record the authorization source and exact approved pull-request set before
   mutation.
-- Revalidating an authorized target, retrying a compatible merge path, or using
-  the repository-required merge queue does not require another prompt.
+- Exact-head merge authority freezes the commit eligible for merge; it does not
+  authorize source repair. An authorized in-place repair keeps the same pull
+  request in the graph but invalidates its readiness and prior exact-head merge
+  authority until the new head is explicitly authorized.
+- Revalidating an unchanged authorized head, retrying a compatible merge path,
+  or using the repository-required merge queue does not require another prompt.
 - Adding a pull request, repository, target base, deployment environment,
   infrastructure effect, merge method, admin path, or identity is material
   scope expansion and requires follow-up authorization.
@@ -70,7 +74,8 @@ Before the first merge, record:
 - known deployment, Kubernetes, public-cloud, and infrastructure-as-code
   effects, including their approval state;
 - post-merge deployment, runtime, and validation gates; and
-- corrective-PR, failure-containment, recovery, and rollback ownership.
+- bounded in-place-remediation authority, replacement-PR criteria,
+  failure-containment, recovery, and rollback ownership.
 
 Use explicit `none`, `not applicable`, `unknown`, or `unobserved`. Any field
 that affects readiness and remains unknown blocks that node.
@@ -164,10 +169,24 @@ before mutation.
   completed, queued, blocked, unknown, and unobserved state.
 - Continue only independent authorized nodes whose readiness remains valid and
   whose failure isolation is proven.
-- Source remediation becomes a normal corrective pull request. It is not
-  automatically added to the authorized set and cannot be merged without
-  follow-up authorization or an accepted plan that already names the bounded
-  corrective policy.
+- Treat routine remediation as an update to the existing pull request when it
+  stays within that pull request's issue and declared scope, its head branch can
+  be updated safely with ordinary commits, and repository policy permits the
+  update. Do not create recursive corrective pull requests for minor conflicts,
+  generated artifacts, dependency refreshes, or other scope-preserving fixes.
+- Exact-head merge authority alone does not authorize source remediation. The
+  user or an accepted plan must separately authorize a bounded in-place repair
+  policy before the head changes.
+- Perform authorized in-place remediation between merge waves. Ordinarily merge
+  the current base into the existing head branch, apply or regenerate the
+  repair, commit, and push to the same branch without rebasing, force-pushing,
+  or retargeting. Then mark the node `UNKNOWN`, remove it from the ready
+  frontier, rerun required current-head checks and review, and obtain fresh
+  exact-head merge authorization before it can become `MERGE_READY` again.
+- Use a replacement pull request only when remediation materially changes the
+  issue scope or architecture, the original head cannot be updated safely, or
+  repository policy or the user explicitly requires replacement. A replacement
+  is a new node and is not automatically added to the authorized set.
 - Never force, bypass, change identity, or broaden scope to recover a wave.
 
 ### Post-Merge Evidence
@@ -196,6 +215,10 @@ healthy state by another name.
   unsupported merge method.
 - Starting a deployment-triggering merge before its effects and approval are
   known.
+- Creating replacement or recursively corrective pull requests for routine,
+  scope-preserving remediation that can safely stay on the existing PR head.
+- Updating a PR head and merging it under authorization or evidence bound to
+  the prior head.
 - Treating merge success as deployment, runtime, production, or integration
   evidence.
 
@@ -213,6 +236,12 @@ healthy state by another name.
   serialization boundaries.
 - Confirm identity or node failure remained isolated and exact partial state
   was preserved.
+- Confirm routine authorized remediation preserved the existing pull request,
+  invalidated prior head evidence and merge authority, and obtained fresh
+  current-head checks, review, revalidation, and exact-head authorization.
+- Confirm replacement PRs were limited to material scope or architecture
+  change, an unsafe or inaccessible original head, or explicit policy or user
+  direction.
 - Confirm post-merge evidence separates merge, workflow, deployment/runtime,
   and production validation.
 - Confirm no bypass, admin override, silent identity substitution, or

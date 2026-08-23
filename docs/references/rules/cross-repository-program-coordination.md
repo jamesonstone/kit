@@ -102,7 +102,8 @@ The ledger must contain:
   request, and operational-reference pointers when applicable;
 - the authorization source and exact approved PR set, authenticated GitHub
   actor for each repository, expected PR head/base, merge method and repository
-  policy, and corrective or rollback owner;
+  policy, bounded in-place-remediation authority, replacement-PR criteria, and
+  corrective or rollback owner;
 - a dependency graph that names each workstream's prerequisites and consumers;
 - the current ready frontier: only unblocked workstreams whose prerequisites
   and approvals are currently satisfied;
@@ -211,9 +212,11 @@ Before resume, handoff, dispatch, milestone advancement, or completion:
 5. checkpoint the reconciled state before assigning or performing more work.
 
 Before each merge wave, also resolve `pull-request-merge` and follow
-`github-pr-merge`. Revalidation of the already authorized set does not require
-another prompt; adding a target or materially changing actor, method,
-environment, infrastructure effect, or recovery does.
+`github-pr-merge`. Revalidation of unchanged authorized heads does not require
+another prompt. A changed head loses prior readiness and merge authority and
+requires fresh exact-head authorization; adding a target or materially changing
+actor, method, environment, infrastructure effect, or recovery also requires
+follow-up authorization.
 
 A handoff must identify the coordinator and ledger, active milestone, current
 ready frontier, blockers and owners, material decisions, exact evidence,
@@ -294,6 +297,9 @@ deployment, runtime, and acceptance evidence as separate workstream items.
 - Confirm every merge wave contains only the exact authorized `MERGE_READY`
   frontier, uses the expected actor/head/base/method, and resolves
   `pull-request-merge` before mutation.
+- Confirm routine scoped remediation preserved its existing pull request and
+  changed heads received fresh checks, review, revalidation, and exact-head
+  authorization before reentering the frontier.
 - Confirm a checkpoint follows each material transition and every handoff.
 - Confirm resume, handoff, dispatch, and completion reconcile against live
   repository, GitHub, runtime, and validation sources.

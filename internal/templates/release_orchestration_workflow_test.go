@@ -28,6 +28,11 @@ func TestReleaseOrchestrationWorkflowPreservesAuthorityBoundaries(t *testing.T) 
 		"slug: cross-repository-program-coordination\n    required: false",
 		"Resolve `pull-request-merge`",
 		"current authorized `MERGE_READY` frontier",
+		"scope-preserving repairs as ordinary, non-history-rewriting updates",
+		"do not rebase, force-push, retarget, or otherwise\n   replace reviewed history",
+		"Every changed existing head received fresh checks, review, revalidation",
+		"exact-head authorization before merge",
+		"heads that cannot be updated safely, or explicit repository-policy or user",
 		"Merge success was never substituted",
 	} {
 		if !strings.Contains(workflow, check) {

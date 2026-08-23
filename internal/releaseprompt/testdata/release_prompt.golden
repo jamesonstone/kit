@@ -67,7 +67,7 @@ Preserve repository-local safety and delivery rules.
 11. Keep one accountable supervisor for scope, graph state, integration, validation, delivery gates, and reporting.
 12. Verify production from actual runtime identity and state, not from merge or deployment command success.
 13. Only an authorized node with exact current evidence in state `MERGE_READY` may enter the reconciled merge frontier; `BLOCKED` and `UNKNOWN` never do.
-14. Convert failures requiring source changes into normal corrective PRs and first-class graph nodes; obtain merge authority for corrective or newly discovered PRs not already inside the accepted bounded plan.
+14. Keep routine, scope-preserving source remediation on the existing PR head under bounded repair authority; invalidate old-head readiness and merge authority, rerun current-head checks and review, and require later exact-head authorization. Create a replacement corrective PR only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user requires it.
 15. Run the configured final integration suite after all intended units pass individual environment verification.
 16. Never trade correctness, availability, security, compatibility, or data integrity for completion.
 17. Preserve every repository's local issue, branch, worktree, delivery, testing, infrastructure, and approval rules.
@@ -95,7 +95,7 @@ Construct a directed Global Release Graph. It is the release control plane and m
 
 Model:
 
-- PR and corrective-PR nodes grouped into feature streams and repository boundaries
+- PR nodes with in-place remediation revisions, plus exceptional replacement-PR nodes, grouped into feature streams and repository boundaries
 - authorization source, exact authorized PR set, expected head and base, authenticated actor, merge method, repository policy, and post-merge gate
 - infrastructure, schema, API, contract, producer/consumer, frontend/backend, deployment, and validation prerequisites
 - conflicts, shared mutation surfaces, compatibility windows, convergence points, safe parallelism, and failure-containment boundaries
@@ -295,7 +295,7 @@ For every release unit, establish actual runtime state using the strongest appli
 
 Do not advance dependent nodes until the release unit is demonstrably healthy. Record unobservable signals as `UNRESOLVED`, not passing.
 
-## Failure and Corrective PR Loop
+## Failure and PR Remediation Loop
 
 Stop advancement of an affected dependency chain whenever correctness, compatibility, data integrity, target identity, or runtime health is uncertain. Diagnose before retrying; do not assume a later PR will repair an earlier failure.
 
@@ -303,12 +303,13 @@ When one node in a wave fails, preserve and report successful independent nodes,
 
 If source changes are required:
 
-1. Implement the smallest correction in the repository's owned delivery lane.
-2. Create a normal reviewed corrective PR.
-3. Add it as a first-class node, determine whether the accepted bounded plan already authorizes it, and obtain follow-up authorization when it does not.
-4. Recompute dependencies, the reconciled authorized frontier, merge waves, deployment waves, and the critical path.
-5. Pass the same readiness, review, compatibility, infrastructure, and validation gates.
-6. Merge, deploy, verify, checkpoint evidence, and update the graph.
+1. Implement the smallest correction in the existing PR's owned delivery lane when it remains within that issue and declared scope.
+2. Under bounded repair authority, ordinarily merge the current base into the existing head branch, apply or regenerate the correction, commit, and push to the same branch without rebasing, force-pushing, or retargeting.
+3. Mark the changed PR `UNKNOWN`, invalidate old-head readiness and merge authority, rerun required current-head checks and review, and obtain fresh exact-head authorization before it can reenter the merge frontier.
+4. Create a reviewed replacement PR and first-class graph node only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user explicitly requires replacement; obtain separate merge authority for that new node.
+5. Recompute dependencies, the reconciled authorized frontier, merge waves, deployment waves, and the critical path.
+6. Pass the same readiness, review, compatibility, infrastructure, and validation gates.
+7. Merge, deploy, verify, checkpoint evidence, and update the graph.
 
 Prefer roll-forward when safer. Roll back only when the previous state is demonstrably compatible and lower risk. Infrastructure rollback remains subject to the same infrastructure approval and identity boundaries.
 
@@ -322,7 +323,7 @@ script:tests/end-to-end/production/run.sh
 
 When configured as `auto`, discover and use the established cross-system suite or operator process. When `none`, record integrated verification as explicitly not applicable and explain why individual release-unit evidence is sufficient. Never replace an established suite with a weaker custom smoke test.
 
-Run the suite after all intended release units pass their individual environment verification. If it fails, diagnose the root cause, create corrective PR nodes where required, recompute the graph, process corrections through every gate, and rerun until it passes or a genuine manual blocker remains.
+Run the suite after all intended release units pass their individual environment verification. If it fails, diagnose the root cause, remediate existing PRs in place when routine and scope-preserving, create exceptional replacement nodes only when required, recompute the graph, process corrections through every gate, and rerun until it passes or a genuine manual blocker remains.
 
 ## Completion Gate
 
@@ -330,7 +331,7 @@ Complete only when all applicable statements are true:
 
 - all required repositories and relevant permitted PRs were inspected and represented in the final graph
 - the direct request or accepted plan, exact authorized PR set, actor, heads/bases, merge method, policy, and final reconciled frontier are recorded
-- all intended authorized safe PRs and authorized corrective PRs are merged, deployed to their required environment, and verified
+- all intended authorized safe PRs, including in-place repairs and any authorized exceptional replacement PRs, are merged, deployed to their required environment, and verified
 - all actionable feedback and conflicts are resolved, and integrated diffs and required validation pass
 - runtime, infrastructure, schema, migration, contract, security, and compatibility prerequisites are satisfied
 - no prohibited or unapproved mutation occurred and every destructive proposal is approved, rejected, or explicitly blocked
@@ -353,7 +354,7 @@ Describe what actually happened, not merely the initial plan. Use exact identiti
 
 ### Final Global Release Graph
 
-Show the graph as executed: original, discovered, and corrective nodes; authorization state; dependency reasons; feature streams; reconciled merge frontiers; partial, complete, and blocked merge/deployment waves; convergence points; critical path; and changes from the initial graph.
+Show the graph as executed: original and discovered nodes, in-place remediation revisions, and exceptional replacement nodes; authorization state; dependency reasons; feature streams; reconciled merge frontiers; partial, complete, and blocked merge/deployment waves; convergence points; critical path; and changes from the initial graph.
 
 ### PR Results
 
@@ -365,7 +366,7 @@ Report exact infrastructure inspected, target identity, approved mutations perfo
 
 ### Deviations and Findings
 
-Include hidden dependencies, conflicts, additional or corrective PRs, infrastructure discrepancies, runtime dependencies, production regressions, compatibility or migration findings, approval changes, and graph reorderings.
+Include hidden dependencies, conflicts, in-place remediations, additional or exceptional replacement PRs, infrastructure discrepancies, runtime dependencies, production regressions, compatibility or migration findings, approval changes, and graph reorderings.
 
 ### Correctness Overview
 
@@ -397,7 +398,7 @@ discover
 → verify actual runtime state
 → checkpoint and update graph
 → run final integrated verification
-→ process corrective PR loop when needed
+→ process PR remediation loop when needed
 → reconcile final evidence
 → issue final report
 ```

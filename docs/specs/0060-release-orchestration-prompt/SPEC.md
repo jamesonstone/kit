@@ -71,6 +71,14 @@ references:
     read_policy: must
     used_for: exact merge authority readiness identity and wave evidence
     status: active
+  - id: in-place-remediation-issue
+    name: Prefer in-place PR remediation in merge policy
+    type: external
+    target: https://github.com/jamesonstone/kit/issues/172
+    relation: supports
+    read_policy: must
+    used_for: release-graph remediation behavior and delivery traceability
+    status: active
 skills: []
 delivery_intent: issue_branch_pr_ready
 ---
@@ -107,6 +115,9 @@ executes the release itself.
   `.kit.yaml` and the README maintainer markers. That drift is not adopted as
   part of this feature; overlapping README edits will preserve current owned
   content.
+- Downstream use exposed a replacement-first failure loop: the renderer turned
+  every source correction into a new PR and graph node even when the existing
+  PR could safely carry a routine, scope-preserving repair.
 
 ## REQUIREMENTS
 
@@ -132,11 +143,18 @@ executes the release itself.
 - Merge the supplied objective and LabCore template semantics into one complete
   prompt covering graph construction, readiness, compatibility, review,
   conflict remediation, merge/deployment waves, infrastructure, verification,
-  corrective PRs, and literal final reporting.
+  in-place PR remediation, exceptional replacement PRs, and literal final
+  reporting.
 - Make the prompt consume the active merge-authority contract: build and
   authorize the bounded graph first, resolve `pull-request-merge`, merge only
   the reconciled ready frontier, reauthorize only material scope expansion,
   and report partial waves literally.
+- Keep routine, scope-preserving source remediation on the existing PR head
+  under bounded repair authority. Invalidate old-head readiness and merge
+  authority, rerun current-head checks and review, and require fresh exact-head
+  authorization. Create a replacement graph node only for material scope or
+  architecture change, an unsafe original head, or explicit policy/user
+  direction.
 - Render no unresolved template placeholders or empty optional sections.
 - Add a `release-orchestration` context workflow based on
   `implementation-delivery`; require infrastructure and topology evidence only
@@ -175,6 +193,9 @@ executes the release itself.
 7. Run focused tests, complete Go tests, vet, lint, builds, project checks,
    manual CLI flows, source-size and diff audits, then explicitly stage,
    commit, push, and open a ready pull request.
+8. On `GH-172`, replace the corrective-PR-first failure loop in the renderer,
+   workflow, golden, and tests with in-place remediation by default and
+   exceptional replacement nodes, while preserving exact-head authorization.
 
 ## DECISIONS
 
@@ -197,6 +218,12 @@ executes the release itself.
   Existing cross-repository coordination applicability remains authoritative.
 - Rejected: invoke broad GitHub discovery from the generator. The downstream
   agent owns release-set and graph construction.
+- Accepted: preserve the existing PR node for routine scoped correction and
+  represent its new head as an `UNKNOWN` revision until fresh evidence and
+  exact-head authorization exist.
+- Rejected: turn every source correction into a new corrective PR. It creates
+  recursive graph growth and discards useful issue, discussion, review, and
+  scope continuity without improving exact-head safety.
 
 ## DISCOVERIES
 
@@ -219,6 +246,10 @@ executes the release itself.
   detection remains authoritative.
 - The baseline `go test ./...` passes on commit
   `0eb617e80839d3bc9ae326dbe3c63ddc5d0b0591`.
+- The release workflow, hard-rule list, graph vocabulary, failure loop,
+  completion gate, reporting language, expected lifecycle, and golden all
+  repeated corrective-PR-first semantics; partial wording changes would leave
+  a contradictory generated prompt.
 
 ## VALIDATION
 
@@ -238,6 +269,21 @@ executes the release itself.
   root discovery, workflow-presence, and authority-frontier checks pass.
 - `git diff --check` passes. Hosted pull-request checks remain a delivery
   observation, not local validation evidence.
+- `GH-172` focused renderer and golden tests pass together with merge-rule,
+  active-policy, generated-gate, workflow-materialization, and release-workflow
+  assertions. The golden contains in-place same-branch remediation and no
+  replacement-first source-correction instruction.
+- Complete uncached Go and race tests, formatting, vet, lint, both builds,
+  project validation, all 65 feature checks, and diff hygiene pass.
+- The built binary resolves `release-orchestration` and `pull-request-merge`
+  unblocked. A strict `pr orchestrate --dry-run` observes every new remediation
+  boundary and rejects the retired corrective-PR-first phrases.
+- Whole-project reconcile reports no drift and audits 712 candidates and 369
+  eligible handwritten source/test files with zero above 300 lines. Gitleaks
+  scans 370 commits and 13.15 MB with no leaks.
+- Browser, deployment, infrastructure, live-integration, and production
+  validation are `NOT_APPLICABLE` because this change renders instructions but
+  performs no release, deployment, or provider mutation.
 
 ## OUTCOME
 
@@ -249,6 +295,10 @@ executes the release itself.
   consumes `pull-request-merge`, restricts merges to the current authorized
   `MERGE_READY` frontier, separates merge/deployment/production evidence, and
   preserves partial waves literally.
+- The renderer now keeps routine scoped remediation on the existing PR and
+  creates replacement graph nodes only for material or unsafe changes. Every
+  changed head loses old-head readiness and merge authority before it can
+  return to the merge frontier.
 - The embedded and checked-in `release-orchestration` workflow extends
   implementation delivery while keeping infrastructure, agent-team, and
   cross-repository program evidence conditional at their applicability
@@ -263,3 +313,7 @@ invocation-local configuration contract, discovery limits, rendering boundary,
 downstream context fallback, infrastructure approval semantics, and rejected
 alternatives contain material rationale that code and tests alone cannot
 preserve.
+
+Updated it for issue #172 because defaulting to in-place PR repair while
+preserving exact-head authorization is a durable release-graph decision that
+the renderer and golden alone cannot explain.
