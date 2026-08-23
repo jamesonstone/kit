@@ -123,9 +123,11 @@ Pull-Request Landing Plan:
 - The authorized set is exact. Adding a new PR, repository, base branch,
   deployment target, infrastructure effect, merge method, or actor requires
   follow-up authorization.
-- Revalidating an already authorized target, retrying a compatible path, or
+- Revalidating an unchanged authorized head, retrying a compatible path, or
   using a repository-required merge queue does not require another prompt when
-  target, scope, intended effect, identity, and approval remain unchanged.
+  target, scope, intended effect, identity, and approval remain unchanged. A
+  changed head invalidates prior merge authority and requires fresh exact-head
+  authorization under `github-pr-merge`.
 - A gate decision, issue, branch, commit, push, ready PR, approval, passing
   check, review-thread resolution, subagent assignment, or program ledger does
   not create merge authority.

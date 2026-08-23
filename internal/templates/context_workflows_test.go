@@ -27,6 +27,32 @@ func TestCheckedInContextWorkflowsMatchEmbeddedArtifacts(t *testing.T) {
 	}
 }
 
+func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.T) {
+	artifacts, err := ContextWorkflowArtifacts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, artifact := range artifacts {
+		if artifact.Slug != "pull-request-merge" {
+			continue
+		}
+		for _, want := range []string{
+			"use ordinary,\n   non-history-rewriting commits to update the existing pull-request head",
+			"return it to `UNKNOWN` pending fresh checks, review, revalidation, and\n   exact-head authorization",
+			"Reserve replacement pull\n   requests for material scope changes, heads that cannot be updated safely",
+			"explicit repository-policy or user requirements",
+			"Do not rebase,\n   force-push, retarget, or otherwise replace the branch's reviewed history",
+			"no changed head reuses readiness, review, checks, or merge authority",
+		} {
+			if !strings.Contains(artifact.Content, want) {
+				t.Fatalf("pull-request-merge workflow missing %q", want)
+			}
+		}
+		return
+	}
+	t.Fatal("embedded pull-request-merge workflow not found")
+}
+
 func TestPRFeedbackWorkflowUsesCapabilityAwareOrchestration(t *testing.T) {
 	artifacts, err := ContextWorkflowArtifacts()
 	if err != nil {

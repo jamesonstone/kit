@@ -47,9 +47,17 @@ evidence:
    current-head and repository-policy evidence.
 3. Reconcile the authorized ready frontier immediately before each wave;
    serialize dependencies and same-base sensitive operations.
-4. Merge or queue only assigned `MERGE_READY` nodes, preserving partial state
+4. When separately authorized routine remediation is required, use ordinary,
+   non-history-rewriting commits to update the existing pull-request head
+   between waves, invalidate its prior head evidence and merge authority, and
+   return it to `UNKNOWN` pending fresh checks, review, revalidation, and
+   exact-head authorization. Reserve replacement pull
+   requests for material scope changes, heads that cannot be updated safely,
+   or explicit repository-policy or user requirements. Do not rebase,
+   force-push, retarget, or otherwise replace the branch's reviewed history.
+5. Merge or queue only assigned `MERGE_READY` nodes, preserving partial state
    and isolating failures.
-5. Record merge, hosted workflow, deployment/runtime, and production evidence
+6. Record merge, hosted workflow, deployment/runtime, and production evidence
    as separate claims; recalculate the next frontier.
 
 ## Completion Gates
@@ -60,4 +68,7 @@ evidence:
   safeguard was bypassed.
 - Partial failures, unknowns, dependents, corrective ownership, and next safe
   actions are exact.
+- Routine scope-preserving remediation stays on its existing pull request, and
+  no changed head reuses readiness, review, checks, or merge authority from its
+  predecessor.
 - Merge success is not reported as deployment or production proof.

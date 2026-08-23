@@ -12,7 +12,7 @@ func addCompletionAndReport(document *promptdoc.Document, config Config) {
 	document.BulletList(
 		"all required repositories and relevant permitted PRs were inspected and represented in the final graph",
 		"the direct request or accepted plan, exact authorized PR set, actor, heads/bases, merge method, policy, and final reconciled frontier are recorded",
-		"all intended authorized safe PRs and authorized corrective PRs are merged, deployed to their required environment, and verified",
+		"all intended authorized safe PRs, including in-place repairs and any authorized exceptional replacement PRs, are merged, deployed to their required environment, and verified",
 		"all actionable feedback and conflicts are resolved, and integrated diffs and required validation pass",
 		"runtime, infrastructure, schema, migration, contract, security, and compatibility prerequisites are satisfied",
 		"no prohibited or unapproved mutation occurred and every destructive proposal is approved, rejected, or explicitly blocked",
@@ -34,7 +34,7 @@ func addCompletionAndReport(document *promptdoc.Document, config Config) {
 	)
 
 	document.Heading(3, "Final Global Release Graph")
-	document.Paragraph("Show the graph as executed: original, discovered, and corrective nodes; authorization state; dependency reasons; feature streams; reconciled merge frontiers; partial, complete, and blocked merge/deployment waves; convergence points; critical path; and changes from the initial graph.")
+	document.Paragraph("Show the graph as executed: original and discovered nodes, in-place remediation revisions, and exceptional replacement nodes; authorization state; dependency reasons; feature streams; reconciled merge frontiers; partial, complete, and blocked merge/deployment waves; convergence points; critical path; and changes from the initial graph.")
 
 	document.Heading(3, "PR Results")
 	document.Paragraph("For every relevant PR report repository, identifier, authorization state, readiness state, expected and observed head/base, authenticated merge actor, merge method, purpose, feature stream, final state, material remediation, merge revision, deployed artifact or revision, target environment, verification result, and exact remaining blocker when open.")
@@ -43,7 +43,7 @@ func addCompletionAndReport(document *promptdoc.Document, config Config) {
 	document.Paragraph("Report exact infrastructure inspected, target identity, approved mutations performed, rationale, resulting state and verification, rollback readiness, and every destructive or replacing change proposed or blocked.")
 
 	document.Heading(3, "Deviations and Findings")
-	document.Paragraph("Include hidden dependencies, conflicts, additional or corrective PRs, infrastructure discrepancies, runtime dependencies, production regressions, compatibility or migration findings, approval changes, and graph reorderings.")
+	document.Paragraph("Include hidden dependencies, conflicts, in-place remediations, additional or exceptional replacement PRs, infrastructure discrepancies, runtime dependencies, production regressions, compatibility or migration findings, approval changes, and graph reorderings.")
 
 	document.Heading(3, "Correctness Overview")
 	document.Paragraph("Assess every important subsystem, graph gate, environment, and integration concern using only:")
@@ -71,7 +71,7 @@ UNRESOLVED`)
 → verify actual runtime state
 → checkpoint and update graph
 → run final integrated verification
-→ process corrective PR loop when needed
+→ process PR remediation loop when needed
 → reconcile final evidence
 → issue final report`)
 	document.Paragraph("A partially completed safe release is preferable to a fully completed unsafe release.")

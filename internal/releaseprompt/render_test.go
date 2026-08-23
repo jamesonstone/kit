@@ -33,12 +33,22 @@ func TestRenderIsDeterministicCompleteAndAuthorityAware(t *testing.T) {
 		"Pending, missing, stale-head",
 		"Report partial waves literally",
 		"Destructive or Replacing Changes",
-		"Failure and Corrective PR Loop",
+		"Failure and PR Remediation Loop",
+		"push to the same branch without rebasing, force-pushing, or retargeting",
+		"Create a reviewed replacement PR and first-class graph node only when",
 		"Final Integrated-System Verification",
 		"VERIFIED\nINFERRED\nNOT_APPLICABLE\nUNRESOLVED",
 	} {
 		if !strings.Contains(first, required) {
 			t.Errorf("rendered prompt missing %q", required)
+		}
+	}
+	for _, forbidden := range []string{
+		"Convert failures requiring source changes into normal corrective PRs",
+		"Create a normal reviewed corrective PR.",
+	} {
+		if strings.Contains(first, forbidden) {
+			t.Errorf("rendered prompt retained replacement-first remediation %q", forbidden)
 		}
 	}
 }

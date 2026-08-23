@@ -13,6 +13,8 @@ func TestInstructionTemplatesIncludeGitHubMergeHardGate(t *testing.T) {
 		"never imply merge consent",
 		"pull-request-merge",
 		"MERGE_READY",
+		"Revalidating an unchanged authorized head",
+		"A changed head invalidates readiness and prior merge authority",
 		"Never bypass protection",
 	}
 	for name, content := range map[string]string{
@@ -42,8 +44,14 @@ func TestCheckedInInstructionsIncludeGitHubMergeHardGate(t *testing.T) {
 		if err != nil {
 			t.Fatalf("read %s: %v", path, err)
 		}
-		if !strings.Contains(string(content), "Only exact current `MERGE_READY` nodes may merge") {
-			t.Errorf("checked-in %s is missing merge readiness guidance", path)
+		for _, want := range []string{
+			"Only exact current `MERGE_READY` nodes may merge",
+			"Revalidating an unchanged authorized head",
+			"A changed head invalidates readiness and prior merge authority",
+		} {
+			if !strings.Contains(string(content), want) {
+				t.Errorf("checked-in %s is missing merge guidance %q", path, want)
+			}
 		}
 	}
 }

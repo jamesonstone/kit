@@ -19,6 +19,8 @@ func TestGitHubPRMergeRulesetIsValid(t *testing.T) {
 		"current ready frontier",
 		"Read-only verification agents never merge",
 		"Merge success never implies workflow success",
+		"Treat routine remediation as an update to the existing pull request",
+		"exact-head merge authorization before it can become",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Errorf("github-pr-merge ruleset missing %q", check)
@@ -50,6 +52,15 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 		"head drift": {
 			"Head or base drift invalidates readiness",
 		},
+		"in-place remediation invalidates old-head authority": {
+			"An authorized in-place repair keeps the same pull", "invalidates its readiness and prior exact-head merge",
+		},
+		"routine remediation preserves the PR": {
+			"Do not create recursive corrective pull requests", "push to the same branch without rebasing, force-pushing",
+		},
+		"replacement PR is exceptional": {
+			"Use a replacement pull request only when remediation materially changes", "is a new node and is not automatically added",
+		},
 		"pending or missing checks": {
 			"pending or missing expected checks", "never passing",
 		},
@@ -80,6 +91,9 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 				}
 			}
 		})
+	}
+	if strings.Contains(rules, "Source remediation becomes a normal corrective pull request") {
+		t.Fatal("routine remediation regressed to a mandatory replacement pull request")
 	}
 }
 
