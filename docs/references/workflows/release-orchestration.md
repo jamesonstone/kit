@@ -49,7 +49,10 @@ evidence:
 
 1. Discover the bounded release set, repository policy, identities, dependencies, runtime relationships, deployment effects, and verification ownership without mutation.
 2. Construct the Global Release Graph and bounded merge plan; record the authorization source and exact approved PR set before any merge.
-3. Remediate review, conflict, compatibility, migration, and validation blockers through repository-owned delivery lanes.
+3. Remediate review, conflict, compatibility, migration, and validation
+   blockers through repository-owned delivery lanes. Keep routine,
+   scope-preserving repairs on their existing pull requests; reserve replacement
+   PRs for material scope changes or heads that cannot be updated safely.
 4. Resolve `pull-request-merge`, recompute the current authorized `MERGE_READY` frontier, and execute only dependency-safe merge and deployment waves.
 5. Verify the exact merged and deployed identities, runtime behavior, and final integrated system; preserve partial, blocked, unknown, and intentionally open state literally.
 
@@ -57,5 +60,7 @@ evidence:
 
 - Every merged or queued PR belonged to the exact authorized set and current ready frontier.
 - Every deployment or infrastructure effect had applicable target, impact, recovery, approval, and post-change evidence.
-- Corrective PRs and newly discovered targets received authority before merge.
+- Every changed existing head received fresh checks, review, revalidation, and
+  exact-head authorization before merge; exceptional replacement PRs and newly
+  discovered targets received separate authority.
 - Merge success was never substituted for hosted workflow, deployment, runtime, production, or integrated-system proof.

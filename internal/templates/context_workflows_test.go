@@ -27,6 +27,30 @@ func TestCheckedInContextWorkflowsMatchEmbeddedArtifacts(t *testing.T) {
 	}
 }
 
+func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.T) {
+	artifacts, err := ContextWorkflowArtifacts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, artifact := range artifacts {
+		if artifact.Slug != "pull-request-merge" {
+			continue
+		}
+		for _, want := range []string{
+			"update the\n   existing pull-request head between waves",
+			"return it to `UNKNOWN` pending fresh checks, review",
+			"Reserve replacement pull\n   requests for material scope changes",
+			"no changed head reuses readiness, review, checks, or merge authority",
+		} {
+			if !strings.Contains(artifact.Content, want) {
+				t.Fatalf("pull-request-merge workflow missing %q", want)
+			}
+		}
+		return
+	}
+	t.Fatal("embedded pull-request-merge workflow not found")
+}
+
 func TestPRFeedbackWorkflowUsesCapabilityAwareOrchestration(t *testing.T) {
 	artifacts, err := ContextWorkflowArtifacts()
 	if err != nil {

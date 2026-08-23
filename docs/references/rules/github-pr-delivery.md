@@ -116,9 +116,10 @@ Delivery Contract:
 - A direct merge request or accepted bounded merge plan routes to
   `github-pr-merge` and `pull-request-merge`.
 - Adding a merge target requires follow-up authorization. Revalidating an
-  already authorized target or using a repository-required merge queue does
+  unchanged authorized head or using a repository-required merge queue does
   not require another prompt when scope, identity, and intended effect remain
-  unchanged.
+  unchanged. A changed head requires fresh current-head evidence and exact-head
+  authorization under `github-pr-merge`.
 
 ### Author And Committer Invariant
 

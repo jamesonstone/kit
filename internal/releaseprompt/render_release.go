@@ -64,14 +64,15 @@ func addVerificationAndFailure(document *promptdoc.Document, config Config) {
 	)
 	document.Paragraph("Do not advance dependent nodes until the release unit is demonstrably healthy. Record unobservable signals as `UNRESOLVED`, not passing.")
 
-	document.Heading(2, "Failure and Corrective PR Loop")
+	document.Heading(2, "Failure and PR Remediation Loop")
 	document.Paragraph("Stop advancement of an affected dependency chain whenever correctness, compatibility, data integrity, target identity, or runtime health is uncertain. Diagnose before retrying; do not assume a later PR will repair an earlier failure.")
 	document.Paragraph("When one node in a wave fails, preserve and report successful independent nodes, classify the failed node and its dependents as `BLOCKED` or `UNKNOWN`, reconcile the remaining authorized frontier, and continue only work whose authority and independence remain proven. Report partial waves literally.")
 	document.Paragraph("If source changes are required:")
 	document.OrderedList(1,
-		"Implement the smallest correction in the repository's owned delivery lane.",
-		"Create a normal reviewed corrective PR.",
-		"Add it as a first-class node, determine whether the accepted bounded plan already authorizes it, and obtain follow-up authorization when it does not.",
+		"Implement the smallest correction in the existing PR's owned delivery lane when it remains within that issue and declared scope.",
+		"Under bounded repair authority, ordinarily merge the current base into the existing head branch, apply or regenerate the correction, commit, and push to the same branch without rebasing, force-pushing, or retargeting.",
+		"Mark the changed PR `UNKNOWN`, invalidate old-head readiness and merge authority, rerun required current-head checks and review, and obtain fresh exact-head authorization before it can reenter the merge frontier.",
+		"Create a reviewed replacement PR and first-class graph node only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user explicitly requires replacement; obtain separate merge authority for that new node.",
 		"Recompute dependencies, the reconciled authorized frontier, merge waves, deployment waves, and the critical path.",
 		"Pass the same readiness, review, compatibility, infrastructure, and validation gates.",
 		"Merge, deploy, verify, checkpoint evidence, and update the graph.",
@@ -82,5 +83,5 @@ func addVerificationAndFailure(document *promptdoc.Document, config Config) {
 	document.Paragraph("Configured integration suite:")
 	document.CodeBlock("text", safeCode(config.IntegrationSuite))
 	document.Paragraph("When configured as `auto`, discover and use the established cross-system suite or operator process. When `none`, record integrated verification as explicitly not applicable and explain why individual release-unit evidence is sufficient. Never replace an established suite with a weaker custom smoke test.")
-	document.Paragraph("Run the suite after all intended release units pass their individual environment verification. If it fails, diagnose the root cause, create corrective PR nodes where required, recompute the graph, process corrections through every gate, and rerun until it passes or a genuine manual blocker remains.")
+	document.Paragraph("Run the suite after all intended release units pass their individual environment verification. If it fails, diagnose the root cause, remediate existing PRs in place when routine and scope-preserving, create exceptional replacement nodes only when required, recompute the graph, process corrections through every gate, and rerun until it passes or a genuine manual blocker remains.")
 }

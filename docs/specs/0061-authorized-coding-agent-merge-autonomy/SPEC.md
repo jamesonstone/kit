@@ -73,6 +73,14 @@ references:
     read_policy: must
     used_for: merge-readiness evidence semantics
     status: active
+  - id: in-place-remediation-issue
+    name: Prefer in-place PR remediation in merge policy
+    type: external
+    target: https://github.com/jamesonstone/kit/issues/172
+    relation: supports
+    read_policy: must
+    used_for: exact-head and source-remediation authority refinement
+    status: active
 delivery_intent: issue_branch_pr_ready
 ---
 # SPEC
@@ -102,6 +110,9 @@ ledger, subagent assignment, or successful checks to invent broader authority.
   effects before the merge, not after the workflow starts.
 - Issue #141 and branch `GH-141` own this integration together with the
   `kit pr orchestrate` prompt consumer. Historical specs remain unchanged.
+- Issue #172 and branch `GH-172` refine the repair boundary after downstream
+  use showed that treating every source fix as a new corrective PR creates
+  recursive delivery lanes for routine, scope-preserving remediation.
 
 ## REQUIREMENTS
 
@@ -122,6 +133,18 @@ ledger, subagent assignment, or successful checks to invent broader authority.
   and automatic clean-preflight allocation never imply merge consent. Scope
   expansion needs follow-up authorization; revalidation of an already
   authorized target does not.
+- Distinguish exact-head merge authority from source-remediation authority.
+  Under a separately authorized bounded repair policy, routine fixes that stay
+  inside the existing PR issue and declared scope must update that same head
+  branch between waves, ordinarily by merging the current base into the head,
+  applying or regenerating the correction, and committing and pushing without
+  rebase, force-push, or retargeting. The changed node returns to `UNKNOWN` and
+  needs fresh checks, review, revalidation, and exact-head authorization.
+- Reserve replacement PRs for material issue-scope or architecture changes,
+  original heads that cannot be updated safely, or explicit repository-policy
+  or user direction. Never create recursively corrective PRs for routine
+  conflicts, generated artifacts, dependency refreshes, or similar in-scope
+  fixes.
 - Make one accountable supervisor own merge-wave decisions. Participants may
   merge only specifically assigned authorized frontier nodes; read-only
   verification agents never merge; subagent assignment does not create merge
@@ -154,6 +177,9 @@ ledger, subagent assignment, or successful checks to invent broader authority.
   `docs/agents/TOOLING.md`, instruction templates, workflow templates, and
   paired tests atomically. Every active delivery-mutation list must include
   merge distinctly and route it to `github-pr-merge`.
+- Align the `kit pr orchestrate` renderer and golden with the same remediation
+  default so release graphs preserve existing PR identity and model only
+  exceptional replacement PRs as new graph nodes.
 - Make `kit pr orchestrate` build the graph and bounded merge plan first,
   identify authorization, resolve `pull-request-merge`, merge only the
   reconciled ready frontier, avoid per-PR reconfirmation after plan acceptance,
@@ -193,6 +219,12 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 5. Validate focused policy, templates, workflow materialization, command
    behavior, complete Go/static/build checks, source size, project context,
    and deterministic manual flows before explicit delivery on `GH-141`.
+6. On `GH-172`, replace the replacement-first repair rule with authorized
+   in-place remediation, invalidate old-head readiness and merge authority, and
+   update the checked-in and embedded workflows and generated merge gates.
+7. Align `kit pr orchestrate`, its golden, scenario tests, and the related
+   release-orchestration feature memory, then rerun focused and complete
+   validation before ready-PR delivery.
 
 ## DECISIONS
 
@@ -204,6 +236,13 @@ ledger, subagent assignment, or successful checks to invent broader authority.
   and covered infrastructure approval when it names the full bounded batch.
 - Accepted: fail closed as `UNKNOWN` when exact current-head evidence, identity,
   repository policy, or indirect deployment effects cannot be established.
+- Accepted: exact-head authority freezes only the commit eligible to merge; it
+  does not require a new PR for separately authorized routine source repair.
+  Any changed head loses prior readiness and merge authority.
+- Accepted: preserve the original PR by default for routine scoped fixes.
+  Replacement PRs are exceptional and become separately authorized graph
+  nodes only when scope, architecture, head safety, policy, or user direction
+  requires them.
 - Rejected: categorical active no-merge language. It erases the distinction
   between unauthorized automation and user-authorized agent execution.
 - Rejected: a Kit merge command. The current product boundary is a
@@ -223,6 +262,10 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - The generated merge gate increased the V2 root template near its historical
   line threshold; the audit baseline now permits one small local policy section
   without weakening duplicate-manual pattern detection.
+- The active downstream rule and `kit pr orchestrate` independently encoded a
+  replacement-first corrective-PR loop. Updating only the registry rule would
+  allow the release prompt to recreate the same infinite regress, so both
+  surfaces and their checked-in and embedded derivatives must move together.
 
 ## VALIDATION
 
@@ -240,6 +283,29 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - Complete Go and race tests, vet, lint, builds, project validation, source-size
   audit, manual prompt flows, and diff checks pass as recorded in related spec
   0060.
+- `GH-172` focused merge-rule, active-policy, generated-gate, checked-in and
+  embedded workflow, release-workflow, and release-renderer/golden tests pass.
+- `make fmt`, `go test ./... -count=1`, `go test -race ./... -count=1`,
+  `go vet ./...`, `golangci-lint run ./...`, `go build ./...`, and
+  `make build` pass; lint reports zero issues.
+- The built `kit` binary reports a coherent project contract and all 65
+  features pass. Both `pull-request-merge` and `release-orchestration` resolve
+  unblocked against the updated rule, workflows, specs, and source hints.
+- `kit reconcile --all --output-only` reports no reconciliation need and a
+  complete source-file-size audit of 712 version-control-eligible candidates,
+  369 eligible handwritten source/test files, and zero files above 300 lines.
+- A strict local `kit pr orchestrate --dry-run` contains the in-place repair,
+  same-branch non-rewrite, old-head invalidation, fresh authorization, and
+  exceptional replacement boundaries and omits the replacement-first phrases.
+- The canonical Kit rule and the `kp` `GH-26` downstream rule are byte-identical
+  at SHA-256
+  `eb4f8af3d0abe5e1b6d3111cad328c9d73b092013c7da99220fd8dac9a6e432d`;
+  their pull-request workflow phase and completion sections also match.
+- `gitleaks git --redact --no-banner` scans 370 commits and 13.15 MB with no
+  leaks; `git diff --check` passes.
+- Browser, deployment, infrastructure, live-integration, and production
+  validation are `NOT_APPLICABLE`; this change updates local policy, templates,
+  and prompt generation without executing a release or provider mutation.
 
 ## OUTCOME
 
@@ -252,6 +318,10 @@ ledger, subagent assignment, or successful checks to invent broader authority.
   concurrent and dependencies or same-base sensitive operations serialized.
 - Identity, repository policy, infrastructure effects, corrective ownership,
   and post-merge hosted/deployment/runtime/production proof remain explicit.
+- Routine scope-preserving remediation now stays on the existing pull request
+  under bounded repair authority. A changed head reenters as `UNKNOWN` and
+  cannot merge without fresh checks, review, revalidation, and exact-head
+  authorization; exceptional replacement PRs remain new graph nodes.
 - Historical specifications remain unchanged. This active rule supersedes the
   former manual-only merge policy only for explicitly authorized agent work;
   Kit itself still performs no merge mutation.
@@ -262,3 +332,7 @@ Created this V3 specification because authorization sources, authority
 non-sources, evidence states, indirect infrastructure effects, identity
 boundaries, superseded manual-only policy, and rejected executor behavior are
 material rationale that code and tests alone cannot preserve.
+
+Updated it for issue #172 because the distinction between freezing an exact
+merge head and preserving the existing PR repair lane is consequential policy
+that must survive downstream registry refresh and release-prompt generation.

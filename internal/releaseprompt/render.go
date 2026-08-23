@@ -96,7 +96,7 @@ func addHardRules(document *promptdoc.Document, config Config) {
 		"Keep one accountable supervisor for scope, graph state, integration, validation, delivery gates, and reporting.",
 		"Verify production from actual runtime identity and state, not from merge or deployment command success.",
 		"Only an authorized node with exact current evidence in state `MERGE_READY` may enter the reconciled merge frontier; `BLOCKED` and `UNKNOWN` never do.",
-		"Convert failures requiring source changes into normal corrective PRs and first-class graph nodes; obtain merge authority for corrective or newly discovered PRs not already inside the accepted bounded plan.",
+		"Keep routine, scope-preserving source remediation on the existing PR head under bounded repair authority; invalidate old-head readiness and merge authority, rerun current-head checks and review, and require later exact-head authorization. Create a replacement corrective PR only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user requires it.",
 		"Run the configured final integration suite after all intended units pass individual environment verification.",
 		"Never trade correctness, availability, security, compatibility, or data integrity for completion.",
 		"Preserve every repository's local issue, branch, worktree, delivery, testing, infrastructure, and approval rules.",
