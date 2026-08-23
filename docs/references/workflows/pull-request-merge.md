@@ -47,12 +47,14 @@ evidence:
    current-head and repository-policy evidence.
 3. Reconcile the authorized ready frontier immediately before each wave;
    serialize dependencies and same-base sensitive operations.
-4. When separately authorized routine remediation is required, update the
-   existing pull-request head between waves, invalidate its prior head evidence
-   and merge authority, and return it to `UNKNOWN` pending fresh checks, review,
-   revalidation, and exact-head authorization. Reserve replacement pull
+4. When separately authorized routine remediation is required, use ordinary,
+   non-history-rewriting commits to update the existing pull-request head
+   between waves, invalidate its prior head evidence and merge authority, and
+   return it to `UNKNOWN` pending fresh checks, review, revalidation, and
+   exact-head authorization. Reserve replacement pull
    requests for material scope changes, heads that cannot be updated safely,
-   or explicit repository-policy or user requirements.
+   or explicit repository-policy or user requirements. Do not rebase,
+   force-push, retarget, or otherwise replace the branch's reviewed history.
 5. Merge or queue only assigned `MERGE_READY` nodes, preserving partial state
    and isolating failures.
 6. Record merge, hosted workflow, deployment/runtime, and production evidence
