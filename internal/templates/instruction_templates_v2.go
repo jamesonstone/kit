@@ -273,6 +273,7 @@ const agentsRLM = `# RLM
 - Load ` + "`docs/references/rules/backend-service-architecture.md`" + ` before implementing API or backend routes, controllers or handlers, application services, repositories, persistence adapters, or gateways
 - Load ` + "`docs/references/rules/frontend-application-architecture.md`" + ` before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components
 - Load ` + "`docs/references/rules/testing-and-environment-validation.md`" + ` and ` + "`docs/references/testing.md`" + ` before implementation or validation, including browser automation and browser testing
+- Load ` + "`docs/references/rules/deadline-mode.md`" + ` only when the user explicitly signals a real time constraint or deadline in-thread; never infer or proactively suggest deadline mode
 - Load ` + "`docs/references/rules/deletion-safety.md`" + ` before designing deletion behavior or deleting persistent project, user, business, or external-system state
 - Load ` + "`docs/references/rules/aws-agent-toolkit-guidance.md`" + ` before AWS-dependent work
 - Load ` + "`docs/references/rules/infrastructure-change-approval.md`" + ` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state

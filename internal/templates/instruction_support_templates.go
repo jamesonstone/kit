@@ -171,6 +171,7 @@ const referencesREADME = `# References
 - Use ` + "`rules/infrastructure-change-approval.md`" + ` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal
 - Use ` + "`rules/aws-agent-toolkit-guidance.md`" + ` before AWS-dependent work to select current Agent Toolkit skills, official documentation, the AWS MCP Server or CLI fallback, verified identity, infrastructure approval, and secret-safe handling
 - Use ` + "`rules/testing-and-environment-validation.md`" + ` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
+- Use ` + "`rules/deadline-mode.md`" + ` only when the user explicitly signals a real deadline or time constraint, to narrow testing and implementation scope without weakening required approvals, security, or migration/compatibility invariants
 - Use ` + "`rules/source-file-size.md`" + ` before editing implementation/source or test files and for whole-project reconcile audits
 - Use ` + "`rules/codex-thread-initialization.md`" + ` to preserve Codex's ordered pre-response rename and pin gate during instruction refresh and reconciliation
 - Use ` + "`worktrees.md`" + ` when present for the canonical native Git worktree hierarchy, naming, shared-state model, safety contract, and optional manual convenience commands

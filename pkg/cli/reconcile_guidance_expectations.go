@@ -17,6 +17,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"repo-local docs before global model/vendor instructions",
 			"Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text",
 			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
+			"Load `docs/references/rules/deadline-mode.md` only when the user explicitly signals a real time constraint or deadline in-thread; never infer or proactively suggest deadline mode",
 			"Load `docs/references/rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state",
 			"Load `docs/references/rules/aws-agent-toolkit-guidance.md` before AWS-dependent work",
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
@@ -42,6 +43,7 @@ func v2GuidanceExpectations() map[string][]string {
 		"docs/references/README.md": {
 			"`rules/agent-completion-output.md`",
 			"`rules/human-authorship.md`",
+			"`rules/deadline-mode.md`",
 			"`rules/aws-agent-toolkit-guidance.md`",
 			"`rules/deletion-safety.md`",
 			"`rules/infrastructure-change-approval.md`",
@@ -139,6 +141,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"## Context Budget Rules",
 			"Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text",
 			"Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation, including browser automation and browser testing",
+			"Load `docs/references/rules/deadline-mode.md` only when the user explicitly signals a real time constraint or deadline in-thread; never infer or proactively suggest deadline mode",
 			"Load `docs/references/rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state",
 			"Load `docs/references/rules/aws-agent-toolkit-guidance.md` before AWS-dependent work",
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
@@ -172,6 +175,7 @@ func v3GuidanceExpectations() map[string][]string {
 		"docs/references/README.md": {
 			"`rules/agent-completion-output.md`",
 			"`rules/human-authorship.md`",
+			"`rules/deadline-mode.md`",
 			"`rules/aws-agent-toolkit-guidance.md`",
 			"`rules/deletion-safety.md`",
 			"`rules/infrastructure-change-approval.md`",

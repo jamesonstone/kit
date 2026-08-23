@@ -21,6 +21,8 @@ rules:
     required: false
   - slug: human-authorship
     required: false
+  - slug: deadline-mode
+    required: false
 evidence:
   - kind: routing
     path: docs/agents/README.md

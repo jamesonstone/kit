@@ -234,6 +234,9 @@ each omission, and final integration ownership.
   execution, assign one implementation owner and a later read-only reviewer,
   or split responsibilities differently. Parallel overlap requires an
   explicit low-risk integration plan.
+- Serialize work sharing a repository, a migration or schema registry, a
+  contract under active revision, deployment state, runtime authority, or
+  another mutable external resource, even when file paths differ.
 
 ### Stable Continuity And Rebriefing
 
@@ -263,6 +266,26 @@ worktrees, create branches, stage files, commit, push, open pull requests,
 resolve review threads, merge, queue a merge, or mark the whole workflow
 complete unless that exact mutation is explicitly assigned, authorized, and
 allowed by the active repository rules.
+
+### Handoff Reconciliation
+
+Never adopt a child or logical lane's handoff solely from its narrative.
+Before integrating, repairing, or advancing state based on a handoff:
+
+1. inspect the current worktree and diff for the claimed changes;
+2. reconcile against git and remote heads;
+3. reconcile against GitHub issue, pull-request, and check state when
+   delivery is in scope;
+4. reconcile against the canonical plan or spec and its accepted acceptance
+   criteria;
+5. reconcile against artifact identity and deployment/runtime evidence when
+   either is claimed; and
+6. record any current external blocker the handoff surfaced.
+
+Change a stale, unverified, or narrative-only claim to `unknown` or
+`unobserved` instead of carrying it forward as fact. Do not repeat completed
+work or trust stale checkpoint text; treat a lane's own summary as a starting
+hypothesis to reconcile, not the source of truth for state.
 
 ### Merge-Wave Authority
 

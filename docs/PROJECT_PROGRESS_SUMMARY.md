@@ -70,6 +70,7 @@
 | 0067 | agent-completion-output | `docs/specs/0067-agent-completion-output` | deliver | no | 2026-08-18 | Give every Kit-managed coding-agent task a terminal response that an operator can scan and act on immediately. Completion starts with one literal overall status, exposes blockers and unfinished work before detail, and uses a left-aligned task-specific evidence block without sacrificing existing validation, delivery, orchestration, or repository-memory requirements. |
 | 0068 | human-authorship | `docs/specs/0068-human-authorship` | deliver | no | 2026-08-20 | Make displayed authorship human-only in every Kit-managed project. Coding agents may implement the work, but commits, pull requests, issues, comments, trailers, and other attribution surfaces must show only the human user. |
 | 0069 | multi-agent-orchestration-evaluation-gate | `docs/specs/0069-multi-agent-orchestration-evaluation-gate` | deliver | no | 2026-08-23 | Make every coding agent evaluate multi-agent/parallel decomposition as a mandatory first pass during native plan formation, not just for work that already looks obviously large. Adds a new cross-file Hard Gate ahead of Work Lane Mutation Hard Gate, strengthens the existing `agent-team-orchestration` rule, and marks it required in the implementation-delivery workflow, all while keeping the recorded decision free to be single-lane and the capability vocabulary free of pinned model names. |
+| 0070 | deadline-mode | `docs/specs/0070-deadline-mode` | deliver | no | 2026-08-23 | Add a new, conditional, pointer-loaded `deadline-mode` ruleset that narrows testing and implementation scope under an explicit, user-signaled deadline without weakening required approvals, security, or compatibility invariants, plus a non-contradictory supersession pointer in `testing-and-environment-validation`. Also hardens `agent-team-orchestration` with explicit concurrency-serialization triggers and a new Handoff Reconciliation rule. No Hard Gate, no CONSTITUTION.md route, no immutable instruction version bump. |
 
 ## PROJECT INTENT
 
@@ -675,6 +676,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: deliver issue #168 through its ready pull request; merge requires separate authorization
 - **POINTERS**: `docs/specs/0069-multi-agent-orchestration-evaluation-gate/SPEC.md`, `docs/references/rules/agent-team-orchestration.md`
 
+### deadline-mode
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Narrow testing and implementation scope under an explicit, user-signaled deadline without weakening required approvals, security, or compatibility invariants, capturing the same effectiveness the user observed feeding an equivalent architecture to Codex under a real deadline.
+- **APPROACH**: Add a new, conditional, pointer-loaded `deadline-mode` ruleset (no Hard Gate, no CONSTITUTION.md route, no version bump) with a priority ordering, a stop-doing/continue-doing invariant-preserving split, a deadline testing budget, and a non-contradictory, explicitly recorded supersession of `testing-and-environment-validation`'s complete-suite-before-handoff default. Wire it through RLM.md, references/README.md, and implementation-delivery.md. Bundle in explicit concurrency-serialization triggers and a new Handoff Reconciliation rule for `agent-team-orchestration`. Deliver issue #170 through one ready pull request, based on GH-168 since it depends on PR #169's not-yet-merged content in the same rule file.
+- **OPEN ITEMS**: deliver issue #170 through its ready pull request; merge requires separate authorization; depends on PR #169 (#168) merging first
+- **POINTERS**: `docs/specs/0070-deadline-mode/SPEC.md`, `docs/references/rules/deadline-mode.md`, `docs/references/rules/agent-team-orchestration.md`
+
 ## LAST UPDATED
 
-2026-08-23 12:00:00 EDT
+2026-08-23 13:30:00 EDT
