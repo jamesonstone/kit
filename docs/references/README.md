@@ -26,6 +26,7 @@
 - Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, name-aware material AWS targets, one-pass execution, and explicit confirmation for deletion or removal
 - Use `rules/aws-agent-toolkit-guidance.md` before AWS-dependent work to select current Agent Toolkit skills, official documentation, the AWS MCP Server or CLI fallback, verified identity, infrastructure approval, and secret-safe handling
 - Use `rules/testing-and-environment-validation.md` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
+- Use `rules/deadline-mode.md` only when the user explicitly signals a real deadline or time constraint, to narrow testing and implementation scope without weakening required approvals, security, or migration/compatibility invariants
 - Use `rules/source-file-size.md` before editing implementation/source or test files and for whole-project reconcile audits
 - Use `rules/codex-thread-initialization.md` to preserve Codex's ordered pre-response rename and pin gate during instruction refresh and reconciliation
 - Use `worktrees.md` for the canonical native Git worktree hierarchy, naming, shared-state model, environment ownership, and safety contract
@@ -60,6 +61,7 @@ are:
 | `coding-agent-context-usage` | coding-agent, workflow, rules, context, evidence | Capability lookup, deterministic context resolution, required evidence loading, and re-resolution. |
 | `constitution-curation` | implementation, validation, repository-memory, constitution | Evidence-based promotion of durable rationale and project-wide invariants. |
 | `cross-repository-program-coordination` | coding-agent, workflow, cross-repository, program, deployment, handoff, resume, dispatch | Coordinator-owned ledger, dependency frontier, exact evidence, checkpoints, reconciliation, and handoff for multi-repository programs. |
+| `deadline-mode` | coding-agent, workflow, testing, implementation, prioritization | Explicit, user-signaled, invariant-preserving narrowing of testing scope and implementation complexity under a real deadline. |
 | `deletion-safety` | implementation, data, persistence, filesystem, identity, API, UI, automation, cleanup, retention, migration, operations, cloud, infrastructure | Recoverable soft delete by default and exact post-outline manual confirmation before hard delete. |
 | `frontend-application-architecture` | architecture, frontend, route, page, component, state | Responsibility and dependency boundaries for frontend routes, features, data adapters, state, and UI. |
 | `github-pr-delivery` | git, GitHub, pull-request, documentation | Issue-to-PR delivery sequencing and post-PR verification. |

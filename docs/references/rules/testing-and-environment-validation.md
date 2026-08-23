@@ -86,6 +86,10 @@ deployment environment or external integration for a project that has none.
   assertions, or permanent skips.
 - During development, run focused tests for fast feedback. Before handoff, run
   the complete applicable code-level suite and record any genuine blocker.
+  This default may be superseded only by an active, explicitly recorded
+  `docs/references/rules/deadline-mode.md` authorization; supersession still
+  requires reporting deferred or reduced-scope validation literally, per
+  `agent-completion-output`, never as complete.
 
 ### Pull-Request CI
 
