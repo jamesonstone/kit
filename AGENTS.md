@@ -35,6 +35,13 @@
 - Use native agent planning for research, clarification, design, and implementation planning
 - Treat repo-local markdown under `docs/` as persistent repository memory
 
+## Multi-Agent Orchestration Evaluation Hard Gate
+
+- Before finalizing any native implementation plan for a new feature, a substantial architectural or behavioral change, or a multi-file refactor, load `docs/references/rules/agent-team-orchestration.md` and evaluate whether the work benefits from multi-agent or parallel decomposition using that rule's lifecycle and semantic capability profiles.
+- A single mechanical edit, a direct question, or read-only research that never forms an implementation plan does not trigger this gate.
+- Record the decision before the plan is finalized: either a multi-lane Agent Team Plan, or `single-lane, because <reason>` using that rule's single-lane criteria. Never skip the evaluation silently, even when the recorded answer is single-lane.
+- This gate fires during plan formation and precedes the Work Lane Mutation Hard Gate below, which fires later, before the first repository mutation.
+
 ## Work Lane Mutation Hard Gate
 
 - Before any coding-agent repository file or delivery mutation, including issue, branch, staging, commit, push, worktree, and pull-request mutations, load `docs/agents/GUARDRAILS.md` and `work-lane-gating` first, complete read-only safety recon, then ask exactly: "Before I make any repository changes, should I create a new GitHub issue, GH-<issue-number> branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?"

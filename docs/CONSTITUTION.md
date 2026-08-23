@@ -165,7 +165,7 @@
 
 ## NON-GOALS
 
-- Kit does not choose models, launch coding agents, supervise agent processes, or replace native agent planning.
+- Kit mandates evaluation of multi-agent and parallel execution topology before a native implementation plan is finalized, but it does not choose the concrete model, force parallel execution, launch coding agents, supervise agent processes, or replace native agent planning.
 - Kit does not fetch external evidence during context resolution.
 - Kit does not treat generated JSON, telemetry, prompts, or agent transcripts as canonical repository memory.
 - Kit does not preserve every historical CLI path across major releases.

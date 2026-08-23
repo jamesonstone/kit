@@ -53,7 +53,7 @@ are:
 | Ruleset | Scope | Purpose |
 | --- | --- | --- |
 | `agent-completion-output` | coding-agent, task, completion, implementation, research, diagnosis, planning, validation, review, operations, coordination, handoff | Literal overall status, immediate operator actions, and required goal-specific evidence profiles. |
-| `agent-team-orchestration` | coding-agent, workflow, dispatch, subagent, verification | Host-confirmed capability negotiation, provider-neutral profiles, accountable root supervision, bounded specialist lanes, continuity, degradation, and verification. |
+| `agent-team-orchestration` | coding-agent, workflow, dispatch, subagent, verification | Mandatory first-pass topology evaluation, host-confirmed capability negotiation, provider-neutral profiles, accountable root supervision, bounded specialist lanes, continuity, degradation, and verification. |
 | `aws-agent-toolkit-guidance` | coding-agent, AWS, AWS CLI, AWS MCP, Agent Toolkit, infrastructure, documentation, secrets | Current AWS skills and official documentation, MCP or CLI execution, verified identity, material targets, infrastructure approval, and secret-safe handling. |
 | `backend-service-architecture` | architecture, backend, API, service, repository, gateway | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |
 | `codex-thread-initialization` | codex, coding-agent, session, thread, session-management | Ordered pre-response thread renaming and pinning with verified or fail-visible status. |

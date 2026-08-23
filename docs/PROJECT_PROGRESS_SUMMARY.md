@@ -69,6 +69,7 @@
 | 0066 | capability-aware-subagent-workflows | `docs/specs/0066-capability-aware-subagent-workflows` | deliver | no | 2026-08-16 | Make Kit's existing subagent orchestration rule capability-aware and usable across coding-agent hosts while optimizing the adapter for Codex's native model, effort, child-thread, follow-up, waiting, and parallel-execution controls. Kit remains prompt-only: it defines truthful negotiation and routing behavior but never selects a model, launches a child, or supervises execution. |
 | 0067 | agent-completion-output | `docs/specs/0067-agent-completion-output` | deliver | no | 2026-08-18 | Give every Kit-managed coding-agent task a terminal response that an operator can scan and act on immediately. Completion starts with one literal overall status, exposes blockers and unfinished work before detail, and uses a left-aligned task-specific evidence block without sacrificing existing validation, delivery, orchestration, or repository-memory requirements. |
 | 0068 | human-authorship | `docs/specs/0068-human-authorship` | deliver | no | 2026-08-20 | Make displayed authorship human-only in every Kit-managed project. Coding agents may implement the work, but commits, pull requests, issues, comments, trailers, and other attribution surfaces must show only the human user. |
+| 0069 | multi-agent-orchestration-evaluation-gate | `docs/specs/0069-multi-agent-orchestration-evaluation-gate` | deliver | no | 2026-08-23 | Make every coding agent evaluate multi-agent/parallel decomposition as a mandatory first pass during native plan formation, not just for work that already looks obviously large. Adds a new cross-file Hard Gate ahead of Work Lane Mutation Hard Gate, strengthens the existing `agent-team-orchestration` rule, and marks it required in the implementation-delivery workflow, all while keeping the recorded decision free to be single-lane and the capability vocabulary free of pinned model names. |
 
 ## PROJECT INTENT
 
@@ -665,6 +666,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: deliver issue #166 through its ready pull request; merge requires separate authorization
 - **POINTERS**: `docs/specs/0068-human-authorship/SPEC.md`, `docs/references/rules/human-authorship.md`
 
+### multi-agent-orchestration-evaluation-gate
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Make every coding agent evaluate multi-agent/parallel decomposition as a mandatory first pass during native plan formation, not just for work that already looks obviously large. The evaluation is mandatory; the recorded answer is still allowed to be single-lane.
+- **APPROACH**: Add a new cross-file Hard Gate to CLAUDE.md, AGENTS.md, copilot-instructions.md, and GUARDRAILS.md positioned ahead of Work Lane Mutation Hard Gate, strengthen the existing `agent-team-orchestration` rule with a mandatory first-pass topology decision, broaden the RLM.md pointer while leaving TOOLING.md's dispatch-time pointer conditional, mark the rule required in the implementation-delivery workflow, narrow the CONSTITUTION.md NON-GOALS bullet, and publish immutable instruction version v7. Keep the capability vocabulary abstracted with no pinned model names. Deliver issue #168 through one ready pull request.
+- **OPEN ITEMS**: deliver issue #168 through its ready pull request; merge requires separate authorization
+- **POINTERS**: `docs/specs/0069-multi-agent-orchestration-evaluation-gate/SPEC.md`, `docs/references/rules/agent-team-orchestration.md`
+
 ## LAST UPDATED
 
-2026-08-20 20:50:00 EDT
+2026-08-23 12:00:00 EDT

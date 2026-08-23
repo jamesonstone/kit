@@ -61,9 +61,6 @@ func TestAgentInstructionsV6RequiresAgentCompletionOutput(t *testing.T) {
 			t.Fatalf("v6 instructions do not contain %q", want)
 		}
 	}
-	if CurrentAgentVersion != "v6" {
-		t.Fatalf("CurrentAgentVersion = %q, want v6", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV6PreservesV5OutsideAdditiveSections(t *testing.T) {
