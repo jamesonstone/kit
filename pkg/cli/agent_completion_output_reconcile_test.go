@@ -36,10 +36,10 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			audit:   auditV3SupportGuidance,
 		},
 		{
-			name:    "V3 root action table",
+			name:    "V3 root action list",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "Type | Action required | Why | Continue with",
+			snippet: "prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
 			audit:   auditV3SupportGuidance,
 		},
 		{

@@ -69,26 +69,30 @@ The first human-readable line must be:
   response. In that case, this heading is the first human-readable line inside
   the required wrapper.
 
-### Operator Action Table
+### Operator Action List
 
-Immediately after the status heading, emit this table:
+Immediately after the status heading, emit a prioritized bullet list:
 
 ```markdown
-| Type | Action required | Why | Continue with |
-| --- | --- | --- | --- |
-| None | No action required | Requested scope and required validation are complete | Optional: `<copy-ready prompt when useful>` |
+## Next actions
+
+- **None — No action required.**
+  Why: Requested scope and required validation are complete.
+  Continue with: `Optional: <copy-ready prompt when useful>`
 ```
 
-- Order rows as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`.
-- Omit row types that do not apply, except every PASS response includes one
-  `None` row.
-- Put one independently actionable concern in each row.
-- Start `Action required` with the responsible actor when ownership is not
-  obvious, such as `User:`, `Agent:`, or `External system:`.
+- Order items as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`.
+- Omit types that do not apply, except every PASS response includes one
+  `None` item.
+- Put one independently actionable concern in each item.
+- Start the bold lead with the type, then the responsible actor when
+  ownership is not obvious, such as `User:`, `Agent:`, or `External system:`.
+- Include indented `Why:` and `Continue with:` lines on every item.
 - Make every required `Continue with` value a copy-ready prompt or command.
   Do not write only “continue,” “retry,” “follow up,” or another vague action.
-- Use `None` rather than an empty cell. Never hide a blocker or incomplete
+- Use `None` rather than omitting the list. Never hide a blocker or incomplete
   requirement below completed work.
+- Do not use a Markdown pipe table for operator actions.
 
 ## Overall Status Semantics
 
@@ -105,14 +109,14 @@ Immediately after the status heading, emit this table:
 - The response contains a usable result, but required scope or evidence
   remains incomplete.
 - No unresolved known failure is being presented as success.
-- The action table names every incomplete item, why it remains, and the exact
+- The action list names every incomplete item, why it remains, and the exact
   prompt or command that resumes completion.
 
 ### BLOCKED
 
 - Completion requires input, authority, credentials, capacity, approval, or
   another external state the agent cannot establish within the task boundary.
-- The action table names the blocker, its supporting evidence, the smallest
+- The action list names the blocker, its supporting evidence, the smallest
   unblock action, and the exact resume prompt.
 - Complete all safe unblocked work before reporting BLOCKED.
 
@@ -121,10 +125,10 @@ Immediately after the status heading, emit this table:
 - A required outcome or validation is known to fail, no external blocker is
   the stopping reason, and in-scope remediation did not produce a usable
   completion.
-- The action table names the failure, attempted recovery, remaining risk, and
+- The action list names the failure, attempted recovery, remaining risk, and
   the next viable action.
 
-Evidence rows preserve native observed states such as `PENDING`, `UNKNOWN`,
+Evidence items preserve native observed states such as `PENDING`, `UNKNOWN`,
 `SKIPPED`, `NOT_APPLICABLE`, `QUEUED`, or provider-specific failure states.
 Never translate an unobserved or pending state into PASS.
 
@@ -147,16 +151,12 @@ data or it materially improves the operator's next decision.
 
 ## Left-Aligned Detail Contract
 
-- Use the Operator Action Table as the only Markdown table in the normal
-  terminal response.
-- After that table, use left-aligned section headings and CommonMark list or
-  key/value blocks for the selected profile and every required supplement.
+- Do not use a Markdown pipe table in the normal terminal response.
+- After the action list, use left-aligned section headings and CommonMark list
+  or key/value blocks for the selected profile and every required supplement.
 - Start each result with a short bold lead label. Put supporting evidence,
   rationale, scope, or limitations on indented continuation lines.
-- Do not use additional pipe tables merely to organize repeated fields. The
-  renderer can center each independently sized table, producing inconsistent
-  left edges and harder scanning.
-- A higher-priority output schema may still require another table or structured
+- A higher-priority output schema may still require a table or structured
   object. Preserve its required shape while keeping this rule's semantic order.
 
 ## Required Profiles
@@ -236,7 +236,7 @@ fix, use the implementation profile and include diagnosis as evidence.
   - **Acceptance signal:** `<observable completion>`
 ```
 
-List unresolved material decisions in the action table. A plan is PASS only
+List unresolved material decisions in the action list. A plan is PASS only
 when it is decision-complete for the requested scope.
 
 ### Validation And Testing
@@ -263,7 +263,7 @@ acceptance claims separate. One layer never implies another.
 ```
 
 Order findings by severity. If no actionable findings exist, include one
-`None` row and state the inspected scope and residual limitations.
+`None` item and state the inspected scope and residual limitations.
 
 ### Operations, Deployment, And Monitoring
 
@@ -303,13 +303,13 @@ omitted lanes.
 
 ## Readability Rules
 
-- Keep the action table compact and use one concern per row.
+- Keep the action list compact and use one concern per item.
 - Use one result per list item and short, concrete lead labels.
 - Put multi-paragraph explanation after the list item it supports.
 - Prefer exact identifiers, links, paths, commands, timestamps, and counts over
   vague claims.
 - Redact secrets, credentials, private customer data, and signed URLs.
-- Do not repeat the same fact in the action table and detail blocks unless
+- Do not repeat the same fact in the action list and detail blocks unless
   repetition is necessary to make a blocker actionable.
 
 ## Composition With Existing Contracts
@@ -335,7 +335,8 @@ omitted lanes.
 - Reporting PASS while required validation is failing, pending, or unobserved.
 - Saying “no blockers” while required scope is incomplete.
 - Naming a blocker without the smallest unblock action and resume prompt.
-- Dumping raw command output into wide tables.
+- Using a Markdown pipe table for operator actions in the normal terminal
+  response.
 - Using every profile because several activities occurred during one task.
 - Replacing provider-native evidence states with an optimistic summary.
 
@@ -346,9 +347,11 @@ Completed implementation:
 ```markdown
 # PASS — canonical completion output is implemented and ready for review
 
-| Type | Action required | Why | Continue with |
-| --- | --- | --- | --- |
-| None | No action required | Requested scope and required local validation are complete | Optional: `Review pull request #123.` |
+## Next actions
+
+- **None — No action required.**
+  Why: Requested scope and required local validation are complete.
+  Continue with: `Optional: Review pull request #123.`
 
 ## Completed
 
@@ -365,9 +368,11 @@ Blocked diagnosis:
 ```markdown
 # BLOCKED — production root cause cannot be confirmed without log access
 
-| Type | Action required | Why | Continue with |
-| --- | --- | --- | --- |
-| Blocker | User: grant read-only production log access | Current evidence ends at the service boundary | `Resume diagnosis using the authorized production logs.` |
+## Next actions
+
+- **Blocker — User: grant read-only production log access.**
+  Why: Current evidence ends at the service boundary.
+  Continue with: `Resume diagnosis using the authorized production logs.`
 
 ## Diagnosis
 
@@ -380,11 +385,13 @@ Blocked diagnosis:
 ## Verification
 
 - Confirm the first human-readable line uses the exact four-state heading.
-- Confirm the operator action table follows immediately and has no blank cells.
-- Confirm Blocker, Incomplete, Next, Optional, and None rows are ordered and
+- Confirm the operator action list follows immediately and has no blank Why
+  or Continue with lines.
+- Confirm Blocker, Incomplete, Next, Optional, and None items are ordered and
   semantically consistent with the overall status.
 - Confirm one primary profile matches the requested deliverable.
 - Confirm required delivery, validation, orchestration, program, and
   repository-memory evidence remains present.
 - Confirm every required follow-up is copy-ready and every unavailable or
   unobserved result is reported literally.
+- Confirm the normal terminal response does not use a Markdown pipe table.

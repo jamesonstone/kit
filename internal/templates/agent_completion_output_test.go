@@ -12,13 +12,12 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 		"## Agent Completion Output Contract",
 		"docs/references/rules/agent-completion-output.md",
 		"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
-		"Type | Action required | Why | Continue with",
-		"Order rows Blocker, Incomplete, Next, Optional, then None",
-		"every PASS includes a None row",
+		"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
+		"every PASS includes a None item",
 		"Make required follow-ups copy-ready",
 		"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE",
-		"After the action table, use left-aligned headings and CommonMark list or key/value blocks",
-		"Do not use another Markdown pipe table unless a higher-priority schema requires it",
+		"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
+		"Do not use a Markdown pipe table unless a higher-priority schema requires it",
 		"implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
 	}
 	for name, content := range map[string]string{
@@ -76,7 +75,7 @@ func TestContextWorkflowsRequireAgentCompletionOutput(t *testing.T) {
 func TestConstitutionTemplateRequiresAgentCompletionOutput(t *testing.T) {
 	for _, check := range []string{
 		"docs/references/rules/agent-completion-output.md",
-		"literal status, immediate action table, and primary task profile",
+		"literal status, immediate prioritized action list, and primary task profile",
 	} {
 		if !strings.Contains(Constitution, check) {
 			t.Errorf("expected Constitution template to contain %q", check)

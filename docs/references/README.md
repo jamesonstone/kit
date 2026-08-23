@@ -9,7 +9,7 @@
 - Use `kit rules list` as the authoritative live ruleset inventory; the index
   below is a concise navigation aid
 - Use `rules/agent-completion-output.md` before every terminal task completion
-  or handoff response to require a literal status, immediate action table, and
+  or handoff response to require a literal status, immediate prioritized action list, and
   task-specific evidence profile
 - Use `rules/agent-team-orchestration.md` when delegation, direct subagent
   execution, continuity, or read-only verification topology affects the task;
