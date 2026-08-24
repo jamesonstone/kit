@@ -91,9 +91,9 @@ func managedFileDeliveryClosingInstructions() []string {
 		"Do not mutate the primary checkout for implementation, and do not use stash, reset, or clean to create or clear a worktree.",
 		"Remain in this coding-agent session after creating or updating the ready pull request. Do not treat pull-request creation as session completion.",
 		"While remaining in this session, address remaining pull-request review feedback as it arrives. Handle review, authorized merge, and primary leftover cleanup as one continuation of this same lane.",
-		"Merge the worktree pull request only after merge is authorized by a direct user request or an accepted bounded merge plan, following `github-pr-merge`. This leftover cleanup does not create merge authority.",
+		"Merge the worktree pull request only after merge is authorized by a direct user request or an accepted bounded merge plan that names the exact authorized pull request set, following `github-pr-merge`. This leftover cleanup does not create merge authority.",
 		"After remaining pull-request feedback is addressed and the authorized merge is confirmed on the protected default branch, use the primary checkout on that default branch.",
-		"Confirm the merge first. Then run `git clean -fd` only in that primary checkout so leftover untracked command-owned files no longer block pulling the merge. If leftover unstaged tracked modifications of the same command-owned paths would still block the pull, restore those exact paths to HEAD. Then pull the merged default branch.",
-		"Do not run `git clean` before merge, inside the writable worktree, or when unrelated untracked files are present; if unrelated dirty or untracked state exists, stop and report it instead of wiping it.",
+		"Confirm the merge first. Then, only in that primary checkout, enumerate or dry-run all untracked files, verify every candidate is command-owned, and run `git clean -fd` with only those verified paths so leftover untracked command-owned files no longer block pulling the merge. If leftover command-owned tracked changes in the index or worktree of those exact paths would still block the pull, restore those exact paths in both the index and the worktree to HEAD. Then pull the merged default branch.",
+		"Do not run `git clean` before merge, inside the writable worktree, or when unrelated dirty or untracked state is present; if unrelated dirty or untracked state exists, stop and report it instead of wiping it.",
 	}
 }

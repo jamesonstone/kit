@@ -205,11 +205,13 @@ root-checkout editing into the regular workflow.
 
 After the matching worktree pull request has been merged into the protected
 default branch, leftover command-owned untracked files on the primary checkout
-from that command may be removed with `git clean -fd`, and leftover
-command-owned unstaged tracked modifications of those same paths may be
-restored to HEAD, so the primary checkout can pull the merge. Do not use this
-exception before merge, for unrelated dirty or untracked state, or to create or
-clear a worktree.
+from that command may be removed with `git clean -fd` after enumerating or
+dry-running all untracked files, verifying every candidate is command-owned,
+and passing only those verified paths. Leftover command-owned tracked changes
+in the index or worktree of those same exact paths may be restored to HEAD in
+both the index and the worktree, so the primary checkout can pull the merge.
+Do not use this exception before merge, for unrelated dirty or untracked
+state, or to create or clear a worktree.
 
 ## Anti-Patterns
 

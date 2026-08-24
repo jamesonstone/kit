@@ -251,21 +251,22 @@ Include:
   feedback as it arrives. Handle review, authorized merge, and primary leftover
   cleanup as one continuation of the current lane.
 - Merge the worktree pull request only after merge is authorized by a direct
-  user request or an accepted bounded merge plan, following `github-pr-merge`.
+  user request or an accepted bounded merge plan that names the exact authorized pull request set, following `github-pr-merge`.
 - This cleanup is leftover disposal after an authorized merge. It does not
   create merge authority.
 - After remaining pull-request feedback is addressed and the authorized merge
   is confirmed on the protected default branch, use the primary checkout on
   that default branch.
-- Confirm merge evidence first. Then run `git clean -fd` only in that primary
-  checkout so leftover untracked command-owned files no longer block pulling
-  the merge.
-- If leftover unstaged tracked modifications of the same command-owned paths
-  would still block the pull, restore those exact paths to HEAD.
+- Confirm merge evidence first. Then, only in that primary checkout, enumerate or dry-run all untracked files, verify every candidate is command-owned, and
+  run `git clean -fd` with only those verified paths so leftover untracked
+  command-owned files no longer block pulling the merge.
+- If leftover command-owned tracked changes in the index or worktree of those
+  exact paths would still block the pull, restore those exact paths in both the index and the worktree to HEAD.
 - Then pull the merged default branch.
 - Do not run `git clean` before merge, inside the writable worktree, to create
-  or clear a lane, or when unrelated untracked files are present. If unrelated
-  dirty or untracked state exists, stop and report it instead of wiping it.
+  or clear a lane, or when unrelated dirty or untracked state is present. If
+  unrelated dirty or untracked state exists, stop and report it instead of
+  wiping it.
 - Keep the existing prohibition on stash, reset, clean, force removal, or
   branch deletion to create or clear a lane.
 
