@@ -175,6 +175,10 @@ obvious without fighting renderer table layout.
 - Feature-to-feature `relationships[].type` cannot be `supersedes`; that
   token is a `references[].relation` value. Record the 0067 replacement as
   `related_to` plus a `supersedes` reference.
+- Required-snippet reconcile maps cannot encode a forbidden leftover
+  operator-action table. Rejection belongs in a separate forbidden check
+  on AGENTS.md, Copilot instructions, and GUARDRAILS.md, plus managed
+  safety-guidance propagation tests.
 
 ## VALIDATION
 

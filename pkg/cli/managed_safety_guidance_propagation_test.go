@@ -150,6 +150,9 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)
 			}
 		}
+		if strings.Contains(content, legacyOperatorActionTableHeader) {
+			t.Errorf("%s still contains leftover operator-action table %q", relativePath, legacyOperatorActionTableHeader)
+		}
 	}
 
 	for _, relativePath := range []string{

@@ -87,6 +87,26 @@ func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
 			))
 			break
 		}
+		for _, snippet := range v3ForbiddenGuidance()[relativePath] {
+			if !strings.Contains(body, snippet) {
+				continue
+			}
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				fmt.Sprintf("V3 instruction support document still contains forbidden guidance %q", snippet),
+				templateSource(projectRoot),
+				fmt.Sprintf(
+					"remove the leftover operator-action table, or preview a targeted generated replacement with `kit reconcile --include-files --force --dry-run --diff --file %s` before overwriting customized content",
+					relativePath,
+				),
+				[]string{
+					fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", relativePath),
+					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
+				},
+			))
+			break
+		}
 		if containsVendorToolRequirement(body) {
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,

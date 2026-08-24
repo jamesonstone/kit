@@ -206,3 +206,14 @@ func v3GuidanceExpectations() map[string][]string {
 		},
 	}
 }
+
+const legacyOperatorActionTableHeader = "| Type | Action required | Why | Continue with |"
+
+func v3ForbiddenGuidance() map[string][]string {
+	header := []string{legacyOperatorActionTableHeader}
+	return map[string][]string{
+		"AGENTS.md":                       header,
+		".github/copilot-instructions.md": header,
+		"docs/agents/GUARDRAILS.md":       header,
+	}
+}
