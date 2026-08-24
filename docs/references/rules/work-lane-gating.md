@@ -85,7 +85,13 @@ After read-only recon, stop and ask:
   an issue reference, a generic pull-request end state, or an agent's opinion
   about the most convenient lane.
 - One recorded choice covers the accepted work plus directly required tests,
-  documentation, validation fixes, review fixes, and delivery.
+  documentation, validation fixes, review fixes, delivery, remaining
+  pull-request review, an authorized merge of that pull request, and
+  post-merge primary leftover cleanup.
+- Remaining in the coding-agent session to handle review, merge once
+  authorized, and then clean the primary default branch is in-scope
+  continuation of the recorded lane. Do not ask the lane question again for
+  that sequence.
 - Ask again before materially new or tangential scope. Do not repeatedly ask
   for routine subtasks that remain inside the recorded lane and pull-request
   plan.

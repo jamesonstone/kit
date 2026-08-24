@@ -37,6 +37,10 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"Post-Merge Primary Leftover Cleanup",
 		"`git clean -fd`",
 		"leftover disposal after an authorized merge",
+		"Remain in the coding-agent session",
+		"Do not treat pull-request creation as session completion",
+		"Merge the worktree pull request only after merge is authorized",
+		"following `github-pr-merge`",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)

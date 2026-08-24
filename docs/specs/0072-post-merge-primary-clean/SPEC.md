@@ -56,9 +56,10 @@ delivery_intent: new_issue_branch_pr_ready
 Stop leftover `kit reconcile` files on the primary default branch from
 blocking `git pull` after the worktree pull request has merged. Keep the
 current design that creates a worktree, adds the same files there, and
-lands the remaining work through that PR. After remaining PR feedback is
-addressed and that PR is merged, instruct the coding agent to run
-`git clean -fd` on primary `main` and then pull.
+lands the remaining work through that PR. Instruct the coding agent to
+remain in the same session after opening the ready PR, handle remaining
+review, merge once authorized, then run `git clean -fd` on primary `main`
+and pull.
 
 ## CONTEXT
 
@@ -92,10 +93,12 @@ addressed and that PR is merged, instruct the coding agent to run
   creates or reuses the canonical worktree, adds the same files there,
   and completes remaining work through that pull request.
 - Generated managed-file delivery instructions, with and without a
-  command-owned snapshot, must tell the coding agent to run
-  `git clean -fd` on the primary default-branch checkout only after
-  remaining pull-request feedback is addressed and the worktree pull
-  request has been merged.
+  command-owned snapshot, must tell the coding agent to remain in the
+  same session after opening the ready pull request, address remaining
+  review feedback there, merge only after merge is authorized, and then
+  run `git clean -fd` on the primary default-branch checkout.
+- Those instructions must not treat pull-request creation as session
+  completion and must not grant merge authority.
 - Those instructions must then tell the agent to pull the merged default
   branch onto the primary checkout.
 - If leftover unstaged tracked modifications of the same command-owned
@@ -148,6 +151,10 @@ Splitting would create high-overlap contract drift.
   dirty state is present.
 - Treat this as delivery leftover disposal, not implementation on the
   primary checkout and not a new merge-authorization path.
+- Keep the coding agent in the same session through review, authorized
+  merge, and primary leftover cleanup. Pull-request creation is not
+  session completion. Merge still requires a direct request or accepted
+  bounded merge plan under `github-pr-merge`.
 - Do not add an instruction version `v9`. The generated reconcile prompt
   and pointer-loaded delivery rules are the operator-facing contract.
   Frozen `v8` still forbids clean to create or clear a worktree.
@@ -167,18 +174,19 @@ Splitting would create high-overlap contract drift.
 - PASS: `go vet ./pkg/cli ./internal/templates ./internal/instructions`
 - PASS: `golangci-lint run --new-from-rev=origin/main ./pkg/cli ./internal/templates ./internal/instructions`
 - PASS: `git diff --check`
-- PASS: source-file-size audit of `pkg/cli/prompt_rules.go` (96), `pkg/cli/managed_file_delivery_test.go` (269), and `pkg/cli/rules_github_delivery_test.go` (103)
+- PASS: source-file-size audit of `pkg/cli/prompt_rules.go` (99), `pkg/cli/managed_file_delivery_test.go` (274), and `pkg/cli/rules_github_delivery_test.go` (107)
 - PASS: `make build`; `./bin/kit check 0072-post-merge-primary-clean`; `./bin/kit check --project`
 - NOT_APPLICABLE: browser, end-to-end, live-integration, and production suites; this change is generated-instruction and ruleset scoped
-- PENDING: hosted GitHub checks until the pull request exists
+- PENDING: hosted GitHub checks on pull request #177
 
 ## OUTCOME
 
-Generated managed-file delivery instructions now tell the coding agent to run
-`git clean -fd` on the primary default-branch checkout after remaining PR
-feedback is addressed and the worktree PR has merged, then pull. Durable
+Generated managed-file delivery instructions now tell the coding agent to
+remain in the same session after opening the ready PR, address remaining
+review feedback there, merge only after merge is authorized, then run
+`git clean -fd` on the primary default-branch checkout and pull. Durable
 `github-pr-delivery` and `work-lane-gating` rules agree. Worktree pre-creation
-was not retried.
+was not retried. Merge is still a separate grant.
 
 ## REPOSITORY MEMORY
 

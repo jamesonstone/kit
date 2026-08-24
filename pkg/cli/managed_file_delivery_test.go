@@ -254,6 +254,11 @@ func TestManagedFileDeliveryInstructionsRequirePostMergePrimaryClean(t *testing.
 	}
 	expected := []string{
 		"`git clean -fd`",
+		"Remain in this coding-agent session",
+		"Do not treat pull-request creation as session completion",
+		"address remaining pull-request review feedback",
+		"Merge the worktree pull request only after merge is authorized",
+		"This leftover cleanup does not create merge authority",
 		"After remaining pull-request feedback is addressed",
 		"Confirm the merge first",
 		"Do not run `git clean` before merge",
