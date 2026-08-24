@@ -54,19 +54,19 @@ func managedFileDeliveryInstructionsForCommand(
 	}
 	boundary := "Treat only this exact snapshot as command-owned evidence: " + strings.Join(entries, "; ") + "."
 
-	return []string{
+	instructions := []string{
 		boundary,
 		fmt.Sprintf(
 			"Inspect `git status --short --branch` and exact-path diffs in `%s` only to verify the captured snapshot; never expand the command-owned boundary from post-command status, and preserve every unrelated change.",
 			projectRoot,
 		),
 		"Before any repository or delivery mutation, prove the user explicitly chose a new lane or to continue the existing lane for this scope and record the repository, issue, branch, non-primary worktree, protected base, and create-or-update pull-request target in a Pull-Request Landing Plan.",
-		"If the snapshot came from the primary checkout or was created before that choice and plan, trigger the work-lane tripwire: preserve it and do not adopt, transfer, stage, commit, push, restore, discard, stash, reset, or clean it.",
+		"If the snapshot came from the primary checkout or was created before that choice and plan, trigger the work-lane tripwire: preserve it and do not adopt, transfer, stage, commit, push, restore, discard, stash, reset, or clean it until the worktree pull request has been merged. After that merge, follow the post-merge primary leftover cleanup below.",
 		"Only when the snapshot was produced inside the already selected writable lane, verify every captured path matches its expected state, no path has an ambiguous staged, working-tree, or untracked conflict, and the destination index contains no unrelated state.",
 		"Verify every destination path matches its expected state, explicitly stage only the captured paths (including deleted paths), and require `git diff --cached --name-only` plus the staged patch to contain exactly the captured command-owned change.",
 		"Integrate the verified staged files with the rest of the issue change, validate the complete diff, commit on the issue branch, push it, and create or update the ready pull request.",
-		"Never transfer or stage `.env`, secrets, ignored files, or machine-local configuration; never mutate the primary checkout, commit on the protected default branch, bulk-stage files, stash, reset, clean, overwrite destination work, or disturb unrelated root-checkout or worktree changes.",
 	}
+	return append(instructions, managedFileDeliveryClosingInstructions()...)
 }
 
 func managedFileDeliveryInstructionsWithoutSnapshot(projectRoot string, rerunCommands ...string) []string {
@@ -74,13 +74,26 @@ func managedFileDeliveryInstructionsWithoutSnapshot(projectRoot string, rerunCom
 	if len(rerunCommands) > 0 && strings.TrimSpace(rerunCommands[0]) != "" {
 		rerunInstruction = "In that exact writable lane, rerun the write-capable Kit command with this exact shell-safe invocation: " + rerunCommands[0] + "."
 	}
-	return []string{
+	instructions := []string{
 		fmt.Sprintf("No exact command-owned path snapshot is present. Do not infer or transfer a managed-file delta from post-command Git status in `%s`; apply only the listed manual findings until a fresh snapshot exists.", projectRoot),
 		"Before any repository or delivery mutation, prove the user's explicit new-lane or continue-existing choice and record the complete Pull-Request Landing Plan.",
 		"For a new lane, create or reuse the human-assigned GitHub issue, exact `GH-<issue-number>` branch, and canonical non-primary writable worktree; for an existing lane, prove its exact branch, owning non-primary worktree, issue scope, and create-or-update pull-request target.",
 		rerunInstruction + " Before staging, require the rerun to emit a new exact command-owned snapshot containing every version-control-eligible path, action, pre-command state, and expected result state; if it cannot, do not adopt managed-file changes and report the blocker.",
 		"Adopt only paths in the new snapshot, verify each path against its captured states, explicitly stage only those paths, and require `git diff --cached --name-only` plus the staged patch to match the snapshot exactly.",
 		"Validate the complete diff, commit on the issue branch, push it, and create or update the ready pull request.",
-		"Never transfer or stage `.env`, secrets, ignored files, or machine-local configuration; never mutate the primary checkout, commit on the protected default branch, bulk-stage files, stash, reset, clean, overwrite destination work, or disturb unrelated root-checkout or worktree changes.",
+	}
+	return append(instructions, managedFileDeliveryClosingInstructions()...)
+}
+
+func managedFileDeliveryClosingInstructions() []string {
+	return []string{
+		"Never transfer or stage `.env`, secrets, ignored files, or machine-local configuration; never commit on the protected default branch, bulk-stage files, stash, reset, overwrite destination work, or disturb unrelated root-checkout or worktree changes.",
+		"Do not mutate the primary checkout for implementation, and do not use stash, reset, or clean to create or clear a worktree.",
+		"Remain in this coding-agent session after creating or updating the ready pull request. Do not treat pull-request creation as session completion.",
+		"While remaining in this session, address remaining pull-request review feedback as it arrives. Handle review, authorized merge, and primary leftover cleanup as one continuation of this same lane.",
+		"Merge the worktree pull request only after merge is authorized by a direct user request or an accepted bounded merge plan that names the exact authorized pull request set, following `github-pr-merge`. This leftover cleanup does not create merge authority.",
+		"After remaining pull-request feedback is addressed and the authorized merge is confirmed on the protected default branch, use the primary checkout on that default branch.",
+		"Confirm the merge first. Then, only in that primary checkout, enumerate or dry-run all untracked files, verify every candidate is command-owned, and run `git clean -fd` with only those verified paths so leftover untracked command-owned files no longer block pulling the merge. If leftover command-owned tracked changes in the index or worktree of those exact paths would still block the pull, restore those exact paths in both the index and the worktree to HEAD only after revalidating that the current index and worktree contents of those paths still match the captured command-owned snapshot; if any path mismatches or is ambiguous, stop and report it instead of overwriting later edits. Then pull the merged default branch.",
+		"Do not run `git clean` before merge, inside the writable worktree, or when unrelated dirty or untracked state is present; if unrelated dirty or untracked state exists, stop and report it instead of wiping it.",
 	}
 }

@@ -227,3 +227,57 @@ func TestManagedFileDeliveryExcludesIgnoredPathFromNestedProject(t *testing.T) {
 		t.Fatal("ignored path in nested Kit project was considered version-control eligible")
 	}
 }
+
+func TestManagedFileDeliveryInstructionsRequirePostMergePrimaryClean(t *testing.T) {
+	projectRoot := t.TempDir()
+	if output, err := exec.Command("git", "-C", projectRoot, "init", "--quiet").CombinedOutput(); err != nil {
+		t.Fatalf("git init error = %v\n%s", err, output)
+	}
+	snapshot := []managedFileDeliverySnapshot{{
+		Path:            "AGENTS.md",
+		Action:          "create",
+		PreCommandState: managedFileAbsentState,
+		ResultState:     managedFileContentState("guidance\n"),
+	}}
+	cases := []struct {
+		name         string
+		instructions string
+	}{
+		{
+			name:         "with snapshot",
+			instructions: strings.Join(managedFileDeliveryInstructions(projectRoot, snapshot), "\n"),
+		},
+		{
+			name:         "without snapshot",
+			instructions: strings.Join(managedFileDeliveryInstructions(projectRoot), "\n"),
+		},
+	}
+	expected := []string{
+		"`git clean -fd`",
+		"Remain in this coding-agent session",
+		"Do not treat pull-request creation as session completion",
+		"address remaining pull-request review feedback",
+		"Merge the worktree pull request only after merge is authorized",
+		"names the exact authorized pull request set",
+		"This leftover cleanup does not create merge authority",
+		"After remaining pull-request feedback is addressed",
+		"Confirm the merge first",
+		"enumerate or dry-run all untracked files",
+		"verify every candidate is command-owned",
+		"`git clean -fd` with only those verified paths",
+		"restore those exact paths in both the index and the worktree",
+		"only after revalidating",
+		"still match the captured command-owned snapshot",
+		"if any path mismatches or is ambiguous, stop",
+		"Do not run `git clean` before merge",
+		"Then pull the merged default branch",
+	}
+	for _, test := range cases {
+		for _, snippet := range expected {
+			if !strings.Contains(test.instructions, snippet) {
+				t.Fatalf("%s missing %q:\n%s", test.name, snippet, test.instructions)
+			}
+		}
+		assertScopedPostMergeCleanupOrder(t, test.instructions)
+	}
+}

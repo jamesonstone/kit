@@ -34,11 +34,27 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"application startup, databases, port allocation, Temporal state",
 		"explicit work-lane choice as an earlier hard gate",
 		"primary/root checkout read-only",
+		"Post-Merge Primary Leftover Cleanup",
+		"`git clean -fd`",
+		"leftover disposal after an authorized merge",
+		"Remain in the coding-agent session",
+		"Do not treat pull-request creation as session completion",
+		"Merge the worktree pull request only after merge is authorized",
+		"names the exact authorized pull request set",
+		"following `github-pr-merge`",
+		"enumerate or dry-run all untracked files",
+		"verify every candidate is command-owned",
+		"`git clean -fd` with only those verified paths",
+		"restore those exact paths in both the index and the worktree",
+		"only after revalidating",
+		"still match the captured command-owned snapshot",
+		"if any path mismatches or is ambiguous, stop",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)
 		}
 	}
+	assertScopedPostMergeCleanupOrder(t, ruleset.Body)
 	if strings.Contains(ruleset.Body, "stop and do not mutate to retry") {
 		t.Fatal("expected github-pr-delivery ruleset to omit blanket mutation retry prohibition")
 	}

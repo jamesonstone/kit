@@ -85,7 +85,13 @@ After read-only recon, stop and ask:
   an issue reference, a generic pull-request end state, or an agent's opinion
   about the most convenient lane.
 - One recorded choice covers the accepted work plus directly required tests,
-  documentation, validation fixes, review fixes, and delivery.
+  documentation, validation fixes, review fixes, delivery, remaining
+  pull-request review, an authorized merge of that pull request, and
+  post-merge primary leftover cleanup.
+- Remaining in the coding-agent session to handle review, merge once
+  authorized, and then clean the primary default branch is in-scope
+  continuation of the recorded lane. Do not ask the lane question again for
+  that sequence.
 - Ask again before materially new or tangential scope. Do not repeatedly ask
   for routine subtasks that remain inside the recorded lane and pull-request
   plan.
@@ -196,6 +202,19 @@ Landing Plan, or any coding-agent change appeared in the primary checkout:
 
 The tripwire is a fail-closed recovery boundary, not permission to normalize
 root-checkout editing into the regular workflow.
+
+After the matching worktree pull request has been merged into the protected
+default branch, leftover command-owned untracked files on the primary checkout
+from that command may be removed with `git clean -fd` after enumerating or
+dry-running all untracked files, verifying every candidate is command-owned,
+and passing only those verified paths. Leftover command-owned tracked changes
+in the index or worktree of those same exact paths may be restored to HEAD in
+both the index and the worktree only after revalidating that the current index
+and worktree contents of those paths still match the captured command-owned
+snapshot; if any path mismatches or is ambiguous, stop and report it instead
+of overwriting later edits, so the primary checkout can pull the merge.
+Do not use this exception before merge, for unrelated dirty or untracked
+state, or to create or clear a worktree.
 
 ## Anti-Patterns
 

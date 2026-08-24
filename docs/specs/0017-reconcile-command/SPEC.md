@@ -12,6 +12,8 @@ relationships:
     target: "0011-handoff-document-sync"
   - type: "builds_on"
     target: "0013-scaffold-agents-safe-merge"
+  - type: "related_to"
+    target: "0072-post-merge-primary-clean"
 references:
   - name: constitution contract
     type: doc
@@ -144,6 +146,7 @@ references:
 
 - related to: 0007-catchup-command
 - related to: 0011-handoff-document-sync
+- related to: 0072-post-merge-primary-clean
 - builds on: 0013-scaffold-agents-safe-merge
 
 ## DEPENDENCIES
@@ -237,7 +240,8 @@ references:
 - The transfer guidance must create or reuse the human-assigned issue and exact `GH-<issue>` worktree, abort when a captured destination path does not match its pre-command state or already has staged, working-tree, or untracked changes, and move only the captured command-owned delta into that worktree.
 - Created, updated, merged, and removed paths must be verified and explicitly staged; removed paths must remain absent in the destination and be represented as deletions in the index.
 - Before clearing source state, the guidance must verify the destination result state and require the index to contain exactly the captured command-owned paths, including deletions.
-- The transfer guidance must restore only the captured command-owned source delta to its exact pre-command state, preserve unrelated dirty files, exclude secrets and machine-local or ignored files, and forbid stash, reset, clean, bulk staging, protected-branch commits, and silent overwrite of worktree content.
+- The transfer guidance must restore only the captured command-owned source delta to its exact pre-command state, preserve unrelated dirty files, exclude secrets and machine-local or ignored files, and forbid stash, reset, clean, bulk staging, protected-branch commits, and silent overwrite of worktree content during transfer-time source restoration.
+- After the worktree pull request that carried the command-owned files has been merged, leftover command-owned untracked files on the primary default-branch checkout must be removed with `git clean -fd` so pulling the merge is not blocked. That leftover-disposal sequence is specified by `0072-post-merge-primary-clean` and is not transfer-time source restoration.
 - Before applying a non-dry-run included refresh, reconcile must inspect the current Git worktree and distinguish the primary checkout from a linked writable worktree.
 - A requested non-dry-run refresh in the primary checkout must not call the managed-file apply path. It must retain the refresh intent, force the existing coding-agent-prompt path when necessary, and render the established no-snapshot delivery instructions that require the write-capable command to be rerun in the selected canonical worktree.
 - The deferred delivery instructions must render one exact shell-safe rerun command that preserves whole-project or feature scope, force, file filters, reference and verification migrations, prompt profile, single-agent selection, and explicit clipboard copying while using `--output-only` so the coding agent can consume the post-refresh instructions.

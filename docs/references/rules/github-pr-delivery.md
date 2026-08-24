@@ -217,9 +217,10 @@ Include:
 - Use native `git worktree` commands as the portable authority for lane creation, reuse, detached inspection, repair, exact-path validation, movement, pruning, and removal. Optional wrappers may simplify manual use, but rules and reconciled guidance must not depend on them.
 - If a command-owned snapshot reports a write in the primary checkout or before
   the lane choice, trigger `work-lane-gating` recovery. Preserve the state and
-  do not automatically transfer, stage, commit, push, restore, or discard it.
-  Establish exact user-approved recovery boundaries before recreating the
-  command result in the writable lane.
+  do not automatically transfer, stage, commit, push, restore, or discard it
+  until the matching worktree pull request has been merged. After that merge,
+  follow post-merge primary leftover cleanup. Establish exact user-approved
+  recovery boundaries before recreating the command result in the writable lane.
 - Otherwise, require the snapshot to come from the selected writable worktree.
   Verify each captured path against its pre-command and expected result state;
   abort rather than overwrite or combine ambiguous staged, working-tree, or
@@ -231,14 +232,43 @@ Include:
 - Integrate the verified files with the complete issue change, validate them, commit and push from the issue branch, and create or update the ready pull request.
 - Never transfer or stage `.env`, secrets, ignored files, or machine-local configuration. Never overwrite destination work or disturb unrelated root-checkout or worktree changes while transferring managed files.
 - Apply, validate, stage, commit, push, and create or update the ready pull request only within the selected writable issue branch worktree under the normal delivery gates.
-- Keep the primary/root checkout read-only. Do not edit files, run mutating
-  generators, stage, commit, switch branches, or use it as a temporary transfer
-  location even when it has a planned pull-request destination.
+- Keep the primary/root checkout read-only for implementation. Do not edit
+  files, run mutating generators, stage, commit, switch branches, or use it as
+  a temporary transfer location even when it has a planned pull-request
+  destination. After an authorized worktree pull-request merge, leftover
+  disposal below is the sole primary-checkout exception.
 - Writable lanes symlink the clone's primary checkout repository-root `.env` and `.envrc` by default when each exists. Omit both links for isolation, never copy environment contents, never overwrite destination environment material, and preserve a repository- or user-supplied `.envrc`.
 - Detached `PR-<number>` inspection lanes do not create environment links; migration preserves existing files and links without creating new ones.
 - Never nest worktrees inside a repository or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
 - Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. Verified expected `.env` and `.envrc` symlinks targeting the matching primary-checkout sources are the sole narrow exceptions: remove only those links before ordinary non-force `git worktree remove` and restore them if removal fails.
 - Keep application startup, databases, port allocation, Temporal state, process supervision, and multi-repository runtime orchestration outside the worktree workflow.
+
+### Post-Merge Primary Leftover Cleanup
+
+- Remain in the coding-agent session after creating or updating the ready pull
+  request. Do not treat pull-request creation as session completion.
+- While remaining in that session, address remaining pull-request review
+  feedback as it arrives. Handle review, authorized merge, and primary leftover
+  cleanup as one continuation of the current lane.
+- Merge the worktree pull request only after merge is authorized by a direct
+  user request or an accepted bounded merge plan that names the exact authorized pull request set, following `github-pr-merge`.
+- This cleanup is leftover disposal after an authorized merge. It does not
+  create merge authority.
+- After remaining pull-request feedback is addressed and the authorized merge
+  is confirmed on the protected default branch, use the primary checkout on
+  that default branch.
+- Confirm merge evidence first. Then, only in that primary checkout, enumerate or dry-run all untracked files, verify every candidate is command-owned, and
+  run `git clean -fd` with only those verified paths so leftover untracked
+  command-owned files no longer block pulling the merge.
+- If leftover command-owned tracked changes in the index or worktree of those
+  exact paths would still block the pull, restore those exact paths in both the index and the worktree to HEAD only after revalidating that the current index and worktree contents of those paths still match the captured command-owned snapshot; if any path mismatches or is ambiguous, stop and report it instead of overwriting later edits.
+- Then pull the merged default branch.
+- Do not run `git clean` before merge, inside the writable worktree, to create
+  or clear a lane, or when unrelated dirty or untracked state is present. If
+  unrelated dirty or untracked state exists, stop and report it instead of
+  wiping it.
+- Keep the existing prohibition on stash, reset, clean, force removal, or
+  branch deletion to create or clear a lane.
 
 ### Branch Workflow
 
