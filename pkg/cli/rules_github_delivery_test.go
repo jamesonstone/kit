@@ -34,6 +34,9 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"application startup, databases, port allocation, Temporal state",
 		"explicit work-lane choice as an earlier hard gate",
 		"primary/root checkout read-only",
+		"Post-Merge Primary Leftover Cleanup",
+		"`git clean -fd`",
+		"leftover disposal after an authorized merge",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)

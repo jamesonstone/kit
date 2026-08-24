@@ -197,6 +197,14 @@ Landing Plan, or any coding-agent change appeared in the primary checkout:
 The tripwire is a fail-closed recovery boundary, not permission to normalize
 root-checkout editing into the regular workflow.
 
+After the matching worktree pull request has been merged into the protected
+default branch, leftover command-owned untracked files on the primary checkout
+from that command may be removed with `git clean -fd`, and leftover
+command-owned unstaged tracked modifications of those same paths may be
+restored to HEAD, so the primary checkout can pull the merge. Do not use this
+exception before merge, for unrelated dirty or untracked state, or to create or
+clear a worktree.
+
 ## Anti-Patterns
 
 - Automatically allocating a lane because the default branch is clean or

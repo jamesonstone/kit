@@ -227,3 +227,43 @@ func TestManagedFileDeliveryExcludesIgnoredPathFromNestedProject(t *testing.T) {
 		t.Fatal("ignored path in nested Kit project was considered version-control eligible")
 	}
 }
+
+func TestManagedFileDeliveryInstructionsRequirePostMergePrimaryClean(t *testing.T) {
+	projectRoot := t.TempDir()
+	if output, err := exec.Command("git", "-C", projectRoot, "init", "--quiet").CombinedOutput(); err != nil {
+		t.Fatalf("git init error = %v\n%s", err, output)
+	}
+	snapshot := []managedFileDeliverySnapshot{{
+		Path:            "AGENTS.md",
+		Action:          "create",
+		PreCommandState: managedFileAbsentState,
+		ResultState:     managedFileContentState("guidance\n"),
+	}}
+	cases := []struct {
+		name         string
+		instructions string
+	}{
+		{
+			name:         "with snapshot",
+			instructions: strings.Join(managedFileDeliveryInstructions(projectRoot, snapshot), "\n"),
+		},
+		{
+			name:         "without snapshot",
+			instructions: strings.Join(managedFileDeliveryInstructions(projectRoot), "\n"),
+		},
+	}
+	expected := []string{
+		"`git clean -fd`",
+		"After remaining pull-request feedback is addressed",
+		"Confirm the merge first",
+		"Do not run `git clean` before merge",
+		"Then pull the merged default branch",
+	}
+	for _, test := range cases {
+		for _, snippet := range expected {
+			if !strings.Contains(test.instructions, snippet) {
+				t.Fatalf("%s missing %q:\n%s", test.name, snippet, test.instructions)
+			}
+		}
+	}
+}

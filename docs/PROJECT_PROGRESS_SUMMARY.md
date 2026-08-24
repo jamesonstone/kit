@@ -72,6 +72,7 @@
 | 0069 | multi-agent-orchestration-evaluation-gate | `docs/specs/0069-multi-agent-orchestration-evaluation-gate` | deliver | no | 2026-08-23 | Make every coding agent evaluate multi-agent/parallel decomposition as a mandatory first pass during native plan formation, not just for work that already looks obviously large. Adds a new cross-file Hard Gate ahead of Work Lane Mutation Hard Gate, strengthens the existing `agent-team-orchestration` rule, and marks it required in the implementation-delivery workflow, all while keeping the recorded decision free to be single-lane and the capability vocabulary free of pinned model names. |
 | 0070 | deadline-mode | `docs/specs/0070-deadline-mode` | deliver | no | 2026-08-23 | Add a new, conditional, pointer-loaded `deadline-mode` ruleset that narrows testing and implementation scope under an explicit, user-signaled deadline without weakening required approvals, security, or compatibility invariants, plus a non-contradictory supersession pointer in `testing-and-environment-validation`. Also hardens `agent-team-orchestration` with explicit concurrency-serialization triggers and a new Handoff Reconciliation rule. No Hard Gate, no CONSTITUTION.md route, no immutable instruction version bump. |
 | 0071 | list-first-completion-output | `docs/specs/0071-list-first-completion-output` | deliver | no | 2026-08-23 | Replace the operator action table in terminal completion output with a prioritized action list while keeping the status-first envelope, evidence profiles, and additive instruction versioning. |
+| 0072 | post-merge-primary-clean | `docs/specs/0072-post-merge-primary-clean` | deliver | no | 2026-08-24 | After a reconcile worktree PR merges, leftover untracked files on primary `main` block `git pull`. Keep the current write-on-main plus worktree copy design, and instruct the coding agent to run `git clean -fd` on primary `main` after remaining PR feedback is addressed and that PR has merged. |
 
 ## PROJECT INTENT
 
@@ -695,7 +696,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0071-list-first-completion-output/SPEC.md`
 
+### post-merge-primary-clean
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: After a reconcile worktree PR merges, leftover untracked files on primary `main` block `git pull`. Keep the current write-on-main plus worktree copy design, and instruct the coding agent to run `git clean -fd` on primary `main` after remaining PR feedback is addressed and that PR has merged.
+- **APPROACH**: Add post-merge `git clean -fd` instructions to generated managed-file delivery prompts and matching github-pr-delivery plus work-lane-gating rules, with a scoped restore for leftover tracked command-owned paths, without retrying worktree pre-creation.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0072-post-merge-primary-clean/SPEC.md`
 
 ## LAST UPDATED
 
-2026-08-23 13:30:00 EDT
+2026-08-24 10:45:00 EDT
