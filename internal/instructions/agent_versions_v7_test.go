@@ -22,9 +22,6 @@ func TestAgentInstructionsV7RequiresMultiAgentOrchestrationGate(t *testing.T) {
 			t.Fatalf("v7 instructions do not contain %q", want)
 		}
 	}
-	if CurrentAgentVersion != "v7" {
-		t.Fatalf("CurrentAgentVersion = %q, want v7", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV7PreservesV6OutsideAdditiveSection(t *testing.T) {

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
@@ -36,10 +37,10 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			audit:   auditV3SupportGuidance,
 		},
 		{
-			name:    "V3 root action table",
+			name:    "V3 root action list",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "Type | Action required | Why | Continue with",
+			snippet: "prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
 			audit:   auditV3SupportGuidance,
 		},
 		{
@@ -65,4 +66,19 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			assertStaleGuidanceFinding(t, projectRoot, tt.path, tt.snippet, tt.audit(projectRoot))
 		})
 	}
+}
+
+func TestAuditV3SupportGuidanceFindsLegacyOperatorActionTable(t *testing.T) {
+	projectRoot := writeCurrentReconcileGuidanceFixture(t, config.InstructionScaffoldVersionMemory)
+	relativePath := "AGENTS.md"
+	absolutePath := filepath.Join(projectRoot, relativePath)
+	content := readFile(t, absolutePath)
+	writeFile(t, absolutePath, content+"\n"+legacyOperatorActionTableHeader+"\n")
+	assertStaleGuidanceFinding(
+		t,
+		projectRoot,
+		relativePath,
+		legacyOperatorActionTableHeader,
+		auditV3SupportGuidance(projectRoot),
+	)
 }

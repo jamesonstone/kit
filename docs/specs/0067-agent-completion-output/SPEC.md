@@ -184,6 +184,10 @@ delivery, orchestration, or repository-memory requirements.
 - Make the implementation/delivery profile use the accepted action-first
   option. The action table remains present on PASS so the operator can
   distinguish completion from omitted follow-up reporting.
+- Superseded by `0071-list-first-completion-output`: the operator action
+  table is replaced by a prioritized left-aligned action list because chat
+  renderers make Markdown tables harder to scan than bullets. Status heading,
+  profiles, and evidence fields remain.
 - Keep tables only where they materially improve actionability. Renderer
   evidence showed independently sized detail tables are centered separately,
   so left-aligned profile blocks provide a more readable shared edge.

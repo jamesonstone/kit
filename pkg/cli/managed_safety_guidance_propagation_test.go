@@ -144,11 +144,14 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 		for _, snippet := range []string{
 			"## Agent Completion Output Contract",
 			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
-			"Type | Action required | Why | Continue with",
+			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)
 			}
+		}
+		if strings.Contains(content, legacyOperatorActionTableHeader) {
+			t.Errorf("%s still contains leftover operator-action table %q", relativePath, legacyOperatorActionTableHeader)
 		}
 	}
 

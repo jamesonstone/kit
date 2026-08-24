@@ -39,9 +39,9 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 	normalized := strings.Join(strings.Fields(ruleset.Body), " ")
 	for _, check := range []string{
 		"# <PASS|PARTIAL|BLOCKED|FAIL> — <one-sentence outcome>",
-		"Type | Action required | Why | Continue with",
-		"Order rows as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`",
-		"every PASS response includes one `None` row",
+		"## Next actions",
+		"Order items as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`",
+		"every PASS response includes one `None` item",
 		"copy-ready prompt or command",
 		"### Implementation And Delivery",
 		"### Research And Discovery",
@@ -53,7 +53,7 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 		"### Coordination And Handoff",
 		"### Fallback",
 		"## Left-Aligned Detail Contract",
-		"Use the Operator Action Table as the only Markdown table",
+		"Do not use a Markdown pipe table",
 		"left-aligned section headings and CommonMark list or key/value blocks",
 		"**Decision:** `created|updated|refactored|deleted|not required`",
 		"higher-priority host wrapper",
@@ -64,6 +64,7 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 		}
 	}
 	for _, forbidden := range []string{
+		"| Type | Action required | Why | Continue with |",
 		"| Item | Result | Evidence |",
 		"| Question | Finding | Evidence and confidence | Implication |",
 		"| Check | Scope | Status | Evidence or gap |",

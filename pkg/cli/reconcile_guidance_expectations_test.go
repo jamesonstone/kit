@@ -41,6 +41,16 @@ func TestReconcileGuidanceExpectationsMatchCurrentTemplates(t *testing.T) {
 					}
 				}
 			}
+			if tt.name == "V3" {
+				for relativePath, snippets := range v3ForbiddenGuidance() {
+					content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath)))
+					for _, snippet := range snippets {
+						if strings.Contains(content, snippet) {
+							t.Fatalf("%s still contains forbidden guidance %q", relativePath, snippet)
+						}
+					}
+				}
+			}
 
 			if findings := tt.audit(projectRoot); len(findings) != 0 {
 				t.Fatalf("current templates produced reconcile findings: %#v", findings)
