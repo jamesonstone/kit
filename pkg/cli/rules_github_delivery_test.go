@@ -46,11 +46,15 @@ func TestGitHubPRDeliveryRulesetUsesAutonomousRecovery(t *testing.T) {
 		"verify every candidate is command-owned",
 		"`git clean -fd` with only those verified paths",
 		"restore those exact paths in both the index and the worktree",
+		"only after revalidating",
+		"still match the captured command-owned snapshot",
+		"if any path mismatches or is ambiguous, stop",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Fatalf("expected github-pr-delivery ruleset to contain %q", check)
 		}
 	}
+	assertScopedPostMergeCleanupOrder(t, ruleset.Body)
 	if strings.Contains(ruleset.Body, "stop and do not mutate to retry") {
 		t.Fatal("expected github-pr-delivery ruleset to omit blanket mutation retry prohibition")
 	}

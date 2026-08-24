@@ -209,7 +209,10 @@ from that command may be removed with `git clean -fd` after enumerating or
 dry-running all untracked files, verifying every candidate is command-owned,
 and passing only those verified paths. Leftover command-owned tracked changes
 in the index or worktree of those same exact paths may be restored to HEAD in
-both the index and the worktree, so the primary checkout can pull the merge.
+both the index and the worktree only after revalidating that the current index
+and worktree contents of those paths still match the captured command-owned
+snapshot; if any path mismatches or is ambiguous, stop and report it instead
+of overwriting later edits, so the primary checkout can pull the merge.
 Do not use this exception before merge, for unrelated dirty or untracked
 state, or to create or clear a worktree.
 

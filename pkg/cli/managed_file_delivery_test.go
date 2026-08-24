@@ -266,6 +266,9 @@ func TestManagedFileDeliveryInstructionsRequirePostMergePrimaryClean(t *testing.
 		"verify every candidate is command-owned",
 		"`git clean -fd` with only those verified paths",
 		"restore those exact paths in both the index and the worktree",
+		"only after revalidating",
+		"still match the captured command-owned snapshot",
+		"if any path mismatches or is ambiguous, stop",
 		"Do not run `git clean` before merge",
 		"Then pull the merged default branch",
 	}
@@ -275,5 +278,6 @@ func TestManagedFileDeliveryInstructionsRequirePostMergePrimaryClean(t *testing.
 				t.Fatalf("%s missing %q:\n%s", test.name, snippet, test.instructions)
 			}
 		}
+		assertScopedPostMergeCleanupOrder(t, test.instructions)
 	}
 }

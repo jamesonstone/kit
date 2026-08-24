@@ -261,7 +261,7 @@ Include:
   run `git clean -fd` with only those verified paths so leftover untracked
   command-owned files no longer block pulling the merge.
 - If leftover command-owned tracked changes in the index or worktree of those
-  exact paths would still block the pull, restore those exact paths in both the index and the worktree to HEAD.
+  exact paths would still block the pull, restore those exact paths in both the index and the worktree to HEAD only after revalidating that the current index and worktree contents of those paths still match the captured command-owned snapshot; if any path mismatches or is ambiguous, stop and report it instead of overwriting later edits.
 - Then pull the merged default branch.
 - Do not run `git clean` before merge, inside the writable worktree, to create
   or clear a lane, or when unrelated dirty or untracked state is present. If

@@ -109,7 +109,10 @@ on primary `main` and pull.
   every candidate is command-owned, and pass only those verified paths.
 - If leftover command-owned tracked changes in the index or worktree of
   those exact paths would still block pull, restore those exact paths in
-  both the index and the worktree to `HEAD` before pulling.
+  both the index and the worktree to `HEAD` only after revalidating that
+  the current index and worktree contents of those paths still match the
+  captured command-owned snapshot. If any path mismatches or is
+  ambiguous, stop and report it instead of overwriting later edits.
 - Do not run `git clean` before merge, inside the writable worktree, to
   create or clear a lane, or when unrelated dirty or untracked state is
   present. If unrelated dirty or untracked state exists, stop and report
@@ -155,8 +158,10 @@ Splitting would create high-overlap contract drift.
   those verified paths.
 - Pair that command with a scoped restore of leftover command-owned
   tracked changes in the index or worktree of those exact paths when
-  those leftovers would still block pull. `git clean -fd` alone cannot
-  remove tracked modifications.
+  those leftovers would still block pull, but only after revalidating
+  that the current index and worktree still match the captured
+  command-owned snapshot. Stop on mismatch or ambiguity. `git clean -fd`
+  alone cannot remove tracked modifications.
 - Abort instead of running a blanket clean when unrelated untracked or
   dirty state is present.
 - Direct merge requests and accepted bounded merge plans must name the
@@ -176,7 +181,7 @@ Splitting would create high-overlap contract drift.
 - `kit spec` rejects a leading numeric prefix in the slug; `post-merge-primary-clean` is the accepted form and Kit assigned `0072`.
 - `kit spec` rewrote every `PROJECT_PROGRESS_SUMMARY.md` created date. That churn was reverted; only the `0072` row and feature summary were added.
 - Frozen instruction versions `v1` through `v8` still forbid clean to create or clear a worktree. The operator-facing change lives in generated managed-file prompts and pointer-loaded delivery rules, so a `v9` snapshot is not required.
-- `git clean -fd` removes untracked leftovers only. The generated instructions also restore leftover command-owned tracked changes in both the index and the worktree of those exact paths when those would still block pull.
+- `git clean -fd` removes untracked leftovers only. The generated instructions also restore leftover command-owned tracked changes in both the index and the worktree of those exact paths only after revalidating that the current index and worktree still match the captured command-owned snapshot.
 
 ## VALIDATION
 
@@ -186,7 +191,7 @@ Splitting would create high-overlap contract drift.
 - PASS: `go vet ./pkg/cli ./internal/templates ./internal/instructions`
 - PASS: `golangci-lint run --new-from-rev=origin/main ./pkg/cli ./internal/templates ./internal/instructions`
 - PASS: `git diff --check`
-- PASS: source-file-size audit of `pkg/cli/prompt_rules.go` (99), `pkg/cli/managed_file_delivery_test.go` (279), and `pkg/cli/rules_github_delivery_test.go` (112)
+- PASS: source-file-size audit of `pkg/cli/prompt_rules.go` (99), `pkg/cli/managed_file_delivery_test.go` (283), `pkg/cli/rules_github_delivery_test.go` (116), and `pkg/cli/post_merge_cleanup_order_test.go` (80)
 - PASS: `make build`; `./bin/kit check 0072-post-merge-primary-clean`; `./bin/kit check --project`
 - NOT_APPLICABLE: browser, end-to-end, live-integration, and production suites; this change is generated-instruction and ruleset scoped
 - PENDING: hosted GitHub checks on pull request #177
@@ -198,7 +203,8 @@ remain in the same session after opening the ready PR, address remaining
 review feedback there, merge only after a direct request or accepted
 bounded plan names the exact authorized pull request set, then run
 path-scoped `git clean -fd` on the primary default-branch checkout, restore
-leftover command-owned index and worktree changes on those exact paths, and
+leftover command-owned index and worktree changes on those exact paths only
+after revalidating they still match the captured command-owned snapshot, and
 pull. Durable `github-pr-delivery` and `work-lane-gating` rules agree.
 Worktree pre-creation was not retried. Merge is still a separate grant.
 
