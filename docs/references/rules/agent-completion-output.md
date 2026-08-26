@@ -278,6 +278,11 @@ Order findings by severity. If no actionable findings exist, include one
 Identify the exact target and version. Report deployment, runtime health,
 integration behavior, and production acceptance as separate observations.
 
+For merge or release orchestration, keep the terminal response to the status
+heading, actionable next steps, and the smallest evidence set that proves each
+terminal node. Do not include a chronological command log, repeated checks,
+unchanged polling, or routine tool details.
+
 ### Coordination And Handoff
 
 ```markdown
@@ -339,6 +344,8 @@ omitted lanes.
   response.
 - Using every profile because several activities occurred during one task.
 - Replacing provider-native evidence states with an optimistic summary.
+- Expanding a merge or deployment result into a chronological work log or
+  repeated unchanged polling history.
 
 ## Examples
 

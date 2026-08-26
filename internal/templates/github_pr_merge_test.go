@@ -13,6 +13,8 @@ func TestInstructionTemplatesIncludeGitHubMergeHardGate(t *testing.T) {
 		"never imply merge consent",
 		"pull-request-merge",
 		"MERGE_READY",
+		"one complete preflight snapshot",
+		"do not rerun unchanged checks or poll repeatedly",
 		"Revalidating an unchanged authorized head",
 		"A changed head invalidates readiness and prior merge authority",
 		"Never bypass protection",
@@ -46,6 +48,7 @@ func TestCheckedInInstructionsIncludeGitHubMergeHardGate(t *testing.T) {
 		}
 		for _, want := range []string{
 			"Only exact current `MERGE_READY` nodes may merge",
+			"one complete preflight snapshot",
 			"Revalidating an unchanged authorized head",
 			"A changed head invalidates readiness and prior merge authority",
 		} {

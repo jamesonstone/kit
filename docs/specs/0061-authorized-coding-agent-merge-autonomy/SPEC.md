@@ -81,6 +81,14 @@ references:
     read_policy: must
     used_for: exact-head and source-remediation authority refinement
     status: active
+  - id: concise-context-aware-orchestration-issue
+    name: Strengthen merge orchestration rules
+    type: external
+    target: https://github.com/jamesonstone/kit/issues/180
+    relation: supports
+    read_policy: must
+    used_for: concise preflight, concurrency, delegation, recovery, and reporting policy
+    status: active
 delivery_intent: issue_branch_pr_ready
 ---
 # SPEC
@@ -113,6 +121,8 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - Issue #172 and branch `GH-172` refine the repair boundary after downstream
   use showed that treating every source fix as a new corrective PR creates
   recursive delivery lanes for routine, scope-preserving remediation.
+- Issue #180 and branch `GH-180` strengthen only the existing rule registry and
+  generated repository gates. They add no Kit CLI invocation or executor.
 
 ## REQUIREMENTS
 
@@ -151,11 +161,28 @@ ledger, subagent assignment, or successful checks to invent broader authority.
   authority or permit global-gate advancement.
 - Permit independent ready nodes to merge concurrently while serializing
   dependency chains and same-base sensitive operations.
+- Define independence across both source and deployment effects. Shared bases,
+  services, environments, databases, migrations, queues, or acceptance gates
+  remain serialized even when repositories differ.
+- Use one complete preflight snapshot per consequential mutation or wave.
+  Refresh only after material state change or freshness expiry, and monitor
+  hosted or deployment state with event-driven waits or bounded backoff.
 - Treat a merge known to trigger deployment, Kubernetes, public-cloud, or IaC
   mutation as part of that covered mutation boundary. The accepted plan must
   identify the workflow, target context, actions and impact, recovery, and
   post-merge evidence. One complete plan may satisfy merge and infrastructure
   approval without duplicate prompts; unknown effects block merge.
+- During release orchestration, infrastructure deletion, destruction, purge,
+  destructive replacement, and state removal are prohibited. Isolate them as a
+  separate task with their own exact post-outline authorization.
+- Allow explicitly requested lower-cost or lower-capability agents only for
+  exact bounded ready-node merges and deployment monitoring when the host can
+  prove sufficient capability. Keep graph, repair, recovery, wave, and
+  acceptance decisions with the accountable supervisor.
+- Diagnose failures before retrying, limit repair to authorized scope, rerun
+  only affected evidence, and stop repeated unchanged failures.
+- Keep terminal release reports status-first and concise; omit chronological
+  command logs, repeated checks, unchanged polls, and routine tool detail.
 - Define `MERGE_READY`, `BLOCKED`, and `UNKNOWN` validation states. Only
   `MERGE_READY` enters a merge frontier. Pending, missing, stale-head,
   policy-ineligible skipped, unattributed, or locally substituted required
@@ -225,6 +252,9 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 7. Align `kit pr orchestrate`, its golden, scenario tests, and the related
    release-orchestration feature memory, then rerun focused and complete
    validation before ready-PR delivery.
+8. On `GH-180`, strengthen the existing merge, infrastructure, team, and
+   completion rules plus generated hard gates and focused tests. Do not add or
+   change a Kit command.
 
 ## DECISIONS
 
@@ -236,6 +266,12 @@ ledger, subagent assignment, or successful checks to invent broader authority.
   and covered infrastructure approval when it names the full bounded batch.
 - Accepted: fail closed as `UNKNOWN` when exact current-head evidence, identity,
   repository policy, or indirect deployment effects cannot be established.
+- Accepted: current evidence is reused until a material state transition or
+  declared freshness expiry; redundant unchanged-state rechecking is rejected.
+- Accepted: release concurrency requires source and deployment independence,
+  and bounded mechanical participants never own coordinator judgment.
+- Accepted: destructive infrastructure work is outside release orchestration
+  and must be isolated behind a separate approval boundary.
 - Accepted: exact-head authority freezes only the commit eligible to merge; it
   does not require a new PR for separately authorized routine source repair.
   Any changed head loses prior readiness and merge authority.
@@ -266,6 +302,9 @@ ledger, subagent assignment, or successful checks to invent broader authority.
   replacement-first corrective-PR loop. Updating only the registry rule would
   allow the release prompt to recreate the same infinite regress, so both
   surfaces and their checked-in and embedded derivatives must move together.
+- Issue #180 confirmed that the necessary behavior already belongs to the
+  rules registry. A new command would duplicate the existing prompt and
+  orchestration surfaces instead of strengthening downstream policy.
 
 ## VALIDATION
 
@@ -306,6 +345,12 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - Browser, deployment, infrastructure, live-integration, and production
   validation are `NOT_APPLICABLE`; this change updates local policy, templates,
   and prompt generation without executing a release or provider mutation.
+- `GH-180` focused template/rule tests, `make all`, the complete race suite,
+  `golangci-lint`, all 69 feature checks, and `git diff --check` pass. The
+  reconcile audit checks 378 eligible handwritten source/test files with zero
+  above 300 physical lines. Its sole `.kit.yaml` refresh advisory is identical
+  on clean `main` and remains outside this issue. Gitleaks scans 287 commits and
+  10.82 MB with no leaks.
 
 ## OUTCOME
 
@@ -325,6 +370,9 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - Historical specifications remain unchanged. This active rule supersedes the
   former manual-only merge policy only for explicitly authorized agent work;
   Kit itself still performs no merge mutation.
+- Merge waves now use one meaningful current snapshot, source-and-deployment
+  independence, bounded recovery, event-driven monitoring, and concise
+  terminal evidence. Destructive infrastructure remains outside release waves.
 
 ## REPOSITORY MEMORY
 
@@ -336,3 +384,8 @@ material rationale that code and tests alone cannot preserve.
 Updated it for issue #172 because the distinction between freezing an exact
 merge head and preserving the existing PR repair lane is consequential policy
 that must survive downstream registry refresh and release-prompt generation.
+
+Updated it for issue #180 because concise preflight, safe cross-deployment
+concurrency, bounded mechanical delegation, destructive-infrastructure
+isolation, and terse terminal reporting are durable registry policy rather
+than a new CLI behavior.

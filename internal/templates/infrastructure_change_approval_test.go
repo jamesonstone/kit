@@ -18,6 +18,8 @@ func TestInstructionTemplatesRequireInfrastructureChangeApproval(t *testing.T) {
 		"Approval of a task plan containing the complete outline counts as confirmation",
 		"batch does not delete or remove infrastructure",
 		"Deleting, destroying, or removing infrastructure always requires explicit confirmation",
+		"During merge or release orchestration, do not execute infrastructure deletion",
+		"isolate it as a separate task with its own exact post-outline authorization",
 		"continue the rest of the task to completion in one pass",
 		"collect all then-known changes into one follow-up outline",
 		"Do not re-confirm actions already included in an approved batch",
