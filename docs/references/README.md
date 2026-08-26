@@ -8,9 +8,10 @@
 - Store durable rulesets under `rules/<slug>.md` and link them with `kit rules link` instead of copying rules into agent instruction files
 - Use `kit rules list` as the authoritative live ruleset inventory; the index
   below is a concise navigation aid
-- Use `rules/agent-completion-output.md` before every terminal task completion
-  or handoff response to require a literal status, immediate prioritized action list, and
-  task-specific evidence profile
+- Use `rules/agent-completion-output.md` before substantial terminal completion
+  or handoff responses to require a literal status, immediate prioritized
+  action list, and task-specific evidence profile; answer ordinary
+  conversational requests naturally without that structured envelope
 - Use `rules/agent-team-orchestration.md` when delegation, direct subagent
   execution, continuity, or read-only verification topology affects the task;
   use `docs/agents/TOOLING.md` for the cross-host adapter

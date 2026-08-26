@@ -41,9 +41,17 @@ references:
     used_for: generated and checked-in provider instruction mirrors
     status: active
   - id: instruction-v8
-    name: Additive current instruction version
+    name: Frozen list-first instruction version
     type: code
     target: internal/instructions/versions/v8.md
+    relation: informs
+    read_policy: evidence
+    used_for: immutable prior kit instructions snapshot
+    status: optional
+  - id: instruction-v9
+    name: Additive current instruction version
+    type: code
+    target: internal/instructions/versions/v9.md
     relation: implements
     read_policy: must
     used_for: immutable current kit instructions snapshot
@@ -54,10 +62,10 @@ delivery_intent: new_issue_branch_pr_ready
 
 ## PURPOSE
 
-Make terminal coding-agent completion output easy to scan and act on. Keep
-the status-first envelope, but stop requiring a Markdown pipe table for
-operator actions. Use a prioritized left-aligned list so the next step is
-obvious without fighting renderer table layout.
+Keep ordinary coding-agent conversation direct and readable while preserving
+a status-first, action-first report for substantial completion and handoff.
+When the structured contract applies, use a prioritized left-aligned list so
+the next step is obvious without fighting renderer table layout.
 
 ## CONTEXT
 
@@ -70,28 +78,51 @@ obvious without fighting renderer table layout.
   profiles. The table was chosen so PASS still showed an explicit None row
   and so blockers could not hide under completed detail. Renderer behavior
   later showed that even one table is harder to scan than a tight list.
-- Instruction versions are immutable. `v7` is current on `main` and already
-  contains the table contract as part of its frozen snapshot. The new
-  current contract must be additive `v8`. Versions `v1` through `v7` remain
-  byte-for-byte unchanged.
+- Issue #178 showed a second readability failure: direct questions, brief
+  explanations, confirmations, and ordinary side-chat exchanges still receive
+  a large PASS envelope, synthetic None action, profile, and repository-memory
+  report. The problem is over-application of the completion contract, not the
+  horizontal alignment of its remaining structured report.
+- Instruction versions are immutable. `v8` is current on `main` and contains
+  the always-structured list contract as part of its frozen snapshot. The new
+  proportional contract must be additive `v9`. Versions `v1` through `v8`
+  remain byte-for-byte unchanged.
 - Kit distributes the contract through the canonical ruleset, the shared
   instruction gate, checked-in AGENTS/CLAUDE/Copilot/GUARDRAILS mirrors,
   Constitution baseline text, the references index, health/reconcile
   expectations, and focused tests.
-- Issue #174, branch `GH-174`, and worktree
-  `~/worktrees/jamesonstone/kit/GH-174` are the authorized delivery lane.
+- Issue #178, branch `GH-178`, and worktree
+  `~/worktrees/jamesonstone/kit/GH-178` are the authorized delivery lane.
   Merge is not authorized.
 
 ## REQUIREMENTS
 
-### Operator Action List
+### Proportionality Gate
 
-- Keep the first human-readable line
+- Answer direct questions, definitions, confirmations, rewrites, brief
+  explanations, small read-only lookups, concise recommendations, and ordinary
+  conversational exchanges naturally without a completion envelope.
+- Conversational responses must not emit a PASS/PARTIAL/BLOCKED/FAIL heading,
+  `## Next actions`, a synthetic None item, a task profile, or Repository
+  Memory.
+- Require the structured contract when omission could hide a blocker,
+  incomplete required scope, required operator action, unresolved failure,
+  repository or external-system mutation, delivery artifact, multiple
+  validation layers, material evidence, owner/dependency handoff, or an
+  explicitly requested canonical report.
+- Classify by operational consequence, never by word count, token count,
+  elapsed time, or number of tool calls. When uncertain, prefer natural prose
+  unless structure preserves operationally important information.
+
+### Structured Operator Action List
+
+- When the structured contract applies, keep the first human-readable line
   `# <PASS|PARTIAL|BLOCKED|FAIL> — <one-sentence outcome>`.
 - Immediately after that heading, emit a prioritized bullet list titled
   `## Next actions`.
 - Order items `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`.
-- Omit types that do not apply, except every PASS includes one `None` item.
+- Omit types that do not apply, except every structured PASS includes one
+  `None` item.
 - Each item uses a bold lead (`**Blocker — User: …**`) plus indented
   `Why:` and `Continue with:` lines.
 - Required `Continue with` values remain copy-ready prompts or commands.
@@ -113,7 +144,7 @@ obvious without fighting renderer table layout.
 - Update the canonical ruleset, shared gate, Constitution baseline,
   references index, checked-in instruction mirrors, and reconcile
   expectations together.
-- Add immutable instruction version `v8` as current. Do not mutate `v7` or
+- Add immutable instruction version `v9` as current. Do not mutate `v8` or
   earlier.
 - Do not change CLI command behavior, flags, or JSON schemas.
 
@@ -126,23 +157,19 @@ obvious without fighting renderer table layout.
 
 ## ACCEPTED PLAN
 
-1. Record this accepted plan in `0071` before implementation.
-2. Rewrite `docs/references/rules/agent-completion-output.md` so the
-   operator action section is a prioritized list, and replace table
-   examples with list examples.
-3. Update the shared instruction gate and every generated/checked-in
-   mirror, Constitution baseline, and references index sentence that still
-   requires an action table.
-4. Copy `v7.md` to `v8.md`, rewrite only the Agent completion output
-   section, register `v8` as current, and keep `v1` through `v7` hashes
-   unchanged.
-5. Point focused ruleset, template, reconcile, safety-propagation, and
-   instruction-version tests at the list-first contract. Keep `v6`/`v7`
-   snapshot tests asserting their frozen table language.
-6. Note in `0067` that the action-table decision is superseded for current
-   guidance.
-7. Validate, curate repository memory, and open one ready pull request for
-   issue #174.
+1. Update this living `0071` spec with the proportionality decision before
+   implementation.
+2. Add the semantic applicability gate, conversational exclusions, structured
+   triggers, and paired examples to the canonical ruleset.
+3. Propagate the same decision through the shared instruction gate, generated
+   and checked-in mirrors, Constitution baseline, references index, RLM route,
+   health/reconcile expectations, and focused tests.
+4. Copy `v8.md` to `v9.md`, rewrite only the Agent completion output section,
+   register `v9` as current, and keep `v1` through `v8` hashes unchanged.
+5. Validate both sides of the boundary: ordinary conversational answers remain
+   natural, while substantial implementation, delivery, blocked, incomplete,
+   and evidence-bearing handoffs retain the structured contract.
+6. Curate repository memory and open one ready pull request for issue #178.
 
 ## DECISIONS
 
@@ -153,8 +180,14 @@ obvious without fighting renderer table layout.
   structure instead of dropping why or continue-with. Readability comes
   from vertical scanning, not from dropping the copy-ready prompt.
 - Keep PASS's explicit None item. The original table existed partly so
-  completion could not be confused with omitted follow-up reporting.
-- Publish additive `v8` instead of mutating `v7`. `v8` equals `v7` except
+  structured completion could not be confused with omitted follow-up
+  reporting. Do not manufacture that item for ordinary conversation.
+- Apply a semantic proportionality gate instead of a length threshold. A short
+  blocked or delivery response can be operationally substantial, while a long
+  conceptual explanation can still be ordinary conversation.
+- Default to natural prose when classification is uncertain unless omitting
+  structure could hide an operationally important fact.
+- Publish additive `v9` instead of mutating `v8`. `v9` equals `v8` except
   the Agent completion output section.
 - Update the Kit-managed Constitution baseline sentence because the
   required terminal envelope is a project-wide instruction contract, not
@@ -179,32 +212,50 @@ obvious without fighting renderer table layout.
   operator-action table. Rejection belongs in a separate forbidden check
   on AGENTS.md, Copilot instructions, and GUARDRAILS.md, plus managed
   safety-guidance propagation tests.
+- Renderer alignment was not the remaining root cause. A vertically aligned
+  list still overwhelms a small answer when the completion contract applies to
+  every terminal turn; the durable fix is to narrow applicability.
 
 ## VALIDATION
 
-- PASS: `gofmt` on changed Go files; `go vet ./...`; `go test ./... -count=1`;
-  focused `go test ./internal/templates ./internal/instructions ./pkg/cli -count=1`;
-  `go test -race ./internal/instructions ./internal/templates ./pkg/cli -count=1`.
-- PASS: `golangci-lint run --new-from-rev=origin/main ./...` reported 0 issues.
-- PASS: `git diff --check`.
-- PASS: `gitleaks dir --no-banner --redact .` found no leaks.
-- PASS: `kit check --project` using this branch's built `./bin/kit`.
-- NOT_APPLICABLE: browser, end-to-end, live-integration, and production
-  suites; this change is instruction-contract and unit-test scoped.
+- PASS: focused template, instruction-version, rule, reconcile, and managed
+  propagation coverage in `internal/instructions`, `internal/templates`, and
+  `pkg/cli`.
+- PASS: `go test ./... -count=1` and `go test -race ./... -count=1`.
+- PASS: `make fmt`, `go vet ./...`,
+  `golangci-lint run --new-from-rev=origin/main ./...` with zero issues, and
+  `make build`.
+- PASS: branch-built Kit listed and viewed `agent-completion-output`, rendered
+  instruction `v9`, and resolved implementation context with no blockers.
+- PASS: feature `0071`, all 69 features, and the project contract.
+- PASS: whole-project reconcile reported no semantic reconciliation needed and
+  audited 729 candidates / 378 eligible handwritten source/test files with
+  zero above 300 physical lines.
+- PASS: `kit health --dry-run --json` and
+  `kit reconcile --include-files --dry-run` detected the expected pre-merge
+  managed-registry drift for the locally changed canonical rule. Health state
+  is literally `attention_needed`; it did not overwrite the branch rule.
+- PASS: `git diff --check`; `gitleaks dir --no-banner --redact .` scanned
+  5.15 MB and found no leaks; instruction `v1` through `v8` hashes are
+  unchanged.
+- NOT_APPLICABLE: browser, live-integration, deployment, runtime, and
+  production suites; this is an instruction-contract change.
 - Hosted GitHub checks remain PENDING until the pull request exists.
 
 ## OUTCOME
 
-Terminal completion output now uses a status heading plus a prioritized
-action list. Frozen `v6` and `v7` instruction snapshots still contain the
-historical table contract. Current guidance is additive `v8`.
+Ordinary conversational replies now use natural prose without a status heading,
+Next actions section, synthetic None item, profile, or Repository Memory block.
+The existing status/action/profile contract remains mandatory for substantial
+completions and handoffs. Current guidance is additive `v9`; `v1` through `v8`
+remain frozen.
 
 ## REPOSITORY MEMORY
 
 - Decision: updated
-- Rationale: The operator-action table is harder to scan in chat renderers
-  than a prioritized list. Keep status-first semantics, explicit PASS None,
-  copy-ready Continue with prompts, and required evidence fields.
+- Rationale: List-first output fixed horizontal table readability but not
+  over-application. Small questions must not carry a ceremonial PASS report;
+  substantial handoffs still need status, action, and evidence discipline.
 - Artifacts: `docs/specs/0071-list-first-completion-output/SPEC.md`,
   `docs/references/rules/agent-completion-output.md`,
-  `docs/CONSTITUTION.md`, `internal/instructions/versions/v8.md`
+  `docs/CONSTITUTION.md`, `internal/instructions/versions/v9.md`

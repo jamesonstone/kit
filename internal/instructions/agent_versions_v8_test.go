@@ -33,9 +33,6 @@ func TestAgentInstructionsV8RequiresListFirstCompletionOutput(t *testing.T) {
 			t.Fatalf("v8 instructions still contain table contract %q", forbidden)
 		}
 	}
-	if CurrentAgentVersion != "v8" {
-		t.Fatalf("CurrentAgentVersion = %q, want v8", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV8PreservesV7OutsideCompletionSection(t *testing.T) {

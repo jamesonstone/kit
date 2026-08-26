@@ -19,7 +19,7 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			name:    "V2 RLM route",
 			version: config.InstructionScaffoldVersionTOC,
 			path:    "docs/agents/RLM.md",
-			snippet: "Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response",
+			snippet: "Load `docs/references/rules/agent-completion-output.md` before a substantial terminal completion or handoff response",
 			audit:   auditV2SupportGuidance,
 		},
 		{
@@ -28,6 +28,20 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			path:    "docs/references/README.md",
 			snippet: "`rules/agent-completion-output.md`",
 			audit:   auditV2SupportGuidance,
+		},
+		{
+			name:    "V3 root conversational exemption",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "Answer ordinary conversational requests naturally",
+			audit:   auditV3SupportGuidance,
+		},
+		{
+			name:    "V3 root semantic applicability",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "Do not classify by word count, token count, elapsed time, or tool-call count",
+			audit:   auditV3SupportGuidance,
 		},
 		{
 			name:    "V3 root status heading",

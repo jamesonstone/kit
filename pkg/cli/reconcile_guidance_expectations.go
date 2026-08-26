@@ -22,7 +22,7 @@ func v2GuidanceExpectations() map[string][]string {
 			"Load `docs/references/rules/aws-agent-toolkit-guidance.md` before AWS-dependent work",
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
 			"Load `docs/references/rules/cross-repository-program-coordination.md` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff",
-			"Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response",
+			"Load `docs/references/rules/agent-completion-output.md` before a substantial terminal completion or handoff response",
 		},
 		"docs/agents/TOOLING.md": {
 			"When `cross-repository-program-coordination` applies, dispatch only the canonical program ledger's reconciled ready frontier and checkpoint program state after each material transition or handoff",
@@ -66,6 +66,9 @@ func v3GuidanceExpectations() map[string][]string {
 	return map[string][]string{
 		"AGENTS.md": {
 			"## Agent Completion Output Contract",
+			"Answer ordinary conversational requests naturally",
+			"must not receive a status heading, Next actions section, synthetic None item, task profile, or Repository Memory block",
+			"Do not classify by word count, token count, elapsed time, or tool-call count",
 			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
 			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
 			"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
@@ -100,6 +103,9 @@ func v3GuidanceExpectations() map[string][]string {
 		},
 		".github/copilot-instructions.md": {
 			"## Agent Completion Output Contract",
+			"Answer ordinary conversational requests naturally",
+			"must not receive a status heading, Next actions section, synthetic None item, task profile, or Repository Memory block",
+			"Do not classify by word count, token count, elapsed time, or tool-call count",
 			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
 			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
 			"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
@@ -146,7 +152,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"Load `docs/references/rules/aws-agent-toolkit-guidance.md` before AWS-dependent work",
 			"Load `docs/references/rules/infrastructure-change-approval.md` before planning or performing mutations to public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state",
 			"Load `docs/references/rules/cross-repository-program-coordination.md` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff",
-			"Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response",
+			"Load `docs/references/rules/agent-completion-output.md` before a substantial terminal completion or handoff response",
 		},
 		"docs/agents/TOOLING.md": {
 			"Use `kit dispatch` after native planning",
@@ -157,6 +163,9 @@ func v3GuidanceExpectations() map[string][]string {
 		},
 		"docs/agents/GUARDRAILS.md": {
 			"## Agent Completion Output Contract",
+			"Answer ordinary conversational requests naturally",
+			"must not receive a status heading, Next actions section, synthetic None item, task profile, or Repository Memory block",
+			"Do not classify by word count, token count, elapsed time, or tool-call count",
 			"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
 			"implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
 			"## Repository Memory Completion Gate",

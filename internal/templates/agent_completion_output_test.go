@@ -11,9 +11,17 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 	required := []string{
 		"## Agent Completion Output Contract",
 		"docs/references/rules/agent-completion-output.md",
+		"Before a substantial terminal completion or handoff response",
+		"This structured contract does not apply to intermediate progress commentary",
+		"Answer ordinary conversational requests naturally",
+		"Direct questions, definitions, confirmations, rewrites, brief explanations, small read-only lookups",
+		"must not receive a status heading, Next actions section, synthetic None item, task profile, or Repository Memory block",
+		"Use the structured contract when omitting it could hide a blocker",
+		"Do not classify by word count, token count, elapsed time, or tool-call count",
+		"When uncertain, prefer natural prose",
 		"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
 		"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
-		"every PASS includes a None item",
+		"every structured PASS includes a None item",
 		"Make required follow-ups copy-ready",
 		"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE",
 		"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
@@ -50,11 +58,11 @@ func TestInstructionSupportRoutesAgentCompletionOutput(t *testing.T) {
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
-		if !strings.Contains(rlm, "Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response") {
+		if !strings.Contains(rlm, "Load `docs/references/rules/agent-completion-output.md` before a substantial terminal completion or handoff response") {
 			t.Errorf("expected version %d RLM to route completion output", version)
 		}
 		references := fileContentByPath(files, "docs/references/README.md")
-		if !strings.Contains(references, "Use `rules/agent-completion-output.md` before every terminal task completion or handoff response") {
+		if !strings.Contains(references, "Use `rules/agent-completion-output.md` before substantial terminal completion or handoff responses") {
 			t.Errorf("expected version %d references index to route completion output", version)
 		}
 	}
@@ -75,6 +83,8 @@ func TestContextWorkflowsRequireAgentCompletionOutput(t *testing.T) {
 func TestConstitutionTemplateRequiresAgentCompletionOutput(t *testing.T) {
 	for _, check := range []string{
 		"docs/references/rules/agent-completion-output.md",
+		"Before a substantial terminal completion or handoff response",
+		"answer ordinary conversational requests naturally without that structured envelope",
 		"literal status, immediate prioritized action list, and primary task profile",
 	} {
 		if !strings.Contains(Constitution, check) {

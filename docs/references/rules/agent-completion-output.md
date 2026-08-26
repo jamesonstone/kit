@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: agent-completion-output
-description: Defines status-first, action-first terminal task responses with required goal-specific evidence profiles.
+description: Defines proportional conversational replies and status-first, action-first reports for substantial task completion and handoff.
 status: active
 registry_scope: downstream
 applies_to:
@@ -29,7 +29,10 @@ read_policy_default: must
 
 ## Purpose
 
-- Make every terminal task response immediately scannable and actionable.
+- Keep ordinary conversation direct and readable without ceremonial completion
+  scaffolding.
+- Make substantial terminal task responses immediately scannable and
+  actionable.
 - Put the overall outcome, blockers, unfinished work, and exact continuation
   action before supporting detail.
 - Preserve task-appropriate evidence without forcing every task into an
@@ -37,22 +40,64 @@ read_policy_default: must
 
 ## Applies When
 
-- A coding agent returns a terminal response that completes, partially
-  completes, fails, or hands off a task because it is blocked.
-- The requested deliverable is implementation, research, diagnosis, planning,
-  validation, review, operations, coordination, or another bounded outcome.
+- A coding agent returns a substantial terminal completion or handoff response.
+- The response must communicate blockers, incomplete required scope, required
+  operator action, repository or external-system mutation, delivery artifacts,
+  multiple validation layers, or evidence that an operator must preserve.
+- The user explicitly asks for a structured completion report.
 
-This rule does not apply to intermediate progress commentary or a focused
-clarification question while the task remains active. It governs the terminal
-human-readable response, not tool-native JSON or machine-only protocol output.
+This rule also governs the decision to answer conversationally. It does not
+apply the structured envelope to intermediate progress commentary, focused
+clarification questions, or ordinary conversational responses. It governs
+human-readable output, not tool-native JSON or machine-only protocol output.
 
 ## Rules
 
-Follow the universal envelope, status semantics, primary-profile selection,
-readability, and composition requirements below as one terminal-response
-contract.
+Classify the response using the proportionality gate. When the structured
+contract applies, follow the universal envelope, status semantics,
+primary-profile selection, readability, and composition requirements below.
 
-## Universal Terminal Envelope
+## Proportionality Gate
+
+### Conversational Responses
+
+Answer naturally and lead with the answer when the requested result is a
+direct question, definition, confirmation, rewrite, brief explanation, small
+read-only lookup, concise recommendation, or ordinary conversational exchange.
+
+For these responses:
+
+- Treat this proportionality gate as the specific exception to any general
+  instruction that says every final response must lead with outcome,
+  validation, and risk sections.
+- Do not emit a `PASS`, `PARTIAL`, `BLOCKED`, or `FAIL` heading.
+- Do not add `## Next actions`, a synthetic `None` item, a task profile, or a
+  Repository Memory block.
+- Include a follow-up suggestion only when it is genuinely useful; do not
+  manufacture one to satisfy a template.
+- Match detail and formatting to the question. A short question may receive a
+  short answer.
+
+### Structured Handoff Triggers
+
+Use the structured completion contract when any of these conditions applies:
+
+- Omitting it could hide a blocker, incomplete required scope, required next
+  action, unresolved failure, or meaningful risk.
+- The agent mutated a repository or external system, implemented or delivered
+  work, or must report artifacts, commits, pull requests, deployments, or
+  recovery state.
+- Completion depends on multiple validation layers or evidence states that an
+  operator must distinguish.
+- The task coordinates owners, workstreams, dependencies, or a formal handoff.
+- The user explicitly requests the canonical structured completion report.
+
+Do not use word count, token count, elapsed time, or number of tool calls as an
+applicability threshold. Classify by operational consequence. When uncertain,
+prefer a natural response unless the structured report is necessary to keep a
+required action, incomplete result, blocker, or material evidence visible.
+
+## Structured Completion Envelope
 
 ### Status Heading
 
@@ -82,8 +127,8 @@ Immediately after the status heading, emit a prioritized bullet list:
 ```
 
 - Order items as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`.
-- Omit types that do not apply, except every PASS response includes one
-  `None` item.
+- Omit types that do not apply, except every structured PASS response includes
+  one `None` item.
 - Put one independently actionable concern in each item.
 - Start the bold lead with the type, then the responsible actor when
   ownership is not obvious, such as `User:`, `Agent:`, or `External system:`.
@@ -330,8 +375,13 @@ omitted lanes.
 
 ## Anti-Patterns
 
+- Manufacturing a PASS heading, Next actions section, or None item for a small
+  question that is fully answered by ordinary prose.
+- Treating every terminal assistant turn as a substantial task completion.
+- Using response length, elapsed time, or tool activity as a proxy for
+  operational consequence.
 - Starting with “Done,” a narrative recap, or implementation details before
-  the overall status.
+  the overall status when the structured contract applies.
 - Reporting PASS while required validation is failing, pending, or unobserved.
 - Saying “no blockers” while required scope is incomplete.
 - Naming a blocker without the smallest unblock action and resume prompt.
@@ -341,6 +391,16 @@ omitted lanes.
 - Replacing provider-native evidence states with an optimistic summary.
 
 ## Examples
+
+Small conversational answer:
+
+```markdown
+“Refresh checks on the final commit” means rerun the required checks after the
+last PR update so the results apply to the exact revision being reviewed.
+```
+
+The answer above intentionally has no status heading, Next actions section,
+synthetic None item, task profile, or Repository Memory block.
 
 Completed implementation:
 
@@ -384,9 +444,16 @@ Blocked diagnosis:
 
 ## Verification
 
-- Confirm the first human-readable line uses the exact four-state heading.
-- Confirm the operator action list follows immediately and has no blank Why
-  or Continue with lines.
+- Confirm a direct question, definition, confirmation, rewrite, brief
+  explanation, or small read-only lookup is answered naturally without a
+  status heading, Next actions section, synthetic None item, task profile, or
+  Repository Memory block.
+- Confirm applicability is based on operational consequence rather than an
+  arbitrary response-length or activity threshold.
+- For a structured completion, confirm the first human-readable line uses the
+  exact four-state heading.
+- For a structured completion, confirm the operator action list follows
+  immediately and has no blank Why or Continue with lines.
 - Confirm Blocker, Incomplete, Next, Optional, and None items are ordered and
   semantically consistent with the overall status.
 - Confirm one primary profile matches the requested deliverable.

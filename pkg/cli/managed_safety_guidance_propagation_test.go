@@ -143,6 +143,10 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 		}
 		for _, snippet := range []string{
 			"## Agent Completion Output Contract",
+			"Answer ordinary conversational requests naturally",
+			"must not receive a status heading, Next actions section, synthetic None item, task profile, or Repository Memory block",
+			"Use the structured contract when omitting it could hide a blocker",
+			"Do not classify by word count, token count, elapsed time, or tool-call count",
 			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
 			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
 		} {
