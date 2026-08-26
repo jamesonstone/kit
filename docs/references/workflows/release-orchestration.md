@@ -41,7 +41,10 @@ evidence:
 
 ## Applicability Boundaries
 
-- Load infrastructure approval only for nodes that can mutate public-cloud, Kubernetes, or infrastructure-as-code state, including merges known to trigger those mutations.
+- Load infrastructure approval only for nodes that perform covered
+  infrastructure mutations, including merges known to create, replace, or
+  delete infrastructure or apply IaC. Image-only CD and other routine
+  application operations are not that load trigger.
 - Load agent-team topology only when work safely separates into bounded lanes.
 - Create or adopt a cross-repository program ledger only when the existing coordination trigger applies: multiple repositories plus dependent deliverables, staged deployment or activation, or expected agent/session handoff.
 
@@ -62,7 +65,9 @@ evidence:
 ## Completion Gates
 
 - Every merged or queued PR belonged to the exact authorized set and current ready frontier.
-- Every deployment or infrastructure effect had applicable target, impact, recovery, approval, and post-change evidence.
+- Every covered infrastructure effect had applicable target, impact, recovery,
+  approval, and post-change evidence. Routine application operations record
+  target and post-change evidence without an infrastructure-approval batch.
 - Every changed existing head received fresh checks, review, revalidation, and
   exact-head authorization before merge; exceptional replacement PRs and newly
   discovered targets received separate authority.

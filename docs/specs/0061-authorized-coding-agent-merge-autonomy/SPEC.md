@@ -113,9 +113,10 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - Pull-request delivery authority and merge authority have different blast
   radii. Creating an issue, branch, commit, push, or ready PR never authorizes
   integration into a protected base.
-- A merge may indirectly trigger deployment, Kubernetes, public-cloud, or
-  infrastructure-as-code mutation. Its authorization must cover those known
-  effects before the merge, not after the workflow starts.
+- A merge may indirectly trigger a covered infrastructure mutation. Its
+  authorization must cover those known effects before the merge, not after
+  the workflow starts. Routine application operations such as image-only CD
+  are recorded deployment effects, not infrastructure-approval batches.
 - Issue #141 and branch `GH-141` own this integration together with the
   `kit pr orchestrate` prompt consumer. Historical specs remain unchanged.
 - Issue #172 and branch `GH-172` refine the repair boundary after downstream
@@ -167,11 +168,13 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - Use one complete preflight snapshot per consequential mutation or wave.
   Refresh only after material state change or freshness expiry, and monitor
   hosted or deployment state with event-driven waits or bounded backoff.
-- Treat a merge known to trigger deployment, Kubernetes, public-cloud, or IaC
-  mutation as part of that covered mutation boundary. The accepted plan must
-  identify the workflow, target context, actions and impact, recovery, and
-  post-merge evidence. One complete plan may satisfy merge and infrastructure
-  approval without duplicate prompts; unknown effects block merge.
+- Treat a merge known to trigger a covered infrastructure mutation as part of
+  that covered mutation boundary. The accepted plan must identify the workflow,
+  target context, actions and impact, recovery, and post-merge evidence. A
+  merge whose only known cloud effect is a routine application operation does
+  not require infrastructure-change-approval confirmation. One complete plan
+  may satisfy merge and infrastructure approval without duplicate prompts;
+  unknown create, replace, or delete effects block merge.
 - During release orchestration, infrastructure deletion, destruction, purge,
   destructive replacement, and state removal are prohibited. Isolate them as a
   separate task with their own exact post-outline authorization.
@@ -265,13 +268,16 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - Accepted: one complete accepted plan may jointly carry merge authorization
   and covered infrastructure approval when it names the full bounded batch.
 - Accepted: fail closed as `UNKNOWN` when exact current-head evidence, identity,
-  repository policy, or indirect deployment effects cannot be established.
+  repository policy, or unknown covered create, replace, or delete effects
+  cannot be established.
 - Accepted: current evidence is reused until a material state transition or
   declared freshness expiry; redundant unchanged-state rechecking is rejected.
 - Accepted: release concurrency requires source and deployment independence,
   and bounded mechanical participants never own coordinator judgment.
 - Accepted: destructive infrastructure work is outside release orchestration
   and must be isolated behind a separate approval boundary.
+- Accepted: image-only CD and other routine application operations are recorded
+  merge effects, not covered infrastructure-approval batches.
 - Accepted: exact-head authority freezes only the commit eligible to merge; it
   does not require a new PR for separately authorized routine source repair.
   Any changed head loses prior readiness and merge authority.

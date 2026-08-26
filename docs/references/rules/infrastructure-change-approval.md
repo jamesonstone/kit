@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: infrastructure-change-approval
-description: Requires one plan-level confirmation and one-pass execution per infrastructure batch, with name-aware material AWS targets and explicit deletion confirmation.
+description: Requires one plan-level confirmation and one-pass execution per covered infrastructure batch, excludes routine application operations, and always requires explicit deletion confirmation.
 status: active
 registry_scope: downstream
 applies_to:
@@ -26,32 +26,75 @@ read_policy_default: must
 
 - Make public-cloud, Kubernetes, and infrastructure-as-code changes explicit
   and reviewable before mutation.
-- Give the user one meaningful approval boundary per bounded change batch.
+- Keep routine application operations on already-provisioned workloads,
+  including deployment image updates and ECS interactions, from becoming an
+  infrastructure-approval batch.
+- Give the user one meaningful approval boundary per bounded covered batch,
+  and always require explicit confirmation before deleting infrastructure.
 - Preserve one-pass execution and autonomous recovery after approval while
   preventing unreviewed scope, deletion, or impact expansion.
 
 ## Applies When
 
-- Creating, updating, replacing, deleting, importing, moving, or applying
-  public-cloud resources through AWS, GCP, Azure, or comparable provider
+Covered mutations:
+
+- Creating, replacing, importing, moving, or applying public-cloud
+  infrastructure resources through AWS, GCP, Azure, or comparable provider
   commands, APIs, SDKs, or consoles.
-- Mutating Kubernetes resources or cluster configuration.
+- Deleting, destroying, or removing public-cloud, Kubernetes, or
+  infrastructure-as-code-managed infrastructure.
+- Creating, replacing, or deleting infrastructure-class Kubernetes objects, or
+  mutating cluster configuration or control-plane state.
 - Editing or applying infrastructure-as-code source, configuration, or state,
   including Terraform, Pulumi, CloudFormation, CDK, Bicep, and comparable
-  tools.
-- Running a deployment path that directly performs one of those covered
-  mutations.
-- Merging a pull request known to trigger deployment, Kubernetes,
-  public-cloud, or infrastructure-as-code mutation. The merge is part of the
-  covered mutation boundary even though the provider mutation occurs
-  indirectly in a workflow.
+  tools, when the change creates, replaces, deletes, or mutates managed
+  infrastructure.
+- Changing IAM, network topology, persistent data stores, cluster control
+  plane, or secrets/KMS material.
+- Running a deployment or apply path that directly performs one of those
+  covered mutations.
+- Merging a pull request known to trigger a covered infrastructure mutation.
+  The merge is part of the covered mutation boundary even though the provider
+  mutation occurs indirectly in a workflow.
 
-This rule does not automatically cover adjacent infrastructure SaaS or general
-CI/CD configuration unless the operation directly invokes a covered
-public-cloud, Kubernetes, or infrastructure-as-code mutation. Project-local
-rules may define a broader scope.
+This rule does not cover read-only discovery, routine application operations
+defined below, or adjacent infrastructure SaaS and general CI/CD configuration
+unless the operation directly invokes a covered public-cloud, Kubernetes, or
+infrastructure-as-code mutation. Project-local rules may define a broader
+scope. If it is uncertain whether an action creates, replaces, or deletes
+infrastructure, treat it as covered.
 
 ## Rules
+
+### Routine Application Operations
+
+A routine application operation targets already-provisioned application
+compute or artifact hosting. It does not create, replace, or delete provider
+resources, infrastructure-class Kubernetes objects, or IaC-managed resources,
+and it does not change IAM, network topology, persistent data stores, cluster
+control plane, or secrets/KMS.
+
+Routine application operations include:
+
+- shipping a new container image, digest, or application artifact onto an
+  existing ECS service, Kubernetes Deployment, or equivalent already-provisioned
+  workload or artifact host;
+- force-new-deployment, rolling restart, or equivalent restart of an existing
+  service;
+- operational ECS or equivalent interactions against existing services,
+  including describe, logs, health, an update of an existing task definition
+  that only changes image or ordinary runtime settings, and desired-count
+  adjustments;
+- merging a pull request whose only known cloud effect is existing CD rolling
+  out a new application image or artifact to already-provisioned targets.
+
+These are not infrastructure-approval batches. Record the target, image or
+artifact identity, and workflow when useful. Do not stop for a covered-mutation
+outline or confirmation. Merge authorization remains a separate gate. AWS
+identity verification remains additive for AWS-dependent work.
+
+Creating a new cluster, service, load balancer, IAM role, network path, or
+datastore is not a routine application operation.
 
 ### Read-Only Discovery
 
@@ -83,7 +126,7 @@ Before the first covered mutation, create one consolidated outline containing:
 The outline may cover multiple providers or tools only when every target and
 mutation is included in the same bounded batch.
 
-For a merge-triggered mutation, the outline must additionally identify:
+For a merge-triggered covered mutation, the outline must additionally identify:
 
 - the exact PR and triggering workflow;
 - target account, environment, region, cluster, project, or subscription;
@@ -91,10 +134,11 @@ For a merge-triggered mutation, the outline must additionally identify:
 - rollback, recovery, or corrective-PR ownership; and
 - the post-merge deployment, runtime, and provider evidence required.
 
-Unknown triggering effects block the merge until inspected. A single accepted
-plan may contain both the exact merge authorization and this infrastructure
-approval. Do not ask twice when that one complete plan satisfies both
-contracts.
+Unknown create, replace, or delete effects block the merge until inspected.
+A routine application operation is not an unknown covered effect. A single
+accepted plan may contain both the exact merge authorization and this
+infrastructure approval. Do not ask twice when that one complete plan
+satisfies both contracts.
 
 - When the task uses a plan, include the complete infrastructure outline in
   that plan instead of creating a separate approval ceremony.
@@ -103,9 +147,14 @@ contracts.
 
 ### Merge And Release Orchestration
 
-- Build the dependency graph and infrastructure outline during analysis, then
-  obtain the consolidated approval before executing the first merge,
-  deployment, or covered infrastructure mutation.
+- Build the dependency graph and infrastructure outline during analysis when
+  the batch includes a covered infrastructure mutation, then obtain the
+  consolidated approval before executing the first merge, deployment, or
+  covered infrastructure mutation.
+- A merge or release whose only known cloud effect is a routine application
+  operation does not require infrastructure-change-approval confirmation.
+  Record the triggering workflow and environment; do not invent a covered
+  batch.
 - Infrastructure deletion, destruction, purge, destructive replacement, and
   state removal are outside an ordinary merge or release-orchestration batch.
   Do not execute them there; isolate them as a separate task governed by this
@@ -162,6 +211,9 @@ contracts.
 - Deleting, destroying, or removing infrastructure always requires explicit
   user confirmation after the consolidated outline, even when the initial
   request already asked for or authorized the deletion.
+- Merge authorization, routine application operations, image deployment, ECS
+  operational interactions, and a broad request such as "deploy it"
+  never authorize deletion or removal.
 - This includes provider delete or destroy operations, Kubernetes object
   deletion, and infrastructure-as-code edits or plans that remove or replace a
   managed resource.
@@ -197,7 +249,8 @@ approved outline or change materially:
 Stop before the first mutation in the follow-up batch, not before every
 subsequent command. Do not re-confirm actions already included in an approved
 batch. A newly discovered deletion or removal always uses the deletion
-confirmation boundary above.
+confirmation boundary above. A newly discovered routine application operation
+is not a follow-up infrastructure batch.
 
 ## Anti-Patterns
 
@@ -205,6 +258,8 @@ confirmation boundary above.
   target, action, impact, recovery, and validation outline.
 - Treating an initial request as deletion confirmation before the user sees the
   consolidated deletion outline.
+- Asking for infrastructure confirmation before every deployment image update
+  or ECS interaction against an existing service.
 - Editing Terraform, Pulumi, CloudFormation, CDK, Bicep, or Kubernetes sources
   before the covered batch is confirmed.
 - Applying a plan whose deletes, replacements, target, or material impact were
@@ -219,18 +274,22 @@ confirmation boundary above.
 - Treating a successful command exit as proof that the intended infrastructure
   state is correct.
 - Treating merge authorization as infrastructure approval, or starting a
-  merge with unknown covered deployment effects.
+  merge with unknown covered create, replace, or delete effects.
+- Treating an image-only CD merge as a covered infrastructure batch.
 
 ## Verification
 
 - Confirm the outline identifies target, actions, execution boundary, impact,
-  rollback or recovery, and validation before the first mutation.
+  rollback or recovery, and validation before the first covered mutation.
+- Confirm routine application operations, including deployment image updates
+  and ECS interactions that do not create or delete infrastructure, did not
+  receive an infrastructure-approval prompt.
 - For a large or materially risky AWS batch, confirm the outline includes the
   resolved account and Region names where available, always includes the
   stable account ID and Region code, and reports unavailable display labels
   explicitly without broadening access.
-- Confirm the user approved the plan or outline once for the complete batch, or
-  supplied a qualifying initial request for a non-deletion batch.
+- Confirm the user approved the plan or outline once for the complete covered
+  batch, or supplied a qualifying initial request for a non-deletion batch.
 - Confirm every deletion or removal received explicit confirmation after its
   complete consolidated outline; confirm the batch was not re-prompted after
   that approval.
@@ -242,32 +301,48 @@ confirmation boundary above.
 - Confirm no covered mutation occurred outside the approved batch.
 - Confirm additional required changes were consolidated into one follow-up
   batch and received one confirmation before their first mutation.
-- For a merge-triggered mutation, confirm the workflow, exact target, expected
-  actions and impact, recovery, and post-merge evidence were included before
-  the merge and that one complete accepted plan was not redundantly confirmed.
+- For a merge-triggered covered mutation, confirm the workflow, exact target,
+  expected actions and impact, recovery, and post-merge evidence were included
+  before the merge and that one complete accepted plan was not redundantly
+  confirmed.
+- For an image-only or routine-ops merge, confirm deployment effects were
+  recorded and that no covered infrastructure batch was invented.
 
 ## Examples
 
-Separate outline and confirmation:
+Covered create that needs outline and confirmation:
 
 ```text
 Target: GCP project analytics-prod, us-central1, GKE cluster primary.
-Actions: update the payments Deployment image and set its minimum replicas to 4.
-Impact: rolling restart; no planned downtime or data change; estimated compute cost increases.
-Recovery: restore the prior image digest and replica count.
-Validation: inspect the server-side diff, rollout status, ready replicas, and service health.
+Actions: create a new payments-worker Deployment, Service, and backend
+config in the existing cluster.
+Impact: additional compute cost; no planned downtime or data change.
+Recovery: delete the new objects after draining.
+Validation: inspect the server-side diff, rollout status, ready replicas,
+and service health.
 
 Proceed with this bounded batch?
 ```
 
-Detailed non-deletion initial request that can count as confirmation:
+Routine application operation, no infrastructure confirmation:
 
 ```text
-In AWS account payments-production (123456789012), Region US East
-(N. Virginia) (us-east-1), update only the existing staging ECS service desired
-count from 2 to 3. This adds one task and its normal cost, does not change data
-or IAM, and can be rolled back to 2. Verify the account, service deployment,
-ready task count, and health check. Proceed with exactly that change.
+Existing ECS service api-staging already runs in AWS account 123456789012,
+us-east-1. Register a new task-definition revision that only changes the
+container image digest and call update-service --force-new-deployment.
+This is a routine application operation. Do not request
+infrastructure-change-approval confirmation. Verify the deployment and
+healthy task count.
+```
+
+Image-only merge, no covered infrastructure batch:
+
+```text
+Authorized merge of owner/service#84. Hosted workflow deploy-staging will
+roll the new image onto the existing ECS service. No create, replace, or
+delete of infrastructure. Record the workflow and environment. Do not
+require a covered infrastructure batch. Merge success is not deployment
+proof.
 ```
 
 Planned deletion that always requires confirmation after the summary:

@@ -18,6 +18,8 @@ func TestMergeOrchestrationRulesStayContextAwareAndConcise(t *testing.T) {
 			"Build the dependency graph and infrastructure outline during analysis",
 			"Infrastructure deletion, destruction, purge, destructive replacement",
 			"isolate them as a separate task",
+			"are not infrastructure-approval batches",
+			"never authorize deletion or removal",
 		},
 		"agent-team-orchestration.md": {
 			"lower-cost or lower-capability configuration",

@@ -152,6 +152,11 @@ removal after its summary.
   contract.
 - Read-only discovery may precede approval so the initial outline can be
   evidence-based.
+- Superseded by 0073: treating every public-cloud update, including ECS image
+  rolls and desired-count changes, as a covered mutation. Covered mutations
+  are create, replace, apply, and delete of infrastructure; routine
+  application operations on already-provisioned workloads are excluded.
+  Deletion still always requires post-outline confirmation.
 
 ## DISCOVERIES
 

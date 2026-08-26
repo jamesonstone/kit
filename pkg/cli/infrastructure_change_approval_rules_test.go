@@ -66,6 +66,10 @@ func TestInfrastructureChangeApprovalRegistryRulesetIsValid(t *testing.T) {
 		"### Follow-Up Batches And Material Deviations",
 		"collect all then-known changes into one follow-up outline",
 		"Do not re-confirm actions already included in an approved batch",
+		"### Routine Application Operations",
+		"already-provisioned",
+		"are not infrastructure-approval batches",
+		"never authorize deletion or removal",
 	} {
 		if !strings.Contains(normalizedBody, check) {
 			t.Errorf("expected %s ruleset to contain %q", slug, check)

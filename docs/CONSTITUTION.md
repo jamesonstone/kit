@@ -30,6 +30,7 @@
 - Report validation literally; planning evidence, local checks, hosted checks, deployment, and production proof are distinct claims.
 - Pull-request merge is a distinct mutation boundary. Only a direct request or accepted bounded merge plan authorizes the exact PR set; delivery consent, checks, assignments, and ledgers never create authority.
 - Only current `MERGE_READY` nodes may merge, and merge success is not deployment, runtime, production, or integrated-system proof.
+- Covered public-cloud, Kubernetes, and infrastructure-as-code mutations require one outline and one confirmation per batch. Routine application operations on already-provisioned workloads, including image deploys and ECS interactions that do not create or delete infrastructure, are not that batch. Deleting, destroying, or removing infrastructure always requires explicit confirmation after the outline.
 
 ### Durable Repository Memory
 

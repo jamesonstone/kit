@@ -73,6 +73,7 @@
 | 0070 | deadline-mode | `docs/specs/0070-deadline-mode` | deliver | no | 2026-08-23 | Add a new, conditional, pointer-loaded `deadline-mode` ruleset that narrows testing and implementation scope under an explicit, user-signaled deadline without weakening required approvals, security, or compatibility invariants, plus a non-contradictory supersession pointer in `testing-and-environment-validation`. Also hardens `agent-team-orchestration` with explicit concurrency-serialization triggers and a new Handoff Reconciliation rule. No Hard Gate, no CONSTITUTION.md route, no immutable instruction version bump. |
 | 0071 | list-first-completion-output | `docs/specs/0071-list-first-completion-output` | deliver | no | 2026-08-26 | Keep ordinary conversation natural and reduce substantial completion reports to What happened, Deviations, and Next steps, with required evidence folded in once. |
 | 0072 | post-merge-primary-clean | `docs/specs/0072-post-merge-primary-clean` | deliver | no | 2026-08-24 | After a reconcile worktree PR merges, leftover untracked files on primary `main` block `git pull`. Keep the current write-on-main plus worktree copy design, and instruct the coding agent to run `git clean -fd` on primary `main` after remaining PR feedback is addressed and that PR has merged. |
+| 0073 | infrastructure-approval-scope | `docs/specs/0073-infrastructure-approval-scope` | deliver | no | 2026-08-26 | Stop treating every deployment image update and ECS interaction as an infrastructure-approval batch, while keeping create/replace/apply of infrastructure gated and requiring explicit post-outline confirmation for deletion. |
 
 ## PROJECT INTENT
 
@@ -705,6 +706,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0072-post-merge-primary-clean/SPEC.md`
 
+### infrastructure-approval-scope
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Stop treating every deployment image update and ECS interaction as an infrastructure-approval batch, while keeping create/replace/apply of infrastructure gated and requiring explicit post-outline confirmation for deletion.
+- **APPROACH**: 1. Record this accepted plan in `0073` before implementation. 2. Narrow `infrastructure-change-approval` and add a Routine Application Operations section. 3. Narrow `github-pr-merge` so only covered infrastructure mutations join the covered mutation boundary. 4. Align hard gates, checked-in instructions, safety-guardrails, references, and workflows. 5. Lock the carve-out and deletion confirmation in focused tests. 6. Note superseded 0057/0061 decisions. 7. Validate, curate repository memory, and open one ready pull request for issue #184.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0073-infrastructure-approval-scope/SPEC.md`
+
 ## LAST UPDATED
 
-2026-08-26 10:38:34 EDT
+2026-08-26 17:55:00 EDT
