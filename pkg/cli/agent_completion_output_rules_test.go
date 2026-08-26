@@ -41,31 +41,25 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 		"## Proportionality Gate",
 		"### Conversational Responses",
 		"### Structured Handoff Triggers",
-		"direct question, definition, confirmation, rewrite, brief explanation, small read-only lookup, concise recommendation",
-		"Do not emit a `PASS`, `PARTIAL`, `BLOCKED`, or `FAIL` heading",
-		"Do not add `## Next actions`, a synthetic `None` item, a task profile, or a Repository Memory block",
-		"Do not use word count, token count, elapsed time, or number of tool calls as an applicability threshold",
-		"When uncertain, prefer a natural response",
-		"The user explicitly requests the canonical structured completion report",
-		"# <PASS|PARTIAL|BLOCKED|FAIL> — <one-sentence outcome>",
-		"## Next actions",
-		"Order items as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`",
-		"every structured PASS response includes one `None` item",
-		"copy-ready prompt or command",
-		"### Implementation And Delivery",
-		"### Research And Discovery",
-		"### Diagnosis And Troubleshooting",
-		"### Planning And Design",
-		"### Validation And Testing",
-		"### Review And Audit",
-		"### Operations, Deployment, And Monitoring",
-		"### Coordination And Handoff",
-		"### Fallback",
-		"## Left-Aligned Detail Contract",
-		"Do not use a Markdown pipe table",
-		"left-aligned section headings and CommonMark list or key/value blocks",
-		"**Decision:** `created|updated|refactored|deleted|not required`",
-		"higher-priority host wrapper",
+		"direct questions, definitions, confirmations, rewrites, brief explanations, small read-only lookups, concise recommendations",
+		"Do not emit status tokens, canonical section headings, synthetic None items",
+		"Do not use word count, token count, elapsed time, or tool-call count as an applicability threshold",
+		"When uncertain, prefer natural prose",
+		"## Three-Section Completion Contract",
+		"emit exactly these headings in order",
+		"## What happened",
+		"## Deviations",
+		"## Next steps",
+		"**Status: <PASS|PARTIAL|BLOCKED|FAIL> — <one-sentence outcome>.**",
+		"Use one nested evidence layer only",
+		"Use one `**None.**` bullet when there are no deviations",
+		"Every required follow-up includes a copy-ready prompt or command",
+		"Use one `**None.**` bullet when no action remains",
+		"## Task-Specific Content",
+		"Task types define which facts must be retained, not additional output sections",
+		"Use exactly the three canonical headings",
+		"Do not repeat a fact across sections",
+		"Repository-memory decision, rationale, and artifacts become one concise What happened bullet",
 		"`PENDING`, `UNKNOWN`, `SKIPPED`, `NOT_APPLICABLE`",
 	} {
 		if !strings.Contains(normalized, check) {
@@ -75,6 +69,11 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 	for _, forbidden := range []string{
 		"Make every terminal task response immediately scannable and actionable",
 		"before every terminal task completion",
+		"## Structured Completion Envelope",
+		"### Operator Action List",
+		"## Required Profiles",
+		"## Left-Aligned Detail Contract",
+		"Order items as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`",
 		"| Type | Action required | Why | Continue with |",
 		"| Item | Result | Evidence |",
 		"| Question | Finding | Evidence and confidence | Implication |",
@@ -95,15 +94,17 @@ func TestAgentCompletionOutputExamplesPreserveProportionalBoundary(t *testing.T)
 	}
 	body := string(content)
 	conversationalStart := strings.Index(body, "Small conversational answer:")
-	structuredStart := strings.Index(body, "Completed implementation:")
+	structuredStart := strings.Index(body, "Substantial implementation:")
 	if conversationalStart < 0 || structuredStart <= conversationalStart {
 		t.Fatal("completion examples are missing or out of order")
 	}
 	conversational := body[conversationalStart:structuredStart]
 	for _, forbidden := range []string{
 		"# PASS —",
-		"## Next actions",
-		"**None —",
+		"## What happened",
+		"## Deviations",
+		"## Next steps",
+		"**None.**",
 		"## Repository Memory",
 	} {
 		if strings.Contains(conversational, forbidden) {
@@ -111,15 +112,49 @@ func TestAgentCompletionOutputExamplesPreserveProportionalBoundary(t *testing.T)
 		}
 	}
 
-	structured := body[structuredStart:]
+	complexStart := strings.Index(body, "Complex production coordination:")
+	if complexStart <= structuredStart {
+		t.Fatal("complex production example is missing or out of order")
+	}
+	structured := body[structuredStart:complexStart]
 	for _, required := range []string{
-		"# PASS — canonical completion output is implemented and ready for review",
-		"## Next actions",
-		"**None — No action required.**",
-		"## Delivery",
+		"## What happened",
+		"**Status: PASS — completion output is proportional and ready for review.**",
+		"## Deviations",
+		"CodeRabbit remains `PENDING`",
+		"## Next steps",
+		"**Optional — User:** Review PR #123 after CodeRabbit completes.",
 	} {
 		if !strings.Contains(structured, required) {
 			t.Errorf("structured example does not contain %q", required)
+		}
+	}
+
+	complexEnd := strings.Index(body[complexStart:], "Blocked diagnosis:")
+	if complexEnd < 0 {
+		t.Fatal("blocked diagnosis example is missing")
+	}
+	complex := body[complexStart : complexStart+complexEnd]
+	for _, required := range []string{
+		"**Status: PASS — PRs #290, #181, and #230 merged",
+		"Production validation passed and manual upsert remained default-off",
+		"Non-fatal workflow warnings",
+		"## Next steps\n\n- **None.**",
+	} {
+		if !strings.Contains(complex, required) {
+			t.Errorf("complex example does not contain %q", required)
+		}
+	}
+	for _, forbidden := range []string{
+		"## Operational Result",
+		"## Validation",
+		"## Feature State",
+		"## Residual Notes",
+		"## Coordination",
+		"## Repository Memory",
+	} {
+		if strings.Contains(complex, forbidden) {
+			t.Errorf("complex example contains superseded section %q", forbidden)
 		}
 	}
 }
@@ -131,19 +166,21 @@ func TestAgentCompletionOutputIsIntegratedWithRelatedRules(t *testing.T) {
 			"| `agent-completion-output` |",
 		},
 		"docs/references/rules/github-pr-delivery.md": {
-			"Follow `agent-completion-output` with the implementation/delivery profile",
+			"Follow the `agent-completion-output` three-section contract",
+			"fields below into concise What happened bullets",
 		},
 		"docs/references/rules/testing-and-environment-validation.md": {
 			"Follow `agent-completion-output` for terminal reporting",
+			"validation results under What happened",
 		},
 		"docs/references/rules/agent-team-orchestration.md": {
-			"Map `task_outcome` to the overall status heading",
+			"Map `task_outcome` to the first What happened status bullet",
 		},
 		"docs/references/rules/cross-repository-program-coordination.md": {
-			"`agent-completion-output` coordination/handoff profile",
+			"`agent-completion-output` three-section contract",
 		},
 		"docs/references/rules/constitution-curation.md": {
-			"`agent-completion-output` Repository Memory key/value block",
+			"Constitution curation result in one concise What happened bullet",
 		},
 	}
 	for path, required := range checks {

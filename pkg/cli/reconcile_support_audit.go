@@ -97,7 +97,7 @@ func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
 				fmt.Sprintf("V3 instruction support document still contains forbidden guidance %q", snippet),
 				templateSource(projectRoot),
 				fmt.Sprintf(
-					"remove the leftover operator-action table, or preview a targeted generated replacement with `kit reconcile --include-files --force --dry-run --diff --file %s` before overwriting customized content",
+					"remove the superseded completion guidance, or preview a targeted generated replacement with `kit reconcile --include-files --force --dry-run --diff --file %s` before overwriting customized content",
 					relativePath,
 				),
 				[]string{

@@ -59,7 +59,7 @@ const Constitution = `# CONSTITUTION
 - Before implementation, inspect code and repository memory; create or adopt ` + "`SPEC.md`" + ` when material rationale exists.
 - After validation, curate feature rationale, project invariants, reusable practices, and domain knowledge into their scope-appropriate canonical documents.
 - Allow a justified ` + "`not required`" + ` repository-memory decision when code and tests preserve the complete durable truth.
-- Before a substantial terminal completion or handoff response, load ` + "`docs/references/rules/agent-completion-output.md`" + ` and use its literal status, immediate prioritized action list, and primary task profile; answer ordinary conversational requests naturally without that structured envelope.
+- Before a substantial terminal completion or handoff response, load ` + "`docs/references/rules/agent-completion-output.md`" + ` and report only What happened, Deviations, and Next steps; answer ordinary conversational requests naturally without that structured envelope.
 - Before commit, pull request, issue, comment, or other attribution text, load ` + "`docs/references/rules/human-authorship.md`" + `. Only the human user may be displayed as author; do not attribute coding agents, tools, or bots.
 - Before designing deletion behavior or deleting persistent project, user, business, or external-system state, load ` + "`docs/references/rules/deletion-safety.md`" + `.
 - Default unqualified deletion to a recoverable soft delete; require a post-outline specific manual confirmation for the exact current targets before any hard delete.

@@ -239,8 +239,9 @@ The program supervisor may mark the program complete only when:
   operational obligations.
 
 Render the terminal program result through the `agent-completion-output`
-coordination/handoff profile. Preserve repository, owner, dependency,
-deployment, runtime, and acceptance evidence as separate workstream items.
+three-section contract. Group repository, owner, dependency, deployment,
+runtime, and acceptance evidence by workstream under What happened. Put
+unresolved dependencies under Deviations and exact handoffs under Next steps.
 
 ### Safety And Existing Gates
 

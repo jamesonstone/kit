@@ -30,9 +30,6 @@ func TestAgentInstructionsV9RequiresProportionalCompletionOutput(t *testing.T) {
 			t.Fatalf("v9 instructions do not contain %q", want)
 		}
 	}
-	if CurrentAgentVersion != "v9" {
-		t.Fatalf("CurrentAgentVersion = %q, want v9", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV9PreservesV8OutsideCompletionSection(t *testing.T) {

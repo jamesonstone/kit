@@ -44,24 +44,24 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			audit:   auditV3SupportGuidance,
 		},
 		{
-			name:    "V3 root status heading",
+			name:    "V3 root status bullet",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
+			snippet: "**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
 			audit:   auditV3SupportGuidance,
 		},
 		{
-			name:    "V3 root action list",
+			name:    "V3 root three sections",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
+			snippet: "emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
 			audit:   auditV3SupportGuidance,
 		},
 		{
-			name:    "V3 guardrails profiles",
+			name:    "V3 guardrails no extra sections",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "docs/agents/GUARDRAILS.md",
-			snippet: "implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
+			snippet: "three canonical sections without duplication",
 			audit:   auditV3SupportGuidance,
 		},
 		{
@@ -95,4 +95,23 @@ func TestAuditV3SupportGuidanceFindsLegacyOperatorActionTable(t *testing.T) {
 		legacyOperatorActionTableHeader,
 		auditV3SupportGuidance(projectRoot),
 	)
+}
+
+func TestAuditV3SupportGuidanceFindsSupersededCompletionEnvelope(t *testing.T) {
+	for _, snippet := range []string{legacyStatusHeading, legacyPrioritizedActionList} {
+		t.Run(snippet, func(t *testing.T) {
+			projectRoot := writeCurrentReconcileGuidanceFixture(t, config.InstructionScaffoldVersionMemory)
+			relativePath := "AGENTS.md"
+			absolutePath := filepath.Join(projectRoot, relativePath)
+			content := readFile(t, absolutePath)
+			writeFile(t, absolutePath, content+"\n"+snippet+"\n")
+			assertStaleGuidanceFinding(
+				t,
+				projectRoot,
+				relativePath,
+				snippet,
+				auditV3SupportGuidance(projectRoot),
+			)
+		})
+	}
 }

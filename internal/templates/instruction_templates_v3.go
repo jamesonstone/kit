@@ -24,7 +24,7 @@ func memoryRepositoryInstructions(title string) string {
 - Before implementation, inspect relevant code and existing repository memory
 - Decide semantically whether the work contains material rationale that code and tests cannot preserve
 - When material rationale exists, create or adopt ` + "`docs/specs/<feature>/SPEC.md`" + ` before editing implementation files and capture the accepted native plan
-- When code and tests are sufficient, do not create documentation solely to satisfy a process; record ` + "`not required`" + ` in the final Repository Memory report
+- When code and tests are sufficient, do not create documentation solely to satisfy a process; record ` + "`not required`" + ` in the final What happened repository-memory bullet
 - During implementation, keep material decisions and discoveries current in the spec
 - After implementation and validation, load ` + "`docs/references/rules/constitution-curation.md`" + `; curate feature rationale into ` + "`SPEC.md`" + `, demonstrated project invariants into ` + "`docs/CONSTITUTION.md`" + `, reusable practices into ` + "`docs/references/`" + ` or ` + "`docs/references/rules/`" + `, and domain knowledge into its existing canonical documentation
 - Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
@@ -212,6 +212,6 @@ func memoryGuardrails() string {
 - Create or adopt a spec before code when material rationale exists.
 - After implementation and validation, curate durable rationale into the correct canonical documents.
 - A justified ` + "`not required`" + ` decision is valid when code and tests preserve the complete durable truth.
-- Every implementation final response must include ` + "`Repository Memory`" + `, a valid decision, rationale, and artifact paths or ` + "`none`" + `.
+- Every implementation final response must preserve the repository-memory decision, rationale, and artifact paths or ` + "`none`" + ` in one concise What happened bullet; do not add a separate Repository Memory section.
 `
 }

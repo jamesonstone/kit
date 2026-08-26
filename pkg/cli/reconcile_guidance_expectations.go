@@ -67,11 +67,13 @@ func v3GuidanceExpectations() map[string][]string {
 		"AGENTS.md": {
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
-			"must not receive a status heading, Next actions section, synthetic None item, task profile, or Repository Memory block",
+			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
-			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
-			"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
+			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
+			"Use one `**None.**` bullet when there are no deviations",
+			"Use one `**None.**` bullet when no action remains",
+			"three canonical sections without duplication",
 			"## Codex Thread Initialization Hard Gate",
 			"before the first commentary message",
 			"First, call the available thread-title operation (`set_thread_title` when available)",
@@ -104,11 +106,13 @@ func v3GuidanceExpectations() map[string][]string {
 		".github/copilot-instructions.md": {
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
-			"must not receive a status heading, Next actions section, synthetic None item, task profile, or Repository Memory block",
+			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
-			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
-			"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
+			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
+			"Use one `**None.**` bullet when there are no deviations",
+			"Use one `**None.**` bullet when no action remains",
+			"three canonical sections without duplication",
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
 			"If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation",
 			"Treat the verified account, ARN, and Region as authoritative",
@@ -164,13 +168,15 @@ func v3GuidanceExpectations() map[string][]string {
 		"docs/agents/GUARDRAILS.md": {
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
-			"must not receive a status heading, Next actions section, synthetic None item, task profile, or Repository Memory block",
+			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
-			"implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
+			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			"Use at most one nested evidence layer and state each fact once",
+			"three canonical sections without duplication",
 			"## Repository Memory Completion Gate",
 			"Create or adopt a spec before code when material rationale exists",
-			"Every implementation final response must include `Repository Memory`",
+			"repository-memory decision, rationale, and artifact paths or `none` in one concise What happened bullet",
+			"do not add a separate Repository Memory section",
 			"docs/references/rules/source-file-size.md",
 			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
@@ -216,13 +222,21 @@ func v3GuidanceExpectations() map[string][]string {
 	}
 }
 
-const legacyOperatorActionTableHeader = "| Type | Action required | Why | Continue with |"
+const (
+	legacyOperatorActionTableHeader = "| Type | Action required | Why | Continue with |"
+	legacyStatusHeading             = "# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>"
+	legacyPrioritizedActionList     = "prioritized action list ordered Blocker, Incomplete, Next, Optional, then None"
+)
 
 func v3ForbiddenGuidance() map[string][]string {
-	header := []string{legacyOperatorActionTableHeader}
+	completion := []string{
+		legacyOperatorActionTableHeader,
+		legacyStatusHeading,
+		legacyPrioritizedActionList,
+	}
 	return map[string][]string{
-		"AGENTS.md":                       header,
-		".github/copilot-instructions.md": header,
-		"docs/agents/GUARDRAILS.md":       header,
+		"AGENTS.md":                       completion,
+		".github/copilot-instructions.md": completion,
+		"docs/agents/GUARDRAILS.md":       completion,
 	}
 }

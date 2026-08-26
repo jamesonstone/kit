@@ -476,9 +476,10 @@ gh run list --commit "$HEAD_SHA" \
 
 ### Final Response
 
-Follow `agent-completion-output` with the implementation/delivery profile.
-Map each item below into the left-aligned Delivery list without omitting or
-collapsing identity, assignment, or hosted-state evidence:
+Follow the `agent-completion-output` three-section contract. Fold the fields
+below into concise What happened bullets without omitting identity, assignment,
+or hosted-state evidence. Put pending, failed, skipped, or unavailable delivery
+evidence under Deviations and remaining operator actions under Next steps:
 
 - Issue number.
 - Branch name in `GH-123` form.

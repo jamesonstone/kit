@@ -158,7 +158,7 @@ const referencesREADME = `# References
 - Keep long-lived background context here instead of in injected top-level instruction files
 - Link these files from feature front matter references when they materially shape work
 - Store durable rulesets under ` + "`rules/<slug>.md`" + ` and link them with ` + "`kit rules link`" + ` instead of copying rules into agent instruction files
-- Use ` + "`rules/agent-completion-output.md`" + ` before substantial terminal completion or handoff responses to require a literal status, immediate prioritized action list, and task-specific evidence profile; answer ordinary conversational requests naturally without that structured envelope
+- Use ` + "`rules/agent-completion-output.md`" + ` before substantial terminal completion or handoff responses to require only What happened, Deviations, and Next steps, with task-specific evidence folded into those sections; answer ordinary conversational requests naturally without that structured envelope
 - Use ` + "`rules/work-lane-gating.md`" + ` before any coding-agent repository
   file or delivery mutation to require the explicit lane choice, pull-request
   landing plan, and read-only primary checkout
