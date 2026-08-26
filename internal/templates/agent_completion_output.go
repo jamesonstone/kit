@@ -16,5 +16,6 @@ const agentCompletionOutputGate = `## Agent Completion Output Contract
 - Preserve native evidence states such as PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE literally.
 - Do not use Markdown pipe tables, additional profile headings, or separate Completed, Validation, Delivery, Feature State, Residual Notes, Coordination, or Repository Memory sections.
 - Preserve every field required by active delivery, validation, repository-memory, orchestration, program, and environment contracts inside the three canonical sections without duplication.
+- For merge or release orchestration, report only state changes, terminal evidence, and actionable next steps; omit chronological command logs, repeated checks, unchanged polling, and routine tool details.
 
 `

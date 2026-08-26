@@ -29,6 +29,8 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 		"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE",
 		"Do not use Markdown pipe tables, additional profile headings",
 		"three canonical sections without duplication",
+		"For merge or release orchestration, report only state changes, terminal evidence, and actionable next steps",
+		"omit chronological command logs, repeated checks, unchanged polling, and routine tool details",
 	}
 	for name, content := range map[string]string{
 		"V1 AGENTS.md":            LegacyAgentsMD,

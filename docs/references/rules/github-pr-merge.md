@@ -54,6 +54,9 @@ ledger existence are also not authorization.
   authority until the new head is explicitly authorized.
 - Revalidating an unchanged authorized head, retrying a compatible merge path,
   or using the repository-required merge queue does not require another prompt.
+- Use one complete current-state snapshot per consequential mutation or wave.
+  Do not rerun unchanged checks, reread identical evidence, or poll repeatedly
+  inside its declared freshness window.
 - Adding a pull request, repository, target base, deployment environment,
   infrastructure effect, merge method, admin path, or identity is material
   scope expansion and requires follow-up authorization.
@@ -158,10 +161,11 @@ before mutation.
 - Read-only verification agents never merge, queue, resolve review state, or
   perform another delivery mutation.
 - Independent `MERGE_READY` nodes may merge concurrently. Dependency chains and
-  same-base operations whose order affects conflict, queue, or release state
-  remain serialized.
+  nodes coupled through a base, service, environment, database, migration,
+  queue, deployment, or acceptance gate remain serialized.
 - Reconcile authorization, head/base, actor, policy, checks, approvals, and
-  dependencies immediately before every wave.
+  dependencies once immediately before every wave. Refresh only when a
+  material fact changes or the evidence freshness window expires.
 
 ### Partial Failure And Corrective Work
 
@@ -188,6 +192,9 @@ before mutation.
   repository policy or the user explicitly requires replacement. A replacement
   is a new node and is not automatically added to the authorized set.
 - Never force, bypass, change identity, or broaden scope to recover a wave.
+- Diagnose a failure before retrying. Within separately authorized repair
+  scope, rerun only affected evidence and refresh the failed node plus its
+  dependents; repeated unchanged failure becomes `BLOCKED`.
 
 ### Post-Merge Evidence
 
@@ -199,6 +206,10 @@ After each merge or queue transition, record:
 - hosted workflow state for the merged identity;
 - deployment/runtime/production state as separate observed claims; and
 - blockers, unknowns, corrective ownership, and next safe action.
+
+Prefer event-driven waits or bounded backoff for hosted and deployment state.
+Do not emit unchanged polling as progress or reproduce a chronological command
+log in the terminal result.
 
 Report partial waves literally. Do not call a queued, merged, deployed, or
 healthy state by another name.
@@ -219,6 +230,8 @@ healthy state by another name.
   scope-preserving remediation that can safely stay on the existing PR head.
 - Updating a PR head and merging it under authorization or evidence bound to
   the prior head.
+- Rechecking unchanged evidence or polling without a state transition merely
+  to recreate an already-current snapshot.
 - Treating merge success as deployment, runtime, production, or integration
   evidence.
 
@@ -233,7 +246,9 @@ healthy state by another name.
   immediately before mutation.
 - Confirm only `MERGE_READY` authorized nodes entered each wave.
 - Confirm independent concurrency did not cross dependency or same-base
-  serialization boundaries.
+  source, deployment, or acceptance serialization boundaries.
+- Confirm each wave used one current preflight snapshot and refreshed evidence
+  only after material change or expiry.
 - Confirm identity or node failure remained isolated and exact partial state
   was preserved.
 - Confirm routine authorized remediation preserved the existing pull request,

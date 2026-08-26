@@ -101,6 +101,18 @@ contracts.
 - Use read-only discovery to make the outline complete before asking. Do not
   split known changes into several summaries or approval prompts.
 
+### Merge And Release Orchestration
+
+- Build the dependency graph and infrastructure outline during analysis, then
+  obtain the consolidated approval before executing the first merge,
+  deployment, or covered infrastructure mutation.
+- Infrastructure deletion, destruction, purge, destructive replacement, and
+  state removal are outside an ordinary merge or release-orchestration batch.
+  Do not execute them there; isolate them as a separate task governed by this
+  rule and `deletion-safety` with its own exact post-outline authorization.
+- A non-destructive release batch may continue after the destructive node is
+  removed only when the remaining graph and approval remain complete.
+
 ### Name-Aware Material AWS Targets
 
 - Treat an AWS infrastructure batch as large or materially risky when it

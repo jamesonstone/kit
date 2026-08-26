@@ -250,6 +250,11 @@ Task types define which facts must be retained, not additional output sections.
   multiple profile-shaped summaries.
 - Put explanatory prose into the relevant bullet rather than adding another
   section.
+- For merge or release orchestration, keep What happened to state changes and
+  the smallest evidence set that proves each terminal node. Put actionable
+  follow-up under Next steps.
+- Do not include a chronological command log, repeated checks, unchanged
+  polling, or routine tool details.
 - Redact secrets, credentials, private customer data, and signed URLs.
 
 ## Composition With Existing Contracts
@@ -282,6 +287,8 @@ Task types define which facts must be retained, not additional output sections.
 - Omitting Deviations or Next steps instead of using a None bullet.
 - Naming a required action without its owner and copy-ready continuation.
 - Using tables, multi-level nesting, or large prose blocks.
+- Expanding a merge or deployment result into a chronological work log or
+  repeated unchanged polling history.
 - Replacing provider-native evidence states with an optimistic summary.
 
 ## Examples

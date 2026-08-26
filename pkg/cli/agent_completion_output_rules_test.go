@@ -59,6 +59,9 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 		"Task types define which facts must be retained, not additional output sections",
 		"Use exactly the three canonical headings",
 		"Do not repeat a fact across sections",
+		"For merge or release orchestration, keep What happened to state changes",
+		"smallest evidence set that proves each terminal node",
+		"Do not include a chronological command log, repeated checks, unchanged polling, or routine tool details",
 		"Repository-memory decision, rationale, and artifacts become one concise What happened bullet",
 		"`PENDING`, `UNKNOWN`, `SKIPPED`, `NOT_APPLICABLE`",
 	} {

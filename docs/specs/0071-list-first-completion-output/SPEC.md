@@ -247,6 +247,11 @@ those sections without duplicative profile headings.
   trigger is now required in AGENTS, Copilot, and Guardrails expectations with
   a removal regression fixture so conversational exemptions cannot suppress
   structured reporting for blockers, mutations, or handoffs.
+- Before final delivery, `origin/main` advanced to `eedf4e1` with merge and
+  release orchestration constraints in overlapping completion-output files.
+  The base merge preserves those constraints inside the three-section model:
+  merge/release reports retain only state changes, the smallest terminal-node
+  evidence set, and actionable follow-up.
 
 ## VALIDATION
 
@@ -260,14 +265,14 @@ those sections without duplicative profile headings.
   `v10`, and resolved implementation context with no blockers.
 - PASS: feature `0071`, all 69 features, and the project contract.
 - PASS: whole-project reconcile reported no semantic reconciliation needed and
-  audited 731 candidates / 379 eligible handwritten source/test files with
+  audited 732 candidates / 380 eligible handwritten source/test files with
   zero above 300 physical lines.
 - PASS: `kit health --dry-run --json` and
   `kit reconcile --include-files --dry-run` detected expected pre-merge
   managed-registry drift without overwriting branch-owned rules. Health state
   remains literally `attention_needed`.
 - PASS: `git diff --check`; `gitleaks dir --no-banner --redact .` scanned
-  5.53 MB and found no leaks; instruction `v1` through `v9` hashes are
+  6.26 MB and found no leaks; instruction `v1` through `v9` hashes are
   unchanged.
 - NOT_APPLICABLE: browser, live-integration, deployment, runtime, and
   production suites; this is an instruction-contract change.
