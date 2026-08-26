@@ -19,7 +19,7 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			name:    "V2 RLM route",
 			version: config.InstructionScaffoldVersionTOC,
 			path:    "docs/agents/RLM.md",
-			snippet: "Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response",
+			snippet: "Load `docs/references/rules/agent-completion-output.md` before a substantial terminal completion or handoff response",
 			audit:   auditV2SupportGuidance,
 		},
 		{
@@ -30,24 +30,45 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			audit:   auditV2SupportGuidance,
 		},
 		{
-			name:    "V3 root status heading",
+			name:    "V3 root conversational exemption",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
+			snippet: "Answer ordinary conversational requests naturally",
 			audit:   auditV3SupportGuidance,
 		},
 		{
-			name:    "V3 root action list",
+			name:    "V3 root structured trigger",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
+			snippet: "Use the structured contract when omitting it could hide a blocker",
 			audit:   auditV3SupportGuidance,
 		},
 		{
-			name:    "V3 guardrails profiles",
+			name:    "V3 root semantic applicability",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "Do not classify by word count, token count, elapsed time, or tool-call count",
+			audit:   auditV3SupportGuidance,
+		},
+		{
+			name:    "V3 root status bullet",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
+			audit:   auditV3SupportGuidance,
+		},
+		{
+			name:    "V3 root three sections",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			audit:   auditV3SupportGuidance,
+		},
+		{
+			name:    "V3 guardrails no extra sections",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "docs/agents/GUARDRAILS.md",
-			snippet: "implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
+			snippet: "three canonical sections without duplication",
 			audit:   auditV3SupportGuidance,
 		},
 		{
@@ -81,4 +102,23 @@ func TestAuditV3SupportGuidanceFindsLegacyOperatorActionTable(t *testing.T) {
 		legacyOperatorActionTableHeader,
 		auditV3SupportGuidance(projectRoot),
 	)
+}
+
+func TestAuditV3SupportGuidanceFindsSupersededCompletionEnvelope(t *testing.T) {
+	for _, snippet := range []string{legacyStatusHeading, legacyPrioritizedActionList} {
+		t.Run(snippet, func(t *testing.T) {
+			projectRoot := writeCurrentReconcileGuidanceFixture(t, config.InstructionScaffoldVersionMemory)
+			relativePath := "AGENTS.md"
+			absolutePath := filepath.Join(projectRoot, relativePath)
+			content := readFile(t, absolutePath)
+			writeFile(t, absolutePath, content+"\n"+snippet+"\n")
+			assertStaleGuidanceFinding(
+				t,
+				projectRoot,
+				relativePath,
+				snippet,
+				auditV3SupportGuidance(projectRoot),
+			)
+		})
+	}
 }

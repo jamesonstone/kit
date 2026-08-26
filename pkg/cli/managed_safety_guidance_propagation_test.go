@@ -143,8 +143,14 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 		}
 		for _, snippet := range []string{
 			"## Agent Completion Output Contract",
-			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
-			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
+			"Answer ordinary conversational requests naturally",
+			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
+			"Use the structured contract when omitting it could hide a blocker",
+			"Do not classify by word count, token count, elapsed time, or tool-call count",
+			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
+			"Use one `**None.**` bullet when there are no deviations",
+			"Use one `**None.**` bullet when no action remains",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)
@@ -152,6 +158,14 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 		}
 		if strings.Contains(content, legacyOperatorActionTableHeader) {
 			t.Errorf("%s still contains leftover operator-action table %q", relativePath, legacyOperatorActionTableHeader)
+		}
+		for _, forbidden := range []string{
+			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
+			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
+		} {
+			if strings.Contains(content, forbidden) {
+				t.Errorf("%s still contains superseded completion guidance %q", relativePath, forbidden)
+			}
 		}
 	}
 

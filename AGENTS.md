@@ -63,22 +63,27 @@
 - Before implementation, inspect relevant code and existing repository memory
 - Decide semantically whether the work contains material rationale that code and tests cannot preserve
 - When material rationale exists, create or adopt `docs/specs/<feature>/SPEC.md` before editing implementation files and capture the accepted native plan
-- When code and tests are sufficient, do not create documentation solely to satisfy a process; record `not required` in the final Repository Memory report
+- When code and tests are sufficient, do not create documentation solely to satisfy a process; record `not required` in the final What happened repository-memory bullet
 - During implementation, keep material decisions and discoveries current in the spec
 - After implementation and validation, load `docs/references/rules/constitution-curation.md`; curate feature rationale into `SPEC.md`, demonstrated project invariants into `docs/CONSTITUTION.md`, reusable practices into `docs/references/` or `docs/references/rules/`, and domain knowledge into its existing canonical documentation
 - Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
 
 ## Agent Completion Output Contract
 
-- Before a terminal task response, load `docs/references/rules/agent-completion-output.md` when present. This contract does not apply to progress commentary or focused clarification questions.
-- Make the first human-readable line `# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>`. A required host wrapper may surround the response, but no human-readable preamble may precede the status.
-- Immediately follow with a prioritized action list ordered Blocker, Incomplete, Next, Optional, then None; every PASS includes a None item.
-- Make required follow-ups copy-ready. Never leave Why or Continue with blank, and never hide blockers or incomplete work below completed detail.
+- Before a substantial terminal completion or handoff response, load `docs/references/rules/agent-completion-output.md` when present.
+- This structured contract does not apply to intermediate progress commentary.
+- Answer ordinary conversational requests naturally. Direct questions, definitions, confirmations, rewrites, brief explanations, small read-only lookups, concise recommendations, and focused clarification questions must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting.
+- Use the structured contract when omitting it could hide a blocker, incomplete required scope, required operator action, unresolved failure, repository or external-system mutation, delivery artifact, multiple validation layers, material evidence, owner/dependency handoff, or when the user explicitly requests the canonical report.
+- Do not classify by word count, token count, elapsed time, or tool-call count. When uncertain, prefer natural prose unless structure is necessary to preserve operationally important information.
+- When the structured contract applies, emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order, with no other output section.
+- Put `**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**` in the first What happened bullet. Do not add a separate status heading.
+- Fold task-specific results, validation, delivery, coordination, and repository-memory evidence into concise What happened bullets. Use at most one nested evidence layer and state each fact once.
+- Put blockers, incomplete scope, failures, warnings, pending or unknown evidence, skipped validation, and degraded execution under Deviations. Use one `**None.**` bullet when there are no deviations.
+- Put independently actionable items under Next steps, required before optional. Name the actor and make every required continuation copy-ready. Use one `**None.**` bullet when no action remains.
 - Use PASS only for complete scope and required validation, PARTIAL for usable incomplete work, BLOCKED for a specific external dependency, and FAIL for an unresolved known failure without an external stopping dependency.
 - Preserve native evidence states such as PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE literally.
-- After the action list, use left-aligned headings and CommonMark list or key/value blocks. Do not use a Markdown pipe table unless a higher-priority schema requires it.
-- Select one primary profile from the requested deliverable: implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback. Start each detail item with a short bold lead label and put long rationale on indented continuation lines.
-- Preserve every field required by active delivery, validation, repository-memory, orchestration, program, and environment contracts inside the canonical profile blocks.
+- Do not use Markdown pipe tables, additional profile headings, or separate Completed, Validation, Delivery, Feature State, Residual Notes, Coordination, or Repository Memory sections.
+- Preserve every field required by active delivery, validation, repository-memory, orchestration, program, and environment contracts inside the three canonical sections without duplication.
 - For merge or release orchestration, report only state changes, terminal evidence, and actionable next steps; omit chronological command logs, repeated checks, unchanged polling, and routine tool details.
 
 ## Runtime Routing

@@ -11,14 +11,24 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 	required := []string{
 		"## Agent Completion Output Contract",
 		"docs/references/rules/agent-completion-output.md",
-		"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
-		"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
-		"every PASS includes a None item",
-		"Make required follow-ups copy-ready",
+		"Before a substantial terminal completion or handoff response",
+		"This structured contract does not apply to intermediate progress commentary",
+		"Answer ordinary conversational requests naturally",
+		"Direct questions, definitions, confirmations, rewrites, brief explanations, small read-only lookups",
+		"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
+		"Use the structured contract when omitting it could hide a blocker",
+		"Do not classify by word count, token count, elapsed time, or tool-call count",
+		"When uncertain, prefer natural prose",
+		"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+		"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
+		"Do not add a separate status heading",
+		"Use at most one nested evidence layer and state each fact once",
+		"Use one `**None.**` bullet when there are no deviations",
+		"make every required continuation copy-ready",
+		"Use one `**None.**` bullet when no action remains",
 		"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE",
-		"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
-		"Do not use a Markdown pipe table unless a higher-priority schema requires it",
-		"implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
+		"Do not use Markdown pipe tables, additional profile headings",
+		"three canonical sections without duplication",
 		"For merge or release orchestration, report only state changes, terminal evidence, and actionable next steps",
 		"omit chronological command logs, repeated checks, unchanged polling, and routine tool details",
 	}
@@ -42,6 +52,15 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 				t.Errorf("expected %s to contain %q", name, check)
 			}
 		}
+		for _, forbidden := range []string{
+			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
+			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
+			"After the action list, use left-aligned headings",
+		} {
+			if strings.Contains(content, forbidden) {
+				t.Errorf("expected %s not to contain superseded contract %q", name, forbidden)
+			}
+		}
 	}
 }
 
@@ -52,11 +71,11 @@ func TestInstructionSupportRoutesAgentCompletionOutput(t *testing.T) {
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
-		if !strings.Contains(rlm, "Load `docs/references/rules/agent-completion-output.md` before a terminal task completion or handoff response") {
+		if !strings.Contains(rlm, "Load `docs/references/rules/agent-completion-output.md` before a substantial terminal completion or handoff response") {
 			t.Errorf("expected version %d RLM to route completion output", version)
 		}
 		references := fileContentByPath(files, "docs/references/README.md")
-		if !strings.Contains(references, "Use `rules/agent-completion-output.md` before every terminal task completion or handoff response") {
+		if !strings.Contains(references, "Use `rules/agent-completion-output.md` before substantial terminal completion or handoff responses") {
 			t.Errorf("expected version %d references index to route completion output", version)
 		}
 	}
@@ -77,7 +96,9 @@ func TestContextWorkflowsRequireAgentCompletionOutput(t *testing.T) {
 func TestConstitutionTemplateRequiresAgentCompletionOutput(t *testing.T) {
 	for _, check := range []string{
 		"docs/references/rules/agent-completion-output.md",
-		"literal status, immediate prioritized action list, and primary task profile",
+		"Before a substantial terminal completion or handoff response",
+		"answer ordinary conversational requests naturally without that structured envelope",
+		"report only What happened, Deviations, and Next steps",
 	} {
 		if !strings.Contains(Constitution, check) {
 			t.Errorf("expected Constitution template to contain %q", check)

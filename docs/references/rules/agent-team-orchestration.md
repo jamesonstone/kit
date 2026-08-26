@@ -353,8 +353,9 @@ hypothesis to reconcile, not the source of truth for state.
 ### Two-Axis Final Reporting
 
 Follow `agent-completion-output` for terminal reporting. Map `task_outcome` to
-the overall status heading and retain the fields below in the coordination or
-evidence list. Never let a successful task heading hide degraded or
+the first What happened status bullet. Keep material execution evidence under
+What happened, degraded or unsatisfied conformance under Deviations, and any
+required handoff under Next steps. Never let task success hide degraded or
 unsatisfied orchestration conformance.
 
 Report task success separately from orchestration compliance:
