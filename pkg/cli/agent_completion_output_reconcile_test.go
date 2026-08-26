@@ -37,6 +37,13 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			audit:   auditV3SupportGuidance,
 		},
 		{
+			name:    "V3 root structured trigger",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "Use the structured contract when omitting it could hide a blocker",
+			audit:   auditV3SupportGuidance,
+		},
+		{
 			name:    "V3 root semantic applicability",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",

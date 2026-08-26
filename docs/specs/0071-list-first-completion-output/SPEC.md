@@ -242,6 +242,11 @@ those sections without duplicative profile headings.
 - Section proliferation is independently harmful even for substantial tasks.
   Profiles remain content checklists, not output headings; one fact must appear
   once in the section that best supports operator understanding or action.
+- Hosted review identified that reconcile initially enforced the three-section
+  shape without independently enforcing the structured-output trigger. The
+  trigger is now required in AGENTS, Copilot, and Guardrails expectations with
+  a removal regression fixture so conversational exemptions cannot suppress
+  structured reporting for blockers, mutations, or handoffs.
 
 ## VALIDATION
 

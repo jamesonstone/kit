@@ -67,6 +67,7 @@ func v3GuidanceExpectations() map[string][]string {
 		"AGENTS.md": {
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
+			"Use the structured contract when omitting it could hide a blocker",
 			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
 			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
@@ -106,6 +107,7 @@ func v3GuidanceExpectations() map[string][]string {
 		".github/copilot-instructions.md": {
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
+			"Use the structured contract when omitting it could hide a blocker",
 			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
 			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
@@ -168,6 +170,7 @@ func v3GuidanceExpectations() map[string][]string {
 		"docs/agents/GUARDRAILS.md": {
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
+			"Use the structured contract when omitting it could hide a blocker",
 			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
 			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
