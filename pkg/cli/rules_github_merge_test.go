@@ -71,7 +71,10 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 			"A participant may merge only specifically assigned PR nodes", "Subagent assignment alone does not create merge authority",
 		},
 		"infrastructure-triggering merge": {
-			"known to trigger deployment, Kubernetes, public-cloud", "accepted plan must identify",
+			"known to trigger a covered infrastructure mutation", "accepted plan must identify",
+		},
+		"routine application operation merge": {
+			"routine application operation", "does not require infrastructure-change-approval",
 		},
 		"partial wave failure": {
 			"A failure on one node stops that node and its dependents", "Preserve exact",

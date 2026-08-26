@@ -75,7 +75,8 @@ Before the first merge, record:
 - dependency edges and the current authorized ready frontier;
 - required review and hosted-check policy plus current-head evidence;
 - known deployment, Kubernetes, public-cloud, and infrastructure-as-code
-  effects, including their approval state;
+  effects, classified as routine application operations or covered
+  infrastructure mutations, including approval state when covered;
 - post-merge deployment, runtime, and validation gates; and
 - bounded in-place-remediation authority, replacement-PR criteria,
   failure-containment, recovery, and rollback ownership.
@@ -136,16 +137,24 @@ before mutation.
 
 ### Infrastructure And Deployment Effects
 
-- A merge known to trigger deployment, Kubernetes, public-cloud, or
-  infrastructure-as-code mutation is part of that covered mutation boundary.
-- Before authorizing that node as `MERGE_READY`, the accepted plan must identify
-  the triggering workflow, target account/environment/region/cluster, expected
-  actions and impact, recovery or rollback, and post-merge evidence.
+- Record known deployment, Kubernetes, public-cloud, and infrastructure-as-code
+  effects in the merge plan, including routine application operations such as
+  existing CD rolling a new image onto already-provisioned compute.
+- A merge known to trigger a covered infrastructure mutation is part of that
+  covered mutation boundary. Before authorizing that node as `MERGE_READY`,
+  the accepted plan must identify the triggering workflow, target
+  account/environment/region/cluster, expected actions and impact, recovery
+  or rollback, and post-merge evidence.
+- A merge whose only known cloud effect is a routine application operation
+  does not require infrastructure-change-approval confirmation. Record the
+  workflow and environment; do not invent a covered infrastructure batch.
 - The same accepted plan may contain both merge authorization and applicable
   infrastructure approval. Do not ask twice when one complete plan satisfies
   both contracts.
-- Unknown indirect effects or incomplete infrastructure approval make the node
-  `UNKNOWN` or `BLOCKED`; inspect them before merge.
+- Unknown create, replace, or delete effects, or incomplete approval for a
+  covered infrastructure mutation, make the node `UNKNOWN` or `BLOCKED`;
+  inspect them before merge. An image-only CD path is not an unknown covered
+  mutation once classified as a routine application operation.
 - Merge success never implies workflow success, deployed identity, runtime
   readiness, production validation, or rollback readiness.
 
@@ -224,8 +233,10 @@ healthy state by another name.
 - Assigning merge authority implicitly to every subagent or verifier.
 - Using admin merge, protection bypass, identity substitution, or an
   unsupported merge method.
-- Starting a deployment-triggering merge before its effects and approval are
-  known.
+- Starting a merge that creates, replaces, or deletes infrastructure before
+  those covered effects and approval are known.
+- Inventing an infrastructure-approval batch solely because merge will deploy
+  a new application image through existing CD.
 - Creating replacement or recursively corrective pull requests for routine,
   scope-preserving remediation that can safely stay on the existing PR head.
 - Updating a PR head and merging it under authorization or evidence bound to
@@ -269,7 +280,9 @@ Authorized single PR:
 ```text
 Direct request: merge owner/service#84.
 Head/base, actor, policy, reviews, required checks, and deployment effects are
-current and acceptable. State: MERGE_READY. Merge only #84.
+current and acceptable. The hosted workflow rolls a new image onto the existing
+ECS service. That is a routine application operation, not a covered
+infrastructure batch. State: MERGE_READY. Merge only #84.
 ```
 
 Unauthorized extra PR:

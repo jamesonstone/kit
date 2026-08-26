@@ -35,6 +35,13 @@ func TestReconcileFindsStaleInfrastructureChangeApprovalGuidance(t *testing.T) {
 			snippet: "Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
 			audit:   auditV3SupportGuidance,
 		},
+		{
+			name:    "V3 routine application operations",
+			version: config.InstructionScaffoldVersionMemory,
+			path:    "AGENTS.md",
+			snippet: "Routine application operations on already-provisioned workloads, including deployment image updates and ECS or equivalent service interactions that do not create, replace, or delete infrastructure, are not infrastructure-approval batches.",
+			audit:   auditV3SupportGuidance,
+		},
 	}
 
 	for _, tt := range tests {

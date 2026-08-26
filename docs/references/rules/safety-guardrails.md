@@ -207,7 +207,7 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
   persistent project, user, business, or external-system state. Default to
   soft delete and obtain post-outline specific manual confirmation for the
   exact current targets before every hard delete.
-- Honor explicit repo-local approval gates. For covered public-cloud, Kubernetes, or infrastructure-as-code mutations, follow `infrastructure-change-approval` before mutation; use one plan-level confirmation per complete batch, then execute that batch and compatible retries without re-prompting; consolidate additional required changes into one follow-up batch, and always obtain post-outline confirmation for deletion or removal.
+- Honor explicit repo-local approval gates. For covered public-cloud, Kubernetes, or infrastructure-as-code mutations, follow `infrastructure-change-approval` before mutation; use one plan-level confirmation per complete batch, then execute that batch and compatible retries without re-prompting; consolidate additional required changes into one follow-up batch, and always obtain post-outline confirmation for deletion or removal. Routine application operations, including deployment image updates and ECS interactions that do not create or delete infrastructure, are not covered mutations and do not require that confirmation.
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files.
 - Before requesting hard-delete confirmation, resolve the exact targets, scope,
   sensitivity, cascades, and recoverability with read-only inspection. An

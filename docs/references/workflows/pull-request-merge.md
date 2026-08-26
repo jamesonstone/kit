@@ -37,7 +37,9 @@ evidence:
 - Execute only the exact pull-request set authorized by a direct request or
   accepted bounded plan.
 - Fail closed on unknown actor, policy, head/base, checks, dependencies,
-  approvals, or indirect deployment effects.
+  approvals, or unknown covered infrastructure effects. Record routine
+  application operations such as image-only CD without inventing a covered
+  batch.
 
 ## Phases
 
