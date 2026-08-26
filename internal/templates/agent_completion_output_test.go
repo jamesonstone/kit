@@ -19,6 +19,8 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 		"After the action list, use left-aligned headings and CommonMark list or key/value blocks",
 		"Do not use a Markdown pipe table unless a higher-priority schema requires it",
 		"implementation, research, diagnosis, planning, validation, review, operations, coordination, or fallback",
+		"For merge or release orchestration, report only state changes, terminal evidence, and actionable next steps",
+		"omit chronological command logs, repeated checks, unchanged polling, and routine tool details",
 	}
 	for name, content := range map[string]string{
 		"V1 AGENTS.md":            LegacyAgentsMD,

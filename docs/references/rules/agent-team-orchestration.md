@@ -178,6 +178,11 @@ Profiles describe required behavior, not vendor products or fixed model IDs:
   `unknown` when the host does not reveal it.
 - Never silently substitute a different configuration for an exact user model
   or effort pin. Obtain explicit relaxation or report the pin unsatisfied.
+- A user may request a lower-cost or lower-capability configuration for exact,
+  mechanical merge or deployment-monitoring lanes. Honor that request only
+  when the host supports explicit selection, the lane is narrowly bounded,
+  and profile evidence shows the configuration is sufficient; keep graph,
+  repair, recovery, and acceptance decisions with the accountable supervisor.
 
 ### Profile Fallback Order
 
@@ -298,11 +303,15 @@ hypothesis to reconcile, not the source of truth for state.
   node's dependency or ownership, bypass a gate, or advance program-wide state.
 - Read-only verification agents can never merge or queue a merge.
 - Independent authorized ready nodes may merge concurrently only when their
-  repository and failure boundaries are independent. Dependency chains and
-  same-base-sensitive operations remain serialized.
+  source, deployment, and failure boundaries are independent. Dependency
+  chains and shared bases, services, environments, databases, migrations,
+  queues, or acceptance gates remain serialized.
 - Every merge participant must load `github-pr-merge`; cross-repository
   programs also reconcile the approved set and ready frontier from the
   canonical ledger before each wave.
+- Assign participants exact nodes and terminal evidence to observe. Use
+  event-driven waits or bounded backoff, and return only state transitions or
+  the terminal result rather than repeated unchanged polling.
 
 ### Verification, Repair, And Degradation
 
