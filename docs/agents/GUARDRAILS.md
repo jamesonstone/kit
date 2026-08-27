@@ -74,6 +74,14 @@ must:
   feature branches, issue references, and generic requests to produce a pull
   request. Do not infer permission to continue the current lane from any of
   those states.
+- Exact existing pull requests targeted for review repair, CI repair, base
+  refresh, conflict resolution, or ordered merge coordination are explicit
+  continuation. Reuse every targeted head branch and pull request; do not
+  create a coordination or corrective pull request for scope-preserving work.
+- For a multi-PR merge or program plan, record one continuation entry per
+  target instead of inventing one coordinator lane. If source repair is not
+  authorized, ask only for bounded in-place-remediation authority; do not
+  allocate a new lane as a fallback.
 - For the default new lane, create or reuse one human-assigned issue, exact
   `GH-<issue-number>` branch, canonical linked worktree at
   `~/worktrees/<owner>/<repository>/GH-<issue-number>`, and one ready-PR plan

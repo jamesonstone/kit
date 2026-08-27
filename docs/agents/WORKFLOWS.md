@@ -9,9 +9,12 @@
 5. Before any repository write, default to a new worklane without asking,
    record the Pull-Request Landing Plan, and enter its non-primary writable
    worktree. Continue an existing lane only when the user explicitly directs it.
-6. Before code, create or adopt `docs/specs/<feature>/SPEC.md` when material rationale must survive.
-7. Implement, validate, and keep consequential decisions and discoveries current.
-8. Curate repository memory to the actual integrated outcome, then rerun context resolution if scope changed.
+6. Existing-PR review, CI, base-refresh, and ordered-merge work reuses every
+   targeted head and pull request; it never creates a coordinator or corrective
+   pull request for scope-preserving remediation.
+7. Before code, create or adopt `docs/specs/<feature>/SPEC.md` when material rationale must survive.
+8. Implement, validate, and keep consequential decisions and discoveries current.
+9. Curate repository memory to the actual integrated outcome, then rerun context resolution if scope changed.
 
 `kit spec [feature]` scaffolds or adopts the living V3 spec and is
 write-capable, so run it only after the lane gate in the selected worktree. It

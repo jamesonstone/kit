@@ -81,6 +81,8 @@ func TestMemoryInstructionsPreserveProjectOrientedWorktrees(t *testing.T) {
 		"Treat the primary/root checkout as read-only",
 		"Default to a new worklane without asking",
 		"continue an existing lane only when the user",
+		"Treat exact existing-PR review repair, CI repair, base refresh, and ordered",
+		"create a coordinator or corrective pull request for scope-preserving work",
 		"create-or-update pull-request target",
 		"Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists",
 		"omit both links when isolation is required",

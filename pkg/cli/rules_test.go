@@ -85,6 +85,8 @@ func TestSafetyGuardrailsRegistryRulesetRequiresAutonomousRecovery(t *testing.T)
 		"Remove only an exact registered path",
 		"default to a new worklane without asking",
 		"explicit same-scope direction to continue an existing lane",
+		"exact existing-PR lifecycle target set as continuation",
+		"coordination or corrective pull requests for scope-preserving work",
 		"exact primary/root checkout as read-only",
 		"Never edit the primary checkout with a plan to move the",
 		"diff later",

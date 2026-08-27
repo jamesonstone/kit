@@ -39,6 +39,14 @@ references:
     read_policy: must
     used_for: issue, branch, worktree, commit, and pull-request delivery
     status: active
+  - id: github-pr-merge
+    name: GitHub pull request merge rule
+    type: rule
+    target: docs/references/rules/github-pr-merge.md
+    relation: guides
+    read_policy: must
+    used_for: existing-PR lifecycle precedence and bounded in-place remediation
+    status: active
   - id: testing-rule
     name: Testing and environment validation rule
     type: rule
@@ -79,6 +87,10 @@ continuation remains available only when the user explicitly directs it.
 - The new default is broader than the earlier v2 clean-preflight path. It
   applies on clean, dirty, protected, and feature branches; current work is not
   continued unless the user explicitly directs continuation for the same scope.
+- Existing-PR lifecycle work is already owned. Review repair, CI repair, base
+  refresh, and dependency-ordered merge coordination must retain every targeted
+  pull request's branch and identity instead of creating coordinator or
+  recursively corrective pull requests.
 - Feature 0050 established canonical linked worktrees at
   `~/worktrees/<owner>/<repository>/<lane>`, exact `GH-<issue-number>` durable
   lanes, and preservation of dirty worktree state.
@@ -108,14 +120,27 @@ continuation remains available only when the user explicitly directs it.
   that write specs, generated files, configuration, source, tests,
   documentation, or Git state may not.
 - Apply the default on clean, dirty, protected, and feature branches, when an
-  issue is referenced, and when the request asks for a pull request. None of
-  those states implies permission to continue the current lane.
+  issue is referenced, and when the request asks for a new pull request. The
+  default applies only when no existing issue/branch/pull-request owner matches
+  the accepted unit of work.
 - Continue an existing lane only when the user explicitly directs that outcome
   for the same unit of work and recon proves its exact branch, non-primary
   owning worktree, issue scope, protected base, and pull-request target.
 - Never offer or ask for a new-versus-existing lane preference. Ask only when
   implementation intent or a user-named target is materially ambiguous and
   cannot be resolved from repository evidence.
+- Treat an exact existing pull-request set targeted for review repair, CI
+  repair, base refresh, conflict resolution, generated-artifact refresh, or
+  ordered merge coordination as explicit continuation of those existing lanes.
+- Reuse every targeted head branch and pull request for scope-preserving work.
+  Never create a coordinator or corrective pull request solely to update or
+  make another pull request mergeable.
+- For a multi-PR merge or program plan, record one continuation entry per
+  target. If source repair is not authorized, request bounded in-place repair
+  authority rather than allocating a new lane or replacement pull request.
+- Preserve `github-pr-merge` replacement criteria: replacement requires a
+  material scope or architecture change, an unsafe original head, repository
+  policy, or explicit user direction.
 - One recorded lane allocation covers the accepted unit of work and its required tests,
   documentation, validation fixes, and delivery. Materially new or tangential
   accepted scope defaults to another new lane; routine subtasks do not create
@@ -181,6 +206,11 @@ continuation remains available only when the user explicitly directs it.
    new-worklane routing, retain only explicitly directed existing-lane
    continuation, update managed-file and reconcile drift semantics, publish
    additive current v11, and preserve immutable v1-v10 bytes.
+10. Repair PR #187 in place by making existing-PR lifecycle work an explicit
+    precedence rule across the canonical lane, safety, delivery, merge,
+    generated-guidance, reconciliation, and v11 surfaces. Add regressions that
+    reject coordinator and recursively corrective pull requests for
+    scope-preserving review, CI, base-refresh, and ordered-merge work.
 
 ## DECISIONS
 
@@ -220,6 +250,12 @@ continuation remains available only when the user explicitly directs it.
   default issue-to-ready-PR lane. This removes a redundant permission prompt
   without weakening identity, primary-checkout, staging, validation, delivery,
   or separate merge-authorization boundaries.
+- Accepted for the PR #187 repair: default-new routing applies only when the
+  accepted unit has no existing issue/branch/pull-request owner. Exact
+  existing-PR lifecycle targets take precedence and are explicit continuation.
+- Accepted for the PR #187 repair: merge authority and in-place repair
+  authority remain separate. Missing repair authority blocks head mutation but
+  can never be satisfied by creating a coordinator or corrective pull request.
 - Rejected during PR review: add unconditional runtime rejection to `kit init`,
   `kit health`, and init refresh. The lane gate governs coding-agent actions,
   while these commands also support direct human use and non-Git bootstrap. Kit
@@ -359,6 +395,10 @@ continuation remains available only when the user explicitly directs it.
   GH-160 now requires one contiguous complete-lane clause in every managed
   surface, removes that clause in per-file stale-guidance regressions, and
   passes the complete Go, race, format, vet, lint, and build validation again.
+- Review of PR #187 found one precedence ambiguity: the general default-new gate
+  could be read before the stronger merge rule and allocate a coordination
+  worklane for an existing PR set. The repair makes exact existing-PR lifecycle
+  targets explicit continuation at the always-loaded boundary.
 - GH-186 focused instruction, template, ruleset, managed-file, reconciliation,
   health, and CLI tests pass. `make all`, `go test -race ./... -count=1`,
   `go build ./...`, changed-code `golangci-lint`, the Windows build, and
@@ -368,10 +408,10 @@ continuation remains available only when the user explicitly directs it.
   reports no drift and audits 735 version-control-eligible candidates and 381
   eligible handwritten source/test files with zero above 300 physical lines.
 - Current v11 hashes to
-  `dc15b613600ef6c62380920ae859bd62a44f33efb10445ca200ac3809ea1be51`;
+  `ddb2a92de00dcef09288f33532eb95164efa450ce00ef7687015b10c06c95f08`;
   immutable v10 remains
   `9c4d87348f0481b552b2dd44024ad0e3fbd82ec4a568fbb31555d9bb8de94162`.
-- `gitleaks dir --redact --no-banner .` scanned 5.05 MB with no leaks, and
+- `gitleaks dir --redact --no-banner .` scanned 5.61 MB with no leaks, and
   `git diff --check` passes.
 - Browser, live-integration, deployment, infrastructure, and production
   validation are `NOT_APPLICABLE`; this change updates local policy, templates,
@@ -383,11 +423,15 @@ continuation remains available only when the user explicitly directs it.
 ## OUTCOME
 
 - The active work-lane rule now defaults every accepted coding-agent repository
-  mutation to a complete new issue/branch/worktree/ready-PR lane without asking.
-  Explicit same-scope continuation is the sole route to an existing lane.
+  mutation with no existing owner to a complete new
+  issue/branch/worktree/ready-PR lane without asking. Explicit same-scope
+  continuation and exact existing-PR lifecycle targets retain their lanes.
 - The lane-choice question and response shorthand were removed from active
   guidance. One allocation covers required completion work, while materially
   new accepted scope receives another default new lane.
+- Review repair, CI repair, base refresh, and ordered merge coordination reuse
+  every targeted existing pull-request head. Scope-preserving work creates no
+  coordinator or recursively corrective pull request.
 - Safety and delivery rules now make the exact primary checkout read-only and
   accept continued work only in a proven non-primary owned worktree with one
   create-or-update pull-request route.
@@ -465,3 +509,6 @@ continuation remains available only when the user explicitly directs it.
   reconcile expectations, and additive v11. This reversal is material durable
   rationale: the default now creates a new worklane without asking, while
   explicit continuation remains bounded and merge authorization stays separate.
+- PR #187 was repaired in place to add existing-PR lifecycle precedence across
+  the same canonical artifacts and v11. This preserves the established
+  no-corrective-PR invariant while keeping missing repair authority fail-closed.

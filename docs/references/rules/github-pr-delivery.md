@@ -27,6 +27,10 @@ read_policy_default: conditional
 - `work-lane-gating` defaulted the accepted repository-mutating task to a new
   lane, or the user explicitly directed continuation of an existing lane for
   the current unit of work.
+- Exact existing pull requests targeted for review repair, CI repair, base
+  refresh, or ordered merge coordination are existing-lane lifecycle work. Reuse
+  their head branches and pull requests; never create a coordinator or
+  corrective pull request for scope-preserving remediation.
 - `safety-guardrails` is already active for identity, protected-branch, secret-scan, and failure handling.
 - The complete Pull-Request Landing Plan is recorded before repository file
   mutation.
@@ -189,6 +193,9 @@ Include:
 - If a PR already exists for `GH-123`, update it instead of duplicating.
 - Before updating an existing PR, check active PRs for the current branch and confirm the active directory, branch, remote, PR head, and PR base match the intended issue branch and repository.
 - If issue, branch, and PR state disagree, reconcile them autonomously when the intended lane can be proven without destructive changes; otherwise report the ambiguity and request the smallest missing input.
+- When a bounded merge or program plan names multiple existing pull requests,
+  preserve one continuation entry per target and update each same-repository
+  head in place. Do not invent a singular coordination lane for the set.
 
 ### Additional Scope On An Existing Pull Request
 

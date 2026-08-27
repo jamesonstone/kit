@@ -29,6 +29,12 @@ func TestWorkLaneGatingRulesetDefaultsToNewPullRequestLane(t *testing.T) {
 		"Search for one exact matching issue and reusable complete lane",
 		"Continue an existing lane only when the user explicitly directs continuation",
 		"Never offer continuation as a choice",
+		"Existing Pull-Request Lifecycle Precedence",
+		"review repair, CI repair, base refresh, conflict resolution",
+		"dependency-ordered merge coordination",
+		"Do not allocate a new coordination issue, branch, worktree, or pull request",
+		"never create recursive corrective pull requests",
+		"Missing repair authority is not a reason to allocate a new worklane",
 		"Ask only when implementation intent or a user-named target is materially ambiguous",
 		"Do not ask for a new-versus-existing lane preference",
 		"Pull-Request Landing Plan",
@@ -37,6 +43,7 @@ func TestWorkLaneGatingRulesetDefaultsToNewPullRequestLane(t *testing.T) {
 		"Treat that exact checkout as read-only",
 		"Never use the primary checkout as a temporary edit location",
 		"Do not create another lane for routine",
+		"Creating a coordination or corrective pull request",
 		"Do not stage, commit, push",
 	} {
 		if !strings.Contains(normalizedBody, check) {

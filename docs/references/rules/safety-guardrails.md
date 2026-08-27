@@ -33,7 +33,8 @@ read_policy_default: must
 
 1. Run read-only `safety-guardrails` recon and identity checks.
 2. Apply `work-lane-gating`: default to a new worklane without asking, or honor
-   an explicit same-scope direction to continue an existing lane.
+   an explicit same-scope direction to continue an existing lane. Treat an
+   exact existing-PR lifecycle target set as continuation, not new work.
 3. Record the complete Pull-Request Landing Plan.
 4. Establish or verify the non-primary writable worktree.
 5. Run `github-pr-delivery` only inside that lane.
@@ -207,6 +208,9 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
   accepted repository-mutating task authorizes that route without another
   prompt. Continue an existing lane only after an explicit same-scope user
   direction; do not infer continuation from current repository state.
+- Review repair, CI repair, base refresh, and ordered merge coordination for an
+  exact existing pull-request set preserve those pull-request lanes. Do not
+  create coordination or corrective pull requests for scope-preserving work.
 - Follow `deletion-safety` before designing deletion behavior or deleting
   persistent project, user, business, or external-system state. Default to
   soft delete and obtain post-outline specific manual confirmation for the

@@ -161,7 +161,8 @@ const referencesREADME = `# References
 - Use ` + "`rules/agent-completion-output.md`" + ` before substantial terminal completion or handoff responses to require only What happened, Deviations, and Next steps, with task-specific evidence folded into those sections; answer ordinary conversational requests naturally without that structured envelope
 - Use ` + "`rules/work-lane-gating.md`" + ` before any coding-agent repository
   file or delivery mutation to default to a new worklane without asking,
-  require the pull-request landing plan, and keep the primary checkout read-only
+  require the pull-request landing plan, preserve exact existing-PR lifecycle
+  work in place, and keep the primary checkout read-only
 - Use ` + "`rules/kit-capabilities-usage.md`" + ` in downstream projects for Kit command discovery guidance
 - Use ` + "`rules/constitution-curation.md`" + ` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use ` + "`rules/cross-repository-program-coordination.md`" + ` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff

@@ -131,6 +131,8 @@ func auditWorkLaneDefaultGuidance(projectRoot string) []reconcileFinding {
 			"ready pull-request plan",
 			"Continue an existing lane only when the user explicitly directs",
 			"Never offer or ask the user to choose between lanes",
+			"Treat exact existing-PR lifecycle work as continuation",
+			"Never create coordination or corrective pull requests for scope-preserving work",
 		},
 		"CLAUDE.md": {
 			"Default to a new worklane without asking",
@@ -140,6 +142,8 @@ func auditWorkLaneDefaultGuidance(projectRoot string) []reconcileFinding {
 			"ready pull-request plan",
 			"Continue an existing lane only when the user explicitly directs",
 			"Never offer or ask the user to choose between lanes",
+			"Treat exact existing-PR lifecycle work as continuation",
+			"Never create coordination or corrective pull requests for scope-preserving work",
 		},
 		".github/copilot-instructions.md": {
 			"Default to a new worklane without asking",
@@ -149,6 +153,8 @@ func auditWorkLaneDefaultGuidance(projectRoot string) []reconcileFinding {
 			"ready pull-request plan",
 			"Continue an existing lane only when the user explicitly directs",
 			"Never offer or ask the user to choose between lanes",
+			"Treat exact existing-PR lifecycle work as continuation",
+			"Never create coordination or corrective pull requests for scope-preserving work",
 		},
 		"docs/agents/GUARDRAILS.md": {
 			"Default to a new worklane without asking",
@@ -158,6 +164,8 @@ func auditWorkLaneDefaultGuidance(projectRoot string) []reconcileFinding {
 			"ready pull-request plan",
 			"Continue an existing lane only when the user explicitly directs",
 			"Never offer or ask the user to choose between lanes",
+			"Exact existing pull requests targeted for review repair, CI repair, base",
+			"create a coordination or corrective pull request for scope-preserving work",
 		},
 	}
 

@@ -58,9 +58,9 @@ Before the first mutation, the agent must have both:
    reviewed.
 
 An accepted request to mutate the repository activates the new-worklane
-default and its issue-to-ready-PR delivery authority. Read-only requests do not
-allocate a lane. The user does not need to separately select or approve the
-default lane.
+default and its issue-to-ready-PR delivery authority when the work has no
+existing issue/branch/pull-request owner. Read-only requests do not allocate a
+lane. The user does not need to separately select or approve the default lane.
 
 ### Required Default
 
@@ -68,8 +68,8 @@ After read-only recon:
 
 - Do not ask whether to create a new lane or continue an existing lane.
 - Default to a new worklane even when the current checkout is clean, dirty, on
-  a protected branch, or on a feature branch, and even when the request names
-  an issue or asks for a pull request.
+  a protected branch, or on a feature branch. A bare issue reference or generic
+  request for a pull request does not prove an existing owner.
 - Search for one exact matching issue and reusable complete lane before
   creating anything. Reuse only a strong scope match whose issue, exact branch,
   canonical non-primary worktree, protected base, and pull-request route agree;
@@ -94,6 +94,29 @@ After read-only recon:
   implementation intent is accepted. Do not create another lane for routine
   subtasks that remain inside the recorded lane and pull-request plan.
 
+### Existing Pull-Request Lifecycle Precedence
+
+- A task targeting one or more exact existing pull requests for review repair,
+  CI repair, base refresh, conflict resolution, generated-artifact refresh,
+  dependency-ordered merge coordination, or other scope-preserving remediation
+  is explicit continuation of each targeted pull request's existing lane.
+- Reuse each target's same-repository head branch, issue, owning non-primary
+  worktree, protected base, and pull-request identity. Do not allocate a new
+  coordination issue, branch, worktree, or pull request for that lifecycle work.
+- For multiple pull requests, record one continuation entry per target in the
+  bounded merge or program plan. That exact target set replaces the singular
+  create-or-update landing target; it does not create a coordinator pull request.
+- Follow `github-pr-merge` for dependency order and bounded in-place repair.
+  Scope-preserving repair stays on the existing heads with ordinary commits;
+  never create recursive corrective pull requests merely to make another pull
+  request current or mergeable.
+- If the user or accepted plan authorizes merge but not source repair, stop for
+  bounded in-place-remediation authority before changing a head. Missing repair
+  authority is not a reason to allocate a new worklane or replacement pull request.
+- Use a replacement pull request only when the remediation materially changes
+  scope or architecture, the original head cannot be updated safely, or
+  repository policy or the user explicitly requires replacement.
+
 ### Pull-Request Landing Plan
 
 Before file mutation, record these fields in-thread:
@@ -112,6 +135,9 @@ Pull-Request Landing Plan:
 ```
 
 - Every field must be known and mutually consistent before file mutation.
+- Existing multi-PR lifecycle work may record one complete continuation entry
+  per target inside its bounded merge or program plan instead of inventing one
+  coordinator issue, branch, worktree, and pull request.
 - A plan is not permission to merge. It is the proven route from the writable
   worktree to one reviewable pull request.
 - If scope, repository, issue, branch, worktree, base, or pull-request target
@@ -125,6 +151,9 @@ Pull-Request Landing Plan:
   commit, push, and ready-PR delivery only.
 - A direct merge request or accepted bounded merge plan routes to
   `github-pr-merge` and the `pull-request-merge` context workflow.
+- The exact existing pull-request set named by that request or plan is explicit
+  continuation under this rule; do not apply the default-new route to create a
+  separate coordination lane.
 - The authorized set is exact. Adding a new PR, repository, base branch,
   deployment target, infrastructure effect, merge method, or actor requires
   follow-up authorization.
@@ -232,6 +261,9 @@ state, or to create or clear a worktree.
   the accepted scope.
 - Hiding tangential work in the current lane instead of applying the default
   new-worklane routing after its intent is accepted.
+- Creating a coordination or corrective pull request for review repair, CI
+  repair, base refresh, ordered merge work, or another scope-preserving change
+  that belongs on a targeted existing pull-request head.
 - Staging, committing, pushing, resetting, cleaning, stashing, or silently
   transferring work after a tripwire violation.
 
@@ -254,6 +286,9 @@ state, or to create or clear a worktree.
   the same gate as source code.
 - Confirm materially new accepted scope defaulted to another new lane while
   routine in-scope completion work stayed in the recorded lane.
+- Confirm exact existing-PR lifecycle work reused every targeted head branch
+  and pull request, recorded per-target continuation, and created no coordinator
+  or recursive corrective pull request.
 - Confirm tripwire state was preserved and no ungated change was staged,
   committed, pushed, discarded, or silently transferred.
 - Confirm PR-delivery consent was not treated as merge consent, and any direct

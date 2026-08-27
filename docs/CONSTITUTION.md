@@ -23,6 +23,10 @@
   issue/branch/worktree/pull-request lane without asking, unless the human
   explicitly directs continuation of an existing pull-request lane; then
   record the exact landing plan.
+- Exact existing pull requests targeted for review repair, CI repair, base
+  refresh, or ordered merge coordination retain their current head branches and
+  pull-request identities. Scope-preserving lifecycle work never creates a
+  coordinator or recursively corrective pull request.
 - Perform coding-agent repository changes only in the selected non-primary
   writable worktree. The clone's primary checkout remains read-only regardless
   of branch, cleanliness, file type, or planned delivery.

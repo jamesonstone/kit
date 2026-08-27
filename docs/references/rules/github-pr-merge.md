@@ -48,6 +48,9 @@ ledger existence are also not authorization.
 
 - Record the authorization source and exact approved pull-request set before
   mutation.
+- Treat that exact existing pull-request set as explicit continuation under
+  `work-lane-gating`. Do not create a new coordination issue, branch, worktree,
+  or pull request merely to prepare or execute the merge plan.
 - Exact-head merge authority freezes the commit eligible for merge; it does not
   authorize source repair. An authorized in-place repair keeps the same pull
   request in the graph but invalidates its readiness and prior exact-head merge

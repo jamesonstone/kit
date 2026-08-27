@@ -70,6 +70,10 @@ func TestAuditWorkLaneDefaultGuidanceFindsExistingSectionDrift(t *testing.T) {
 		{path: "CLAUDE.md", snippet: "Never offer or ask the user to choose between lanes"},
 		{path: ".github/copilot-instructions.md", snippet: "Never offer or ask the user to choose between lanes"},
 		{path: "docs/agents/GUARDRAILS.md", snippet: "Never offer or ask the user to choose between lanes"},
+		{path: "AGENTS.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
+		{path: "CLAUDE.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
+		{path: ".github/copilot-instructions.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
+		{path: "docs/agents/GUARDRAILS.md", snippet: "Exact existing pull requests targeted for review repair, CI repair, base"},
 	} {
 		t.Run(tt.path, func(t *testing.T) {
 			projectRoot, _ := setupLifecycleTestProject(t)
@@ -136,6 +140,11 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 			"ready pull-request plan",
 			"Continue an existing lane only when the user explicitly directs",
 			"Never offer or ask the user to choose between lanes",
+			"review repair, CI repair, base",
+			"ordered merge coordination",
+			"coordination or corrective pull request",
+			"bounded in-place-remediation authority",
+			"allocate a new lane",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)

@@ -67,6 +67,9 @@ const agentsTooling = `# Tooling
 - Default to a new worklane without asking before any coding-agent repository
   file or delivery mutation; continue an existing lane only when the user
   explicitly directs it for the same unit of work
+- Treat exact existing-PR review repair, CI repair, base refresh, and ordered
+  merge coordination as continuation; reuse every targeted head and never
+  create a coordinator or corrective pull request for scope-preserving work
 - Record the repository, issue, branch, non-primary worktree, protected base,
   and create-or-update pull-request target before editing files
 - Work in the existing checkout only when it is the exact non-primary linked
