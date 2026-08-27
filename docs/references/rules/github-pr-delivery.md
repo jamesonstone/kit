@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: github-pr-delivery
-description: Sequences issue, worktree, branch, commit, push, ready PR, documentation-only CI skips, and post-PR checks after an explicit lane choice.
+description: Sequences issue, worktree, branch, commit, push, ready PR, documentation-only CI skips, and post-PR checks after default new-lane routing.
 status: active
 applies_to:
   - git
@@ -24,8 +24,9 @@ read_policy_default: conditional
 
 ## Applies When
 
-- The user explicitly chooses new-lane or continue-existing delivery through
-  `work-lane-gating` for the current unit of work.
+- `work-lane-gating` defaulted the accepted repository-mutating task to a new
+  lane, or the user explicitly directed continuation of an existing lane for
+  the current unit of work.
 - `safety-guardrails` is already active for identity, protected-branch, secret-scan, and failure handling.
 - The complete Pull-Request Landing Plan is recorded before repository file
   mutation.
@@ -44,9 +45,9 @@ read_policy_default: conditional
 - Treat issue, branch, staging, commit, push, PR, and merge operations as
   distinct mutation boundaries. Even if implementation is already complete,
   reload and resolve the applicable delivery or merge rules at that boundary.
-- Treat the explicit work-lane choice as an earlier hard gate: do not create an
-  issue, branch, or worktree until the user has chosen new versus existing for
-  the current scope.
+- Treat work-lane routing as an earlier hard gate: after recon, default to a new
+  issue, branch, and worktree without asking. Continue an existing lane only
+  when the user explicitly directs that outcome for the current scope.
 - Before any GitHub delivery mutation, load repo-local workflow entrypoints:
   - `.kit.yaml`
   - `docs/agents/README.md`
@@ -100,7 +101,8 @@ Delivery Contract:
 ```
 
 - If any field is unknown, ambiguous, missing, or conflicts with the recorded
-  lane choice, stop and request the smallest missing decision before mutating.
+  lane route, stop and request only the smallest implementation-intent or named-
+  target clarification before mutating. Never ask for a lane preference.
 - If repo-local delivery rules cannot be found or are incomplete, stop and ask. Do not invent a substitute workflow.
 - Global agent/plugin GitHub workflows are fallback tools only. They do not define process in Kit-managed projects.
 - Do not create `codex/*` branches, ad hoc issue bodies, ad hoc PR bodies, draft PRs by default, commits using generic messages, or PRs that omit the repo template unless repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
@@ -216,7 +218,7 @@ Include:
   command ownership from post-command Git status alone.
 - Use native `git worktree` commands as the portable authority for lane creation, reuse, detached inspection, repair, exact-path validation, movement, pruning, and removal. Optional wrappers may simplify manual use, but rules and reconciled guidance must not depend on them.
 - If a command-owned snapshot reports a write in the primary checkout or before
-  the lane choice, trigger `work-lane-gating` recovery. Preserve the state and
+  the lane was established, trigger `work-lane-gating` recovery. Preserve the state and
   do not automatically transfer, stage, commit, push, restore, or discard it
   until the matching worktree pull request has been merged. After that merge,
   follow post-merge primary leftover cleanup. Establish exact user-approved
@@ -493,7 +495,8 @@ evidence under Deviations and remaining operator actions under Next steps:
 
 ## Anti-Patterns
 
-- Do not run this workflow without consent or an explicit PR request.
+- Do not run this workflow without an accepted repository-mutating task or an
+  explicit pull-request request.
 - Do not use a global GitHub/plugin workflow as the delivery process inside a Kit-managed project.
 - Do not create duplicate issues or PRs.
 - Do not create `codex/*` branches unless repo-local Kit rules or the user explicitly override the `GH-123` convention.
@@ -518,9 +521,11 @@ evidence under Deviations and remaining operator actions under Next steps:
 ## Verification
 
 - Confirm `safety-guardrails` ran first.
-- Confirm PR workflow consent or explicit PR request was recorded.
+- Confirm an accepted repository-mutating task or explicit pull-request request
+  activated delivery authority.
 - Confirm the Kit Delivery Hard Gate ran before any issue, branch, staging, commit, push, PR, or merge mutation, and that merge routed separately to `github-pr-merge`.
-- Confirm the Delivery Contract was resolved and no unknown fields remained before mutation.
+- Confirm default new-lane routing or an explicit same-scope continuation was
+  resolved and no Delivery Contract fields remained unknown before mutation.
 - Confirm branch/status/staleness recon ran at the GitHub delivery boundary.
 - Confirm base branch was discovered instead of assumed.
 - Confirm issue resolution searched existing open issues before creating a new issue.

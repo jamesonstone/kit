@@ -51,19 +51,15 @@ must:
 2. Complete read-only safety recon, including the current branch, dirty state,
    remote, active pull requests, registered worktrees, and exact primary
    checkout.
-3. Ask exactly:
-
-   > Before I make any repository changes, should I create a new GitHub issue, `GH-<issue-number>` branch, canonical worktree, and pull request for this work, or continue in the existing branch/worktree and land it through that branch's pull request?
-
-   Interpret the response's first standalone token after trimming surrounding
-   whitespace, case-insensitively: `c` means continue existing, while
-   `n` or `y` means new lane. When shorthand leads a longer response,
-   shorthand is the primary lane choice and the remaining text is supplemental
-   lane instructions. Treat the case-insensitive full-form answers `new lane`, `new work lane`, `new worklane`, and `new worktree` as the new-lane choice:
-   create or reuse the human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan;
-   ambiguous or contradictory responses fail closed.
-4. Wait for the user's explicit choice unless that exact choice is already
-   recorded for the same unit of work.
+3. When no complete lane is recorded for the accepted unit of work, apply the
+   default. Default to a new worklane without asking. Create or reuse one
+   human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree,
+   and ready pull-request plan. Reuse that recorded lane for subsequent
+   in-scope mutations.
+4. Continue an existing lane only when the user explicitly directs that
+   outcome for the same unit of work. Prove its non-protected branch, exact
+   owning linked worktree, issue scope, protected base, and create-or-update
+   pull-request target. Never offer or ask the user to choose between lanes.
 5. Record a Pull-Request Landing Plan with the repository, issue, branch,
    non-primary worktree, protected base, and create-or-update PR target, then
    verify that plan still matches before every mutation.
@@ -74,20 +70,26 @@ must:
   pull-request mutations, as well as merges. Read-only discovery and planning
   may precede it; write-capable commands such as `kit spec`,
   `kit init`, and `kit reconcile` may not.
-- Never infer the choice from a clean default branch, an issue reference, or a
-  generic request to produce a pull request.
-- For a new lane, create or reuse one human-assigned issue, exact
+- The new-worklane default applies on clean and dirty checkouts, protected and
+  feature branches, issue references, and generic requests to produce a pull
+  request. Do not infer permission to continue the current lane from any of
+  those states.
+- For the default new lane, create or reuse one human-assigned issue, exact
   `GH-<issue-number>` branch, canonical linked worktree at
   `~/worktrees/<owner>/<repository>/GH-<issue-number>`, and one ready-PR plan
   before editing files.
-- Continue existing work only after proving the non-protected branch, its exact
+- Continue existing work only after an explicit user direction and after proving the non-protected branch, its exact
   owning linked worktree, issue scope, protected base, and create-or-update PR
   target. Reuse an existing pull request; do not create a second delivery lane.
 - Treat the clone's primary/root checkout as read-only for coding-agent work,
   regardless of branch or cleanliness. Never edit there with a plan to move the
   diff later.
-- One choice covers directly required tests, documentation, validation fixes,
-  and delivery. Ask again for materially new or tangential scope.
+- One lane allocation covers directly required tests, documentation,
+  validation fixes, and delivery. Materially new or tangential scope defaults
+  to another new lane once its implementation intent is accepted.
+- Ask only to clarify implementation intent or a user-named target that is
+  materially ambiguous and cannot be resolved from repository evidence. Never
+  ask for a new-versus-existing lane preference.
 - If an ungated or primary-checkout change is detected, stop and preserve it.
   Do not stage, commit, push, stash, reset, clean, discard, or silently transfer
   it; follow `work-lane-gating` recovery.
@@ -96,7 +98,7 @@ must:
 
 ## GitHub Delivery Hard Gate
 
-When the user asks to create or mutate an issue, branch, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation.
+When accepted work requires creating or mutating an issue, branch, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation.
 
 A Kit-managed project is any repository containing `.kit.yaml`, `docs/CONSTITUTION.md`, or `docs/agents/README.md`.
 

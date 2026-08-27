@@ -32,7 +32,8 @@ read_policy_default: must
 ### Execution Order
 
 1. Run read-only `safety-guardrails` recon and identity checks.
-2. Obtain and record the explicit `work-lane-gating` choice.
+2. Apply `work-lane-gating`: default to a new worklane without asking, or honor
+   an explicit same-scope direction to continue an existing lane.
 3. Record the complete Pull-Request Landing Plan.
 4. Establish or verify the non-primary writable worktree.
 5. Run `github-pr-delivery` only inside that lane.
@@ -47,7 +48,7 @@ Use this matrix instead of inventing an authority boundary in each workflow:
 | --- | --- |
 | Read-only discovery | Implied by the task |
 | In-scope implementation and safe recovery | Current accepted task |
-| Issue, branch, commit, push, and ready PR | PR-delivery consent |
+| Issue, branch, commit, push, and ready PR | Accepted repository-mutating task through the default new lane, or explicit same-scope continuation |
 | Review-thread mutation | Explicitly assigned repair/resolution authority |
 | PR merge | Direct merge request or accepted bounded merge plan |
 | Multi-repository merge program | Approved plan plus reconciled program ledger |
@@ -192,17 +193,20 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Do not blindly repeat the same failed command. Retry only after diagnosis or a material change in evidence, state, parameters, or tool path.
 - Do not use `--force`, `--force-with-lease`, `git rebase`, `git reset --hard`, `git add -A`, `git add .`, an amend to an already-pushed commit, or branch/issue/PR recreation as a recovery shortcut.
 - Missing credentials, ambiguous identity or target, conflicting user-owned changes, unavailable external dependencies, or required external authorization are genuine blockers. Complete unblocked work, report the evidence, and request only the smallest missing input; do not frame this as permission for a routine retry.
-- Autonomous recovery never supplies a missing work-lane choice, Pull-Request
-  Landing Plan, or exact ownership proof. Preserve ungated and primary-checkout
-  changes under the work-lane tripwire instead of staging, committing, pushing,
-  discarding, or silently transferring them.
+- Autonomous recovery never invents an existing-lane continuation direction,
+  Pull-Request Landing Plan, or exact ownership proof. When continuation was not
+  explicitly directed, recover through the default new worklane without asking.
+  Preserve ungated and primary-checkout changes under the work-lane tripwire
+  instead of staging, committing, pushing, discarding, or silently transferring
+  them.
 
 ### Permission Boundary
 
 - Resolve all in-scope implementation, validation, and delivery issues autonomously and continue until the requested goal is fully complete or a genuine external blocker remains.
-- The explicit work-lane choice is a mandatory permission boundary. Obtain it
-  before any repository file or delivery mutation; do not infer it from the
-  general instruction to complete the task.
+- The default new-worklane route is a mandatory permission boundary. An
+  accepted repository-mutating task authorizes that route without another
+  prompt. Continue an existing lane only after an explicit same-scope user
+  direction; do not infer continuation from current repository state.
 - Follow `deletion-safety` before designing deletion behavior or deleting
   persistent project, user, business, or external-system state. Default to
   soft delete and obtain post-outline specific manual confirmation for the
@@ -223,8 +227,9 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
 - Do not stage secrets, `.env` files, tokens, private keys, or machine-local config.
 - Do not proceed to lane gating before branch and repository recon is complete.
 - Do not mutate the primary checkout or use it as a temporary edit location.
-- Do not infer the user's lane choice from clean state, current branch, issue
-  references, or a generic request for a pull request.
+- Do not ask for a lane choice. Default to a new worklane, and do not infer
+  existing-lane continuation from clean state, current branch, issue references,
+  or a generic request for a pull request.
 - Do not commit when author or committer identity is missing, ambiguous, or not the human user's.
 - Do not ask the user to authorize a compatible `gh` or connector retry that preserves the already-authorized mutation.
 - Do not treat autonomous failure recovery as permission to bypass an explicit infrastructure-change approval gate.
@@ -243,8 +248,9 @@ Agents own the requested outcome. On a lint, test, template, tool, authenticatio
   and intended writable worktree.
 - Confirm active PRs for the current branch were checked, or that an unavailable PR lookup was explicitly reported before mutation.
 - Confirm the active directory, branch, remote, and PR state matched the intended work lane before editing, committing, pushing, or mutating a PR.
-- Confirm the explicit lane choice and complete Pull-Request Landing Plan were
-  recorded before any repository file or delivery mutation.
+- Confirm the default new lane or explicitly continued existing lane and the
+  complete Pull-Request Landing Plan were recorded before any repository file
+  mutation.
 - Confirm the primary checkout received no coding-agent file, index, commit, or
   branch mutation.
 - Confirm protected or assumed-protected branches were not written to.

@@ -10,8 +10,9 @@
 1. Use `kit capabilities <command> --json` when command safety is not already established.
 2. Run `kit context resolve --workflow <slug> --json` with relevant `--feature` and `--path` hints.
 3. Load the required selected evidence in order.
-4. Before any repository write, obtain the explicit work-lane choice and
-   record its Pull-Request Landing Plan.
+4. Before any repository write, default to a new worklane without asking,
+   unless the user explicitly directs continuation of an existing lane; record
+   the Pull-Request Landing Plan.
 5. Rerun resolution after a material scope change.
 
 ## Runtime Routing

@@ -46,21 +46,21 @@ func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 	}
 }
 
-func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T) {
+func TestInstructionTemplatesDefaultToNewWorkLaneBeforeMutation(t *testing.T) {
 	checks := []string{
 		"## Work Lane Mutation Hard Gate",
 		"docs/agents/GUARDRAILS.md",
 		"work-lane-gating",
-		"Before I make any repository changes",
-		"canonical worktree, and pull request for this work",
-		"case-insensitively",
-		"`c` means continue existing",
-		"`n` or `y` means new lane",
-		"shorthand is the primary lane choice",
-		"remaining text is supplemental lane instructions",
-		"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
-		"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
-		"ambiguous or contradictory responses fail closed",
+		"Default to a new worklane without asking",
+		"one human-assigned GitHub issue",
+		"exact `GH-<issue-number>` branch",
+		"canonical non-primary worktree",
+		"ready pull-request plan",
+		"Continue an existing lane only when the user explicitly directs",
+		"Never offer or ask the user to choose between lanes",
+		"Ask only",
+		"implementation intent",
+		"materially ambiguous",
 		"Pull-Request Landing Plan",
 		"repository file or delivery mutation",
 		"issue, branch, staging, commit, push, worktree, and pull-request mutations",
@@ -72,9 +72,8 @@ func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T)
 		"docs/agents/GUARDRAILS.md",
 		"work-lane-gating",
 		"read-only safety recon",
-		"Before I make any repository changes",
-		"shorthand",
-		"Wait for",
+		"Default to a new worklane without asking",
+		"Continue an existing lane only when the user explicitly directs",
 		"Pull-Request Landing Plan",
 	}
 	for name, content := range map[string]string{
@@ -101,6 +100,27 @@ func TestInstructionTemplatesRequireExplicitWorkLaneBeforeMutation(t *testing.T)
 				t.Fatalf("expected %s to contain %q after the preceding gate step", name, check)
 			}
 			previousIndex = index
+		}
+	}
+	for name, content := range map[string]string{
+		"V1 AGENTS.md":            LegacyAgentsMD,
+		"V1 CLAUDE.md":            LegacyClaudeMD,
+		"V1 Copilot instructions": LegacyCopilotInstructionsMD,
+		"V2 AGENTS.md":            AgentsMD,
+		"V2 CLAUDE.md":            ClaudeMD,
+		"V2 Copilot instructions": CopilotInstructionsMD,
+		"V3 AGENTS.md":            MemoryAgentsMD,
+		"V3 CLAUDE.md":            MemoryClaudeMD,
+		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
+	} {
+		for _, forbidden := range []string{
+			"Before I make any repository changes, should I create a new GitHub issue",
+			"`c` means continue existing",
+			"Wait for the explicit choice",
+		} {
+			if strings.Contains(content, forbidden) {
+				t.Fatalf("expected %s to omit superseded lane-choice guidance %q", name, forbidden)
+			}
 		}
 	}
 }

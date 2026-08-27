@@ -16,8 +16,8 @@
   execution, continuity, or read-only verification topology affects the task;
   use `docs/agents/TOOLING.md` for the cross-host adapter
 - Use `rules/work-lane-gating.md` before any coding-agent repository
-  file or delivery mutation to require the explicit lane choice, pull-request
-  landing plan, and read-only primary checkout
+  file or delivery mutation to default to a new worklane without asking,
+  require the pull-request landing plan, and keep the primary checkout read-only
 - Use `rules/kit-capabilities-usage.md` in downstream projects for Kit command discovery guidance
 - Use `rules/constitution-curation.md` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use `rules/cross-repository-program-coordination.md` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff
@@ -75,7 +75,7 @@ are:
 | `safety-guardrails` | git, GitHub, safety | Recon, identity, worktree, secret, protected-branch, and failure-recovery boundaries. |
 | `source-file-size` | implementation, testing, validation, refactor, reconcile, maintenance | Exact 300-line handwritten source/test limit, exclusions, semantic splits, and verification. |
 | `testing-and-environment-validation` | implementation, testing, validation, CI, deployment, local, production, browser automation, browser testing | Code-level PR checks, high-level environment suites, browser lifecycle ownership, immutable evidence, status reporting, and safe production validation. |
-| `work-lane-gating` | git, GitHub, workflow | Requires an explicit user-selected pull-request lane before every coding-agent repository mutation. |
+| `work-lane-gating` | git, GitHub, workflow | Defaults every coding-agent repository mutation to a new pull-request worklane without asking. |
 
 `command-capabilities` is a Kit-maintainer-only local ruleset. It requires
 changes to `kit capabilities` metadata when Kit command behavior changes and is
