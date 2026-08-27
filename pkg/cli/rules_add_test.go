@@ -13,7 +13,7 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
-func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
+func TestWorkLaneGatingRulesetDefaultsToNewPullRequestLane(t *testing.T) {
 	path := filepath.Join("..", "..", "docs", "references", "rules", "work-lane-gating.md")
 	ruleset, err := parseRulesetFile(path)
 	if err != nil {
@@ -24,22 +24,26 @@ func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
 	}
 	normalizedBody := strings.Join(strings.Fields(ruleset.Body), " ")
 	for _, check := range []string{
-		"Before I make any repository changes",
-		"canonical worktree, and pull request for this work",
-		"case-insensitively",
-		"`c` means continue existing",
-		"`n` or `y` means new lane",
-		"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
-		"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
-		"shorthand leads a longer response",
-		"remaining text is supplemental lane instructions",
-		"Ambiguous or contradictory responses",
+		"Do not ask whether to create a new lane or continue an existing lane",
+		"Default to a new worklane even when the current checkout is clean, dirty",
+		"Search for one exact matching issue and reusable complete lane",
+		"Continue an existing lane only when the user explicitly directs continuation",
+		"Never offer continuation as a choice",
+		"Existing Pull-Request Lifecycle Precedence",
+		"review repair, CI repair, base refresh, conflict resolution",
+		"dependency-ordered merge coordination",
+		"Do not allocate a new coordination issue, branch, worktree, or pull request",
+		"never create recursive corrective pull requests",
+		"Missing repair authority is not a reason to allocate a new worklane",
+		"Ask only when implementation intent or a user-named target is materially ambiguous",
+		"Do not ask for a new-versus-existing lane preference",
 		"Pull-Request Landing Plan",
 		"source, tests, documentation, specs, plans, notes, generated",
-		"Do not infer the choice from a clean default branch",
+		"not an explicit continuation direction",
 		"Treat that exact checkout as read-only",
 		"Never use the primary checkout as a temporary edit location",
-		"Do not repeatedly ask",
+		"Do not create another lane for routine",
+		"Creating a coordination or corrective pull request",
 		"Do not stage, commit, push",
 	} {
 		if !strings.Contains(normalizedBody, check) {
@@ -48,7 +52,8 @@ func TestWorkLaneGatingRulesetRequiresExplicitPullRequestLane(t *testing.T) {
 	}
 	for _, forbidden := range []string{
 		"automatic clean-preflight decision",
-		"Do not ask whether to create a new issue",
+		"Before I make any repository changes, should I create a new GitHub issue",
+		"`c` means continue existing",
 	} {
 		if strings.Contains(normalizedBody, forbidden) {
 			t.Fatalf("expected work-lane-gating ruleset to omit %q", forbidden)

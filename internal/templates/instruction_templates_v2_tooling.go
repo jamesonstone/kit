@@ -64,12 +64,16 @@ const agentsTooling = `# Tooling
 
 ## Project Worktrees
 
-- Ask and record the new-lane versus continue-existing choice before any
-  coding-agent repository file or delivery mutation
+- Default to a new worklane without asking before any coding-agent repository
+  file or delivery mutation; continue an existing lane only when the user
+  explicitly directs it for the same unit of work
+- Treat exact existing-PR review repair, CI repair, base refresh, and ordered
+  merge coordination as continuation; reuse every targeted head and never
+  create a coordinator or corrective pull request for scope-preserving work
 - Record the repository, issue, branch, non-primary worktree, protected base,
   and create-or-update pull-request target before editing files
 - Work in the existing checkout only when it is the exact non-primary linked
-  worktree that owns the user-selected lane
+  worktree that owns the explicitly continued lane
 - For a separate lane, reuse or create ` + "`~/worktrees/<owner>/<repository>/<lane>`" + `; never put a worktree inside a repository
 - Use exact ` + "`GH-<number>`" + ` for durable issue lanes and uppercase detached ` + "`PR-<number>`" + ` only for temporary pull-request inspection
 - Reuse the pull request head branch for writable repair; never edit the detached ` + "`PR-<number>`" + ` view

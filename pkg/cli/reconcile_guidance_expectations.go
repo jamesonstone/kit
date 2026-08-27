@@ -65,6 +65,11 @@ func v2GuidanceExpectations() map[string][]string {
 func v3GuidanceExpectations() map[string][]string {
 	return map[string][]string{
 		"AGENTS.md": {
+			"Default to a new worklane without asking",
+			"Continue an existing lane only when the user explicitly directs",
+			"Never offer or ask the user to choose between lanes",
+			"Treat exact existing-PR lifecycle work as continuation",
+			"Never create coordination or corrective pull requests for scope-preserving work",
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
 			"Use the structured contract when omitting it could hide a blocker",
@@ -106,6 +111,11 @@ func v3GuidanceExpectations() map[string][]string {
 			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 		},
 		".github/copilot-instructions.md": {
+			"Default to a new worklane without asking",
+			"Continue an existing lane only when the user explicitly directs",
+			"Never offer or ask the user to choose between lanes",
+			"Treat exact existing-PR lifecycle work as continuation",
+			"Never create coordination or corrective pull requests for scope-preserving work",
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
 			"Use the structured contract when omitting it could hide a blocker",
@@ -138,11 +148,15 @@ func v3GuidanceExpectations() map[string][]string {
 		},
 		"docs/agents/README.md": {
 			"## Runtime Routing",
+			"default to a new worklane without asking",
+			"exact existing-PR review, CI, base-refresh, and ordered-merge work",
 			"Native agent planning owns research, clarification, design, and plan formation",
 			"V1 and V2 artifacts remain supported legacy inputs",
 		},
 		"docs/agents/WORKFLOWS.md": {
 			"## Agent-First Contract",
+			"default to a new worklane without asking",
+			"Existing-PR review, CI, base-refresh, and ordered-merge work",
 			"kit context resolve --workflow <slug> --json",
 			"Before code, create or adopt `docs/specs/<feature>/SPEC.md` when material rationale must survive",
 			"Never mechanically rewrite a V2 spec into V3",
@@ -163,6 +177,10 @@ func v3GuidanceExpectations() map[string][]string {
 			"Load `docs/references/rules/agent-completion-output.md` before a substantial terminal completion or handoff response",
 		},
 		"docs/agents/TOOLING.md": {
+			"Default to a new worklane without asking",
+			"continue an existing lane only when the user",
+			"Treat exact existing-PR review repair, CI repair, base refresh, and ordered",
+			"create a coordinator or corrective pull request for scope-preserving work",
 			"Use `kit dispatch` after native planning",
 			"accepted plan needs a safe multi-lane execution topology",
 			"When `cross-repository-program-coordination` applies, dispatch only the canonical program ledger's reconciled ready frontier and checkpoint program state after each material transition or handoff",
@@ -170,6 +188,11 @@ func v3GuidanceExpectations() map[string][]string {
 			"preserve a repository- or user-supplied `.envrc`",
 		},
 		"docs/agents/GUARDRAILS.md": {
+			"Default to a new worklane without asking",
+			"Continue an existing lane only when the user explicitly directs",
+			"Never offer or ask the user to choose between lanes",
+			"Exact existing pull requests targeted for review repair, CI repair, base",
+			"create a coordination or corrective pull request for scope-preserving work",
 			"## Agent Completion Output Contract",
 			"Answer ordinary conversational requests naturally",
 			"Use the structured contract when omitting it could hide a blocker",
@@ -194,6 +217,8 @@ func v3GuidanceExpectations() map[string][]string {
 			"If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
 		},
 		"docs/references/README.md": {
+			"default to a new worklane without asking",
+			"preserve exact existing-PR lifecycle",
 			"`rules/agent-completion-output.md`",
 			"`rules/human-authorship.md`",
 			"`rules/deadline-mode.md`",
@@ -240,9 +265,14 @@ func v3ForbiddenGuidance() map[string][]string {
 		legacyStatusHeading,
 		legacyPrioritizedActionList,
 	}
+	workLane := []string{
+		"Before I make any repository changes, should I create a new GitHub issue",
+		"`c` means continue existing",
+		"Wait for the explicit choice",
+	}
 	return map[string][]string{
-		"AGENTS.md":                       completion,
-		".github/copilot-instructions.md": completion,
-		"docs/agents/GUARDRAILS.md":       completion,
+		"AGENTS.md":                       append(completion, workLane...),
+		".github/copilot-instructions.md": append(completion, workLane...),
+		"docs/agents/GUARDRAILS.md":       append(completion, workLane...),
 	}
 }

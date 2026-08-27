@@ -164,8 +164,13 @@ const agentsWorkflows = `# Workflows
 ## Work Lane Precondition
 
 - Read-only discovery and planning may run before a lane exists
-- Before any repository write, obtain the explicit new-lane versus
-  continue-existing choice and record the complete pull-request landing plan
+- Before any repository write, default to a new worklane without asking and
+  record the complete pull-request landing plan
+- Continue an existing lane only when the user explicitly directs it for the
+  same unit of work and exact ownership can be proven
+- Treat exact existing-PR review, CI, base-refresh, and ordered-merge work as
+  continuation of every targeted head; never create a coordinator or
+  corrective pull request for scope-preserving work
 - Create or update feature artifacts only inside the selected non-primary
   writable worktree
 

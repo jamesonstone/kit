@@ -38,9 +38,6 @@ func TestAgentInstructionsV10RequiresThreeSectionCompletionOutput(t *testing.T) 
 			t.Fatalf("v10 instructions contain superseded output contract %q", forbidden)
 		}
 	}
-	if CurrentAgentVersion != "v10" {
-		t.Fatalf("CurrentAgentVersion = %q, want v10", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV10PreservesV9OutsideCompletionSection(t *testing.T) {

@@ -20,6 +20,8 @@ func TestGitHubPRMergeRulesetIsValid(t *testing.T) {
 		"Read-only verification agents never merge",
 		"Merge success never implies workflow success",
 		"Treat routine remediation as an update to the existing pull request",
+		"Treat that exact existing pull-request set as explicit continuation",
+		"Do not create a new coordination issue, branch, worktree",
 		"exact-head merge authorization before it can become",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
@@ -57,6 +59,9 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 		},
 		"routine remediation preserves the PR": {
 			"Do not create recursive corrective pull requests", "push to the same branch without rebasing, force-pushing",
+		},
+		"merge coordination preserves existing lanes": {
+			"exact existing pull-request set as explicit continuation", "Do not create a new coordination issue, branch, worktree",
 		},
 		"replacement PR is exceptional": {
 			"Use a replacement pull request only when remediation materially changes", "is a new node and is not automatically added",

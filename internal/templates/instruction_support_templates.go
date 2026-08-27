@@ -18,7 +18,7 @@ const agentsGuardrails = `# Guardrails
 
 ` + multiAgentOrchestrationHardGate + workLaneMutationHardGate + `## GitHub Delivery Hard Gate
 
-When the user asks to create or mutate an issue, branch, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation.
+When accepted work requires creating or mutating an issue, branch, commit, push, pull request, or merge in a Kit-managed project, stop before any GitHub or git mutation.
 
 A Kit-managed project is any repository containing ` + "`.kit.yaml`" + `, ` + "`docs/CONSTITUTION.md`" + `, or ` + "`docs/agents/README.md`" + `.
 
@@ -160,8 +160,9 @@ const referencesREADME = `# References
 - Store durable rulesets under ` + "`rules/<slug>.md`" + ` and link them with ` + "`kit rules link`" + ` instead of copying rules into agent instruction files
 - Use ` + "`rules/agent-completion-output.md`" + ` before substantial terminal completion or handoff responses to require only What happened, Deviations, and Next steps, with task-specific evidence folded into those sections; answer ordinary conversational requests naturally without that structured envelope
 - Use ` + "`rules/work-lane-gating.md`" + ` before any coding-agent repository
-  file or delivery mutation to require the explicit lane choice, pull-request
-  landing plan, and read-only primary checkout
+  file or delivery mutation to default to a new worklane without asking,
+  require the pull-request landing plan, preserve exact existing-PR lifecycle
+  work in place, and keep the primary checkout read-only
 - Use ` + "`rules/kit-capabilities-usage.md`" + ` in downstream projects for Kit command discovery guidance
 - Use ` + "`rules/constitution-curation.md`" + ` after implementation and validation to keep the Constitution aligned with demonstrated project-wide truth
 - Use ` + "`rules/cross-repository-program-coordination.md`" + ` before implementing or resuming accepted plans that span multiple repositories with dependent deliverables, staged deployment or activation, or expected handoff

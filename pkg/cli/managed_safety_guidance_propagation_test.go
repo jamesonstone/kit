@@ -57,33 +57,36 @@ func TestHealthAndReconcileInstallManagedSafetyGuidance(t *testing.T) {
 	}
 }
 
-func TestAuditWorkLaneShorthandGuidanceFindsExistingSectionDrift(t *testing.T) {
+func TestAuditWorkLaneDefaultGuidanceFindsExistingSectionDrift(t *testing.T) {
 	for _, tt := range []struct {
 		path    string
 		snippet string
 	}{
-		{path: "AGENTS.md", snippet: "remaining text is supplemental lane instructions"},
-		{path: "CLAUDE.md", snippet: "remaining text is supplemental lane instructions"},
-		{path: ".github/copilot-instructions.md", snippet: "remaining text is supplemental lane instructions"},
-		{path: "docs/agents/GUARDRAILS.md", snippet: "shorthand is the primary lane choice"},
-		{path: "AGENTS.md", snippet: "`new lane`, `new work lane`, `new worklane`, and `new worktree`"},
-		{path: "AGENTS.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
-		{path: "CLAUDE.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
-		{path: ".github/copilot-instructions.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
-		{path: "docs/agents/GUARDRAILS.md", snippet: "human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan"},
+		{path: "AGENTS.md", snippet: "Default to a new worklane without asking"},
+		{path: "CLAUDE.md", snippet: "Default to a new worklane without asking"},
+		{path: ".github/copilot-instructions.md", snippet: "Default to a new worklane without asking"},
+		{path: "docs/agents/GUARDRAILS.md", snippet: "Default to a new worklane without asking"},
+		{path: "AGENTS.md", snippet: "Never offer or ask the user to choose between lanes"},
+		{path: "CLAUDE.md", snippet: "Never offer or ask the user to choose between lanes"},
+		{path: ".github/copilot-instructions.md", snippet: "Never offer or ask the user to choose between lanes"},
+		{path: "docs/agents/GUARDRAILS.md", snippet: "Never offer or ask the user to choose between lanes"},
+		{path: "AGENTS.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
+		{path: "CLAUDE.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
+		{path: ".github/copilot-instructions.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
+		{path: "docs/agents/GUARDRAILS.md", snippet: "Exact existing pull requests targeted for review repair, CI repair, base"},
 	} {
 		t.Run(tt.path, func(t *testing.T) {
 			projectRoot, _ := setupLifecycleTestProject(t)
 			removeGuidanceSnippet(t, projectRoot, tt.path, tt.snippet)
 
-			findings := auditWorkLaneShorthandGuidance(projectRoot)
+			findings := auditWorkLaneDefaultGuidance(projectRoot)
 			absolutePath := filepath.Join(projectRoot, filepath.FromSlash(tt.path))
 			for _, finding := range findings {
 				if finding.FilePath == absolutePath && strings.Contains(finding.Issue, tt.snippet) {
 					return
 				}
 			}
-			t.Fatalf("no shorthand drift finding for %s: %#v", tt.path, findings)
+			t.Fatalf("no default routing drift finding for %s: %#v", tt.path, findings)
 		})
 	}
 }
@@ -130,12 +133,18 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 	} {
 		content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath)))
 		for _, snippet := range []string{
-			"case-insensitively",
-			"`c` means continue existing",
-			"`n` or `y` means new lane",
-			"shorthand is the primary lane choice",
-			"`new lane`, `new work lane`, `new worklane`, and `new worktree`",
-			"human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan",
+			"Default to a new worklane without asking",
+			"one human-assigned",
+			"exact `GH-<issue-number>` branch",
+			"canonical non-primary",
+			"ready pull-request plan",
+			"Continue an existing lane only when the user explicitly directs",
+			"Never offer or ask the user to choose between lanes",
+			"review repair, CI repair, base",
+			"ordered merge coordination",
+			"coordination or corrective pull request",
+			"bounded in-place-remediation authority",
+			"allocate a new lane",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)
