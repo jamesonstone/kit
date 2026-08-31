@@ -8,6 +8,7 @@ import (
 
 func TestGitHubPRMergeRulesetIsValid(t *testing.T) {
 	ruleset := loadGitHubPRMergeRuleset(t)
+	normalized := strings.Join(strings.Fields(ruleset.Body), " ")
 	for _, check := range []string{
 		"direct user",
 		"request or accepted bounded merge plan authorizes it",
@@ -23,17 +24,17 @@ func TestGitHubPRMergeRulesetIsValid(t *testing.T) {
 		"Treat that exact existing pull-request set as explicit continuation",
 		"Do not create a new coordination issue, branch, worktree",
 		"exact-head merge authorization before it can become",
-		"continue authorized merge and deployment work without interleaving UI or",
-		"the authorized set is delivered, run one final UI verification",
+		"continue authorized merge and deployment work without interleaving UI or browser walkthrough verification after each result",
+		"After every result in the authorized set is delivered, run one final UI verification",
 	} {
-		if !strings.Contains(ruleset.Body, check) {
+		if !strings.Contains(normalized, check) {
 			t.Errorf("github-pr-merge ruleset missing %q", check)
 		}
 	}
 }
 
 func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
-	rules := loadGitHubPRMergeRuleset(t).Body
+	rules := strings.Join(strings.Fields(loadGitHubPRMergeRuleset(t).Body), " ")
 	scenarios := map[string][]string{
 		"authorized single PR": {
 			"Direct request: merge owner/service#84.", "State: MERGE_READY. Merge only #84.",
@@ -87,8 +88,8 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 			"A failure on one node stops that node and its dependents", "Preserve exact",
 		},
 		"deadline-mode UI deferral": {
-			"continue authorized merge and deployment work without interleaving UI or",
-			"the authorized set is delivered, run one final UI verification",
+			"continue authorized merge and deployment work without interleaving UI or browser walkthrough verification after each result",
+			"After every result in the authorized set is delivered, run one final UI verification",
 		},
 		"actor mismatch isolation": {
 			"Identity failure blocks only that repository node and its dependents",
