@@ -226,6 +226,14 @@ log in the terminal result.
 Report partial waves literally. Do not call a queued, merged, deployed, or
 healthy state by another name.
 
+Under an active `docs/references/rules/deadline-mode.md` authorization,
+continue authorized merge and deployment work without interleaving UI or
+browser walkthrough verification after each result. After every result in
+the authorized set is delivered, run one final UI verification. Record merge,
+hosted-workflow, and deployment/runtime evidence after each transition as
+usual. Do not treat the deferred UI check as license to skip required
+post-deployment production-suite evidence.
+
 ## Anti-Patterns
 
 - Treating PR-delivery consent, automatic lane allocation, review resolution,
@@ -248,6 +256,9 @@ healthy state by another name.
   to recreate an already-current snapshot.
 - Treating merge success as deployment, runtime, production, or integration
   evidence.
+- Interleaving UI or browser walkthroughs after each merge or deployment
+  result during an active deadline-mode wave instead of one final UI
+  verification after all results are delivered.
 
 ## Verification
 
@@ -273,6 +284,9 @@ healthy state by another name.
   direction.
 - Confirm post-merge evidence separates merge, workflow, deployment/runtime,
   and production validation.
+- Confirm that under active deadline mode, UI or browser walkthroughs waited
+  until every authorized merge and deployment result was delivered, then one
+  final UI verification ran.
 - Confirm no bypass, admin override, silent identity substitution, or
   unauthorized scope expansion occurred.
 
@@ -300,4 +314,12 @@ Partial wave:
 ```text
 Wave 2 merged service-a#84. service-b#87 became UNKNOWN after head drift, so it
 and its dependent UI#90 stopped. Independent docs#12 remains MERGE_READY.
+```
+
+Deadline-mode merge/deploy wave:
+
+```text
+Deadline mode is active. Wave 1 merges service#84 and ui#90; both configured
+deployments complete. UI verification stays SKIPPED until both results are
+delivered, then one final UI verification runs against the delivered system.
 ```

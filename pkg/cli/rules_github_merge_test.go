@@ -23,6 +23,8 @@ func TestGitHubPRMergeRulesetIsValid(t *testing.T) {
 		"Treat that exact existing pull-request set as explicit continuation",
 		"Do not create a new coordination issue, branch, worktree",
 		"exact-head merge authorization before it can become",
+		"continue authorized merge and deployment work without interleaving UI or",
+		"the authorized set is delivered, run one final UI verification",
 	} {
 		if !strings.Contains(ruleset.Body, check) {
 			t.Errorf("github-pr-merge ruleset missing %q", check)
@@ -83,6 +85,10 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 		},
 		"partial wave failure": {
 			"A failure on one node stops that node and its dependents", "Preserve exact",
+		},
+		"deadline-mode UI deferral": {
+			"continue authorized merge and deployment work without interleaving UI or",
+			"the authorized set is delivered, run one final UI verification",
 		},
 		"actor mismatch isolation": {
 			"Identity failure blocks only that repository node and its dependents",
