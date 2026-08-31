@@ -262,6 +262,8 @@ func TestTestingAndEnvironmentValidationRegistryRulesetIsValid(t *testing.T) {
 		"cleanup or exit-verification failure as a validation failure",
 		"Do not disable or weaken macOS code-signing protections",
 		"Do not routinely delete Chrome code-sign clone directories",
+		"skip UI and browser walkthrough verification until",
+		"then run one final UI verification",
 	} {
 		if !strings.Contains(normalizedBody, check) {
 			t.Errorf("expected %s ruleset to contain %q", slug, check)

@@ -41,6 +41,9 @@ func TestDeadlineModeRegistryRulesetIsValid(t *testing.T) {
 		"required infrastructure approval",
 		"independent final review",
 		"required post-deployment tests",
+		"one final UI verification after every result",
+		"Skip UI, browser, and operator walkthrough verification until every result",
+		"Then run one final UI verification",
 		"Deadline mode is an explicit, recorded, invariant-preserving supersession",
 		"use `PARTIAL` or `SKIPPED`, never `PASS`",
 		"Ask again, or fall back to the ordinary",
@@ -63,6 +66,12 @@ func TestDeadlineModeIsIntegratedWithRelatedRules(t *testing.T) {
 		"docs/references/rules/testing-and-environment-validation.md": {
 			"superseded only by an active, explicitly recorded",
 			"`docs/references/rules/deadline-mode.md`",
+			"until every result is delivered, then requires one final",
+			"skip UI and browser walkthrough verification until",
+		},
+		"docs/references/rules/github-pr-merge.md": {
+			"without interleaving UI or browser walkthrough verification",
+			"run one final UI verification",
 		},
 		"docs/references/workflows/implementation-delivery.md": {
 			"slug: deadline-mode",

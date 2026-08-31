@@ -74,6 +74,7 @@
 | 0071 | list-first-completion-output | `docs/specs/0071-list-first-completion-output` | deliver | no | 2026-08-26 | Keep ordinary conversation natural and reduce substantial completion reports to What happened, Deviations, and Next steps, with required evidence folded in once. |
 | 0072 | post-merge-primary-clean | `docs/specs/0072-post-merge-primary-clean` | deliver | no | 2026-08-24 | After a reconcile worktree PR merges, leftover untracked files on primary `main` block `git pull`. Keep the current write-on-main plus worktree copy design, and instruct the coding agent to run `git clean -fd` on primary `main` after remaining PR feedback is addressed and that PR has merged. |
 | 0073 | infrastructure-approval-scope | `docs/specs/0073-infrastructure-approval-scope` | deliver | no | 2026-08-26 | Stop treating every deployment image update and ECS interaction as an infrastructure-approval batch, while keeping create/replace/apply of infrastructure gated and requiring explicit post-outline confirmation for deletion. |
+| 0074 | deadline-merge-ui-verification | `docs/specs/0074-deadline-merge-ui-verification` | deliver | no | 2026-08-31 | Under deadline mode, continue authorized merge and deployment work, skip UI verification until every result is delivered, then run one final UI verification without weakening required post-deployment production-suite checks. |
 
 ## PROJECT INTENT
 
@@ -715,6 +716,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0073-infrastructure-approval-scope/SPEC.md`
 
+### deadline-merge-ui-verification
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Under an explicit deadline, continue authorized merge and deployment work, skip UI and browser walkthroughs until every result in that wave is delivered, then run one final UI verification.
+- **APPROACH**: 1. Record this accepted plan in `0074` before implementation. 2. Extend `deadline-mode` with the merge/deploy UI deferral. 3. Point `testing-and-environment-validation` and `github-pr-merge` at that contract. 4. Lock the wording in focused tests. 5. Hand-add only this feature's summary row after reverting `kit spec` mtime corruption. 6. Validate, curate repository memory, and open one ready pull request for issue #188.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0074-deadline-merge-ui-verification/SPEC.md`, `docs/references/rules/deadline-mode.md`
+
 ## LAST UPDATED
 
-2026-08-26 17:55:00 EDT
+2026-08-31 11:46:00 EDT

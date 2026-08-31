@@ -13,6 +13,7 @@ func TestMergeOrchestrationRulesStayContextAwareAndConcise(t *testing.T) {
 			"Use one complete current-state snapshot per consequential mutation or wave",
 			"nodes coupled through a base, service, environment, database, migration",
 			"Prefer event-driven waits or bounded backoff",
+			"one final UI verification",
 		},
 		"infrastructure-change-approval.md": {
 			"Build the dependency graph and infrastructure outline during analysis",

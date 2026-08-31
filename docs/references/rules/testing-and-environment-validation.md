@@ -89,7 +89,10 @@ deployment environment or external integration for a project that has none.
   This default may be superseded only by an active, explicitly recorded
   `docs/references/rules/deadline-mode.md` authorization; supersession still
   requires reporting deferred or reduced-scope validation literally, per
-  `agent-completion-output`, never as complete.
+  `agent-completion-output`, never as complete. The same authorization defers
+  UI and browser walkthrough verification during an in-progress merge or
+  deployment wave until every result is delivered, then requires one final
+  UI verification.
 
 ### Pull-Request CI
 
@@ -207,6 +210,13 @@ tests/
 - Do not disable or weaken macOS code-signing protections. Do not routinely
   delete Chrome code-sign clone directories as a substitute for hermetic
   browser selection, scoped ownership, and correct lifecycle cleanup.
+- Under an active `docs/references/rules/deadline-mode.md` authorization for
+  merge or deployment work, skip UI and browser walkthrough verification until
+  every result in that authorized wave is delivered, then run one final UI
+  verification. Report the deferred checks as `PARTIAL` or `SKIPPED`. This
+  does not skip required post-deployment production-suite checks in
+  `### Local And Production Execution`, browser lifecycle cleanup for any
+  session that did run, or the final UI verification itself.
 
 ### Local And Production Execution
 
