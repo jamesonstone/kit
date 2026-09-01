@@ -157,7 +157,8 @@ before mutation. A changed head invalidates readiness, not accepted-task authori
   destructive actions and impact, recovery or rollback, and post-merge
   evidence.
 - Unknown create, replace, or delete effects require inspection. Unresolved
-  destructive ambiguity makes the node `UNKNOWN` or `BLOCKED`. An image-only
+  destructive ambiguity makes the node `UNKNOWN` or `BLOCKED`. Unresolved
+  destructive-effect classification is not `MERGE_READY`. An image-only
   CD path is not an unknown destructive mutation once classified as a routine
   application operation.
 - Merge success never implies workflow success, deployed identity, runtime

@@ -78,6 +78,9 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 		"destructive merge confirmation": {
 			"A merge known to trigger a destructive effect is not `MERGE_READY`",
 		},
+		"unresolved destructive classification": {
+			"Unresolved destructive-effect classification is not `MERGE_READY`",
+		},
 		"routine application operation merge": {
 			"routine application operation", "do not require infrastructure-change-approval",
 		},

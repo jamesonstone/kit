@@ -90,7 +90,7 @@ Current provider references: [Codex subagents](https://learn.chatgpt.com/docs/ag
 - An accepted task or active `/goal` authorizes in-scope ordinary and remediation merges once they are `MERGE_READY`. Do not stop for a separate merge-consent prompt.
 - Before any merge or merge-queue mutation, resolve `pull-request-merge` and load `docs/references/rules/github-pr-merge.md`.
 - Merge only exact current `MERGE_READY` nodes from the in-scope frontier; revalidate actor, head/base, repository policy, checks, dependencies, and destructive versus non-destructive effects before every wave.
-- A changed head invalidates readiness, not accepted-task authority. Material product-scope expansion and explicit user holds require clarification. Destructive merge effects require exact confirmation.
+- A changed head invalidates readiness, not accepted-task authority. Material product-scope expansion and explicit user holds require clarification. Known and unresolved destructive-effect classifications are not `MERGE_READY`; exact confirmation is required only for resolved destructive effects.
 - Report merge, hosted workflow, deployment/runtime, and production evidence separately.
 
 ## PR Release Orchestration

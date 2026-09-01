@@ -71,7 +71,7 @@ func addVerificationAndFailure(document *promptdoc.Document, config Config) {
 	document.OrderedList(1,
 		"Implement the smallest correction in the existing PR's owned delivery lane when it remains within that issue and declared scope.",
 		"Under bounded repair authority, ordinarily merge the current base into the existing head branch, apply or regenerate the correction, commit, and push to the same branch without rebasing, force-pushing, or retargeting.",
-		"Mark the changed PR `UNKNOWN`, invalidate old-head readiness, rerun required current-head checks and review, then restore `MERGE_READY` without a new consent prompt when the repair stays in accepted-task scope.",
+		"Mark the changed PR `UNKNOWN`, invalidate old-head readiness, rerun required current-head checks and review, then restore `MERGE_READY` without a new consent prompt when the repair stays in accepted-task or active `/goal` scope.",
 		"Create a reviewed replacement PR and first-class graph node only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user explicitly requires replacement; an in-scope replacement is revalidated and merged without a new consent prompt.",
 		"Recompute dependencies, the reconciled authorized frontier, merge waves, deployment waves, and the critical path.",
 		"Pass the same readiness, review, compatibility, infrastructure, and validation gates.",

@@ -79,7 +79,7 @@ must:
   continuation. Reuse every targeted head branch and pull request; do not
   create a coordination or corrective pull request for scope-preserving work.
 - For a multi-PR merge or program plan, record one continuation entry per
-  target instead of inventing one coordinator lane. The accepted task
+  target instead of inventing one coordinator lane. The accepted task or active `/goal`
   authorizes in-scope in-place repair. If the user explicitly withheld source
   repair, ask only for bounded in-place-remediation authority; do not
   allocate a new lane as a fallback.
@@ -197,7 +197,7 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 - Revalidating an unchanged `MERGE_READY` head does not require another prompt. A changed head invalidates readiness, not accepted-task authority; revalidate current-head evidence, then merge in-scope work without requesting fresh consent. Adding a target or materially expanding product scope requires clarification. An explicit user hold such as "do not merge" prevails.
 - Never bypass protection, reviews, required checks, a merge queue, repository policy, or identity safeguards.
 - Report merge, hosted workflow, deployment/runtime, and production evidence as separate claims.
-- Stop for exact manual confirmation only when the merge is known to trigger a destructive effect.
+- Known and unresolved destructive-effect classifications are not `MERGE_READY`. Exact confirmation is required only for resolved destructive effects.
 
 ## Deletion Safety Hard Gate
 

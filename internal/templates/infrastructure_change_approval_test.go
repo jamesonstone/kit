@@ -58,7 +58,7 @@ func TestInstructionSupportRoutesInfrastructureChangeApproval(t *testing.T) {
 			t.Errorf("expected version %d RLM to route infrastructure approval", version)
 		}
 		references := fileContentByPath(files, "docs/references/README.md")
-		if !strings.Contains(references, "Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to classify effects, proceed autonomously for additive or rollback-preserving work, and require exact confirmation only for deletion or removal") {
+		if !strings.Contains(references, "Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to classify effects, proceed autonomously for additive or rollback-preserving work, and require exact confirmation for every known destructive effect") {
 			t.Errorf("expected version %d references index to route infrastructure approval", version)
 		}
 	}

@@ -17,6 +17,7 @@ func TestInstructionTemplatesIncludeGitHubMergeHardGate(t *testing.T) {
 		"do not rerun unchanged checks or poll repeatedly",
 		"A changed head invalidates readiness, not accepted-task authority",
 		"Do not stop for a separate merge-consent prompt",
+		"Known and unresolved destructive-effect classifications are not",
 		"Never bypass protection",
 	}
 	for name, content := range map[string]string{
@@ -51,6 +52,7 @@ func TestCheckedInInstructionsIncludeGitHubMergeHardGate(t *testing.T) {
 			"one complete preflight snapshot",
 			"A changed head invalidates readiness, not accepted-task authority",
 			"Do not stop for a separate merge-consent prompt",
+			"Known and unresolved destructive-effect classifications are not",
 		} {
 			if !strings.Contains(string(content), want) {
 				t.Errorf("checked-in %s is missing merge guidance %q", path, want)
