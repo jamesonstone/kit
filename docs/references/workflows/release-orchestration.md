@@ -41,10 +41,10 @@ evidence:
 
 ## Applicability Boundaries
 
-- Load infrastructure approval only for nodes that perform covered
-  infrastructure mutations, including merges known to create, replace, or
-  delete infrastructure or apply IaC. Image-only CD and other routine
-  application operations are not that load trigger.
+- Load infrastructure approval to classify public-cloud, Kubernetes, or IaC
+  effects. Proceed autonomously for additive and routine application
+  operations. Exact confirmation is required only for delete, remove, or
+  otherwise destructive effects. Image-only CD is not a destructive trigger.
 - Load agent-team topology only when work safely separates into bounded lanes.
 - Create or adopt a cross-repository program ledger only when the existing coordination trigger applies: multiple repositories plus dependent deliverables, staged deployment or activation, or expected agent/session handoff.
 
@@ -59,16 +59,15 @@ evidence:
    replace reviewed history. Reserve replacement PRs for material scope changes,
    heads that cannot be updated safely, or explicit repository-policy or user
    requirements.
-4. Resolve `pull-request-merge`, recompute the current authorized `MERGE_READY` frontier, and execute only dependency-safe merge and deployment waves.
+4. Resolve `pull-request-merge`, recompute the current in-scope `MERGE_READY` frontier, and execute only dependency-safe merge and deployment waves.
 5. Verify the exact merged and deployed identities, runtime behavior, and final integrated system; preserve partial, blocked, unknown, and intentionally open state literally.
 
 ## Completion Gates
 
-- Every merged or queued PR belonged to the exact authorized set and current ready frontier.
-- Every covered infrastructure effect had applicable target, impact, recovery,
-  approval, and post-change evidence. Routine application operations record
-  target and post-change evidence without an infrastructure-approval batch.
-- Every changed existing head received fresh checks, review, revalidation, and
-  exact-head authorization before merge; exceptional replacement PRs and newly
-  discovered targets received separate authority.
+- Every merged or queued PR belonged to the exact in-scope set and current ready frontier.
+- Every destructive infrastructure effect had applicable target, impact, recovery,
+  confirmation, and post-change evidence. Additive and routine application operations record
+  target and post-change evidence without a confirmation batch.
+- Every changed existing head received fresh checks, review, and revalidation before merge; exceptional replacement PRs and newly
+  discovered out-of-scope targets received clarification.
 - Merge success was never substituted for hosted workflow, deployment, runtime, production, or integrated-system proof.

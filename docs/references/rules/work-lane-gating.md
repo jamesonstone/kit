@@ -106,13 +106,14 @@ After read-only recon:
 - For multiple pull requests, record one continuation entry per target in the
   bounded merge or program plan. That exact target set replaces the singular
   create-or-update landing target; it does not create a coordinator pull request.
-- Follow `github-pr-merge` for dependency order and bounded in-place repair.
+- Follow `github-pr-merge` for dependency order and in-place repair.
   Scope-preserving repair stays on the existing heads with ordinary commits;
   never create recursive corrective pull requests merely to make another pull
   request current or mergeable.
-- If the user or accepted plan authorizes merge but not source repair, stop for
-  bounded in-place-remediation authority before changing a head. Missing repair
-  authority is not a reason to allocate a new worklane or replacement pull request.
+- If the user explicitly withheld source repair, stop for bounded
+  in-place-remediation authority before changing a head. Missing repair
+  authority is not a reason to allocate a new worklane or replacement pull
+  request. Otherwise the accepted task authorizes in-scope in-place repair.
 - Use a replacement pull request only when the remediation materially changes
   scope or architecture, the original head cannot be updated safely, or
   repository policy or the user explicitly requires replacement.
@@ -145,26 +146,25 @@ Pull-Request Landing Plan:
   or the user's explicit continuation direction, and record a revised plan
   before further mutation.
 
-### Merge Authorization
+### Merge Readiness
 
-- PR-delivery consent never implies merge consent. It authorizes issue, branch,
-  commit, push, and ready-PR delivery only.
-- A direct merge request or accepted bounded merge plan routes to
-  `github-pr-merge` and the `pull-request-merge` context workflow.
-- The exact existing pull-request set named by that request or plan is explicit
+- PR-delivery consent never invents `MERGE_READY`. It authorizes issue, branch,
+  commit, push, and ready-PR delivery. An accepted task or active `/goal`
+  authorizes in-scope non-destructive merges once they are `MERGE_READY`.
+- A merge routes to `github-pr-merge` and the `pull-request-merge` context
+  workflow. Do not stop for a separate merge-consent prompt.
+- The exact existing pull-request set named by that accepted scope is explicit
   continuation under this rule; do not apply the default-new route to create a
   separate coordination lane.
-- The authorized set is exact. Adding a new PR, repository, base branch,
-  deployment target, infrastructure effect, merge method, or actor requires
-  follow-up authorization.
-- Revalidating an unchanged authorized head, retrying a compatible path, or
-  using a repository-required merge queue does not require another prompt when
-  target, scope, intended effect, identity, and approval remain unchanged. A
-  changed head invalidates prior merge authority and requires fresh exact-head
-  authorization under `github-pr-merge`.
+- The in-scope set is exact. Adding a new PR outside accepted product scope,
+  repository, base branch, or a destructive effect requires clarification or
+  exact destructive confirmation. An explicit user hold prevails.
+- Revalidating an unchanged `MERGE_READY` head, retrying a compatible path, or
+  using a repository-required merge queue does not require another prompt. A
+  changed head invalidates readiness, not accepted-task authority.
 - A gate decision, issue, branch, commit, push, ready PR, approval, passing
   check, review-thread resolution, subagent assignment, or program ledger does
-  not create merge authority.
+  not invent `MERGE_READY`.
 
 ### New Lane
 
@@ -291,8 +291,9 @@ state, or to create or clear a worktree.
   or recursive corrective pull request.
 - Confirm tripwire state was preserved and no ungated change was staged,
   committed, pushed, discarded, or silently transferred.
-- Confirm PR-delivery consent was not treated as merge consent, and any direct
-  merge request or accepted bounded plan routed to `github-pr-merge`.
+- Confirm PR-delivery consent was not treated as `MERGE_READY`, and any
+  in-scope merge routed to `github-pr-merge` without a redundant consent
+  prompt.
 
 ## Examples
 

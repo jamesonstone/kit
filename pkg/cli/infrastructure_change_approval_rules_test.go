@@ -58,7 +58,7 @@ func TestInfrastructureChangeApprovalRegistryRulesetIsValid(t *testing.T) {
 		"Do not create a separate identity prompt or approval ceremony",
 		"### One Confirmation And One-Pass Execution",
 		"User approval of a task plan that contains the complete infrastructure outline counts as confirmation",
-		"For a batch with no deletion or removal, a sufficiently detailed initial request also counts as confirmation",
+		"Additive or rollback-preserving batches proceed without confirmation",
 		"remaining task work to completion in one pass without asking for command-by-command approval",
 		"### Deletion And Removal Exception",
 		"always requires explicit user confirmation after the consolidated outline",

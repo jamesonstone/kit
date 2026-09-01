@@ -13,10 +13,7 @@ func TestInstructionTemplatesRequireInfrastructureChangeApproval(t *testing.T) {
 		"docs/references/rules/infrastructure-change-approval.md",
 		"Kubernetes resources or cluster state",
 		"does not alter cloud resources, Kubernetes objects",
-		"into the task plan when planning is used",
-		"one explicit user confirmation for the complete bounded batch",
-		"Approval of a task plan containing the complete outline counts as confirmation",
-		"batch does not delete or remove infrastructure",
+		"Proceed autonomously when the graph contains only additive or rollback-preserving effects",
 		"Deleting, destroying, or removing infrastructure always requires explicit confirmation",
 		"During merge or release orchestration, do not execute infrastructure deletion",
 		"isolate it as a separate task with its own exact post-outline authorization",
@@ -61,7 +58,7 @@ func TestInstructionSupportRoutesInfrastructureChangeApproval(t *testing.T) {
 			t.Errorf("expected version %d RLM to route infrastructure approval", version)
 		}
 		references := fileContentByPath(files, "docs/references/README.md")
-		if !strings.Contains(references, "Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to require one plan-level confirmation per batch, one-pass execution, and explicit confirmation for deletion or removal") {
+		if !strings.Contains(references, "Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to classify effects, proceed autonomously for additive or rollback-preserving work, and require exact confirmation only for deletion or removal") {
 			t.Errorf("expected version %d references index to route infrastructure approval", version)
 		}
 	}

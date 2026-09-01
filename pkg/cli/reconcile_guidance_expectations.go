@@ -104,10 +104,10 @@ func v3GuidanceExpectations() map[string][]string {
 			"Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 			"Routine application operations on already-provisioned workloads, including deployment image updates and ECS or equivalent service interactions that do not create, replace, or delete infrastructure, are not infrastructure-approval batches.",
 			"Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.",
-			"Put one consolidated outline of the target context, resource actions, execution boundary, material impact and risk, rollback or recovery, and validation evidence into the task plan when planning is used; otherwise present it once before the first covered mutation. Obtain one explicit user confirmation for the complete bounded batch.",
+			"Classify planned effects as create, update, replace, delete, or remove. Proceed autonomously when the graph contains only additive or rollback-preserving effects, including additive IAM, network, or resource create-or-update and production activation.",
 			"Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
-			"After confirmation, execute the exact approved batch and continue the rest of the task to completion in one pass without routine command-by-command approval.",
-			"If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
+			"After destructive confirmation, execute the exact approved batch and continue the rest of the task to completion in one pass without routine command-by-command approval.",
+			"If additional destructive infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
 			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 		},
 		".github/copilot-instructions.md": {
@@ -140,7 +140,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"Routine application operations on already-provisioned workloads, including deployment image updates and ECS or equivalent service interactions that do not create, replace, or delete infrastructure, are not infrastructure-approval batches.",
 			"Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.",
 			"Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
-			"If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
+			"If additional destructive infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
 			"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",
 			"end-to-end and live-integration suites supplement rather than replace them",
 			"Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`",
@@ -186,6 +186,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"When `cross-repository-program-coordination` applies, dispatch only the canonical program ledger's reconciled ready frontier and checkpoint program state after each material transition or handoff",
 			"Link the primary checkout's `.env` and `.envrc` into writable lanes by default",
 			"preserve a repository- or user-supplied `.envrc`",
+			"Do not stop for a separate merge-consent prompt",
 		},
 		"docs/agents/GUARDRAILS.md": {
 			"Default to a new worklane without asking",
@@ -214,7 +215,7 @@ func v3GuidanceExpectations() map[string][]string {
 			"Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.",
 			"Routine application operations on already-provisioned workloads, including deployment image updates and ECS or equivalent service interactions that do not create, replace, or delete infrastructure, are not infrastructure-approval batches.",
 			"Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch.",
-			"If additional covered infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
+			"If additional destructive infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.",
 		},
 		"docs/references/README.md": {
 			"default to a new worklane without asking",
@@ -270,9 +271,14 @@ func v3ForbiddenGuidance() map[string][]string {
 		"`c` means continue existing",
 		"Wait for the explicit choice",
 	}
+	consent := []string{
+		"never imply merge consent",
+		"Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set",
+		"Obtain one explicit user confirmation for the complete bounded batch",
+	}
 	return map[string][]string{
-		"AGENTS.md":                       append(completion, workLane...),
-		".github/copilot-instructions.md": append(completion, workLane...),
-		"docs/agents/GUARDRAILS.md":       append(completion, workLane...),
+		"AGENTS.md":                       append(append(completion, workLane...), consent...),
+		".github/copilot-instructions.md": append(append(completion, workLane...), consent...),
+		"docs/agents/GUARDRAILS.md":       append(append(completion, workLane...), consent...),
 	}
 }

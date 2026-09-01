@@ -10,13 +10,13 @@ import (
 func TestInstructionTemplatesIncludeGitHubMergeHardGate(t *testing.T) {
 	checks := []string{
 		"Merge is a distinct mutation boundary",
-		"never imply merge consent",
+		"never invent merge readiness",
 		"pull-request-merge",
 		"MERGE_READY",
 		"one complete preflight snapshot",
 		"do not rerun unchanged checks or poll repeatedly",
-		"Revalidating an unchanged authorized head",
-		"A changed head invalidates readiness and prior merge authority",
+		"A changed head invalidates readiness, not accepted-task authority",
+		"Do not stop for a separate merge-consent prompt",
 		"Never bypass protection",
 	}
 	for name, content := range map[string]string{
@@ -49,8 +49,8 @@ func TestCheckedInInstructionsIncludeGitHubMergeHardGate(t *testing.T) {
 		for _, want := range []string{
 			"Only exact current `MERGE_READY` nodes may merge",
 			"one complete preflight snapshot",
-			"Revalidating an unchanged authorized head",
-			"A changed head invalidates readiness and prior merge authority",
+			"A changed head invalidates readiness, not accepted-task authority",
+			"Do not stop for a separate merge-consent prompt",
 		} {
 			if !strings.Contains(string(content), want) {
 				t.Errorf("checked-in %s is missing merge guidance %q", path, want)

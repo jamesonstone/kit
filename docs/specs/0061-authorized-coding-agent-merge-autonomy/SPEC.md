@@ -16,6 +16,9 @@ relationships:
     target: 0059-conservative-coding-agent-first
   - type: related_to
     target: 0060-release-orchestration-prompt
+  - type: related_to
+    target: 0075-autonomous-non-destructive-execution
+    note: Feature 0075 supersedes the extra merge-consent prompt. MERGE_READY, identity, reviews, CI, and protection remain hard gates.
 references:
   - id: safety-rule
     name: Safety guardrails
@@ -379,6 +382,9 @@ ledger, subagent assignment, or successful checks to invent broader authority.
 - Merge waves now use one meaningful current snapshot, source-and-deployment
   independence, bounded recovery, event-driven monitoring, and concise
   terminal evidence. Destructive infrastructure remains outside release waves.
+- Feature `0075-autonomous-non-destructive-execution` later superseded the extra
+  merge-consent prompt. This spec remains historical; `MERGE_READY`, identity,
+  reviews, CI, and protection remain hard gates under the later policy.
 
 ## REPOSITORY MEMORY
 

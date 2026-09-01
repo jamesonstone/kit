@@ -15,10 +15,10 @@ func TestActivePolicyUsesOneMergeAuthorityModel(t *testing.T) {
 	for name, content := range files {
 		for _, check := range []string{
 			"Merge is a distinct mutation boundary",
-			"never imply merge consent",
+			"never invent merge readiness",
+			"Do not stop for a separate merge-consent prompt",
 			"Only exact current `MERGE_READY` nodes may merge",
-			"Revalidating an unchanged authorized head",
-			"A changed head invalidates readiness and prior merge authority",
+			"A changed head invalidates readiness, not accepted-task authority",
 			"Never bypass protection",
 		} {
 			if !strings.Contains(content, check) {
@@ -50,12 +50,11 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 	}
 
 	required := []string{
-		"PR-delivery consent never implies merge consent",
 		"The ledger records and reconciles that authority; it never creates it",
-		"Read-only verification agents can never merge or queue a merge",
-		"The merge is part of the",
-		"covered mutation boundary",
+		"Read-only verification agents never merge",
 		"Protection bypass, admin override, review bypass, required-check bypass",
+		"Do not stop for a separate merge-consent prompt",
+		"Proceed autonomously when the graph contains only additive or rollback-preserving effects",
 	}
 	for _, check := range required {
 		if !strings.Contains(combined, check) {
@@ -68,8 +67,9 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 		"program ledger creates merge authority",
 		"verification agents may merge",
 		"passing checks authorize merge",
-		"Revalidating an already authorized target",
-		"Revalidation of the already authorized set",
+		"Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set",
+		"never imply merge consent",
+		"Obtain one explicit user confirmation for the complete bounded batch",
 	} {
 		if strings.Contains(combined, forbidden) {
 			t.Errorf("active policy contains contradictory authority %q", forbidden)

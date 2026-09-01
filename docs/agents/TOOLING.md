@@ -87,10 +87,10 @@ Current provider references: [Codex subagents](https://learn.chatgpt.com/docs/ag
 
 ## PR Merge
 
-- PR delivery never implies merge consent. A direct user request or accepted bounded merge plan must name the exact authorized PR set.
+- An accepted task or active `/goal` authorizes in-scope ordinary and remediation merges once they are `MERGE_READY`. Do not stop for a separate merge-consent prompt.
 - Before any merge or merge-queue mutation, resolve `pull-request-merge` and load `docs/references/rules/github-pr-merge.md`.
-- Merge only exact current `MERGE_READY` nodes from the authorized frontier; revalidate actor, head/base, repository policy, checks, dependencies, and infrastructure effects before every wave.
-- Revalidation and compatible retries do not require another prompt. Material scope expansion does.
+- Merge only exact current `MERGE_READY` nodes from the in-scope frontier; revalidate actor, head/base, repository policy, checks, dependencies, and destructive versus non-destructive effects before every wave.
+- A changed head invalidates readiness, not accepted-task authority. Material product-scope expansion and explicit user holds require clarification. Destructive merge effects require exact confirmation.
 - Report merge, hosted workflow, deployment/runtime, and production evidence separately.
 
 ## PR Release Orchestration

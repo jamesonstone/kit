@@ -36,9 +36,9 @@ read_policy_default: conditional
   mutation.
 - This ruleset sequences and verifies PR delivery; it does not infer consent or
   relax safety checks.
-- This ruleset never creates merge authority. A direct merge request or
-  accepted bounded merge plan must resolve `pull-request-merge` and follow
-  `github-pr-merge` separately.
+- This ruleset never invents `MERGE_READY`. An accepted task or active `/goal`
+  authorizes in-scope non-destructive merges. Resolve `pull-request-merge` and
+  follow `github-pr-merge` before any merge mutation. Do not stop for a separate merge-consent prompt.
 
 ## Rules
 
@@ -113,19 +113,18 @@ Delivery Contract:
 - The `PR title format` field must resolve to the Conventional Commits title shape with the GitHub issue as scope:
   `<type>(<issue_number>): <gitmoji> <short title message>`.
 
-### Merge Is A Separate Boundary
+### Merge Is Readiness, Not A Second Consent Prompt
 
 - PR-delivery consent authorizes issue, branch, commit, push, and ready-PR
-  delivery only. It never implies merge consent.
+  delivery. An accepted task or active `/goal` also authorizes in-scope
+  non-destructive merges once they are `MERGE_READY`.
 - A lane decision, issue assignment, PR creation, approval, passing checks, or
-  documentation-only eligibility never authorizes merge.
-- A direct merge request or accepted bounded merge plan routes to
-  `github-pr-merge` and `pull-request-merge`.
-- Adding a merge target requires follow-up authorization. Revalidating an
-  unchanged authorized head or using a repository-required merge queue does
-  not require another prompt when scope, identity, and intended effect remain
-  unchanged. A changed head requires fresh current-head evidence and exact-head
-  authorization under `github-pr-merge`.
+  documentation-only eligibility never invents `MERGE_READY`.
+- In-scope merges route to `github-pr-merge` and `pull-request-merge`. Do not stop for a separate merge-consent prompt.
+- Adding a merge target outside accepted product scope requires clarification.
+  Revalidating an unchanged `MERGE_READY` head or using a repository-required
+  merge queue does not require another prompt. A changed head requires fresh
+  current-head evidence under `github-pr-merge`, not a new consent prompt.
 
 ### Author And Committer Invariant
 
@@ -259,10 +258,10 @@ Include:
 - While remaining in that session, address remaining pull-request review
   feedback as it arrives. Handle review, authorized merge, and primary leftover
   cleanup as one continuation of the current lane.
-- Merge the worktree pull request only after merge is authorized by a direct
-  user request or an accepted bounded merge plan that names the exact authorized pull request set, following `github-pr-merge`.
-- This cleanup is leftover disposal after an authorized merge. It does not
-  create merge authority.
+- Merge the worktree pull request when it is in accepted-task scope and
+  current `MERGE_READY`, following `github-pr-merge`. Do not stop for a separate merge-consent prompt.
+- This cleanup is leftover disposal after an in-scope `MERGE_READY` merge. It does
+  not invent readiness.
 - After remaining pull-request feedback is addressed and the authorized merge
   is confirmed on the protected default branch, use the primary checkout on
   that default branch.
