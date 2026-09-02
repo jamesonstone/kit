@@ -95,9 +95,9 @@ registry:
           path: docs/references/rules/deadline-mode.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 811d577c5e288f72c7c4b9319c15c4f85b2629ce
+          source_commit: e4090c8e74373fc0b8f874bc05baf6c60ff43d99
           source_path: docs/references/rules/deadline-mode.md
-          installed_hash: sha256:d722cf7308414c38a3cb078622ea691c2c3e24e6206a0dbac9e4c6988671d810
+          installed_hash: sha256:5661c8e46fc2450593f67e5c4e12fc6306815ce023e4e0d5e1d578294433487f
           state: managed
         - kind: ruleset
           slug: deletion-safety
@@ -122,18 +122,18 @@ registry:
           path: docs/references/rules/github-pr-delivery.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 811d577c5e288f72c7c4b9319c15c4f85b2629ce
+          source_commit: e4090c8e74373fc0b8f874bc05baf6c60ff43d99
           source_path: docs/references/rules/github-pr-delivery.md
-          installed_hash: sha256:347ea14fe877cf97791d2da8e2e7212822b29ccc9760c1e795c6881b0c5f1839
+          installed_hash: sha256:b6ba99c766d44daff75b6e3a1245a2411df95293571cbf23e05666fe67c75afb
           state: managed
         - kind: ruleset
           slug: github-pr-merge
           path: docs/references/rules/github-pr-merge.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 811d577c5e288f72c7c4b9319c15c4f85b2629ce
+          source_commit: e4090c8e74373fc0b8f874bc05baf6c60ff43d99
           source_path: docs/references/rules/github-pr-merge.md
-          installed_hash: sha256:1b4e01ed163b8c49a8239800ce1a06e59a5efc23606c5a43861cc24dd4c42b6b
+          installed_hash: sha256:c279a415eb81ae52c5b0a952913f3a2bdd42663483df6b1e52cc345b6b57e424
           state: managed
         - kind: ruleset
           slug: human-authorship
@@ -149,9 +149,9 @@ registry:
           path: docs/references/rules/infrastructure-change-approval.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 811d577c5e288f72c7c4b9319c15c4f85b2629ce
+          source_commit: e4090c8e74373fc0b8f874bc05baf6c60ff43d99
           source_path: docs/references/rules/infrastructure-change-approval.md
-          installed_hash: sha256:1d3cec251b1d1596d3c6a39b4f4a521e7b5b72d6fbacdafa7da27cf0c4a1dbb4
+          installed_hash: sha256:28128b2460ad895effb92360906412726584632e608fbe9a392f4ae8e3247442
           state: managed
         - kind: ruleset
           slug: kit-capabilities-usage
@@ -185,9 +185,9 @@ registry:
           path: docs/references/rules/safety-guardrails.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 811d577c5e288f72c7c4b9319c15c4f85b2629ce
+          source_commit: e4090c8e74373fc0b8f874bc05baf6c60ff43d99
           source_path: docs/references/rules/safety-guardrails.md
-          installed_hash: sha256:20274ef980fd91b883e034fe13185b04232343ba9e0925027daeb4ac3c7e4bbb
+          installed_hash: sha256:60c3a1d7b13c13779dba9ff9976243597c5fe03dcb31b7af5f1b0db071802181
           state: managed
         - kind: ruleset
           slug: source-file-size
@@ -203,18 +203,18 @@ registry:
           path: docs/references/rules/testing-and-environment-validation.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 811d577c5e288f72c7c4b9319c15c4f85b2629ce
+          source_commit: e4090c8e74373fc0b8f874bc05baf6c60ff43d99
           source_path: docs/references/rules/testing-and-environment-validation.md
-          installed_hash: sha256:83bde49ad33768863fcdba5ba9b802e12174c131740120082841282965311003
+          installed_hash: sha256:e3b815b40a3015de7b05a0a44def11f0d56c486b56172735428a52bc130fc2ee
           state: managed
         - kind: ruleset
           slug: work-lane-gating
           path: docs/references/rules/work-lane-gating.md
           source_repo: jamesonstone/kit
           source_branch: main
-          source_commit: 811d577c5e288f72c7c4b9319c15c4f85b2629ce
+          source_commit: e4090c8e74373fc0b8f874bc05baf6c60ff43d99
           source_path: docs/references/rules/work-lane-gating.md
-          installed_hash: sha256:f6009a003e4a6671d7522f23d5979e0bb15a4b19da0243f160a398535754ebfc
+          installed_hash: sha256:e997494888d4e90e3983f0b878c9d0be9736a34f53106dcb4899f8d988662f99
           state: managed
 aws:
     enabled: false
