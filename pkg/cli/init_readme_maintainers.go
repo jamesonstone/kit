@@ -2,18 +2,28 @@ package cli
 
 import "strings"
 
-const readmeMaintainersSection = `## Maintainers
+const readmeMaintainersFallback = "## Maintainers\n\nMaintained by this project's maintainers.\n"
 
-Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (` + "`jamesonstone`" + `).
-`
+// defaultReadmeMaintainersSection derives a generic, non-personal maintainers
+// credit from the project's own GitHub owner instead of hardcoding Kit's
+// author. Downstream projects are not Kit's own repository, so the generated
+// default must not name Kit's maintainer.
+func defaultReadmeMaintainersSection(owner string) string {
+	owner = strings.TrimSpace(owner)
+	if owner == "" {
+		return readmeMaintainersFallback
+	}
+	return "## Maintainers\n\nMaintained by the [" + owner + "](https://github.com/" + owner + ") team.\n"
+}
 
-func upsertReadmeMaintainersSection(content string) string {
+func upsertReadmeMaintainersSection(content, owner string) string {
+	section := defaultReadmeMaintainersSection(owner)
 	trimmed := strings.TrimSpace(content)
 	if trimmed == "" {
-		return strings.TrimRight(readmeMaintainersSection, "\n") + "\n"
+		return strings.TrimRight(section, "\n") + "\n"
 	}
 	withoutMaintainers := removeReadmeMaintainersSections(content)
-	return joinReadmeParts(withoutMaintainers, readmeMaintainersSection, "")
+	return joinReadmeParts(withoutMaintainers, section, "")
 }
 
 func removeReadmeMaintainersSections(content string) string {

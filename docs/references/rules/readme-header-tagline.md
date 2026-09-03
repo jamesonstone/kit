@@ -18,8 +18,13 @@ read_policy_default: conditional
 ## Purpose
 
 - Keep top-level project READMEs immediately recognizable, skimmable, and useful to humans and coding agents.
-- Preserve a consistent Kit-managed opening pattern across repositories.
+- Offer one concrete, ready-to-use opening pattern instead of leaving every project to invent its own from scratch.
 - Replace one-off README style instructions with durable repo-local guidance.
+
+This is Kit's default template, not a project-identity correctness rule. A
+project with its own deliberate README style should keep it; nothing here
+should be read as requiring every Kit-managed repository to converge on one
+visual identity.
 
 ## Applies When
 
@@ -67,17 +72,20 @@ read_policy_default: conditional
 - Do not include a License badge in the default Kit-managed badge set.
 - When Kit-managed refresh updates badges, preserve the Kit marker comments around the badge block and update only the block between those markers.
 - Keep installation details, long architecture notes, changelogs, and contribution guidance after the header, tagline, and opening paragraph.
-- Every top-level `README.md` must end with a `## Maintainers` section as the last H2 header.
-- The default Kit-managed maintainer copy is:
+- Default a top-level `README.md` to end with a `## Maintainers` section as the last H2 header.
+- Derive the maintainer credit from the project's own GitHub owner. The default Kit-managed shape is:
 
 ```markdown
 ## Maintainers
 
-Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+Maintained by the [<owner>](https://github.com/<owner>) team.
 ```
 
+- Never name Kit's own author or repository as the maintainer of a downstream project. This template exists so every project gets a maintainers line; the identity in it must always be the project's own, not Kit's.
+- When no GitHub owner is known, use a neutral fallback such as "Maintained by this project's maintainers." rather than inventing a name.
 - Use `## Maintainers`, not `## Maintainer`, even when there is currently only one maintainer.
 - Preserve existing stronger brand guidance when a repository already has an intentional, current README identity.
+- Preserve an existing, deliberately authored maintainers list or contribution-credit convention; only apply the default template when the project has none.
 - Do not invent product claims, operational capabilities, compliance posture, customer names, or integrations that are not supported by repository evidence.
 
 ## Anti-Patterns
@@ -109,7 +117,7 @@ Before completing README work, verify:
 - Kit-managed private-repository badge blocks exclude public Shields GitHub metadata badges and include only a native CI workflow badge when a conventional workflow exists.
 - Kit-managed badge blocks do not include a License badge by default.
 - `README.md` ends with `## Maintainers` as the last H2 header.
-- The Maintainers section includes [Jameson](https://github.com/jamesonstone) and the `jamesonstone` GitHub username.
+- The Maintainers section names the project's own GitHub owner (or the neutral fallback), never Kit's own author or repository.
 - The opening does not claim unsupported capabilities, integrations, users, or status.
 - Setup, architecture, and contribution sections remain below the identity opening.
 
@@ -142,7 +150,7 @@ Example Service is the Go service that receives partner events, validates payloa
 
 ## Maintainers
 
-Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+Maintained by the [acme](https://github.com/acme) team.
 ````
 
 Compact wordmark variant:
@@ -158,5 +166,5 @@ Acme Worker runs account maintenance jobs, reconciles partner state, and emits o
 
 ## Maintainers
 
-Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+Maintained by the [acme](https://github.com/acme) team.
 ````

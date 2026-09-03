@@ -290,7 +290,7 @@ const agentsRLM = `# RLM
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
 - Do not load every ruleset by default; feature front matter references determine when a ruleset is must-read, conditional, evidence, or skipped
 - Open a prior feature doc only when it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or reference link
-- Inspect at most 5 prior feature directories before narrowing further or asking a clarifying question
+- Inspect as many prior feature directories as materially relevant to the current decision, then stop; keep narrowing by relevance rather than by a fixed count, and ask a clarifying question only when relevance itself is unclear
 - Extract only the concrete facts that change the current feature; do not paraphrase entire prior docs into chat or copy irrelevant history into the active artifact
 - Treat RLM as discovery and context selection first; do not jump straight into parallel execution while the candidate set is still broad
 - Always update affected documentation and ensure touched documents stay current and properly formatted before finishing the work

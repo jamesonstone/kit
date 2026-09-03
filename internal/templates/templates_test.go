@@ -215,7 +215,7 @@ func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
 			"agent-team-orchestration.md",
 			"mandatory first-pass evaluation before finalizing any native implementation plan",
 			"shared interface or contract",
-			"Inspect at most 5 prior feature directories",
+			"Inspect as many prior feature directories as materially relevant",
 			"discovery and context selection first",
 			"do not jump straight into parallel execution",
 			"Always update affected documentation",
