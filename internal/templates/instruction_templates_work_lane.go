@@ -6,7 +6,7 @@ const workLaneMutationRoutingGate = `## Work Lane Mutation Hard Gate
 - Default to a new worklane without asking for the accepted unit of work: create or reuse one human-assigned GitHub issue, exact ` + "`GH-<issue-number>`" + ` branch, canonical non-primary worktree, and ready pull-request plan. Reuse that recorded lane for subsequent in-scope mutations. A clean or dirty checkout, current feature branch, issue reference, or generic pull-request request does not change this default.
 - Continue an existing lane only when the user explicitly directs that outcome for the same unit of work. Prove the non-primary owning worktree, branch, issue scope, protected base, and create-or-update pull-request target.
 - Never offer or ask the user to choose between lanes.
-- Treat exact existing-PR lifecycle work as continuation: review repair, CI repair, base refresh, conflict resolution, and ordered merge coordination reuse every targeted pull-request head. Never create coordination or corrective pull requests for scope-preserving work. If source repair is not authorized, ask only for bounded in-place-remediation authority; do not allocate a new lane.
+- Treat exact existing-PR lifecycle work as continuation: review repair, CI repair, base refresh, conflict resolution, and ordered merge coordination reuse every targeted pull-request head. Never create coordination or corrective pull requests for scope-preserving work. The accepted task or active ` + "`/goal`" + ` authorizes in-scope in-place repair. If the user explicitly withheld source repair, ask only for bounded in-place-remediation authority; do not allocate a new lane.
 - Record a Pull-Request Landing Plan covering the repository, issue, branch, canonical non-primary worktree, protected base, and create-or-update PR target. Verify that plan still matches before every mutation. Ask only when implementation intent or an explicitly named target is materially ambiguous and cannot be resolved from repository evidence.
 - Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it.
 
@@ -50,8 +50,9 @@ must:
   continuation. Reuse every targeted head branch and pull request; do not
   create a coordination or corrective pull request for scope-preserving work.
 - For a multi-PR merge or program plan, record one continuation entry per
-  target instead of inventing one coordinator lane. If source repair is not
-  authorized, ask only for bounded in-place-remediation authority; do not
+  target instead of inventing one coordinator lane. The accepted task or active ` + "`/goal`" + `
+  authorizes in-scope in-place repair. If the user explicitly withheld source
+  repair, ask only for bounded in-place-remediation authority; do not
   allocate a new lane as a fallback.
 - For the default new lane, create or reuse one human-assigned issue, exact
   ` + "`GH-<issue-number>`" + ` branch, canonical linked worktree at

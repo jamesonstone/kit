@@ -75,6 +75,7 @@
 | 0072 | post-merge-primary-clean | `docs/specs/0072-post-merge-primary-clean` | deliver | no | 2026-08-24 | After a reconcile worktree PR merges, leftover untracked files on primary `main` block `git pull`. Keep the current write-on-main plus worktree copy design, and instruct the coding agent to run `git clean -fd` on primary `main` after remaining PR feedback is addressed and that PR has merged. |
 | 0073 | infrastructure-approval-scope | `docs/specs/0073-infrastructure-approval-scope` | deliver | no | 2026-08-26 | Stop treating every deployment image update and ECS interaction as an infrastructure-approval batch, while keeping create/replace/apply of infrastructure gated and requiring explicit post-outline confirmation for deletion. |
 | 0074 | deadline-merge-ui-verification | `docs/specs/0074-deadline-merge-ui-verification` | deliver | no | 2026-08-31 | Under deadline mode, continue authorized merge and deployment work, skip UI verification until every result is delivered, then run one final UI verification without weakening required post-deployment production-suite checks. |
+| 0075 | autonomous-non-destructive-execution | `docs/specs/0075-autonomous-non-destructive-execution` | deliver | no | 2026-09-01 | Stop Kit coding agents from pausing accepted task or `/goal` work to ask for merge, deploy, or additive-infrastructure consent. Keep explicit manual authorization only for deletes, removals, or otherwise destructive effects. |
 
 ## PROJECT INTENT
 
@@ -725,6 +726,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0074-deadline-merge-ui-verification/SPEC.md`, `docs/references/rules/deadline-mode.md`
 
+### autonomous-non-destructive-execution
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Stop Kit coding agents from pausing accepted task or `/goal` work to ask for merge, deploy, or additive-infrastructure consent. Keep explicit manual authorization only for deletes, removals, or otherwise destructive effects.
+- **APPROACH**: 1. Record this accepted plan in `0075` before implementation. 2. Rewrite the authority matrix, `github-pr-merge`, `infrastructure-change-approval`, work-lane, delivery, deadline, team, program, Constitution, and generated gates so accepted-task scope authorizes non-destructive merge/deploy/infra. 3. Keep `MERGE_READY` and destructive confirmation as the only remaining human-stop gates besides explicit holds. 4. Lock the new behavior in ruleset, template, reconcile, and scenario tests. 5. Add reconcile detection for superseded consent phrases in instruction files and the two policy rulesets. 6. Note superseded 0061/0073 decisions without mechanically rewriting those completed specs. 7. Hand-add only this feature's summary row after reverting `kit spec` mtime corruption. 8. Validate, curate repository memory, and open one ready pull request for issue #190.
+- **OPEN ITEMS**: none
+- **POINTERS**: `docs/specs/0075-autonomous-non-destructive-execution/SPEC.md`, `docs/references/rules/github-pr-merge.md`, `docs/references/rules/infrastructure-change-approval.md`
+
 ## LAST UPDATED
 
-2026-08-31 11:46:00 EDT
+2026-09-01 12:30:00 EDT

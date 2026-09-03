@@ -18,7 +18,7 @@ read_policy_default: conditional
 ## Purpose
 
 - Let a coding agent narrow validation and implementation scope to what a real, user-declared deadline requires, instead of wasting time on evidence and cleanup the deadline makes low-value.
-- Change prioritization and scope only. Deadline mode never weakens correctness, authority, or any required approval, security, or compatibility boundary.
+- Change prioritization and scope only. Deadline mode never weakens correctness, `MERGE_READY` evidence, destructive-effect fencing, security, or compatibility invariants.
 - Require every narrowing to be explicit and recorded, never silent. A recorded single-lane or reduced-scope decision is a fully valid, first-class outcome, not a shortcut to hide.
 
 ## Applies When
@@ -61,8 +61,8 @@ Do not substitute repeated broad suites for focused evidence.
 
 Deadline mode must never weaken, skip, or narrow:
 
-- required merge authorization — `docs/references/rules/github-pr-merge.md` and `pull-request-merge` still gate every merge exactly as always;
-- required infrastructure approval — `docs/references/rules/infrastructure-change-approval.md`'s consolidated outline and one-pass execution still apply in full;
+- required merge readiness — `docs/references/rules/github-pr-merge.md` and `pull-request-merge` still gate every merge on `MERGE_READY`, identity, reviews, CI, and protection; they do not add a second consent prompt for in-scope non-destructive work;
+- required destructive-effect fencing — `docs/references/rules/infrastructure-change-approval.md` still requires exact confirmation for delete, remove, or otherwise destructive effects; additive work stays autonomous;
 - independent final review — `docs/references/rules/agent-team-orchestration.md`'s fresh, read-only `verifier` requirement still applies to nontrivial implementation;
 - required post-deployment tests — `docs/references/rules/testing-and-environment-validation.md`'s `### Local And Production Execution` production-suite requirement still applies after an actual deployment;
 - one final UI verification after every result in the authorized merge or deployment wave is delivered — deadline mode defers this check until then; it does not cancel it;

@@ -87,10 +87,11 @@ SCOPED -> CAPABILITY_NEGOTIATING -> MAPPING -> SYNTHESIZING
   closed with rerun evidence or accepted as explicit residual risk.
   `SOURCE_VERIFIED` requires the integrated source, tests, documentation, and
   evidence to agree; implementation completion alone cannot enter that state.
-- `PR_READY` never implies `MERGE_AUTHORIZED`. That transition requires a
-  direct user request or accepted bounded merge plan for the exact current
-  pull-request set plus revalidated head, base, actor, repository policy,
-  reviews, checks, dependencies, method, and material effects.
+- `PR_READY` never implies `MERGE_READY`. That transition requires the
+  accepted task or active `/goal` to cover the exact current pull-request set
+  plus revalidated head, base, actor, repository policy, reviews, checks,
+  dependencies, method, and non-destructive effect classification. Do not
+  stop for a separate merge-consent prompt.
 - `MERGED` requires observed evidence that the exact authorized pull request
   merged. Merge success is not release evidence.
 - `RELEASE_VERIFIED` requires evidence tying the expected merged source to the
@@ -98,7 +99,7 @@ SCOPED -> CAPABILITY_NEGOTIATING -> MAPPING -> SYNTHESIZING
   merge, tag name, or local build.
 - `PROVENANCE_PR_READY` requires a separately authorized and owned
   issue/branch/worktree/pull-request lane whose ready-PR evidence records the
-  verified release provenance. It never implies merge authorization for that
+  verified release provenance. It never invents `MERGE_READY` for that
   separate pull request.
 - `COMPLETE` requires evidence for every applicable prior state. A workflow
   that does not own merge, release, or provenance reports those later states as

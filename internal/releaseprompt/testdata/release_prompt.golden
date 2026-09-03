@@ -46,7 +46,7 @@ Before mutation in each Kit-managed repository:
 5. Load every required selected artifact in order. Treat blocked resolution as an evidence gap and do not guess.
 6. Report the missing release workflow as scaffold drift. Do not refresh or rewrite repository guidance during the release unless that mutation is separately authorized and placed in the graph.
 
-Merge authority comes only from a direct merge request or an accepted bounded merge plan. PR-delivery consent, successful checks, subagent assignment, and a program ledger do not create it. Preserve compatible authority across revalidation and routine retries; obtain follow-up authorization only for material scope expansion or changed effects.
+An accepted task or active `/goal` authorizes in-scope non-destructive merges once they are `MERGE_READY`. PR-delivery consent, successful checks, subagent assignment, and a program ledger do not invent readiness. A changed head loses readiness, not accepted-task authority. An explicit user hold stops mutation independently. Exact confirmation is required only for destructive effects. Clarify material product-scope expansion.
 
 Cross-repository coordination is conditional: create or adopt one canonical `docs/programs/<program>/PROGRAM.md` only when the work spans multiple repositories and also has dependent deliverables, staged deployment or activation, or expected agent/session handoff. The ledger records and reconciles the authorized PR set and frontier but never creates authority. Otherwise keep the Global Release Graph in the task's working report without inventing a program ledger.
 
@@ -55,7 +55,7 @@ Preserve repository-local safety and delivery rules.
 ## Hard Rules
 
 1. Construct the initial Global Release Graph before any source, GitHub, deployment, or infrastructure mutation.
-2. Identify the direct request or accepted bounded plan that authorizes the exact merge set before treating any node as authorized.
+2. Identify the accepted task, active `/goal`, or explicit hold that bounds the in-scope merge set before treating any node as `MERGE_READY`.
 3. The graph, not PR age, number, repository order, or apparent urgency, determines release ordering.
 4. Treat merge order and deployment order as separate decisions.
 5. Prefer local Git and repository evidence; use `gh` conservatively with batched JSON, cached results, and bounded targeted refreshes. If it is unavailable or unauthenticated, stop and establish the repository-approved authenticated client rather than guessing remote state.
@@ -67,11 +67,11 @@ Preserve repository-local safety and delivery rules.
 11. Keep one accountable supervisor for scope, graph state, integration, validation, delivery gates, and reporting.
 12. Verify production from actual runtime identity and state, not from merge or deployment command success.
 13. Only an authorized node with exact current evidence in state `MERGE_READY` may enter the reconciled merge frontier; `BLOCKED` and `UNKNOWN` never do.
-14. Keep routine, scope-preserving source remediation on the existing PR head under bounded repair authority; invalidate old-head readiness and merge authority, rerun current-head checks and review, and require later exact-head authorization. Create a replacement corrective PR only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user requires it.
+14. Keep routine, scope-preserving source remediation on the existing PR head; invalidate old-head readiness, rerun current-head checks and review, then merge in-scope work without a new consent prompt. Create a replacement corrective PR only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user requires it.
 15. Run the configured final integration suite after all intended units pass individual environment verification.
 16. Never trade correctness, availability, security, compatibility, or data integrity for completion.
 17. Preserve every repository's local issue, branch, worktree, delivery, testing, infrastructure, and approval rules.
-18. Do not merge, deploy, mutate infrastructure, or resolve review state when authority, target identity, ownership, evidence, repository policy, or approval is ambiguous.
+18. Do not merge, deploy, mutate infrastructure, or resolve review state when target identity, ownership, evidence, repository policy, or destructive-effect classification is ambiguous.
 
 ## Phase 1: Discover the Release Set
 
@@ -125,7 +125,7 @@ Give every material dependency edge a reason. Do not force whole feature streams
 Do not mutate until the graph and evidence can answer:
 
 1. What are all relevant PRs and feature streams within the permitted scope?
-2. Which exact PRs are authorized to merge by the direct request or accepted bounded plan, and which discovered nodes require follow-up authorization?
+2. Which exact PRs are in accepted-task or `/goal` scope, which of those are currently `MERGE_READY`, and which discovered nodes expand product scope or have destructive effects?
 3. Which nodes depend on which others, and why?
 4. What runtime, infrastructure, schema, migration, contract, and approval prerequisites exist?
 5. For each authorized node, what are the expected head/base, authenticated actor, merge method and policy, current readiness evidence, indirect deployment effects, and post-merge gate?
@@ -210,7 +210,7 @@ Treat destructive or irreversible migrations as high risk and place their approv
 
 ## Phase 3: Merge and Deploy by Graph
 
-Before each wave, reconcile the accepted authority, exact authorized PR set, expected heads and bases, authenticated actor, repository merge policy, readiness evidence, dependencies, and indirect effects. Merge only the authorized `MERGE_READY` frontier, not a static PR list. Determine deployment waves separately from merge waves.
+Before each wave, reconcile the accepted-task or `/goal` scope, in-scope PR set, expected heads and bases, authenticated actor, repository merge policy, readiness evidence, dependencies, and destructive versus non-destructive effects. Merge only the in-scope `MERGE_READY` frontier, not a static PR list. Determine deployment waves separately from merge waves.
 
 Default release progression:
 
@@ -227,7 +227,7 @@ release unit
 
 A release unit may be one PR, one tightly coupled dependency wave, or multiple proven-independent changes. Independent authorized `MERGE_READY` nodes may merge concurrently when repository policy and same-base behavior permit it; serialize dependency chains and same-base sensitive operations. Do not expose an invalid intermediate production state merely to preserve PR-by-PR serialization.
 
-Do not ask for per-PR reconfirmation after the bounded plan is accepted. Reauthorize only a material expansion of the PR set, target, effects, or recovery boundary. Default to one potentially interacting production release unit at a time. Deploy concurrently only when independence is demonstrated by separate runtime, data, dependency, mutation, and rollback boundaries. Never leave the outcome of an interacting unit unknown while advancing a dependent node.
+Do not ask for per-PR merge-consent reconfirmation after the task or `/goal` is accepted. Clarify material product-scope expansion. Confirm only destructive effects. Default to one potentially interacting production release unit at a time. Deploy concurrently only when independence is demonstrated by separate runtime, data, dependency, mutation, and rollback boundaries. Never leave the outcome of an interacting unit unknown while advancing a dependent node.
 
 Verify the authenticated GitHub actor before every repository boundary and confirm the post-merge actor. Accept only the expected human or explicitly authorized service identity; never substitute another profile silently. One repository's identity failure blocks that node and its dependents without erasing verified progress elsewhere.
 
@@ -248,19 +248,19 @@ Run kit aws verify and confirm account, ARN, region, and environment.
 Policy:
 
 ```text
-Additive changes require an approved batch; destructive changes require explicit manual approval.
+Additive changes proceed autonomously; destructive changes require explicit manual approval.
 ```
 
-Before any public-cloud, Kubernetes, or infrastructure-as-code mutation, produce one consolidated batch outline containing the exact target identity, resource actions, execution boundary, material availability/data/security/cost impact, rollback or recovery, and validation evidence. A merge known to trigger such mutation belongs inside this boundary before merge. Obtain one explicit confirmation for the complete bounded batch unless the accepted merge plan already contains and authorizes the same complete non-deletion outline.
+Before any public-cloud, Kubernetes, or infrastructure-as-code mutation, classify create, update, replace, delete, and remove effects. Proceed autonomously when the graph contains only additive or rollback-preserving effects, including additive IAM, network, resource create-or-update, and production activation. A merge whose only known cloud effect is additive or a routine application operation does not stop for confirmation.
 
-Deletion, destruction, removal, or replacement always requires explicit confirmation after the complete outline, even when general release authorization exists. A material change to identity, environment, region, cluster, resources, action type, impact, recovery, or validation is a follow-up batch requiring a new consolidated outline and confirmation.
+Deletion, destruction, removal, destructive replacement, state removal, history rewrite, data erasure, permission revocation, or loss of a supported recovery path always requires explicit confirmation after the complete exact-target outline, even when general release authorization exists. Unresolved destructive ambiguity fails closed. A newly discovered destructive effect is a follow-up batch requiring a new consolidated outline and confirmation.
 
 #### Additive Infrastructure Changes
 
 1. Verify provider identity and exact environment with the strongest repository-local mechanism.
 2. Inspect actual current state and confirm the resource or configuration does not already satisfy the requirement.
-3. Prove the operation is within the approved batch, additive, backward compatible, and the smallest safe change.
-4. Apply the approved batch in one pass with bounded diagnosed retries only.
+3. Prove the operation is additive or rollback-preserving, backward compatible, and the smallest safe change.
+4. Apply the classified non-destructive batch in one pass with bounded diagnosed retries only.
 5. Re-read provider state, verify application integration, and checkpoint exact evidence.
 
 #### Destructive or Replacing Changes
@@ -305,8 +305,8 @@ If source changes are required:
 
 1. Implement the smallest correction in the existing PR's owned delivery lane when it remains within that issue and declared scope.
 2. Under bounded repair authority, ordinarily merge the current base into the existing head branch, apply or regenerate the correction, commit, and push to the same branch without rebasing, force-pushing, or retargeting.
-3. Mark the changed PR `UNKNOWN`, invalidate old-head readiness and merge authority, rerun required current-head checks and review, and obtain fresh exact-head authorization before it can reenter the merge frontier.
-4. Create a reviewed replacement PR and first-class graph node only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user explicitly requires replacement; obtain separate merge authority for that new node.
+3. Mark the changed PR `UNKNOWN`, invalidate old-head readiness, rerun required current-head checks and review, then restore `MERGE_READY` without a new consent prompt when the repair stays in accepted-task or active `/goal` scope.
+4. Create a reviewed replacement PR and first-class graph node only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user explicitly requires replacement; an in-scope replacement is revalidated and merged without a new consent prompt.
 5. Recompute dependencies, the reconciled authorized frontier, merge waves, deployment waves, and the critical path.
 6. Pass the same readiness, review, compatibility, infrastructure, and validation gates.
 7. Merge, deploy, verify, checkpoint evidence, and update the graph.

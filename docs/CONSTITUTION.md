@@ -33,9 +33,9 @@
 - Validate findings against current source and current external state before acting.
 - Preserve unrelated and project-owned changes. Fail closed when ownership, target identity, or mutation scope is ambiguous.
 - Report validation literally; planning evidence, local checks, hosted checks, deployment, and production proof are distinct claims.
-- Pull-request merge is a distinct mutation boundary. Only a direct request or accepted bounded merge plan authorizes the exact PR set; delivery consent, checks, assignments, and ledgers never create authority.
+- Pull-request merge is a distinct mutation boundary. An accepted task or active `/goal` authorizes in-scope non-destructive merges once they are `MERGE_READY`; delivery consent, checks, assignments, and ledgers never invent readiness. Stop for exact confirmation only for deletes, removals, or otherwise destructive effects, or when the user explicitly holds merge or deploy.
 - Only current `MERGE_READY` nodes may merge, and merge success is not deployment, runtime, production, or integrated-system proof.
-- Covered public-cloud, Kubernetes, and infrastructure-as-code mutations require one outline and one confirmation per batch. Routine application operations on already-provisioned workloads, including image deploys and ECS interactions that do not create or delete infrastructure, are not that batch. Deleting, destroying, or removing infrastructure always requires explicit confirmation after the outline.
+- Classify public-cloud, Kubernetes, and infrastructure-as-code mutations before they run. Additive or rollback-preserving effects, including image deploys and ECS interactions that do not delete infrastructure, proceed without a confirmation batch. Deleting, destroying, or removing infrastructure always requires explicit confirmation after the outline.
 
 ### Durable Repository Memory
 

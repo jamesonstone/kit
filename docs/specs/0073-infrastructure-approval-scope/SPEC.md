@@ -17,6 +17,9 @@ relationships:
   - type: related_to
     target: 0065-deletion-safety
     note: Deleting infrastructure still requires explicit post-outline confirmation and remains isolated from merge and release waves.
+  - type: related_to
+    target: 0075-autonomous-non-destructive-execution
+    note: Feature 0075 supersedes additive-infrastructure confirmation. Exact confirmation remains only for delete, remove, or otherwise destructive effects.
 references:
   - id: infrastructure-rule
     name: Infrastructure change approval
@@ -179,6 +182,9 @@ confirmation after an outline whenever infrastructure is deleted.
   and "deploy it" never authorize deletion.
 - Image-only CD merges record deployment effects and do not invent a covered
   infrastructure batch. Merge success remains distinct from deployment proof.
+- Feature `0075-autonomous-non-destructive-execution` later superseded additive
+  infrastructure confirmation. This spec remains historical; exact confirmation
+  is still required for delete, remove, or otherwise destructive effects.
 
 ## REPOSITORY MEMORY
 

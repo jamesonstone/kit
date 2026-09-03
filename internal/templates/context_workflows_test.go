@@ -38,11 +38,12 @@ func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.
 		}
 		for _, want := range []string{
 			"use ordinary,\n   non-history-rewriting commits to update the existing pull-request head",
-			"return it to `UNKNOWN` pending fresh checks, review, revalidation, and\n   exact-head authorization",
+			"return it to `UNKNOWN` pending fresh checks, review, and revalidation",
+			"Do not request a new consent prompt for in-scope repair",
 			"Reserve replacement pull\n   requests for material scope changes, heads that cannot be updated safely",
 			"explicit repository-policy or user requirements",
 			"Do not rebase,\n   force-push, retarget, or otherwise replace the branch's reviewed history",
-			"no changed head reuses readiness, review, checks, or merge authority",
+			"no changed head reuses readiness, review, or checks",
 		} {
 			if !strings.Contains(artifact.Content, want) {
 				t.Fatalf("pull-request-merge workflow missing %q", want)

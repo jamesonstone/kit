@@ -28,8 +28,8 @@ func TestRenderIsDeterministicCompleteAndAuthorityAware(t *testing.T) {
 	for _, required := range []string{
 		"Mandatory Global Release Graph",
 		"pull-request-merge",
-		"direct merge request or an accepted bounded merge plan",
-		"authorized `MERGE_READY` frontier",
+		"accepted task or active `/goal` authorizes in-scope non-destructive merges",
+		"in-scope `MERGE_READY` frontier",
 		"Pending, missing, stale-head",
 		"Report partial waves literally",
 		"Destructive or Replacing Changes",
@@ -156,7 +156,7 @@ func goldenConfig() Config {
 		Infrastructure: Infrastructure{
 			Mode: "direct", Provider: "aws", CLI: "aws",
 			IdentityCheck: "Run kit aws verify and confirm account, ARN, region, and environment.",
-			Policy:        "Additive changes require an approved batch; destructive changes require explicit manual approval.",
+			Policy:        "Additive changes proceed autonomously; destructive changes require explicit manual approval.",
 		},
 		Production:              Production{Environment: "production", Verification: "command:make verify-production"},
 		IntegrationSuite:        "script:tests/end-to-end/production/run.sh",

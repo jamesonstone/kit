@@ -168,9 +168,9 @@ program-level interpretation in the ledger. Redact secrets and protected data.
   program complete unless the program supervisor explicitly assigns that
   authority.
 - A participant may merge only specifically assigned PR nodes from the exact
-  approved `MERGE_READY` frontier. Participant or subagent assignment alone
-  does not create merge authority, and read-only verifiers never merge.
-- The accepted bounded plan or direct user request creates merge authority.
+  in-scope `MERGE_READY` frontier. Participant or subagent assignment alone
+  does not invent `MERGE_READY`, and read-only verifiers never merge.
+- The accepted task or active `/goal` creates in-scope merge authority.
   The ledger records and reconciles that authority; it never creates it.
 - Before every merge wave, the supervisor reconciles the authorization source,
   approved PR set, actor, expected head/base, repository policy, current
@@ -212,11 +212,10 @@ Before resume, handoff, dispatch, milestone advancement, or completion:
 5. checkpoint the reconciled state before assigning or performing more work.
 
 Before each merge wave, also resolve `pull-request-merge` and follow
-`github-pr-merge`. Revalidation of unchanged authorized heads does not require
-another prompt. A changed head loses prior readiness and merge authority and
-requires fresh exact-head authorization; adding a target or materially changing
-actor, method, environment, infrastructure effect, or recovery also requires
-follow-up authorization.
+`github-pr-merge`. Revalidation of unchanged `MERGE_READY` heads does not
+require another prompt. A changed head invalidates readiness, not accepted-task
+authority. Adding a target outside accepted product scope requires
+clarification; destructive effects still require exact confirmation.
 
 A handoff must identify the coordinator and ledger, active milestone, current
 ready frontier, blockers and owners, material decisions, exact evidence,
