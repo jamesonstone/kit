@@ -99,6 +99,7 @@ Delivery Contract:
 - PR title format:
 - PR template:
 - Draft or ready:
+- Human assignee:
 - Required checks:
 - Cross-repo dependencies:
 - Unknowns/blockers:

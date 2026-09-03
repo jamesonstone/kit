@@ -91,6 +91,7 @@
 - Issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries
 - Before a delivery mutation, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*` delivery rules
 - Repo-local Kit rules outrank generic GitHub or plugin defaults
+- Assign every created or reused GitHub issue and pull request to the human user, such as with `gh issue create --assignee @me` or `gh pr create --assignee @me` after confirming the authenticated `gh` login is the human user; never assign a coding agent, assistant, bot, or automated identity
 
 ## GitHub Merge Authorization Hard Gate
 

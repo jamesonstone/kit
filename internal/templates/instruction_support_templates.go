@@ -52,8 +52,9 @@ Before creating or mutating issues, branches, staging, commits, pushes, PRs, or 
    - PR template headings
    - required validation commands
 4. Present a short Delivery Contract and wait for explicit user approval if any field is unknown, ambiguous, missing, or conflicts with generic agent defaults.
-5. Never use global defaults such as ` + "`codex/<slug>`" + ` branches, ad hoc issue bodies, ad hoc PR bodies, draft PRs, ` + "`git add -A`" + `, ` + "`git add .`" + `, or generic commit messages when repo-local Kit rules define different behavior.
-6. If repo-local delivery rules cannot be found or are incomplete, stop and ask. Do not invent a substitute workflow.
+5. Assign every created or reused GitHub issue and pull request to the human user, such as with ` + "`gh issue create --assignee @me`" + ` or ` + "`gh pr create --assignee @me`" + ` after confirming the authenticated ` + "`gh`" + ` login is the human user. Never assign a coding agent, assistant, bot, or automated identity.
+6. Never use global defaults such as ` + "`codex/<slug>`" + ` branches, ad hoc issue bodies, ad hoc PR bodies, draft PRs, ` + "`git add -A`" + `, ` + "`git add .`" + `, or generic commit messages when repo-local Kit rules define different behavior.
+7. If repo-local delivery rules cannot be found or are incomplete, stop and ask. Do not invent a substitute workflow.
 
 Before executing GitHub delivery, output:
 
@@ -72,6 +73,7 @@ Delivery Contract:
 - PR title format:
 - PR template:
 - Draft or ready:
+- Human assignee:
 - Required checks:
 - Cross-repo dependencies:
 - Unknowns/blockers:

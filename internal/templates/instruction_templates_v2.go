@@ -31,6 +31,7 @@ func tocRepositoryInstructions(title string) string {
 - In Kit-managed projects, issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries
 - Before any GitHub delivery mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and the relevant ` + "`docs/references/rules/*`" + ` delivery rules
 - Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
+- Assign every created or reused GitHub issue and pull request to the human user, such as with ` + "`gh issue create --assignee @me`" + ` or ` + "`gh pr create --assignee @me`" + ` after confirming the authenticated ` + "`gh`" + ` login is the human user; never assign a coding agent, assistant, bot, or automated identity
 
 ` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
@@ -97,6 +98,7 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - In Kit-managed projects, issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries
 - Before any GitHub delivery mutation, load ` + "`docs/agents/GUARDRAILS.md`" + ` and the relevant ` + "`docs/references/rules/*`" + ` delivery rules
 - Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
+- Assign every created or reused GitHub issue and pull request to the human user, such as with ` + "`gh issue create --assignee @me`" + ` or ` + "`gh pr create --assignee @me`" + ` after confirming the authenticated ` + "`gh`" + ` login is the human user; never assign a coding agent, assistant, bot, or automated identity
 
 ` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 

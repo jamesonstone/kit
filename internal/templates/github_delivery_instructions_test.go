@@ -46,6 +46,45 @@ func TestInstructionTemplatesIncludeGitHubDeliveryHardGate(t *testing.T) {
 	}
 }
 
+func TestInstructionTemplatesAssignHumanUserToGitHubDelivery(t *testing.T) {
+	assignCheck := "assign every created or reused github issue and pull request to the human user"
+	for name, content := range map[string]string{
+		"legacy AGENTS.md":                LegacyAgentsMD,
+		"legacy CLAUDE.md":                LegacyClaudeMD,
+		"legacy Copilot instructions":     LegacyCopilotInstructionsMD,
+		"AGENTS.md":                       AgentsMD,
+		"CLAUDE.md":                       ClaudeMD,
+		".github/copilot-instructions.md": CopilotInstructionsMD,
+		"memory AGENTS.md":                MemoryAgentsMD,
+		"memory CLAUDE.md":                MemoryClaudeMD,
+		"memory Copilot instructions":     MemoryCopilotInstructionsMD,
+	} {
+		if !strings.Contains(strings.ToLower(content), assignCheck) {
+			t.Fatalf("expected %s to instruct assigning the human user to every issue and PR", name)
+		}
+		if !strings.Contains(strings.ToLower(content), "never assign a coding agent, assistant, bot, or automated identity") {
+			t.Fatalf("expected %s to forbid assigning a coding agent or bot identity", name)
+		}
+	}
+
+	for _, version := range []int{
+		config.InstructionScaffoldVersionVerbose,
+		config.InstructionScaffoldVersionTOC,
+		config.InstructionScaffoldVersionMemory,
+	} {
+		guardrails := fileContentByPath(InstructionSupportFiles(version), "docs/agents/GUARDRAILS.md")
+		if guardrails == "" {
+			continue
+		}
+		if !strings.Contains(strings.ToLower(guardrails), assignCheck) {
+			t.Fatalf("expected GUARDRAILS.md (version %d) to instruct assigning the human user to every issue and PR", version)
+		}
+		if !strings.Contains(guardrails, "- Human assignee:") {
+			t.Fatalf("expected GUARDRAILS.md (version %d) Delivery Contract block to require a human assignee field", version)
+		}
+	}
+}
+
 func TestInstructionTemplatesDefaultToNewWorkLaneBeforeMutation(t *testing.T) {
 	checks := []string{
 		"## Work Lane Mutation Hard Gate",

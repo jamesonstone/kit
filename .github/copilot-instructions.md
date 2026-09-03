@@ -28,7 +28,7 @@ Before editing implementation/source or test files, load `docs/references/rules/
 - Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it.
 
 
-Before Git, GitHub, or AWS mutations, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*`. Repo-local Kit rules outrank generic defaults.
+Before Git, GitHub, or AWS mutations, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*`. Repo-local Kit rules outrank generic defaults. Assign every created or reused GitHub issue and pull request to the human user, such as with `gh issue create --assignee @me` or `gh pr create --assignee @me` after confirming the authenticated `gh` login is the human user; never assign a coding agent, assistant, bot, or automated identity.
 
 ## GitHub Merge Authorization Hard Gate
 

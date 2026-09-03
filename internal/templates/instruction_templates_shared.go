@@ -26,8 +26,9 @@ When accepted work requires creating or mutating an issue, branch, staging, comm
 - Repo-local Kit rules outrank global GitHub/plugin defaults; delivery rules outrank global GitHub/plugin workflows
 - Load ` + "`.kit.yaml`" + `, ` + "`docs/agents/README.md`" + `, ` + "`docs/agents/GUARDRAILS.md`" + `, ` + "`docs/agents/TOOLING.md`" + `, relevant ` + "`docs/references/rules/*`" + ` rulesets, and GitHub templates before delivery mutation
 - Run and report delivery recon: ` + "`pwd`" + `, ` + "`git status --short --branch`" + `, ` + "`git remote -v`" + `, current branch, default/base branch, active PRs for the current branch, matching issues, and git author/committer identity
-- Resolve and output a Delivery Contract covering repository, base branch, issue source, issue number/link, branch name/base, branch-status-staleness check, staging method, commit format, PR title format, PR template, draft/ready state, required checks, cross-repo dependencies, and unknowns/blockers
+- Resolve and output a Delivery Contract covering repository, base branch, issue source, issue number/link, branch name/base, branch-status-staleness check, staging method, commit format, PR title format, PR template, draft/ready state, human assignee, required checks, cross-repo dependencies, and unknowns/blockers
 - Resolve PR title format as Conventional Commits title format with the GitHub issue as scope: ` + "`<type>(<issue_number>): <gitmoji> <short title message>`" + `
+- Assign every created or reused GitHub issue and pull request to the human user, such as with ` + "`gh issue create --assignee @me`" + ` or ` + "`gh pr create --assignee @me`" + ` after confirming the authenticated ` + "`gh`" + ` login is the human user; never assign a coding agent, assistant, bot, or automated identity
 - If any Delivery Contract field is unknown, ambiguous, missing, or conflicts with generic defaults, stop and ask before mutating
 - Do not use ` + "`codex/*`" + ` branches, ad hoc issue/PR bodies, draft PRs by default, bulk staging, generic commit messages, or PRs that omit the repo template unless the Kit contract or user explicitly overrides it
 
