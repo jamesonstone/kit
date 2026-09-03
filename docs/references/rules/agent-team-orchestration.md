@@ -63,6 +63,19 @@ waives or narrows the single-lane criteria already defined in Applies When,
 and it never substitutes for host-confirmed capability evidence gathered
 during `CAPABILITY_NEGOTIATING`.
 
+### Proportionality
+
+The depth of the recorded evaluation scales with the size and risk of the
+work, not with the mere fact that a plan exists. For a small, tightly-coupled,
+or low-risk change, the recorded topology decision may be the single-lane
+reason alone; a full Capability Manifest, Lane Manifest, and goal-coverage
+walkthrough are warranted only once the work is large or risky enough that a
+genuine multi-lane split is actually on the table. Scaling the ceremony down
+for a small change is not skipping the evaluation; it is the evaluation
+correctly concluding, quickly, that decomposition would not help. Treat an
+inflated manifest for trivial work as its own anti-pattern: it burns effort
+without adding evidence anyone will use.
+
 ### Lifecycle And Root Accountability
 
 Use this execution lifecycle:
@@ -396,6 +409,9 @@ single supervisor lane; no specialist or verification agents spawned
 
 - Hardcoding provider, model, version, effort, or numeric concurrency policy in
   this rule.
+- Producing a full Capability Manifest and Lane Manifest for trivial or
+  tightly-coupled work where a one-line single-lane reason already answers the
+  question.
 - Asking Kit to inspect host capabilities, choose a model, launch an agent,
   wait for results, or supervise execution.
 - Inferring capability from a provider label, treating `unknown` as available,

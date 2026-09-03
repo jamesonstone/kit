@@ -41,9 +41,13 @@ both conditions are true:
 
 Do not create a program ledger merely for read-only multi-repository research,
 one atomic change mirrored across repositories, or several independent changes
-whose order and completion do not affect one another. Escalate into this rule
-when those tasks acquire a shared dependency, rollout, acceptance, or handoff
-boundary.
+whose order and completion do not affect one another. A small number of
+directly coupled repositories with one simple, non-staged dependency, such as
+updating a shared library and then bumping it in its callers, also does not
+need a program ledger; track that as ordinary sequential delivery in each
+repository. Escalate into this rule when those tasks acquire a shared
+dependency, rollout, acceptance, or handoff boundary that is actually staged,
+multi-milestone, or expected to cross a handoff.
 
 This rule coordinates a program. It does not replace each repository's local
 workflow, specification, issue, pull request, testing, infrastructure approval,
@@ -327,6 +331,17 @@ Not a program trigger:
 Inspect twelve repositories for the same deprecated setting and report which
 ones contain it. This is read-only research with no dependent delivery,
 deployment, shared acceptance gate, or expected handoff; do not create a
+program ledger.
+```
+
+Coupled but not a program:
+
+```text
+Bump the shared client library's version, then update the two internal
+services that import it. The dependency is real but simple and non-staged:
+one library release followed by two ordinary sequential pull requests, no
+deployment stages, and no expected agent or session handoff. Deliver each
+repository's change through its normal local workflow instead of creating a
 program ledger.
 ```
 

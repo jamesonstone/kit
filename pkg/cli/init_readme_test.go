@@ -53,8 +53,11 @@ func TestRunInitRefresh_AddsManagedReadmeBadgesAndStaysIdempotent(t *testing.T) 
 	if !strings.Contains(first, "Widget runs useful jobs for the Acme platform.\n\n"+readmeBadgeStart+"\n") {
 		t.Fatalf("expected badge block after opening paragraph, got:\n%s", first)
 	}
-	if !strings.Contains(first, "## Maintainers\n\nMaintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).") {
+	if !strings.Contains(first, "## Maintainers\n\nMaintained by the [acme](https://github.com/acme) team.") {
 		t.Fatalf("expected managed maintainers section, got:\n%s", first)
+	}
+	if strings.Contains(first, "Jameson") {
+		t.Fatalf("README maintainers section must not name Kit's own maintainer, got:\n%s", first)
 	}
 	if got := lastReadmeH2(first); got != "## Maintainers" {
 		t.Fatalf("last README H2 = %q, want ## Maintainers\n%s", got, first)
@@ -109,7 +112,7 @@ func TestRunInitRefresh_CreatesReadmeStarterWithManagedBadges(t *testing.T) {
 		"img.shields.io/github/last-commit/acme/background-worker",
 		"img.shields.io/github/v/release/acme/background-worker",
 		"## Maintainers",
-		"`jamesonstone`",
+		"Maintained by the [acme](https://github.com/acme) team.",
 	} {
 		if !strings.Contains(content, check) {
 			t.Fatalf("expected README starter to contain %q, got:\n%s", check, content)
@@ -150,7 +153,7 @@ func TestRunInitRefresh_ReplacesMaintainerSectionAndKeepsMaintainersLast(t *test
 			t.Fatalf("expected stale maintainer content %q to be removed, got:\n%s", unexpected, content)
 		}
 	}
-	if !strings.Contains(content, "## License\n\nMIT\n\n## Maintainers\n\nMaintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).") {
+	if !strings.Contains(content, "## License\n\nMIT\n\n## Maintainers\n\nMaintained by the [acme](https://github.com/acme) team.") {
 		t.Fatalf("expected managed Maintainers section after License, got:\n%s", content)
 	}
 	if got := lastReadmeH2(content); got != "## Maintainers" {
@@ -183,7 +186,7 @@ func TestRunInitRefresh_AddsMaintainersWithoutGitHubRemote(t *testing.T) {
 	if strings.Contains(content, readmeBadgeStart) {
 		t.Fatalf("did not expect badge block without GitHub repo, got:\n%s", content)
 	}
-	if !strings.Contains(content, "## Maintainers\n\nMaintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).") {
+	if !strings.Contains(content, "## Maintainers\n\nMaintained by this project's maintainers.") {
 		t.Fatalf("expected managed Maintainers section, got:\n%s", content)
 	}
 	if got := lastReadmeH2(content); got != "## Maintainers" {
