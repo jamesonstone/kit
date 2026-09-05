@@ -289,9 +289,10 @@ policy, infrastructure, data, and production correctness.
   `golangci-lint run --new-from-rev=origin/main ./...`, `make docs-check`,
   exact Kit rule/workflow parity, generated-entrypoint convergence,
   `git diff --check`, and diff-scoped gitleaks.
-- PASS: LabCore UI 826 tests, lint, typecheck, file-size audit, static web
-  export, exact Kit rule/workflow parity, generated-entrypoint convergence,
-  `git diff --check`, and diff-scoped gitleaks.
+- PASS: LabCore UI 826 tests, lint, typecheck, changed-file Prettier gate,
+  file-size audit, static web export, exact Kit rule/workflow parity,
+  generated-entrypoint convergence, `git diff --check`, and diff-scoped
+  gitleaks.
 - PASS: ready human-assigned PRs Kit #201, LabCore #541, and LabCore UI #326
   exist on their governed issue branches.
 - PENDING: final-head hosted checks and review state for all three PRs.

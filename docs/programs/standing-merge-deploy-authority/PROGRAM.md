@@ -34,7 +34,7 @@
   withheld. Canonical policy source commit is
   `56b8802fcf810b3113353196868015f389840a85`; downstream heads are
   `819186d59c2a48ca846a293b5ec5424e7846127f` and
-  `cfd31a17d5a7c0e2f2374feda90ff2ded53b78ff`.
+  `c3ed1c7cad0e2afd75ea6f0cceb6a56353b21201`.
 - Merge authority for these governance PRs: explicitly withheld by the user.
 - Deployment authority for these governance PRs: explicitly withheld by the
   user.
@@ -80,7 +80,7 @@ WS-kit-no-head-reauthorize
 | `WS-labcore-refresh` | prior refresh complete at `57ad7a446ab5c19bb14a51a82e41d523654b78d4`; parity now stale after Kit D002/D004 repair | ready PR #508 requires in-place managed rule/workflow refresh after final Kit head | not applicable | prior validation passed; refreshed-head validation PENDING |
 | `WS-kit-no-head-reauthorize` | complete at policy source `56b8802fcf810b3113353196868015f389840a85`; final checkpoint follows | ready PR #201 | not applicable | full local validation passed; hosted checks PENDING |
 | `WS-labcore-no-head-reauthorize` | complete at `819186d59c2a48ca846a293b5ec5424e7846127f` from base `d89f5d7829d2b34e5bb750a1c21c94ab6a4c6aa0` | ready PR #541 | not applicable | full Go, vet, lint, docs, parity, and secret-diff validation passed; hosted checks PENDING |
-| `WS-labcore-ui-no-head-reauthorize` | complete at `cfd31a17d5a7c0e2f2374feda90ff2ded53b78ff` from base `26ff6a0c6c01ec0e61db82b7cdf2f47553e09dea` | ready PR #326 | not applicable | 826 tests, lint, typecheck, file-size, web build, parity, and secret-diff validation passed; hosted checks PENDING |
+| `WS-labcore-ui-no-head-reauthorize` | complete at `c3ed1c7cad0e2afd75ea6f0cceb6a56353b21201` from base `26ff6a0c6c01ec0e61db82b7cdf2f47553e09dea` | ready PR #326 | not applicable | 826 tests, lint, typecheck, changed-file format, file-size, web build, parity, and secret-diff validation passed; hosted checks PENDING |
 
 ## Milestones And Gates
 
@@ -114,7 +114,7 @@ WS-kit-no-head-reauthorize
 
 ## Current Checkpoint
 
-- Observed at: `2026-09-05T19:49:28Z`
+- Observed at: `2026-09-05T19:51:45Z`
 - Supervisor: `jamesonstone`
 - State changes: PR #199 and PR #508 are merged. A later LabCore run still
   requested exact-head reauthorization after PR #538 changed from `70fdaf` to
