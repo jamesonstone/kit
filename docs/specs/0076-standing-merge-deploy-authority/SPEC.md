@@ -283,24 +283,24 @@ policy, infrastructure, data, and production correctness.
 - PASS: targeted `./bin/kit init --refresh --force --dry-run --diff` reports
   zero planned changes for AGENTS, CLAUDE, Copilot, GUARDRAILS, and TOOLING.
 - PASS: `./bin/kit reconcile --all --output-only` reports no reconciliation
-  needed and a complete audit of 746 candidates, 385 eligible handwritten
+  needed and a complete audit of 746 candidates, 386 eligible handwritten
   source/test files, and zero files above 300 lines.
 - PASS: LabCore full `go test ./... -count=1`, `go vet ./...`,
-  `golangci-lint run --new-from-rev=origin/main ./...`, `make docs-check`, Kit
-  config check, repository-maintenance context resolution, managed-rule and
-  workflow byte comparisons, three-entrypoint section comparisons,
+  `golangci-lint run --new-from-rev=origin/main ./...`, `make docs-check`,
+  exact Kit rule/workflow parity, generated-entrypoint convergence,
   `git diff --check`, and diff-scoped gitleaks.
-- PASS: LabCore ready PR #508 at `57ad7a446ab5c19bb14a51a82e41d523654b78d4`
-  is human-authored and assigned, mergeable, and preserves the Docs-Site
-  `not-required` evidence.
-- PENDING: LabCore CodeQL checks and Kit CodeRabbit. Kit hosted `validate` and
-  auto-assignment passed on policy commit `7d08f7e` before this checkpoint
-  update.
-- KNOWN PRE-EXISTING: full LabCore lint reports 66 findings; Kit project
-  validation reports 44 blocking historical spec/progress/source-size findings;
-  the whole-tree gitleaks scan reports four existing documentation examples.
-  The diff-scoped lint, docs, tests, vet, and gitleaks checks pass and none of
-  those findings is in this change.
+- PASS: LabCore UI 826 tests, lint, typecheck, file-size audit, static web
+  export, exact Kit rule/workflow parity, generated-entrypoint convergence,
+  `git diff --check`, and diff-scoped gitleaks.
+- PASS: ready human-assigned PRs Kit #201, LabCore #541, and LabCore UI #326
+  exist on their governed issue branches.
+- PENDING: final-head hosted checks and review state for all three PRs.
+- KNOWN PRE-EXISTING: Kit project validation passes. LabCore project validation
+  retains 44 historical spec/progress/source-size findings and four whole-tree
+  gitleaks examples. LabCore UI retains eight historical spec/progress findings,
+  41 whole-tree Prettier warnings, one whole-tree gitleaks example, and the
+  lockfile dependency baseline reported by `npm ci`. Diff-scoped validation
+  passes and no product/runtime source changed.
 - PASS: PR-review repair focused suites for `internal/releaseprompt`,
   `internal/templates`, and `pkg/cli`; full `go test ./... -count=1`; full
   `go test -race ./... -count=1`; `go vet ./...`; `golangci-lint run ./...`;
@@ -309,8 +309,8 @@ policy, infrastructure, data, and production correctness.
 - PASS: fresh independent read-only verification of D001-D005 and the complete
   16-file repair diff. The verifier confirmed every finding, test boundary,
   mirror, source-size limit, and repair-versus-merge authority distinction.
-- PENDING: final commit/push, current-head hosted validation, reflection, and
-  verified review-thread resolution.
+- PENDING: current-head hosted validation and any verified in-place review
+  repair.
 
 ## OUTCOME
 
@@ -328,22 +328,22 @@ policy, infrastructure, data, and production correctness.
 - Direct human pause, hold, or revocation has precedence and persists until
   explicit resume or replacement authority; completion or expiry ends the
   grant.
-- Additive instruction version v12 preserves immutable v1-v11, and generated
+- Additive instruction version v13 preserves immutable v1-v12, and generated
   entrypoints, workflows, release prompts, audits, and regression tests share
   the same contract.
-- LabCore's three entrypoints now agree on the standing merge/deploy contract.
-  Managed merge/team/program/deadline rules and merge/release workflows are
-  byte-identical to Kit policy commit `7d08f7e`; local-custom delivery, safety,
+- LabCore's three entrypoints, active Hybrid WGS ledger, managed merge/program
+  rules, and merge/release workflows now agree on the evidence-only head
+  contract from Kit policy commit `56b8802`; local-custom delivery, safety,
   work-lane, and infrastructure rules preserve stricter LabCore policy.
+- LabCore UI's generated entrypoints and managed merge, delivery, work-lane,
+  infrastructure, cross-repository, and release guidance now match the same
+  exact Kit source.
 - `.github/workflows/deploy.yaml` is the only current LabCore standard
   deployment path eligible for a named standing grant; live/production still
   requires immediate `kit aws verify` for the configured `lsmc` identity.
-- Kit PR #199 and LabCore PR #508 are ready for human review. Merge and
-  deployment remain explicitly unperformed and unauthorized.
-- PR #199's repair now closes D001-D005 with focused regressions. Because D002
-  and D004 update managed merge workflows/rules after policy source `7d08f7e`,
-  LabCore PR #508 must be refreshed in its own existing lane before it can
-  claim parity with the final Kit head.
+- Kit PR #201, LabCore PR #541, and LabCore UI PR #326 are ready for human
+  review. Merge and deployment remain explicitly unperformed and unauthorized
+  for these governance PRs.
 
 ## REPOSITORY MEMORY
 
@@ -361,8 +361,10 @@ Artifacts:
 - `docs/references/rules/github-pr-merge.md`
 - `docs/references/rules/infrastructure-change-approval.md`
 - `docs/references/rules/safety-guardrails.md`
-- generated entrypoints, workflows, release prompt, semantic audit, and v12
+- generated entrypoints, workflows, release prompt, semantic audit, and v13
   instruction sources listed by the delivered diff
-- LabCore repository memory: not required; the downstream change is a managed
-  instruction/rule refresh whose durable rationale and sequencing live in this
-  Kit spec and the coordinator program ledger.
+- LabCore repository memory: the existing active Hybrid WGS program ledger was
+  corrected because it directly influenced the stale request.
+- LabCore UI repository memory: not required; its downstream change is a
+  managed instruction/rule refresh whose durable rationale and sequencing live
+  in this Kit spec and the coordinator program ledger.

@@ -20,18 +20,21 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | `WS-kit-policy` | `jamesonstone/kit` | `docs/specs/0076-standing-merge-deploy-authority/SPEC.md` | `jamesonstone/kit#198` | `GH-198` | `jamesonstone/kit#199` | Kit rules, templates, init, reconcile, and validation |
 | `WS-labcore-refresh` | `lsmc-bio/labcore` | not required; managed refresh is code-sufficient | `lsmc-bio/labcore#507` | `GH-507` | `lsmc-bio/labcore#508` | LabCore managed entrypoints and registry copies |
-| `WS-kit-no-head-reauthorize` | `jamesonstone/kit` | `docs/specs/0076-standing-merge-deploy-authority/SPEC.md` | `jamesonstone/kit#200` | `GH-200` | pending | SHA-as-evidence invariant, generators, audits, and tests |
-| `WS-labcore-no-head-reauthorize` | `lsmc-bio/labcore` | active program ledger plus managed guidance | `lsmc-bio/labcore#539` | `GH-539` | pending | Final Kit refresh and active Hybrid WGS coordination correction |
-| `WS-labcore-ui-no-head-reauthorize` | `lsmc-bio/labcore-ui` | not required; managed refresh is code-sufficient | `lsmc-bio/labcore-ui#323` | `GH-323` | pending | Full managed instruction/rule/workflow refresh |
+| `WS-kit-no-head-reauthorize` | `jamesonstone/kit` | `docs/specs/0076-standing-merge-deploy-authority/SPEC.md` | `jamesonstone/kit#200` | `GH-200` | `jamesonstone/kit#201` | SHA-as-evidence invariant, generators, audits, and tests |
+| `WS-labcore-no-head-reauthorize` | `lsmc-bio/labcore` | active program ledger plus managed guidance | `lsmc-bio/labcore#539` | `GH-539` | `lsmc-bio/labcore#541` | Final Kit refresh and active Hybrid WGS coordination correction |
+| `WS-labcore-ui-no-head-reauthorize` | `lsmc-bio/labcore-ui` | not required; managed refresh is code-sufficient | `lsmc-bio/labcore-ui#323` | `GH-323` | `lsmc-bio/labcore-ui#326` | Full managed instruction/rule/workflow refresh |
 
 ## Standing Authority And Delivery Boundary
 
-- Authorization source: the user accepted this exact two-repository delivery
-  task and explicitly required governed lanes plus ready PRs.
-- Authorized delivery set: Kit PR #199 and LabCore PR #508. Merge authority is
-  explicitly withheld. Policy source commit is
-  `7d08f7e2e5721d5e60e2f2b05d5aaf1c50e20ba3`; current LabCore head is
-  `57ad7a446ab5c19bb14a51a82e41d523654b78d4`.
+- Authorization source: the user accepted this exact three-repository delivery
+  task and explicitly required the exact-head reauthorization correction in
+  Kit, LabCore, and LabCore UI through governed lanes and ready PRs.
+- Authorized delivery set: Kit PR #201, LabCore PR #541, and LabCore UI PR
+  #326. Merge and deployment authority for these governance PRs are explicitly
+  withheld. Canonical policy source commit is
+  `56b8802fcf810b3113353196868015f389840a85`; downstream heads are
+  `819186d59c2a48ca846a293b5ec5424e7846127f` and
+  `cfd31a17d5a7c0e2f2374feda90ff2ded53b78ff`.
 - Merge authority for these governance PRs: explicitly withheld by the user.
 - Deployment authority for these governance PRs: explicitly withheld by the
   user.
@@ -75,28 +78,28 @@ WS-kit-no-head-reauthorize
 | --- | --- | --- | --- | --- |
 | `WS-kit-policy` | PR-review repair complete in the commit containing this checkpoint; policy commit `7d08f7e` is superseded | ready PR #199; resolve exact live head after push; hosted checks PENDING | not applicable | full local and independent verification passed |
 | `WS-labcore-refresh` | prior refresh complete at `57ad7a446ab5c19bb14a51a82e41d523654b78d4`; parity now stale after Kit D002/D004 repair | ready PR #508 requires in-place managed rule/workflow refresh after final Kit head | not applicable | prior validation passed; refreshed-head validation PENDING |
-| `WS-kit-no-head-reauthorize` | in progress from `aae08e1881cdbdd617918a55b21c9fe45c26100b` | issue #200; branch `GH-200`; PR pending | not applicable | pending |
-| `WS-labcore-no-head-reauthorize` | planned from `d89f5d7829d2b34e5bb750a1c21c94ab6a4c6aa0` | issue #539; branch `GH-539`; PR pending | not applicable | pending |
-| `WS-labcore-ui-no-head-reauthorize` | planned from `26ff6a0c6c01ec0e61db82b7cdf2f47553e09dea` | issue #323; branch `GH-323`; PR pending | not applicable | pending |
+| `WS-kit-no-head-reauthorize` | complete at policy source `56b8802fcf810b3113353196868015f389840a85`; final checkpoint follows | ready PR #201 | not applicable | full local validation passed; hosted checks PENDING |
+| `WS-labcore-no-head-reauthorize` | complete at `819186d59c2a48ca846a293b5ec5424e7846127f` from base `d89f5d7829d2b34e5bb750a1c21c94ab6a4c6aa0` | ready PR #541 | not applicable | full Go, vet, lint, docs, parity, and secret-diff validation passed; hosted checks PENDING |
+| `WS-labcore-ui-no-head-reauthorize` | complete at `cfd31a17d5a7c0e2f2374feda90ff2ded53b78ff` from base `26ff6a0c6c01ec0e61db82b7cdf2f47553e09dea` | ready PR #326 | not applicable | 826 tests, lint, typecheck, file-size, web build, parity, and secret-diff validation passed; hosted checks PENDING |
 
 ## Milestones And Gates
 
 | ID | State | Evidence required to advance |
 | --- | --- | --- |
 | `M1-kit-policy` | satisfied | canonical rule/template/audit implementation and focused plus full Kit validation |
-| `GATE-kit-source-verified` | pending push | D001-D005 repair passed focused/full/race/static/build and independent verification; exact pushed head and hosted checks pending |
-| `GATE-instruction-consistency` | stale | LabCore #508 matches `7d08f7e`, but D002/D004 change managed workflows/rules and require an in-place downstream refresh after final Kit head |
-| `M2-pr-delivery` | in progress | two ready human-assigned PRs exist; terminal final-head hosted check states remain to observe |
-| `GATE-kit-no-head-reauthorize-verified` | pending | canonical SHA-as-evidence invariant, active-language audit, generation, and full Kit validation |
-| `GATE-three-repository-consistency` | pending | Kit, LabCore, and LabCore UI active guidance contains no exact-head reauthorization requirement |
-| `M3-pr-delivery` | pending | three ready human-assigned PRs with exact current heads and observed hosted state |
+| `GATE-kit-source-verified` | satisfied | Kit PR #199 merged as `aae08e1` after D001-D005 validation and review repair |
+| `GATE-instruction-consistency` | satisfied | superseded M2 drift is resolved by the M3 exact-source refreshes |
+| `M2-pr-delivery` | satisfied | Kit PR #199 and LabCore PR #508 merged before the M3 correction |
+| `GATE-kit-no-head-reauthorize-verified` | satisfied | canonical SHA-as-evidence invariant, active-language audit, generation, and full Kit validation passed |
+| `GATE-three-repository-consistency` | satisfied | active guidance contains no exact-head reauthorization requirement; managed copies and generated entrypoints converge on Kit source `56b8802` |
+| `M3-pr-delivery` | in progress | three ready human-assigned PRs exist; exact current hosted states remain to observe |
 
 ## Ready Frontier And Blockers
 
-- Ready frontier: `WS-kit-no-head-reauthorize`; downstream refreshes wait for
-  its exact source-verified commit.
+- Ready frontier: hosted validation and in-place review repair for PRs #201,
+  #541, and #326 only.
 - Blockers: none.
-- Explicit hold: do not merge or deploy either governance PR.
+- Explicit hold: do not merge or deploy any of the three M3 governance PRs.
 
 ## Compatibility, Recovery, And Completion
 
@@ -105,26 +108,22 @@ WS-kit-no-head-reauthorize
   creation into merge/deployment authority.
 - Recovery: before delivery, repair only within the owning issue lane. After
   delivery, keep review repair on the same PR head and rerun current evidence.
-- Completion: source verification, downstream refresh, two ready PRs, and a
+- Completion: source verification, downstream refresh, three ready PRs, and a
   final reconciled checkpoint. Merge, runtime, deployment, activation, and
   production acceptance remain `NOT_APPLICABLE` to this delivery task.
 
 ## Current Checkpoint
 
-- Observed at: `2026-09-05T19:24:00Z`
+- Observed at: `2026-09-05T19:49:28Z`
 - Supervisor: `jamesonstone`
 - State changes: PR #199 and PR #508 are merged. A later LabCore run still
   requested exact-head reauthorization after PR #538 changed from `70fdaf` to
   `204f692`, proving active downstream and copied task context remains stale.
   Issues #200, #539, and #323 now own the durable three-repository correction.
-- Ready frontier: implement and verify Kit issue #200, then refresh LabCore and
-  LabCore UI from that exact source.
-- Blockers: merge and deployment intentionally withheld. LabCore targeted
-  registry reconciliation against configured Kit `main` remains PENDING until
-  Kit PR #199 lands; exact candidate source commit and installed hashes are
-  recorded, and no product/runtime files changed.
-- Next safe action: strengthen Kit's canonical rule/generator/audit contract,
-  validate and commit it, then apply downstream refreshes. Do not merge or
-  deploy the governance PRs.
-- Live claims still required: three implementation heads, ready PR identities,
-  hosted checks, and final active-language parity.
+- Ready frontier: observe hosted validation and repair only in place on the
+  three existing PR heads when needed.
+- Blockers: none for delivery. Merge and deployment are intentionally outside
+  this task, and no product/runtime files changed.
+- Next safe action: review PRs #201, #541, and #326. Do not merge or deploy the
+  governance PRs without a separate applicable grant.
+- Live claims still required: terminal hosted checks and review state.
