@@ -38,7 +38,7 @@ evidence:
   authority once they are `MERGE_READY`. Later in-scope PRs and refreshed heads
   inside the selector do not require renewed merge authority after exact-current
   `MERGE_READY` evidence.
-- Agent-performed in-place repair requires the standing-authority permitted
+- Agent-performed in-place repair requires the standing-authority-permitted
   actions to explicitly include blocker repair; otherwise stop before source,
   commit, or push and obtain renewed repair authority.
 - Fail closed on absent, paused, revoked, expired, or mismatched authority;
@@ -55,7 +55,7 @@ evidence:
 3. Reconcile the in-scope ready frontier immediately before each wave;
    serialize dependencies and same-base sensitive operations.
 4. Before agent-performed in-scope routine remediation, confirm the standing-
-   authority permitted actions explicitly include blocker repair. Otherwise
+   authority-permitted actions explicitly include blocker repair. Otherwise
    stop before source, commit, or push and obtain renewed repair authority. When
    authorized, use ordinary, non-history-rewriting commits to update the
    existing pull-request head between waves. Any changed or refreshed head,

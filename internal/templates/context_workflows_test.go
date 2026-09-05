@@ -37,7 +37,8 @@ func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.
 			continue
 		}
 		for _, want := range []string{
-			"permitted actions explicitly include blocker repair",
+			"standing-authority-permitted\n  actions to explicitly include blocker repair",
+			"standing-\n   authority-permitted actions explicitly include blocker repair",
 			"stop before source, commit, or push and obtain renewed repair authority",
 			"Any changed or refreshed head,\n   including a human or external update, returns to `UNKNOWN`",
 			"returns to `MERGE_READY`, merge under standing merge\n   authority without renewed merge authorization",
