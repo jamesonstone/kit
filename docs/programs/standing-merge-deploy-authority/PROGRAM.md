@@ -60,7 +60,7 @@ WS-kit-policy implementation and validation
 
 | Workstream | Implementation | GitHub delivery | Deployment/runtime | Validation |
 | --- | --- | --- | --- | --- |
-| `WS-kit-policy` | policy source complete at `7d08f7e2e5721d5e60e2f2b05d5aaf1c50e20ba3`; checkpoint commit pending | ready PR #199; final head pending this checkpoint update; hosted validate and auto-assign passed; CodeRabbit PENDING | not applicable | full local Kit matrix passed |
+| `WS-kit-policy` | policy source complete at `7d08f7e2e5721d5e60e2f2b05d5aaf1c50e20ba3`; current delivery head is the commit containing this checkpoint | ready PR #199; resolve the exact live head before merge; final-head hosted checks PENDING | not applicable | full local Kit matrix passed |
 | `WS-labcore-refresh` | complete at `57ad7a446ab5c19bb14a51a82e41d523654b78d4` | ready PR #508; CodeQL PENDING | not applicable | full Go tests, vet, diff-scoped lint, docs, config, context, consistency, diff, and secret checks passed |
 
 ## Milestones And Gates
@@ -70,12 +70,11 @@ WS-kit-policy implementation and validation
 | `M1-kit-policy` | satisfied | canonical rule/template/audit implementation and focused plus full Kit validation |
 | `GATE-kit-source-verified` | satisfied | policy source commit `7d08f7e`; generation, init/refresh, reconcile, full Go/race, vet, lint, build, project, source-size, diff, and secret checks passed |
 | `GATE-instruction-consistency` | satisfied | LabCore's three entrypoints agree; managed rules/workflows match `7d08f7e`; local-custom production and AWS policy is preserved |
-| `M2-pr-delivery` | in progress | two ready human-assigned PRs exist; final Kit checkpoint head and terminal hosted check states remain to observe |
+| `M2-pr-delivery` | in progress | two ready human-assigned PRs exist; terminal final-head hosted check states remain to observe |
 
 ## Ready Frontier And Blockers
 
-- Ready frontier: push the Kit checkpoint commit, observe hosted checks, and
-  stop before merge.
+- Ready frontier: observe terminal hosted checks and stop before merge.
 - Blockers: none.
 - Explicit hold: do not merge or deploy either governance PR.
 
@@ -96,15 +95,14 @@ WS-kit-policy implementation and validation
 - Supervisor: `jamesonstone`
 - State changes: delivered Kit PR #199 and LabCore PR #508; LabCore head
   `57ad7a44` is mergeable and its managed rules/workflows match Kit policy
-  commit `7d08f7e`. Kit hosted validate and auto-assign passed on that policy
-  commit; CodeRabbit and LabCore CodeQL are PENDING.
-- Ready frontier: push this Kit checkpoint update, then observe terminal hosted
-  states without merging either PR.
+  commit `7d08f7e`. This commit is the final durable program checkpoint; resolve
+  its exact PR head and hosted state live before any landing mutation.
+- Ready frontier: observe terminal hosted states without merging either PR.
 - Blockers: merge and deployment intentionally withheld. LabCore targeted
   registry reconciliation against configured Kit `main` remains PENDING until
   Kit PR #199 lands; exact candidate source commit and installed hashes are
   recorded, and no product/runtime files changed.
 - Next safe action: complete hosted observation and report the exact current PR
   heads plus the smallest landing authorization. Do not merge or deploy.
-- Live claims still required: terminal CodeRabbit/CodeQL state and final Kit PR
-  head after this checkpoint commit.
+- Live claims still required: terminal CodeRabbit/CodeQL state and the exact Kit
+  PR head containing this checkpoint.
