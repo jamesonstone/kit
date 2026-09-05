@@ -742,7 +742,7 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **PAUSED**: no
 - **INTENT**: Let a human grant bounded standing authority for an accepted task, goal, or program so agents can merge later in-scope pull requests and refreshed heads, run only named existing standard deployment workflows, verify runtime, and resume the goal without repetitive permission prompts.
 - **APPROACH**: Define semantic standing-authority selectors with exact current mutation-time reconciliation; preserve current-head readiness; make pause, revocation, expiry, and direct human instructions authoritative; exclude scope, repository, environment, identity, infrastructure, security, data-loss, destructive, and nonstandard deployment expansion; propagate through canonical rules, templates, version v12, init/refresh, reconcile, release prompts, tests, and LabCore.
-- **OPEN ITEMS**: complete Kit validation and delivery, refresh and validate LabCore, then deliver both ready PRs without merging or deploying them.
+- **OPEN ITEMS**: observe terminal hosted checks, then land Kit PR #199 before dependent LabCore PR #508 when explicitly authorized; do not deploy these governance changes.
 - **POINTERS**: `docs/specs/0076-standing-merge-deploy-authority/SPEC.md`, `docs/programs/standing-merge-deploy-authority/PROGRAM.md`
 
 ## LAST UPDATED

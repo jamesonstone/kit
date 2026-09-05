@@ -242,8 +242,22 @@ policy, infrastructure, data, and production correctness.
 - PASS: `./bin/kit reconcile --all --output-only` reports no reconciliation
   needed and a complete audit of 746 candidates, 385 eligible handwritten
   source/test files, and zero files above 300 lines.
-- Pending: LabCore refresh, downstream validation, both commits/PRs, hosted
-  check observation, diff/secret checks, and final exact-head evidence.
+- PASS: LabCore full `go test ./... -count=1`, `go vet ./...`,
+  `golangci-lint run --new-from-rev=origin/main ./...`, `make docs-check`, Kit
+  config check, repository-maintenance context resolution, managed-rule and
+  workflow byte comparisons, three-entrypoint section comparisons,
+  `git diff --check`, and diff-scoped gitleaks.
+- PASS: LabCore ready PR #508 at `57ad7a446ab5c19bb14a51a82e41d523654b78d4`
+  is human-authored and assigned, mergeable, and preserves the Docs-Site
+  `not-required` evidence.
+- PENDING: LabCore CodeQL checks and Kit CodeRabbit. Kit hosted `validate` and
+  auto-assignment passed on policy commit `7d08f7e` before this checkpoint
+  update.
+- KNOWN PRE-EXISTING: full LabCore lint reports 66 findings; Kit project
+  validation reports 44 blocking historical spec/progress/source-size findings;
+  the whole-tree gitleaks scan reports four existing documentation examples.
+  The diff-scoped lint, docs, tests, vet, and gitleaks checks pass and none of
+  those findings is in this change.
 
 ## OUTCOME
 
@@ -264,7 +278,15 @@ policy, infrastructure, data, and production correctness.
 - Additive instruction version v12 preserves immutable v1-v11, and generated
   entrypoints, workflows, release prompts, audits, and regression tests share
   the same contract.
-- Downstream LabCore propagation and PR delivery remain pending.
+- LabCore's three entrypoints now agree on the standing merge/deploy contract.
+  Managed merge/team/program/deadline rules and merge/release workflows are
+  byte-identical to Kit policy commit `7d08f7e`; local-custom delivery, safety,
+  work-lane, and infrastructure rules preserve stricter LabCore policy.
+- `.github/workflows/deploy.yaml` is the only current LabCore standard
+  deployment path eligible for a named standing grant; live/production still
+  requires immediate `kit aws verify` for the configured `lsmc` identity.
+- Kit PR #199 and LabCore PR #508 are ready for human review. Merge and
+  deployment remain explicitly unperformed and unauthorized.
 
 ## REPOSITORY MEMORY
 
@@ -284,3 +306,6 @@ Artifacts:
 - `docs/references/rules/safety-guardrails.md`
 - generated entrypoints, workflows, release prompt, semantic audit, and v12
   instruction sources listed by the delivered diff
+- LabCore repository memory: not required; the downstream change is a managed
+  instruction/rule refresh whose durable rationale and sequencing live in this
+  Kit spec and the coordinator program ledger.
