@@ -39,7 +39,7 @@ func TestReconcileFindsStaleInfrastructureChangeApprovalGuidance(t *testing.T) {
 			name:    "V3 routine application operations",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "Routine application operations on already-provisioned workloads, including deployment image updates and ECS or equivalent service interactions that do not create, replace, or delete infrastructure, are not infrastructure-approval batches.",
+			snippet: "Routine application operations on already-provisioned workloads are not infrastructure-approval batches when they stay inside the recorded standard deployment boundary.",
 			audit:   auditV3SupportGuidance,
 		},
 	}

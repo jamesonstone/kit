@@ -9,15 +9,16 @@ import (
 
 func TestInstructionTemplatesIncludeGitHubMergeHardGate(t *testing.T) {
 	checks := []string{
-		"Merge is a distinct mutation boundary",
+		"Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program",
 		"never invent merge readiness",
 		"pull-request-merge",
 		"MERGE_READY",
 		"one complete preflight snapshot",
 		"do not rerun unchanged checks or poll repeatedly",
-		"A changed head invalidates readiness, not accepted-task authority",
-		"Do not stop for a separate merge-consent prompt",
-		"Known and unresolved destructive-effect classifications are not",
+		"may bind later-created in-scope PRs and refreshed heads",
+		"A changed in-scope head invalidates readiness, not standing authority",
+		"IAM, network, KMS, secrets, database-schema or data-loss changes",
+		"Pause, hold, or revocation stops affected actions and dependents",
 		"Never bypass protection",
 	}
 	for name, content := range map[string]string{
@@ -50,9 +51,10 @@ func TestCheckedInInstructionsIncludeGitHubMergeHardGate(t *testing.T) {
 		for _, want := range []string{
 			"Only exact current `MERGE_READY` nodes may merge",
 			"one complete preflight snapshot",
-			"A changed head invalidates readiness, not accepted-task authority",
-			"Do not stop for a separate merge-consent prompt",
-			"Known and unresolved destructive-effect classifications are not",
+			"may bind later-created in-scope PRs and refreshed heads",
+			"A changed in-scope head invalidates readiness, not standing authority",
+			"IAM, network, KMS, secrets, database-schema or data-loss changes",
+			"Pause, hold, or revocation stops affected actions and dependents",
 		} {
 			if !strings.Contains(string(content), want) {
 				t.Errorf("checked-in %s is missing merge guidance %q", path, want)

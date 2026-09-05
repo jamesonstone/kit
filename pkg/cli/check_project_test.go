@@ -160,6 +160,7 @@ func setupCoherentProjectForCheck(t *testing.T) string {
 	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
 		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
 	}
+	writeStandingAuthorityPolicies(t, projectRoot)
 
 	return projectRoot
 }

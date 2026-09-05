@@ -43,9 +43,6 @@ func TestAgentInstructionsV11DefaultsToNewWorklane(t *testing.T) {
 			t.Fatalf("v11 instructions contain superseded lane-choice guidance %q", forbidden)
 		}
 	}
-	if CurrentAgentVersion != "v11" {
-		t.Fatalf("CurrentAgentVersion = %q, want v11", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV11PreservesV10OutsideMutationGate(t *testing.T) {

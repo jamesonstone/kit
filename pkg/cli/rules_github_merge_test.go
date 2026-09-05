@@ -10,9 +10,9 @@ func TestGitHubPRMergeRulesetIsValid(t *testing.T) {
 	ruleset := loadGitHubPRMergeRuleset(t)
 	normalized := strings.Join(strings.Fields(ruleset.Body), " ")
 	for _, check := range []string{
-		"accepted task or active `/goal`",
-		"Do not stop for a separate merge-consent prompt",
-		"Record the accepted-scope source and exact in-scope pull-request set",
+		"Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program",
+		"Bind later pull requests only when each is directly required",
+		"Record the standing-authority source and selector",
 		"`MERGE_READY`",
 		"`BLOCKED`",
 		"`UNKNOWN`",
@@ -21,9 +21,11 @@ func TestGitHubPRMergeRulesetIsValid(t *testing.T) {
 		"Read-only verification agents never merge",
 		"Merge success never implies workflow success",
 		"Treat routine remediation as an update to the existing pull request",
-		"Treat that exact existing pull-request set as explicit continuation",
+		"Treat the resolved existing pull-request set as explicit continuation",
 		"Do not create a new coordination issue, branch, worktree",
-		"A changed head invalidates readiness, not accepted-task authority",
+		"A changed in-scope head invalidates readiness, not standing authority",
+		"Only an explicit human resume or new grant restores it",
+		"IAM, network, KMS, secrets, database schema or data-loss changes",
 		"continue authorized merge and deployment work without interleaving UI or browser walkthrough verification after each result",
 		"After every result in the authorized set is delivered, run one final UI verification",
 	} {
@@ -36,14 +38,14 @@ func TestGitHubPRMergeRulesetIsValid(t *testing.T) {
 func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 	rules := strings.Join(strings.Fields(loadGitHubPRMergeRuleset(t).Body), " ")
 	scenarios := map[string][]string{
-		"accepted goal merges without another prompt": {
-			"Accepted task/goal includes owner/service#84.", "Merge #84 without another consent prompt",
+		"later blocker PR uses standing authority": {
+			"Later in-scope blocker PR:", "Blocker PR #84 was created later in a governed lane",
 		},
-		"ready PR is not MERGE_READY": {
-			"Opening, updating, or approving a ready pull request does not invent",
+		"generic task is not standing authority": {
+			"Accepting a generic implementation task", "do not create standing authority or `MERGE_READY`",
 		},
-		"automatic preflight is not MERGE_READY": {
-			"Automatic clean-preflight delivery allocation", "are also not `MERGE_READY`",
+		"semantic selector binds exact current target": {
+			"grant may use a semantic scope before pull-request numbers", "Materialize the exact PR and current head",
 		},
 		"independent ready concurrency": {
 			"Independent `MERGE_READY` nodes may merge concurrently",
@@ -55,13 +57,13 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 			"Head or base drift invalidates readiness",
 		},
 		"in-place repair keeps the PR": {
-			"An in-scope in-place repair keeps the same pull", "invalidates its readiness until",
+			"An in-scope in-place repair keeps the same pull request", "invalidates its readiness until",
 		},
 		"routine remediation preserves the PR": {
 			"Do not create recursive corrective pull requests", "push to the same branch without rebasing, force-pushing",
 		},
 		"merge coordination preserves existing lanes": {
-			"exact existing pull-request set as explicit continuation", "Do not create a new coordination issue, branch, worktree",
+			"resolved existing pull-request set as explicit continuation", "Do not create a new coordination issue, branch, worktree",
 		},
 		"replacement PR is exceptional": {
 			"Use a replacement pull request only when remediation materially changes",
@@ -70,19 +72,19 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 			"pending or missing expected checks", "never passing",
 		},
 		"unauthorized extra PR": {
-			"#91 is green and related but is not", "BLOCKED pending product-scope clarification",
+			"#91 changes the production network and is not covered", "BLOCKED pending explicit expanded authority",
 		},
 		"participant authority": {
 			"A participant may merge only specifically assigned PR nodes", "Subagent assignment alone does not create merge authority",
 		},
-		"destructive merge confirmation": {
-			"A merge known to trigger a destructive effect is not `MERGE_READY`",
+		"infrastructure risk remains separate": {
+			"infrastructure creation, replacement, or deletion", "outside standing merge/deploy authority",
 		},
-		"unresolved destructive classification": {
-			"Unresolved destructive-effect classification is not `MERGE_READY`",
+		"unresolved risk classification": {
+			"Unresolved classification makes the node `UNKNOWN` or `BLOCKED`",
 		},
-		"routine application operation merge": {
-			"routine application operation", "do not require infrastructure-change-approval",
+		"standard deployment boundary": {
+			"repository-approved existing standard workflow", "already-provisioned targets",
 		},
 		"partial wave failure": {
 			"A failure on one node stops that node and its dependents", "Preserve exact",
@@ -97,6 +99,9 @@ func TestGitHubPRMergeRulesetCoversRequiredScenarios(t *testing.T) {
 		"merge queue and docs-only squash": {
 			"Use the required merge queue when policy requires it", "For documentation-only squash merges",
 		},
+	}
+	scenarios["pause and revoke"] = []string{
+		"Pause and revocation:", "Passing checks and a new head do not resume it",
 	}
 	for scenario, checks := range scenarios {
 		t.Run(scenario, func(t *testing.T) {

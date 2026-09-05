@@ -49,10 +49,13 @@ const agentsTooling = `# Tooling
 
 ## PR Merge
 
-- An accepted task or active ` + "`/goal`" + ` authorizes in-scope ordinary and remediation merges once they are ` + "`MERGE_READY`" + `. Do not stop for a separate merge-consent prompt.
+- Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program to merge its resulting work. Generic task acceptance does not create it.
+- Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve the exact current PR and head before mutation; do not ask again solely because its number or final OID was unknown when authority was granted.
 - Before any merge or merge-queue mutation, resolve ` + "`pull-request-merge`" + ` and load ` + "`docs/references/rules/github-pr-merge.md`" + `.
-- Merge only exact current ` + "`MERGE_READY`" + ` nodes from the in-scope frontier; revalidate actor, head/base, repository policy, checks, dependencies, and destructive versus non-destructive effects before every wave.
-- A changed head invalidates readiness, not accepted-task authority. Material product-scope expansion and explicit user holds require clarification. Known and unresolved destructive-effect classifications are not ` + "`MERGE_READY`" + `; exact confirmation is required only for resolved destructive effects.
+- Merge only exact current ` + "`MERGE_READY`" + ` nodes from the standing-authority frontier; revalidate actor, head/base, repository policy, checks, dependencies, deployment workflow, environment, and material effects before every wave.
+- A changed in-scope head invalidates readiness, not standing authority. Scope, repository, base, environment, actor, identity, method, workflow, or material-effect expansion requires explicit updated authority.
+- IAM, network, KMS, secrets, database-schema or data-loss changes, infrastructure creation/replacement/deletion, destructive deletion, nonstandard deployment effects, and unresolved risk classifications are outside standing merge/deploy authority.
+- The most recent direct human instruction wins. Pause, hold, or revocation stops affected actions and dependents until explicit human resume or replacement authority.
 - Report merge, hosted workflow, deployment/runtime, and production evidence separately.
 
 ## PR Release Orchestration

@@ -100,7 +100,7 @@ func TestInstructionTemplatesDefaultToNewWorkLaneBeforeMutation(t *testing.T) {
 		"review repair, CI repair, base refresh, conflict resolution",
 		"ordered merge coordination",
 		"coordination or corrective pull request",
-		"bounded in-place-remediation authority",
+		"includes blocker repair",
 		"allocate a new lane",
 		"Ask only",
 		"implementation intent",

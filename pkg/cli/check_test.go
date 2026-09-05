@@ -68,6 +68,7 @@ func TestRunCheckProjectPassesWhenRepoIsCoherent(t *testing.T) {
 	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
 		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
 	}
+	writeStandingAuthorityPolicies(t, projectRoot)
 	setWorkingDirectory(t, projectRoot)
 
 	checkProject = true
@@ -100,6 +101,7 @@ func TestRunCheckProjectPassesWithV3InstructionContract(t *testing.T) {
 		}
 		writeFile(t, filepath.Join(projectRoot, relativePath), content)
 	}
+	writeStandingAuthorityPolicies(t, projectRoot)
 	setWorkingDirectory(t, projectRoot)
 
 	checkProject = true

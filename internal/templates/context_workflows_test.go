@@ -37,16 +37,26 @@ func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.
 			continue
 		}
 		for _, want := range []string{
-			"use ordinary,\n   non-history-rewriting commits to update the existing pull-request head",
-			"return it to `UNKNOWN` pending fresh checks, review, and revalidation",
-			"Do not request a new consent prompt for in-scope repair",
+			"standing-authority-permitted\n  actions to explicitly include blocker repair",
+			"standing-\n   authority-permitted actions explicitly include blocker repair",
+			"stop before source, commit, or push and obtain renewed repair authority",
+			"Any changed or refreshed head,\n   including a human or external update, returns to `UNKNOWN`",
+			"returns to `MERGE_READY`, merge under standing merge\n   authority without renewed merge authorization",
 			"Reserve replacement pull\n   requests for material scope changes, heads that cannot be updated safely",
 			"explicit repository-policy or user requirements",
-			"Do not rebase,\n   force-push, retarget, or otherwise replace the branch's reviewed history",
+			"Do not rebase, force-push,\n   retarget, or otherwise replace the branch's reviewed history",
 			"no changed head reuses readiness, review, or checks",
 		} {
 			if !strings.Contains(artifact.Content, want) {
 				t.Fatalf("pull-request-merge workflow missing %q", want)
+			}
+		}
+		for _, forbidden := range []string{
+			"changed or refreshed heads retain authority only when",
+			"otherwise require renewed authorization before merging it",
+		} {
+			if strings.Contains(artifact.Content, forbidden) {
+				t.Fatalf("pull-request-merge workflow conflates repair and merge authority with %q", forbidden)
 			}
 		}
 		return

@@ -221,6 +221,7 @@ func TestReconcileProjectScopeWithCurrentInstructionFilesIsClean(t *testing.T) {
 	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
 		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
 	}
+	writeStandingAuthorityPolicies(t, projectRoot)
 
 	report, err := buildReconcileReport(projectRoot, cfg, nil)
 	if err != nil {
