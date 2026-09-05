@@ -229,7 +229,7 @@ release unit
 
 A release unit may be one PR, one tightly coupled dependency wave, or multiple proven-independent changes. Independent authorized `MERGE_READY` nodes may merge concurrently when repository policy and same-base behavior permit it; serialize dependency chains and same-base sensitive operations. Do not expose an invalid intermediate production state merely to preserve PR-by-PR serialization.
 
-A commit SHA or head OID identifies readiness evidence only and never becomes an authorization identity. Do not ask for renewed or exact-head authorization solely because a later in-scope PR or refreshed head changed identifiers. After final-head evidence restores `MERGE_READY`, continue the authorized standard deployment and browser retry. Stop only for selector mismatch, pause or revocation, or material expansion.
+A commit SHA or head OID identifies readiness evidence only and never becomes an authorization identity. Do not ask for renewed or exact-head authorization solely because a later in-scope PR or refreshed head changed identifiers. After final-head evidence restores `MERGE_READY`, continue the authorized standard deployment and browser retry only while all current authorization, identity, policy, workflow, environment, dependency, and material-effect gates remain valid.
 
 Verify the authenticated GitHub actor before every repository boundary and confirm the post-merge actor. Accept only the expected human or explicitly authorized service identity; never substitute another profile silently. One repository's identity failure blocks that node and its dependents without erasing verified progress elsewhere.
 

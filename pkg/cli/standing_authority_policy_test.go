@@ -53,6 +53,20 @@ func TestAuditStandingAuthorityPolicyRejectsExactHeadReauthorization(t *testing.
 	assertStandingAuthorityFinding(t, auditStandingAuthorityPolicy(projectRoot), path, "superseded standing-authority guidance")
 }
 
+func TestAuditStandingAuthorityPolicyRejectsContradictoryEntrypoint(t *testing.T) {
+	projectRoot := copyStandingAuthorityPolicies(t)
+	path := filepath.Join(projectRoot, "AGENTS.md")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = append(body, []byte("\nA refreshed head requires exact-head reauthorization.\n")...)
+	if err := os.WriteFile(path, body, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	assertStandingAuthorityFinding(t, auditStandingAuthorityPolicy(projectRoot), path, "superseded standing-authority guidance")
+}
+
 func TestExactHeadReauthorizationPhrasesAreNormalized(t *testing.T) {
 	body := normalizeStandingAuthorityPolicy("A changed head loses prior readiness AND merge authority.")
 	phrase := normalizeStandingAuthorityPolicy("changed head loses prior readiness and merge authority")
@@ -124,6 +138,11 @@ func writeStandingAuthorityPolicies(t *testing.T, projectRoot string) {
 	t.Helper()
 	for _, check := range standingAuthorityChecks() {
 		path := filepath.Join(projectRoot, filepath.FromSlash(check.path))
+		if _, err := os.Stat(path); err == nil {
+			continue
+		} else if !os.IsNotExist(err) {
+			t.Fatal(err)
+		}
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			t.Fatal(err)
 		}

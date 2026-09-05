@@ -267,6 +267,13 @@ policy, infrastructure, data, and production correctness.
   Kit policy commit `7d08f7e`; LabCore UI remains on older Kit provenance
   `76af71c`. PR #538 subsequently merged after producing the quoted redundant
   authorization request.
+- PR #201 review found three valid final-head gaps: the release prompt described
+  selector mismatch, pause/revocation, and expansion as an exhaustive stop list;
+  the semantic audit omitted generated entrypoints; and the forbidden-language
+  set missed `require(s) exact-head reauthorization`. The repair keeps every
+  current identity, policy, workflow, environment, dependency, and material-
+  effect gate active, audits all five generated entrypoints, and locks the
+  additional normalized wording with regression coverage.
 
 ## VALIDATION
 
@@ -310,6 +317,9 @@ policy, infrastructure, data, and production correctness.
 - PASS: fresh independent read-only verification of D001-D005 and the complete
   16-file repair diff. The verifier confirmed every finding, test boundary,
   mirror, source-size limit, and repair-versus-merge authority distinction.
+- PASS: PR #201 final review repair reran full `go test ./... -count=1`, race
+  coverage for `pkg/cli` and `internal/releaseprompt`, `go vet ./...`,
+  `golangci-lint run ./...`, and `go build ./...`.
 - PENDING: current-head hosted validation and any verified in-place review
   repair.
 
