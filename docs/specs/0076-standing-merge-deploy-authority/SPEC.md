@@ -302,7 +302,10 @@ policy, infrastructure, data, and production correctness.
   gitleaks.
 - PASS: ready human-assigned PRs Kit #201, LabCore #541, and LabCore UI #326
   exist on their governed issue branches.
-- PENDING: final-head hosted checks and review state for all three PRs.
+- PASS: hosted checks are terminal green for Kit implementation head `7c7ddcd`,
+  LabCore head `819186d`, and LabCore UI head `c3ed1c7`. Kit CodeRabbit review
+  findings were repaired and resolved; downstream CodeRabbit statuses succeeded
+  with rate-limited reviews.
 - KNOWN PRE-EXISTING: Kit project validation passes. LabCore project validation
   retains 44 historical spec/progress/source-size findings and four whole-tree
   gitleaks examples. LabCore UI retains eight historical spec/progress findings,
@@ -320,8 +323,8 @@ policy, infrastructure, data, and production correctness.
 - PASS: PR #201 final review repair reran full `go test ./... -count=1`, race
   coverage for `pkg/cli` and `internal/releaseprompt`, `go vet ./...`,
   `golangci-lint run ./...`, and `go build ./...`.
-- PENDING: current-head hosted validation and any verified in-place review
-  repair.
+- PENDING: final docs-only Kit checkpoint checks; no implementation evidence or
+  verified review repair remains pending.
 
 ## OUTCOME
 

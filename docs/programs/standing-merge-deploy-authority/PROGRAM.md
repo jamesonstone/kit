@@ -78,9 +78,9 @@ WS-kit-no-head-reauthorize
 | --- | --- | --- | --- | --- |
 | `WS-kit-policy` | PR-review repair complete in the commit containing this checkpoint; policy commit `7d08f7e` is superseded | ready PR #199; resolve exact live head after push; hosted checks PENDING | not applicable | full local and independent verification passed |
 | `WS-labcore-refresh` | prior refresh complete at `57ad7a446ab5c19bb14a51a82e41d523654b78d4`; parity now stale after Kit D002/D004 repair | ready PR #508 requires in-place managed rule/workflow refresh after final Kit head | not applicable | prior validation passed; refreshed-head validation PENDING |
-| `WS-kit-no-head-reauthorize` | complete at policy source `56b8802fcf810b3113353196868015f389840a85`; final checkpoint follows | ready PR #201 | not applicable | full local validation passed; hosted checks PENDING |
-| `WS-labcore-no-head-reauthorize` | complete at `819186d59c2a48ca846a293b5ec5424e7846127f` from base `d89f5d7829d2b34e5bb750a1c21c94ab6a4c6aa0` | ready PR #541 | not applicable | full Go, vet, lint, docs, parity, and secret-diff validation passed; hosted checks PENDING |
-| `WS-labcore-ui-no-head-reauthorize` | complete at `c3ed1c7cad0e2afd75ea6f0cceb6a56353b21201` from base `26ff6a0c6c01ec0e61db82b7cdf2f47553e09dea` | ready PR #326 | not applicable | 826 tests, lint, typecheck, changed-file format, file-size, web build, parity, and secret-diff validation passed; hosted checks PENDING |
+| `WS-kit-no-head-reauthorize` | complete at policy source `56b8802fcf810b3113353196868015f389840a85`; review repair passed at `7c7ddcdcf76e0faf85bfe4d279594d3ef8a65d20`; final checkpoint follows | ready PR #201 | not applicable | full local validation, hosted validate, and CodeRabbit passed on the implementation head |
+| `WS-labcore-no-head-reauthorize` | complete at `819186d59c2a48ca846a293b5ec5424e7846127f` from base `d89f5d7829d2b34e5bb750a1c21c94ab6a4c6aa0` | ready PR #541 | not applicable | full Go, vet, lint, docs, parity, secret-diff, and hosted checks passed; CodeRabbit status succeeded with a rate-limited review |
+| `WS-labcore-ui-no-head-reauthorize` | complete at `c3ed1c7cad0e2afd75ea6f0cceb6a56353b21201` from base `26ff6a0c6c01ec0e61db82b7cdf2f47553e09dea` | ready PR #326 | not applicable | 826 tests, lint, typecheck, changed-file format, file-size, web build, parity, secret-diff, and hosted checks passed; CodeRabbit status succeeded with a rate-limited review |
 
 ## Milestones And Gates
 
@@ -92,12 +92,12 @@ WS-kit-no-head-reauthorize
 | `M2-pr-delivery` | satisfied | Kit PR #199 and LabCore PR #508 merged before the M3 correction |
 | `GATE-kit-no-head-reauthorize-verified` | satisfied | canonical SHA-as-evidence invariant, active-language audit, generation, and full Kit validation passed |
 | `GATE-three-repository-consistency` | satisfied | active guidance contains no exact-head reauthorization requirement; managed copies and generated entrypoints converge on Kit source `56b8802` |
-| `M3-pr-delivery` | in progress | three ready human-assigned PRs exist; exact current hosted states remain to observe |
+| `M3-pr-delivery` | satisfied | three ready human-assigned PRs exist with terminal green hosted checks on the implementation heads |
 
 ## Ready Frontier And Blockers
 
-- Ready frontier: hosted validation and in-place review repair for PRs #201,
-  #541, and #326 only.
+- Ready frontier: none inside the authorized delivery boundary; PRs #201, #541,
+  and #326 are ready for human review.
 - Blockers: none.
 - Explicit hold: do not merge or deploy any of the three M3 governance PRs.
 
@@ -114,16 +114,18 @@ WS-kit-no-head-reauthorize
 
 ## Current Checkpoint
 
-- Observed at: `2026-09-05T19:51:45Z`
+- Observed at: `2026-09-05T20:02:18Z`
 - Supervisor: `jamesonstone`
 - State changes: PR #199 and PR #508 are merged. A later LabCore run still
   requested exact-head reauthorization after PR #538 changed from `70fdaf` to
   `204f692`, proving active downstream and copied task context remains stale.
   Issues #200, #539, and #323 now own the durable three-repository correction.
-- Ready frontier: observe hosted validation and repair only in place on the
-  three existing PR heads when needed.
+- Ready frontier: none inside the authorized delivery boundary. Any later
+  in-scope review repair remains on the existing PR head and requires fresh
+  readiness evidence, not renewed authorization.
 - Blockers: none for delivery. Merge and deployment are intentionally outside
   this task, and no product/runtime files changed.
 - Next safe action: review PRs #201, #541, and #326. Do not merge or deploy the
   governance PRs without a separate applicable grant.
-- Live claims still required: terminal hosted checks and review state.
+- Live claims still required: final docs-only checkpoint checks after this
+  recorded state; no implementation evidence is pending.
