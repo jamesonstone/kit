@@ -170,10 +170,15 @@ func TestRunHealthRegistryFailureIsReadOnlyUnknown(t *testing.T) {
 }
 
 func TestRunHealthPreservesConflictedRulesetAndReportsAttention(t *testing.T) {
+	deliveryPolicy := readRepositoryFile(t, "docs/references/rules/github-pr-delivery.md")
 	projectRoot, cfg := setupLifecycleTestProject(t)
 	setWorkingDirectory(t, projectRoot)
 	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
-	base := registryRulesetForTest("github-pr-delivery", []string{"github"})
+	base := registryRulesetWithContentForTest(
+		"github-pr-delivery",
+		deliveryPolicy,
+		"test-github-pr-delivery-commit",
+	)
 	local := strings.Replace(base.Content, "## Rules", "- Local rule change.\n\n## Rules", 1)
 	remoteContent := strings.Replace(base.Content, "## Rules", "- Remote rule change.\n\n## Rules", 1)
 	remote := registryRulesetWithContentForTest(base.Slug, remoteContent, "new-commit")

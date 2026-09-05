@@ -38,6 +38,8 @@ func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.
 		}
 		for _, want := range []string{
 			"standing-authority-permitted\n  actions to explicitly include blocker repair",
+			"SHA/head OID as the evidence key only",
+			"Do not request exact-head reauthorization after checks pass",
 			"standing-\n   authority-permitted actions explicitly include blocker repair",
 			"stop before source, commit, or push and obtain renewed repair authority",
 			"Any changed or refreshed head,\n   including a human or external update, returns to `UNKNOWN`",
@@ -45,6 +47,8 @@ func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.
 			"Reserve replacement pull\n   requests for material scope changes, heads that cannot be updated safely",
 			"explicit repository-policy or user requirements",
 			"Do not rebase, force-push,\n   retarget, or otherwise replace the branch's reviewed history",
+			"Continue already-authorized standard deployment and browser verification",
+			"do not stop for SHA-specific permission",
 			"no changed head reuses readiness, review, or checks",
 		} {
 			if !strings.Contains(artifact.Content, want) {

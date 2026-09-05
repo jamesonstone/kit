@@ -61,6 +61,9 @@ head, passing check, retry, session, or unchanged ledger cannot.
 
 - Record the standing-authority source and selector, then resolve and record
   the exact current in-scope pull-request set before each mutation wave.
+- A commit SHA or head OID identifies readiness evidence only. It is never part
+  of the standing-authority identity and must never be submitted for separate
+  authorization.
 - Treat the resolved existing pull-request set as explicit continuation under
   `work-lane-gating`. Do not create a new coordination issue, branch, worktree,
   or pull request merely to prepare or execute the merge plan.
@@ -142,6 +145,10 @@ before mutation. A changed in-scope head invalidates readiness, not standing
 authority. After fresh current-head checks, review, mergeability, policy,
 identity, dependencies, and effect classification pass, it may re-enter the
 frontier without a new authorization prompt.
+
+After fresh evidence restores a selector-matching head to `MERGE_READY`,
+continue the already-authorized merge, standard deployment, and verification
+steps—including a bounded browser retry—without exact-head reauthorization.
 
 ### Repository Policy And Merge Method
 
@@ -257,6 +264,9 @@ post-deployment production-suite evidence.
 
 - Requiring renewed authorization solely because an in-scope PR number or final
   head OID was unknown when standing authority was granted.
+- Saying a refreshed head invalidated prior merge authority, asking the human
+  to authorize a SHA, or requiring a new SHA-specific approval after checks
+  pass.
 - Treating generic task acceptance as standing merge authority.
 - Treating PR-delivery consent, automatic lane allocation, review resolution,
   check success, or a program ledger as `MERGE_READY`.
@@ -303,6 +313,8 @@ post-deployment production-suite evidence.
 - Confirm routine in-scope remediation preserved the existing pull request,
   invalidated prior head evidence, and obtained fresh current-head checks and
   review without a new authorization prompt.
+- Confirm no changed or refreshed head triggered SHA-specific reauthorization
+  before an already-authorized deployment or browser verification retry.
 - Confirm replacement PRs were limited to material scope or architecture
   change, an unsafe or inaccessible original head, or explicit policy or user
   direction.

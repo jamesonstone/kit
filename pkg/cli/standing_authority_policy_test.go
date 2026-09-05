@@ -18,6 +18,9 @@ func TestStandingAuthorityPolicyLocksRequiredScenarios(t *testing.T) {
 		"Later in-scope blocker PR:",
 		"Do not ask again",
 		"A changed in-scope head invalidates readiness, not standing",
+		"A commit SHA or head OID identifies readiness evidence only",
+		"without exact-head reauthorization",
+		"including a bounded browser retry",
 		"### Standard Deployments Under Standing Authority",
 		"provider plan now replaces the database",
 		"Proceed with this complete deletion batch?",
@@ -37,6 +40,24 @@ func TestStandingAuthorityPolicyLocksRequiredScenarios(t *testing.T) {
 		if !strings.Contains(combined, check) {
 			t.Errorf("policy missing required scenario %q", check)
 		}
+	}
+}
+
+func TestAuditStandingAuthorityPolicyRejectsExactHeadReauthorization(t *testing.T) {
+	projectRoot := copyStandingAuthorityPolicies(t)
+	path := filepath.Join(projectRoot, "docs", "references", "workflows", "pull-request-merge.md")
+	stale := "After that check passes, the refreshed head needs exact-head authorization, deployment, and one browser retry.\n"
+	if err := os.WriteFile(path, []byte(stale), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	assertStandingAuthorityFinding(t, auditStandingAuthorityPolicy(projectRoot), path, "superseded standing-authority guidance")
+}
+
+func TestExactHeadReauthorizationPhrasesAreNormalized(t *testing.T) {
+	body := normalizeStandingAuthorityPolicy("A changed head loses prior readiness AND merge authority.")
+	phrase := normalizeStandingAuthorityPolicy("changed head loses prior readiness and merge authority")
+	if !strings.Contains(body, phrase) {
+		t.Fatal("normalized exact-head reauthorization phrase did not match")
 	}
 }
 

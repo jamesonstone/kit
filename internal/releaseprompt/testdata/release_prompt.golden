@@ -48,7 +48,7 @@ Before mutation in each Kit-managed repository:
 
 Standing merge or deployment authority exists only when a human explicitly authorizes a bounded task, goal, or program for those actions. Record its selector, pause or revocation state, repositories, bases, environments, workflows, actor, expiry or completion, and exclusions. Generic task acceptance, PR delivery, checks, assignment, and a ledger do not create it.
 
-Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve every exact current PR and head at the mutation boundary and require `MERGE_READY`; do not ask again solely because identifiers changed. Scope, repository, environment, identity, workflow, or material-effect expansion needs explicit updated authority, and direct human pause or revocation prevails until explicit resume.
+Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve every exact current PR and head at the mutation boundary and require `MERGE_READY`; the SHA/head OID is evidence only, never an authorization identity. Do not request exact-head reauthorization solely because the identifier changed. Scope, repository, environment, identity, workflow, or material-effect expansion needs explicit updated authority, and direct human pause or revocation prevails until explicit resume.
 
 Cross-repository coordination is conditional: create or adopt one canonical `docs/programs/<program>/PROGRAM.md` only when the documented trigger applies. The ledger records the standing selector, pause state, resolved exact current PR set, and frontier; it never creates authority.
 
@@ -229,7 +229,7 @@ release unit
 
 A release unit may be one PR, one tightly coupled dependency wave, or multiple proven-independent changes. Independent authorized `MERGE_READY` nodes may merge concurrently when repository policy and same-base behavior permit it; serialize dependency chains and same-base sensitive operations. Do not expose an invalid intermediate production state merely to preserve PR-by-PR serialization.
 
-Do not ask for renewed authorization solely because a later in-scope PR number or refreshed head was unknown when standing authority was granted. Stop for selector mismatch, pause or revocation, or material expansion. Default to one potentially interacting production release unit at a time and advance dependents only after observed verification.
+A commit SHA or head OID identifies readiness evidence only and never becomes an authorization identity. Do not ask for renewed or exact-head authorization solely because a later in-scope PR or refreshed head changed identifiers. After final-head evidence restores `MERGE_READY`, continue the authorized standard deployment and browser retry. Stop only for selector mismatch, pause or revocation, or material expansion.
 
 Verify the authenticated GitHub actor before every repository boundary and confirm the post-merge actor. Accept only the expected human or explicitly authorized service identity; never substitute another profile silently. One repository's identity failure blocks that node and its dependents without erasing verified progress elsewhere.
 

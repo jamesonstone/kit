@@ -34,9 +34,6 @@ func TestAgentInstructionsV12DefinesStandingAuthority(t *testing.T) {
 			t.Fatalf("v12 instructions contain superseded authority guidance %q", forbidden)
 		}
 	}
-	if CurrentAgentVersion != "v12" {
-		t.Fatalf("CurrentAgentVersion = %q, want v12", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV12PreservesV11OutsideAuthoritySections(t *testing.T) {

@@ -141,6 +141,15 @@ policy, infrastructure, data, and production correctness.
   recorded expiry boundary ends it automatically.
 - Preserve exact pre-merge reconciliation and post-deployment verification as
   mandatory evidence, not authorization ceremonies.
+- Treat the commit SHA and head OID only as keys for current readiness evidence.
+  They are never part of the standing-authority identity. A changed or refreshed
+  head invalidates prior checks and review, not authorization.
+- After fresh checks restore a selector-matching head to `MERGE_READY`, continue
+  through every already-authorized standard deployment and verification step,
+  including a bounded browser retry, without exact-head reauthorization.
+- Active guidance must never require or emit language equivalent to: "prior
+  merge authority is invalid", "fresh exact-head authorization", "reauthorize
+  the current head", or "the refreshed head needs exact-head authorization".
 - Update canonical rules, generated entrypoints, support docs, release prompt,
   refresh/reconcile behavior, and tests so every Kit-managed project receives
   the semantics through normal refresh/reconcile.
@@ -179,6 +188,16 @@ policy, infrastructure, data, and production correctness.
    deliver one ready PR.
 7. Checkpoint exact issues, branches, heads, PRs, validation, and remaining
    landing order in the coordinator ledger. Stop before merge or deployment.
+8. For issue #200, strengthen the canonical contract so SHA/OID changes
+   invalidate readiness evidence only, add an additive current instruction
+   version, and expand semantic audits to reject exact-head reauthorization
+   across active instructions, rules, and workflows.
+9. Remove the obsolete requirement from the active progress index while
+   preserving historical specs as superseded evidence.
+10. Refresh LabCore issue #539 and LabCore UI issue #323 from the exact verified
+    Kit source. Preserve local customizations, correct active program/PR
+    coordination text, validate both downstream repositories, and deliver ready
+    PRs without merge or deployment.
 
 ## DECISIONS
 
@@ -187,6 +206,10 @@ policy, infrastructure, data, and production correctness.
   permission prompts.
 - Accepted: changed heads lose readiness evidence, not in-scope standing
   authority.
+- Accepted: a SHA or head OID is never an authorization selector or approval
+  token. No head change, by any actor, can revoke standing authority by itself.
+- Accepted: after final-head readiness passes, authorized deployment and browser
+  verification continue without another permission prompt.
 - Accepted: standard deployment is an allowlisted existing workflow and
   environment, not a synonym for every non-destructive cloud or IaC mutation.
 - Accepted: current explicit pause/revocation outranks earlier standing
@@ -235,6 +258,15 @@ policy, infrastructure, data, and production correctness.
   requires explicit blocker-repair permission, but a selector-matching human or
   external head change retains standing merge authority after it returns from
   `UNKNOWN` to exact-current `MERGE_READY` with fresh evidence.
+- Issue #200 follow-up: despite Kit's current rule, LabCore's active Hybrid WGS
+  ledger and LabCore UI's managed instructions still preserve exact-head
+  reauthorization wording. Existing task prompts also retain copied historical
+  context after repository rules change.
+- Current live state at the follow-up boundary: Kit PR #199 and LabCore PR #508
+  are merged; LabCore main still records managed-rule provenance from pre-final
+  Kit policy commit `7d08f7e`; LabCore UI remains on older Kit provenance
+  `76af71c`. PR #538 subsequently merged after producing the quoted redundant
+  authorization request.
 
 ## VALIDATION
 
