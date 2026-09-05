@@ -100,11 +100,11 @@ SCOPED -> CAPABILITY_NEGOTIATING -> MAPPING -> SYNTHESIZING
   closed with rerun evidence or accepted as explicit residual risk.
   `SOURCE_VERIFIED` requires the integrated source, tests, documentation, and
   evidence to agree; implementation completion alone cannot enter that state.
-- `PR_READY` never implies `MERGE_READY`. That transition requires the
-  accepted task or active `/goal` to cover the exact current pull-request set
-  plus revalidated head, base, actor, repository policy, reviews, checks,
-  dependencies, method, and non-destructive effect classification. Do not
-  stop for a separate merge-consent prompt.
+- `PR_READY` never implies standing merge authority or `MERGE_READY`. An
+  explicit bounded standing-authority selector may bind later in-scope PRs and
+  refreshed heads, but every transition still requires the resolved exact
+  current node plus revalidated head, base, actor, policy, reviews, checks,
+  dependencies, method, environment, workflow, and material effects.
 - `MERGED` requires observed evidence that the exact authorized pull request
   merged. Merge success is not release evidence.
 - `RELEASE_VERIFIED` requires evidence tying the expected merged source to the
@@ -311,8 +311,8 @@ hypothesis to reconcile, not the source of truth for state.
 - Only the accountable supervisor owns merge-wave decisions, authorization
   reconciliation, the global ready frontier, and global gate advancement.
 - A participant may merge only specifically assigned pull-request nodes from
-  the exact authorized `MERGE_READY` frontier. Subagent assignment alone never
-  creates merge authority.
+  the exact current `MERGE_READY` frontier resolved under standing authority.
+  Subagent assignment alone never creates authority.
 - A participant must not expand the approved pull-request set, change another
   node's dependency or ownership, bypass a gate, or advance program-wide state.
 - Read-only verification agents can never merge or queue a merge.
@@ -424,7 +424,7 @@ single supervisor lane; no specialist or verification agents spawned
 - Calling supervisor self-review independent verification.
 - Treating task success as proof of full orchestration conformance.
 - Copying transient capability or convergence state into spec front matter.
-- Treating participant assignment as merge authority or allowing a participant
+- Treating participant assignment as standing merge authority or allowing a participant
   to expand the authorized pull-request set or advance a global gate.
 
 ## Verification

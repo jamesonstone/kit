@@ -114,7 +114,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 		findings = append(findings, auditAlwaysLoadedCoreDocs(projectRoot)...)
 	}
 	findings = append(findings, auditWorkLaneDefaultGuidance(projectRoot)...)
-	findings = append(findings, auditNondestructiveAuthorityPolicy(projectRoot)...)
+	findings = append(findings, auditStandingAuthorityPolicy(projectRoot)...)
 	if version == config.InstructionScaffoldVersionTOC && !exactGeneratedInstructionScaffold(projectRoot, cfg, version) {
 		finding := newFinding(
 			reconcileSeverityWarning,

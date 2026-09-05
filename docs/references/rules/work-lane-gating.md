@@ -110,10 +110,11 @@ After read-only recon:
   Scope-preserving repair stays on the existing heads with ordinary commits;
   never create recursive corrective pull requests merely to make another pull
   request current or mergeable.
-- If the user explicitly withheld source repair, stop for bounded
-  in-place-remediation authority before changing a head. Missing repair
-  authority is not a reason to allocate a new worklane or replacement pull
-  request. Otherwise the accepted task authorizes in-scope in-place repair.
+- When explicit bounded standing authority includes blocker repair, later
+  in-scope repairs and refreshed heads remain authorized even if their PR
+  numbers or final OIDs were unknown at grant time. A specific repair pause,
+  hold, or revocation prevails. Missing repair authority is not a reason to
+  allocate a new worklane or replacement pull request.
 - Use a replacement pull request only when the remediation materially changes
   scope or architecture, the original head cannot be updated safely, or
   repository policy or the user explicitly requires replacement.
@@ -146,22 +147,27 @@ Pull-Request Landing Plan:
   or the user's explicit continuation direction, and record a revised plan
   before further mutation.
 
-### Merge Readiness
+### Standing Merge Authority And Readiness
 
-- PR-delivery consent never invents `MERGE_READY`. It authorizes issue, branch,
-  commit, push, and ready-PR delivery. An accepted task or active `/goal`
-  authorizes in-scope non-destructive merges once they are `MERGE_READY`.
+- PR-delivery consent never creates standing merge authority or `MERGE_READY`.
+  It authorizes issue, branch, commit, push, and ready-PR delivery.
+- Standing merge authority exists only when a human explicitly authorizes a
+  bounded task, goal, or program to merge its resulting work. Generic task
+  acceptance, lane allocation, approval, checks, or a ledger do not create it.
+- A semantic standing-authority selector may bind later-created in-scope PRs
+  and refreshed heads. Resolve the exact current targets during pre-merge
+  reconciliation; do not ask again solely because their numbers or final OIDs
+  were unknown when authority was granted.
 - A merge routes to `github-pr-merge` and the `pull-request-merge` context
-  workflow. Do not stop for a separate merge-consent prompt.
-- The exact existing pull-request set named by that accepted scope is explicit
-  continuation under this rule; do not apply the default-new route to create a
-  separate coordination lane.
-- The in-scope set is exact. Adding a new PR outside accepted product scope,
-  repository, base branch, or a destructive effect requires clarification or
-  exact destructive confirmation. An explicit user hold prevails.
-- Revalidating an unchanged `MERGE_READY` head, retrying a compatible path, or
-  using a repository-required merge queue does not require another prompt. A
-  changed head invalidates readiness, not accepted-task authority.
+  workflow. The resolved existing PR set is continuation under this rule; do
+  not create a separate coordination lane.
+- A changed in-scope head invalidates readiness, not standing authority.
+  Re-run all current-head checks, reviews, policy, identity, dependency, and
+  effect gates before restoring `MERGE_READY`.
+- Repository, base, environment, actor, identity, merge method, deployment
+  workflow, product scope, or material-effect expansion requires explicit
+  updated authority. The most recent human pause, hold, or revocation prevails
+  until explicit resume or replacement authority.
 - A gate decision, issue, branch, commit, push, ready PR, approval, passing
   check, review-thread resolution, subagent assignment, or program ledger does
   not invent `MERGE_READY`.

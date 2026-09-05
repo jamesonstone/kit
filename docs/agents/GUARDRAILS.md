@@ -79,10 +79,10 @@ must:
   continuation. Reuse every targeted head branch and pull request; do not
   create a coordination or corrective pull request for scope-preserving work.
 - For a multi-PR merge or program plan, record one continuation entry per
-  target instead of inventing one coordinator lane. The accepted task or active `/goal`
-  authorizes in-scope in-place repair. If the user explicitly withheld source
-  repair, ask only for bounded in-place-remediation authority; do not
-  allocate a new lane as a fallback.
+  resolved target instead of inventing one coordinator lane. Explicit bounded
+  standing authority that includes blocker repair covers later in-scope repairs
+  and refreshed heads; an explicit repair pause, hold, or revocation prevails.
+  Do not allocate a new lane as a fallback for a permission prompt.
 - For the default new lane, create or reuse one human-assigned issue, exact
   `GH-<issue-number>` branch, canonical linked worktree at
   `~/worktrees/<owner>/<repository>/GH-<issue-number>`, and one ready-PR plan
@@ -188,18 +188,20 @@ Do not create:
 
 unless the repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
 
-## GitHub Merge Readiness Hard Gate
+## GitHub Standing Merge Authority Hard Gate
 
 - Merge is a distinct mutation boundary. PR-delivery consent, automatic lane allocation, approval, check success, subagent assignment, and a program ledger never invent merge readiness.
-- An accepted task or active `/goal` authorizes in-scope ordinary and remediation merges. Do not stop for a separate merge-consent prompt.
+- Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program to merge its resulting work. Generic task acceptance does not create it. Record repositories, bases, environments, permitted actions, actor, expiry or completion, and exclusions.
+- Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve the exact current PR and head before mutation; do not ask again solely because its number or final OID was unknown when authority was granted.
 - Before any merge or merge-queue mutation, resolve `pull-request-merge` and load `docs/references/rules/github-pr-merge.md`.
-- Reconcile the accepted-scope source, authenticated actor, expected head/base, repository merge policy, current reviews/checks, dependencies, and destructive versus non-destructive effects before every wave.
+- Reconcile the standing-authority selector and pause state, authenticated actor, expected head/base, repository policy, current reviews/checks, dependencies, deployment workflow, environment, and material effects before every wave.
 - Only exact current `MERGE_READY` nodes may merge. Pending, missing, stale-head, or policy-ineligible skipped checks are not passing.
 - Use one complete preflight snapshot per consequential mutation or wave; do not rerun unchanged checks or poll repeatedly unless material state changes or the evidence freshness window expires.
-- Revalidating an unchanged `MERGE_READY` head does not require another prompt. A changed head invalidates readiness, not accepted-task authority; revalidate current-head evidence, then merge in-scope work without requesting fresh consent. Adding a target or materially expanding product scope requires clarification. An explicit user hold such as "do not merge" prevails.
+- A changed in-scope head invalidates readiness, not standing authority. Revalidate current-head evidence, then merge without renewed authorization. Scope, repository, base, environment, actor, identity, method, workflow, or material-effect expansion requires explicit updated authority.
 - Never bypass protection, reviews, required checks, a merge queue, repository policy, or identity safeguards.
 - Report merge, hosted workflow, deployment/runtime, and production evidence as separate claims.
-- Known and unresolved destructive-effect classifications are not `MERGE_READY`. Exact confirmation is required only for resolved destructive effects.
+- IAM, network, KMS, secrets, database-schema or data-loss changes, infrastructure creation/replacement/deletion, destructive deletion, nonstandard deployment effects, and unresolved risk classifications are not covered by standing merge/deploy authority.
+- The most recent direct human instruction wins. Pause, hold, or revocation stops affected actions and dependents until explicit human resume or replacement authority.
 
 ## Deletion Safety Hard Gate
 
@@ -215,15 +217,16 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 ## Infrastructure Change Approval Hard Gate
 
 - Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.
-- Classify planned effects as create, update, replace, delete, or remove. Proceed autonomously when the graph contains only additive or rollback-preserving effects, including additive IAM, network, or resource create-or-update and production activation.
-- Routine application operations on already-provisioned workloads, including deployment image updates and ECS or equivalent service interactions that do not create, replace, or delete infrastructure, are not infrastructure-approval batches. Record classified non-destructive mutations; do not stop for a confirmation outline.
-- Read-only discovery may precede mutation only when it does not alter cloud resources, Kubernetes objects, remote state, or repository-owned infrastructure source.
-- Isolate delete, remove, destroy, purge, destructive replacement, state removal, history rewrite, data erasure, permission revocation, or loss of a supported recovery path. Present one exact-target outline and obtain one explicit user confirmation for that destructive batch.
-- Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch. An accepted task, merge, image deployment, and routine ECS interactions never authorize deletion.
+- Standing merge/deploy authority covers only a named existing standard deployment workflow for an authorized environment and exact merged artifact on already-provisioned application resources, followed by deployed-identity, health, runtime, and rollback verification. Generic task acceptance does not authorize deployment.
+- IAM, network topology, KMS, secrets, persistent data-store or database-schema change, data loss, cluster control-plane change, infrastructure creation, replacement, or deletion, new targets, workflow mutation, and nonstandard deployment effects are outside standing authority and require their own applicable approval boundary.
+- Routine application operations on already-provisioned workloads are not infrastructure-approval batches when they stay inside the recorded standard deployment boundary. Record the target, workflow, environment, actor, and artifact; do not stop for another prompt solely because a later in-scope PR or head was unknown when authority was granted.
+- Read-only discovery may precede confirmation only when it does not alter cloud resources, Kubernetes objects, remote state, or repository-owned infrastructure source.
+- Put one consolidated outline of the target context, resource actions, execution boundary, material impact and risk, rollback or recovery, and validation evidence into the task plan before the first covered infrastructure mutation. Obtain one explicit user confirmation for that complete bounded batch.
+- Approval of a task plan containing the complete outline counts as confirmation. A standing merge/deploy grant never substitutes for that infrastructure outline.
+- Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch. Standing authority, merge, image deployment, and routine operations never authorize deletion.
 - During merge or release orchestration, do not execute infrastructure deletion, destruction, purge, destructive replacement, or state removal; isolate it as a separate task with its own exact post-outline authorization.
-- After destructive confirmation, execute the exact approved batch and continue the rest of the task to completion in one pass without routine command-by-command approval.
-- If additional destructive infrastructure changes become necessary, collect all then-known changes into one follow-up outline, obtain one confirmation, and execute that follow-up batch in one pass. Do not re-confirm actions already included in an approved batch.
-- Unresolved destructive-effect classification fails closed. Compatible tools, commands, and retries inside an approved destructive boundary do not require another prompt. Explicit user holds such as "keep production default-off" prevail.
+- After infrastructure confirmation, execute the exact approved batch and continue in one pass without routine command-by-command approval. Additional or materially different covered changes require one follow-up outline and confirmation.
+- The most recent direct human instruction wins. Pause, hold, or revocation stops affected actions and dependents until explicit human resume. Unresolved effect classification fails closed.
 
 ## AWS Context Hard Gate
 

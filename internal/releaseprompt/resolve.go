@@ -167,7 +167,7 @@ func resolveInfrastructure(config *Config, input Input, hint infrastructureHint)
 		}
 	}
 	config.Infrastructure.IdentityCheck = identityCheck(config.Infrastructure.Provider)
-	config.Infrastructure.Policy = "Additive changes require a complete approved infrastructure batch and post-change proof. Destructive, replacing, or removing changes always require explicit manual approval after the exact impact and recovery outline."
+	config.Infrastructure.Policy = "IAM, network, KMS, secrets, database schema or data-loss, infrastructure create/replace/delete, destructive, and nonstandard deployment changes require their own complete approval boundary and post-change proof. Standing authority covers only recorded standard deployment workflows on already-provisioned targets."
 	return nil
 }
 

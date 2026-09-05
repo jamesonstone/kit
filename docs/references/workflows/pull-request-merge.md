@@ -1,7 +1,7 @@
 ---
 kind: workflow
 slug: pull-request-merge
-description: Reconcile accepted-task scope, policy, identity, current-head evidence, destructive-effect classification, and dependency gates before exact pull-request merges.
+description: Resolve bounded standing authority to exact current pull requests and reconcile policy, identity, readiness, dependencies, deployment, and risk gates.
 rules:
   - slug: safety-guardrails
     required: true
@@ -34,18 +34,18 @@ evidence:
 
 ## Purpose
 
-- Execute in-scope pull-request merges authorized by an accepted task or
-  active `/goal` once they are `MERGE_READY`. Do not stop for a separate
-  merge-consent prompt.
-- Fail closed on unknown actor, policy, head/base, checks, dependencies,
-  explicit holds, or unresolved destructive effects. Record routine
-  application operations such as image-only CD without inventing a
-  confirmation batch.
+- Execute exact current pull-request merges covered by explicit bounded standing
+  authority once they are `MERGE_READY`. Later in-scope PRs and refreshed heads
+  do not require renewed authority.
+- Fail closed on absent, paused, revoked, expired, or mismatched authority;
+  unknown actor, policy, head/base, checks, dependencies, environment, workflow,
+  or effects; and every separately gated risk class.
 
 ## Phases
 
-1. Record the accepted-scope source, in-scope PR set, expected actor, head/base,
-   merge method, dependencies, and destructive versus non-destructive effects.
+1. Record the standing-authority source and selector, current pause/revocation
+   state, resolved exact PR set, expected actor, head/base, merge method,
+   dependencies, deployment workflow and environment, and material effects.
 2. Classify each node as `MERGE_READY`, `BLOCKED`, or `UNKNOWN` from exact
    current-head and repository-policy evidence.
 3. Reconcile the in-scope ready frontier immediately before each wave;
@@ -54,7 +54,7 @@ evidence:
    non-history-rewriting commits to update the existing pull-request head
    between waves, invalidate its prior head evidence, and
    return it to `UNKNOWN` pending fresh checks, review, and revalidation.
-   Do not request a new consent prompt for in-scope repair. Reserve replacement pull
+   Do not request renewed authority for an in-scope refreshed head. Reserve replacement pull
    requests for material scope changes, heads that cannot be updated safely,
    or explicit repository-policy or user requirements. Do not rebase,
    force-push, retarget, or otherwise replace the branch's reviewed history.
@@ -65,8 +65,8 @@ evidence:
 
 ## Completion Gates
 
-- Every merged or queued node belonged to the in-scope set and current ready
-  frontier.
+- Every merged or queued node matched active standing authority and belonged to
+  the resolved exact current ready frontier.
 - No protection, review, required-check, merge-method, or identity
   safeguard was bypassed.
 - Partial failures, unknowns, dependents, corrective ownership, and next safe
@@ -74,4 +74,7 @@ evidence:
 - Routine scope-preserving remediation stays on its existing pull request, and
   no changed head reuses readiness, review, or checks from its
   predecessor.
+- No IAM, network, KMS, secrets, database schema/data-loss, infrastructure
+  create/replace/delete, destructive, or nonstandard deployment effect was
+  treated as covered by standing merge/deploy authority.
 - Merge success is not reported as deployment or production proof.

@@ -38,6 +38,7 @@ func TestAgentInstructionVersionsAreImmutable(t *testing.T) {
 		{version: "v9", sha256: "2746dab50058f5feeedb40b6df268d7a127128a223b2074b9287131ffd8eba5d"},
 		{version: "v10", sha256: "9c4d87348f0481b552b2dd44024ad0e3fbd82ec4a568fbb31555d9bb8de94162"},
 		{version: "v11", sha256: "ddb2a92de00dcef09288f33532eb95164efa450ce00ef7687015b10c06c95f08"},
+		{version: "v12", sha256: "3800f8a2c00f9220ac5b39633a0e2d15ced22c6dd54a12723c229ac2552548e6"},
 	}
 
 	for _, test := range tests {
@@ -186,21 +187,21 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 }
 
 func TestAgentInstructionsRejectsUnavailableVersion(t *testing.T) {
-	_, err := AgentInstructions("v12")
+	_, err := AgentInstructions("v13")
 	if err == nil {
-		t.Fatal("AgentInstructions(\"v12\") expected an error")
+		t.Fatal("AgentInstructions(\"v13\") expected an error")
 	}
-	for _, want := range []string{`unsupported instructions version "v12"`, "available versions: v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11"} {
+	for _, want := range []string{`unsupported instructions version "v13"`, "available versions: v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12"} {
 		if !strings.Contains(err.Error(), want) {
-			t.Fatalf("AgentInstructions(\"v12\") error = %q, want %q", err, want)
+			t.Fatalf("AgentInstructions(\"v13\") error = %q, want %q", err, want)
 		}
 	}
 }
 
 func TestAgentInstructionVersionsReturnsCopy(t *testing.T) {
 	versions := AgentInstructionVersions()
-	if len(versions) != 11 || versions[0] != "v1" || versions[1] != "v2" || versions[2] != "v3" || versions[3] != "v4" || versions[4] != "v5" || versions[5] != "v6" || versions[6] != "v7" || versions[7] != "v8" || versions[8] != "v9" || versions[9] != "v10" || versions[10] != "v11" {
-		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11]", versions)
+	if len(versions) != 12 || versions[0] != "v1" || versions[1] != "v2" || versions[2] != "v3" || versions[3] != "v4" || versions[4] != "v5" || versions[5] != "v6" || versions[6] != "v7" || versions[7] != "v8" || versions[8] != "v9" || versions[9] != "v10" || versions[10] != "v11" || versions[11] != "v12" {
+		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12]", versions)
 	}
 	if versions[len(versions)-1] != CurrentAgentVersion {
 		t.Fatalf("last available version = %q, want current %q", versions[len(versions)-1], CurrentAgentVersion)

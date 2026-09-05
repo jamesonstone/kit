@@ -104,10 +104,11 @@ The ledger must contain:
 
 - a participant repository table with owner, local spec, issue, branch, pull
   request, and operational-reference pointers when applicable;
-- the authorization source and exact approved PR set, authenticated GitHub
-  actor for each repository, expected PR head/base, merge method and repository
-  policy, bounded in-place-remediation authority, replacement-PR criteria, and
-  corrective or rollback owner;
+- the standing-authority source and semantic selector, current pause,
+  revocation, expiry, or completion state, dynamically resolved exact PR set,
+  authenticated GitHub actor for each repository, expected PR head/base, merge
+  method and policy, in-place-remediation authority, replacement-PR criteria,
+  and corrective or rollback owner;
 - a dependency graph that names each workstream's prerequisites and consumers;
 - the current ready frontier: only unblocked workstreams whose prerequisites
   and approvals are currently satisfied;
@@ -174,11 +175,13 @@ program-level interpretation in the ledger. Redact secrets and protected data.
 - A participant may merge only specifically assigned PR nodes from the exact
   in-scope `MERGE_READY` frontier. Participant or subagent assignment alone
   does not invent `MERGE_READY`, and read-only verifiers never merge.
-- The accepted task or active `/goal` creates in-scope merge authority.
-  The ledger records and reconciles that authority; it never creates it.
-- Before every merge wave, the supervisor reconciles the authorization source,
-  approved PR set, actor, expected head/base, repository policy, current
-  evidence, approvals, and ready frontier against live sources.
+- Explicit bounded standing authority may cover later-created in-scope PRs and
+  refreshed heads. The ledger records its semantic selector, pause/revocation
+  state, and each resolved exact current node; it never creates authority.
+- Before every merge wave, the supervisor reconciles the standing-authority
+  selector and pause state, resolved exact PR set, actor, expected head/base,
+  repository policy, current evidence, approvals, and ready frontier against
+  live sources.
 - Use `agent-team-orchestration` for the execution topology inside each ready
   wave. Its overlap, concurrency, verification, and delivery boundaries remain
   in force.
@@ -216,10 +219,10 @@ Before resume, handoff, dispatch, milestone advancement, or completion:
 5. checkpoint the reconciled state before assigning or performing more work.
 
 Before each merge wave, also resolve `pull-request-merge` and follow
-`github-pr-merge`. Revalidation of unchanged `MERGE_READY` heads does not
-require another prompt. A changed head invalidates readiness, not accepted-task
-authority. Adding a target outside accepted product scope requires
-clarification; destructive effects still require exact confirmation.
+`github-pr-merge`. A later in-scope PR or changed head may retain standing
+authority, but it must receive fresh exact current-head readiness evidence.
+Repository, base, environment, actor, identity, method, workflow, product
+scope, or material-effect expansion requires explicit updated authority.
 
 A handoff must identify the coordinator and ledger, active milestone, current
 ready frontier, blockers and owners, material decisions, exact evidence,
@@ -251,9 +254,10 @@ unresolved dependencies under Deviations and exact handoffs under Next steps.
 - Continue to obey every participant repository's instructions and ownership
   boundaries. The program ledger does not grant cross-repository mutation
   authority.
-- The accepted plan or direct user request creates authority; the ledger only
-  records it. Never infer merge permission from ledger existence, a ready
-  frontier, participant assignment, or check success.
+- An explicit human standing-authority grant or direct current merge request
+  creates authority; the ledger only records it. Never infer merge permission
+  from generic task acceptance, ledger existence, a ready frontier,
+  participant assignment, or check success.
 - Infrastructure changes still require the applicable consolidated approval
   boundary, target verification, rollback plan, and provider-specific gates.
 - Never store secrets, credentials, customer data, raw logs, agent transcripts,
@@ -302,8 +306,8 @@ unresolved dependencies under Deviations and exact handoffs under Next steps.
   frontier, uses the expected actor/head/base/method, and resolves
   `pull-request-merge` before mutation.
 - Confirm routine scoped remediation preserved its existing pull request and
-  changed heads received fresh checks, review, revalidation, and exact-head
-  authorization before reentering the frontier.
+  changed heads received fresh checks, review, revalidation, and standing-
+  authority selector matching before reentering the frontier.
 - Confirm a checkpoint follows each material transition and every handoff.
 - Confirm resume, handoff, dispatch, and completion reconcile against live
   repository, GitHub, runtime, and validation sources.

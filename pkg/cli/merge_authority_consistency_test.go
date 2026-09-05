@@ -14,11 +14,11 @@ func TestActivePolicyUsesOneMergeAuthorityModel(t *testing.T) {
 	}
 	for name, content := range files {
 		for _, check := range []string{
-			"Merge is a distinct mutation boundary",
-			"never invent merge readiness",
-			"Do not stop for a separate merge-consent prompt",
+			"Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program",
+			"may bind later-created in-scope PRs and refreshed heads",
 			"Only exact current `MERGE_READY` nodes may merge",
-			"A changed head invalidates readiness, not accepted-task authority",
+			"A changed in-scope head invalidates readiness, not standing authority",
+			"Pause, hold, or revocation stops affected actions and dependents",
 			"Never bypass protection",
 		} {
 			if !strings.Contains(content, check) {
@@ -48,13 +48,15 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 	for _, path := range activePaths {
 		combined += "\n" + readRepositoryFile(t, path)
 	}
+	combined = strings.Join(strings.Fields(combined), " ")
 
 	required := []string{
-		"The ledger records and reconciles that authority; it never creates it",
+		"it never creates authority",
 		"Read-only verification agents never merge",
 		"Protection bypass, admin override, review bypass, required-check bypass",
-		"Do not stop for a separate merge-consent prompt",
-		"Proceed autonomously when the graph contains only additive or rollback-preserving effects",
+		"explicitly authorizes a bounded task, goal, or program",
+		"### Standard Deployments Under Standing Authority",
+		"IAM, network, KMS, secrets, database schema/data-loss",
 	}
 	for _, check := range required {
 		if !strings.Contains(combined, check) {
@@ -69,7 +71,8 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 		"passing checks authorize merge",
 		"Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set",
 		"never imply merge consent",
-		"Obtain one explicit user confirmation for the complete bounded batch",
+		"accepted task or active `/goal` authorizes",
+		"Proceed autonomously when the graph contains only additive or rollback-preserving effects",
 	} {
 		if strings.Contains(combined, forbidden) {
 			t.Errorf("active policy contains contradictory authority %q", forbidden)

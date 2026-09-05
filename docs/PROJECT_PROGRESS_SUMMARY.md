@@ -76,6 +76,7 @@
 | 0073 | infrastructure-approval-scope | `docs/specs/0073-infrastructure-approval-scope` | deliver | no | 2026-08-26 | Stop treating every deployment image update and ECS interaction as an infrastructure-approval batch, while keeping create/replace/apply of infrastructure gated and requiring explicit post-outline confirmation for deletion. |
 | 0074 | deadline-merge-ui-verification | `docs/specs/0074-deadline-merge-ui-verification` | deliver | no | 2026-08-31 | Under deadline mode, continue authorized merge and deployment work, skip UI verification until every result is delivered, then run one final UI verification without weakening required post-deployment production-suite checks. |
 | 0075 | autonomous-non-destructive-execution | `docs/specs/0075-autonomous-non-destructive-execution` | deliver | no | 2026-09-01 | Stop Kit coding agents from pausing accepted task or `/goal` work to ask for merge, deploy, or additive-infrastructure consent. Keep explicit manual authorization only for deletes, removals, or otherwise destructive effects. |
+| 0076 | standing-merge-deploy-authority | `docs/specs/0076-standing-merge-deploy-authority` | deliver | no | 2026-09-04 | Let a human grant bounded standing authority for task, goal, or program merges and standard deployments without repeated per-PR or per-head prompts, while preserving exact readiness and separate risk gates. |
 
 ## PROJECT INTENT
 
@@ -735,6 +736,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0075-autonomous-non-destructive-execution/SPEC.md`, `docs/references/rules/github-pr-merge.md`, `docs/references/rules/infrastructure-change-approval.md`
 
+### standing-merge-deploy-authority
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Let a human grant bounded standing authority for an accepted task, goal, or program so agents can merge later in-scope pull requests and refreshed heads, run only named existing standard deployment workflows, verify runtime, and resume the goal without repetitive permission prompts.
+- **APPROACH**: Define semantic standing-authority selectors with exact current mutation-time reconciliation; preserve current-head readiness; make pause, revocation, expiry, and direct human instructions authoritative; exclude scope, repository, environment, identity, infrastructure, security, data-loss, destructive, and nonstandard deployment expansion; propagate through canonical rules, templates, version v12, init/refresh, reconcile, release prompts, tests, and LabCore.
+- **OPEN ITEMS**: complete Kit validation and delivery, refresh and validate LabCore, then deliver both ready PRs without merging or deploying them.
+- **POINTERS**: `docs/specs/0076-standing-merge-deploy-authority/SPEC.md`, `docs/programs/standing-merge-deploy-authority/PROGRAM.md`
+
 ## LAST UPDATED
 
-2026-09-01 12:30:00 EDT
+2026-09-04 21:58:43 EDT

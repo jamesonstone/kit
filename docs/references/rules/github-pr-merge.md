@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: github-pr-merge
-description: Gates exact pull-request merges on readiness, identity, repository policy, and destructive-effect classification without a second merge-consent prompt.
+description: Binds explicit bounded standing authority to exact current pull requests while preserving readiness, identity, policy, deployment, and risk gates.
 status: active
 registry_scope: downstream
 applies_to:
@@ -19,54 +19,61 @@ read_policy_default: must
 
 ## Purpose
 
-- Allow a coding agent to merge in-scope pull requests when an accepted task
-  or active `/goal` authorizes non-destructive delivery, without stopping for
-  a separate merge-consent prompt.
+- Allow a coding agent to merge pull requests covered by explicit bounded
+  standing authority without asking again for each later PR number or head OID.
 - Keep merge readiness, repository policy, current-head evidence, identity,
   destructive-effect classification, and post-merge proof explicit and
   independently verifiable.
-- Prevent PR-delivery consent, a program ledger, subagent assignment, or green
-  checks from inventing `MERGE_READY`.
+- Prevent generic task acceptance, PR-delivery consent, a program ledger,
+  subagent assignment, or green checks from inventing standing authority or
+  `MERGE_READY`.
 
 ## Applies When
 
 Load this rule and resolve the `pull-request-merge` workflow before any merge or
 merge-queue mutation.
 
-In-scope merge authority for non-destructive work comes from:
+Standing merge authority exists only when a human explicitly authorizes a
+bounded task, goal, or program to merge its resulting work. Record that grant
+with its goal and non-goals, repositories, bases, environments, permitted
+actions, actor, expiry or completion boundary, and exclusions.
 
-- the current accepted task; or
-- an active `/goal` whose accepted scope includes the merge.
+The grant may use a semantic scope before pull-request numbers or final head
+OIDs exist. Bind later pull requests only when each is directly required by the
+authorized outcome, belongs to a governed in-scope lane, targets an authorized
+repository and base, and introduces no materially different effect. Materialize
+the exact PR and current head during pre-merge reconciliation. Do not ask again
+merely because those identifiers were unknown when authority was granted.
 
-Do not stop for a separate merge-consent prompt.
+Accepting a generic implementation task, opening or approving a pull request,
+automatic lane allocation, review resolution, check success, participant
+assignment, and program-ledger existence do not create standing authority or
+`MERGE_READY`.
 
-Opening, updating, or approving a ready pull request does not invent
-`MERGE_READY`. Automatic clean-preflight delivery allocation, review-thread
-resolution, check success, participant assignment, and program ledger
-existence are also not `MERGE_READY`.
-
-An explicit user hold such as "do not merge" prevails over accepted-task
-authority.
+The most recent direct human instruction wins. An explicit pause, hold, or
+revocation immediately supersedes standing authority for the affected actions
+and dependents. Only an explicit human resume or new grant restores it; a new
+head, passing check, retry, session, or unchanged ledger cannot.
 
 ## Rules
 
 ### Authorization Boundary
 
-- Record the accepted-scope source and exact in-scope pull-request set before
-  mutation.
-- Treat that exact existing pull-request set as explicit continuation under
+- Record the standing-authority source and selector, then resolve and record
+  the exact current in-scope pull-request set before each mutation wave.
+- Treat the resolved existing pull-request set as explicit continuation under
   `work-lane-gating`. Do not create a new coordination issue, branch, worktree,
   or pull request merely to prepare or execute the merge plan.
-- Exact-head freeze is a readiness constraint. An in-scope in-place repair
+- Exact-head identity is a readiness constraint. An in-scope in-place repair
   keeps the same pull request in the graph but invalidates its readiness until
   the new head is revalidated. It does not require a new consent prompt.
 - Revalidating an unchanged `MERGE_READY` head, retrying a compatible merge
   path, or using the repository-required merge queue does not require another
   prompt.
-- Adding a pull request outside accepted product scope, a new repository,
-  target base, or a destructive effect is material expansion. Clarify product
-  scope; obtain exact confirmation only for destructive effects. An explicit
-  user hold prevails.
+- A later PR or refreshed head inside the recorded selector retains authority.
+  Adding or changing repository, target base, environment, actor, identity,
+  merge method, deployment workflow, product scope, or material effect is
+  expansion and requires explicit updated authority.
 - Protection bypass, admin override, review bypass, required-check bypass,
   force-push, and silent identity substitution are prohibited even when merge
   authority exists.
@@ -75,15 +82,16 @@ authority.
 
 Before the first merge, record:
 
-- accepted-scope source and in-scope PR set;
+- standing-authority source, selector, current pause/revocation state, and the
+  resolved in-scope PR set;
 - repository identity and authenticated GitHub actor for every repository;
 - expected PR head OID, base branch, and current PR state;
 - repository-approved merge method or merge-queue policy;
 - dependency edges and the current ready frontier;
 - required review and hosted-check policy plus current-head evidence;
-- known deployment, Kubernetes, public-cloud, and infrastructure-as-code
-  effects, classified as additive, routine application operations, or
-  destructive;
+- known deployment, Kubernetes, public-cloud, database, and infrastructure-as-
+  code effects, including whether any standard deployment is named by the
+  grant and whether any excluded risk class is present;
 - post-merge deployment, runtime, and validation gates; and
 - in-scope in-place-remediation policy, replacement-PR criteria,
   failure-containment, recovery, and rollback ownership.
@@ -109,11 +117,12 @@ that affects readiness and remains unknown blocks that node.
 
 Classify every authorized node as exactly one of:
 
-- `MERGE_READY`: all required current-head evidence is present, attributable,
-  acceptable under repository policy, and every dependency and non-destructive
-  effect classification is satisfied;
-- `BLOCKED`: a required gate failed, an explicit user hold applies, or a
-  destructive effect lacks exact confirmation; or
+- `MERGE_READY`: standing authority currently covers the exact node, all
+  required current-head evidence is present and attributable, repository
+  policy accepts it, every dependency is satisfied, and no excluded or
+  unresolved material-risk class is present;
+- `BLOCKED`: a required gate failed, authority is paused or revoked, or the
+  node requires scope expansion or an excluded risk class; or
 - `UNKNOWN`: evidence is missing, stale, unavailable, ambiguous, or cannot be
   attributed to the expected head, target, policy, or actor.
 
@@ -123,12 +132,15 @@ Only `MERGE_READY` nodes may enter the ready frontier. These are never passing:
 - skipped checks without verified policy eligibility;
 - checks for an earlier head OID;
 - local tests substituted for required hosted checks;
-- review, mergeability, base, policy, actor, or destructive effects that are
-  unknown; or
+- review, mergeability, base, policy, actor, deployment workflow, environment,
+  or material effects that are unknown; or
 - a successful merge treated as deployment or production proof.
 
 Head or base drift invalidates readiness. Recompute evidence and the frontier
-before mutation. A changed head invalidates readiness, not accepted-task authority.
+before mutation. A changed in-scope head invalidates readiness, not standing
+authority. After fresh current-head checks, review, mergeability, policy,
+identity, dependencies, and effect classification pass, it may re-enter the
+frontier without a new authorization prompt.
 
 ### Repository Policy And Merge Method
 
@@ -147,20 +159,17 @@ before mutation. A changed head invalidates readiness, not accepted-task authori
 - Record known deployment, Kubernetes, public-cloud, and infrastructure-as-code
   effects in the merge plan, including routine application operations such as
   existing CD rolling a new image onto already-provisioned compute.
-- Classify effects as additive, rollback-preserving, routine application
-  operations, or destructive. Additive and routine application operations
-  proceed autonomously and do not require infrastructure-change-approval
-  confirmation.
-- A merge known to trigger a destructive effect is not `MERGE_READY` until
-  that exact-target confirmation exists. The accepted plan must identify the
-  triggering workflow, target account/environment/region/cluster, expected
-  destructive actions and impact, recovery or rollback, and post-merge
-  evidence.
-- Unknown create, replace, or delete effects require inspection. Unresolved
-  destructive ambiguity makes the node `UNKNOWN` or `BLOCKED`. Unresolved
-  destructive-effect classification is not `MERGE_READY`. An image-only
-  CD path is not an unknown destructive mutation once classified as a routine
-  application operation.
+- Standing deployment authority covers only a repository-approved existing
+  standard workflow named by the grant for an authorized environment, limited
+  to the merged artifact on already-provisioned targets plus required runtime
+  verification.
+- IAM, network, KMS, secrets, database schema or data-loss changes,
+  infrastructure creation, replacement, or deletion, destructive deletion,
+  and nonstandard deployment effects are outside standing merge/deploy
+  authority. Route them to their own applicable approval boundary.
+- Unknown create, replace, delete, data, security, or deployment effects
+  require inspection. Unresolved classification makes the node `UNKNOWN` or
+  `BLOCKED`, never `MERGE_READY`.
 - Merge success never implies workflow success, deployed identity, runtime
   readiness, production validation, or rollback readiness.
 
@@ -179,8 +188,9 @@ before mutation. A changed head invalidates readiness, not accepted-task authori
   nodes coupled through a base, service, environment, database, migration,
   queue, deployment, or acceptance gate remain serialized.
 - Use one complete current-state snapshot per consequential mutation or wave.
-  Reconcile accepted-task scope, head/base, actor, policy, checks, destructive
-  effects, and dependencies once immediately before every wave. Refresh only
+  Reconcile the standing-authority selector and pause state, head/base, actor,
+  policy, checks, effects, and dependencies once immediately before every
+  wave. Refresh only
   when a material fact changes or the evidence freshness window expires.
 
 ### Partial Failure And Corrective Work
@@ -194,20 +204,22 @@ before mutation. A changed head invalidates readiness, not accepted-task authori
   be updated safely with ordinary commits, and repository policy permits the
   update. Do not create recursive corrective pull requests for minor conflicts,
   generated artifacts, dependency refreshes, or other scope-preserving fixes.
-- The accepted task authorizes in-scope in-place repair. An explicit user hold
-  on source repair remains a blocker.
+- Standing authority authorizes in-scope in-place repair when its recorded
+  permitted actions include blocker repair. A specific repair hold remains a
+  blocker.
 - Perform in-scope in-place remediation between merge waves. Ordinarily merge
   the current base into the existing head branch, apply or regenerate the
   repair, commit, and push to the same branch without rebasing, force-pushing,
   or retargeting. Then mark the node `UNKNOWN`, remove it from the ready
-  frontier, rerun required current-head checks and review, and restore
-  `MERGE_READY` without a new consent prompt.
+  frontier, rerun every required current-head readiness check, and restore
+  `MERGE_READY` without a new authorization prompt when the selector still
+  matches.
 - Use a replacement pull request only when remediation materially changes the
   issue scope or architecture, the original head cannot be updated safely, or
   repository policy or the user explicitly requires replacement. A replacement
-  is a new node. An in-scope replacement is revalidated and merged without a
-  new consent prompt; it is not automatically added when it expands product
-  scope.
+  is a new node. A replacement that still satisfies the standing selector is
+  revalidated and merged without a new authorization prompt; expansion is not
+  automatically covered.
 - Never force, bypass, change identity, or broaden product scope to recover a
   wave.
 - Diagnose a failure before retrying. Within in-scope repair, rerun only
@@ -242,8 +254,9 @@ post-deployment production-suite evidence.
 
 ## Anti-Patterns
 
-- Stopping for a merge-consent prompt after the user already accepted the task
-  or `/goal`.
+- Requiring renewed authorization solely because an in-scope PR number or final
+  head OID was unknown when standing authority was granted.
+- Treating generic task acceptance as standing merge authority.
 - Treating PR-delivery consent, automatic lane allocation, review resolution,
   check success, or a program ledger as `MERGE_READY`.
 - Merging an extra PR because it appears related or ready.
@@ -252,8 +265,9 @@ post-deployment production-suite evidence.
 - Assigning merge authority implicitly to every subagent or verifier.
 - Using admin merge, protection bypass, identity substitution, or an
   unsupported merge method.
-- Starting a merge that deletes, destroys, or removes infrastructure before
-  those destructive effects have exact confirmation.
+- Starting a merge with IAM, network, KMS, secrets, database schema or data-
+  loss changes, infrastructure create/replace/delete, destructive deletion, or
+  nonstandard deployment effects under standing merge/deploy authority.
 - Inventing an infrastructure-approval batch solely because merge will deploy
   a new application image through existing CD.
 - Creating replacement or recursively corrective pull requests for routine,
@@ -270,8 +284,9 @@ post-deployment production-suite evidence.
 
 ## Verification
 
-- Confirm an accepted task or active `/goal` covered the exact in-scope PR set,
-  or that an explicit user hold was respected.
+- Confirm an explicit standing-authority grant covers the resolved exact
+  current PR set and that pause, revocation, expiry, and completion state were
+  reconciled.
 - Confirm `pull-request-merge` context resolved and every required artifact was
   loaded.
 - Confirm the authenticated actor, repository, expected head/base, merge
@@ -286,7 +301,7 @@ post-deployment production-suite evidence.
   was preserved.
 - Confirm routine in-scope remediation preserved the existing pull request,
   invalidated prior head evidence, and obtained fresh current-head checks and
-  review without a new consent prompt.
+  review without a new authorization prompt.
 - Confirm replacement PRs were limited to material scope or architecture
   change, an unsafe or inaccessible original head, or explicit policy or user
   direction.
@@ -300,21 +315,32 @@ post-deployment production-suite evidence.
 
 ## Examples
 
-Authorized single PR:
+Later in-scope blocker PR:
 
 ```text
-Accepted task/goal includes owner/service#84.
-Head/base, actor, policy, reviews, required checks, and deployment effects are
-current and acceptable. The hosted workflow rolls a new image onto the existing
-ECS service. That is a routine application operation, not a destructive
-infrastructure batch. State: MERGE_READY. Merge #84 without another consent prompt.
+The human granted standing authority for the bounded checkout-recovery goal in
+owner/service, targeting main and the standard staging deploy workflow. Blocker
+PR #84 was created later in a governed lane. Its current head/base, actor,
+policy, reviews, required checks, dependencies, and effects are current and
+acceptable. State: MERGE_READY. Merge #84, run only the named standard deploy,
+verify runtime, and resume the goal without another authorization prompt.
 ```
 
 Unauthorized extra PR:
 
 ```text
-The accepted task authorizes #84 and #87. #91 is green and related but is not
-in the in-scope set. State: BLOCKED pending product-scope clarification.
+Standing authority covers service PRs required by the checkout-recovery goal.
+#91 changes the production network and is not covered. State: BLOCKED pending
+explicit expanded authority and the infrastructure approval contract.
+```
+
+Pause and revocation:
+
+```text
+The human paused production deployment while keeping staging authorized. Stop
+production and its dependents immediately. Passing checks and a new head do not
+resume it; continue only independent staging work until the human explicitly
+resumes or grants replacement authority.
 ```
 
 Partial wave:

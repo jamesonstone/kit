@@ -57,6 +57,35 @@ func TestHealthAndReconcileInstallManagedSafetyGuidance(t *testing.T) {
 	}
 }
 
+func TestInitRefreshInstallsStandingAuthorityGuidance(t *testing.T) {
+	projectRoot := setupManagedSafetyGuidanceProject(t)
+	stubManagedSafetyRulesetRegistry(t)
+	setWorkingDirectory(t, projectRoot)
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initForce = true
+		initOutputOnly = true
+		initRefreshFiles = []string{
+			"AGENTS.md",
+			"CLAUDE.md",
+			".github/copilot-instructions.md",
+			"docs/agents/GUARDRAILS.md",
+			"docs/references/rules/work-lane-gating.md",
+			"docs/references/rules/deletion-safety.md",
+			"docs/references/rules/agent-completion-output.md",
+			"docs/references/rules/human-authorship.md",
+		}
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	assertManagedSafetyGuidance(t, projectRoot)
+}
+
 func TestAuditWorkLaneDefaultGuidanceFindsExistingSectionDrift(t *testing.T) {
 	for _, tt := range []struct {
 		path    string
@@ -143,8 +172,15 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 			"review repair, CI repair, base",
 			"ordered merge coordination",
 			"coordination or corrective pull request",
-			"bounded in-place-remediation authority",
+			"includes blocker repair",
 			"allocate a new lane",
+			"Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program",
+			"may bind later-created in-scope PRs and refreshed heads",
+			"Only exact current `MERGE_READY` nodes may merge",
+			"A changed in-scope head invalidates readiness, not standing authority",
+			"Standing merge/deploy authority covers only a named existing standard deployment workflow",
+			"IAM, network topology, KMS, secrets",
+			"Pause, hold, or revocation stops affected actions and dependents",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)

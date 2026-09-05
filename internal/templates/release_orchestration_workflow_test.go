@@ -27,11 +27,11 @@ func TestReleaseOrchestrationWorkflowPreservesAuthorityBoundaries(t *testing.T) 
 		"slug: agent-team-orchestration\n    required: false",
 		"slug: cross-repository-program-coordination\n    required: false",
 		"Resolve `pull-request-merge`",
-		"current in-scope `MERGE_READY` frontier",
+		"resolved exact current ready frontier",
 		"scope-preserving repairs as ordinary, non-history-rewriting updates",
 		"do not rebase, force-push, retarget, or otherwise\n   replace reviewed history",
 		"Every changed existing head received fresh checks, review, and revalidation",
-		"fresh checks, review, and revalidation before merge",
+		"fresh checks, review, and revalidation\n  before merge without renewed authority",
 		"heads that cannot be updated safely, or explicit repository-policy or user",
 		"Merge success was never substituted",
 	} {
@@ -47,7 +47,8 @@ func TestToolingTemplateRoutesPROrchestration(t *testing.T) {
 		"`kit pr orchestrate`",
 		"`release-orchestration`",
 		"does not enumerate PRs, merge, deploy, mutate infrastructure, or launch an agent",
-		"An accepted task or active `/goal` authorizes in-scope ordinary and remediation merges once they are `MERGE_READY`. Do not stop for a separate merge-consent prompt.",
+		"Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program",
+		"may bind later-created in-scope PRs and refreshed heads",
 	} {
 		if !strings.Contains(agentsTooling, check) {
 			t.Errorf("tooling template missing %q", check)

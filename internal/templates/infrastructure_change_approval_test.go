@@ -13,14 +13,15 @@ func TestInstructionTemplatesRequireInfrastructureChangeApproval(t *testing.T) {
 		"docs/references/rules/infrastructure-change-approval.md",
 		"Kubernetes resources or cluster state",
 		"does not alter cloud resources, Kubernetes objects",
-		"Proceed autonomously when the graph contains only additive or rollback-preserving effects",
+		"Standing merge/deploy authority covers only a named existing standard deployment workflow",
+		"IAM, network topology, KMS, secrets",
+		"standing merge/deploy grant never substitutes",
 		"Deleting, destroying, or removing infrastructure always requires explicit confirmation",
 		"During merge or release orchestration, do not execute infrastructure deletion",
 		"isolate it as a separate task with its own exact post-outline authorization",
-		"continue the rest of the task to completion in one pass",
-		"collect all then-known changes into one follow-up outline",
-		"Do not re-confirm actions already included in an approved batch",
-		"do not require another prompt",
+		"continue in one pass without routine command-by-command approval",
+		"Additional or materially different covered changes require one follow-up outline",
+		"Pause, hold, or revocation stops affected actions and dependents",
 		"are not infrastructure-approval batches",
 		"never authorize deletion",
 	}
@@ -58,7 +59,7 @@ func TestInstructionSupportRoutesInfrastructureChangeApproval(t *testing.T) {
 			t.Errorf("expected version %d RLM to route infrastructure approval", version)
 		}
 		references := fileContentByPath(files, "docs/references/README.md")
-		if !strings.Contains(references, "Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state to classify effects, proceed autonomously for additive or rollback-preserving work, and require exact confirmation for every known destructive effect") {
+		if !strings.Contains(references, "standing authority covers only named standard deployments on already-provisioned targets") {
 			t.Errorf("expected version %d references index to route infrastructure approval", version)
 		}
 	}

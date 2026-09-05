@@ -73,8 +73,9 @@ func addContextContract(document *promptdoc.Document, config Config) {
 		"Load every required selected artifact in order. Treat blocked resolution as an evidence gap and do not guess.",
 		"Report the missing release workflow as scaffold drift. Do not refresh or rewrite repository guidance during the release unless that mutation is separately authorized and placed in the graph.",
 	)
-	document.Paragraph("An accepted task or active `/goal` authorizes in-scope non-destructive merges once they are `MERGE_READY`. PR-delivery consent, successful checks, subagent assignment, and a program ledger do not invent readiness. A changed head loses readiness, not accepted-task authority. An explicit user hold stops mutation independently. Exact confirmation is required only for destructive effects. Clarify material product-scope expansion.")
-	document.Paragraph("Cross-repository coordination is conditional: create or adopt one canonical `docs/programs/<program>/PROGRAM.md` only when the work spans multiple repositories and also has dependent deliverables, staged deployment or activation, or expected agent/session handoff. The ledger records and reconciles the authorized PR set and frontier but never creates authority. Otherwise keep the Global Release Graph in the task's working report without inventing a program ledger.")
+	document.Paragraph("Standing merge or deployment authority exists only when a human explicitly authorizes a bounded task, goal, or program for those actions. Record its selector, pause or revocation state, repositories, bases, environments, workflows, actor, expiry or completion, and exclusions. Generic task acceptance, PR delivery, checks, assignment, and a ledger do not create it.")
+	document.Paragraph("Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve every exact current PR and head at the mutation boundary and require `MERGE_READY`; do not ask again solely because identifiers changed. Scope, repository, environment, identity, workflow, or material-effect expansion needs explicit updated authority, and direct human pause or revocation prevails until explicit resume.")
+	document.Paragraph("Cross-repository coordination is conditional: create or adopt one canonical `docs/programs/<program>/PROGRAM.md` only when the documented trigger applies. The ledger records the standing selector, pause state, resolved exact current PR set, and frontier; it never creates authority.")
 	if additionalRules := strings.TrimSpace(config.AdditionalHardRules); additionalRules != "" {
 		document.Paragraph(inline(additionalRules))
 	}
@@ -84,7 +85,7 @@ func addHardRules(document *promptdoc.Document, config Config) {
 	document.Heading(2, "Hard Rules")
 	document.OrderedList(1,
 		"Construct the initial Global Release Graph before any source, GitHub, deployment, or infrastructure mutation.",
-		"Identify the accepted task, active `/goal`, or explicit hold that bounds the in-scope merge set before treating any node as `MERGE_READY`.",
+		"Identify the explicit bounded standing-authority grant and its current pause, revocation, expiry, or completion state before treating any node as `MERGE_READY`.",
 		"The graph, not PR age, number, repository order, or apparent urgency, determines release ordering.",
 		"Treat merge order and deployment order as separate decisions.",
 		"Prefer local Git and repository evidence; use `"+inline(config.SourceControl.CLI)+"` conservatively with batched JSON, cached results, and bounded targeted refreshes. If it is unavailable or unauthenticated, stop and establish the repository-approved authenticated client rather than guessing remote state.",
@@ -96,11 +97,11 @@ func addHardRules(document *promptdoc.Document, config Config) {
 		"Keep one accountable supervisor for scope, graph state, integration, validation, delivery gates, and reporting.",
 		"Verify production from actual runtime identity and state, not from merge or deployment command success.",
 		"Only an authorized node with exact current evidence in state `MERGE_READY` may enter the reconciled merge frontier; `BLOCKED` and `UNKNOWN` never do.",
-		"Keep routine, scope-preserving source remediation on the existing PR head; invalidate old-head readiness, rerun current-head checks and review, then merge in-scope work without a new consent prompt. Create a replacement corrective PR only when the repair materially changes scope or architecture, the original head cannot be updated safely, or repository policy or the user requires it.",
+		"Keep routine, scope-preserving source remediation on the existing PR head; invalidate old-head readiness, rerun current-head checks and review, then merge without renewed authority when the standing selector still matches. Create a replacement only when scope, architecture, head safety, repository policy, or the user requires it.",
 		"Run the configured final integration suite after all intended units pass individual environment verification.",
 		"Never trade correctness, availability, security, compatibility, or data integrity for completion.",
 		"Preserve every repository's local issue, branch, worktree, delivery, testing, infrastructure, and approval rules.",
-		"Do not merge, deploy, mutate infrastructure, or resolve review state when target identity, ownership, evidence, repository policy, or destructive-effect classification is ambiguous.",
+		"Do not merge, deploy, mutate infrastructure, or resolve review state when standing authority, target identity, ownership, evidence, repository policy, environment, workflow, or material-effect classification is ambiguous.",
 	)
 }
 

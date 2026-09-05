@@ -36,9 +36,10 @@ read_policy_default: conditional
   mutation.
 - This ruleset sequences and verifies PR delivery; it does not infer consent or
   relax safety checks.
-- This ruleset never invents `MERGE_READY`. An accepted task or active `/goal`
-  authorizes in-scope non-destructive merges. Resolve `pull-request-merge` and
-  follow `github-pr-merge` before any merge mutation. Do not stop for a separate merge-consent prompt.
+- This ruleset never creates standing merge authority or `MERGE_READY`.
+  Explicit bounded standing authority may cover later in-scope PRs and refreshed
+  heads; resolve `pull-request-merge` and follow `github-pr-merge` before every
+  merge mutation.
 
 ## Rules
 
@@ -114,18 +115,20 @@ Delivery Contract:
 - The `PR title format` field must resolve to the Conventional Commits title shape with the GitHub issue as scope:
   `<type>(<issue_number>): <gitmoji> <short title message>`.
 
-### Merge Is Readiness, Not A Second Consent Prompt
+### Standing Merge Authority Is Separate From Delivery
 
 - PR-delivery consent authorizes issue, branch, commit, push, and ready-PR
-  delivery. An accepted task or active `/goal` also authorizes in-scope
-  non-destructive merges once they are `MERGE_READY`.
-- A lane decision, issue assignment, PR creation, approval, passing checks, or
-  documentation-only eligibility never invents `MERGE_READY`.
-- In-scope merges route to `github-pr-merge` and `pull-request-merge`. Do not stop for a separate merge-consent prompt.
-- Adding a merge target outside accepted product scope requires clarification.
-  Revalidating an unchanged `MERGE_READY` head or using a repository-required
-  merge queue does not require another prompt. A changed head requires fresh
-  current-head evidence under `github-pr-merge`, not a new consent prompt.
+  delivery. It does not create standing merge or deployment authority.
+- Standing authority exists only when a human explicitly authorizes a bounded
+  task, goal, or program for merge and/or deployment. A lane decision, issue
+  assignment, PR creation, approval, passing checks, or documentation-only
+  eligibility never creates it or `MERGE_READY`.
+- A standing selector may bind a later in-scope PR or refreshed head. Resolve
+  the exact current target under `github-pr-merge` and `pull-request-merge`;
+  fresh readiness evidence is mandatory, renewed permission is not.
+- Repository, base, environment, actor, identity, method, workflow, product
+  scope, or material-effect expansion requires explicit updated authority.
+  Pause, hold, or revocation remains effective until explicit human resume.
 
 ### Author And Committer Invariant
 
@@ -259,8 +262,9 @@ Include:
 - While remaining in that session, address remaining pull-request review
   feedback as it arrives. Handle review, authorized merge, and primary leftover
   cleanup as one continuation of the current lane.
-- Merge the worktree pull request when it is in accepted-task scope and
-  current `MERGE_READY`, following `github-pr-merge`. Do not stop for a separate merge-consent prompt.
+- Merge the worktree pull request only when active standing authority covers its
+  resolved exact current node and it is `MERGE_READY`, following
+  `github-pr-merge`. A later in-scope head does not require renewed authority.
 - This cleanup is leftover disposal after an in-scope `MERGE_READY` merge. It does
   not invent readiness.
 - After remaining pull-request feedback is addressed and the authorized merge
@@ -443,7 +447,7 @@ git log -1 --format='%an <%ae> | %cn <%ce>'
 
 ### Squash-And-Merge Preservation
 
-This section applies only after `github-pr-merge` establishes authority and
+This section applies only after `github-pr-merge` establishes standing authority and
 readiness for the exact pull request. Documentation-only delivery and skip
 eligibility do not create merge authority.
 
@@ -522,8 +526,9 @@ evidence under Deviations and remaining operator actions under Next steps:
 - Do not remove `[skip ci]` from the generated commit message while squash-merging a qualifying documentation-only pull request.
 - Do not add agent or tool attribution to commits or PR bodies.
 - Do not force-push, rebase, or amend already-pushed commits to recover from failure.
-- Do not treat PR-delivery consent, automatic lane allocation, ready state,
-  passing checks, or documentation-only eligibility as merge authorization.
+- Do not treat generic task acceptance, PR-delivery consent, automatic lane
+  allocation, ready state, passing checks, or documentation-only eligibility as
+  standing merge authorization.
 
 ## Verification
 

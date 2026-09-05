@@ -48,7 +48,7 @@ INDEPENDENT_OF`)
 	document.Paragraph("Do not mutate until the graph and evidence can answer:")
 	document.OrderedList(1,
 		"What are all relevant PRs and feature streams within the permitted scope?",
-		"Which exact PRs are in accepted-task or `/goal` scope, which of those are currently `MERGE_READY`, and which discovered nodes expand product scope or have destructive effects?",
+		"Which exact current PRs match the active standing-authority selector, which are `MERGE_READY`, and which discovered nodes expand scope, environment, identity, workflow, infrastructure, security, data, or destructive effects?",
 		"Which nodes depend on which others, and why?",
 		"What runtime, infrastructure, schema, migration, contract, and approval prerequisites exist?",
 		"For each authorized node, what are the expected head/base, authenticated actor, merge method and policy, current readiness evidence, indirect deployment effects, and post-merge gate?",
