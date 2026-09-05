@@ -224,6 +224,12 @@ authority, but it must receive fresh exact current-head readiness evidence.
 Repository, base, environment, actor, identity, method, workflow, product
 scope, or material-effect expansion requires explicit updated authority.
 
+A commit SHA or head OID is an evidence pointer, never an authorization
+identity. When the standing selector still matches, a changed head invalidates
+readiness only. After fresh evidence restores `MERGE_READY`, continue the
+authorized merge, standard deployment, and browser verification without
+exact-head reauthorization.
+
 A handoff must identify the coordinator and ledger, active milestone, current
 ready frontier, blockers and owners, material decisions, exact evidence,
 unobserved claims, next safe actions, and prohibited or deferred scope. A chat

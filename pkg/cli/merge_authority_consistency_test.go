@@ -18,6 +18,8 @@ func TestActivePolicyUsesOneMergeAuthorityModel(t *testing.T) {
 			"may bind later-created in-scope PRs and refreshed heads",
 			"Only exact current `MERGE_READY` nodes may merge",
 			"A changed in-scope head invalidates readiness, not standing authority",
+			"A commit SHA or head OID identifies readiness evidence only",
+			"Never request exact-head reauthorization",
 			"Pause, hold, or revocation stops affected actions and dependents",
 			"Never bypass protection",
 		} {
@@ -64,7 +66,7 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 		}
 	}
 
-	for _, forbidden := range []string{
+	for _, forbidden := range append([]string{
 		"GitHub access is never permission to:\n\n- Merge.",
 		"program ledger creates merge authority",
 		"verification agents may merge",
@@ -73,7 +75,7 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 		"never imply merge consent",
 		"accepted task or active `/goal` authorizes",
 		"Proceed autonomously when the graph contains only additive or rollback-preserving effects",
-	} {
+	}, exactHeadReauthorizationPhrases()...) {
 		if strings.Contains(combined, normalizeMergeAuthorityPolicy(forbidden)) {
 			t.Errorf("active policy contains contradictory authority %q", forbidden)
 		}
@@ -90,4 +92,13 @@ func TestNormalizeMergeAuthorityPolicyCollapsesWhitespace(t *testing.T) {
 
 func normalizeMergeAuthorityPolicy(value string) string {
 	return strings.Join(strings.Fields(value), " ")
+}
+
+func TestProjectSummaryDoesNotRequireExactHeadReauthorization(t *testing.T) {
+	summary := normalizeStandingAuthorityPolicy(readRepositoryFile(t, "docs/PROJECT_PROGRESS_SUMMARY.md"))
+	for _, forbidden := range exactHeadReauthorizationPhrases() {
+		if strings.Contains(summary, normalizeStandingAuthorityPolicy(forbidden)) {
+			t.Errorf("project summary contains superseded authority requirement %q", forbidden)
+		}
+	}
 }

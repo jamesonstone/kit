@@ -126,6 +126,8 @@ Delivery Contract:
 - A standing selector may bind a later in-scope PR or refreshed head. Resolve
   the exact current target under `github-pr-merge` and `pull-request-merge`;
   fresh readiness evidence is mandatory, renewed permission is not.
+- A SHA or head OID identifies the evidence to revalidate; it is never an
+  authorization target. Do not ask the human to reauthorize a refreshed head.
 - Repository, base, environment, actor, identity, method, workflow, product
   scope, or material-effect expansion requires explicit updated authority.
   Pause, hold, or revocation remains effective until explicit human resume.
@@ -265,6 +267,8 @@ Include:
 - Merge the worktree pull request only when active standing authority covers its
   resolved exact current node and it is `MERGE_READY`, following
   `github-pr-merge`. A later in-scope head does not require renewed authority.
+- Continue any already-authorized standard deployment and browser retry after
+  final-head readiness passes; do not insert an exact-head permission prompt.
 - This cleanup is leftover disposal after an in-scope `MERGE_READY` merge. It does
   not invent readiness.
 - After remaining pull-request feedback is addressed and the authorized merge

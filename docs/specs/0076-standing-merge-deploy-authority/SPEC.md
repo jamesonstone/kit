@@ -141,6 +141,15 @@ policy, infrastructure, data, and production correctness.
   recorded expiry boundary ends it automatically.
 - Preserve exact pre-merge reconciliation and post-deployment verification as
   mandatory evidence, not authorization ceremonies.
+- Treat the commit SHA and head OID only as keys for current readiness evidence.
+  They are never part of the standing-authority identity. A changed or refreshed
+  head invalidates prior checks and review, not authorization.
+- After fresh checks restore a selector-matching head to `MERGE_READY`, continue
+  through every already-authorized standard deployment and verification step,
+  including a bounded browser retry, without exact-head reauthorization.
+- Active guidance must never require or emit language equivalent to: "prior
+  merge authority is invalid", "fresh exact-head authorization", "reauthorize
+  the current head", or "the refreshed head needs exact-head authorization".
 - Update canonical rules, generated entrypoints, support docs, release prompt,
   refresh/reconcile behavior, and tests so every Kit-managed project receives
   the semantics through normal refresh/reconcile.
@@ -179,6 +188,16 @@ policy, infrastructure, data, and production correctness.
    deliver one ready PR.
 7. Checkpoint exact issues, branches, heads, PRs, validation, and remaining
    landing order in the coordinator ledger. Stop before merge or deployment.
+8. For issue #200, strengthen the canonical contract so SHA/OID changes
+   invalidate readiness evidence only, add an additive current instruction
+   version, and expand semantic audits to reject exact-head reauthorization
+   across active instructions, rules, and workflows.
+9. Remove the obsolete requirement from the active progress index while
+   preserving historical specs as superseded evidence.
+10. Refresh LabCore issue #539 and LabCore UI issue #323 from the exact verified
+    Kit source. Preserve local customizations, correct active program/PR
+    coordination text, validate both downstream repositories, and deliver ready
+    PRs without merge or deployment.
 
 ## DECISIONS
 
@@ -187,6 +206,10 @@ policy, infrastructure, data, and production correctness.
   permission prompts.
 - Accepted: changed heads lose readiness evidence, not in-scope standing
   authority.
+- Accepted: a SHA or head OID is never an authorization selector or approval
+  token. No head change, by any actor, can revoke standing authority by itself.
+- Accepted: after final-head readiness passes, authorized deployment and browser
+  verification continue without another permission prompt.
 - Accepted: standard deployment is an allowlisted existing workflow and
   environment, not a synonym for every non-destructive cloud or IaC mutation.
 - Accepted: current explicit pause/revocation outranks earlier standing
@@ -235,6 +258,22 @@ policy, infrastructure, data, and production correctness.
   requires explicit blocker-repair permission, but a selector-matching human or
   external head change retains standing merge authority after it returns from
   `UNKNOWN` to exact-current `MERGE_READY` with fresh evidence.
+- Issue #200 follow-up: despite Kit's current rule, LabCore's active Hybrid WGS
+  ledger and LabCore UI's managed instructions still preserve exact-head
+  reauthorization wording. Existing task prompts also retain copied historical
+  context after repository rules change.
+- Current live state at the follow-up boundary: Kit PR #199 and LabCore PR #508
+  are merged; LabCore main still records managed-rule provenance from pre-final
+  Kit policy commit `7d08f7e`; LabCore UI remains on older Kit provenance
+  `76af71c`. PR #538 subsequently merged after producing the quoted redundant
+  authorization request.
+- PR #201 review found three valid final-head gaps: the release prompt described
+  selector mismatch, pause/revocation, and expansion as an exhaustive stop list;
+  the semantic audit omitted generated entrypoints; and the forbidden-language
+  set missed `require(s) exact-head reauthorization`. The repair keeps every
+  current identity, policy, workflow, environment, dependency, and material-
+  effect gate active, audits all five generated entrypoints, and locks the
+  additional normalized wording with regression coverage.
 
 ## VALIDATION
 
@@ -251,24 +290,28 @@ policy, infrastructure, data, and production correctness.
 - PASS: targeted `./bin/kit init --refresh --force --dry-run --diff` reports
   zero planned changes for AGENTS, CLAUDE, Copilot, GUARDRAILS, and TOOLING.
 - PASS: `./bin/kit reconcile --all --output-only` reports no reconciliation
-  needed and a complete audit of 746 candidates, 385 eligible handwritten
+  needed and a complete audit of 746 candidates, 386 eligible handwritten
   source/test files, and zero files above 300 lines.
 - PASS: LabCore full `go test ./... -count=1`, `go vet ./...`,
-  `golangci-lint run --new-from-rev=origin/main ./...`, `make docs-check`, Kit
-  config check, repository-maintenance context resolution, managed-rule and
-  workflow byte comparisons, three-entrypoint section comparisons,
+  `golangci-lint run --new-from-rev=origin/main ./...`, `make docs-check`,
+  exact Kit rule/workflow parity, generated-entrypoint convergence,
   `git diff --check`, and diff-scoped gitleaks.
-- PASS: LabCore ready PR #508 at `57ad7a446ab5c19bb14a51a82e41d523654b78d4`
-  is human-authored and assigned, mergeable, and preserves the Docs-Site
-  `not-required` evidence.
-- PENDING: LabCore CodeQL checks and Kit CodeRabbit. Kit hosted `validate` and
-  auto-assignment passed on policy commit `7d08f7e` before this checkpoint
-  update.
-- KNOWN PRE-EXISTING: full LabCore lint reports 66 findings; Kit project
-  validation reports 44 blocking historical spec/progress/source-size findings;
-  the whole-tree gitleaks scan reports four existing documentation examples.
-  The diff-scoped lint, docs, tests, vet, and gitleaks checks pass and none of
-  those findings is in this change.
+- PASS: LabCore UI 826 tests, lint, typecheck, changed-file Prettier gate,
+  file-size audit, static web export, exact Kit rule/workflow parity,
+  generated-entrypoint convergence, `git diff --check`, and diff-scoped
+  gitleaks.
+- PASS: ready human-assigned PRs Kit #201, LabCore #541, and LabCore UI #326
+  exist on their governed issue branches.
+- PASS: hosted checks are terminal green for Kit implementation head `7c7ddcd`,
+  LabCore head `819186d`, and LabCore UI head `c3ed1c7`. Kit CodeRabbit review
+  findings were repaired and resolved; downstream CodeRabbit statuses succeeded
+  with rate-limited reviews.
+- KNOWN PRE-EXISTING: Kit project validation passes. LabCore project validation
+  retains 44 historical spec/progress/source-size findings and four whole-tree
+  gitleaks examples. LabCore UI retains eight historical spec/progress findings,
+  41 whole-tree Prettier warnings, one whole-tree gitleaks example, and the
+  lockfile dependency baseline reported by `npm ci`. Diff-scoped validation
+  passes and no product/runtime source changed.
 - PASS: PR-review repair focused suites for `internal/releaseprompt`,
   `internal/templates`, and `pkg/cli`; full `go test ./... -count=1`; full
   `go test -race ./... -count=1`; `go vet ./...`; `golangci-lint run ./...`;
@@ -277,8 +320,11 @@ policy, infrastructure, data, and production correctness.
 - PASS: fresh independent read-only verification of D001-D005 and the complete
   16-file repair diff. The verifier confirmed every finding, test boundary,
   mirror, source-size limit, and repair-versus-merge authority distinction.
-- PENDING: final commit/push, current-head hosted validation, reflection, and
-  verified review-thread resolution.
+- PASS: PR #201 final review repair reran full `go test ./... -count=1`, race
+  coverage for `pkg/cli` and `internal/releaseprompt`, `go vet ./...`,
+  `golangci-lint run ./...`, and `go build ./...`.
+- PENDING: final docs-only Kit checkpoint checks; no implementation evidence or
+  verified review repair remains pending.
 
 ## OUTCOME
 
@@ -296,22 +342,22 @@ policy, infrastructure, data, and production correctness.
 - Direct human pause, hold, or revocation has precedence and persists until
   explicit resume or replacement authority; completion or expiry ends the
   grant.
-- Additive instruction version v12 preserves immutable v1-v11, and generated
+- Additive instruction version v13 preserves immutable v1-v12, and generated
   entrypoints, workflows, release prompts, audits, and regression tests share
   the same contract.
-- LabCore's three entrypoints now agree on the standing merge/deploy contract.
-  Managed merge/team/program/deadline rules and merge/release workflows are
-  byte-identical to Kit policy commit `7d08f7e`; local-custom delivery, safety,
+- LabCore's three entrypoints, active Hybrid WGS ledger, managed merge/program
+  rules, and merge/release workflows now agree on the evidence-only head
+  contract from Kit policy commit `56b8802`; local-custom delivery, safety,
   work-lane, and infrastructure rules preserve stricter LabCore policy.
+- LabCore UI's generated entrypoints and managed merge, delivery, work-lane,
+  infrastructure, cross-repository, and release guidance now match the same
+  exact Kit source.
 - `.github/workflows/deploy.yaml` is the only current LabCore standard
   deployment path eligible for a named standing grant; live/production still
   requires immediate `kit aws verify` for the configured `lsmc` identity.
-- Kit PR #199 and LabCore PR #508 are ready for human review. Merge and
-  deployment remain explicitly unperformed and unauthorized.
-- PR #199's repair now closes D001-D005 with focused regressions. Because D002
-  and D004 update managed merge workflows/rules after policy source `7d08f7e`,
-  LabCore PR #508 must be refreshed in its own existing lane before it can
-  claim parity with the final Kit head.
+- Kit PR #201, LabCore PR #541, and LabCore UI PR #326 are ready for human
+  review. Merge and deployment remain explicitly unperformed and unauthorized
+  for these governance PRs.
 
 ## REPOSITORY MEMORY
 
@@ -329,8 +375,10 @@ Artifacts:
 - `docs/references/rules/github-pr-merge.md`
 - `docs/references/rules/infrastructure-change-approval.md`
 - `docs/references/rules/safety-guardrails.md`
-- generated entrypoints, workflows, release prompt, semantic audit, and v12
+- generated entrypoints, workflows, release prompt, semantic audit, and v13
   instruction sources listed by the delivered diff
-- LabCore repository memory: not required; the downstream change is a managed
-  instruction/rule refresh whose durable rationale and sequencing live in this
-  Kit spec and the coordinator program ledger.
+- LabCore repository memory: the existing active Hybrid WGS program ledger was
+  corrected because it directly influenced the stale request.
+- LabCore UI repository memory: not required; its downstream change is a
+  managed instruction/rule refresh whose durable rationale and sequencing live
+  in this Kit spec and the coordinator program ledger.

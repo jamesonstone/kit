@@ -24,8 +24,9 @@ func auditStandingAuthorityPolicy(projectRoot string) []reconcileFinding {
 			continue
 		}
 		body := string(content)
+		normalizedBody := normalizeStandingAuthorityPolicy(body)
 		for _, required := range check.required {
-			if strings.Contains(body, required) {
+			if strings.Contains(normalizedBody, normalizeStandingAuthorityPolicy(required)) {
 				continue
 			}
 			findings = append(findings, newFinding(
@@ -39,7 +40,7 @@ func auditStandingAuthorityPolicy(projectRoot string) []reconcileFinding {
 			break
 		}
 		for _, forbidden := range check.forbidden {
-			if !strings.Contains(body, forbidden) {
+			if !strings.Contains(normalizedBody, normalizeStandingAuthorityPolicy(forbidden)) {
 				continue
 			}
 			findings = append(findings, newFinding(
@@ -71,14 +72,56 @@ func standingAuthorityChecks() []standingAuthorityCheck {
 				"Bind later pull requests only when each is directly required",
 				"A changed in-scope head invalidates readiness, not standing",
 				"Only exact current `MERGE_READY` nodes may merge",
+				"A commit SHA or head OID identifies readiness evidence only",
+				"without exact-head reauthorization",
 				"Only an explicit human resume or new grant restores it",
 			},
-			forbidden: []string{
+			forbidden: append(exactHeadReauthorizationPhrases(),
 				"accepted task or active `/goal`",
 				"accepted-task authority",
 				"Additive and routine application operations proceed autonomously",
 				"Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set",
+			),
+		},
+		{
+			path: "docs/references/rules/work-lane-gating.md",
+			required: []string{
+				"A commit SHA or head OID is readiness evidence, never an authorization",
+				"without exact-head reauthorization",
 			},
+			forbidden: exactHeadReauthorizationPhrases(),
+		},
+		{
+			path: "docs/references/rules/github-pr-delivery.md",
+			required: []string{
+				"A SHA or head OID identifies the evidence to revalidate",
+				"already-authorized standard deployment and browser retry",
+			},
+			forbidden: exactHeadReauthorizationPhrases(),
+		},
+		{
+			path: "docs/references/rules/cross-repository-program-coordination.md",
+			required: []string{
+				"A commit SHA or head OID is an evidence pointer, never an authorization",
+				"without exact-head reauthorization",
+			},
+			forbidden: exactHeadReauthorizationPhrases(),
+		},
+		{
+			path: "docs/references/workflows/pull-request-merge.md",
+			required: []string{
+				"Treat the SHA/head OID as the evidence key only",
+				"Do not request exact-head reauthorization after checks pass",
+			},
+			forbidden: exactHeadReauthorizationPhrases(),
+		},
+		{
+			path: "docs/references/workflows/release-orchestration.md",
+			required: []string{
+				"Each SHA/head OID identified readiness evidence only",
+				"No changed head required exact-head reauthorization",
+			},
+			forbidden: exactHeadReauthorizationPhrases(),
 		},
 		{
 			path: "docs/references/rules/infrastructure-change-approval.md",
@@ -93,5 +136,42 @@ func standingAuthorityChecks() []standingAuthorityCheck {
 				"Additive IAM, network topology",
 			},
 		},
+		instructionStandingAuthorityCheck("AGENTS.md"),
+		instructionStandingAuthorityCheck("CLAUDE.md"),
+		instructionStandingAuthorityCheck(".github/copilot-instructions.md"),
+		instructionStandingAuthorityCheck("docs/agents/GUARDRAILS.md"),
+		instructionStandingAuthorityCheck("docs/agents/TOOLING.md"),
 	}
+}
+
+func instructionStandingAuthorityCheck(path string) standingAuthorityCheck {
+	return standingAuthorityCheck{
+		path: path,
+		required: []string{
+			"A commit SHA or head OID identifies readiness evidence only",
+			"Never request exact-head reauthorization",
+			"After final-head evidence restores `MERGE_READY`",
+		},
+		forbidden: exactHeadReauthorizationPhrases(),
+	}
+}
+
+func exactHeadReauthorizationPhrases() []string {
+	return []string{
+		"prior merge authority is invalid",
+		"changed head invalidates prior merge authority",
+		"changed head loses prior readiness and merge authority",
+		"requires fresh exact-head authorization",
+		"require fresh exact-head authorization",
+		"requires exact-head reauthorization",
+		"require exact-head reauthorization",
+		"fresh exact-head authorization",
+		"exact-head merge authorization",
+		"reauthorize the current head",
+		"refreshed head needs exact-head authorization",
+	}
+}
+
+func normalizeStandingAuthorityPolicy(value string) string {
+	return strings.ToLower(strings.Join(strings.Fields(value), " "))
 }

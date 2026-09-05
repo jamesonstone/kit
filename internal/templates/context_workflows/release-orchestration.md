@@ -77,6 +77,9 @@ evidence:
   before returning to `MERGE_READY`, including heads changed by a human or
   external system. Selector-matching nodes retained standing merge authority
   without renewed merge authorization.
+- Each SHA/head OID identified readiness evidence only. No changed head required
+  exact-head reauthorization before its already-authorized merge, standard
+  deployment, or browser verification retry.
 - Every agent-performed in-place repair had explicit blocker-repair permission;
   otherwise source, commit, and push stopped for renewed repair authority.
   Exceptional replacement PRs and material expansions received explicit

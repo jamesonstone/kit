@@ -51,9 +51,11 @@ const agentsTooling = `# Tooling
 
 - Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program to merge its resulting work. Generic task acceptance does not create it.
 - Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve the exact current PR and head before mutation; do not ask again solely because its number or final OID was unknown when authority was granted.
+- A commit SHA or head OID identifies readiness evidence only; it is never an authorization identity. Never request exact-head reauthorization.
 - Before any merge or merge-queue mutation, resolve ` + "`pull-request-merge`" + ` and load ` + "`docs/references/rules/github-pr-merge.md`" + `.
 - Merge only exact current ` + "`MERGE_READY`" + ` nodes from the standing-authority frontier; revalidate actor, head/base, repository policy, checks, dependencies, deployment workflow, environment, and material effects before every wave.
 - A changed in-scope head invalidates readiness, not standing authority. Scope, repository, base, environment, actor, identity, method, workflow, or material-effect expansion requires explicit updated authority.
+- After final-head evidence restores ` + "`MERGE_READY`" + `, continue any already-authorized standard deployment and browser retry without another permission prompt.
 - IAM, network, KMS, secrets, database-schema or data-loss changes, infrastructure creation/replacement/deletion, destructive deletion, nonstandard deployment effects, and unresolved risk classifications are outside standing merge/deploy authority.
 - The most recent direct human instruction wins. Pause, hold, or revocation stops affected actions and dependents until explicit human resume or replacement authority.
 - Report merge, hosted workflow, deployment/runtime, and production evidence separately.

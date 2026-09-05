@@ -164,6 +164,9 @@ Pull-Request Landing Plan:
 - A changed in-scope head invalidates readiness, not standing authority.
   Re-run all current-head checks, reviews, policy, identity, dependency, and
   effect gates before restoring `MERGE_READY`.
+- A commit SHA or head OID is readiness evidence, never an authorization
+  identity. After a selector-matching head returns to `MERGE_READY`, continue
+  without exact-head reauthorization.
 - Repository, base, environment, actor, identity, merge method, deployment
   workflow, product scope, or material-effect expansion requires explicit
   updated authority. The most recent human pause, hold, or revocation prevails

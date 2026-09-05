@@ -96,6 +96,14 @@ delivery_intent: issue_branch_pr_ready
 ---
 # SPEC
 
+## SUPERSEDED AUTHORITY NOTE
+
+Feature 0076 supersedes every SHA-specific or exact-head authorization statement
+below. They remain historical rationale only. Current policy treats a commit SHA
+or head OID as readiness evidence, never an authorization identity: a changed
+head returns to `UNKNOWN`, receives fresh checks and review, and proceeds under
+the existing bounded standing authority once it is `MERGE_READY`.
+
 ## PURPOSE
 
 Define one repository-native authority model that lets coding agents merge an

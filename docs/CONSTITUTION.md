@@ -34,6 +34,7 @@
 - Preserve unrelated and project-owned changes. Fail closed when ownership, target identity, or mutation scope is ambiguous.
 - Report validation literally; planning evidence, local checks, hosted checks, deployment, and production proof are distinct claims.
 - Pull-request merge is a distinct mutation boundary. Explicit bounded standing authority may cover later-created in-scope PRs and refreshed heads, but every exact current node must be `MERGE_READY`; generic task acceptance, delivery consent, checks, assignments, and ledgers create neither authority nor readiness. Direct human pause or revocation prevails until explicit resume.
+- Commit SHAs and head OIDs identify readiness evidence only; they are never authorization identities. Changed heads invalidate checks and review, not standing authority, and must not trigger exact-head reauthorization after fresh evidence restores `MERGE_READY`.
 - Only current `MERGE_READY` nodes may merge, and merge success is not deployment, runtime, production, or integrated-system proof.
 - Standing deployment authority covers only a named existing standard workflow, authorized environment, and exact merged artifact on already-provisioned resources, followed by runtime verification. IAM, network, KMS, secrets, database schema/data-loss, infrastructure creation/replacement/deletion, destructive, and nonstandard deployment effects retain their separate approval boundaries.
 
