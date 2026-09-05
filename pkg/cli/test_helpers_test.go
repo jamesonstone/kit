@@ -52,6 +52,7 @@ func setupLifecycleTestProject(t *testing.T) (string, *config.Config) {
 		}
 		writeFile(t, filepath.Join(projectRoot, relativePath), content)
 	}
+	writeStandingAuthorityPolicies(t, projectRoot)
 	if err := os.MkdirAll(filepath.Join(projectRoot, "docs", "specs"), 0o755); err != nil {
 		t.Fatal(err)
 	}

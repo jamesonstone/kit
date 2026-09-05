@@ -224,6 +224,17 @@ policy, infrastructure, data, and production correctness.
   validation. Moving the cohesive `agentsRLM` template to
   `instruction_templates_v2_rlm.go` preserved output and brought both files
   below the limit.
+- PR #199 review confirmed five valid gaps. The resolved release policy needed
+  all standard-deployment bounds; changed-head workflow wording needed to keep
+  agent repair permission separate from standing merge authority; forbidden
+  phrase checks needed symmetric whitespace normalization; the semantic audit
+  needed the exact-current `MERGE_READY` gate; and unreadable policy documents
+  needed visible warnings rather than silent skips.
+- CodeRabbit's blocker-repair finding was too broad if applied literally to
+  every changed head. Agent-performed source, commit, or push remediation
+  requires explicit blocker-repair permission, but a selector-matching human or
+  external head change retains standing merge authority after it returns from
+  `UNKNOWN` to exact-current `MERGE_READY` with fresh evidence.
 
 ## VALIDATION
 
@@ -258,6 +269,16 @@ policy, infrastructure, data, and production correctness.
   the whole-tree gitleaks scan reports four existing documentation examples.
   The diff-scoped lint, docs, tests, vet, and gitleaks checks pass and none of
   those findings is in this change.
+- PASS: PR-review repair focused suites for `internal/releaseprompt`,
+  `internal/templates`, and `pkg/cli`; full `go test ./... -count=1`; full
+  `go test -race ./... -count=1`; `go vet ./...`; `golangci-lint run ./...`;
+  `go build ./...`; `make build`; workflow mirror comparisons; `gofmt` and
+  `git diff --check`.
+- PASS: fresh independent read-only verification of D001-D005 and the complete
+  16-file repair diff. The verifier confirmed every finding, test boundary,
+  mirror, source-size limit, and repair-versus-merge authority distinction.
+- PENDING: final commit/push, current-head hosted validation, reflection, and
+  verified review-thread resolution.
 
 ## OUTCOME
 
@@ -287,6 +308,10 @@ policy, infrastructure, data, and production correctness.
   requires immediate `kit aws verify` for the configured `lsmc` identity.
 - Kit PR #199 and LabCore PR #508 are ready for human review. Merge and
   deployment remain explicitly unperformed and unauthorized.
+- PR #199's repair now closes D001-D005 with focused regressions. Because D002
+  and D004 update managed merge workflows/rules after policy source `7d08f7e`,
+  LabCore PR #508 must be refreshed in its own existing lane before it can
+  claim parity with the final Kit head.
 
 ## REPOSITORY MEMORY
 

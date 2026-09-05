@@ -167,7 +167,7 @@ func resolveInfrastructure(config *Config, input Input, hint infrastructureHint)
 		}
 	}
 	config.Infrastructure.IdentityCheck = identityCheck(config.Infrastructure.Provider)
-	config.Infrastructure.Policy = "IAM, network, KMS, secrets, database schema or data-loss, infrastructure create/replace/delete, destructive, and nonstandard deployment changes require their own complete approval boundary and post-change proof. Standing authority covers only recorded standard deployment workflows on already-provisioned targets."
+	config.Infrastructure.Policy = "IAM, network, KMS, secrets, database schema or data-loss, infrastructure create/replace/delete, destructive, and nonstandard deployment changes require their own complete approval boundary and post-change proof. Standing authority covers only a named existing standard deployment workflow for an authorized environment and exact merged artifact on already-provisioned application resources, followed by deployed-identity, health, runtime, and rollback verification."
 	return nil
 }
 

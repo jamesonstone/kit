@@ -31,12 +31,23 @@ func TestReleaseOrchestrationWorkflowPreservesAuthorityBoundaries(t *testing.T) 
 		"scope-preserving repairs as ordinary, non-history-rewriting updates",
 		"do not rebase, force-push, retarget, or otherwise\n   replace reviewed history",
 		"Every changed existing head received fresh checks, review, and revalidation",
-		"fresh checks, review, and revalidation\n  before merge without renewed authority",
+		"including heads changed by a human or\n  external system",
+		"retained standing merge authority\n  without renewed merge authorization",
+		"Every agent-performed in-place repair had explicit blocker-repair permission",
+		"otherwise source, commit, and push stopped for renewed repair authority",
 		"heads that cannot be updated safely, or explicit repository-policy or user",
 		"Merge success was never substituted",
 	} {
 		if !strings.Contains(workflow, check) {
 			t.Errorf("release-orchestration workflow missing %q", check)
+		}
+	}
+	for _, forbidden := range []string{
+		"changed or refreshed heads retain authority only when",
+		"otherwise it received renewed authorization",
+	} {
+		if strings.Contains(workflow, forbidden) {
+			t.Errorf("release-orchestration workflow conflates repair and merge authority with %q", forbidden)
 		}
 	}
 }

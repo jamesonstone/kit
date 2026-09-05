@@ -126,7 +126,8 @@ Classify every authorized node as exactly one of:
 - `UNKNOWN`: evidence is missing, stale, unavailable, ambiguous, or cannot be
   attributed to the expected head, target, policy, or actor.
 
-Only `MERGE_READY` nodes may enter the ready frontier. These are never passing:
+Only exact current `MERGE_READY` nodes may merge or enter the ready frontier.
+These are never passing:
 
 - pending or missing expected checks;
 - skipped checks without verified policy eligibility;

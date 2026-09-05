@@ -48,7 +48,7 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 	for _, path := range activePaths {
 		combined += "\n" + readRepositoryFile(t, path)
 	}
-	combined = strings.Join(strings.Fields(combined), " ")
+	combined = normalizeMergeAuthorityPolicy(combined)
 
 	required := []string{
 		"it never creates authority",
@@ -74,8 +74,20 @@ func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 		"accepted task or active `/goal` authorizes",
 		"Proceed autonomously when the graph contains only additive or rollback-preserving effects",
 	} {
-		if strings.Contains(combined, forbidden) {
+		if strings.Contains(combined, normalizeMergeAuthorityPolicy(forbidden)) {
 			t.Errorf("active policy contains contradictory authority %q", forbidden)
 		}
 	}
+}
+
+func TestNormalizeMergeAuthorityPolicyCollapsesWhitespace(t *testing.T) {
+	policy := "GitHub access is never permission to: - Merge."
+	forbidden := "GitHub access is never permission to:\n\n- Merge."
+	if !strings.Contains(normalizeMergeAuthorityPolicy(policy), normalizeMergeAuthorityPolicy(forbidden)) {
+		t.Fatal("normalized multiline phrase did not match normalized policy")
+	}
+}
+
+func normalizeMergeAuthorityPolicy(value string) string {
+	return strings.Join(strings.Fields(value), " ")
 }

@@ -60,21 +60,22 @@ WS-kit-policy implementation and validation
 
 | Workstream | Implementation | GitHub delivery | Deployment/runtime | Validation |
 | --- | --- | --- | --- | --- |
-| `WS-kit-policy` | policy source complete at `7d08f7e2e5721d5e60e2f2b05d5aaf1c50e20ba3`; current delivery head is the commit containing this checkpoint | ready PR #199; resolve the exact live head before merge; final-head hosted checks PENDING | not applicable | full local Kit matrix passed |
-| `WS-labcore-refresh` | complete at `57ad7a446ab5c19bb14a51a82e41d523654b78d4` | ready PR #508; CodeQL PENDING | not applicable | full Go tests, vet, diff-scoped lint, docs, config, context, consistency, diff, and secret checks passed |
+| `WS-kit-policy` | PR-review repair complete in the commit containing this checkpoint; policy commit `7d08f7e` is superseded | ready PR #199; resolve exact live head after push; hosted checks PENDING | not applicable | full local and independent verification passed |
+| `WS-labcore-refresh` | prior refresh complete at `57ad7a446ab5c19bb14a51a82e41d523654b78d4`; parity now stale after Kit D002/D004 repair | ready PR #508 requires in-place managed rule/workflow refresh after final Kit head | not applicable | prior validation passed; refreshed-head validation PENDING |
 
 ## Milestones And Gates
 
 | ID | State | Evidence required to advance |
 | --- | --- | --- |
 | `M1-kit-policy` | satisfied | canonical rule/template/audit implementation and focused plus full Kit validation |
-| `GATE-kit-source-verified` | satisfied | policy source commit `7d08f7e`; generation, init/refresh, reconcile, full Go/race, vet, lint, build, project, source-size, diff, and secret checks passed |
-| `GATE-instruction-consistency` | satisfied | LabCore's three entrypoints agree; managed rules/workflows match `7d08f7e`; local-custom production and AWS policy is preserved |
+| `GATE-kit-source-verified` | pending push | D001-D005 repair passed focused/full/race/static/build and independent verification; exact pushed head and hosted checks pending |
+| `GATE-instruction-consistency` | stale | LabCore #508 matches `7d08f7e`, but D002/D004 change managed workflows/rules and require an in-place downstream refresh after final Kit head |
 | `M2-pr-delivery` | in progress | two ready human-assigned PRs exist; terminal final-head hosted check states remain to observe |
 
 ## Ready Frontier And Blockers
 
-- Ready frontier: observe terminal hosted checks and stop before merge.
+- Ready frontier: commit and push Kit D001-D005 repair, verify hosted state and
+  resolve addressed threads, then refresh LabCore PR #508 in its owning lane.
 - Blockers: none.
 - Explicit hold: do not merge or deploy either governance PR.
 
@@ -91,18 +92,20 @@ WS-kit-policy implementation and validation
 
 ## Current Checkpoint
 
-- Observed at: `2026-09-05T02:18:00Z`
+- Observed at: `2026-09-05T11:15:49Z`
 - Supervisor: `jamesonstone`
-- State changes: delivered Kit PR #199 and LabCore PR #508; LabCore head
-  `57ad7a44` is mergeable and its managed rules/workflows match Kit policy
-  commit `7d08f7e`. This commit is the final durable program checkpoint; resolve
-  its exact PR head and hosted state live before any landing mutation.
-- Ready frontier: observe terminal hosted states without merging either PR.
+- State changes: repaired all five active CodeRabbit findings on Kit PR #199.
+  Fresh independent verification is clean. D002/D004 supersede managed content
+  previously propagated to LabCore head `57ad7a44`, returning the downstream
+  parity gate to stale until an in-place refresh.
+- Ready frontier: push the verified Kit repair, complete reflection and thread
+  resolution, then hand off LabCore #508 refresh without merging either PR.
 - Blockers: merge and deployment intentionally withheld. LabCore targeted
   registry reconciliation against configured Kit `main` remains PENDING until
   Kit PR #199 lands; exact candidate source commit and installed hashes are
   recorded, and no product/runtime files changed.
-- Next safe action: complete hosted observation and report the exact current PR
-  heads plus the smallest landing authorization. Do not merge or deploy.
-- Live claims still required: terminal CodeRabbit/CodeQL state and the exact Kit
-  PR head containing this checkpoint.
+- Next safe action: complete Kit PR #199 delivery and review resolution. Then
+  refresh LabCore PR #508 from the exact final Kit source in its existing lane.
+  Do not merge or deploy.
+- Live claims still required: exact pushed Kit head, terminal hosted checks,
+  resolved thread count, and refreshed LabCore parity.

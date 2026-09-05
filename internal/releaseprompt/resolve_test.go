@@ -32,6 +32,18 @@ func TestResolveUsesExplicitDiscoveredAndDefaultValues(t *testing.T) {
 	if config.Project != "release-x" || config.Organization != "acme" || config.ScopeExpansion != "strict" {
 		t.Fatalf("unexpected resolved config: %#v", config)
 	}
+	for _, required := range []string{
+		"named existing standard deployment workflow",
+		"authorized environment",
+		"exact merged artifact",
+		"already-provisioned application resources",
+		"deployed-identity, health, runtime, and rollback verification",
+		"require their own complete approval boundary",
+	} {
+		if !strings.Contains(config.Infrastructure.Policy, required) {
+			t.Errorf("infrastructure policy missing %q: %s", required, config.Infrastructure.Policy)
+		}
+	}
 	if got := config.Repositories[0].GitHub; got != "acme/service" {
 		t.Fatalf("sanitized GitHub identity = %q", got)
 	}

@@ -36,7 +36,11 @@ evidence:
 
 - Execute exact current pull-request merges covered by explicit bounded standing
   authority once they are `MERGE_READY`. Later in-scope PRs and refreshed heads
-  do not require renewed authority.
+  inside the selector do not require renewed merge authority after exact-current
+  `MERGE_READY` evidence.
+- Agent-performed in-place repair requires the standing-authority permitted
+  actions to explicitly include blocker repair; otherwise stop before source,
+  commit, or push and obtain renewed repair authority.
 - Fail closed on absent, paused, revoked, expired, or mismatched authority;
   unknown actor, policy, head/base, checks, dependencies, environment, workflow,
   or effects; and every separately gated risk class.
@@ -50,14 +54,18 @@ evidence:
    current-head and repository-policy evidence.
 3. Reconcile the in-scope ready frontier immediately before each wave;
    serialize dependencies and same-base sensitive operations.
-4. When in-scope routine remediation is required, use ordinary,
-   non-history-rewriting commits to update the existing pull-request head
-   between waves, invalidate its prior head evidence, and
-   return it to `UNKNOWN` pending fresh checks, review, and revalidation.
-   Do not request renewed authority for an in-scope refreshed head. Reserve replacement pull
-   requests for material scope changes, heads that cannot be updated safely,
-   or explicit repository-policy or user requirements. Do not rebase,
-   force-push, retarget, or otherwise replace the branch's reviewed history.
+4. Before agent-performed in-scope routine remediation, confirm the standing-
+   authority permitted actions explicitly include blocker repair. Otherwise
+   stop before source, commit, or push and obtain renewed repair authority. When
+   authorized, use ordinary, non-history-rewriting commits to update the
+   existing pull-request head between waves. Any changed or refreshed head,
+   including a human or external update, returns to `UNKNOWN` pending fresh
+   exact-current checks, review, and revalidation. When the selector still
+   matches and the node returns to `MERGE_READY`, merge under standing merge
+   authority without renewed merge authorization. Reserve replacement pull
+   requests for material scope changes, heads that cannot be updated safely, or
+   explicit repository-policy or user requirements. Do not rebase, force-push,
+   retarget, or otherwise replace the branch's reviewed history.
 5. Merge or queue only assigned `MERGE_READY` nodes, preserving partial state
    and isolating failures.
 6. Record merge, hosted workflow, deployment/runtime, and production evidence

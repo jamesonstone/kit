@@ -74,7 +74,11 @@ evidence:
   infrastructure, security, data, destructive, or nonstandard effect retained
   its applicable approval and post-change evidence.
 - Every changed existing head received fresh checks, review, and revalidation
-  before merge without renewed authority when the selector still matched;
-  exceptional replacement PRs and material expansions received explicit
+  before returning to `MERGE_READY`, including heads changed by a human or
+  external system. Selector-matching nodes retained standing merge authority
+  without renewed merge authorization.
+- Every agent-performed in-place repair had explicit blocker-repair permission;
+  otherwise source, commit, and push stopped for renewed repair authority.
+  Exceptional replacement PRs and material expansions received explicit
   updated authority.
 - Merge success was never substituted for hosted workflow, deployment, runtime, production, or integrated-system proof.

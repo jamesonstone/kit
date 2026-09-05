@@ -41,19 +41,13 @@ func TestStandingAuthorityPolicyLocksRequiredScenarios(t *testing.T) {
 }
 
 func TestAuditStandingAuthorityPolicyFindsSupersededGuidance(t *testing.T) {
-	projectRoot := t.TempDir()
+	projectRoot := copyStandingAuthorityPolicies(t)
 	path := filepath.Join(projectRoot, "docs", "references", "rules", "github-pr-merge.md")
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		t.Fatal(err)
-	}
 	stale := "# stale\naccepted task or active `/goal` authorizes every merge\n"
 	if err := os.WriteFile(path, []byte(stale), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	findings := auditStandingAuthorityPolicy(projectRoot)
-	if len(findings) == 0 {
-		t.Fatal("expected a superseded-consent finding")
-	}
+	assertStandingAuthorityFinding(t, auditStandingAuthorityPolicy(projectRoot), path, "superseded standing-authority guidance")
 }
 
 func TestAuditStandingAuthorityPolicyAcceptsCurrentRules(t *testing.T) {
@@ -61,4 +55,69 @@ func TestAuditStandingAuthorityPolicyAcceptsCurrentRules(t *testing.T) {
 	if findings := auditStandingAuthorityPolicy(projectRoot); len(findings) != 0 {
 		t.Fatalf("current rules produced policy findings: %#v", findings)
 	}
+}
+
+func TestAuditStandingAuthorityPolicyRequiresExactCurrentMergeGate(t *testing.T) {
+	projectRoot := copyStandingAuthorityPolicies(t)
+	path := filepath.Join(projectRoot, "docs", "references", "rules", "github-pr-merge.md")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = []byte(strings.ReplaceAll(string(body), "Only exact current `MERGE_READY` nodes may merge", "Only ready nodes may merge"))
+	if err := os.WriteFile(path, body, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	assertStandingAuthorityFinding(t, auditStandingAuthorityPolicy(projectRoot), path, "missing standing-authority guidance")
+}
+
+func TestAuditStandingAuthorityPolicyWarnsWhenPolicyMissing(t *testing.T) {
+	projectRoot := copyStandingAuthorityPolicies(t)
+	path := filepath.Join(projectRoot, "docs", "references", "rules", "github-pr-merge.md")
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	assertStandingAuthorityFinding(t, auditStandingAuthorityPolicy(projectRoot), path, "failed to read standing-authority policy document")
+}
+
+func TestAuditStandingAuthorityPolicyWarnsWhenPolicyUnreadable(t *testing.T) {
+	projectRoot := copyStandingAuthorityPolicies(t)
+	path := filepath.Join(projectRoot, "docs", "references", "rules", "github-pr-merge.md")
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(path, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	assertStandingAuthorityFinding(t, auditStandingAuthorityPolicy(projectRoot), path, "failed to read standing-authority policy document")
+}
+
+func copyStandingAuthorityPolicies(t *testing.T) string {
+	t.Helper()
+	projectRoot := t.TempDir()
+	writeStandingAuthorityPolicies(t, projectRoot)
+	return projectRoot
+}
+
+func writeStandingAuthorityPolicies(t *testing.T, projectRoot string) {
+	t.Helper()
+	for _, check := range standingAuthorityChecks() {
+		path := filepath.Join(projectRoot, filepath.FromSlash(check.path))
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(readRepositoryFile(t, check.path)), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func assertStandingAuthorityFinding(t *testing.T, findings []reconcileFinding, path, issue string) {
+	t.Helper()
+	for _, finding := range findings {
+		if finding.FilePath == path && strings.Contains(finding.Issue, issue) && finding.Severity == reconcileSeverityWarning {
+			return
+		}
+	}
+	t.Fatalf("missing warning for %s containing %q: %#v", path, issue, findings)
 }

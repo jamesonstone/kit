@@ -13,6 +13,14 @@ func auditStandingAuthorityPolicy(projectRoot string) []reconcileFinding {
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(check.path))
 		content, err := os.ReadFile(absolutePath)
 		if err != nil {
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				fmt.Sprintf("failed to read standing-authority policy document: %v", err),
+				templateSource(projectRoot),
+				"restore policy document readability before reconciling standing-authority guidance",
+				[]string{fmt.Sprintf("ls -l %s", absolutePath)},
+			))
 			continue
 		}
 		body := string(content)
@@ -62,6 +70,7 @@ func standingAuthorityChecks() []standingAuthorityCheck {
 				"Standing merge authority exists only when a human explicitly authorizes a",
 				"Bind later pull requests only when each is directly required",
 				"A changed in-scope head invalidates readiness, not standing",
+				"Only exact current `MERGE_READY` nodes may merge",
 				"Only an explicit human resume or new grant restores it",
 			},
 			forbidden: []string{
