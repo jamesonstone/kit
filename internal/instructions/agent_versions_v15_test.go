@@ -47,7 +47,31 @@ func TestAgentInstructionsV15RemovesCompletionFormat(t *testing.T) {
 	}
 }
 
-func TestAgentInstructionsV15PreservesV14OutsideCompletionSection(t *testing.T) {
+func TestAgentInstructionsV15RemovesFixedFinalResponseStructureEverywhere(t *testing.T) {
+	content, err := AgentInstructions("v15")
+	if err != nil {
+		t.Fatalf("AgentInstructions(\"v15\") error = %v", err)
+	}
+	for _, want := range []string{
+		"no labels, headings, or section are required",
+		"No fixed order or\n  format is required; lead with whatever matters most to the reader",
+	} {
+		if !strings.Contains(content, want) {
+			t.Fatalf("v15 instructions do not contain %q", want)
+		}
+	}
+	for _, forbidden := range []string{
+		"must include `Repository Memory`,",
+		"- Lead final responses with:",
+		"  1. Outcome",
+	} {
+		if strings.Contains(content, forbidden) {
+			t.Fatalf("v15 instructions still impose a fixed final-response structure %q", forbidden)
+		}
+	}
+}
+
+func TestAgentInstructionsV15PreservesV14BeforeReportingSections(t *testing.T) {
 	v14, err := AgentInstructions("v14")
 	if err != nil {
 		t.Fatal(err)
@@ -56,12 +80,21 @@ func TestAgentInstructionsV15PreservesV14OutsideCompletionSection(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	const marker = "# Agent completion output"
+	// v15 rewrites only the three sections that impose a response shape:
+	// repository memory completion, communication, and agent completion output.
+	// Everything before the first of them must be untouched.
+	const marker = "# Repository memory completion"
 	prior, current := strings.Index(v14, marker), strings.Index(v15, marker)
 	if prior < 0 || current < 0 {
-		t.Fatal("both versions must define the agent completion output section")
+		t.Fatal("both versions must define the repository memory completion section")
 	}
 	if v14[:prior] != v15[:current] {
-		t.Fatal("v15 changed instructions outside the agent completion output section")
+		t.Fatal("v15 changed instructions outside the response-shape sections")
+	}
+
+	const pullRequest = "# Pull request"
+	if v14[strings.Index(v14, pullRequest):strings.Index(v14, "# Communication")] !=
+		v15[strings.Index(v15, pullRequest):strings.Index(v15, "# Communication")] {
+		t.Fatal("v15 changed the pull request section")
 	}
 }
