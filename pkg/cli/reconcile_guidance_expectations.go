@@ -75,11 +75,11 @@ func v3GuidanceExpectations() map[string][]string {
 			"Use the structured contract when omitting it could hide a blocker",
 			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			"use only `## What happened`, `## Deviations`, and `## Next steps`, in that order",
 			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
-			"Use one `**None.**` bullet when there are no deviations",
-			"Use one `**None.**` bullet when no action remains",
-			"three canonical sections without duplication",
+			"A PARTIAL, BLOCKED, or FAIL status always carries Deviations",
+			"never manufacture or speculatively offer an action",
+			"canonical sections without duplication, using the shortest phrasing that keeps each fact recoverable",
 			"## Codex Thread Initialization Hard Gate",
 			"before the first commentary message",
 			"First, call the available thread-title operation (`set_thread_title` when available)",
@@ -123,11 +123,11 @@ func v3GuidanceExpectations() map[string][]string {
 			"Use the structured contract when omitting it could hide a blocker",
 			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			"use only `## What happened`, `## Deviations`, and `## Next steps`, in that order",
 			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
-			"Use one `**None.**` bullet when there are no deviations",
-			"Use one `**None.**` bullet when no action remains",
-			"three canonical sections without duplication",
+			"A PARTIAL, BLOCKED, or FAIL status always carries Deviations",
+			"never manufacture or speculatively offer an action",
+			"canonical sections without duplication, using the shortest phrasing that keeps each fact recoverable",
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
 			"If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation",
 			"Treat the verified account, ARN, and Region as authoritative",
@@ -205,9 +205,9 @@ func v3GuidanceExpectations() map[string][]string {
 			"Use the structured contract when omitting it could hide a blocker",
 			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
-			"Use at most one nested evidence layer and state each fact once",
-			"three canonical sections without duplication",
+			"use only `## What happened`, `## Deviations`, and `## Next steps`, in that order",
+			"Write a briefing, not a transcript",
+			"canonical sections without duplication, using the shortest phrasing that keeps each fact recoverable",
 			"## Repository Memory Completion Gate",
 			"Create or adopt a spec before code when material rationale exists",
 			"repository-memory decision, rationale, and artifact paths or `none` in one concise What happened bullet",
@@ -266,6 +266,8 @@ const (
 	legacyOperatorActionTableHeader = "| Type | Action required | Why | Continue with |"
 	legacyStatusHeading             = "# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>"
 	legacyPrioritizedActionList     = "prioritized action list ordered Blocker, Incomplete, Next, Optional, then None"
+	legacyNoneBulletMandate         = "Use one `**None.**` bullet when there are no deviations"
+	legacyNestedEvidenceMandate     = "Use at most one nested evidence layer and state each fact once"
 )
 
 func v3ForbiddenGuidance() map[string][]string {
@@ -273,6 +275,8 @@ func v3ForbiddenGuidance() map[string][]string {
 		legacyOperatorActionTableHeader,
 		legacyStatusHeading,
 		legacyPrioritizedActionList,
+		legacyNoneBulletMandate,
+		legacyNestedEvidenceMandate,
 	}
 	workLane := []string{
 		"Before I make any repository changes, should I create a new GitHub issue",

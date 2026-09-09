@@ -192,10 +192,10 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
 			"Use the structured contract when omitting it could hide a blocker",
 			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			"use only `## What happened`, `## Deviations`, and `## Next steps`, in that order",
 			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
-			"Use one `**None.**` bullet when there are no deviations",
-			"Use one `**None.**` bullet when no action remains",
+			"A PARTIAL, BLOCKED, or FAIL status always carries Deviations",
+			"never manufacture or speculatively offer an action",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)

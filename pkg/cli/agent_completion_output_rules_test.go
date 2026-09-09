@@ -45,20 +45,33 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 		"Do not emit status tokens, canonical section headings, synthetic None items",
 		"Do not use word count, token count, elapsed time, or tool-call count as an applicability threshold",
 		"When uncertain, prefer natural prose",
+		"## Density Budget",
+		"A structured report is a briefing for someone deciding what to do next",
+		"Target twelve rendered lines or fewer for ordinary work",
+		"Keep What happened to five bullets or fewer",
+		"Keep each bullet to one sentence, plus at most one short clause carrying its evidence",
+		"Nest at most one line under a bullet",
 		"## Three-Section Completion Contract",
-		"emit exactly these headings in order",
+		"use these headings and no others",
 		"## What happened",
 		"## Deviations",
 		"## Next steps",
 		"**Status: <PASS|PARTIAL|BLOCKED|FAIL> — <one-sentence outcome>.**",
-		"Use one nested evidence layer only",
-		"Use one `**None.**` bullet when there are no deviations",
+		"Prose is the default shape for this section",
+		"### Evidence",
+		"Include an identifier when the reader needs it to act",
+		"Leave out: a commit SHA cited as proof that something was checked",
+		"At most one link per claim",
+		"### Formatting",
+		"Reserve bold for the status line, a blocker, and a required action",
+		"Omit this section entirely when nothing diverged",
+		"Omit this section entirely when no action remains",
+		"always, when the status is PARTIAL, BLOCKED, or FAIL",
 		"Every required follow-up includes a copy-ready prompt or command",
-		"Use one `**None.**` bullet when no action remains",
+		"Speculative offers of work the user has not asked for are not next steps",
 		"## Task-Specific Content",
-		"Task types define which facts must be retained, not additional output sections",
-		"Use exactly the three canonical headings",
-		"Do not repeat a fact across sections",
+		"Task type decides which facts earn a place, not how many sections the report has",
+		"A composing contract names which facts must survive, never how many lines they may occupy",
 		"For merge or release orchestration, keep What happened to state changes",
 		"smallest evidence set that proves each terminal node",
 		"Do not include a chronological command log, repeated checks, unchanged polling, or routine tool details",
@@ -77,6 +90,10 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 		"## Required Profiles",
 		"## Left-Aligned Detail Contract",
 		"Order items as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`",
+		"Always include this section. Use one `**None.**` bullet",
+		"Use one nested evidence layer only",
+		"Start with a short bold lead; put identifiers and evidence after it",
+		"Prefer exact links, identifiers, commands, timestamps, and counts over vague",
 		"| Type | Action required | Why | Continue with |",
 		"| Item | Result | Evidence |",
 		"| Question | Finding | Evidence and confidence | Implication |",
@@ -96,12 +113,26 @@ func TestAgentCompletionOutputExamplesPreserveProportionalBoundary(t *testing.T)
 		t.Fatalf("read agent completion output ruleset: %v", err)
 	}
 	body := string(content)
-	conversationalStart := strings.Index(body, "Small conversational answer:")
-	structuredStart := strings.Index(body, "Substantial implementation:")
-	if conversationalStart < 0 || structuredStart <= conversationalStart {
-		t.Fatal("completion examples are missing or out of order")
+
+	const (
+		conversationalLabel = "Small conversational answer:"
+		implementationLabel = "Substantial implementation, nothing diverged and nothing remains:"
+		coordinationLabel   = "Complex production coordination, where separate bullets earn their place:"
+		blockedLabel        = "Blocked diagnosis:"
+	)
+	offsets := make([]int, 0, 4)
+	for _, label := range []string{conversationalLabel, implementationLabel, coordinationLabel, blockedLabel} {
+		at := strings.Index(body, label)
+		if at < 0 {
+			t.Fatalf("completion example %q is missing", label)
+		}
+		if len(offsets) > 0 && at <= offsets[len(offsets)-1] {
+			t.Fatalf("completion example %q is out of order", label)
+		}
+		offsets = append(offsets, at)
 	}
-	conversational := body[conversationalStart:structuredStart]
+
+	conversational := body[offsets[0]:offsets[1]]
 	for _, forbidden := range []string{
 		"# PASS —",
 		"## What happened",
@@ -115,38 +146,28 @@ func TestAgentCompletionOutputExamplesPreserveProportionalBoundary(t *testing.T)
 		}
 	}
 
-	complexStart := strings.Index(body, "Complex production coordination:")
-	if complexStart <= structuredStart {
-		t.Fatal("complex production example is missing or out of order")
+	implementation := body[offsets[1]:offsets[2]]
+	if !strings.Contains(implementation, "**Status: PASS — completion output is proportional and ready for review.**") {
+		t.Error("implementation example does not open with the status line")
 	}
-	structured := body[structuredStart:complexStart]
-	for _, required := range []string{
-		"## What happened",
-		"**Status: PASS — completion output is proportional and ready for review.**",
-		"## Deviations",
-		"CodeRabbit remains `PENDING`",
-		"## Next steps",
-		"**Optional — User:** Review PR #123 after CodeRabbit completes.",
-	} {
-		if !strings.Contains(structured, required) {
-			t.Errorf("structured example does not contain %q", required)
+	for _, forbidden := range []string{"## Deviations", "## Next steps"} {
+		if strings.Contains(implementation, forbidden) {
+			t.Errorf("implementation example emits empty section %q instead of omitting it", forbidden)
 		}
 	}
 
-	complexEnd := strings.Index(body[complexStart:], "Blocked diagnosis:")
-	if complexEnd < 0 {
-		t.Fatal("blocked diagnosis example is missing")
-	}
-	complex := body[complexStart : complexStart+complexEnd]
+	coordination := body[offsets[2]:offsets[3]]
 	for _, required := range []string{
 		"**Status: PASS — PRs #290, #181, and #230 merged",
-		"Production validation passed and manual upsert remained default-off",
-		"Non-fatal workflow warnings",
-		"## Next steps\n\n- **None.**",
+		"upsert stayed default-off as intended",
+		"## Deviations",
 	} {
-		if !strings.Contains(complex, required) {
-			t.Errorf("complex example does not contain %q", required)
+		if !strings.Contains(coordination, required) {
+			t.Errorf("coordination example does not contain %q", required)
 		}
+	}
+	if strings.Contains(coordination, "## Next steps") {
+		t.Error("coordination example emits an empty Next steps section")
 	}
 	for _, forbidden := range []string{
 		"## Operational Result",
@@ -156,9 +177,27 @@ func TestAgentCompletionOutputExamplesPreserveProportionalBoundary(t *testing.T)
 		"## Coordination",
 		"## Repository Memory",
 	} {
-		if strings.Contains(complex, forbidden) {
-			t.Errorf("complex example contains superseded section %q", forbidden)
+		if strings.Contains(coordination, forbidden) {
+			t.Errorf("coordination example contains superseded section %q", forbidden)
 		}
+	}
+
+	blocked := body[offsets[3]:]
+	for _, required := range []string{
+		"**Status: BLOCKED —",
+		"## Deviations",
+		"remains `UNKNOWN`",
+		"## Next steps",
+		"**Required — User:** Grant read-only production log access.",
+		"Continue with: `Resume diagnosis using the authorized production logs.`",
+	} {
+		if !strings.Contains(blocked, required) {
+			t.Errorf("blocked example does not contain %q", required)
+		}
+	}
+
+	if strings.Contains(body, "- **None.**") {
+		t.Error("ruleset still models a None bullet")
 	}
 }
 

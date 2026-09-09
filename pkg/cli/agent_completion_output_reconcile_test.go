@@ -61,14 +61,14 @@ func TestReconcileFindsStaleAgentCompletionOutputGuidance(t *testing.T) {
 			name:    "V3 root three sections",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "AGENTS.md",
-			snippet: "emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
+			snippet: "use only `## What happened`, `## Deviations`, and `## Next steps`, in that order",
 			audit:   auditV3SupportGuidance,
 		},
 		{
 			name:    "V3 guardrails no extra sections",
 			version: config.InstructionScaffoldVersionMemory,
 			path:    "docs/agents/GUARDRAILS.md",
-			snippet: "three canonical sections without duplication",
+			snippet: "canonical sections without duplication, using the shortest phrasing that keeps each fact recoverable",
 			audit:   auditV3SupportGuidance,
 		},
 		{
