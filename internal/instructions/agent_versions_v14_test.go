@@ -40,9 +40,6 @@ func TestAgentInstructionsV14BoundsCompletionDensity(t *testing.T) {
 			t.Fatalf("v14 instructions contain superseded completion guidance %q", forbidden)
 		}
 	}
-	if CurrentAgentVersion != "v14" {
-		t.Fatalf("CurrentAgentVersion = %q, want v14", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV14PreservesV13OutsideCompletionSection(t *testing.T) {

@@ -77,7 +77,7 @@
 | 0074 | deadline-merge-ui-verification | `docs/specs/0074-deadline-merge-ui-verification` | deliver | no | 2026-08-31 | Under deadline mode, continue authorized merge and deployment work, skip UI verification until every result is delivered, then run one final UI verification without weakening required post-deployment production-suite checks. |
 | 0075 | autonomous-non-destructive-execution | `docs/specs/0075-autonomous-non-destructive-execution` | deliver | no | 2026-09-01 | Stop Kit coding agents from pausing accepted task or `/goal` work to ask for merge, deploy, or additive-infrastructure consent. Keep explicit manual authorization only for deletes, removals, or otherwise destructive effects. |
 | 0076 | standing-merge-deploy-authority | `docs/specs/0076-standing-merge-deploy-authority` | deliver | no | 2026-09-04 | Let a human grant bounded standing authority for task, goal, or program merges and standard deployments without repeated per-PR or per-head prompts, while preserving exact readiness and separate risk gates. |
-| 0077 | completion-output-density | `docs/specs/0077-completion-output-density` | deliver | no | 2026-09-09 | Keep the three-section completion contract and status line, and bound report length, bullet count, sentence count, nesting, and evidence so structured reports read in one pass. |
+| 0077 | unstructured-completion-output | `docs/specs/0077-unstructured-completion-output` | deliver | no | 2026-09-09 | Remove every required completion format and let the agent write terminal responses in its own shape, keeping only the facts a response must not leave out. |
 
 ## PROJECT INTENT
 
@@ -746,14 +746,14 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: deliver and resolve PR #199 review repair, refresh dependent LabCore PR #508 from the final Kit head, then land in dependency order when explicitly authorized; do not deploy these governance changes.
 - **POINTERS**: `docs/specs/0076-standing-merge-deploy-authority/SPEC.md`, `docs/programs/standing-merge-deploy-authority/PROGRAM.md`
 
-### completion-output-density
+### unstructured-completion-output
 
 - **STATUS**: deliver
 - **PAUSED**: no
-- **INTENT**: Make structured completion reports readable in one pass by bounding length, bullet count, sentence count, nesting, and evidence, while preserving the three canonical sections, the status line, and every composing contract's required facts.
-- **APPROACH**: 1. Trace the observed density to specific ruleset clauses rather than agent drift. 2. Rewrite the ruleset around a density budget, an evidence inclusion test, prose-first What happened, and omitted empty sections. 3. Rewrite the worked examples to model the budget. 4. Compress the always-loaded gate and regenerate the checked-in provider instruction files. 5. Publish frozen `v14`, equal to `v13` outside the completion section. 6. Update string-exact expectations, add reconcile detection for the superseded `None`-bullet and nested-evidence mandates, and add a `v14` contract test. 7. Validate, curate repository memory, and open one ready pull request for issue #203.
+- **INTENT**: Remove every required completion format and rely on the agent's own reporting shape, while preserving the facts a terminal response must not leave out: blockers, incomplete scope, required action, failing or unobserved checks, mutations, and confidence.
+- **APPROACH**: 1. Trace the observed density to prescribed shape rather than agent drift, across three successive format contracts. 2. Replace the ruleset body with a format-free content and honesty contract. 3. Compress the always-loaded gate and regenerate the checked-in provider instruction files. 4. Rewrite the five composing rules that named the retired headings so they name required facts. 5. Publish frozen `v15`, equal to `v14` outside the completion section, keeping `v14`'s density budget as a superseded snapshot. 6. Teach reconcile to flag the three-section, status-token, density-budget, `None`-bullet, and nested-evidence mandates as superseded. 7. Validate, curate repository memory, and update the ready pull request for issue #203.
 - **OPEN ITEMS**: none
-- **POINTERS**: `docs/specs/0077-completion-output-density/SPEC.md`, `docs/references/rules/agent-completion-output.md`
+- **POINTERS**: `docs/specs/0077-unstructured-completion-output/SPEC.md`, `docs/references/rules/agent-completion-output.md`
 
 ## LAST UPDATED
 

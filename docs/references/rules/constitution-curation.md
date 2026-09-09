@@ -77,8 +77,8 @@ read_policy_default: must
 - Confirm the Kit-managed baseline and marker comments remain intact.
 - Run `kit check --project` after changing the Constitution.
 - Review `git diff -- docs/CONSTITUTION.md docs/specs docs/references` before finalizing.
-- State the Constitution curation result in one concise What happened bullet
-  under `agent-completion-output`, including `not required` when no update was
+- State the Constitution curation result once, in whatever form the response
+  takes under `agent-completion-output`, including `not required` when no update was
   warranted. Do not add a separate Repository Memory section.
 
 ## Examples

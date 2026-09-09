@@ -250,10 +250,11 @@ The program supervisor may mark the program complete only when:
 - a final reconciled checkpoint records the actual outcome and remaining
   operational obligations.
 
-Render the terminal program result through the `agent-completion-output`
-three-section contract. Group repository, owner, dependency, deployment,
-runtime, and acceptance evidence by workstream under What happened. Put
-unresolved dependencies under Deviations and exact handoffs under Next steps.
+Render the terminal program result through `agent-completion-output`, which
+prescribes no format. Keep each workstream's repository, owner, dependency,
+deployment, runtime, and acceptance evidence identifiable, and state unresolved
+dependencies and exact handoffs plainly rather than leaving them to be
+inferred.
 
 ### Safety And Existing Gates
 

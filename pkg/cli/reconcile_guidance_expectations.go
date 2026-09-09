@@ -71,15 +71,15 @@ func v3GuidanceExpectations() map[string][]string {
 			"Treat exact existing-PR lifecycle work as continuation",
 			"Never create coordination or corrective pull requests for scope-preserving work",
 			"## Agent Completion Output Contract",
-			"Answer ordinary conversational requests naturally",
-			"Use the structured contract when omitting it could hide a blocker",
-			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
-			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"use only `## What happened`, `## Deviations`, and `## Next steps`, in that order",
-			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
-			"A PARTIAL, BLOCKED, or FAIL status always carries Deviations",
-			"never manufacture or speculatively offer an action",
-			"canonical sections without duplication, using the shortest phrasing that keeps each fact recoverable",
+			"Write every response, including terminal completions and handoffs, in the shape the content calls for",
+			"never leave the reader wrong about a blocker",
+			"no `**Status: ...**` token, no `**None.**` item",
+			"When something could not be validated, say so and say why",
+			"There is no required response format",
+			"Do not emit the retired envelope",
+			"never folded into success",
+			"Give a required action with enough context to act on it",
+			"They name facts that must reach the reader, never a layout",
 			"## Codex Thread Initialization Hard Gate",
 			"before the first commentary message",
 			"First, call the available thread-title operation (`set_thread_title` when available)",
@@ -119,15 +119,15 @@ func v3GuidanceExpectations() map[string][]string {
 			"Treat exact existing-PR lifecycle work as continuation",
 			"Never create coordination or corrective pull requests for scope-preserving work",
 			"## Agent Completion Output Contract",
-			"Answer ordinary conversational requests naturally",
-			"Use the structured contract when omitting it could hide a blocker",
-			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
-			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"use only `## What happened`, `## Deviations`, and `## Next steps`, in that order",
-			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
-			"A PARTIAL, BLOCKED, or FAIL status always carries Deviations",
-			"never manufacture or speculatively offer an action",
-			"canonical sections without duplication, using the shortest phrasing that keeps each fact recoverable",
+			"Write every response, including terminal completions and handoffs, in the shape the content calls for",
+			"never leave the reader wrong about a blocker",
+			"no `**Status: ...**` token, no `**None.**` item",
+			"When something could not be validated, say so and say why",
+			"There is no required response format",
+			"Do not emit the retired envelope",
+			"never folded into success",
+			"Give a required action with enough context to act on it",
+			"They name facts that must reach the reader, never a layout",
 			"`docs/references/rules/aws-agent-toolkit-guidance.md`",
 			"If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation",
 			"Treat the verified account, ARN, and Region as authoritative",
@@ -201,16 +201,16 @@ func v3GuidanceExpectations() map[string][]string {
 			"Exact existing pull requests targeted for review repair, CI repair, base",
 			"create a coordination or corrective pull request for scope-preserving work",
 			"## Agent Completion Output Contract",
-			"Answer ordinary conversational requests naturally",
-			"Use the structured contract when omitting it could hide a blocker",
-			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
-			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"use only `## What happened`, `## Deviations`, and `## Next steps`, in that order",
-			"Write a briefing, not a transcript",
-			"canonical sections without duplication, using the shortest phrasing that keeps each fact recoverable",
+			"Write every response, including terminal completions and handoffs, in the shape the content calls for",
+			"never leave the reader wrong about a blocker",
+			"no `**Status: ...**` token, no `**None.**` item",
+			"When something could not be validated, say so and say why",
+			"There is no required response format",
+			"never leave the reader wrong about a blocker, incomplete scope, a required next action",
+			"They name facts that must reach the reader, never a layout",
 			"## Repository Memory Completion Gate",
 			"Create or adopt a spec before code when material rationale exists",
-			"repository-memory decision, rationale, and artifact paths or `none` in one concise What happened bullet",
+			"repository-memory decision, rationale, and artifact paths or `none` once",
 			"do not add a separate Repository Memory section",
 			"docs/references/rules/source-file-size.md",
 			"version-control-eligible handwritten implementation/source and test file at 300 physical lines or less",
@@ -259,38 +259,5 @@ func v3GuidanceExpectations() map[string][]string {
 			"Preserve a regular destination",
 			"Never use `--force`, reset, clean, stash, or branch deletion",
 		},
-	}
-}
-
-const (
-	legacyOperatorActionTableHeader = "| Type | Action required | Why | Continue with |"
-	legacyStatusHeading             = "# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>"
-	legacyPrioritizedActionList     = "prioritized action list ordered Blocker, Incomplete, Next, Optional, then None"
-	legacyNoneBulletMandate         = "Use one `**None.**` bullet when there are no deviations"
-	legacyNestedEvidenceMandate     = "Use at most one nested evidence layer and state each fact once"
-)
-
-func v3ForbiddenGuidance() map[string][]string {
-	completion := []string{
-		legacyOperatorActionTableHeader,
-		legacyStatusHeading,
-		legacyPrioritizedActionList,
-		legacyNoneBulletMandate,
-		legacyNestedEvidenceMandate,
-	}
-	workLane := []string{
-		"Before I make any repository changes, should I create a new GitHub issue",
-		"`c` means continue existing",
-		"Wait for the explicit choice",
-	}
-	consent := []string{
-		"never imply merge consent",
-		"Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set",
-		"Obtain one explicit user confirmation for the complete bounded batch",
-	}
-	return map[string][]string{
-		"AGENTS.md":                       append(append(completion, workLane...), consent...),
-		".github/copilot-instructions.md": append(append(completion, workLane...), consent...),
-		"docs/agents/GUARDRAILS.md":       append(append(completion, workLane...), consent...),
 	}
 }
