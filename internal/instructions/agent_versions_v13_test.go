@@ -31,9 +31,6 @@ func TestAgentInstructionsV13RejectsExactHeadReauthorization(t *testing.T) {
 			t.Fatalf("v13 instructions contain superseded requirement %q", forbidden)
 		}
 	}
-	if CurrentAgentVersion != "v13" {
-		t.Fatalf("CurrentAgentVersion = %q, want v13", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV13PreservesV12OutsideAuthoritySection(t *testing.T) {

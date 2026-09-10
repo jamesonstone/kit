@@ -9,9 +9,8 @@
 - Use `kit rules list` as the authoritative live ruleset inventory; the index
   below is a concise navigation aid
 - Use `rules/agent-completion-output.md` before substantial terminal completion
-  or handoff responses to require only What happened, Deviations, and Next
-  steps, with task-specific evidence folded into those sections; answer
-  ordinary conversational requests naturally without that structured envelope
+  or handoff responses; it requires no response format and names only the facts
+  a response must not leave out
 - Use `rules/agent-team-orchestration.md` when delegation, direct subagent
   execution, continuity, or read-only verification topology affects the task;
   use `docs/agents/TOOLING.md` for the cross-host adapter
@@ -55,7 +54,7 @@ are:
 
 | Ruleset | Scope | Purpose |
 | --- | --- | --- |
-| `agent-completion-output` | coding-agent, task, completion, implementation, research, diagnosis, planning, validation, review, operations, coordination, handoff | Natural conversational replies and concise What happened, Deviations, and Next steps reports for substantial completion. |
+| `agent-completion-output` | coding-agent, task, completion, implementation, research, diagnosis, planning, validation, review, operations, coordination, handoff | No required response format; names only the facts a terminal completion or handoff must not leave out. |
 | `agent-team-orchestration` | coding-agent, workflow, dispatch, subagent, verification | Mandatory first-pass topology evaluation, host-confirmed capability negotiation, provider-neutral profiles, accountable root supervision, bounded specialist lanes, continuity, degradation, and verification. |
 | `aws-agent-toolkit-guidance` | coding-agent, AWS, AWS CLI, AWS MCP, Agent Toolkit, infrastructure, documentation, secrets | Current AWS skills and official documentation, MCP or CLI execution, verified identity, material targets, infrastructure approval, and secret-safe handling. |
 | `backend-service-architecture` | architecture, backend, API, service, repository, gateway | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |

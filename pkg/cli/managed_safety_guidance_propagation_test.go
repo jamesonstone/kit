@@ -188,14 +188,20 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 		}
 		for _, snippet := range []string{
 			"## Agent Completion Output Contract",
-			"Answer ordinary conversational requests naturally",
-			"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
-			"Use the structured contract when omitting it could hide a blocker",
-			"Do not classify by word count, token count, elapsed time, or tool-call count",
-			"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
-			"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
-			"Use one `**None.**` bullet when there are no deviations",
-			"Use one `**None.**` bullet when no action remains",
+			"Write each response, including terminal completions and handoffs, in the shape its content calls for",
+			"Match length to consequence rather than to effort spent",
+			"conveys what the user now has, what remains unfinished and why",
+			"the exact command or prompt when there is one",
+			"Say plainly whether the work is finished, partly finished, blocked, or failed",
+			"Keep blockers and unfinished scope as prominent as the successes",
+			"Report each check as observed",
+			"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE are preserved verbatim",
+			"Report a check as passing only when it ran and passed",
+			"When something could not be validated, say so and say why",
+			"Distinguish a verified fact from an inference and from a hypothesis",
+			"an account of where things stand, not an index of everything checked",
+			"Satisfy them on content; a heading alone satisfies none of them",
+			"When something could not be validated, say so and say why",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)

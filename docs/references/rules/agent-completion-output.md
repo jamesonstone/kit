@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: agent-completion-output
-description: Defines natural conversational replies and concise three-section reports for substantial task completion and handoff.
+description: States what a terminal response must convey and leaves its shape entirely to the agent.
 status: active
 registry_scope: downstream
 applies_to:
@@ -29,352 +29,166 @@ read_policy_default: must
 
 ## Purpose
 
-- Keep ordinary conversation direct and free of completion scaffolding.
-- Make substantial task completion immediately understandable by reporting only
-  what happened, deviations, and next steps.
-- Preserve evidence and status semantics without repeating the same facts across
-  separate validation, delivery, coordination, or repository-memory sections.
+- Leave the shape of every response, including terminal ones, to the agent.
+- Name the facts that must survive whatever shape it chooses.
 
 ## Applies When
 
-Use the structured contract when a substantial terminal completion or handoff
-must communicate blockers, incomplete scope, required operator action,
-repository or external-system mutation, delivery artifacts, multiple validation
-layers, formal coordination, or evidence that an operator must preserve. Also
-use it when the user explicitly asks for the canonical structured report.
+Applies to every human-readable terminal completion or handoff response, and
+to ordinary conversation.
 
-This rule governs human-readable output, not tool-native JSON, machine-only
-protocol output, intermediate progress commentary, or focused clarification
-questions.
+A host schema that specifies its own response shape takes precedence. This rule
+does not govern tool-native JSON or machine-only protocol output.
 
 ## Rules
 
-Classify the response with the proportionality gate. When structured reporting
-applies, use the three-section contract and task-specific content requirements
-below as one completion contract.
+### Shape
 
-## Proportionality Gate
+Write each response in the shape its content calls for. A sentence, a
+paragraph, a list, a heading, a table — whichever carries the meaning. Match
+length to consequence rather than to effort spent; substantial work often
+warrants a short account.
 
-### Conversational Responses
+### What A Terminal Response Conveys
 
-Answer naturally and lead with the answer for direct questions, definitions,
-confirmations, rewrites, brief explanations, small read-only lookups, concise
-recommendations, and ordinary conversational exchanges.
+- What the user now has.
+- What remains unfinished, and why.
+- Anything blocking completion, and what would clear it.
+- Anything the reader must do next, with enough context to act on it and the
+  exact command or prompt when there is one.
+- Whether the work is finished, partly finished, blocked, or failed, said
+  plainly.
+- Every repository, delivery, external-system, and infrastructure change made,
+  with the identifiers a reader needs to find or undo it.
 
-For these responses:
+Blockers and unfinished scope belong where the reader will see them, as
+prominent as the successes.
 
-- Treat this gate as the specific exception to any general instruction that
-  says every final response must lead with outcome, validation, and risk.
-- Do not emit status tokens, canonical section headings, synthetic None items,
-  task profiles, or repository-memory reporting.
-- Include a follow-up suggestion only when it is genuinely useful.
-- Match detail and formatting to the request. A short question may receive a
-  short answer.
+### Reporting State Truthfully
 
-### Structured Handoff Triggers
-
-Use the structured contract when any of these conditions applies:
-
-- Omitting structure could hide a blocker, incomplete required scope, required
-  next action, unresolved failure, or meaningful risk.
-- The agent mutated a repository or external system, implemented or delivered
-  work, or must report artifacts, commits, pull requests, deployments, or
-  recovery state.
-- Completion depends on validation layers or evidence states that an operator
-  must distinguish.
-- The task coordinates owners, workstreams, dependencies, or a formal handoff.
-- The user explicitly requests the canonical structured report.
-
-Do not use word count, token count, elapsed time, or tool-call count as an
-applicability threshold. Classify by operational consequence. When uncertain,
-prefer natural prose unless structure is necessary to keep required action,
-incomplete work, a blocker, or material evidence visible.
-
-## Three-Section Completion Contract
-
-When the structured contract applies, emit exactly these headings in order:
-
-1. `## What happened`
-2. `## Deviations`
-3. `## Next steps`
-
-Do not add a status heading or any other top-level or second-level section. A
-higher-priority host wrapper, directive, or machine tag may surround the
-response; the What happened heading remains the first human-readable line
-inside it.
-
-### What Happened
-
-The first bullet must be:
-
-```markdown
-## What happened
-
-- **Status: <PASS|PARTIAL|BLOCKED|FAIL> — <one-sentence outcome>.**
-```
-
-Then add concise bullets for material outcomes. Put each fact once, under the
-outcome it supports.
-
-- Lead with the user-visible result, not agent activity.
-- Fold task-specific results, validation, delivery, runtime state, coordination,
-  and repository-memory evidence into this section.
-- Use one nested evidence layer only when it materially helps the operator
-  verify or understand an outcome.
-- Group tightly related identifiers on one nested line when that remains easy
-  to scan.
-- Planned exclusions, deliberately default-off behavior, and authorized scope
-  boundaries are outcomes rather than deviations when they occurred as
-  intended.
-
-### Deviations
-
-Always include this section. Use one `**None.**` bullet when there are no
-deviations.
-
-```markdown
-## Deviations
-
-- **None.**
-```
-
-Replace the None bullet with one bullet per material divergence from requested
-or expected scope:
-
-- blocker or unresolved failure;
-- incomplete required scope;
-- warning or degraded execution;
-- pending, unknown, skipped, unavailable, or not-applicable evidence when it
-  affects interpretation;
-- unperformed action that an operator could otherwise mistake as complete;
-- stale, mismatched, or lower-confidence evidence.
-
-Name the observed state and its impact. Preserve literal native states such as
-`PENDING`, `UNKNOWN`, `SKIPPED`, `NOT_APPLICABLE`, and provider-specific
-states. A planned exclusion is not a deviation. Do not repeat a deviation in
-What happened unless the outcome would otherwise be misleading.
-
-### Next Steps
-
-Always include this section. Use one `**None.**` bullet when no action
-remains.
-
-```markdown
-## Next steps
-
-- **None.**
-```
-
-When action remains:
-
-- Put one independently actionable item in each bullet.
-- Start with `Required` or `Optional` and name the responsible actor when it
-  is not obvious.
-- State the action directly; add one nested line only when a reason, dependency,
-  or copy-ready continuation is necessary.
-- Every required follow-up includes a copy-ready prompt or command.
-- Order required actions before optional actions.
-- Never manufacture an action only to fill the section.
-
-## Overall Status Semantics
-
-### PASS
-
-- Requested scope and required validation are complete or explicitly
+- Report each check as observed: a failing, pending, unavailable, skipped, or
+  never-run check is reported as exactly that.
+- Preserve literal provider states such as `PENDING`, `UNKNOWN`, `SKIPPED`, and
   `NOT_APPLICABLE`.
-- No required operator action remains.
-- Non-blocking warnings or optional pending evidence may appear under
-  Deviations without converting the outcome to PARTIAL.
+- Report a check as passing only when it ran and passed, and a file or system
+  as inspected only when it was inspected.
+- When something could not be validated, say so and say why.
+- Distinguish a verified fact from an inference and from a hypothesis.
 
-### PARTIAL
+### Evidence
 
-- A usable result exists, but required scope or evidence remains incomplete.
-- Deviations name every incomplete item and its impact.
-- Next steps contain the exact action that resumes completion.
+A response is an account of where things stand, not an index of everything
+checked. Include an identifier when the reader needs it to act, or would
+reasonably doubt the claim without it.
 
-### BLOCKED
-
-- Completion requires input, authority, credentials, capacity, approval, or
-  external state the agent cannot establish within the task boundary.
-- Safe unblocked work is complete.
-- Deviations name the blocker and supporting evidence; Next steps name the
-  smallest unblock action and copy-ready resume prompt.
-
-### FAIL
-
-- A required outcome or validation is known to fail, no external blocker is the
-  stopping reason, and in-scope remediation did not produce a usable result.
-- Deviations name the failure, attempted recovery, and remaining risk.
-- Next steps name the next viable action.
-
-Never translate pending, unavailable, skipped, or unobserved evidence into PASS.
-
-## Task-Specific Content
-
-Task types define which facts must be retained, not additional output sections.
-
-- **Implementation and delivery:** What changed, material validation, issue,
-  branch, commit, pull request, hosted state, and repository-memory decision
-  when required. Put gaps in Deviations and operator actions in Next steps.
-- **Research and discovery:** Question answered, finding, source or evidence,
-  confidence, and implication. Separate sourced fact from inference.
-- **Diagnosis and troubleshooting:** Symptom, confirmed cause or current
-  hypothesis, evidence, confidence, and impact. Do not label a hypothesis as a
-  confirmed root cause.
-- **Planning and design:** Material decisions, chosen approach, rationale, and
-  observable acceptance signals. Unresolved decisions are deviations with next
-  steps.
-- **Validation and testing:** Exact check, scope, observed state, and evidence
-  or gap. Keep local, hosted, deployment, runtime, integration, physical, and
-  business acceptance claims distinct.
-- **Review and audit:** Findings ordered by severity, tight location or
-  evidence, and required remediation. A clean review states inspected scope and
-  residual limitations.
-- **Operations, deployment, and monitoring:** Exact target and version, action
-  or observation, literal state, evidence, and recovery boundary. Keep
-  deployment, runtime health, integration behavior, and production acceptance
-  distinct.
-- **Coordination and handoff:** Workstream, owner, state, dependency, and exact
-  handoff. Keep task outcome separate from degraded orchestration conformance.
-- **Fallback:** Requested item, result, evidence, and limitation.
-
-## Readability And Evidence Rules
-
-- Use exactly the three canonical headings for a structured response.
-- Use bullets, never Markdown pipe tables.
-- Keep one concern per bullet and one nested evidence layer at most.
-- Start with a short bold lead; put identifiers and evidence after it.
-- Prefer exact links, identifiers, commands, timestamps, and counts over vague
-  claims, but include only facts needed to understand, verify, or act.
-- Do not repeat a fact across sections or restate the same success through
-  multiple profile-shaped summaries.
-- Put explanatory prose into the relevant bullet rather than adding another
-  section.
-- For merge or release orchestration, keep What happened to state changes and
-  the smallest evidence set that proves each terminal node. Put actionable
-  follow-up under Next steps.
-- Do not include a chronological command log, repeated checks, unchanged
-  polling, or routine tool details.
+- Include the pull request, issue, or branch a reader will open next; the exact
+  target and version of anything deployed; the specific failure and where it
+  lives; the command that resumes blocked work.
+- Name a validation and what it showed, in a few words.
+- For merge or release orchestration, report state changes and the
+  smallest evidence set that proves each terminal node.
 - Redact secrets, credentials, private customer data, and signed URLs.
 
 ## Composition With Existing Contracts
 
-- `github-pr-delivery` fields belong under What happened; pending checks or
-  delivery gaps belong under Deviations; review or merge actions belong under
-  Next steps.
-- `testing-and-environment-validation` results belong under What happened;
-  unavailable, pending, skipped, partial, or blocked evidence belongs under
-  Deviations.
-- Repository-memory decision, rationale, and artifacts become one concise What
-  happened bullet when that contract requires them.
-- `agent-team-orchestration` task outcome belongs in the status bullet;
-  material execution facts belong under What happened and degraded
-  conformance belongs under Deviations.
-- Cross-repository program evidence belongs under What happened, grouped by
-  workstream; unresolved dependencies belong under Deviations and Next steps.
-- Higher-priority system, developer, client, tool, or host schemas take
-  precedence. Preserve the same three semantic groups inside the wrapper.
+Delivery, validation, orchestration, program, and repository-memory contracts
+name facts that must reach the reader. Satisfy them on content; they say
+nothing about layout, and a heading alone satisfies none of them.
+
+- `github-pr-delivery` requires the issue, branch, commit, pull request, and
+  assignee to be recoverable from the response.
+- `testing-and-environment-validation` requires observed results and every
+  non-passing or unavailable evidence state to be visible and distinct.
+- `agent-team-orchestration` requires the task outcome, and any degraded or
+  unsatisfied conformance, to be stated in its own right.
+- Cross-repository program work requires each workstream's state, unresolved
+  dependencies, and exact handoffs to be identifiable.
+- Repository-memory decisions, including `not required`, are stated once.
 
 ## Anti-Patterns
 
-- Manufacturing structured output for an ordinary conversational answer.
-- Adding a separate PASS heading above What happened.
-- Adding Completed, Validation, Delivery, Feature State, Residual Notes,
-  Coordination, Repository Memory, or task-profile headings.
-- Repeating a deployment or validation fact in multiple sections.
-- Hiding blockers or incomplete work among successful outcome bullets.
-- Reporting PASS while required validation is failing, pending, or unobserved.
-- Omitting Deviations or Next steps instead of using a None bullet.
-- Naming a required action without its owner and copy-ready continuation.
-- Using tables, multi-level nesting, or large prose blocks.
-- Expanding a merge or deployment result into a chronological work log or
-  repeated unchanged polling history.
-- Replacing provider-native evidence states with an optimistic summary.
+These are failures of content, not of layout. No shape is wrong here; these
+are.
+
+- Reporting a check as passing when it did not run, or claiming an inspection
+  that did not happen.
+- Folding a pending, unavailable, or skipped state into a summary that reads
+  as success.
+- Presenting a hypothesis or an inference as a confirmed fact.
+- Leaving a blocker or unfinished scope to be inferred from successful-sounding
+  detail.
+- Naming a required action without enough context to act on it.
+- Padding a response with identifiers that support no decision the reader has
+  to make.
+- Turning a merge or deployment result into a chronological command log or a
+  polling history.
+- Carrying one response template across unrelated tasks instead of letting each
+  response take the shape its content calls for.
 
 ## Examples
 
-Small conversational answer:
+These differ in shape because their content differs. That is the point.
+
+A small answer stays a small answer:
 
 ```markdown
 “Refresh checks on the final commit” means rerun the required checks after the
-last PR update so the results apply to the exact revision being reviewed.
+last PR update, so the results apply to the exact revision being reviewed.
 ```
 
-Substantial implementation:
+A clean delivery, said once:
 
 ```markdown
-## What happened
-
-- **Status: PASS — completion output is proportional and ready for review.**
-- **The canonical rule now reserves structured reporting for substantial work.**
-  - Validation: complete Go and race suites passed.
-- **Delivery is ready in PR #123.**
-  - Issue #122; branch `GH-122`; commit `abc123`; hosted validation `SUCCESS`.
-- **Repository memory was updated.**
-  - Decision: updated; artifacts: feature spec and Constitution.
-
-## Deviations
-
-- **CodeRabbit remains `PENDING`.**
-
-## Next steps
-
-- **Optional — User:** Review PR #123 after CodeRabbit completes.
+The metadata gate is in on both admission paths, so a run can't be listed or
+created without complete metadata. Domain, full, and race suites pass, and
+it's ready for review in PR #204.
 ```
 
-Complex production coordination:
+Partial work, where the gap leads:
 
 ```markdown
-## What happened
+The listing path is fixed and covered, but run creation still admits
+incomplete metadata — `CreateManualHybridRun` never reaches the gate. I left
+it alone because blocking there and failing at persistence are different
+product decisions.
 
-- **Status: PASS — PRs #290, #181, and #230 merged and their configured deployments completed successfully.**
-- **LabCore #290 merged, released as v0.58.0, and is healthy in production.**
-  - Commit `6c7e16d`; deployment `SUCCESS`; ECS 1/1 healthy; health endpoint 200.
-- **UI #181 and docs #230 merged and deployed successfully.**
-  - UI and docs endpoints returned 200; CloudFront invalidations completed.
-- **Production validation passed and manual upsert remained default-off as intended.**
-  - Aggregate `PASS`; unauthenticated mutation returned 401; activation was not performed.
-- **Repository memory was updated with source-to-runtime evidence.**
-
-## Deviations
-
-- **Non-fatal workflow warnings:** Node 20 deprecation and an unsupported input warning did not change the successful deployment outcome.
-
-## Next steps
-
-- **None.**
+Tell me which you want and I'll finish it.
 ```
 
-Blocked diagnosis:
+A blocker, with the unblock:
 
 ```markdown
-## What happened
+I can't confirm the root cause. The request fails past the service boundary
+and the logs stop there; everything on this side behaves correctly.
 
-- **Status: BLOCKED — production root cause cannot be confirmed with current evidence.**
-- **Available logs end at the service boundary.**
+I need read-only access to the production dependency logs — once you've
+granted it, say “resume diagnosis using the authorized production logs.”
+```
 
-## Deviations
+Orchestrated work, where headings genuinely help the reader navigate:
 
-- **Blocker:** Read-only production dependency logs are unavailable, so the root cause remains `UNKNOWN`.
+```markdown
+All three PRs merged and deployed.
 
-## Next steps
+**LabCore** — released as v0.58.0, healthy in production.
+**UI and docs** — deployed behind it, both serving.
 
-- **Required — User:** Grant read-only production log access.
-  - Continue with: `Resume diagnosis using the authorized production logs.`
+One thing to watch: the deployment workflow logged a Node 20 deprecation and
+an unsupported input. Neither changed the outcome, but both will break on the
+next runner upgrade.
 ```
 
 ## Verification
 
-- Confirm ordinary conversation contains none of the canonical headings or
-  status tokens.
-- Confirm every structured response contains exactly What happened, Deviations,
-  and Next steps in that order.
-- Confirm the first What happened bullet contains one literal overall status.
-- Confirm empty Deviations and Next steps sections contain one None bullet.
-- Confirm no task-profile or evidence-specific heading is emitted.
-- Confirm task-specific required facts remain present once, with at most one
-  nested evidence layer.
-- Confirm required follow-up is owner-specific and copy-ready.
-- Confirm native pending, unknown, skipped, unavailable, and not-applicable
-  states remain literal.
-- Confirm no Markdown pipe table appears.
+- Confirm each response's shape follows from its content rather than from a
+  template carried across tasks.
+- Confirm blockers, unfinished scope, and required actions are as visible as
+  the successes.
+- Confirm every check's state is reported as observed, with provider-native
+  wording preserved.
+- Confirm passing claims correspond to checks that ran, and inspection claims
+  to inspections that happened.
+- Confirm hypotheses and inferences read as such.
+- Confirm every mutation is recoverable from the response.
+- Confirm every fact required by a composing contract reaches the reader.
+- Confirm the identifiers present support a decision the reader has to make.

@@ -11,26 +11,22 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 	required := []string{
 		"## Agent Completion Output Contract",
 		"docs/references/rules/agent-completion-output.md",
-		"Before a substantial terminal completion or handoff response",
-		"This structured contract does not apply to intermediate progress commentary",
-		"Answer ordinary conversational requests naturally",
-		"Direct questions, definitions, confirmations, rewrites, brief explanations, small read-only lookups",
-		"must not receive status tokens, canonical section headings, synthetic None items, task profiles, or repository-memory reporting",
-		"Use the structured contract when omitting it could hide a blocker",
-		"Do not classify by word count, token count, elapsed time, or tool-call count",
-		"When uncertain, prefer natural prose",
-		"emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order",
-		"**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**",
-		"Do not add a separate status heading",
-		"Use at most one nested evidence layer and state each fact once",
-		"Use one `**None.**` bullet when there are no deviations",
-		"make every required continuation copy-ready",
-		"Use one `**None.**` bullet when no action remains",
-		"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE",
-		"Do not use Markdown pipe tables, additional profile headings",
-		"three canonical sections without duplication",
-		"For merge or release orchestration, report only state changes, terminal evidence, and actionable next steps",
-		"omit chronological command logs, repeated checks, unchanged polling, and routine tool details",
+		"Write each response, including terminal completions and handoffs, in the shape its content calls for",
+		"Match length to consequence rather than to effort spent",
+		"conveys what the user now has, what remains unfinished and why",
+		"anything blocking completion and what would clear it",
+		"the exact command or prompt when there is one",
+		"Say plainly whether the work is finished, partly finished, blocked, or failed",
+		"Keep blockers and unfinished scope as prominent as the successes",
+		"Report each check as observed",
+		"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE are preserved verbatim",
+		"Report a check as passing only when it ran and passed",
+		"When something could not be validated, say so and say why",
+		"Distinguish a verified fact from an inference and from a hypothesis",
+		"recoverable from the response, with the identifiers a reader needs to find or undo it",
+		"an account of where things stand, not an index of everything checked",
+		"smallest evidence set that proves each terminal node",
+		"Satisfy them on content; a heading alone satisfies none of them",
 	}
 	for name, content := range map[string]string{
 		"V1 AGENTS.md":            LegacyAgentsMD,
@@ -53,9 +49,15 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 			}
 		}
 		for _, forbidden := range []string{
+			"## What happened",
+			"## Deviations",
+			"## Next steps",
+			"**Status: PASS|PARTIAL|BLOCKED|FAIL",
+			"`**None.**`",
+			"retired envelope",
+			"fixed template applied to every task",
 			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
 			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
-			"After the action list, use left-aligned headings",
 		} {
 			if strings.Contains(content, forbidden) {
 				t.Errorf("expected %s not to contain superseded contract %q", name, forbidden)
@@ -97,8 +99,8 @@ func TestConstitutionTemplateRequiresAgentCompletionOutput(t *testing.T) {
 	for _, check := range []string{
 		"docs/references/rules/agent-completion-output.md",
 		"Before a substantial terminal completion or handoff response",
-		"answer ordinary conversational requests naturally without that structured envelope",
-		"report only What happened, Deviations, and Next steps",
+		"which requires no response format",
+		"never leave the reader wrong about a blocker, incomplete scope, a required action, or a failing or unobserved check",
 	} {
 		if !strings.Contains(Constitution, check) {
 			t.Errorf("expected Constitution template to contain %q", check)

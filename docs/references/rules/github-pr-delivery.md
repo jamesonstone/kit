@@ -493,10 +493,11 @@ gh run list --commit "$HEAD_SHA" \
 
 ### Final Response
 
-Follow the `agent-completion-output` three-section contract. Fold the fields
-below into concise What happened bullets without omitting identity, assignment,
-or hosted-state evidence. Put pending, failed, skipped, or unavailable delivery
-evidence under Deviations and remaining operator actions under Next steps:
+Follow `agent-completion-output`, which prescribes no format. The fields below
+must be recoverable from the response, including identity, assignment, and
+hosted-state evidence; where they appear is free. Report pending, failed,
+skipped, or unavailable delivery evidence as those states, and state any
+remaining operator action plainly:
 
 - Issue number.
 - Branch name in `GH-123` form.

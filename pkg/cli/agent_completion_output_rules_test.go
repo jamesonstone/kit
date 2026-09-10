@@ -38,50 +38,50 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 
 	normalized := strings.Join(strings.Fields(ruleset.Body), " ")
 	for _, check := range []string{
-		"## Proportionality Gate",
-		"### Conversational Responses",
-		"### Structured Handoff Triggers",
-		"direct questions, definitions, confirmations, rewrites, brief explanations, small read-only lookups, concise recommendations",
-		"Do not emit status tokens, canonical section headings, synthetic None items",
-		"Do not use word count, token count, elapsed time, or tool-call count as an applicability threshold",
-		"When uncertain, prefer natural prose",
-		"## Three-Section Completion Contract",
-		"emit exactly these headings in order",
-		"## What happened",
-		"## Deviations",
-		"## Next steps",
-		"**Status: <PASS|PARTIAL|BLOCKED|FAIL> — <one-sentence outcome>.**",
-		"Use one nested evidence layer only",
-		"Use one `**None.**` bullet when there are no deviations",
-		"Every required follow-up includes a copy-ready prompt or command",
-		"Use one `**None.**` bullet when no action remains",
-		"## Task-Specific Content",
-		"Task types define which facts must be retained, not additional output sections",
-		"Use exactly the three canonical headings",
-		"Do not repeat a fact across sections",
-		"For merge or release orchestration, keep What happened to state changes",
+		"## Rules",
+		"### Shape",
+		"Write each response in the shape its content calls for",
+		"Match length to consequence rather than to effort spent",
+		"### What A Terminal Response Conveys",
+		"What the user now has",
+		"What remains unfinished, and why",
+		"Anything blocking completion, and what would clear it",
+		"the exact command or prompt when there is one",
+		"Whether the work is finished, partly finished, blocked, or failed, said plainly",
+		"the identifiers a reader needs to find or undo it",
+		"Blockers and unfinished scope belong where the reader will see them, as prominent as the successes",
+		"### Reporting State Truthfully",
+		"Report each check as observed",
+		"`PENDING`, `UNKNOWN`, `SKIPPED`, and `NOT_APPLICABLE`",
+		"Report a check as passing only when it ran and passed",
+		"When something could not be validated, say so and say why",
+		"Distinguish a verified fact from an inference and from a hypothesis",
+		"### Evidence",
+		"not an index of everything checked",
+		"Include an identifier when the reader needs it to act",
 		"smallest evidence set that proves each terminal node",
-		"Do not include a chronological command log, repeated checks, unchanged polling, or routine tool details",
-		"Repository-memory decision, rationale, and artifacts become one concise What happened bullet",
-		"`PENDING`, `UNKNOWN`, `SKIPPED`, `NOT_APPLICABLE`",
+		"Satisfy them on content; they say nothing about layout, and a heading alone satisfies none of them",
+		"These are failures of content, not of layout",
+		"Carrying one response template across unrelated tasks",
+		"These differ in shape because their content differs",
 	} {
 		if !strings.Contains(normalized, check) {
 			t.Errorf("expected %s ruleset to contain %q", slug, check)
 		}
 	}
 	for _, forbidden := range []string{
-		"Make every terminal task response immediately scannable and actionable",
-		"before every terminal task completion",
-		"## Structured Completion Envelope",
-		"### Operator Action List",
-		"## Required Profiles",
-		"## Left-Aligned Detail Contract",
-		"Order items as `Blocker`, `Incomplete`, `Next`, `Optional`, then `None`",
+		"## What happened",
+		"## Deviations",
+		"## Next steps",
+		"**Status:",
+		"**None.**",
+		"retired envelope",
+		"## Proportionality Gate",
+		"## Three-Section Completion Contract",
+		"## Density Budget",
+		"Target twelve rendered lines or fewer",
 		"| Type | Action required | Why | Continue with |",
 		"| Item | Result | Evidence |",
-		"| Question | Finding | Evidence and confidence | Implication |",
-		"| Check | Scope | Status | Evidence or gap |",
-		"| Workstream | Owner | State | Dependency or next handoff |",
 	} {
 		if strings.Contains(ruleset.Body, forbidden) {
 			t.Errorf("%s ruleset still contains centered detail table %q", slug, forbidden)
@@ -89,76 +89,53 @@ func TestAgentCompletionOutputRegistryRulesetIsValid(t *testing.T) {
 	}
 }
 
-func TestAgentCompletionOutputExamplesPreserveProportionalBoundary(t *testing.T) {
+func TestAgentCompletionOutputExamplesModelUnstructuredResponses(t *testing.T) {
 	path := filepath.Join("..", "..", "docs", "references", "rules", "agent-completion-output.md")
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read agent completion output ruleset: %v", err)
 	}
 	body := string(content)
-	conversationalStart := strings.Index(body, "Small conversational answer:")
-	structuredStart := strings.Index(body, "Substantial implementation:")
-	if conversationalStart < 0 || structuredStart <= conversationalStart {
-		t.Fatal("completion examples are missing or out of order")
+
+	examples := strings.Index(body, "## Examples")
+	if examples < 0 {
+		t.Fatal("ruleset has no examples section")
 	}
-	conversational := body[conversationalStart:structuredStart]
+	verification := strings.Index(body, "## Verification")
+	if verification <= examples {
+		t.Fatal("verification section is missing or out of order")
+	}
+	shown := body[examples:verification]
+
+	for _, label := range []string{
+		"A small answer stays a small answer:",
+		"A clean delivery, said once:",
+		"Partial work, where the gap leads:",
+		"A blocker, with the unblock:",
+	} {
+		if !strings.Contains(shown, label) {
+			t.Errorf("examples do not cover %q", label)
+		}
+	}
+
 	for _, forbidden := range []string{
-		"# PASS —",
 		"## What happened",
 		"## Deviations",
 		"## Next steps",
+		"**Status:",
 		"**None.**",
-		"## Repository Memory",
+		"**Required — User:**",
 	} {
-		if strings.Contains(conversational, forbidden) {
-			t.Errorf("conversational example contains structured output %q", forbidden)
+		if strings.Contains(shown, forbidden) {
+			t.Errorf("examples still model the retired envelope %q", forbidden)
 		}
 	}
 
-	complexStart := strings.Index(body, "Complex production coordination:")
-	if complexStart <= structuredStart {
-		t.Fatal("complex production example is missing or out of order")
+	if !strings.Contains(shown, "resume diagnosis using the authorized production logs") {
+		t.Error("blocked example does not give a copy-ready continuation")
 	}
-	structured := body[structuredStart:complexStart]
-	for _, required := range []string{
-		"## What happened",
-		"**Status: PASS — completion output is proportional and ready for review.**",
-		"## Deviations",
-		"CodeRabbit remains `PENDING`",
-		"## Next steps",
-		"**Optional — User:** Review PR #123 after CodeRabbit completes.",
-	} {
-		if !strings.Contains(structured, required) {
-			t.Errorf("structured example does not contain %q", required)
-		}
-	}
-
-	complexEnd := strings.Index(body[complexStart:], "Blocked diagnosis:")
-	if complexEnd < 0 {
-		t.Fatal("blocked diagnosis example is missing")
-	}
-	complex := body[complexStart : complexStart+complexEnd]
-	for _, required := range []string{
-		"**Status: PASS — PRs #290, #181, and #230 merged",
-		"Production validation passed and manual upsert remained default-off",
-		"Non-fatal workflow warnings",
-		"## Next steps\n\n- **None.**",
-	} {
-		if !strings.Contains(complex, required) {
-			t.Errorf("complex example does not contain %q", required)
-		}
-	}
-	for _, forbidden := range []string{
-		"## Operational Result",
-		"## Validation",
-		"## Feature State",
-		"## Residual Notes",
-		"## Coordination",
-		"## Repository Memory",
-	} {
-		if strings.Contains(complex, forbidden) {
-			t.Errorf("complex example contains superseded section %q", forbidden)
-		}
+	if !strings.Contains(shown, "Tell me which you want and I'll finish it.") {
+		t.Error("partial example does not name what the reader must decide")
 	}
 }
 
@@ -167,23 +144,26 @@ func TestAgentCompletionOutputIsIntegratedWithRelatedRules(t *testing.T) {
 		"docs/references/README.md": {
 			"Use `rules/agent-completion-output.md`",
 			"| `agent-completion-output` |",
+			"it requires no response format and names only the facts a response must not leave out",
 		},
 		"docs/references/rules/github-pr-delivery.md": {
-			"Follow the `agent-completion-output` three-section contract",
-			"fields below into concise What happened bullets",
+			"Follow `agent-completion-output`, which prescribes no format",
+			"must be recoverable from the response, including identity, assignment, and hosted-state evidence; where they appear is free",
 		},
 		"docs/references/rules/testing-and-environment-validation.md": {
-			"Follow `agent-completion-output` for terminal reporting",
-			"validation results under What happened",
+			"Follow `agent-completion-output` for terminal reporting, which prescribes no format",
+			"Keep observed validation results, gaps or non-passing evidence, and any required rerun or remediation visible and distinct",
 		},
 		"docs/references/rules/agent-team-orchestration.md": {
-			"Map `task_outcome` to the first What happened status bullet",
+			"State `task_outcome` plainly",
+			"report degraded or unsatisfied conformance as its own fact",
 		},
 		"docs/references/rules/cross-repository-program-coordination.md": {
-			"`agent-completion-output` three-section contract",
+			"Render the terminal program result through `agent-completion-output`, which prescribes no format",
+			"state unresolved dependencies and exact handoffs plainly",
 		},
 		"docs/references/rules/constitution-curation.md": {
-			"Constitution curation result in one concise What happened bullet",
+			"State the Constitution curation result once",
 		},
 	}
 	for path, required := range checks {
