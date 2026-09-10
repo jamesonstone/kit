@@ -15,6 +15,7 @@ func codexBrowserPolicy(title string) string {
   falling back.
 - When I explicitly authorize an external browser, terminate and verify all
   task-owned browser and automation processes before finishing.
+- Host binding detail lives in ` + "`docs/references/host-adapters/codex.md`" + `; normative thread lifecycle lives in ` + "`docs/references/rules/codex-thread-initialization.md`" + `.
 
 `
 }

@@ -21,12 +21,14 @@
   falling back.
 - When I explicitly authorize an external browser, terminate and verify all
   task-owned browser and automation processes before finishing.
+- Host binding detail lives in `docs/references/host-adapters/codex.md`; normative thread lifecycle lives in `docs/references/rules/codex-thread-initialization.md`.
 
 ## Conditional Codex Subagent Binding
 
 - Apply this section only when the active coding host is Codex. Warp/Oz and every other host that reads `AGENTS.md` must skip it.
 - Before delegating, inspect the live Codex roster with `list_agents`. The root supervisor may use `spawn_agent` with host-exposed `model` and `reasoning_effort` controls, `followup_task` for same-agent continuation, and `wait_agent` for status and joining; children must not spawn descendants.
 - Resolve profiles from the live roster rather than static model IDs or a presumed capacity. If a native control is unavailable or fails, follow the shared host-adapter fallback and report the requested and effective profile, model, effort, continuity, and degradation.
+- Capability descriptors live in `docs/references/host-adapters/codex.md`; normative topology lives in `docs/references/rules/agent-team-orchestration.md`.
 
 ## Purpose
 
@@ -34,6 +36,7 @@
 - Start at `docs/agents/README.md` and load only the guidance needed for the current decision
 - Use native agent planning for research, clarification, design, and implementation planning
 - Treat repo-local markdown under `docs/` as persistent repository memory
+- Precedence: `docs/CONSTITUTION.md` over `docs/agents/GUARDRAILS.md` over `docs/references/rules/*` over `docs/specs/<feature>/SPEC.md` over chat; `GUARDRAILS.md` plus `work-lane-gating.md` own worklane routing and `github-pr-merge.md` owns merge readiness, and the detailed gates below route to those sources without restating them as competing rules.
 
 ## Multi-Agent Orchestration Evaluation Hard Gate
 

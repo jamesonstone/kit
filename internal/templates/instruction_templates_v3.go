@@ -9,6 +9,7 @@ func memoryRepositoryInstructions(title string) string {
 - Start at ` + "`docs/agents/README.md`" + ` and load only the guidance needed for the current decision
 - Use native agent planning for research, clarification, design, and implementation planning
 - Treat repo-local markdown under ` + "`docs/`" + ` as persistent repository memory
+- Precedence: ` + "`docs/CONSTITUTION.md`" + ` over ` + "`docs/agents/GUARDRAILS.md`" + ` over ` + "`docs/references/rules/*`" + ` over ` + "`docs/specs/<feature>/SPEC.md`" + ` over chat; ` + "`GUARDRAILS.md`" + ` plus ` + "`work-lane-gating.md`" + ` own worklane routing and ` + "`github-pr-merge.md`" + ` owns merge readiness, and the detailed gates below route to those sources without restating them as competing rules.
 
 ` + multiAgentOrchestrationRoutingGate + workLaneMutationRoutingGate + `
 ## Coding Agent Context Gate
@@ -122,6 +123,12 @@ func memoryInstructionSupportContent(relativePath string) string {
 - Route agents from native planning through implementation to curated repository memory
 - Load only the guidance and repository context needed for the current decision
 
+## Precedence and Altitude
+
+- Authority order: ` + "`docs/CONSTITUTION.md`" + ` over ` + "`docs/agents/GUARDRAILS.md`" + ` over ` + "`docs/references/rules/*`" + ` over ` + "`docs/specs/<feature>/SPEC.md`" + ` over chat; resolve contradictions toward higher authority and never let later instructions override earlier invariants.
+- Source of truth: ` + "`GUARDRAILS.md`" + ` plus ` + "`work-lane-gating.md`" + ` own worklane routing; ` + "`github-pr-merge.md`" + ` owns merge readiness; this file only routes and never restates their normative text as a competing rule.
+- Goldilocks altitude: concrete heuristics plus structure, not brittle if-else scripts nor vague aspirations; prefer canonical examples over edge-case lists.
+
 ## Start Here
 
 1. Use ` + "`kit capabilities <command> --json`" + ` when command safety is not already established.
@@ -174,12 +181,20 @@ func memoryInstructionSupportContent(relativePath string) string {
 write-capable, so run it only after the lane gate in the selected worktree. It
 does not replace native planning, ingest transcripts, or launch an agent.
 
+## Plan-Act-Reflect
+
+- State a brief plan before tool calls, act with the smallest sufficient tool set, then reflect on results before the next step.
+- Ground every claim in read, search, or inspect output before editing; never guess file structure, APIs, or behavior.
+- On unexpected results, diagnose from current evidence, adjust the plan, and verify recovery before continuing.
+
 ## Memory Decision
 
 - Create or update a spec for consequential product behavior, architecture, cross-component contracts, rejected alternatives, or historical decisions future agents need.
 - Do not create a spec for mechanical or code-sufficient work when code and tests communicate the complete durable truth.
 - Route feature rationale to ` + "`SPEC.md`" + `, invariants to ` + "`CONSTITUTION.md`" + `, reusable practices to references or rules, and domain knowledge to existing canonical domain docs.
 - Treat the exact generated Constitution starter as a valid bootstrap state; promote only demonstrated project-wide truth through the Constitution curation rule.
+- Keep work resumable by default: maintain a structured progress log plus commits in ` + "`SPEC.md`" + ` and program ledgers; on a fresh window re-orient through logs, feature list, then a smoke test before continuing.
+- Record launch, pause, and resume state in durable artifacts, never in model memory alone.
 
 ## V3 Phase Gates
 

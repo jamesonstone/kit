@@ -38,6 +38,8 @@ func TestCapabilityAwareHostAdapterIsSharedAndProviderNeutral(t *testing.T) {
 			"confirmed or unknown parallelism",
 			"Unknown or single-agent host",
 			"Never report a role prompt, task list, handoff, or manually opened conversation as a child",
+			"host-specific bindings live in",
+			"illustrative, never normative",
 			"https://learn.chatgpt.com/docs/agent-configuration/subagents",
 			"https://code.claude.com/docs/en/sub-agents",
 			"https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/invoke-custom-agents",

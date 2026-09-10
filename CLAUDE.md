@@ -6,6 +6,7 @@
 - Start at `docs/agents/README.md` and load only the guidance needed for the current decision
 - Use native agent planning for research, clarification, design, and implementation planning
 - Treat repo-local markdown under `docs/` as persistent repository memory
+- Precedence: `docs/CONSTITUTION.md` over `docs/agents/GUARDRAILS.md` over `docs/references/rules/*` over `docs/specs/<feature>/SPEC.md` over chat; `GUARDRAILS.md` plus `work-lane-gating.md` own worklane routing and `github-pr-merge.md` owns merge readiness, and the detailed gates below route to those sources without restating them as competing rules.
 
 ## Multi-Agent Orchestration Evaluation Hard Gate
 

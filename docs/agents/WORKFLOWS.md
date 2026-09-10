@@ -20,12 +20,20 @@
 write-capable, so run it only after the lane gate in the selected worktree. It
 does not replace native planning, ingest transcripts, or launch an agent.
 
+## Plan-Act-Reflect
+
+- State a brief plan before tool calls, act with the smallest sufficient tool set, then reflect on results before the next step.
+- Ground every claim in read, search, or inspect output before editing; never guess file structure, APIs, or behavior.
+- On unexpected results, diagnose from current evidence, adjust the plan, and verify recovery before continuing.
+
 ## Memory Decision
 
 - Create or update a spec for consequential product behavior, architecture, cross-component contracts, rejected alternatives, or historical decisions future agents need.
 - Do not create a spec for mechanical or code-sufficient work when code and tests communicate the complete durable truth.
 - Route feature rationale to `SPEC.md`, invariants to `CONSTITUTION.md`, reusable practices to references or rules, and domain knowledge to existing canonical domain docs.
 - Treat the exact generated Constitution starter as a valid bootstrap state; promote only demonstrated project-wide truth through the Constitution curation rule.
+- Keep work resumable by default: maintain a structured progress log plus commits in `SPEC.md` and program ledgers; on a fresh window re-orient through logs, feature list, then a smoke test before continuing.
+- Record launch, pause, and resume state in durable artifacts, never in model memory alone.
 
 ## V3 Phase Gates
 

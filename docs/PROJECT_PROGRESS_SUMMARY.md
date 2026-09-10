@@ -78,6 +78,7 @@
 | 0075 | autonomous-non-destructive-execution | `docs/specs/0075-autonomous-non-destructive-execution` | deliver | no | 2026-09-01 | Stop Kit coding agents from pausing accepted task or `/goal` work to ask for merge, deploy, or additive-infrastructure consent. Keep explicit manual authorization only for deletes, removals, or otherwise destructive effects. |
 | 0076 | standing-merge-deploy-authority | `docs/specs/0076-standing-merge-deploy-authority` | deliver | no | 2026-09-04 | Let a human grant bounded standing authority for task, goal, or program merges and standard deployments without repeated per-PR or per-head prompts, while preserving exact readiness and separate risk gates. |
 | 0077 | unstructured-completion-output | `docs/specs/0077-unstructured-completion-output` | deliver | no | 2026-09-09 | Remove every required completion format and let the agent write terminal responses in its own shape, keeping only the facts a response must not leave out. |
+| 0078 | rules-lab-alignment | `docs/specs/0078-rules-lab-alignment` | implement | no | 2026-09-10 | Align deeply-rooted rules with cross-lab model-agnostic fundamentals, removing model-specific leakage and duplicated hierarchy while adding persistence, reflect, tool-contract, verifier, context-budget, and resumability guidance. |
 
 ## PROJECT INTENT
 
@@ -755,6 +756,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **OPEN ITEMS**: none
 - **POINTERS**: `docs/specs/0077-unstructured-completion-output/SPEC.md`, `docs/references/rules/agent-completion-output.md`
 
+### rules-lab-alignment
+
+- **STATUS**: implement
+- **PAUSED**: no
+- **INTENT**: Align deeply-rooted rules with cross-lab model-agnostic fundamentals for OpenAI, Claude, Google, and Meta.
+- **APPROACH**: De-model core into host-adapters, declare precedence plus Goldilocks altitude, add persistence plus exit, plan-act-reflect, tool contracts, verifier hardening, context-budget ops, resumability plus evals, with parallel template updates to preserve generator equality.
+- **OPEN ITEMS**: deliver ready PR from GH-206; stop before merge.
+- **POINTERS**: `docs/specs/0078-rules-lab-alignment/SPEC.md`
+
 ## LAST UPDATED
 
-2026-09-09 00:00:00 EDT
+2026-09-10 00:00:00 EDT

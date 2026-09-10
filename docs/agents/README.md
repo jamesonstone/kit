@@ -5,6 +5,12 @@
 - Route agents from native planning through implementation to curated repository memory
 - Load only the guidance and repository context needed for the current decision
 
+## Precedence and Altitude
+
+- Authority order: `docs/CONSTITUTION.md` over `docs/agents/GUARDRAILS.md` over `docs/references/rules/*` over `docs/specs/<feature>/SPEC.md` over chat; resolve contradictions toward higher authority and never let later instructions override earlier invariants.
+- Source of truth: `GUARDRAILS.md` plus `work-lane-gating.md` own worklane routing; `github-pr-merge.md` owns merge readiness; this file only routes and never restates their normative text as a competing rule.
+- Goldilocks altitude: concrete heuristics plus structure, not brittle if-else scripts nor vague aspirations; prefer canonical examples over edge-case lists.
+
 ## Start Here
 
 1. Use `kit capabilities <command> --json` when command safety is not already established.
