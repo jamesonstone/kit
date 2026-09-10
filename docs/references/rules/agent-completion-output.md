@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: agent-completion-output
-description: Removes every required completion format and keeps only the facts a terminal response must not leave out.
+description: States what a terminal response must convey and leaves its shape entirely to the agent.
 status: active
 registry_scope: downstream
 applies_to:
@@ -29,121 +29,105 @@ read_policy_default: must
 
 ## Purpose
 
-- Let the agent write every response in its own natural shape, including
-  terminal ones.
-- Keep a short list of facts from going missing once the shape is free.
-- Retire the three-section envelope, the status token, the None items, and the
-  density budget. Each was added to make reports scannable and each instead
-  produced uniform, ceremonial output that read worse than plain writing.
+- Leave the shape of every response, including terminal ones, to the agent.
+- Name the facts that must survive whatever shape it chooses.
 
 ## Applies When
 
 Applies to every human-readable terminal completion or handoff response, and
 to ordinary conversation.
 
-Does not govern tool-native JSON, machine-only protocol output, or any host
-schema that specifies its own response shape.
+A host schema that specifies its own response shape takes precedence. This rule
+does not govern tool-native JSON or machine-only protocol output.
 
 ## Rules
 
-### Write In Your Own Shape
+### Shape
 
-There is no required format. No mandatory headings, no status token, no fixed
-section order, no required bullet style, no ban on tables, no length budget,
-and no rule that empty things must be declared empty.
+Write each response in the shape its content calls for. A sentence, a
+paragraph, a list, a heading, a table — whichever carries the meaning. Match
+length to consequence rather than to effort spent; substantial work often
+warrants a short account.
 
-- Choose the shape the content calls for: a sentence for a small answer, a
-  short paragraph for a result, a list when the items are genuinely parallel,
-  a heading only when a reader needs to navigate between parts.
-- Match length to consequence rather than to effort spent. Substantial work
-  can warrant a short report, and often does.
-- Do not carry retired scaffolding forward out of habit, and do not invent a
-  fixed replacement template and apply it to every task.
+### What A Terminal Response Conveys
 
-### What Must Not Go Missing
+- What the user now has.
+- What remains unfinished, and why.
+- Anything blocking completion, and what would clear it.
+- Anything the reader must do next, with enough context to act on it and the
+  exact command or prompt when there is one.
+- Whether the work is finished, partly finished, blocked, or failed, said
+  plainly.
+- Every repository, delivery, external-system, and infrastructure change made,
+  with the identifiers a reader needs to find or undo it.
 
-Whatever shape a terminal response takes, it must not leave the reader wrong
-about any of the following. State each one plainly, in whatever words fit.
+Blockers and unfinished scope belong where the reader will see them, as
+prominent as the successes.
 
-- **Blockers.** Anything preventing completion, and what would clear it.
-- **Incomplete scope.** Any part of the request not done, and why.
-- **Required action.** Anything the reader must do next, said so they can act
-  without reconstructing context. When it is a command or a prompt, give it
-  exactly.
-- **Failed and unobserved checks.** A failing, pending, unavailable, skipped,
-  or never-run check reported as exactly that, never folded into success.
-  Preserve literal provider states such as `PENDING`, `UNKNOWN`, `SKIPPED`,
-  and `NOT_APPLICABLE`.
-- **Mutations.** Repository, delivery, external-system, and infrastructure
-  changes actually made, with the identifiers a reader needs to find or undo
-  them.
-- **Confidence.** A hypothesis said as a hypothesis, an inference as an
-  inference, and a verified fact as verified.
+### Reporting State Truthfully
 
-Say plainly whether the work is finished, partly finished, blocked, or failed.
-Say it in ordinary words; no token, label, or taxonomy is required.
-
-### Honesty
-
-- Never report a check as passing unless it ran and passed.
-- Never describe a file, system, or state as inspected unless it was.
-- Never smooth a partial or blocked result into a clean one.
+- Report each check as observed: a failing, pending, unavailable, skipped, or
+  never-run check is reported as exactly that.
+- Preserve literal provider states such as `PENDING`, `UNKNOWN`, `SKIPPED`, and
+  `NOT_APPLICABLE`.
+- Report a check as passing only when it ran and passed, and a file or system
+  as inspected only when it was inspected.
 - When something could not be validated, say so and say why.
+- Distinguish a verified fact from an inference and from a hypothesis.
 
 ### Evidence
 
-Include an identifier when the reader needs it to act, or would reasonably
-doubt the claim without it. Leave it out otherwise. A report is an account of
-where things stand, not an index of everything that was checked.
+A response is an account of where things stand, not an index of everything
+checked. Include an identifier when the reader needs it to act, or would
+reasonably doubt the claim without it.
 
 - Include the pull request, issue, or branch a reader will open next; the exact
   target and version of anything deployed; the specific failure and where it
   lives; the command that resumes blocked work.
-- Leave out a commit SHA cited as proof that something was checked rather than
-  as an identifier a delivery contract requires, lists of test or suite names,
-  file-and-line references for code that is correct, counts of things
-  inspected, and the tools and steps used to reach the answer.
-- Name a validation and what it showed rather than enumerating suites, cases,
-  or per-file results.
+- Name a validation and what it showed, in a few words.
 - For merge or release orchestration, report state changes and the
   smallest evidence set that proves each terminal node.
-- Do not include a chronological command log, repeated checks, or unchanged
-  polling history.
 - Redact secrets, credentials, private customer data, and signed URLs.
 
 ## Composition With Existing Contracts
 
-- Delivery, validation, orchestration, program, and repository-memory
-  contracts still bind. They name facts that must reach the reader; none of
-  them dictates layout, and none may be satisfied by a heading alone.
+Delivery, validation, orchestration, program, and repository-memory contracts
+name facts that must reach the reader. Satisfy them on content; they say
+nothing about layout, and a heading alone satisfies none of them.
+
 - `github-pr-delivery` requires the issue, branch, commit, pull request, and
-  assignee to be recoverable from the response. Where they appear is free.
+  assignee to be recoverable from the response.
 - `testing-and-environment-validation` requires observed results and every
   non-passing or unavailable evidence state to be visible and distinct.
-- `agent-team-orchestration` requires the task outcome and any degraded or
-  unsatisfied conformance to be stated, never hidden behind task success.
+- `agent-team-orchestration` requires the task outcome, and any degraded or
+  unsatisfied conformance, to be stated in its own right.
 - Cross-repository program work requires each workstream's state, unresolved
   dependencies, and exact handoffs to be identifiable.
-- Repository-memory decisions, including `not required`, must be stated once.
-- A higher-priority system, developer, client, tool, or host schema takes
-  precedence over this rule.
+- Repository-memory decisions, including `not required`, are stated once.
 
 ## Anti-Patterns
 
-- Reproducing the retired envelope: `## What happened`, `## Deviations`, and
-  `## Next steps` headings, a `**Status: ...**` token, or a `**None.**` item.
-- Replacing it with a different fixed template applied to every task.
-- Adding Completed, Validation, Delivery, Feature State, Residual Notes,
-  Coordination, or Repository Memory headings.
-- Announcing that there are no deviations, no risks, or no next steps.
-- Reporting success while a required check is failing, pending, or unobserved.
-- Replacing a provider-native evidence state with an optimistic summary.
-- Burying a blocker or unfinished scope among successful-sounding detail.
+These are failures of content, not of layout. No shape is wrong here; these
+are.
+
+- Reporting a check as passing when it did not run, or claiming an inspection
+  that did not happen.
+- Folding a pending, unavailable, or skipped state into a summary that reads
+  as success.
+- Presenting a hypothesis or an inference as a confirmed fact.
+- Leaving a blocker or unfinished scope to be inferred from successful-sounding
+  detail.
 - Naming a required action without enough context to act on it.
-- Padding a report with commit SHAs, suite names, or file-and-line references
-  that support no decision.
+- Padding a response with identifiers that support no decision the reader has
+  to make.
+- Turning a merge or deployment result into a chronological command log or a
+  polling history.
+- Carrying one response template across unrelated tasks instead of letting each
+  response take the shape its content calls for.
 
 ## Examples
+
+These differ in shape because their content differs. That is the point.
 
 A small answer stays a small answer:
 
@@ -181,7 +165,7 @@ I need read-only access to the production dependency logs — once you've
 granted it, say “resume diagnosis using the authorized production logs.”
 ```
 
-Orchestrated work where headings genuinely help the reader navigate:
+Orchestrated work, where headings genuinely help the reader navigate:
 
 ```markdown
 All three PRs merged and deployed.
@@ -196,14 +180,15 @@ next runner upgrade.
 
 ## Verification
 
-- Confirm no response contains the retired headings, status token, or None
-  item.
-- Confirm no single fixed template is being applied across unrelated tasks.
-- Confirm blockers, incomplete scope, and required actions are stated plainly
-  and are not hidden among successful detail.
-- Confirm failing, pending, unavailable, skipped, and unobserved checks are
-  reported as those states, with provider-native wording preserved.
-- Confirm mutations are recoverable from the response.
-- Confirm hypotheses and inferences are not presented as verified facts.
+- Confirm each response's shape follows from its content rather than from a
+  template carried across tasks.
+- Confirm blockers, unfinished scope, and required actions are as visible as
+  the successes.
+- Confirm every check's state is reported as observed, with provider-native
+  wording preserved.
+- Confirm passing claims correspond to checks that ran, and inspection claims
+  to inspections that happened.
+- Confirm hypotheses and inferences read as such.
+- Confirm every mutation is recoverable from the response.
 - Confirm every fact required by a composing contract reaches the reader.
-- Confirm identifiers that support no decision were left out.
+- Confirm the identifiers present support a decision the reader has to make.

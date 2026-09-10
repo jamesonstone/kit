@@ -31,7 +31,7 @@ func TestMergeOrchestrationRulesStayContextAwareAndConcise(t *testing.T) {
 		"agent-completion-output.md": {
 			"smallest evidence set that proves each",
 			"terminal node",
-			"Do not include a chronological command log",
+			"chronological command log",
 		},
 	}
 

@@ -188,14 +188,20 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 		}
 		for _, snippet := range []string{
 			"## Agent Completion Output Contract",
-			"Write every response, including terminal completions and handoffs, in the shape the content calls for",
-			"no `**Status: ...**` token, no `**None.**` item",
-			"never leave the reader wrong about a blocker",
+			"Write each response, including terminal completions and handoffs, in the shape its content calls for",
+			"Match length to consequence rather than to effort spent",
+			"conveys what the user now has, what remains unfinished and why",
+			"the exact command or prompt when there is one",
+			"Say plainly whether the work is finished, partly finished, blocked, or failed",
+			"Keep blockers and unfinished scope as prominent as the successes",
+			"Report each check as observed",
+			"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE are preserved verbatim",
+			"Report a check as passing only when it ran and passed",
 			"When something could not be validated, say so and say why",
-			"There is no required response format",
-			"Do not emit the retired envelope",
-			"never folded into success",
-			"Give a required action with enough context to act on it",
+			"Distinguish a verified fact from an inference and from a hypothesis",
+			"an account of where things stand, not an index of everything checked",
+			"Satisfy them on content; a heading alone satisfies none of them",
+			"When something could not be validated, say so and say why",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)

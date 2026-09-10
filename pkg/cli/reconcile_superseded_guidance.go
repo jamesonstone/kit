@@ -9,7 +9,8 @@ const (
 	legacyPrioritizedActionList     = "prioritized action list ordered Blocker, Incomplete, Next, Optional, then None"
 	legacyNoneBulletMandate         = "Use one `**None.**` bullet when there are no deviations"
 	legacyNestedEvidenceMandate     = "Use at most one nested evidence layer and state each fact once"
-	legacyThreeSectionMandate       = "`## What happened`, `## Deviations`, and `## Next steps`, in that order"
+	legacyThreeSectionMandate       = "emit exactly `## What happened`, `## Deviations`, and `## Next steps` in that order"
+	legacyThreeSectionRestatement   = "`## What happened`, `## Deviations`, and `## Next steps`, in that order"
 	legacyStatusTokenMandate        = "**Status: PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>.**"
 	legacyDensityBudgetMandate      = "target twelve rendered lines or fewer"
 )
@@ -22,6 +23,7 @@ func v3ForbiddenGuidance() map[string][]string {
 		legacyNoneBulletMandate,
 		legacyNestedEvidenceMandate,
 		legacyThreeSectionMandate,
+		legacyThreeSectionRestatement,
 		legacyStatusTokenMandate,
 		legacyDensityBudgetMandate,
 	}
