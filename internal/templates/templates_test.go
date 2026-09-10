@@ -89,7 +89,7 @@ func TestBuildAutoAssignWorkflowRendersSafeGitHubActionsWorkflow(t *testing.T) {
 		"const configured = [",
 		"context.payload?.issue?.user?.login",
 		"context.payload?.pull_request?.user?.login",
-		`login.endsWith("[bot]")`,
+		`key.endsWith("[bot]")`,
 		"login.toLowerCase()",
 		"includes initiator",
 		"github.rest.issues.addAssignees",

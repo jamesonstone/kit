@@ -55,10 +55,10 @@ jobs:
               if (typeof login !== "string" || login.length === 0) {
                 continue;
               }
-              if (login.endsWith("[bot]")) {
+              const key = login.toLowerCase();
+              if (key.endsWith("[bot]")) {
                 continue;
               }
-              const key = login.toLowerCase();
               if (seen.has(key)) {
                 continue;
               }

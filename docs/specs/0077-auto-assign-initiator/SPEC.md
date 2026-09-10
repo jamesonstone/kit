@@ -125,6 +125,12 @@ repository).
 - `TestBuildAutoAssignWorkflowNoOpsWithoutAssignees` encodes the old
   empty-list no-op; it must be updated to the initiator-still-assigns
   contract.
+- CodeRabbit review on PR #207 found the bot-suffix check was
+  case-sensitive (`login.endsWith("[bot]")` ran before lowercasing), so a
+  mixed-case bot initiator could reach `addAssignees`. Fixed by lowering
+  first and checking `key.endsWith("[bot]")`; node simulation confirms
+  `Dependabot[Bot]` and `github-actions[Bot]` are excluded while human
+  initiators still assign.
 
 ## VALIDATION
 
