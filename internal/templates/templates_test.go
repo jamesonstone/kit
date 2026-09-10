@@ -86,6 +86,12 @@ func TestBuildAutoAssignWorkflowRendersSafeGitHubActionsWorkflow(t *testing.T) {
 		"continue-on-error: true",
 		`"jamesonstone"`,
 		`"octocat"`,
+		"const configured = [",
+		"context.payload?.issue?.user?.login",
+		"context.payload?.pull_request?.user?.login",
+		`key.endsWith("[bot]")`,
+		"login.toLowerCase()",
+		"includes initiator",
 		"github.rest.issues.addAssignees",
 	} {
 		if !strings.Contains(content, check) {
@@ -101,8 +107,9 @@ func TestBuildAutoAssignWorkflowNoOpsWithoutAssignees(t *testing.T) {
 	content := BuildAutoAssignWorkflow(nil)
 
 	for _, check := range []string{
-		"const assignees = [];",
-		"No Kit auto-assignees configured; skipping.",
+		"const configured = [];",
+		"context.payload?.issue?.user?.login",
+		"No assignees resolved (no configured maintainers and no human initiator); skipping.",
 		"continue-on-error: true",
 	} {
 		if !strings.Contains(content, check) {
