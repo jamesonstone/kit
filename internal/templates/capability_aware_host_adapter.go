@@ -2,7 +2,7 @@ package templates
 
 const capabilityAwareHostAdapter = `## Capability-Aware Host Adapter
 
-Use ` + "`docs/references/rules/agent-team-orchestration.md`" + ` for the canonical topology and lifecycle. This adapter translates semantic profiles into controls confirmed by the active host; host and model examples are illustrative, not fixed requirements.
+Use ` + "`docs/references/rules/agent-team-orchestration.md`" + ` for the canonical topology and lifecycle. This adapter translates semantic profiles into controls confirmed by the active host; host-specific bindings live in ` + "`docs/references/host-adapters/`" + ` and remain illustrative, never normative.
 
 | Profile | Capability target |
 | --- | --- |
@@ -22,12 +22,15 @@ Use ` + "`docs/references/rules/agent-team-orchestration.md`" + ` for the canoni
 - If capacity changes or a spawn fails, keep unadmitted lanes pending, preserve accepted work, recompute the ready frontier from confirmed capacity, and report the failure and degradation. Do not retry indefinitely or let children create descendants.
 - Report actual and logical lanes separately, requested and effective profiles plus model and effort when exposed, confirmed or unknown parallelism, continuity or replacement, verifier independence, and every fallback.
 
-### Illustrative Current Mappings
+### Host-Specific Bindings
 
-| Host | Example profile mapping |
+- Core uses only semantic profiles; host bindings live in ` + "`docs/references/host-adapters/`" + ` and are illustrative, not fixed requirements.
+- Resolve every profile against the live roster the host confirms; never encode model IDs or version names in normative guidance.
+
+| Host | Capability descriptor |
 | --- | --- |
 | Codex | strongest justified live configuration for ` + "`architect`" + ` and ` + "`precision`" + `; balanced read-heavy configuration for ` + "`orchestrator`" + ` and ` + "`mapper`" + `; fast configuration for bounded ` + "`specialist`" + ` work; fresh strong configuration for ` + "`verifier`" + ` |
-| Claude Code | Opus-class for architecture, precision, and strong verification; Sonnet-class for orchestration, mapping, and general implementation; Haiku-class only for narrow low-risk bounded work |
+| Claude Code | strongest justified configuration for ` + "`architect`" + `, ` + "`precision`" + `, and strong verification; balanced configuration for ` + "`orchestrator`" + `, ` + "`mapper`" + `, and general implementation; light configuration only for narrow low-risk bounded work |
 | GitHub Copilot | request semantic profiles conservatively and record the effective model or agent controls the host confirms; do not infer child continuation, parallelism, or per-child selection |
 | Warp/Oz | use native parent-child orchestration, continuation, and per-child model controls only when exposed; parallelism and admission remain host-owned |
 | Unknown or single-agent host | serialize logical lanes in the supervisor and perform a distinct self-review, reporting that no child or independent verifier was confirmed |
@@ -46,6 +49,7 @@ func codexCapabilityAwareHostBinding(title string) string {
 - Apply this section only when the active coding host is Codex. Warp/Oz and every other host that reads ` + "`AGENTS.md`" + ` must skip it.
 - Before delegating, inspect the live Codex roster with ` + "`list_agents`" + `. The root supervisor may use ` + "`spawn_agent`" + ` with host-exposed ` + "`model`" + ` and ` + "`reasoning_effort`" + ` controls, ` + "`followup_task`" + ` for same-agent continuation, and ` + "`wait_agent`" + ` for status and joining; children must not spawn descendants.
 - Resolve profiles from the live roster rather than static model IDs or a presumed capacity. If a native control is unavailable or fails, follow the shared host-adapter fallback and report the requested and effective profile, model, effort, continuity, and degradation.
+- Capability descriptors live in ` + "`docs/references/host-adapters/codex.md`" + `; normative topology lives in ` + "`docs/references/rules/agent-team-orchestration.md`" + `.
 
 `
 }

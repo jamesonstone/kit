@@ -21,6 +21,12 @@
 - In downstream Kit-managed projects, load `docs/references/rules/kit-capabilities-usage.md` when command discovery affects the task.
 - Downstream projects should use `kit capabilities` for command discovery; do not maintain Kit's internal command catalog from a downstream project.
 
+## Tool Contracts
+
+- Define few, sharp, typed tools with clear names, parameter descriptions, and an examples section; prefer native schemas over hand-injected ones.
+- Keep tool outputs token-efficient and unambiguous; document formats with examples models already write, such as Markdown and absolute paths.
+- Split the agent when tools overlap or prompts sprout many conditional branches, not merely on tool count.
+
 ## Dispatch
 
 - Use `kit dispatch` after native planning when an accepted plan needs a safe multi-lane execution topology
@@ -36,7 +42,7 @@
 
 ## Capability-Aware Host Adapter
 
-Use `docs/references/rules/agent-team-orchestration.md` for the canonical topology and lifecycle. This adapter translates semantic profiles into controls confirmed by the active host; host and model examples are illustrative, not fixed requirements.
+Use `docs/references/rules/agent-team-orchestration.md` for the canonical topology and lifecycle. This adapter translates semantic profiles into controls confirmed by the active host; host-specific bindings live in `docs/references/host-adapters/` and remain illustrative, never normative.
 
 | Profile | Capability target |
 | --- | --- |
@@ -56,12 +62,15 @@ Use `docs/references/rules/agent-team-orchestration.md` for the canonical topolo
 - If capacity changes or a spawn fails, keep unadmitted lanes pending, preserve accepted work, recompute the ready frontier from confirmed capacity, and report the failure and degradation. Do not retry indefinitely or let children create descendants.
 - Report actual and logical lanes separately, requested and effective profiles plus model and effort when exposed, confirmed or unknown parallelism, continuity or replacement, verifier independence, and every fallback.
 
-### Illustrative Current Mappings
+### Host-Specific Bindings
 
-| Host | Example profile mapping |
+- Core uses only semantic profiles; host bindings live in `docs/references/host-adapters/` and are illustrative, not fixed requirements.
+- Resolve every profile against the live roster the host confirms; never encode model IDs or version names in normative guidance.
+
+| Host | Capability descriptor |
 | --- | --- |
 | Codex | strongest justified live configuration for `architect` and `precision`; balanced read-heavy configuration for `orchestrator` and `mapper`; fast configuration for bounded `specialist` work; fresh strong configuration for `verifier` |
-| Claude Code | Opus-class for architecture, precision, and strong verification; Sonnet-class for orchestration, mapping, and general implementation; Haiku-class only for narrow low-risk bounded work |
+| Claude Code | strongest justified configuration for `architect`, `precision`, and strong verification; balanced configuration for `orchestrator`, `mapper`, and general implementation; light configuration only for narrow low-risk bounded work |
 | GitHub Copilot | request semantic profiles conservatively and record the effective model or agent controls the host confirms; do not infer child continuation, parallelism, or per-child selection |
 | Warp/Oz | use native parent-child orchestration, continuation, and per-child model controls only when exposed; parallelism and admission remain host-owned |
 | Unknown or single-agent host | serialize logical lanes in the supervisor and perform a distinct self-review, reporting that no child or independent verifier was confirmed |
@@ -87,6 +96,7 @@ Current provider references: [Codex subagents](https://learn.chatgpt.com/docs/ag
 
 ## PR Merge
 
+- Source of truth is `docs/references/rules/github-pr-merge.md`; the bullets below route to it and never restate it as a competing rule.
 - Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program to merge its resulting work. Generic task acceptance does not create it.
 - Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve the exact current PR and head before mutation; do not ask again solely because its number or final OID was unknown when authority was granted.
 - A commit SHA or head OID identifies readiness evidence only; it is never an authorization identity. Never request exact-head reauthorization.

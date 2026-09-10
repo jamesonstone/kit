@@ -76,6 +76,12 @@ correctly concluding, quickly, that decomposition would not help. Treat an
 inflated manifest for trivial work as its own anti-pattern: it burns effort
 without adding evidence anyone will use.
 
+### Persistence And Exit Conditions
+
+- Keep going until acceptance criteria plus verification are complete; stop only on verified done, an explicit user stop, or a genuine external blocker that cannot be recovered in scope.
+- Declare the loop `exit_condition`, tool and turn budgets, bounded retries, and stall detection before `IMPLEMENTING`; never retry the same failed action without new evidence, a revised recovery path, or a changed tool path.
+- Treat stalled progress such as repeated unchanged tool output or repeated failing checks without diagnosis as a signal to re-plan, narrow scope, or request the smallest missing input, not to loop harder.
+
 ### Lifecycle And Root Accountability
 
 Use this execution lifecycle:
@@ -332,6 +338,8 @@ hypothesis to reconcile, not the source of truth for state.
 - After nontrivial implementation, use a fresh independent `verifier` when the
   host confirms that capability. The verifier must have a distinct execution
   and result, must not be the implementer or advisor, and remains read-only.
+- The builder never marks its own work done; completion requires independent tool output such as tests, checks, or inspection, or a fresh verifier, never narrative alone.
+- Preserve tool-trajectory evidence such as tool order, inputs, and outputs alongside final text; evaluate trajectories as well as final answers.
 - Verification agents must not edit files, stage changes, commit, push, close
   findings, mark acceptance criteria complete, resolve review threads, or
   mutate issue, branch, pull-request, merge, or merge-queue state.

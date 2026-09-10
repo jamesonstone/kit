@@ -62,6 +62,7 @@ deployment environment or external integration for a project that has none.
   literally. Do not convert unobserved behavior into a passing claim.
 - Use coverage reports to find untested behavior, not as a substitute for
   meaningful assertions or as a universal percentage target.
+- For rule and instruction changes, baseline on a small eval set with outcome plus trajectory grading and human spot-checks; iterate from failure audits rather than a single static score.
 
 ### Preserve Code-Level Tests
 

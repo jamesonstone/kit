@@ -17,6 +17,12 @@ const agentsTooling = `# Tooling
 - In downstream Kit-managed projects, load ` + "`docs/references/rules/kit-capabilities-usage.md`" + ` when command discovery affects the task.
 - Downstream projects should use ` + "`kit capabilities`" + ` for command discovery; do not maintain Kit's internal command catalog from a downstream project.
 
+## Tool Contracts
+
+- Define few, sharp, typed tools with clear names, parameter descriptions, and an examples section; prefer native schemas over hand-injected ones.
+- Keep tool outputs token-efficient and unambiguous; document formats with examples models already write, such as Markdown and absolute paths.
+- Split the agent when tools overlap or prompts sprout many conditional branches, not merely on tool count.
+
 ## Dispatch
 
 - Use ` + "`kit dispatch`" + ` when broad work must be turned into a safe Agent Team Plan
@@ -49,6 +55,7 @@ const agentsTooling = `# Tooling
 
 ## PR Merge
 
+- Source of truth is ` + "`docs/references/rules/github-pr-merge.md`" + `; the bullets below route to it and never restate it as a competing rule.
 - Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program to merge its resulting work. Generic task acceptance does not create it.
 - Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve the exact current PR and head before mutation; do not ask again solely because its number or final OID was unknown when authority was granted.
 - A commit SHA or head OID identifies readiness evidence only; it is never an authorization identity. Never request exact-head reauthorization.
