@@ -40,8 +40,16 @@ func TestRunInit_ExplicitEmptyProjectAutoAssignAssigneesSkipsGlobalFallback(t *t
 	if strings.Contains(content, "jamesonstone") {
 		t.Fatalf("explicit empty project assignees should not fall back to global config:\n%s", content)
 	}
-	if !strings.Contains(content, "const assignees = [];") {
-		t.Fatalf("expected explicit empty project assignees to render a no-op workflow, got:\n%s", content)
+	if !strings.Contains(content, "const configured = [];") {
+		t.Fatalf("expected explicit empty project assignees to render an initiator-only workflow, got:\n%s", content)
+	}
+	for _, check := range []string{
+		"context.payload?.issue?.user?.login",
+		"No assignees resolved (no configured maintainers and no human initiator); skipping.",
+	} {
+		if !strings.Contains(content, check) {
+			t.Fatalf("expected explicit empty workflow to contain %q, got:\n%s", check, content)
+		}
 	}
 }
 
@@ -62,8 +70,9 @@ func TestRunInit_CreatesNonBlockingAutoAssignWorkflowWithoutAssignees(t *testing
 
 	content := readFile(t, filepath.Join(tempDir, autoAssignWorkflowPath))
 	for _, check := range []string{
-		"const assignees = [];",
-		"No Kit auto-assignees configured; skipping.",
+		"const configured = [];",
+		"context.payload?.issue?.user?.login",
+		"No assignees resolved (no configured maintainers and no human initiator); skipping.",
 		"continue-on-error: true",
 	} {
 		if !strings.Contains(content, check) {
