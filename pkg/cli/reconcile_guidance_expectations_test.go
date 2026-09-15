@@ -214,6 +214,7 @@ func writeCurrentReconcileGuidanceFixture(t *testing.T, version int) string {
 		writeFile(t, filepath.Join(projectRoot, filepath.FromSlash(support.RelativePath)), support.Content)
 	}
 	if version == config.InstructionScaffoldVersionMemory {
+		writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.MemoryClaudeMD)
 		writeFile(
 			t,
 			filepath.Join(projectRoot, "AGENTS.md"),

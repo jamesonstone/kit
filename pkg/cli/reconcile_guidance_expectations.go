@@ -64,7 +64,11 @@ func v2GuidanceExpectations() map[string][]string {
 
 func v3GuidanceExpectations() map[string][]string {
 	return map[string][]string{
+		"CLAUDE.md": {"docs/references/thread-naming.md", "kit instructions naming"},
 		"AGENTS.md": {
+			"docs/references/thread-naming.md",
+			"kit instructions naming",
+			"This policy supersedes legacy initial-title formats and unconditional preserve-title wording",
 			"Default to a new worklane without asking",
 			"Continue an existing lane only when the user explicitly directs",
 			"Never offer or ask the user to choose between lanes",

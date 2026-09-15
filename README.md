@@ -114,3 +114,20 @@ MIT
 ## Maintainers
 
 Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+
+## Conversation titles
+
+Kit names conversations for their current work: `[scope] domain / objective`,
+for example `[labcore] eventing / prod delivery`. Titles evolve when ownership
+changes; coding stages do not trigger renames. Forks receive their own objective.
+
+`kit init` installs one [shared policy and capability matrix](docs/references/thread-naming.md)
+through AGENTS.md (Codex/Cursor) and CLAUDE.md (Claude Code). Existing projects
+use the normal `kit init --refresh` review flow. Upgrading the binary alone does
+not rewrite projects or global host preferences. `kit instructions` prints the
+current global instruction version; `kit instructions naming` prints the policy.
+
+Exposed native metadata tools apply titles automatically; otherwise the agent
+suggests one title with the supported manual action. Claude ordinary Chat/Cowork
+repository loading is unverified. No context reset, host database edit or UI
+automation is used.

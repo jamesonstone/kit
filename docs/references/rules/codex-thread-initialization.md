@@ -49,7 +49,7 @@ refreshing, reconciling, or reviewing the instruction contract.
 ### Required Order
 
 1. Invoke the available thread-title operation, such as `set_thread_title`,
-   with `[<project>] <description>`.
+   with `[scope] domain / objective`.
 2. Invoke the available thread-pin operation, such as `set_thread_pinned`.
 3. Verify each result from returned host state when that state is available.
 
@@ -58,12 +58,13 @@ to a later interaction.
 
 ### Title Contract
 
-- Derive `<project>` from repository or working-directory context supplied by
-  the host. Do not inspect the repository merely to choose the title.
-- Derive `<description>` from the user's request.
-- Keep the description lowercase and at most four words.
-- Do not let title wording delay the required operations; choose the clearest
-  concise description supported by the supplied context.
+- Shared naming semantics live in `docs/references/thread-naming.md`. The
+  installed pointer and bootstrap format are projections of that policy.
+- Derive scope, stable domain and current objective from supplied context.
+  Aim for 60 characters without sacrificing meaning; preserve useful acronyms.
+- If the request is an unread attachment, defer naming until it has been read.
+  This is the narrow exception to pre-response title ordering; resolve pinning
+  normally and do not invent the attachment's objective.
 
 ### Failure And Continuation
 
@@ -79,9 +80,9 @@ to a later interaction.
 
 ### Continued Tasks
 
-- Preserve the title and pin state of a continued Codex task.
-- Re-run only the missing operation unless the user explicitly requests a title
-  or pin-state change.
+- Preserve pin state and titles that still identify the owned outcome.
+- At material ownership changes, apply the shared naming policy without
+  repeating initialization. Rename only metadata on the same thread.
 - Do not repeat successful initialization on every interaction.
 
 ### Provider Boundary
@@ -118,7 +119,7 @@ to a later interaction.
 Successful initialization:
 
 ```text
-set_thread_title("[payments] retry policy") -> renamed
+set_thread_title("[payments] retries / recovery") -> renamed
 set_thread_pinned(true) -> pinned
 first commentary follows
 ```
