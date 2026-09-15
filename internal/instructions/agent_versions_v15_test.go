@@ -48,9 +48,6 @@ func TestAgentInstructionsV15RemovesCompletionFormat(t *testing.T) {
 			t.Fatalf("v15 instructions contain superseded completion format %q", forbidden)
 		}
 	}
-	if CurrentAgentVersion != "v15" {
-		t.Fatalf("CurrentAgentVersion = %q, want v15", CurrentAgentVersion)
-	}
 }
 
 func TestAgentInstructionsV15RemovesFixedFinalResponseStructureEverywhere(t *testing.T) {

@@ -170,6 +170,8 @@ func instructionSupportContent(relativePath string, version int) string {
 		}
 	}
 	switch relativePath {
+	case "docs/references/thread-naming.md":
+		return instructions.ThreadNamingPolicy
 	case "docs/agents/README.md":
 		return agentsREADME
 	case "docs/agents/WORKFLOWS.md":
