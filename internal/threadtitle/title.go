@@ -101,8 +101,11 @@ func equivalent(current, candidate string) bool {
 
 func normalize(value string) string {
 	words := strings.Fields(strings.ToLower(value))
-	for i := range words {
-		words[i] = strings.Trim(words[i], ".,:;!?\"'“”‘’")
+	normalized := words[:0]
+	for _, word := range words {
+		if word = strings.Trim(word, ".,:;!?\"'“”‘’"); word != "" {
+			normalized = append(normalized, word)
+		}
 	}
-	return strings.Join(words, " ")
+	return strings.Join(normalized, " ")
 }

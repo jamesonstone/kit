@@ -20,6 +20,7 @@ func TestResolveOwnership(t *testing.T) {
 		{"token boundaries", "[kit] agents / threadnaming", "thread naming", "ownership_changed", false, true},
 		{"acronym boundaries", "[kit] agents / J.W.T validation", "JWT validation", "ownership_changed", false, true},
 		{"language symbols", "[kit] agents / C++ support", "C support", "ownership_changed", false, true},
+		{"standalone punctuation token", "[kit] agents / thread naming !!!", "thread naming", "cosmetic_only", false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
