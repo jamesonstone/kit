@@ -27,6 +27,7 @@ stdout; the command does not require a Kit project or use the clipboard.`,
 		Args: cobra.NoArgs,
 		RunE: runInstructions,
 	}
+	cmd.AddCommand(newInstructionsTitleCommand(), newInstructionsNamingCommand())
 	cmd.Flags().String("version", "", "print an exact instructions version, such as v1 (default: current)")
 	return cmd
 }
@@ -49,4 +50,14 @@ func runInstructions(cmd *cobra.Command, args []string) error {
 	}
 	_, err = fmt.Fprint(cmd.OutOrStdout(), content)
 	return err
+}
+
+func newInstructionsNamingCommand() *cobra.Command {
+	return &cobra.Command{
+		Use: "naming", Short: "Print the shared conversation naming policy", Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			_, err := fmt.Fprint(cmd.OutOrStdout(), instructions.ThreadNamingPolicy)
+			return err
+		},
+	}
 }

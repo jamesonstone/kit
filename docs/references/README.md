@@ -2,6 +2,8 @@
 
 ## Purpose
 
+- Use `thread-naming.md` for shared conversation naming and host capability adapters
+
 - This directory holds durable repo-local references that are broader than one feature
 - Keep long-lived background context here instead of in injected top-level instruction files
 - Link these files from feature front matter references when they materially shape work
