@@ -216,6 +216,17 @@ unless the repo-local Kit rules explicitly require them or the user explicitly o
 - Bind confirmation to the actor, action, exact targets or immutable snapshot/version, environment, and consequences. Immediately before execution, compare the current target set or version with the confirmed snapshot; any difference requires a new outline and confirmation.
 - Preserve stricter repository, legal, privacy, security, infrastructure, and provider controls. One post-outline confirmation may satisfy multiple deletion gates only when the combined outline contains every required field.
 
+## Slack: Read-Only by Default, Explicit Approval Required to Send
+
+- Treat all Slack access as **read-only by default**.
+- You may read and search Slack without additional approval. If given a Slack message or thread link, read the **entire thread**; inspect or search the containing channel and other relevant Slack content when useful.
+- Use Slack content as reference material. Do **not** post, reply, react, edit, delete, forward, or otherwise modify Slack unless the human explicitly authorizes that specific action.
+- Drafting a Slack message is not authorization to send it. Requests to draft, write, improve, or suggest a reply mean **draft only**; return the proposed text.
+- Before any Slack send or other Slack mutation: draft the exact message or action, show the complete final content, ask whether the human authorizes **that specific action**, and wait for an explicit instruction such as **"send it," "send this," or "yes, send that message."**
+- Approval is **single-use and message-specific**. Previous Slack send authorization and general statements such as "handle this" or "go ahead" do not authorize a later send unless they clearly refer to the exact message just presented.
+- When uncertain whether the human authorized a Slack write, **do not perform it. Ask.**
+- Load `docs/references/rules/slack-read-only.md` before any Slack write or when Slack investigation needs the full protocol.
+
 ## Infrastructure Change Approval Hard Gate
 
 - Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.
@@ -293,6 +304,7 @@ Before AWS-dependent work, load `docs/references/rules/aws-agent-toolkit-guidanc
 - Resolve all in-scope issues autonomously and continue until the goal is fully complete or a genuine blocker remains; diagnose before retrying, preserve target and scope, and verify the recovered state
 - Do not ask for routine approval to switch supported tools, including authenticated `gh`, when the authorized mutation is unchanged
 - Follow `docs/references/rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state; default to soft delete and obtain post-outline specific manual confirmation before every hard delete
+- Follow `docs/references/rules/slack-read-only.md` before any Slack write; treat Slack as read-only by default and obtain explicit, message-specific human approval before sending or otherwise mutating Slack
 - Outside explicit repo-local approval gates, ask permission only before large-scale deletion or deleting sensitive files
 - Treat missing credentials, ambiguous identity or target, conflicting user-owned changes, and required external authorization as blockers requiring the smallest missing input, not as routine retry-permission requests
 - Do not run `coderabbit --prompt-only` unless explicitly requested or approved

@@ -126,6 +126,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"frontend-application-architecture",
 		"human-authorship",
 		"infrastructure-change-approval",
+		"slack-read-only",
 		"source-file-size",
 		"testing-and-environment-validation",
 		"work-lane-gating",

@@ -63,6 +63,7 @@ const Constitution = `# CONSTITUTION
 - Before commit, pull request, issue, comment, or other attribution text, load ` + "`docs/references/rules/human-authorship.md`" + `. Only the human user may be displayed as author; do not attribute coding agents, tools, or bots.
 - Before designing deletion behavior or deleting persistent project, user, business, or external-system state, load ` + "`docs/references/rules/deletion-safety.md`" + `.
 - Default unqualified deletion to a recoverable soft delete; require a post-outline specific manual confirmation for the exact current targets before any hard delete.
+- Treat Slack as read-only by default. Load ` + "`docs/references/rules/slack-read-only.md`" + ` before any Slack write. Drafting is not authorization to send; require explicit, message-specific human approval.
 - Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less.
 - Before delivery, audit the complete affected source/test scope; whole-project reconcile and scheduled maintenance audit the entire repository.
 - Exclude documentation files, all ` + "`docs/**`" + `, all ` + "`.kit/**`" + `, ` + "`.kit.yaml`" + `, ignored files, vendored dependencies, and proven generated files.

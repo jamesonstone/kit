@@ -34,7 +34,7 @@ When accepted work requires creating or mutating an issue, branch, staging, comm
 
 ---
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + `---
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + slackReadOnlyGate + infrastructureChangeApprovalGate + `---
 
 ## AWS Context Hard Gate
 

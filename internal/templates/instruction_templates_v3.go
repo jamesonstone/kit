@@ -62,7 +62,7 @@ func memoryRepositoryInstructions(title string) string {
 - Repo-local Kit rules outrank generic GitHub or plugin defaults
 - Assign every created or reused GitHub issue and pull request to the human user, such as with ` + "`gh issue create --assignee @me`" + ` or ` + "`gh pr create --assignee @me`" + ` after confirming the authenticated ` + "`gh`" + ` login is the human user; never assign a coding agent, assistant, bot, or automated identity
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + `## Knowledge Map
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + slackReadOnlyGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + `## Knowledge Map
 
 - ` + "`docs/specs/<feature>/SPEC.md`" + ` — material feature rationale and living implementation history
 - ` + "`docs/CONSTITUTION.md`" + ` — project invariants
@@ -112,7 +112,7 @@ Before editing implementation/source or test files, load ` + "`docs/references/r
 ` + multiAgentOrchestrationRoutingGate + workLaneMutationRoutingGate + `
 Before Git, GitHub, or AWS mutations, load ` + "`docs/agents/GUARDRAILS.md`" + ` and relevant ` + "`docs/references/rules/*`" + `. Repo-local Kit rules outrank generic defaults. Assign every created or reused GitHub issue and pull request to the human user, such as with ` + "`gh issue create --assignee @me`" + ` or ` + "`gh pr create --assignee @me`" + ` after confirming the authenticated ` + "`gh`" + ` login is the human user; never assign a coding agent, assistant, bot, or automated identity.
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + strings.TrimSuffix(agentCompletionOutputGate, "\n")
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + slackReadOnlyGate + infrastructureChangeApprovalGate + memoryAWSContextHardGate + strings.TrimSuffix(agentCompletionOutputGate, "\n")
 
 func memoryInstructionSupportContent(relativePath string) string {
 	switch relativePath {

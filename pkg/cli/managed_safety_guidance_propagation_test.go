@@ -75,6 +75,7 @@ func TestInitRefreshInstallsStandingAuthorityGuidance(t *testing.T) {
 			"docs/references/rules/deletion-safety.md",
 			"docs/references/rules/agent-completion-output.md",
 			"docs/references/rules/human-authorship.md",
+			"docs/references/rules/slack-read-only.md",
 		}
 		_ = captureStdout(t, func() {
 			if err := runInit(initCmd, nil); err != nil {
@@ -143,12 +144,14 @@ func stubManagedSafetyRulesetRegistry(t *testing.T) {
 	deletionSafety := readRepositoryFile(t, "docs/references/rules/deletion-safety.md")
 	completionOutput := readRepositoryFile(t, "docs/references/rules/agent-completion-output.md")
 	humanAuthorship := readRepositoryFile(t, "docs/references/rules/human-authorship.md")
+	slackReadOnly := readRepositoryFile(t, "docs/references/rules/slack-read-only.md")
 	stubRulesetRegistry(
 		t,
 		registryRulesetWithContentForTest("work-lane-gating", workLane, "test-work-lane"),
 		registryRulesetWithContentForTest("deletion-safety", deletionSafety, "test-deletion-safety"),
 		registryRulesetWithContentForTest("agent-completion-output", completionOutput, "test-completion-output"),
 		registryRulesetWithContentForTest("human-authorship", humanAuthorship, "test-human-authorship"),
+		registryRulesetWithContentForTest("slack-read-only", slackReadOnly, "test-slack-read-only"),
 	)
 }
 
@@ -181,6 +184,8 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 			"Standing merge/deploy authority covers only a named existing standard deployment workflow",
 			"IAM, network topology, KMS, secrets",
 			"Pause, hold, or revocation stops affected actions and dependents",
+			"## Slack: Read-Only by Default, Explicit Approval Required to Send",
+			"Drafting a Slack message is not authorization to send it",
 		} {
 			if !strings.Contains(content, snippet) {
 				t.Errorf("%s does not contain %q", relativePath, snippet)
@@ -225,6 +230,7 @@ func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 		"docs/references/rules/deletion-safety.md",
 		"docs/references/rules/agent-completion-output.md",
 		"docs/references/rules/human-authorship.md",
+		"docs/references/rules/slack-read-only.md",
 	} {
 		content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath)))
 		if !strings.Contains(content, "registry_scope: downstream") {

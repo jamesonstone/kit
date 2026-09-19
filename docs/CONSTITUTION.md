@@ -66,6 +66,7 @@
 - Allow a justified `not required` repository-memory decision when code and tests preserve the complete durable truth.
 - Before a substantial terminal completion or handoff response, load `docs/references/rules/agent-completion-output.md` which requires no response format; write in the shape the content calls for and never leave the reader wrong about a blocker, incomplete scope, a required action, or a failing or unobserved check.
 - Before commit, pull request, issue, comment, or other attribution text, load `docs/references/rules/human-authorship.md`. Only the human user may be displayed as author; do not attribute coding agents, tools, or bots.
+- Treat Slack as read-only by default. Load `docs/references/rules/slack-read-only.md` before any Slack write. Drafting is not authorization to send; require explicit, message-specific human approval.
 - Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less.
 - Before delivery, audit the complete affected source/test scope; whole-project reconcile and scheduled maintenance audit the entire repository.
 - Exclude documentation files, all `docs/**`, all `.kit/**`, `.kit.yaml`, ignored files, vendored dependencies, and proven generated files.

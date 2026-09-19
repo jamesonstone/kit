@@ -26,6 +26,7 @@
 - Use `rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text so only the human user is displayed as author
 - Use `rules/github-pr-merge.md` and resolve `pull-request-merge` before any merge or merge-queue mutation; explicit bounded standing authority may bind later in-scope PRs and refreshed heads, every resolved exact current node must be `MERGE_READY`, and its SHA/head OID is evidence only, never an authorization identity
 - Use `rules/deletion-safety.md` before designing deletion behavior or deleting persistent project, user, business, or external-system state to require recoverable soft delete by default and exact manual confirmation before hard delete
+- Use `rules/slack-read-only.md` when Slack is in scope so access stays read-only by default and every Slack send or other mutation requires explicit, message-specific human approval
 - Use `rules/infrastructure-change-approval.md` before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state; standing authority covers only named standard deployments on already-provisioned targets, while IAM, network, KMS, secrets, database schema/data-loss, infrastructure create/replace/delete, destructive, and nonstandard deployment effects retain their own approval boundaries
 - Use `rules/aws-agent-toolkit-guidance.md` before AWS-dependent work to select current Agent Toolkit skills, official documentation, the AWS MCP Server or CLI fallback, verified identity, infrastructure approval, and secret-safe handling
 - Use `rules/testing-and-environment-validation.md` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
@@ -75,6 +76,7 @@ are:
 | `llms-txt` | web, website, API, documentation | `/llms.txt` contract for applicable public web and API surfaces. |
 | `readme-header-tagline` | README and repository onboarding | Consistent top-level README identity and opening structure. |
 | `safety-guardrails` | git, GitHub, safety | Recon, identity, worktree, secret, protected-branch, and failure-recovery boundaries. |
+| `slack-read-only` | slack, messaging, communication, coding-agent, automation, collaboration | Slack is read-only by default; every send or other Slack mutation requires explicit, message-specific human approval. |
 | `source-file-size` | implementation, testing, validation, refactor, reconcile, maintenance | Exact 300-line handwritten source/test limit, exclusions, semantic splits, and verification. |
 | `testing-and-environment-validation` | implementation, testing, validation, CI, deployment, local, production, browser automation, browser testing | Code-level PR checks, high-level environment suites, browser lifecycle ownership, immutable evidence, status reporting, and safe production validation. |
 | `work-lane-gating` | git, GitHub, workflow | Defaults every coding-agent repository mutation to a new pull-request worklane without asking. |
