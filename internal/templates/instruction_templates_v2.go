@@ -33,7 +33,7 @@ func tocRepositoryInstructions(title string) string {
 - Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
 - Assign every created or reused GitHub issue and pull request to the human user, such as with ` + "`gh issue create --assignee @me`" + ` or ` + "`gh pr create --assignee @me`" + ` after confirming the authenticated ` + "`gh`" + ` login is the human user; never assign a coding agent, assistant, bot, or automated identity
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + slackReadOnlyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
 - ` + awsAgentToolkitGuidanceRoute + ` If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
 - Use the verified configured profile and Region explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported
@@ -100,7 +100,7 @@ const tocCopilotInstructions = `# GitHub Copilot Repository Instructions
 - Repo-local Kit rules outrank global GitHub/plugin defaults; do not use generic branches, commits, PR bodies, or draft defaults when Kit defines the contract
 - Assign every created or reused GitHub issue and pull request to the human user, such as with ` + "`gh issue create --assignee @me`" + ` or ` + "`gh pr create --assignee @me`" + ` after confirming the authenticated ` + "`gh`" + ` login is the human user; never assign a coding agent, assistant, bot, or automated identity
 
-` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
+` + githubPRMergeGate + crossRepositoryProgramCoordinationGate + deletionSafetyGate + slackReadOnlyGate + infrastructureChangeApprovalGate + `## AWS Context Hard Gate
 
 - ` + awsAgentToolkitGuidanceRoute + ` If .kit.yaml defines an enabled aws context, run kit aws verify before the first AWS-dependent command in a task and again immediately before any AWS mutation
 - Use the verified configured profile and Region explicitly for every AWS-dependent command, including AWS CLI, SDK, Terraform, CDK, deployment, and project scripts, where supported

@@ -23,6 +23,8 @@ rules:
     required: false
   - slug: deadline-mode
     required: false
+  - slug: slack-read-only
+    required: false
 evidence:
   - kind: routing
     path: docs/agents/README.md

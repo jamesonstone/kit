@@ -80,6 +80,7 @@
 | 0077 | unstructured-completion-output | `docs/specs/0077-unstructured-completion-output` | deliver | no | 2026-09-09 | Remove every required completion format and let the agent write terminal responses in its own shape, keeping only the facts a response must not leave out. |
 | 0078 | rules-lab-alignment | `docs/specs/0078-rules-lab-alignment` | implement | no | 2026-09-10 | Align deeply-rooted rules with cross-lab model-agnostic fundamentals, removing model-specific leakage and duplicated hierarchy while adding persistence, reflect, tool-contract, verifier, context-budget, and resumability guidance. |
 | 0079 | thread-naming | `docs/specs/0079-thread-naming` | deliver | no | 2026-09-15 | Shared current-ownership conversation titles across coding hosts. |
+| 0080 | slack-read-only | `docs/specs/0080-slack-read-only` | deliver | no | 2026-09-19 | Treat Slack as read-only by default and require explicit, message-specific human approval before any Slack send or other Slack mutation. |
 
 ## PROJECT INTENT
 
@@ -773,6 +774,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **INTENT**: Name conversations for their current owned outcome.
 - **POINTERS**: `docs/specs/0079-thread-naming/SPEC.md`
 
+### slack-read-only
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Treat Slack as read-only by default in every Kit-managed project. Agents may read and search Slack without extra approval, and must not send or otherwise mutate Slack unless the human explicitly authorizes that specific action.
+- **APPROACH**: Add a mandatory downstream `slack-read-only` ruleset, compose a concise always-loaded hard gate into generated instructions, install it through refresh/health/reconcile adoption, and deliver issue #211 through one ready pull request.
+- **OPEN ITEMS**: deliver GH-211 through its ready pull request; merge requires separate authorization
+- **POINTERS**: `docs/specs/0080-slack-read-only/SPEC.md`, `docs/references/rules/slack-read-only.md`
+
 ## LAST UPDATED
 
-2026-09-10 00:00:00 EDT
+2026-09-19 00:00:00 EDT
