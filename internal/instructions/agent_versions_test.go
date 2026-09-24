@@ -188,21 +188,21 @@ func TestAgentInstructionsV4RequiresExplicitPullRequestLane(t *testing.T) {
 }
 
 func TestAgentInstructionsRejectsUnavailableVersion(t *testing.T) {
-	_, err := AgentInstructions("v17")
+	_, err := AgentInstructions("v18")
 	if err == nil {
-		t.Fatal("AgentInstructions(\"v17\") expected an error")
+		t.Fatal("AgentInstructions(\"v18\") expected an error")
 	}
-	for _, want := range []string{`unsupported instructions version "v17"`, "available versions: v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16"} {
+	for _, want := range []string{`unsupported instructions version "v18"`, "available versions: v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17"} {
 		if !strings.Contains(err.Error(), want) {
-			t.Fatalf("AgentInstructions(\"v17\") error = %q, want %q", err, want)
+			t.Fatalf("AgentInstructions(\"v18\") error = %q, want %q", err, want)
 		}
 	}
 }
 
 func TestAgentInstructionVersionsReturnsCopy(t *testing.T) {
 	versions := AgentInstructionVersions()
-	if len(versions) != 16 || versions[0] != "v1" || versions[1] != "v2" || versions[2] != "v3" || versions[3] != "v4" || versions[4] != "v5" || versions[5] != "v6" || versions[6] != "v7" || versions[7] != "v8" || versions[8] != "v9" || versions[9] != "v10" || versions[10] != "v11" || versions[11] != "v12" || versions[12] != "v13" || versions[13] != "v14" || versions[14] != "v15" || versions[15] != "v16" {
-		t.Fatalf("AgentInstructionVersions() = %v, want [v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 v16]", versions)
+	if len(versions) != 17 || versions[0] != "v1" || versions[16] != "v17" {
+		t.Fatalf("AgentInstructionVersions() = %v, want 17 versions ending in v17", versions)
 	}
 	if versions[len(versions)-1] != CurrentAgentVersion {
 		t.Fatalf("last available version = %q, want current %q", versions[len(versions)-1], CurrentAgentVersion)

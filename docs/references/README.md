@@ -2,8 +2,6 @@
 
 ## Purpose
 
-- Use `thread-naming.md` for shared conversation naming and host capability adapters
-
 - This directory holds durable repo-local references that are broader than one feature
 - Keep long-lived background context here instead of in injected top-level instruction files
 - Link these files from feature front matter references when they materially shape work
@@ -32,7 +30,6 @@
 - Use `rules/testing-and-environment-validation.md` before implementation and validation, including browser automation and browser testing, to preserve code-level checks, browser lifecycle ownership, and environment evidence safely
 - Use `rules/deadline-mode.md` only when the user explicitly signals a real deadline or time constraint, to narrow testing and implementation scope without weakening required approvals, security, or migration/compatibility invariants
 - Use `rules/source-file-size.md` before editing implementation/source or test files and for whole-project reconcile audits
-- Use `rules/codex-thread-initialization.md` to preserve Codex's ordered pre-response rename and pin gate during instruction refresh and reconciliation
 - Use `worktrees.md` for the canonical native Git worktree hierarchy, naming, shared-state model, environment ownership, and safety contract
 - Use `kit rules add` to import or activate available registry rulesets from the Kit GitHub `main` branch
 - Use `kit rules view <slug>` to preview a local or registry ruleset before importing it
@@ -61,7 +58,6 @@ are:
 | `agent-team-orchestration` | coding-agent, workflow, dispatch, subagent, verification | Mandatory first-pass topology evaluation, host-confirmed capability negotiation, provider-neutral profiles, accountable root supervision, bounded specialist lanes, continuity, degradation, and verification. |
 | `aws-agent-toolkit-guidance` | coding-agent, AWS, AWS CLI, AWS MCP, Agent Toolkit, infrastructure, documentation, secrets | Current AWS skills and official documentation, MCP or CLI execution, verified identity, material targets, infrastructure approval, and secret-safe handling. |
 | `backend-service-architecture` | architecture, backend, API, service, repository, gateway | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |
-| `codex-thread-initialization` | codex, coding-agent, session, thread, session-management | Ordered pre-response thread renaming and pinning with verified or fail-visible status. |
 | `coding-agent-context-usage` | coding-agent, workflow, rules, context, evidence | Capability lookup, deterministic context resolution, required evidence loading, and re-resolution. |
 | `constitution-curation` | implementation, validation, repository-memory, constitution | Evidence-based promotion of durable rationale and project-wide invariants. |
 | `cross-repository-program-coordination` | coding-agent, workflow, cross-repository, program, deployment, handoff, resume, dispatch | Coordinator-owned ledger, dependency frontier, exact evidence, checkpoints, reconciliation, and handoff for multi-repository programs. |

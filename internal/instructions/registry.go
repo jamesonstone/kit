@@ -86,7 +86,6 @@ func SupportDocs(version int) []Doc {
 	}
 
 	docs := []Doc{
-		{Label: "CONVERSATION NAMING", RelativePath: "docs/references/thread-naming.md", Use: "shared conversation naming policy and host capabilities", Required: true, ManagedBy: "kit init"},
 		{
 			Label:        "AGENTS DOCS",
 			RelativePath: "docs/agents/README.md",

@@ -119,7 +119,6 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"agent-completion-output",
 		"aws-agent-toolkit-guidance",
 		"backend-service-architecture",
-		"codex-thread-initialization",
 		"cross-repository-program-coordination",
 		"deadline-mode",
 		"deletion-safety",

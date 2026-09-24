@@ -29,14 +29,14 @@ references:
     read_policy: must
     used_for: stale existing-project instruction detection
     status: active
-  - id: thread-initialization-rule
-    name: Codex thread initialization rule
-    type: rule
-    target: docs/references/rules/codex-thread-initialization.md
-    relation: constrains
-    read_policy: must
-    used_for: ordered first-response behavior and fail-visible fallback
-    status: active
+  - id: retire-spec
+    name: Retirement of thread pin and rename
+    type: spec
+    target: docs/specs/0081-retire-thread-naming/SPEC.md
+    relation: informs
+    read_policy: skip
+    used_for: later retirement of this gate
+    status: stale
 skills:
   - name: github:github
     source: GitHub plugin
@@ -216,5 +216,9 @@ workflow decisions that code and tests alone cannot fully explain.
 Artifacts:
 
 - `docs/specs/0055-codex-thread-initialization/SPEC.md`
-- `docs/references/rules/codex-thread-initialization.md`
 - `AGENTS.md`
+
+0081 retired the always-loaded Codex Thread Initialization Hard Gate and
+deleted `docs/references/rules/codex-thread-initialization.md`. This spec
+remains historical evidence. v16 is the last global instruction version that
+required Codex pin/init.

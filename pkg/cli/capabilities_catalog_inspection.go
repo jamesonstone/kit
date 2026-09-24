@@ -84,7 +84,7 @@ func reconcileCapabilityRecord() capabilityRecord {
 		withCaveats(
 			"The existing conflict-aware reconcile behavior and flags are preserved.",
 			"A non-dry-run included refresh requested from the primary checkout is deferred to the existing canonical-worktree delivery workflow; linked worktrees apply it directly.",
-			"V3 whole-project reconciliation checks `AGENTS.md` for the ordered Codex pre-response thread-title and thread-pin gate, including fail-visible first-commentary semantics.",
+			"V3 whole-project reconciliation treats leftover conversation naming and Codex thread pin/init gates as forbidden always-loaded guidance.",
 			"Whole-project output emits literal `source-file-size audit: complete` evidence with candidate, eligible-file, and violation counts; missing or incomplete evidence cannot support a clean result.",
 		))
 }

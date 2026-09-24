@@ -37,8 +37,16 @@ func v3ForbiddenGuidance() map[string][]string {
 		"Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set",
 		"Obtain one explicit user confirmation for the complete bounded batch",
 	}
+	threadLifecycle := []string{
+		"## Conversation Naming",
+		"kit instructions naming",
+		"## Codex Thread Initialization Hard Gate",
+		"set_thread_pinned",
+		"set_thread_title",
+	}
 	return map[string][]string{
-		"AGENTS.md":                       append(append(completion, workLane...), consent...),
+		"AGENTS.md":                       append(append(append(completion, workLane...), consent...), threadLifecycle...),
+		"CLAUDE.md":                       threadLifecycle,
 		".github/copilot-instructions.md": append(append(completion, workLane...), consent...),
 		"docs/agents/GUARDRAILS.md":       append(append(completion, workLane...), consent...),
 	}

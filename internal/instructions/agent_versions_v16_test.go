@@ -14,9 +14,6 @@ func TestV16NamingPreservesOtherInstructions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if CurrentAgentVersion != "v16" {
-		t.Fatal("v16 must be current")
-	}
 	const tail = "# Multi-agent orchestration evaluation gate"
 	if prior[strings.Index(prior, tail):] != current[strings.Index(current, tail):] {
 		t.Fatal("changed unrelated instructions")

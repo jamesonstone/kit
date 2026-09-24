@@ -104,10 +104,6 @@ func TestAuditV3SupportGuidanceFindsStaleSessionBrowserTestingAndWorktreeSemanti
 	}{
 		{
 			path:    "AGENTS.md",
-			snippet: "First, call the available thread-title operation (`set_thread_title` when available)",
-		},
-		{
-			path:    "AGENTS.md",
 			snippet: "For interactive browser work, use Codex's built-in browser through `@Browser`.",
 		},
 		{

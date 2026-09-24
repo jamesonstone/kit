@@ -3,7 +3,7 @@ package templates
 import "strings"
 
 func memoryRepositoryInstructions(title string) string {
-	return codexThreadInitializationGate(title) + codexBrowserPolicy(title) + codexCapabilityAwareHostBinding(title) + threadNamingPointer + `## Purpose
+	return codexBrowserPolicy(title) + codexCapabilityAwareHostBinding(title) + `## Purpose
 
 - This file is a routing table, not the full manual
 - Start at ` + "`docs/agents/README.md`" + ` and load only the guidance needed for the current decision
@@ -74,26 +74,6 @@ func memoryRepositoryInstructions(title string) string {
 - Keep ` + title + ` short and stable
 - Put durable workflow guidance in ` + "`docs/agents/*`" + ` instead of expanding always-loaded files
 - Do not ingest or depend on agent transcripts as repository memory
-`
-}
-
-func codexThreadInitializationGate(title string) string {
-	if title != "AGENTS" {
-		return ""
-	}
-
-	return `## Codex Thread Initialization Hard Gate
-
-- Apply this section only when the active host is Codex; Cursor and other hosts skip it.
-- For every newly created Codex task, this is a blocking pre-response gate. Complete it before the first commentary message and before planning, repository inspection, shell or network commands, or any other task action; only the minimum capability lookup needed to locate the two thread operations may precede it.
-- First, call the available thread-title operation (` + "`set_thread_title`" + ` when available) with ` + "`[scope] domain / objective`" + ` for the current owned outcome.
-- Second, call the available thread-pin operation (` + "`set_thread_pinned`" + ` when available).
-- Both actions are required and ordered, except the unread-attachment title deferral below. Otherwise never defer either supported operation to a later interaction.
-- Derive scope, stable domain and current objective from supplied repository context and the user request; aim for 60 characters without losing meaning. If the request is an unread attachment, defer the title until its objective is known; do not invent one.
-- Verify each operation from its returned state when the host exposes one.
-- If an operation is unsupported, unavailable, or fails, do not silently skip it or retry indefinitely. After resolving both actions in order, begin the first commentary with ` + "`Thread initialization: rename <status>; pin <status>.`" + `, include a concise reason for every non-success status, then continue the requested work.
-- For a continued Codex task, preserve pin state and an accurate title. At a material ownership change, follow ` + "`docs/references/thread-naming.md`" + `; do not repeat initialization or rename for execution stages.
-
 `
 }
 

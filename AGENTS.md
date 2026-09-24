@@ -1,17 +1,5 @@
 # AGENTS
 
-## Codex Thread Initialization Hard Gate
-
-- Apply this section only when the active host is Codex; Cursor and other hosts skip it.
-- For every newly created Codex task, this is a blocking pre-response gate. Complete it before the first commentary message and before planning, repository inspection, shell or network commands, or any other task action; only the minimum capability lookup needed to locate the two thread operations may precede it.
-- First, call the available thread-title operation (`set_thread_title` when available) with `[scope] domain / objective` for the current owned outcome.
-- Second, call the available thread-pin operation (`set_thread_pinned` when available).
-- Both actions are required and ordered, except the unread-attachment title deferral below. Otherwise never defer either supported operation to a later interaction.
-- Derive scope, stable domain and current objective from supplied repository context and the user request; aim for 60 characters without losing meaning. If the request is an unread attachment, defer the title until its objective is known; do not invent one.
-- Verify each operation from its returned state when the host exposes one.
-- If an operation is unsupported, unavailable, or fails, do not silently skip it or retry indefinitely. After resolving both actions in order, begin the first commentary with `Thread initialization: rename <status>; pin <status>.`, include a concise reason for every non-success status, then continue the requested work.
-- For a continued Codex task, preserve pin state and an accurate title. At a material ownership change, follow `docs/references/thread-naming.md`; do not repeat initialization or rename for execution stages.
-
 ## Browser policy
 
 - For interactive browser work, use Codex's built-in browser through `@Browser`.
@@ -22,7 +10,7 @@
   falling back.
 - When I explicitly authorize an external browser, terminate and verify all
   task-owned browser and automation processes before finishing.
-- Host binding detail lives in `docs/references/host-adapters/codex.md`; normative thread lifecycle lives in `docs/references/rules/codex-thread-initialization.md`.
+- Host binding detail lives in `docs/references/host-adapters/codex.md`.
 
 ## Conditional Codex Subagent Binding
 
@@ -30,13 +18,6 @@
 - Before delegating, inspect the live Codex roster with `list_agents`. The root supervisor may use `spawn_agent` with host-exposed `model` and `reasoning_effort` controls, `followup_task` for same-agent continuation, and `wait_agent` for status and joining; children must not spawn descendants.
 - Resolve profiles from the live roster rather than static model IDs or a presumed capacity. If a native control is unavailable or fails, follow the shared host-adapter fallback and report the requested and effective profile, model, effort, continuity, and degradation.
 - Capability descriptors live in `docs/references/host-adapters/codex.md`; normative topology lives in `docs/references/rules/agent-team-orchestration.md`.
-
-## Conversation Naming
-
-- At creation, a user-requested fork, or a meaningful ownership checkpoint, load `docs/references/thread-naming.md` for the shared naming policy and active host adapter. If absent, use `kit instructions naming`.
-- This policy supersedes legacy initial-title formats and unconditional preserve-title wording; the ordered Codex pin gate remains.
-- Use `[scope] domain / objective` for the current owned outcome. Preserve accurate titles through ordinary execution stages; naming changes metadata only.
-- Codex, Claude Code and Cursor share this policy; only the supported application mechanism differs. Unknown capabilities must not block work.
 
 ## Purpose
 
