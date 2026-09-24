@@ -111,6 +111,9 @@ helpers.
 - Do not mechanically strip leftover sections from downstream projects.
   Append-only refresh never deletes user-owned sections; forbidden-guidance
   reconcile findings flag leftovers.
+- Flag leftover `kit instructions title` the same way as leftover
+  `kit instructions naming`. Title-only remnants are still thread-naming
+  guidance.
 - Keep Codex browser and subagent adapter text. Those are unrelated to
   rename/pin.
 
@@ -121,19 +124,20 @@ authenticated GitHub plugin as `jamesonstone`. Git SSH push still works.
 
 ## VALIDATION
 
-- PASS: `go test ./...`
+- PASS: `go test ./...` after leftover-title marker
 - PASS: `go vet ./...`
 - PASS: `gofmt` on touched Go files
 - PASS: `git diff --check`
-- PASS: source-file-size audit of version-control-eligible handwritten source and test files: complete, 0 violations. Largest touched Go file is `pkg/cli/reconcile_guidance_expectations.go` at 292 lines.
+- PASS: source-file-size audit of version-control-eligible handwritten source and test files: complete, 0 violations. Largest touched Go file is `pkg/cli/reconcile_guidance_expectations.go` at 292 lines. Follow-up files: `pkg/cli/reconcile_superseded_guidance.go` 54 lines, `pkg/cli/thread_naming_migration_test.go` 72 lines.
+- PASS: focused `go test ./pkg/cli -run TestAuditV3FlagsLeftoverInstructionsTitle`
 - PASS: `kit check 0081-retire-thread-naming`, `kit check 0055-codex-thread-initialization`, `kit check 0079-thread-naming`
 - PASS: `kit context resolve --workflow implementation-delivery --feature 0081-retire-thread-naming` returned `blocked: false`
-- NEVER-RUN: hosted GitHub Actions checks. They exist only after the ready PR is opened.
+- PENDING: hosted GitHub Actions checks on the post-review head. Prior head `cdcf124` had Assign initiator success and validate success. This follow-up changes only `pkg/cli` leftover-marker files and SPEC, which are outside `kit-improve-validate` path filters.
 - NEVER-RUN: `golangci-lint`. This repository's GitHub workflows do not run it.
 
 ## OUTCOME
 
-Local implementation is complete. Frozen `v17` is the current `kit instructions` version. New and refreshed scaffolds omit Conversation Naming and the Codex Thread Initialization Hard Gate. `kit instructions naming` and `kit instructions title` are gone. The naming policy and Codex initialization ruleset are deleted. Historical v1-v16 files, 0055, and 0079 remain. GH-213 is the delivery lane; merge is not authorized.
+Review repair is complete on GH-213 / PR 214. Leftover `kit instructions title` is now a V3 forbidden-guidance marker with a regression test. Merge remains a separate mutation after current-head `MERGE_READY`.
 
 ## REPOSITORY MEMORY
 

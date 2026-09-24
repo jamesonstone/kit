@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
@@ -46,5 +47,26 @@ func TestRefreshDoesNotReinjectRetiredThreadLifecycle(t *testing.T) {
 	}
 	if readFile(t, path) != got {
 		t.Fatal("second refresh is not idempotent")
+	}
+}
+
+func TestAuditV3FlagsLeftoverInstructionsTitle(t *testing.T) {
+	snippet := "kit instructions title"
+	for _, relativePath := range []string{"AGENTS.md", "CLAUDE.md"} {
+		t.Run(relativePath, func(t *testing.T) {
+			projectRoot := writeCurrentReconcileGuidanceFixture(
+				t,
+				config.InstructionScaffoldVersionMemory,
+			)
+			absolutePath := filepath.Join(projectRoot, relativePath)
+			writeFile(t, absolutePath, readFile(t, absolutePath)+"\n"+snippet+"\n")
+			assertStaleGuidanceFinding(
+				t,
+				projectRoot,
+				relativePath,
+				snippet,
+				auditV3SupportGuidance(projectRoot),
+			)
+		})
 	}
 }

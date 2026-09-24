@@ -40,6 +40,7 @@ func v3ForbiddenGuidance() map[string][]string {
 	threadLifecycle := []string{
 		"## Conversation Naming",
 		"kit instructions naming",
+		"kit instructions title",
 		"## Codex Thread Initialization Hard Gate",
 		"set_thread_pinned",
 		"set_thread_title",
