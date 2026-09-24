@@ -66,11 +66,12 @@ func v2GuidanceExpectations() map[string][]string {
 
 func v3GuidanceExpectations() map[string][]string {
 	return map[string][]string{
-		"CLAUDE.md": {"docs/references/thread-naming.md", "kit instructions naming"},
+		"CLAUDE.md": {
+			"This file is a routing table, not the full manual",
+			"docs/agents/README.md",
+			"Default to a new worklane without asking",
+		},
 		"AGENTS.md": {
-			"docs/references/thread-naming.md",
-			"kit instructions naming",
-			"This policy supersedes legacy initial-title formats and unconditional preserve-title wording",
 			"Default to a new worklane without asking",
 			"Continue an existing lane only when the user explicitly directs",
 			"Never offer or ask the user to choose between lanes",
@@ -93,11 +94,6 @@ func v3GuidanceExpectations() map[string][]string {
 			"an account of where things stand, not an index of everything checked",
 			"smallest evidence set that proves each terminal node",
 			"Satisfy them on content; a heading alone satisfies none of them",
-			"## Codex Thread Initialization Hard Gate",
-			"before the first commentary message",
-			"First, call the available thread-title operation (`set_thread_title` when available)",
-			"Second, call the available thread-pin operation (`set_thread_pinned` when available)",
-			"Thread initialization: rename <status>; pin <status>.",
 			"## Browser policy",
 			"For interactive browser work, use Codex's built-in browser through `@Browser`.",
 			"Do not use `@Chrome`, control my active Chrome profile, or launch external",
@@ -271,7 +267,6 @@ func v3GuidanceExpectations() map[string][]string {
 			"`rules/cross-repository-program-coordination.md`",
 			"`rules/testing-and-environment-validation.md`",
 			"`rules/source-file-size.md`",
-			"`rules/codex-thread-initialization.md`",
 			"`worktrees.md` for the canonical native Git worktree hierarchy",
 			"environment ownership",
 			"browser lifecycle ownership",

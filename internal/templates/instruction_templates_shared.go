@@ -1,6 +1,6 @@
 package templates
 
-const sharedRepositoryInstructionsCore = threadNamingPointer + `## Source of truth
+const sharedRepositoryInstructionsCore = `## Source of truth
 
 - Primary authority for repository workflow, constraints, and change policy: ` + "`docs/CONSTITUTION.md`" + `
 - Feature specs live under: ` + "`docs/specs/<feature>/`" + `

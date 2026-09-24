@@ -41,7 +41,7 @@ func TestV2CommandTreeRejectsRemovedGroups(t *testing.T) {
 		"backlog", "brainstorm", "ci", "complete", "feature", "handoff",
 		"implement", "legacy", "loop", "map", "notes", "plan", "project",
 		"prompt", "reflect", "replay", "scaffold", "skill", "state", "tasks",
-		"trace", "verify",
+		"trace", "verify", "instructions naming", "instructions title",
 	} {
 		if commandPathPresent(rootCmd, path) {
 			t.Errorf("removed command path %q remains available", path)

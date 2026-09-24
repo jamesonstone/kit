@@ -131,8 +131,7 @@ func TestReconcileCapabilityExposesMaintenanceContracts(t *testing.T) {
 	}
 	caveats := strings.Join(payload.Command.Caveats, " ")
 	for _, contract := range []string{
-		"ordered Codex pre-response thread-title and thread-pin gate",
-		"fail-visible first-commentary semantics",
+		"leftover conversation naming and Codex thread pin/init gates",
 		"source-file-size audit: complete",
 		"candidate, eligible-file, and violation counts",
 	} {

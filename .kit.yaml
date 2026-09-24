@@ -55,15 +55,6 @@ registry:
           installed_hash: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
           state: managed
         - kind: ruleset
-          slug: codex-thread-initialization
-          path: docs/references/rules/codex-thread-initialization.md
-          source_repo: jamesonstone/kit
-          source_branch: main
-          source_commit: 815ac16b790293f828dbf56e3a1fc2f260e7600d
-          source_path: docs/references/rules/codex-thread-initialization.md
-          installed_hash: sha256:5cab73a2486ee949d964f656f1c82ad5e613fb486f8ad2822be63fc28a78723e
-          state: managed
-        - kind: ruleset
           slug: coding-agent-context-usage
           path: docs/references/rules/coding-agent-context-usage.md
           source_repo: jamesonstone/kit

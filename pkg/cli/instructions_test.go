@@ -48,9 +48,9 @@ func TestInstructionsCommandRejectsInvalidVersions(t *testing.T) {
 		arg  string
 		want string
 	}{
-		{name: "empty", arg: "--version=", want: "--version cannot be empty; available versions: v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16"},
+		{name: "empty", arg: "--version=", want: "--version cannot be empty; available versions: v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17"},
 		{name: "malformed", arg: "--version=1", want: `unsupported instructions version "1"`},
-		{name: "unavailable", arg: "--version=v17", want: `unsupported instructions version "v17"`},
+		{name: "unavailable", arg: "--version=v18", want: `unsupported instructions version "v18"`},
 	}
 
 	for _, test := range tests {

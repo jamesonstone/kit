@@ -1,65 +1,49 @@
 package cli
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
-
-	"github.com/jamesonstone/kit/v3/internal/instructions"
 )
 
-func TestNamingReferenceRefreshIsIdempotentAndPreservesCustomContent(t *testing.T) {
-	root := t.TempDir()
+func TestInitDoesNotInstallThreadNamingPolicy(t *testing.T) {
+	tempDir := t.TempDir()
 	setupInitHome(t)
-	path := "docs/references/thread-naming.md"
-	opts := initRefreshOptions{files: []string{path}, outputOnly: true}
-	if err := runInitRefresh(root, opts); err != nil {
-		t.Fatal(err)
+	setWorkingDirectory(t, tempDir)
+
+	withInitFlags(t, func() {
+		initOutputOnly = true
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	path := filepath.Join(tempDir, "docs", "references", "thread-naming.md")
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		t.Fatalf("init installed retired thread-naming.md: %v", err)
 	}
-	full := filepath.Join(root, path)
-	before, err := os.ReadFile(full)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(before) != instructions.ThreadNamingPolicy {
-		t.Fatal("missing installed canonical policy")
-	}
-	if err := runInitRefresh(root, opts); err != nil {
-		t.Fatal(err)
-	}
-	after, err := os.ReadFile(full)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.Equal(before, after) {
-		t.Fatal("second refresh changed policy")
-	}
-	custom := "# User policy\nKeep my title\n"
-	if err := os.WriteFile(full, []byte(custom), 0644); err != nil {
-		t.Fatal(err)
-	}
-	if err := runInitRefresh(root, opts); err == nil {
-		t.Fatal("expected existing append-only conflict for unrecognized user sections")
-	}
-	after, err = os.ReadFile(full)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(after) != custom {
-		t.Fatal("refresh overwrote user-owned content")
+	agents := readFile(t, filepath.Join(tempDir, "AGENTS.md"))
+	for _, stale := range []string{
+		"## Conversation Naming",
+		"kit instructions naming",
+		"## Codex Thread Initialization Hard Gate",
+		"set_thread_title",
+		"set_thread_pinned",
+	} {
+		if strings.Contains(agents, stale) {
+			t.Fatalf("init AGENTS.md still contains %q", stale)
+		}
 	}
 }
 
-func TestInstructionsNamingPrintsCanonicalPolicy(t *testing.T) {
-	cmd := newInstructionsCommand()
-	var out bytes.Buffer
-	cmd.SetOut(&out)
-	cmd.SetArgs([]string{"naming"})
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
-	}
-	if out.String() != instructions.ThreadNamingPolicy {
-		t.Fatal("CLI policy differs")
+func TestInstructionsRejectsNamingAndTitleSubcommands(t *testing.T) {
+	for _, sub := range []string{"naming", "title"} {
+		_, err := executeInstructionsCommand(sub)
+		if err == nil {
+			t.Fatalf("kit instructions %s succeeded", sub)
+		}
 	}
 }

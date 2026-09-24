@@ -60,4 +60,4 @@ Implementation and local validation complete. GH-209 delivers one shared embedde
 
 ## REPOSITORY MEMORY
 
-This spec retains design rationale and acceptance boundaries. internal/instructions/thread_naming.md is the editable canonical policy; docs/references/thread-naming.md is its tested installed projection. Host documents route to it. Codex initialization retains ordering/pinning and routes evolving titles to the shared policy. The Constitution command list includes the two new read-only subcommands. Historical instruction versions remain immutable.
+This spec retains design rationale and acceptance boundaries. 0081 retired the shared naming policy, always-loaded Conversation Naming pointers, `kit instructions naming`/`title`, and `internal/threadtitle`. v16 is the last global instruction version that required naming. Historical instruction versions remain immutable.

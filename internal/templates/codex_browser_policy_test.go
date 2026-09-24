@@ -14,11 +14,10 @@ func TestMemoryAgentsContainsCodexBrowserPolicy(t *testing.T) {
 		t.Fatalf("V3 AGENTS.md contains the browser policy %d times, want 1", count)
 	}
 
-	threadGate := strings.Index(MemoryAgentsMD, "## Codex Thread Initialization Hard Gate")
 	browserPolicy := strings.Index(MemoryAgentsMD, "## Browser policy")
 	purpose := strings.Index(MemoryAgentsMD, "## Purpose")
-	if threadGate < 0 || browserPolicy <= threadGate || purpose <= browserPolicy {
-		t.Fatalf("V3 AGENTS.md browser policy is not between the thread gate and purpose")
+	if browserPolicy < 0 || purpose <= browserPolicy {
+		t.Fatalf("V3 AGENTS.md browser policy is not before purpose")
 	}
 
 	for _, want := range []string{

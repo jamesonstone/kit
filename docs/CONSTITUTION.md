@@ -93,7 +93,7 @@
   - `kit rules add`, `list`, `view`, and `link`
   - `kit reconcile`
   - `kit dispatch`
-  - `kit instructions`, `naming`, and `title`
+  - `kit instructions`
   - `kit upgrade`, `version`, and `completion`
 - Removed command groups are absent, not hidden compatibility aliases.
 - Legacy loop, prompt, feature-state, removed-feature, and project-refresh

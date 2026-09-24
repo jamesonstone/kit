@@ -1,7 +1,7 @@
 package templates
 
 func tocRepositoryInstructions(title string) string {
-	return threadNamingPointer + `## Purpose
+	return `## Purpose
 
 - This file is a routing table, not the full manual
 - Start at ` + "`docs/agents/README.md`" + `, then load only the docs needed for the current decision
