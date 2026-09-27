@@ -47,10 +47,16 @@ func managedFileDeliverySnapshotFromInitRefresh(
 	changes []initRefreshFileChange,
 ) []managedFileDeliverySnapshot {
 	snapshot := make([]managedFileDeliverySnapshot, 0, len(changes))
+	paths := make([]string, 0, len(changes))
+	for _, change := range changes {
+		if change.result != instructionFileSkipped {
+			paths = append(paths, change.relativePath)
+		}
+	}
+	eligible := managedFileDeliveryEligiblePaths(projectRoot, paths)
 	for _, change := range changes {
 		relativePath := normalizeManagedFileDeliveryPath(change.relativePath)
-		if change.result == instructionFileSkipped ||
-			!managedFileDeliveryPathEligible(projectRoot, relativePath) {
+		if change.result == instructionFileSkipped || !eligible[relativePath] {
 			continue
 		}
 
@@ -138,8 +144,13 @@ func managedFileDeliverySnapshotFromBaseline(
 	baseline map[string]managedFileDeliveryBaselineEntry,
 ) ([]managedFileDeliverySnapshot, error) {
 	snapshot := make([]managedFileDeliverySnapshot, 0, len(baseline))
+	paths := make([]string, 0, len(baseline))
+	for relativePath := range baseline {
+		paths = append(paths, relativePath)
+	}
+	eligible := managedFileDeliveryEligiblePaths(projectRoot, paths)
 	for relativePath, before := range baseline {
-		if !managedFileDeliveryPathEligible(projectRoot, relativePath) {
+		if !eligible[normalizeManagedFileDeliveryPath(relativePath)] {
 			continue
 		}
 		after, afterExists, err := readManagedFileDeliveryState(
@@ -193,41 +204,72 @@ func readManagedFileDeliveryState(path string) (string, bool, error) {
 }
 
 func managedFileDeliveryPathEligible(projectRoot, relativePath string) bool {
-	if !managedFileDeliveryPathWithinProject(relativePath) {
-		return false
+	return managedFileDeliveryEligiblePaths(projectRoot, []string{relativePath})[normalizeManagedFileDeliveryPath(relativePath)]
+}
+
+// managedFileDeliveryEligiblePaths reports which paths belong in a delivery:
+// inside the project, not secret-like, and not ignored by Git. It runs one
+// `git rev-parse` and one batched `git check-ignore` for all paths.
+func managedFileDeliveryEligiblePaths(projectRoot string, relativePaths []string) map[string]bool {
+	eligible := map[string]bool{}
+	var candidates []string
+	for _, relativePath := range relativePaths {
+		if !managedFileDeliveryPathWithinProject(relativePath) {
+			continue
+		}
+		relativePath = normalizeManagedFileDeliveryPath(relativePath)
+		base := strings.ToLower(filepath.Base(relativePath))
+		if base == ".env" ||
+			base == ".envrc" ||
+			strings.HasPrefix(base, ".env.") ||
+			strings.HasSuffix(base, ".pem") ||
+			strings.HasSuffix(base, ".key") ||
+			strings.Contains(base, "credentials") {
+			continue
+		}
+		candidates = append(candidates, relativePath)
 	}
-	relativePath = normalizeManagedFileDeliveryPath(relativePath)
-	base := strings.ToLower(filepath.Base(relativePath))
-	if base == ".env" ||
-		base == ".envrc" ||
-		strings.HasPrefix(base, ".env.") ||
-		strings.HasSuffix(base, ".pem") ||
-		strings.HasSuffix(base, ".key") ||
-		strings.Contains(base, "credentials") {
-		return false
+	if len(candidates) == 0 {
+		return eligible
 	}
 
 	gitPath, err := exec.LookPath("git")
 	if err != nil {
-		return false
+		return eligible
 	}
-	worktreeCheck := exec.Command(gitPath, "-C", projectRoot, "rev-parse", "--is-inside-work-tree")
-	output, err := worktreeCheck.Output()
+	output, err := exec.Command(gitPath, "-C", projectRoot, "rev-parse", "--is-inside-work-tree").Output()
 	if err != nil {
+		// Outside Git every candidate is eligible, unless Git metadata exists
+		// but cannot be read.
 		if _, statErr := os.Lstat(filepath.Join(projectRoot, ".git")); statErr == nil || !os.IsNotExist(statErr) {
-			return false
+			return eligible
 		}
-		return true
+		for _, path := range candidates {
+			eligible[path] = true
+		}
+		return eligible
 	}
 	if strings.TrimSpace(string(output)) != "true" {
-		return false
+		return eligible
 	}
 
-	cmd := exec.Command(gitPath, "-C", projectRoot, "check-ignore", "--quiet", "--", relativePath)
-	err = cmd.Run()
-	if err == nil {
-		return false
-	}
+	cmd := exec.Command(gitPath, "-C", projectRoot, "check-ignore", "--stdin", "-z")
+	cmd.Stdin = strings.NewReader(strings.Join(candidates, "\x00") + "\x00")
+	ignoredOutput, err := cmd.Output()
 	var exitErr *exec.ExitError
-	return errors.As(err, &exitErr) && exitErr.ExitCode() == 1
+	if err != nil && (!errors.As(err, &exitErr) || exitErr.ExitCode() != 1) {
+		return eligible // unknown ignore state: include nothing
+	}
+	ignored := map[string]bool{}
+	for _, path := range strings.Split(string(ignoredOutput), "\x00") {
+		if path != "" {
+			ignored[filepath.ToSlash(path)] = true
+		}
+	}
+	for _, path := range candidates {
+		if !ignored[path] {
+			eligible[path] = true
+		}
+	}
+	return eligible
 }
