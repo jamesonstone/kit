@@ -23,6 +23,9 @@ type reconcileTarget struct {
 	path        string
 	base        string
 	created     bool
+	// current marks an already-current primary checkout: nothing is written,
+	// not even local-only files such as .env.
+	current bool
 }
 
 var inspectReconcileWorktree = func(projectRoot string) (worktreeprep.Location, error) {
@@ -46,8 +49,12 @@ func resolveReconcileTarget(out io.Writer, projectRoot string, dryRun, upToDate 
 	if err != nil {
 		return reconcileTarget{}, fmt.Errorf("inspect reconcile worktree: %w", err)
 	}
-	if upToDate || !location.InsideGit || !location.IsPrimary {
+	if !location.InsideGit || !location.IsPrimary {
 		return reconcileTarget{projectRoot: projectRoot}, nil
+	}
+	if upToDate {
+		// Nothing to write: a preview plans in place and a writing run is a no-op.
+		return reconcileTarget{projectRoot: projectRoot, current: !dryRun}, nil
 	}
 	if dryRun {
 		_, err := fmt.Fprintf(out, "Preview of this checkout. A writing run applies the migration in the %s linked worktree, based on %s; changes that are not in %s are not included.\n", reconcileBranch, reconcileBaseRef(location.Path), reconcileBaseRef(location.Path))
@@ -201,5 +208,22 @@ func reconcileHasNoChanges(projectRoot string, opts initRefreshOptions) (bool, e
 	if err != nil {
 		return false, err
 	}
-	return plan.stats.changed() == 0, nil
+	return len(actionableRefreshChanges(projectRoot, plan.changes)) == 0, nil
+}
+
+// actionableRefreshChanges is the one definition of pending Kit-managed
+// repository drift, shared by `kit reconcile` and `kit health`: planned writes
+// and removals of repository-delivered paths. Local-only files, such as a
+// clean clone's missing .env and .envrc, are not drift.
+func actionableRefreshChanges(projectRoot string, changes []initRefreshFileChange) []initRefreshFileChange {
+	var actionable []initRefreshFileChange
+	for _, change := range changes {
+		if change.result == instructionFileSkipped {
+			continue
+		}
+		if managedFileDeliveryPathEligible(projectRoot, normalizeManagedFileDeliveryPath(change.relativePath)) {
+			actionable = append(actionable, change)
+		}
+	}
+	return actionable
 }

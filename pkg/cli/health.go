@@ -92,17 +92,22 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 		}
 		return err
 	}
+	actionable := actionableRefreshChanges(projectRoot, plan.changes)
+	var pending initRefreshStats
+	for _, change := range actionable {
+		pending.recordFileChange(change)
+	}
 	report.Changes = healthChangeSummary{
-		Created: plan.stats.created,
-		Updated: plan.stats.updated,
-		Merged:  plan.stats.merged,
-		Removed: plan.stats.removed,
+		Created: pending.created,
+		Updated: pending.updated,
+		Merged:  pending.merged,
+		Removed: pending.removed,
 		Skipped: plan.stats.skipped,
 	}
-	report.Files = managedFileDeliverySnapshotFromInitRefresh(projectRoot, plan.changes)
+	report.Files = managedFileDeliverySnapshotFromInitRefresh(projectRoot, actionable)
 	report.Notes = append(report.Notes, plan.notes...)
 	if diffOutput {
-		if diff := renderInitRefreshDiff(plan.changes); strings.TrimSpace(diff) != "" {
+		if diff := renderInitRefreshDiff(actionable); strings.TrimSpace(diff) != "" {
 			if _, err := fmt.Fprint(cmd.OutOrStdout(), diff); err != nil {
 				return err
 			}

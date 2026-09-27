@@ -107,14 +107,18 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
+		if target.current {
+			_, err := fmt.Fprintln(cmd.OutOrStdout(), "Kit-managed files are current; nothing to write.")
+			if err != nil {
+				return err
+			}
+		} else if deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
 			force:      reconcileForce,
 			dryRun:     reconcileDryRun,
 			diff:       reconcileDiff,
 			files:      reconcileRefreshFiles,
 			outputOnly: reconcileOutputOnly,
-		})
-		if err != nil {
+		}); err != nil {
 			return err
 		}
 		if target.worktree {
