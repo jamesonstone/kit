@@ -107,7 +107,7 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 	report.Files = managedFileDeliverySnapshotFromInitRefresh(projectRoot, actionable)
 	report.Notes = append(report.Notes, plan.notes...)
 	if diffOutput {
-		if diff := renderInitRefreshDiff(plan.changes); strings.TrimSpace(diff) != "" {
+		if diff := renderInitRefreshDiff(actionable); strings.TrimSpace(diff) != "" {
 			if _, err := fmt.Fprint(cmd.OutOrStdout(), diff); err != nil {
 				return err
 			}

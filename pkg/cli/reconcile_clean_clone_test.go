@@ -38,6 +38,15 @@ func TestCleanCloneOfCurrentProjectReconcilesWithoutWriting(t *testing.T) {
 	if report.State != statusKitManagedStateCurrent || pending != 0 || len(report.Files) != 0 {
 		t.Fatalf("health on a current clean clone = %#v", report)
 	}
+	diffCmd := healthCommandForTest(t, "--diff")
+	diffOut := &strings.Builder{}
+	diffCmd.SetOut(diffOut)
+	if err := runHealth(diffCmd, nil); err != nil {
+		t.Fatalf("runHealth(--diff) error = %v", err)
+	}
+	if strings.Contains(diffOut.String(), "diff --git") {
+		t.Fatalf("health --diff shows changes for a current clean clone:\n%s", diffOut.String())
+	}
 	if status := reconcileGitOutput(t, clone, "status", "--porcelain", "--ignored"); status != "" {
 		t.Fatalf("health wrote to the clone:\n%s", status)
 	}
