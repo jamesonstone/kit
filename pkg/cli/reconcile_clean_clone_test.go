@@ -3,6 +3,7 @@ package cli
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -21,6 +22,14 @@ func TestCleanCloneOfCurrentProjectReconcilesWithoutWriting(t *testing.T) {
 	}
 	stubReconcileWorktreeRoot(t, t.TempDir())
 	setWorkingDirectory(t, clone)
+
+	var preview strings.Builder
+	if _, err := resolveReconcileTarget(&preview, clone, true, true); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(preview.String(), "linked worktree") {
+		t.Fatalf("current preview claims a worktree would be used: %q", preview.String())
+	}
 
 	runManagedReconcileForWorktreeTest(t)
 	if branches := reconcileGitOutput(t, clone, "branch", "--list", reconcileBranch); branches != "" {

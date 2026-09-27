@@ -52,8 +52,9 @@ func resolveReconcileTarget(out io.Writer, projectRoot string, dryRun, upToDate 
 	if !location.InsideGit || !location.IsPrimary {
 		return reconcileTarget{projectRoot: projectRoot}, nil
 	}
-	if upToDate && !dryRun {
-		return reconcileTarget{projectRoot: projectRoot, current: true}, nil
+	if upToDate {
+		// Nothing to write: a preview plans in place and a writing run is a no-op.
+		return reconcileTarget{projectRoot: projectRoot, current: !dryRun}, nil
 	}
 	if dryRun {
 		_, err := fmt.Fprintf(out, "Preview of this checkout. A writing run applies the migration in the %s linked worktree, based on %s; changes that are not in %s are not included.\n", reconcileBranch, reconcileBaseRef(location.Path), reconcileBaseRef(location.Path))
