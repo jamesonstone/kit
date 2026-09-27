@@ -190,8 +190,8 @@ func TestRunInit_PopulatesGlobalConfig(t *testing.T) {
 		if !found {
 			t.Fatal("config.LoadGlobal() found = false, want true")
 		}
-		if cfg.InstructionScaffoldVersion != config.DefaultInstructionScaffoldVersion {
-			t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, config.DefaultInstructionScaffoldVersion)
+		if cfg.InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
+			t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, config.CurrentInstructionScaffoldVersion)
 		}
 	})
 }

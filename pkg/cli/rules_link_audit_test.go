@@ -114,7 +114,7 @@ func setupRulesProject(t *testing.T) string {
 	t.Helper()
 	projectRoot := t.TempDir()
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
 	}

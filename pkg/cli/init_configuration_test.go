@@ -111,7 +111,7 @@ func TestRunInit_InstallsRegistryRulesetsAndState(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
-	registry := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
+	registry := registryRulesetForTest("sample-guardrails", []string{"git", "github"})
 	stubRulesetRegistry(t, registry)
 
 	withInitFlags(t, func() {
@@ -128,7 +128,7 @@ func TestRunInit_InstallsRegistryRulesetsAndState(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected registry ruleset to be installed by kit init: %v", err)
 	}
-	if !strings.Contains(string(rulesetContent), "slug: safety-guardrails") {
+	if !strings.Contains(string(rulesetContent), "slug: sample-guardrails") {
 		t.Fatalf("unexpected ruleset content:\n%s", rulesetContent)
 	}
 
@@ -149,7 +149,7 @@ func TestRunInitRefresh_ForceIsIdempotentAfterConvergence(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
-	registry := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
+	registry := registryRulesetForTest("sample-guardrails", []string{"git", "github"})
 	stubRulesetRegistry(t, registry)
 
 	withInitFlags(t, func() {
@@ -218,7 +218,7 @@ func TestRunInitRefreshForceCopiesDocumentationPrompt(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
-	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+	stubRulesetRegistry(t, registryRulesetForTest("sample-guardrails", []string{"git", "github"}))
 
 	withInitFlags(t, func() {
 		initOutputOnly = true

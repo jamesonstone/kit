@@ -1,14 +1,7 @@
+// Package instructions names the agent entry files Kit manages.
 package instructions
 
-import (
-	"path/filepath"
-	"strings"
-
-	"github.com/jamesonstone/kit/v3/internal/config"
-	"github.com/jamesonstone/kit/v3/internal/document"
-)
-
-const UnknownVersion = 0
+import "github.com/jamesonstone/kit/v3/internal/config"
 
 const (
 	AgentsMDPath            = "AGENTS.md"
@@ -16,192 +9,17 @@ const (
 	CopilotInstructionsPath = ".github/copilot-instructions.md"
 )
 
-type Doc struct {
-	Label        string
-	RelativePath string
-	Use          string
-	Required     bool
-	ManagedBy    string
-}
-
+// InstructionRelativePaths lists the configured agent entry files plus the
+// Copilot instructions, which every project carries.
 func InstructionRelativePaths(cfg *config.Config) []string {
 	if cfg == nil {
 		cfg = config.Default()
 	}
-
 	files := make([]string, 0, len(cfg.Agents)+1)
 	for _, file := range cfg.Agents {
 		files = appendUnique(files, file)
 	}
-	files = appendUnique(files, CopilotInstructionsPath)
-	return files
-}
-
-func DetectVersion(projectRoot string, cfg *config.Config) int {
-	if cfg != nil && config.IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
-		return cfg.InstructionScaffoldVersion
-	}
-
-	// Legacy support docs identify unconfigured pre-contract repositories.
-	for _, doc := range SupportDocs(config.InstructionScaffoldVersionTOC) {
-		if document.Exists(filepath.Join(projectRoot, filepath.FromSlash(doc.RelativePath))) {
-			// Support docs alone cannot distinguish v2 from v3. Treat an
-			// unconfigured repository as the legacy TOC version so migration is
-			// reviewed rather than assumed.
-			return config.InstructionScaffoldVersionTOC
-		}
-	}
-
-	for _, relativePath := range InstructionRelativePaths(cfg) {
-		if document.Exists(filepath.Join(projectRoot, filepath.FromSlash(relativePath))) {
-			return config.InstructionScaffoldVersionVerbose
-		}
-	}
-
-	return UnknownVersion
-}
-
-func InstructionDocs(cfg *config.Config, version int) []Doc {
-	use := "repository instruction contract; keep aligned with canonical docs"
-	if config.UsesInstructionSupportDocs(version) {
-		use = "thin instruction entrypoint; keep aligned with the repo-local docs tree"
-	}
-
-	docs := make([]Doc, 0, len(InstructionRelativePaths(cfg)))
-	for _, relativePath := range InstructionRelativePaths(cfg) {
-		docs = append(docs, Doc{
-			Label:        LabelForPath(relativePath),
-			RelativePath: relativePath,
-			Use:          use,
-			Required:     true,
-			ManagedBy:    "kit init",
-		})
-	}
-
-	return docs
-}
-
-func SupportDocs(version int) []Doc {
-	if !config.UsesInstructionSupportDocs(version) {
-		return nil
-	}
-
-	docs := []Doc{
-		{
-			Label:        "AGENTS DOCS",
-			RelativePath: "docs/agents/README.md",
-			Use:          "repo-local runtime routing index",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-		{
-			Label:        "WORKFLOWS",
-			RelativePath: "docs/agents/WORKFLOWS.md",
-			Use:          "spec-driven versus ad hoc routing",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-		{
-			Label:        "RLM",
-			RelativePath: "docs/agents/RLM.md",
-			Use:          "just-in-time context routing and progressive disclosure",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-		{
-			Label:        "TOOLING",
-			RelativePath: "docs/agents/TOOLING.md",
-			Use:          "skills, dispatch, project-directory workflow, and secondary globals",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-		{
-			Label:        "GUARDRAILS",
-			RelativePath: "docs/agents/GUARDRAILS.md",
-			Use:          "hard constraints and completion bar",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-		{
-			Label:        "REFERENCES",
-			RelativePath: "docs/references/README.md",
-			Use:          "repo-wide references index",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-		{
-			Label:        "TESTING REFERENCE",
-			RelativePath: "docs/references/testing.md",
-			Use:          "durable repo-wide testing guidance",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-		{
-			Label:        "TOOLING REFERENCE",
-			RelativePath: "docs/references/tooling.md",
-			Use:          "durable repo-wide tooling guidance",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-		{
-			Label:        "EXTERNAL SYSTEMS",
-			RelativePath: "docs/references/external-systems.md",
-			Use:          "durable external-system notes",
-			Required:     true,
-			ManagedBy:    "kit init",
-		},
-	}
-	if version == config.InstructionScaffoldVersionMemory {
-		// The v3 universal contract lives in the entry files; the only generated
-		// project-memory document is the validation reference it points to.
-		kept := docs[:0]
-		for _, doc := range docs {
-			if doc.Label == "TESTING REFERENCE" {
-				kept = append(kept, doc)
-			}
-		}
-		docs = kept
-	}
-	return docs
-}
-
-func ExistingInstructionDocs(projectRoot string, cfg *config.Config) []Doc {
-	version := DetectVersion(projectRoot, cfg)
-	if version == UnknownVersion {
-		return nil
-	}
-
-	return existingDocs(projectRoot, InstructionDocs(cfg, version))
-}
-
-func ExistingSupportDocs(projectRoot string, cfg *config.Config) []Doc {
-	version := DetectVersion(projectRoot, cfg)
-	if !config.UsesInstructionSupportDocs(version) {
-		return nil
-	}
-
-	return existingDocs(projectRoot, SupportDocs(version))
-}
-
-func KnowledgeEntrypointPath(projectRoot string, cfg *config.Config) string {
-	return existingDocPathByLabel(projectRoot, cfg, "AGENTS DOCS")
-}
-
-func ReferencesEntrypointPath(projectRoot string, cfg *config.Config) string {
-	return existingDocPathByLabel(projectRoot, cfg, "REFERENCES")
-}
-
-func LabelForPath(path string) string {
-	switch filepath.Base(path) {
-	case "AGENTS.md":
-		return "AGENTS"
-	case "CLAUDE.md":
-		return "CLAUDE"
-	case "copilot-instructions.md":
-		return "COPILOT"
-	default:
-		return strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
-	}
+	return appendUnique(files, CopilotInstructionsPath)
 }
 
 func appendUnique(items []string, value string) []string {
@@ -210,27 +28,5 @@ func appendUnique(items []string, value string) []string {
 			return items
 		}
 	}
-
 	return append(items, value)
-}
-
-func existingDocs(projectRoot string, docs []Doc) []Doc {
-	var existing []Doc
-	for _, doc := range docs {
-		if document.Exists(filepath.Join(projectRoot, filepath.FromSlash(doc.RelativePath))) {
-			existing = append(existing, doc)
-		}
-	}
-
-	return existing
-}
-
-func existingDocPathByLabel(projectRoot string, cfg *config.Config, label string) string {
-	for _, doc := range ExistingSupportDocs(projectRoot, cfg) {
-		if doc.Label == label {
-			return filepath.Join(projectRoot, filepath.FromSlash(doc.RelativePath))
-		}
-	}
-
-	return ""
 }

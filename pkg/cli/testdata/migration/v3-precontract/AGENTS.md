@@ -1,0 +1,191 @@
+# AGENTS
+
+## Browser policy
+
+- For interactive browser work, use Codex's built-in browser through `@Browser`.
+- Do not use `@Chrome`, control my active Chrome profile, or launch external
+  Chrome or Chromium through Playwright, Selenium, Cypress, or browser MCP tools
+  unless I explicitly request it.
+- If `@Browser` is unavailable, report the limitation instead of silently
+  falling back.
+- When I explicitly authorize an external browser, terminate and verify all
+  task-owned browser and automation processes before finishing.
+- Host binding detail lives in `docs/references/host-adapters/codex.md`.
+
+## Conditional Codex Subagent Binding
+
+- Apply this section only when the active coding host is Codex. Warp/Oz and every other host that reads `AGENTS.md` must skip it.
+- Before delegating, inspect the live Codex roster with `list_agents`. The root supervisor may use `spawn_agent` with host-exposed `model` and `reasoning_effort` controls, `followup_task` for same-agent continuation, and `wait_agent` for status and joining; children must not spawn descendants.
+- Resolve profiles from the live roster rather than static model IDs or a presumed capacity. If a native control is unavailable or fails, follow the shared host-adapter fallback and report the requested and effective profile, model, effort, continuity, and degradation.
+- Capability descriptors live in `docs/references/host-adapters/codex.md`; normative topology lives in `docs/references/rules/agent-team-orchestration.md`.
+
+## Purpose
+
+- This file is a routing table, not the full manual
+- Start at `docs/agents/README.md` and load only the guidance needed for the current decision
+- Use native agent planning for research, clarification, design, and implementation planning
+- Treat repo-local markdown under `docs/` as persistent repository memory
+- Precedence: `docs/CONSTITUTION.md` over `docs/agents/GUARDRAILS.md` over `docs/references/rules/*` over `docs/specs/<feature>/SPEC.md` over chat; `GUARDRAILS.md` plus `work-lane-gating.md` own worklane routing and `github-pr-merge.md` owns merge readiness, and the detailed gates below route to those sources without restating them as competing rules.
+
+## Multi-Agent Orchestration Evaluation Hard Gate
+
+- Before finalizing any native implementation plan for a new feature, a substantial architectural or behavioral change, or a multi-file refactor, load `docs/references/rules/agent-team-orchestration.md` and evaluate whether the work benefits from multi-agent or parallel decomposition using that rule's lifecycle and semantic capability profiles.
+- A single mechanical edit, a direct question, or read-only research that never forms an implementation plan does not trigger this gate.
+- Record the decision before the plan is finalized: either a multi-lane Agent Team Plan, or `single-lane, because <reason>` using that rule's single-lane criteria. Never skip the evaluation silently, even when the recorded answer is single-lane.
+- This gate fires during plan formation and precedes the Work Lane Mutation Hard Gate below, which fires later, before the first repository mutation.
+
+## Work Lane Mutation Hard Gate
+
+- Before any coding-agent repository file or delivery mutation, including issue, branch, staging, commit, push, worktree, and pull-request mutations, load `docs/agents/GUARDRAILS.md` and `work-lane-gating` first and complete read-only safety recon.
+- Default to a new worklane without asking for the accepted unit of work: create or reuse one human-assigned GitHub issue, exact `GH-<issue-number>` branch, canonical non-primary worktree, and ready pull-request plan. Reuse that recorded lane for subsequent in-scope mutations. A clean or dirty checkout, current feature branch, issue reference, or generic pull-request request does not change this default.
+- Continue an existing lane only when the user explicitly directs that outcome for the same unit of work. Prove the non-primary owning worktree, branch, issue scope, protected base, and create-or-update pull-request target.
+- Never offer or ask the user to choose between lanes.
+- Treat exact existing-PR lifecycle work as continuation: review repair, CI repair, base refresh, conflict resolution, and ordered merge coordination reuse every targeted pull-request head. Never create coordination or corrective pull requests for scope-preserving work. A standing-authority grant that includes blocker repair covers later in-scope repairs and refreshed heads; an explicit repair hold prevails. Do not allocate a new lane merely because the PR number or final head was unknown when authority was granted.
+- Record a Pull-Request Landing Plan covering the repository, issue, branch, canonical non-primary worktree, protected base, and create-or-update PR target. Verify that plan still matches before every mutation. Ask only when implementation intent or an explicitly named target is materially ambiguous and cannot be resolved from repository evidence.
+- Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it. The only exception is command-owned leftovers after their matching worktree pull request has merged, handled by the `work-lane-gating` post-merge cleanup.
+
+
+## Coding Agent Context Gate
+
+- When Kit command behavior is not already established, run `kit capabilities <command> --json` before choosing the command
+- Before implementation, maintenance, PR repair, or repository bootstrap, run `kit context resolve --workflow <slug> --json` with relevant feature and path hints
+- Load every required selected artifact before acting; load optional evidence only when its applicability boundary is reached
+- Treat a blocked contract as a hard evidence gap and rerun resolution after material scope changes
+- `kit context resolve` is local-only and read-only; it never fetches, writes, mutates Git, infers truth, or launches an agent
+
+## Repository Memory Gate
+
+- Before implementation, inspect relevant code and existing repository memory
+- Decide semantically whether the work contains material rationale that code and tests cannot preserve
+- When material rationale exists, create or adopt `docs/specs/<feature>/SPEC.md` before editing implementation files and capture the accepted native plan
+- When code and tests are sufficient, do not create documentation solely to satisfy a process; record `not required` in the final response
+- During implementation, keep material decisions and discoveries current in the spec
+- After implementation and validation, load `docs/references/rules/constitution-curation.md`; curate feature rationale into `SPEC.md`, demonstrated project invariants into `docs/CONSTITUTION.md`, reusable practices into `docs/references/` or `docs/references/rules/`, and domain knowledge into its existing canonical documentation
+- Remove transient planning chatter and code-recoverable detail during curation; retain material superseded decisions with rationale
+
+## Agent Completion Output Contract
+
+- Before a substantial terminal completion or handoff response, load `docs/references/rules/agent-completion-output.md` when present.
+- Write each response, including terminal completions and handoffs, in the shape its content calls for. Match length to consequence rather than to effort spent.
+- A terminal response conveys what the user now has, what remains unfinished and why, anything blocking completion and what would clear it, and anything the reader must do next with the exact command or prompt when there is one.
+- Say plainly whether the work is finished, partly finished, blocked, or failed.
+- Keep blockers and unfinished scope as prominent as the successes.
+- Report each check as observed: a failing, pending, unavailable, skipped, or never-run check is reported as exactly that, and literal states such as PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE are preserved verbatim.
+- Report a check as passing only when it ran and passed, and a file or system as inspected only when it was inspected. When something could not be validated, say so and say why.
+- Distinguish a verified fact from an inference and from a hypothesis.
+- Make every repository, delivery, external-system, and infrastructure change recoverable from the response, with the identifiers a reader needs to find or undo it.
+- Include an identifier when the reader needs it to act or would reasonably doubt the claim without it. A response is an account of where things stand, not an index of everything checked.
+- For merge or release orchestration, report state changes and the smallest evidence set that proves each terminal node.
+- Delivery, validation, repository-memory, orchestration, program, and environment contracts name facts that must reach the reader. Satisfy them on content; a heading alone satisfies none of them.
+
+## Runtime Routing
+
+- `docs/agents/README.md` — classify the work and choose the next document
+- `docs/agents/WORKFLOWS.md` — native planning, implementation, and repository-memory lifecycle
+- `docs/agents/GUARDRAILS.md` — completion, safety, and hard rules
+- `docs/agents/RLM.md` — just-in-time context loading
+- `docs/agents/TOOLING.md` — skills, post-plan dispatch, and secondary inputs
+
+## Testing And Validation Gate
+
+- Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`
+- Preserve language-native code-level tests and pull-request checks; end-to-end and live-integration suites supplement rather than replace them
+
+## Source File Size Gate
+
+- Before editing implementation/source or test files, load `docs/references/rules/source-file-size.md`
+- Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less
+- Audit the complete affected source/test scope before delivery; whole-project reconcile and scheduled maintenance audit the entire repository
+
+## Application Architecture Gate
+
+- Before implementing API or backend routes, controllers or handlers, services, repositories, persistence adapters, or gateways, load `docs/references/rules/backend-service-architecture.md`
+- Before implementing frontend routes or pages, feature orchestration, state flows, data adapters, or reusable components, load `docs/references/rules/frontend-application-architecture.md`
+- Treat both rules as responsibility boundaries rather than mandatory directory names, and preserve stronger repo-local architecture
+
+## GitHub Delivery Hard Gate
+
+- Issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries
+- Before a delivery mutation, load `docs/agents/GUARDRAILS.md` and relevant `docs/references/rules/*` delivery rules
+- Repo-local Kit rules outrank generic GitHub or plugin defaults
+- Assign every created or reused GitHub issue and pull request to the human user, such as with `gh issue create --assignee @me` or `gh pr create --assignee @me` after confirming the authenticated `gh` login is the human user; never assign a coding agent, assistant, bot, or automated identity
+
+## GitHub Standing Merge Authority Hard Gate
+
+- Merge is a distinct mutation boundary. PR-delivery consent, automatic lane allocation, approval, check success, subagent assignment, and a program ledger never invent merge readiness.
+- Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program to merge its resulting work. Generic task acceptance does not create it. Record repositories, bases, environments, permitted actions, actor, expiry or completion, and exclusions.
+- Standing authority may bind later-created in-scope PRs and refreshed heads. Resolve the exact current PR and head before mutation; do not ask again solely because its number or final OID was unknown when authority was granted.
+- A commit SHA or head OID identifies readiness evidence only; it is never an authorization identity. A head change invalidates checks and review, not standing authority. Never request exact-head reauthorization.
+- Before any merge or merge-queue mutation, resolve `pull-request-merge` and load `docs/references/rules/github-pr-merge.md`.
+- Reconcile the standing-authority selector and pause state, authenticated actor, expected head/base, repository policy, current reviews/checks, dependencies, deployment workflow, environment, and material effects before every wave.
+- Only exact current `MERGE_READY` nodes may merge. Pending, missing, stale-head, or policy-ineligible skipped checks are not passing.
+- Use one complete preflight snapshot per consequential mutation or wave; do not rerun unchanged checks or poll repeatedly unless material state changes or the evidence freshness window expires.
+- A changed in-scope head invalidates readiness, not standing authority. Revalidate current-head evidence, then merge without renewed authorization. Scope, repository, base, environment, actor, identity, method, workflow, or material-effect expansion requires explicit updated authority.
+- After final-head evidence restores `MERGE_READY`, continue any already-authorized standard deployment and browser retry without another permission prompt.
+- Never bypass protection, reviews, required checks, a merge queue, repository policy, or identity safeguards.
+- Report merge, hosted workflow, deployment/runtime, and production evidence as separate claims.
+- IAM, network, KMS, secrets, database-schema or data-loss changes, infrastructure creation/replacement/deletion, destructive deletion, nonstandard deployment effects, and unresolved risk classifications are not covered by standing merge/deploy authority.
+- The most recent direct human instruction wins. Pause, hold, or revocation stops affected actions and dependents until explicit human resume or replacement authority.
+
+## Cross-Repository Program Coordination Gate
+
+- Before implementing or resuming an accepted plan that spans multiple repositories and includes dependent deliverables, staged deployment or activation, or expected agent or session handoff, load `docs/references/rules/cross-repository-program-coordination.md`.
+- Designate one coordinator repository and create or adopt one canonical `docs/programs/<program>/PROGRAM.md` ledger before implementation; participant repositories remain authoritative for local specs, delivery state, runbooks, and evidence.
+- Dispatch only the reconciled ready frontier, checkpoint every material transition and handoff, and reconcile recorded claims against live repositories, GitHub, runtime, and validation evidence before resume or completion.
+
+## Deletion Safety Hard Gate
+
+- Before designing deletion behavior or deleting persistent project, user, business, or external-system state, load `docs/references/rules/deletion-safety.md`.
+- An unqualified delete means soft delete: use a reversible lifecycle state with a supported, authorized, and tested restore path. Task-owned ephemeral scratch that never became authoritative state is outside this retained-state definition; ambiguity remains covered.
+- Treat purge, destroy, force deletion, empty-trash operations, destructive replacement, history rewrite, retention expiry, backup or snapshot deletion, cryptographic erasure, and irreversible cascades as hard delete.
+- Make the normal product and operational path soft-delete by default. Keep hard delete as a separate privileged, auditable, server-enforced action; a client prompt or `force` flag alone is insufficient.
+- Before any hard delete, resolve and present the exact targets, or a bounded selector first resolved to the exact current target set with its current count and materialized target IDs or an immutable snapshot/version token, environment, cascades, why soft delete is insufficient, the loss of restore, backup state, retention or legal impact, and verification plan.
+- After that outline, obtain a specific manual confirmation from the human for those exact current targets. Initial requests, general task or plan approval, automation, retention schedules, prior soft-delete approval, and broad cleanup language do not count.
+- Bind confirmation to the actor, action, exact targets or immutable snapshot/version, environment, and consequences. Immediately before execution, compare the current target set or version with the confirmed snapshot; any difference requires a new outline and confirmation.
+- Preserve stricter repository, legal, privacy, security, infrastructure, and provider controls. One post-outline confirmation may satisfy multiple deletion gates only when the combined outline contains every required field.
+
+## Slack: Read-Only by Default, Explicit Approval Required to Send
+
+- Treat all Slack access as **read-only by default**.
+- You may read and search Slack without additional approval. If given a Slack message or thread link, read the **entire thread**; inspect or search the containing channel and other relevant Slack content when useful.
+- Use Slack content as reference material. Do **not** post, reply, react, edit, delete, forward, or otherwise modify Slack unless the human explicitly authorizes that specific action.
+- Drafting a Slack message is not authorization to send it. Requests to draft, write, improve, or suggest a reply mean **draft only**; return the proposed text.
+- Before any Slack send or other Slack mutation: draft the exact message or action, show the complete final content, ask whether the human authorizes **that specific action**, and wait for an explicit instruction such as **"send it," "send this," or "yes, send that message."**
+- Approval is **single-use and message-specific**. Previous Slack send authorization and general statements such as "handle this" or "go ahead" do not authorize a later send unless they clearly refer to the exact message just presented.
+- When uncertain whether the human authorized a Slack write, **do not perform it. Ask.**
+- Load `docs/references/rules/slack-read-only.md` before any Slack write or when Slack investigation needs the full protocol.
+
+## Infrastructure Change Approval Hard Gate
+
+- Before mutating public-cloud resources, Kubernetes resources or cluster state, or infrastructure-as-code source, configuration, or state, load `docs/references/rules/infrastructure-change-approval.md`.
+- Standing merge/deploy authority covers only a named existing standard deployment workflow for an authorized environment and exact merged artifact on already-provisioned application resources, followed by deployed-identity, health, runtime, and rollback verification. Generic task acceptance does not authorize deployment.
+- IAM, network topology, KMS, secrets, persistent data-store or database-schema change, data loss, cluster control-plane change, infrastructure creation, replacement, or deletion, new targets, workflow mutation, and nonstandard deployment effects are outside standing authority and require their own applicable approval boundary.
+- Routine application operations on already-provisioned workloads are not infrastructure-approval batches when they stay inside the recorded standard deployment boundary. Record the target, workflow, environment, actor, and artifact; do not stop for another prompt solely because a later in-scope PR or head was unknown when authority was granted.
+- Read-only discovery may precede confirmation only when it does not alter cloud resources, Kubernetes objects, remote state, or repository-owned infrastructure source.
+- Put one consolidated outline of the target context, resource actions, execution boundary, material impact and risk, rollback or recovery, and validation evidence into the task plan before the first covered infrastructure mutation. Obtain one explicit user confirmation for that complete bounded batch.
+- Approval of a task plan containing the complete outline counts as confirmation. A standing merge/deploy grant never substitutes for that infrastructure outline.
+- Deleting, destroying, or removing infrastructure always requires explicit confirmation after the consolidated outline, even when the initial request asked for it; one confirmation covers every deletion named in that batch. Standing authority, merge, image deployment, and routine operations never authorize deletion.
+- During merge or release orchestration, do not execute infrastructure deletion, destruction, purge, destructive replacement, or state removal; isolate it as a separate task with its own exact post-outline authorization.
+- After infrastructure confirmation, execute the exact approved batch and continue in one pass without routine command-by-command approval. Additional or materially different covered changes require one follow-up outline and confirmation.
+- The most recent direct human instruction wins. Pause, hold, or revocation stops affected actions and dependents until explicit human resume. Unresolved effect classification fails closed.
+
+## AWS Context Hard Gate
+
+- Before AWS-dependent work, load `docs/references/rules/aws-agent-toolkit-guidance.md` and use its current AWS skill, official documentation, AWS MCP Server or CLI fallback, identity, infrastructure-approval, and secret-safety routing; repo-local Kit gates remain authoritative. If `.kit.yaml` defines an enabled AWS context, run `kit aws verify` before the first AWS-dependent command and again immediately before AWS mutation
+- Treat the verified account, ARN, and Region as authoritative; a profile name alone is not proof of identity
+- Use the verified configured profile and Region explicitly for every AWS-dependent command where supported
+- After verification, never use default, another discovered profile, or ambient credentials
+- Stop on missing credentials, incomplete configuration, or identity mismatch
+
+## Knowledge Map
+
+- `docs/specs/<feature>/SPEC.md` — material feature rationale and living implementation history
+- `docs/CONSTITUTION.md` — project invariants
+- `docs/references/` — reusable repo-wide knowledge and practices
+- domain documentation — canonical domain behavior and interfaces
+
+## Constraints
+
+- Keep AGENTS short and stable
+- Put durable workflow guidance in `docs/agents/*` instead of expanding always-loaded files
+- Do not ingest or depend on agent transcripts as repository memory

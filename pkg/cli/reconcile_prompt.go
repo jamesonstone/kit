@@ -126,7 +126,7 @@ func buildReconcilePrompt(report *reconcileReport) string {
 		doc.Paragraph("Delivery of command-created files:")
 		doc.BulletList(managedFileDeliveryInstructionsForCommand(
 			report.ProjectRoot,
-			report.DeferredRefreshCommand,
+			"",
 			report.DeliverySnapshot,
 		)...)
 		doc.Paragraph("Audit snapshot:")

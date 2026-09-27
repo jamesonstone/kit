@@ -23,6 +23,7 @@ type healthChangeSummary struct {
 	Created int `json:"created"`
 	Updated int `json:"updated"`
 	Merged  int `json:"merged"`
+	Removed int `json:"removed"`
 	Skipped int `json:"skipped"`
 }
 
@@ -103,6 +104,7 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 		Created: plan.stats.created,
 		Updated: plan.stats.updated,
 		Merged:  plan.stats.merged,
+		Removed: plan.stats.removed,
 		Skipped: plan.stats.skipped,
 	}
 	report.Files = healthChangedFiles(projectRoot, plan.changes)
@@ -240,7 +242,7 @@ func writeHealthReport(out io.Writer, report healthReport, jsonOutput bool) erro
 	if _, err := fmt.Fprintf(out, "Kit health: %s\n", report.State); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(out, "Changes: %d created, %d updated, %d merged, %d skipped\n", report.Changes.Created, report.Changes.Updated, report.Changes.Merged, report.Changes.Skipped); err != nil {
+	if _, err := fmt.Fprintf(out, "Changes: %d created, %d updated, %d merged, %d removed, %d skipped\n", report.Changes.Created, report.Changes.Updated, report.Changes.Merged, report.Changes.Removed, report.Changes.Skipped); err != nil {
 		return err
 	}
 	for _, note := range report.Notes {

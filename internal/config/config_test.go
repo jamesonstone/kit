@@ -166,7 +166,7 @@ func TestLoadWithInspectionRequiresQuotedAWSAccountID(t *testing.T) {
 func TestDisabledAWSConfigIsSemanticallyValid(t *testing.T) {
 	root := t.TempDir()
 	cfg := Default()
-	cfg.InstructionScaffoldVersion = DefaultInstructionScaffoldVersion
+	cfg.InstructionScaffoldVersion = CurrentInstructionScaffoldVersion
 	cfg.AWS = DisabledAWSConfig()
 	if err := Save(root, cfg); err != nil {
 		t.Fatalf("Save() error = %v", err)

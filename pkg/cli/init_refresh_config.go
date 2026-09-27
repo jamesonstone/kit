@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	stdreflect "reflect"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"gopkg.in/yaml.v3"
@@ -42,12 +43,14 @@ func initRefreshConfig(
 	if configSelected && opts.force {
 		aws := cfg.AWS
 		instructionVersion := cfg.InstructionScaffoldVersion
+		registry := cfg.Registry
 		cfg = defaultInitConfig()
 		cfg.SchemaVersion = config.CurrentSchemaVersion
-		if exists && config.IsInstructionScaffoldVersionSupported(instructionVersion) {
+		if exists && config.IsKnownInstructionScaffoldVersion(instructionVersion) {
 			cfg.InstructionScaffoldVersion = instructionVersion
 		}
 		cfg.AWS = aws
+		cfg.Registry = registry
 		after, err := marshalInitRefreshConfig(cfg)
 		if err != nil {
 			return nil, nil, err
@@ -64,9 +67,8 @@ func initRefreshConfig(
 		cfg.SchemaVersion = config.CurrentSchemaVersion
 		configChanged = true
 	}
-	if !config.IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
-		cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
-		configChanged = true
+	if !exists {
+		cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	}
 	if configChanged && shouldTouchConfig {
 		after, err := marshalInitRefreshConfig(cfg)
@@ -110,10 +112,20 @@ func finalizeInitRefreshConfigChange(projectRoot string, cfg *config.Config, pla
 	if err != nil {
 		return nil, err
 	}
-	if before == after {
+	// Rewrite only for a change in content, which includes dropping keys Kit
+	// no longer reads; formatting and comments alone never trigger a rewrite.
+	if before == after || (planned == nil && sameYAMLContent(before, after)) {
 		return nil, nil
 	}
 	return newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, result), nil
+}
+
+func sameYAMLContent(left, right string) bool {
+	var a, b any
+	if yaml.Unmarshal([]byte(left), &a) != nil || yaml.Unmarshal([]byte(right), &b) != nil {
+		return false
+	}
+	return stdreflect.DeepEqual(a, b)
 }
 
 func marshalInitRefreshConfig(cfg *config.Config) (string, error) {

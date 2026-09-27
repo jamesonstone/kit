@@ -6,7 +6,7 @@ agents:
     - AGENTS.md
     - CLAUDE.md
     - .github/copilot-instructions.md
-instruction_scaffold_version: 3
+instruction_scaffold_version: 4
 feature_naming:
     numeric_width: 4
     separator: '-'

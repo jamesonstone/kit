@@ -132,16 +132,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		// The closing refresh migrates an existing project's structure and
+		// records the scaffold version it converged on.
 		cfg = existing
-		if !config.IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
-			cfg.InstructionScaffoldVersion = detectInstructionScaffoldVersion(cwd, cfg)
-			if cfg.InstructionScaffoldVersion == instructionScaffoldVersionUnknown {
-				cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
-			}
-			if err := config.Save(cwd, cfg); err != nil {
-				return fmt.Errorf("failed to update %s: %w", config.ConfigFileName, err)
-			}
-		}
 	} else {
 		if err := config.Save(cwd, cfg); err != nil {
 			return fmt.Errorf("failed to create .kit.yaml: %w", err)
@@ -227,18 +220,8 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	// scaffold repository instruction files
-	for _, relativePath := range instructionArtifactPaths(
-		cfg,
-		instructionFileSelection{},
-		cfg.InstructionScaffoldVersion,
-		true,
-	) {
-		result, err := writeInstructionFileWithMode(
-			cwd,
-			relativePath,
-			instructionFileWriteModeSkipExisting,
-			cfg.InstructionScaffoldVersion,
-		)
+	for _, relativePath := range instructionArtifactPaths(cfg) {
+		result, err := writeInstructionFileWithMode(cwd, relativePath, instructionFileWriteModeSkipExisting)
 		if err != nil {
 			return err
 		}

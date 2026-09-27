@@ -52,7 +52,7 @@ func TestRunStatusJSONIncludesLocalKitManagedRefreshSummary(t *testing.T) {
 func TestStatusManagedSummaryReportsRemoteRegistryRefresh(t *testing.T) {
 	projectRoot := t.TempDir()
 	setupInitHome(t)
-	base := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
+	base := registryRulesetForTest("sample-guardrails", []string{"git", "github"})
 	stubRulesetRegistry(t, registryRulesetWithContentForTest(base.Slug, strings.Replace(base.Content, "## Verification", "- Remote registry addition.\n\n## Verification", 1), "new-commit"))
 
 	cfg := config.Default()

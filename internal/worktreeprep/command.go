@@ -88,3 +88,18 @@ func resolvedPath(path string) string {
 	}
 	return filepath.Join(parent, filepath.Base(absolute))
 }
+
+// WorktreeForBranch returns the path of the worktree that has branch checked
+// out, or "" when none does.
+func (preparer *Preparer) WorktreeForBranch(ctx context.Context, cwd, branch string) (string, error) {
+	entries, err := preparer.worktrees(ctx, cwd)
+	if err != nil {
+		return "", err
+	}
+	for _, entry := range entries {
+		if entry.branch == branch {
+			return filepath.Clean(entry.path), nil
+		}
+	}
+	return "", nil
+}

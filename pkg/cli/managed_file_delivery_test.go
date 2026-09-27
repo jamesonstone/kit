@@ -74,37 +74,6 @@ func TestManagedFileDeliverySnapshotFromInitRefreshCapturesExactBoundary(t *test
 	}
 }
 
-func TestManagedFileDeliveryInstructionsCarryRemovalOnlyChange(t *testing.T) {
-	projectRoot := t.TempDir()
-	relativePath := "docs/agents/README.md"
-	absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
-	writeFile(t, absolutePath, "obsolete managed guidance\n")
-
-	snapshot, err := managedFileDeliverySnapshotFromScaffold(
-		projectRoot,
-		nil,
-		[]instructionRemovalPlan{{
-			relativePath: relativePath,
-			absolutePath: absolutePath,
-		}},
-	)
-	if err != nil {
-		t.Fatalf("managedFileDeliverySnapshotFromScaffold() error = %v", err)
-	}
-
-	instructions := strings.Join(managedFileDeliveryInstructions(projectRoot, snapshot), "\n")
-	for _, expected := range []string{
-		"`docs/agents/README.md` (remove; pre-command sha256:",
-		"expected absent",
-		"trigger the work-lane tripwire",
-		"explicitly stage only the captured paths (including deleted paths)",
-	} {
-		if !strings.Contains(instructions, expected) {
-			t.Fatalf("expected removal-only delivery instructions to contain %q, got:\n%s", expected, instructions)
-		}
-	}
-}
-
 func TestManagedFileDeliveryInstructionsWithoutSnapshotRequiresFreshBoundary(t *testing.T) {
 	projectRoot := t.TempDir()
 	instructions := strings.Join(managedFileDeliveryInstructions(projectRoot), "\n")

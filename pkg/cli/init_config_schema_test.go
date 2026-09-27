@@ -67,7 +67,7 @@ func TestRunInitRefreshForcePreservesAWSContext(t *testing.T) {
 	setupInitHome(t)
 	setWorkingDirectory(t, root)
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
+	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	cfg.AWS = &config.AWSConfig{Profile: "dev", AccountID: "012345678901", Region: "us-east-1"}
 	if err := config.Save(root, cfg); err != nil {
 		t.Fatalf("Save() error = %v", err)

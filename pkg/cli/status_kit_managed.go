@@ -30,6 +30,7 @@ type statusManagedFilesSummary struct {
 	Created    int    `json:"created"`
 	Updated    int    `json:"updated"`
 	Merged     int    `json:"merged"`
+	Removed    int    `json:"removed"`
 	Skipped    int    `json:"skipped"`
 	Planned    int    `json:"planned_changes"`
 	Unchecked  bool   `json:"unchecked,omitempty"`
@@ -112,6 +113,8 @@ func recordStatusManagedFileChanges(summary *statusKitManagedSummary, changes []
 			summary.ManagedFiles.Updated++
 		case instructionFileMerged:
 			summary.ManagedFiles.Merged++
+		case instructionFileRemoved:
+			summary.ManagedFiles.Removed++
 		case instructionFileSkipped:
 			summary.ManagedFiles.Skipped++
 		}

@@ -1,0 +1,638 @@
+---
+kind: ruleset
+slug: github-pr-delivery
+description: Sequences issue, worktree, branch, commit, push, ready PR, documentation-only CI skips, and post-PR checks after default new-lane routing.
+status: active
+applies_to:
+  - git
+  - github
+  - pull-request
+  - github-actions
+  - documentation
+  - coding-agent
+read_policy_default: conditional
+---
+
+# Ruleset: github-pr-delivery
+
+## Purpose
+
+- Define the workflow for landing every coding-agent repository change through
+  a GitHub pull request.
+- Preserve traceability from issue, to issue-number branch, to commit, to pull request.
+- Sequence issue resolution, branch creation, scoped implementation, review, explicit staging, commit, push, PR creation, and post-PR verification.
+
+## Applies When
+
+- `work-lane-gating` defaulted the accepted repository-mutating task to a new
+  lane, or the user explicitly directed continuation of an existing lane for
+  the current unit of work.
+- Exact existing pull requests targeted for review repair, CI repair, base
+  refresh, or ordered merge coordination are existing-lane lifecycle work. Reuse
+  their head branches and pull requests; never create a coordinator or
+  corrective pull request for scope-preserving remediation.
+- `safety-guardrails` is already active for identity, protected-branch, secret-scan, and failure handling.
+- The complete Pull-Request Landing Plan is recorded before repository file
+  mutation.
+- This ruleset sequences and verifies PR delivery; it does not infer consent or
+  relax safety checks.
+- This ruleset never creates standing merge authority or `MERGE_READY`.
+  Explicit bounded standing authority may cover later in-scope PRs and refreshed
+  heads; resolve `pull-request-merge` and follow `github-pr-merge` before every
+  merge mutation.
+
+## Rules
+
+### Kit Delivery Hard Gate
+
+- In a Kit-managed project, repo-local Kit delivery rules outrank every global GitHub/plugin workflow before any issue, branch, staging, commit, push, PR, or merge mutation.
+- A Kit-managed project is any repository containing `.kit.yaml`, `docs/CONSTITUTION.md`, or `docs/agents/README.md`.
+- Treat issue, branch, staging, commit, push, PR, and merge operations as
+  distinct mutation boundaries. Even if implementation is already complete,
+  reload and resolve the applicable delivery or merge rules at that boundary.
+- Treat work-lane routing as an earlier hard gate: after recon, default to a new
+  issue, branch, and worktree without asking. Continue an existing lane only
+  when the user explicitly directs that outcome for the current scope.
+- Before any GitHub delivery mutation, load repo-local workflow entrypoints:
+  - `.kit.yaml`
+  - the repository's agent entry file (`AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`), whose Kit-managed block holds the universal contract
+  - `docs/agents/GUARDRAILS.md` and `docs/agents/TOOLING.md` only in projects still on instruction scaffold version 2
+  - rulesets under `docs/references/rules/*` relevant to git, GitHub, branches, issues, commits, or PRs
+  - `.github/pull_request_template.md` and issue templates when present
+- Run and report delivery recon before any GitHub delivery mutation:
+  - `pwd`
+  - `git status --short --branch`
+  - `git remote -v`
+  - current branch
+  - default/base branch
+  - primary checkout and registered worktrees
+  - active PRs for the current branch
+  - existing matching issues
+  - git author and committer identity
+- Resolve the repo-local delivery contract before mutation:
+  - issue system and required ticket format
+  - issue reuse/create rules
+  - branch naming convention
+  - base branch refresh and staleness rules
+  - staging rule
+  - commit message format
+  - PR draft/ready convention
+  - PR template headings
+  - required validation commands
+- Confirm the Pull-Request Landing Plan recorded by `work-lane-gating` matches
+  the resolved Delivery Contract. A mismatch is a blocker, not implicit
+  permission to choose another lane.
+- Present this preflight before executing GitHub delivery:
+
+```text
+Delivery Contract:
+- Repository:
+- Base branch:
+- Issue source:
+- Issue number/link:
+- Branch name:
+- Branch base:
+- Worktree path:
+- Branch/status/staleness check:
+- Staging method:
+- Commit format:
+- PR title format:
+- PR template:
+- Draft or ready:
+- Human assignee:
+- Required checks:
+- Cross-repo dependencies:
+- Unknowns/blockers:
+```
+
+- If any field is unknown, ambiguous, missing, or conflicts with the recorded
+  lane route, stop and request only the smallest implementation-intent or named-
+  target clarification before mutating. Never ask for a lane preference.
+- If repo-local delivery rules cannot be found or are incomplete, stop and ask. Do not invent a substitute workflow.
+- Global agent/plugin GitHub workflows are fallback tools only. They do not define process in Kit-managed projects.
+- Do not create `codex/*` branches, ad hoc issue bodies, ad hoc PR bodies, draft PRs by default, commits using generic messages, or PRs that omit the repo template unless repo-local Kit rules explicitly require them or the user explicitly overrides the Kit contract.
+- The `PR title format` field must resolve to the Conventional Commits title shape with the GitHub issue as scope:
+  `<type>(<issue_number>): <gitmoji> <short title message>`.
+
+### Standing Merge Authority Is Separate From Delivery
+
+- PR-delivery consent authorizes issue, branch, commit, push, and ready-PR
+  delivery. It does not create standing merge or deployment authority.
+- Standing authority exists only when a human explicitly authorizes a bounded
+  task, goal, or program for merge and/or deployment. A lane decision, issue
+  assignment, PR creation, approval, passing checks, or documentation-only
+  eligibility never creates it or `MERGE_READY`.
+- A standing selector may bind a later in-scope PR or refreshed head. Resolve
+  the exact current target under `github-pr-merge` and `pull-request-merge`;
+  fresh readiness evidence is mandatory, renewed permission is not.
+- A SHA or head OID identifies the evidence to revalidate; it is never an
+  authorization target. Do not ask the human to reauthorize a refreshed head.
+- Repository, base, environment, actor, identity, method, workflow, product
+  scope, or material-effect expansion requires explicit updated authority.
+  Pause, hold, or revocation remains effective until explicit human resume.
+
+### Author And Committer Invariant
+
+- Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, comment, or other attribution text. That ruleset is the complete displayed-authorship contract.
+
+### Base Branch Discovery
+
+Prefer:
+
+```bash
+gh repo view --json defaultBranchRef -q .defaultBranchRef.name
+```
+
+Fallback:
+
+```bash
+git symbolic-ref refs/remotes/origin/HEAD --short
+```
+
+- Do not assume `main` or `master`.
+- Treat the discovered base branch as protected under `safety-guardrails`.
+- If the base branch cannot be determined safely, stop and ask.
+
+### Issue Resolution
+
+- The branch name requires the issue number, so obtain the issue number before creating the branch.
+- Identify the repo from `git remote -v`; if ambiguous, stop and ask.
+- Search for an existing issue before creating one, using open issues and a title match against the task summary:
+
+```bash
+gh issue list --state open --search "<key terms from task> in:title" --json number,title,url
+```
+
+- If exactly one strong title match exists, reuse it.
+- If multiple plausible matches exist, stop, list them, and ask which to use.
+- If none exists, create a new issue.
+- Prefer authenticated `gh` after checking `gh auth status`.
+- If `gh` is unavailable or unauthenticated, use an approved GitHub MCP/API connector.
+- If neither `gh` nor a GitHub connector is available, stop and ask for an issue number.
+- Determine the GitHub login for the human user driving the workflow before creating or updating an issue.
+- Prefer `@me` for `gh` issue assignment only when the authenticated `gh` account has been confirmed as the human user.
+- If the human user's GitHub login cannot be confirmed, stop and ask before creating or assigning the issue.
+- Assign every new issue to the human user, such as with `gh issue create --assignee @me` or `gh issue create --assignee <login>`.
+- If reusing an existing issue, confirm it is assigned to the human user; if not, add the human user as an assignee before branching.
+- Do not assign a coding agent, assistant, bot, tool, or autogenerated identity to the issue.
+- Do not assume labels, milestones, or projects unless repo convention is clear or the user instructs it.
+- Capture the issue number, URL, and assignee.
+
+### Issue Content
+
+Include:
+
+- Concise title.
+- Original ask.
+- Scope boundaries.
+- Acceptance criteria.
+- Expected verification.
+- Human user assignee.
+
+### Idempotency
+
+- If a matching issue exists, reuse it.
+- If branch `GH-123` already exists locally or remotely, inspect it before continuing.
+- Do not reuse an existing branch if it contains unrelated work.
+- If a PR already exists for `GH-123`, update it instead of duplicating.
+- Before updating an existing PR, check active PRs for the current branch and confirm the active directory, branch, remote, PR head, and PR base match the intended issue branch and repository.
+- If issue, branch, and PR state disagree, reconcile them autonomously when the intended lane can be proven without destructive changes; otherwise report the ambiguity and request the smallest missing input.
+- When a bounded merge or program plan names multiple existing pull requests,
+  preserve one continuation entry per target and update each same-repository
+  head in place. Do not invent a singular coordination lane for the set.
+
+### Additional Scope On An Existing Pull Request
+
+- The normal contract is one issue, exact issue-number branch, and one pull request. Use this exception only when the user explicitly requests that unrelated or tangential new scope continue on an existing pull request.
+- Create or reuse a separate GitHub issue for the additional scope before implementation and assign it to the human user.
+- Keep the existing pull request head branch. Do not create a second branch or pull request solely for the additional issue.
+- Scope every new commit for the additional work to its own issue number, such as `feat(GH-123): :sparkles: add maintenance workflow`, even though the branch retains the original issue number.
+- Preserve the original issue-closing line and append a separate `Closes #123` line in the pull request `Ticket` section when the combined pull request fully resolves the additional issue. Use `Refs #123` when it does not.
+- Refresh the pull request description and `How to Test` section so they accurately describe and validate the complete combined diff. Preserve the existing primary issue scope in the pull request title unless the user explicitly requests a different title.
+- Before push and after updating the pull request, verify its repository, base branch, head branch, head commit, issue assignments, and complete set of closing references.
+- This exception changes traceability mapping only. It does not waive explicit staging, human identity, validation, safety, or ready-for-review requirements.
+
+### Project-Oriented Worktree Delivery
+
+- Work in the existing checkout only when it is the exact non-primary linked
+  worktree that owns the recorded issue branch and does not contain
+  unrelated user work.
+- For a separate issue or pull-request lane, preserve every existing checkout and use only `~/worktrees/<owner>/<repository>/<lane>`.
+- Before creating a linked worktree, inspect the registered worktrees and reuse the exact branch path when one exists.
+- Create or reuse the human-assigned issue first. Then use exact uppercase `GH-<issue-number>` as both the branch and durable worktree lane.
+- Use exact uppercase `PR-<number>` only for detached inspection. Writable review repair must use the pull request's same-repository head branch, normally its durable `GH-<issue-number>` lane.
+- Fetch the remote base without switching, pulling, merging, stashing, resetting, cleaning, or writing in another checkout. Create a new issue branch from the freshly fetched remote base.
+- Before a managed-file command writes, verify it is running in the selected
+  writable worktree, then capture the exact version-control-eligible paths it
+  owns and each path's pre-command state. Carry the path, action, pre-command
+  state, and expected result state into its delivery guidance; never infer
+  command ownership from post-command Git status alone.
+- Use native `git worktree` commands as the portable authority for lane creation, reuse, detached inspection, repair, exact-path validation, movement, pruning, and removal. Optional wrappers may simplify manual use, but rules and reconciled guidance must not depend on them.
+- If a command-owned snapshot reports a write in the primary checkout or before
+  the lane was established, trigger `work-lane-gating` recovery. Preserve the state and
+  do not automatically transfer, stage, commit, push, restore, or discard it
+  until the matching worktree pull request has been merged. After that merge,
+  follow post-merge primary leftover cleanup. Establish exact user-approved
+  recovery boundaries before recreating the command result in the writable lane.
+- Otherwise, require the snapshot to come from the selected writable worktree.
+  Verify each captured path against its pre-command and expected result state;
+  abort rather than overwrite or combine ambiguous staged, working-tree, or
+  untracked state.
+- Explicitly stage only the captured command-owned delta in that writable lane.
+  Created and updated paths must match their expected content state, removed
+  paths must remain absent, and the staged index must contain exactly the
+  captured paths with deletions represented explicitly.
+- Integrate the verified files with the complete issue change, validate them, commit and push from the issue branch, and create or update the ready pull request.
+- Never transfer or stage `.env`, secrets, ignored files, or machine-local configuration. Never overwrite destination work or disturb unrelated root-checkout or worktree changes while transferring managed files.
+- Apply, validate, stage, commit, push, and create or update the ready pull request only within the selected writable issue branch worktree under the normal delivery gates.
+- Keep the primary/root checkout read-only for implementation. Do not edit
+  files, run mutating generators, stage, commit, switch branches, or use it as
+  a temporary transfer location even when it has a planned pull-request
+  destination. After an authorized worktree pull-request merge, leftover
+  disposal below is the sole primary-checkout exception.
+- Writable lanes symlink the clone's primary checkout repository-root `.env` and `.envrc` by default when each exists. Omit both links for isolation, never copy environment contents, never overwrite destination environment material, and preserve a repository- or user-supplied `.envrc`.
+- Detached `PR-<number>` inspection lanes do not create environment links; migration preserves existing files and links without creating new ones.
+- Never nest worktrees inside a repository or use stash, reset, clean, force removal, branch deletion, or substring-based selection to create or clear a lane.
+- Remove a worktree only after successful delivery and only when exact-path checks prove it has no tracked, untracked, ignored, or unpushed state. Verified expected `.env` and `.envrc` symlinks targeting the matching primary-checkout sources are the sole narrow exceptions: remove only those links before ordinary non-force `git worktree remove` and restore them if removal fails.
+- Keep application startup, databases, port allocation, Temporal state, process supervision, and multi-repository runtime orchestration outside the worktree workflow.
+
+### Post-Merge Primary Leftover Cleanup
+
+- Remain in the coding-agent session after creating or updating the ready pull
+  request. Do not treat pull-request creation as session completion.
+- While remaining in that session, address remaining pull-request review
+  feedback as it arrives. Handle review, authorized merge, and primary leftover
+  cleanup as one continuation of the current lane.
+- Merge the worktree pull request only when active standing authority covers its
+  resolved exact current node and it is `MERGE_READY`, following
+  `github-pr-merge`. A later in-scope head does not require renewed authority.
+- Continue any already-authorized standard deployment and browser retry after
+  final-head readiness passes; do not insert an exact-head permission prompt.
+- This cleanup is leftover disposal after an in-scope `MERGE_READY` merge. It does
+  not invent readiness.
+- After remaining pull-request feedback is addressed and the authorized merge
+  is confirmed on the protected default branch, use the primary checkout on
+  that default branch.
+- Confirm merge evidence first. Then, only in that primary checkout, enumerate or dry-run all untracked files, verify every candidate is command-owned, and
+  run `git clean -fd` with only those verified paths so leftover untracked
+  command-owned files no longer block pulling the merge.
+- If leftover command-owned tracked changes in the index or worktree of those
+  exact paths would still block the pull, restore those exact paths in both the index and the worktree to HEAD only after revalidating that the current index and worktree contents of those paths still match the captured command-owned snapshot; if any path mismatches or is ambiguous, stop and report it instead of overwriting later edits.
+- Then pull the merged default branch.
+- Do not run `git clean` before merge, inside the writable worktree, to create
+  or clear a lane, or when unrelated dirty or untracked state is present. If
+  unrelated dirty or untracked state exists, stop and report it instead of
+  wiping it.
+- Keep the existing prohibition on stash, reset, clean, force removal, or
+  branch deletion to create or clear a lane.
+
+### Branch Workflow
+
+- Branch name is the GitHub issue number only, exact form: `GH-123`.
+- Do not add a slug, suffix, or description.
+- Create or reuse the issue branch in the checkout or canonical worktree selected during recon.
+- Never switch an unrelated or dirty checkout merely to enter another issue lane.
+- Before creating or switching to an issue branch, automatically re-run branch/status/staleness recon for the active directory and current branch.
+- Before branching, refresh the base from the remote. Fetch only. Never pull, merge, or checkout the base:
+
+```bash
+git fetch origin "$BASE_BRANCH"
+git rev-list --left-right --count "$BASE_BRANCH...origin/$BASE_BRANCH" 2>/dev/null || true
+```
+
+- Create the new branch from the freshly fetched remote base, never from a local copy:
+
+```bash
+git fetch origin "$BASE_BRANCH"
+WORKTREE_PATH="$HOME/worktrees/<owner>/<repository>/GH-123"
+mkdir -p "$(dirname "$WORKTREE_PATH")"
+git worktree add -b GH-123 "$WORKTREE_PATH" "origin/$BASE_BRANCH"
+test "$(git -C "$WORKTREE_PATH" rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+test "$(git -C "$WORKTREE_PATH" rev-parse HEAD)" = "$(git -C "$WORKTREE_PATH" rev-parse "origin/$BASE_BRANCH")" || { echo "ABORT: branch base not at remote head"; exit 1; }
+gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
+```
+
+- Never commit directly to the base branch, which is protected under `safety-guardrails`.
+- If `git fetch` fails, diagnose and recover autonomously under `safety-guardrails`. Do not branch off a base that could not be refreshed; report a genuine connectivity or authentication blocker only after safe recovery paths are exhausted.
+- Before editing after any thread resume or user redirect, repeat branch and PR recon for the active directory because another thread may have moved the work forward.
+- If the active branch or PR lookup does not match the intended `GH-123` branch and repository, recover the intended lane autonomously when it can be proven safely; otherwise report the ambiguity before editing.
+
+### Implementation Workflow
+
+- Make minimal, production-ready changes.
+- Prefer explicit idiomatic code over clever code.
+- Avoid unnecessary abstractions and premature generalization.
+- Run formatting, linting, and tests appropriate to changed files.
+- On failure, follow `safety-guardrails`: diagnose the cause, choose a safe in-scope recovery path, retry autonomously, verify the result, and continue.
+
+### Review And Staging Workflow
+
+```bash
+git diff -- <file>
+# secret-scan per safety-guardrails before staging
+git add <file_name>
+git diff --staged
+```
+
+- Before staging, perform a self-review pass over the implementation and documentation changes.
+- During self-review, verify the current diff against the original ask, acceptance criteria, and repo-local rules.
+- Resolve known errors before staging, including compile errors, failing focused tests, lint/format failures, broken generated docs, stale command metadata, and obvious regressions found during review.
+- If any relevant error remains, stop and report it. Do not stage, commit, push, or open/update the PR with known-broken work unless the user explicitly instructs that exact exception.
+- Review each file before staging.
+- Stage files explicitly with `git add <file_name>`.
+- Never use `git add .` or `git add -A`.
+- Review staged diff before committing.
+
+### Commit Workflow
+
+- Commit only after staged changes are reviewed and acceptable.
+- Before committing, confirm there are no known relevant errors remaining and that focused verification has passed or any skipped verification has been explicitly reported and accepted by the user.
+- Re-confirm author and committer before committing; abort on any non-human identity:
+
+```bash
+test "$(git config user.email)" = "$EXPECTED_EMAIL" || { echo "ABORT: wrong author"; exit 1; }
+git var GIT_AUTHOR_IDENT
+git var GIT_COMMITTER_IDENT
+```
+
+- Do not add agent attribution trailers.
+
+Commit title structure is mandatory:
+
+```text
+<type>(<issue_number>): <gitmoji> <short title message>
+```
+
+- `<issue_number>` is the `GH-123` form.
+- Example: `feat(GH-123): :sparkles: added a new feature`.
+- The structure must not change except for the conditional documentation-only `[skip ci]` suffix defined below. Otherwise only `type`, `issue_number`, `gitmoji`, and `short title message` change.
+
+Type to gitmoji mapping is deterministic:
+
+| type | gitmoji | use |
+|---|---|---|
+| `feat` | `:sparkles:` | new feature |
+| `fix` | `:bug:` | bug fix |
+| `docs` | `:memo:` | documentation |
+| `test` | `:white_check_mark:` | tests |
+| `refactor` | `:recycle:` | refactor |
+| `chore` | `:wrench:` | tooling/chore |
+| `ci` | `:green_heart:` | CI |
+
+- The gitmoji is determined by the type.
+- Do not mix types and gitmoji values, such as pairing `feat` with `:bug:`.
+
+### Documentation-Only CI Skip
+
+- Classify a change as documentation-only from the complete branch and pull request diff against the base branch, including staged and unstaged work, not from the latest commit or command name alone.
+- A qualifying diff may contain prose documentation, agent instruction files, registry rulesets, and non-executable scaffold or registry metadata that cannot change product runtime, build, test, release, deployment, or CI behavior.
+- Product code, tests, dependency manifests or locks, executable scripts, generated runtime artifacts, GitHub workflow files, and runtime, build, test, release, deployment, or CI configuration disqualify the entire pull request.
+- Source-changing pull requests are not eligible for Kit-only CI skips, including behavior-preserving source-file-size splits and their tests.
+- `kit reconcile` is a candidate signal, not proof of eligibility. Inspect its actual diff; qualify it only when every changed path and hunk remains within the documentation-only boundary.
+- A documentation-only follow-up on a mixed pull request is not eligible because GitHub evaluates the pull request HEAD commit. If an eligible pull request becomes mixed, remove `[skip ci]` from the pull request title and push a new commit without a skip directive so CI runs on the complete diff.
+- Before using a skip directive, inspect branch protection, repository rulesets, and other required-check policy. If a skipped workflow would remain pending, block the merge, or the requirement cannot be established confidently, omit `[skip ci]` and run CI.
+- Append the literal suffix `[skip ci]` to every qualifying commit title:
+
+```text
+docs(GH-123): :memo: reconcile Kit-managed documentation [skip ci]
+```
+
+- Append the same literal `[skip ci]` suffix to the pull request title. This preserves the directive when GitHub creates a squash commit from the pull request title instead of a source commit title.
+- The conditional suffix extends the mandatory Conventional Commit title shape; it does not change the required type, issue scope, gitmoji, or short description.
+- GitHub commit-message skip instructions apply only to workflows triggered by `push` and `pull_request`. They do not suppress `pull_request_target` or other events.
+- A skipped workflow is not a passing workflow. Report the exact no-run, skipped, pending, or unaffected-event state and never describe it as green CI.
+- Follow GitHub's documented [workflow-skip behavior](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs) and [squash-merge message behavior](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/configuring-commit-squashing-for-pull-requests).
+
+Commit body must include:
+
+- Original ask.
+- Implementation summary.
+- Verification performed.
+- Reference to the GitHub issue.
+- No agent or tool attribution of any kind.
+
+### Push And PR Workflow
+
+```bash
+git status --short --branch
+git remote -v
+test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+gh pr list --head GH-123 --state all --json number,url,state,isDraft,headRefName,baseRefName,assignees
+git push -u origin GH-123
+git log -1 --format='%an <%ae> | %cn <%ce>'
+```
+
+- Immediately before pushing, confirm the active directory, current branch, upstream remote, and active PR state still match the intended issue branch and repository.
+- If an existing PR is found for `GH-123`, update that PR; do not create a duplicate.
+- Push only after committing.
+- Verify remote-side author and committer are the human user.
+- On push rejection, such as a stale base, follow `safety-guardrails` failure handling.
+- Do not force-push or rebase to resolve a push rejection.
+- If a GitHub connector or PR mutation path fails while repository, branch, target, intended effect, and human identity remain unchanged, re-run read-only recon and use another supported authenticated path such as `gh` without requesting routine retry permission. Verify that no duplicate issue or PR was created.
+- Create the PR using `.github/pull_request_template.md` when present.
+- Preserve PR template headings.
+- Author the PR body in the user's name; do not add agent self-attribution.
+- The PR title must follow the Conventional Commits 1.0.0 title shape with the issue number as the required scope:
+  `<type>(<issue_number>): <gitmoji> <short title message>`.
+- For a qualifying documentation-only pull request, append the conditional `[skip ci]` suffix required by `Documentation-Only CI Skip`.
+- Example: `feat(GH-123): :sparkles: add invitation workflow`.
+- Use the same allowed `type` values and deterministic type-to-gitmoji mapping as commit titles.
+- Keep the gitmoji immediately after the colon and space as part of the Conventional Commit description.
+- Do not create gitmoji-only PR titles, sentence-case PR titles, or PR titles without the `GH-123` issue scope.
+- Use `!` for a breaking-change PR title only when the change is intentionally breaking and the user explicitly approves that signal.
+- Prefix each concrete bullet in the PR `Description` section with a descriptive gitmoji code that reflects that bullet's work.
+- Use gitmoji codes that are aligned with the work being described, such as `:sparkles:` for feature work, `:bug:` for fixes, `:memo:` for documentation, `:white_check_mark:` for tests, `:recycle:` for refactors, `:green_heart:` for CI, `:wrench:` for tooling, `:dizzy:` for refresh or migration flows, and `:notebook:` for constitution, guide, or reference updates.
+- Keep PR headings from the template unchanged; add gitmoji prefixes to title and description content, not to template headings.
+- Assign the PR to the human user.
+- Use `Closes #123` when the PR fully resolves the issue.
+- Use `Refs #123` when the PR only partially addresses the issue.
+- Create the PR ready for review, not as a draft, unless the user explicitly asks for a draft PR.
+
+### Squash-And-Merge Preservation
+
+This section applies only after `github-pr-merge` establishes standing authority and
+readiness for the exact pull request. Documentation-only delivery and skip
+eligibility do not create merge authority.
+
+- GitHub synthesizes a new commit when a pull request is squash-merged. Its default title and body depend on repository settings and the number of source commits, so a qualifying pull request must carry `[skip ci]` in both its pull request title and source commit titles.
+- Before selecting `Confirm squash and merge`, inspect the generated squash commit title and body and confirm that at least one contains the literal `[skip ci]`.
+- If the generated message does not contain `[skip ci]`, add the literal suffix before confirming the squash merge without otherwise weakening the repository's commit-message contract.
+- If the complete pull request diff is no longer documentation-only, or skipping would conflict with required checks, remove the directive instead and allow CI to run.
+- After the squash merge, resolve the exact synthesized commit and inspect its message and workflow runs:
+
+```bash
+PR_NUMBER="$(gh pr view --json number -q .number)"
+REPOSITORY="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+SQUASH_SHA="$(gh pr view "$PR_NUMBER" --json mergeCommit -q .mergeCommit.oid)"
+gh api "repos/$REPOSITORY/commits/$SQUASH_SHA" --jq .commit.message
+gh run list --commit "$SQUASH_SHA" \
+  --json databaseId,event,workflowName,status,conclusion,url,headSha
+```
+
+- Confirm the squash commit message contains `[skip ci]` and that no `push` CI workflow was created for that exact SHA. Report workflows from unaffected events separately.
+
+### Post-PR Verification
+
+```bash
+HEAD_SHA="$(git rev-parse HEAD)"
+gh pr view --json number,url,author,state,isDraft,assignees,title
+gh pr checks
+gh run list --commit "$HEAD_SHA" \
+  --json databaseId,event,workflowName,status,conclusion,url,headSha
+```
+
+- Confirm GitHub shows the human user as commit author and committer.
+- Confirm the GitHub issue is assigned to the human user.
+- Confirm the PR is assigned to the human user.
+- Confirm the PR is ready for review and not draft, unless the user explicitly asked for a draft PR.
+- For an eligible documentation-only pull request, confirm the pull request title and HEAD commit message contain `[skip ci]` and no `push` or `pull_request` CI workflow was created for the exact HEAD SHA.
+- Treat `pull_request_target` and other unaffected event runs separately; their presence does not mean the skip directive failed.
+- Do not claim CI passed unless checks were observed passing.
+- If checks are pending, failing, unavailable, or not run, report that exact state.
+
+### Final Response
+
+Follow `agent-completion-output`, which prescribes no format. The fields below
+must be recoverable from the response, including identity, assignment, and
+hosted-state evidence; where they appear is free. Report pending, failed,
+skipped, or unavailable delivery evidence as those states, and state any
+remaining operator action plainly:
+
+- Issue number.
+- Branch name in `GH-123` form.
+- Commit hash.
+- PR URL.
+- GitHub issue assignee, which must be the human user.
+- Git author and committer used, which must be the human user.
+- Verification commands run, with observed output.
+- Observed PR and CI state when available.
+- Known residual risk or skipped verification.
+
+## Anti-Patterns
+
+- Do not run this workflow without an accepted repository-mutating task or an
+  explicit pull-request request.
+- Do not use a global GitHub/plugin workflow as the delivery process inside a Kit-managed project.
+- Do not create duplicate issues or PRs.
+- Do not create `codex/*` branches unless repo-local Kit rules or the user explicitly override the `GH-123` convention.
+- Do not create ad hoc issue bodies or PR bodies when repo-local templates or issue content rules exist.
+- Do not create draft PRs by default when repo-local Kit rules require ready-for-review PRs.
+- Do not use generic commit messages when repo-local Kit rules define a commit format.
+- Do not omit the repository PR template.
+- Do not create descriptive branch names when an issue number is available.
+- Do not commit to the protected base branch.
+- Do not create worktrees inside repositories, use flat ad hoc paths, edit detached `PR-<number>` views, or discard state to make room for a lane.
+- Do not reuse a branch that contains unrelated work.
+- Do not stage files in bulk.
+- Do not commit with mixed type and gitmoji values.
+- Do not infer documentation-only eligibility from `kit reconcile`, a docs-only latest commit, or file extensions without reviewing the complete pull request diff.
+- Do not put `[skip ci]` on a mixed pull request or when required checks would remain pending.
+- Do not remove `[skip ci]` from the generated commit message while squash-merging a qualifying documentation-only pull request.
+- Do not add agent or tool attribution to commits or PR bodies.
+- Do not force-push, rebase, or amend already-pushed commits to recover from failure.
+- Do not treat generic task acceptance, PR-delivery consent, automatic lane
+  allocation, ready state, passing checks, or documentation-only eligibility as
+  standing merge authorization.
+
+## Verification
+
+- Confirm `safety-guardrails` ran first.
+- Confirm an accepted repository-mutating task or explicit pull-request request
+  activated delivery authority.
+- Confirm the Kit Delivery Hard Gate ran before any issue, branch, staging, commit, push, PR, or merge mutation, and that merge routed separately to `github-pr-merge`.
+- Confirm default new-lane routing or an explicit same-scope continuation was
+  resolved and no Delivery Contract fields remained unknown before mutation.
+- Confirm branch/status/staleness recon ran at the GitHub delivery boundary.
+- Confirm base branch was discovered instead of assumed.
+- Confirm issue resolution searched existing open issues before creating a new issue.
+- Confirm the GitHub issue is assigned to the human user before branch creation.
+- Confirm branch name exactly matches the issue number in `GH-123` form.
+- Confirm `git fetch origin "$BASE_BRANCH"` refreshed the remote base before branch creation.
+- Confirm the branch was created from `origin/$BASE_BRANCH`, not local `$BASE_BRANCH`.
+- Confirm branch HEAD equals `origin/$BASE_BRANCH` immediately after branch creation.
+- Confirm checkout is on the issue-number branch before editing.
+- Confirm active PRs for the current branch were checked before editing after any thread resume or user redirect.
+- Confirm each changed file was reviewed before explicit staging.
+- Confirm no secrets or local config were staged.
+- Confirm author and committer identity were inspected before commit and are the human user.
+- Confirm staged diff was reviewed before commit.
+- Confirm commit title and body follow the required format.
+- For a documentation-only CI skip, confirm the complete pull request diff qualifies, required-check policy permits the skip, and every commit title plus the pull request title contains `[skip ci]`.
+- Confirm branch was pushed only after commit.
+- Confirm active directory, branch, remote, and PR state were rechecked immediately before pushing.
+- Confirm PR was created with the repository template when present.
+- Confirm PR title follows the required Conventional Commit format and `Description` bullets use descriptive gitmoji prefixes while preserving template headings.
+- Confirm PR assignee is the human user.
+- Confirm PR is ready for review and not draft unless explicitly requested otherwise.
+- Confirm PR and CI state were observed before final reporting.
+- When squash-merging an eligible documentation-only pull request, confirm the generated message retained `[skip ci]`, then verify the exact squash commit message and absence of a `push` CI run.
+
+## Examples
+
+Search for an issue:
+
+```bash
+gh issue list --state open --search "invitation workflow in:title" --json number,title,url,assignees
+```
+
+Create an issue assigned to the human user:
+
+```bash
+gh issue create \
+  --title "Add invitation workflow" \
+  --assignee @me \
+  --body "Original ask: ...\n\nScope boundaries:\n- ...\n\nAcceptance criteria:\n- ...\n\nExpected verification:\n- ..."
+```
+
+Confirm or add the issue assignee before branching:
+
+```bash
+gh issue view 123 --json number,url,assignees
+gh issue edit 123 --add-assignee @me
+```
+
+Create and confirm the issue-number branch in its canonical worktree:
+
+```bash
+git fetch origin "$BASE_BRANCH"
+WORKTREE_PATH="$HOME/worktrees/<owner>/<repository>/GH-123"
+mkdir -p "$(dirname "$WORKTREE_PATH")"
+git worktree add -b GH-123 "$WORKTREE_PATH" "origin/$BASE_BRANCH"
+cd "$WORKTREE_PATH"
+test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
+test "$(git rev-parse HEAD)" = "$(git rev-parse "origin/$BASE_BRANCH")" || { echo "ABORT: branch base not at remote head"; exit 1; }
+```
+
+Review, stage, and inspect from that worktree:
+
+```bash
+git diff -- path/to/file_one.ts
+git add path/to/file_one.ts
+git diff --staged
+```
+
+Commit title:
+
+```text
+docs(GH-125): :memo: document PR workflow
+```
+
+PR title and description formatting:
+
+```text
+PR Title: feat(GH-123): :sparkles: add invitation workflow
+
+## Description
+
+- :sparkles: Adds the invitation creation workflow.
+- :white_check_mark: Adds focused coverage for invitation validation.
+- :memo: Documents the operator-facing invitation behavior.
+```
+
+Post-PR checks:
+
+```bash
+gh issue view 123 --json number,url,assignees
+gh pr view --json number,url,author,state,isDraft,assignees
+gh pr checks
+```

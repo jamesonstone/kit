@@ -105,6 +105,9 @@ func formatManagedFileSummary(summary statusManagedFilesSummary) string {
 	if summary.Merged > 0 {
 		parts = append(parts, fmt.Sprintf("%d merged", summary.Merged))
 	}
+	if summary.Removed > 0 {
+		parts = append(parts, fmt.Sprintf("%d removed", summary.Removed))
+	}
 	if len(parts) == 0 {
 		return fmt.Sprintf("%d planned change(s)", summary.Planned)
 	}

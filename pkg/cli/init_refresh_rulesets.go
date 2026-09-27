@@ -9,7 +9,7 @@ import (
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
-	"github.com/jamesonstone/kit/v3/internal/templates"
+	"github.com/jamesonstone/kit/v3/internal/legacy"
 )
 
 func planRefreshInitRulesets(
@@ -57,7 +57,7 @@ func planRefreshInitRulesets(
 				changes = append(changes, *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped))
 				continue
 			}
-			if !opts.force {
+			if !opts.force && !legacy.RuleKnown(item.Slug, before) {
 				hash := localHash
 				if err != nil {
 					hash = ""
@@ -88,15 +88,6 @@ func planRefreshInitRulesets(
 		changes = append(changes, *newInitRefreshFileChange(projectRoot, relativePath, before, syncResult.content, instructionFileUpdated))
 	}
 	return changes, notes, registryChanged, nil
-}
-
-func exactLegacyInstructionArtifact(projectRoot, relativePath string) bool {
-	path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return false
-	}
-	return strings.TrimSpace(string(content)) == strings.TrimSpace(templates.InstructionFileForVersion(relativePath, config.InstructionScaffoldVersionVerbose))
 }
 
 func upsertConstitutionBaseline(content, baselineSection string) (string, bool) {

@@ -7,282 +7,90 @@ import (
 	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
-	"github.com/jamesonstone/kit/v3/internal/document"
-	"github.com/jamesonstone/kit/v3/internal/instructions"
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
+// auditInstructionFiles reports what `kit reconcile` would change in the
+// agent entry files, plus retired Kit artifacts and legacy scaffold state. It
+// uses the same migration plan reconcile applies, so the two never disagree.
 func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFinding {
 	var findings []reconcileFinding
-	version := detectInstructionScaffoldVersion(projectRoot, cfg)
-	if version == instructionScaffoldVersionUnknown {
-		version = config.DefaultInstructionScaffoldVersion
-	}
-
 	for _, relativePath := range instructionFiles(cfg) {
-		plan, err := planInstructionFileWrite(
-			projectRoot,
-			relativePath,
-			instructionFileWriteModeAppendOnly,
-			version,
-		)
-		absolutePath := filepath.Join(projectRoot, relativePath)
+		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, false)
 		if err != nil {
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				"repository instruction file drift cannot be reconciled safely with append-only planning",
-				templateSource(projectRoot),
-				fmt.Sprintf("inspect the file manually or preview a targeted replacement with `kit reconcile --include-files --force --dry-run --diff --file %s`", relativePath),
-				[]string{
-					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
-					fmt.Sprintf("sed -n '1,240p' %s", templateSource(projectRoot)),
-				},
-			))
+			return append(findings, newFinding(reconcileSeverityWarning, filepath.Join(projectRoot, relativePath), err.Error(), templateSource(projectRoot), "inspect the file manually", nil))
+		}
+		issue := ""
+		switch {
+		case plan.note != "":
+			issue = plan.note
+		case plan.result == instructionFileCreated:
+			issue = "missing Kit-managed agent entry file"
+		case plan.result == instructionFileUpdated && strings.Contains(readFileOrEmpty(plan.absolutePath), templates.UniversalContractBeginMarker):
+			issue = "Kit-managed contract block differs from the current universal contract"
+		case plan.result == instructionFileUpdated:
+			issue = "agent entry file predates the Kit-managed contract block"
+		default:
 			continue
 		}
-
-		if plan.legacyContract {
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				"repository instruction file predates the Kit-managed contract block",
-				templateSource(projectRoot),
-				fmt.Sprintf("move project-specific guidance outside Kit's block after previewing `kit reconcile --include-files --force --dry-run --diff --file %s`", relativePath),
-				[]string{fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", relativePath)},
-			))
-			continue
-		}
-		switch plan.result {
-		case instructionFileUpdated:
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				"Kit-managed contract block differs from the current universal contract",
-				templateSource(projectRoot),
-				fmt.Sprintf("preview the regenerated block with `kit reconcile --include-files --dry-run --diff --file %s`, then apply after review", relativePath),
-				[]string{fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath)},
-			))
-		case instructionFileCreated:
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				"missing Kit-managed repository instruction file",
-				templateSource(projectRoot),
-				fmt.Sprintf("preview creation with `kit reconcile --include-files --dry-run --diff --file %s`, then apply only after review", relativePath),
-				[]string{fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath)},
-			))
-		case instructionFileMerged:
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				"repository instruction file is missing current Kit-managed sections",
-				templateSource(projectRoot),
-				fmt.Sprintf("preview the missing managed sections with `kit reconcile --include-files --dry-run --diff --file %s`, then apply only after review", relativePath),
-				[]string{
-					fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath),
-					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
-				},
-			))
-		}
+		findings = append(findings, newFinding(
+			reconcileSeverityWarning,
+			plan.absolutePath,
+			issue,
+			templateSource(projectRoot),
+			fmt.Sprintf("preview with `kit reconcile --dry-run --diff --file %s`, then run `kit reconcile`", relativePath),
+			[]string{fmt.Sprintf("kit reconcile --dry-run --diff --file %s", relativePath)},
+		))
 	}
 
-	for _, support := range instructions.SupportDocs(version) {
-		absolutePath := filepath.Join(projectRoot, support.RelativePath)
-		exists := document.Exists(absolutePath)
-		switch version {
-		case config.InstructionScaffoldVersionTOC, config.InstructionScaffoldVersionMemory:
-			if exists {
-				continue
-			}
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				"missing repo-local instruction support document",
-				templateSource(projectRoot),
-				fmt.Sprintf("preview restoration with `kit reconcile --include-files --dry-run --diff --file %s`, using `--force` only after reviewing customized content", support.RelativePath),
-				[]string{
-					fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", support.RelativePath),
-					fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", support.RelativePath),
-				},
-			))
-		case config.InstructionScaffoldVersionVerbose:
-			if !exists {
-				continue
-			}
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				"v2 docs-tree artifact is present in a version 1 instruction model",
-				templateSource(projectRoot),
-				"review and remove the leftover V2 support artifact only when it has no project-owned content",
-				[]string{
-					fmt.Sprintf("sed -n '1,240p' %s", absolutePath),
-				},
-			))
-		}
-	}
-
-	if config.UsesInstructionSupportDocs(version) {
-		findings = append(findings, auditInstructionEntrypoints(projectRoot, instructionFileSet(instructionFiles(cfg)), version)...)
-		if version == config.InstructionScaffoldVersionMemory {
-			findings = append(findings, auditV3SupportGuidance(projectRoot)...)
-		} else {
-			findings = append(findings, auditV2SupportGuidance(projectRoot)...)
-		}
-		findings = append(findings, auditInstructionPromptEntrypoints(projectRoot, cfg, version)...)
-		findings = append(findings, auditAlwaysLoadedCoreDocs(projectRoot)...)
-	}
 	findings = append(findings, auditStandingAuthorityPolicy(projectRoot)...)
-	if version == config.InstructionScaffoldVersionTOC && !exactGeneratedInstructionScaffold(projectRoot, cfg, version) {
+
+	artifacts, err := findRetiredArtifacts(projectRoot, cfg, nil)
+	if err != nil {
+		return findings
+	}
+	for _, artifact := range artifacts {
+		issue := "retired Kit file; `kit reconcile` removes it"
+		if !artifact.kitOwned {
+			issue = "retired Kit file kept because it is not exactly as Kit generated it (" + artifact.reason + ")"
+		}
 		finding := newFinding(
 			reconcileSeverityWarning,
-			filepath.Join(projectRoot, config.ConfigFileName),
-			"customized V2 instruction artifacts are not eligible for automatic V3 migration",
+			filepath.Join(projectRoot, filepath.FromSlash(artifact.relativePath)),
+			issue,
 			templateSource(projectRoot),
-			"review `kit reconcile --include-files --force --dry-run --diff`; Kit will not overwrite customized V2 instructions automatically",
-			[]string{"kit reconcile --include-files --dry-run --diff", "kit reconcile --include-files --force --dry-run --diff"},
+			"run `kit reconcile`; delete kept files yourself once they hold nothing the project needs",
+			[]string{"kit reconcile --dry-run"},
 		)
 		finding.NonBlocking = true
 		findings = append(findings, finding)
 	}
-
+	if cfg.InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
+		finding := newFinding(
+			reconcileSeverityWarning,
+			filepath.Join(projectRoot, config.ConfigFileName),
+			legacyScaffoldIssue(cfg.InstructionScaffoldVersion),
+			templateSource(projectRoot),
+			"run `kit reconcile` to migrate to the current structure",
+			[]string{"kit reconcile --dry-run"},
+		)
+		finding.NonBlocking = true
+		findings = append(findings, finding)
+	}
 	return findings
 }
 
-const (
-	rootInstructionMinimumMaxLines             = 100
-	rootInstructionCustomizationAllowanceLines = 20
-)
-
-var v2RequiredRootInstructionPaths = []string{
-	instructions.AgentsMDPath,
-	instructions.ClaudeMDPath,
-	instructions.CopilotInstructionsPath,
-}
-
-var v2ManualDuplicateSnippets = []string{
-	"## Workflow: Plan",
-	"## Quality gate policy",
-	"## Code Style Standards",
-	"## Architecture & Structure",
-	"## State Summarization",
-	"### Phase 1: PLAN",
-	"### Phase 2: ACT",
-	"### Phase 3: REFLECT",
-}
-
-var vendorToolRequirementSnippets = []string{
-	"must use claude",
-	"must use copilot",
-	"must use codex",
-	"requires claude",
-	"requires copilot",
-	"requires codex",
-	"only use claude",
-	"only use copilot",
-	"only use codex",
-}
-
-func auditInstructionEntrypoints(projectRoot string, alreadyAudited map[string]bool, version int) []reconcileFinding {
-	var findings []reconcileFinding
-	model := fmt.Sprintf("version %d", version)
-	for _, relativePath := range v2RequiredRootInstructionPaths {
-		scaffoldCommand := fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath)
-		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
-		content, err := os.ReadFile(absolutePath)
-		if err != nil {
-			if os.IsNotExist(err) {
-				if alreadyAudited[relativePath] {
-					continue
-				}
-				findings = append(findings, newFinding(
-					reconcileSeverityWarning,
-					absolutePath,
-					fmt.Sprintf("missing %s root instruction entrypoint", model),
-					templateSource(projectRoot),
-					fmt.Sprintf("restore the thin root files with `%s`", scaffoldCommand),
-					[]string{scaffoldCommand},
-				))
-				continue
-			}
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				fmt.Sprintf("failed to read %s root instruction entrypoint", model),
-				templateSource(projectRoot),
-				"fix file readability before project validation can inspect instruction drift",
-				[]string{fmt.Sprintf("sed -n '1,160p' %s", absolutePath)},
-			))
-			continue
-		}
-
-		body := string(content)
-		// v3 entry files carry the self-contained universal contract block.
-		if version != config.InstructionScaffoldVersionMemory && !strings.Contains(body, "docs/agents/README.md") {
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				fmt.Sprintf("%s root instruction file does not route through `docs/agents/README.md`", model),
-				templateSource(projectRoot),
-				fmt.Sprintf("restore the thin routing entrypoint with `%s` or `--force` if a full refresh is acceptable", scaffoldCommand),
-				[]string{
-					scaffoldCommand,
-					fmt.Sprintf("rg -n \"docs/agents/README.md\" %s", absolutePath),
-				},
-			))
-		}
-		if countLines(body) > rootInstructionMaxLines(relativePath, version) || containsAny(body, v2ManualDuplicateSnippets) {
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				fmt.Sprintf("%s root instruction file duplicates the full workflow manual instead of staying thin", model),
-				templateSource(projectRoot),
-				"move durable workflow guidance to `docs/agents/*` and keep the root file as a routing table",
-				[]string{
-					fmt.Sprintf("wc -l %s", absolutePath),
-					fmt.Sprintf("sed -n '1,180p' %s", absolutePath),
-				},
-			))
-		}
-		if containsVendorToolRequirement(body) {
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				fmt.Sprintf("%s root instruction file requires a vendor-specific coding tool", model),
-				constitutionSource(projectRoot),
-				"rewrite the instruction as agent-agnostic guidance and keep vendor-specific files as optional entrypoints only",
-				[]string{fmt.Sprintf("sed -n '1,160p' %s", absolutePath)},
-			))
-		}
-		if strings.Contains(strings.ToLower(body), "core.md") {
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				fmt.Sprintf("%s root instruction file references an unsupported always-loaded `core.md`", model),
-				templateSource(projectRoot),
-				"remove the monolithic core reference and route through `docs/agents/README.md` instead",
-				[]string{fmt.Sprintf("rg -n \"core\\.md|docs/agents/README\\.md\" %s", absolutePath)},
-			))
-		}
+func readFileOrEmpty(path string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ""
 	}
-
-	return findings
+	return string(data)
 }
 
-func rootInstructionMaxLines(relativePath string, version int) int {
-	generatedLines := countLines(templates.InstructionFileForVersion(relativePath, version)) +
-		rootInstructionCustomizationAllowanceLines
-	if generatedLines > rootInstructionMinimumMaxLines {
-		return generatedLines
+func legacyScaffoldIssue(version int) string {
+	if version == 0 {
+		return "instruction_scaffold_version is missing, so this is a legacy Kit structure"
 	}
-	return rootInstructionMinimumMaxLines
-}
-
-func instructionFileSet(paths []string) map[string]bool {
-	set := make(map[string]bool, len(paths))
-	for _, path := range paths {
-		set[filepath.ToSlash(path)] = true
-	}
-	return set
+	return fmt.Sprintf("instruction_scaffold_version %d is a legacy Kit structure", version)
 }

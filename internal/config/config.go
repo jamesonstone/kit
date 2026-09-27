@@ -4,11 +4,17 @@ package config
 const ConfigFileName = ".kit.yaml"
 
 const (
-	CurrentSchemaVersion              = 2
-	InstructionScaffoldVersionVerbose = 1
-	InstructionScaffoldVersionTOC     = 2
-	InstructionScaffoldVersionMemory  = 3
-	DefaultInstructionScaffoldVersion = InstructionScaffoldVersionMemory
+	CurrentSchemaVersion = 2
+
+	// CurrentInstructionScaffoldVersion is the only project structure Kit
+	// generates: agent entry files carrying the managed universal contract,
+	// the Constitution, the testing reference, and the shipped rules.
+	CurrentInstructionScaffoldVersion = 4
+
+	// Legacy scaffold versions are recognized only as migration inputs.
+	LegacyInstructionScaffoldVersionVerbose = 1
+	LegacyInstructionScaffoldVersionTOC     = 2
+	LegacyInstructionScaffoldVersionMemory  = 3
 )
 
 // Config represents the .kit.yaml configuration file.
@@ -108,7 +114,7 @@ func Default() *Config {
 		SpecsDir:                   "docs/specs",
 		ConstitutionPath:           "docs/CONSTITUTION.md",
 		Agents:                     []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
-		InstructionScaffoldVersion: DefaultInstructionScaffoldVersion,
+		InstructionScaffoldVersion: CurrentInstructionScaffoldVersion,
 		FeatureNaming: FeatureNaming{
 			NumericWidth: 4,
 			Separator:    "-",
@@ -116,22 +122,10 @@ func Default() *Config {
 	}
 }
 
-func IsInstructionScaffoldVersionSupported(version int) bool {
-	return version == InstructionScaffoldVersionVerbose ||
-		version == InstructionScaffoldVersionTOC ||
-		version == InstructionScaffoldVersionMemory
-}
-
-func UsesInstructionSupportDocs(version int) bool {
-	return version == InstructionScaffoldVersionTOC || version == InstructionScaffoldVersionMemory
-}
-
-func (c *Config) EffectiveInstructionScaffoldVersion() int {
-	if c == nil || !IsInstructionScaffoldVersionSupported(c.InstructionScaffoldVersion) {
-		return DefaultInstructionScaffoldVersion
-	}
-
-	return c.InstructionScaffoldVersion
+// IsKnownInstructionScaffoldVersion reports whether a recorded version is the
+// current structure or a legacy one that migration recognizes.
+func IsKnownInstructionScaffoldVersion(version int) bool {
+	return version >= LegacyInstructionScaffoldVersionVerbose && version <= CurrentInstructionScaffoldVersion
 }
 
 func (c *Config) RegistryArtifact(kind, slug string) (RegistryArtifact, bool) {

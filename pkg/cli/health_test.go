@@ -63,7 +63,7 @@ func TestRunHealthExplicitOptOutSkipsNetworkAndWrites(t *testing.T) {
 func TestRunHealthDryRunPlansWithoutWriting(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	setWorkingDirectory(t, projectRoot)
-	ruleset := registryRulesetForTest("safety-guardrails", []string{"git"})
+	ruleset := registryRulesetForTest("sample-guardrails", []string{"git"})
 	stubRulesetRegistry(t, ruleset)
 	target := filepath.Join(projectRoot, rulesetTarget(ruleset.Slug))
 
@@ -89,8 +89,7 @@ func TestRunHealthDryRunPlansWithoutWriting(t *testing.T) {
 func TestRunHealthAppliesSafeRegistryUpdateAndChecksProject(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	setWorkingDirectory(t, projectRoot)
-	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
-	ruleset := registryRulesetForTest("safety-guardrails", []string{"git"})
+	ruleset := registryRulesetForTest("sample-guardrails", []string{"git"})
 	stubRulesetRegistry(t, ruleset)
 
 	cmd := healthCommandForTest(t, "--json")

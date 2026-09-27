@@ -2,19 +2,7 @@ package cli
 
 import (
 	"testing"
-
-	"github.com/jamesonstone/kit/v3/internal/config"
-	"github.com/jamesonstone/kit/v3/internal/templates"
 )
-
-func initTestSupportFileContent(relativePath string) string {
-	for _, file := range templates.InstructionSupportFiles(config.DefaultInstructionScaffoldVersion) {
-		if file.RelativePath == relativePath {
-			return file.Content
-		}
-	}
-	return ""
-}
 
 func withInitFlags(t *testing.T, run func()) {
 	t.Helper()

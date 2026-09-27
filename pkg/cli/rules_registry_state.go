@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/legacy"
 )
 
 const registryArtifactSchemaVersion = 1
@@ -107,7 +108,8 @@ func syncRulesetRegistryContent(
 	switch {
 	case localHash == embeddedHash:
 		return rulesetRegistrySyncResult{content: localContent, state: registryArtifactStateManaged, hash: embeddedHash}, nil
-	case kitWroteUnmodified(state, localHash):
+	case kitWroteUnmodified(state, localHash), legacy.RuleKnown(item.Slug, localContent):
+		// Exactly what Kit installed, or exactly a version Kit once shipped.
 		return embedded()
 	default:
 		return rulesetRegistrySyncResult{

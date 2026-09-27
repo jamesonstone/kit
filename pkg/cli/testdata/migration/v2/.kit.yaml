@@ -1,0 +1,16 @@
+goal_percentage: 95
+specs_dir: docs/specs
+skills_dir: .agents/skills
+constitution_path: docs/CONSTITUTION.md
+allow_out_of_order: false
+loop:
+    min_confidence: 95
+    max_iterations: 20
+agents:
+    - AGENTS.md
+    - CLAUDE.md
+    - .github/copilot-instructions.md
+instruction_scaffold_version: 2
+feature_naming:
+    numeric_width: 4
+    separator: '-'

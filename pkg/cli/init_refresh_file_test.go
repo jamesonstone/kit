@@ -160,7 +160,8 @@ func TestRunInitRefresh_ForceDoesNotOverwriteExistingScaffoldFilesWithoutFileTar
 	if err != nil {
 		t.Fatalf("failed to read docs/references/testing.md: %v", err)
 	}
-	if string(guardrailsContent) != initTestSupportFileContent("docs/references/testing.md") {
-		t.Fatalf("expected generated docs support file to be overwritten on force, got:\n%s", guardrailsContent)
+	// The testing reference is project-owned once created; --force never replaces it.
+	if string(guardrailsContent) != "# Testing Reference\n\nold\n" {
+		t.Fatalf("expected project testing reference to be preserved on force, got:\n%s", guardrailsContent)
 	}
 }

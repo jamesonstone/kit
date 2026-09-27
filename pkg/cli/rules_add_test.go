@@ -198,7 +198,7 @@ func TestRunRulesAddRegistrySelectorImportsMissingRuleset(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
 	resetRulesFlags(t)
-	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+	stubRulesetRegistry(t, registryRulesetForTest("sample-guardrails", []string{"git", "github"}))
 
 	output := withStdin(t, "1\n", func() string {
 		return captureStdout(t, func() {
@@ -208,12 +208,12 @@ func TestRunRulesAddRegistrySelectorImportsMissingRuleset(t *testing.T) {
 		})
 	})
 
-	path := filepath.Join(projectRoot, "docs", "references", "rules", "safety-guardrails.md")
+	path := filepath.Join(projectRoot, "docs", "references", "rules", "sample-guardrails.md")
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("expected imported ruleset file: %v", err)
 	}
-	if !strings.Contains(string(content), "slug: safety-guardrails") || !strings.Contains(string(content), "status: active") {
+	if !strings.Contains(string(content), "slug: sample-guardrails") || !strings.Contains(string(content), "status: active") {
 		t.Fatalf("unexpected imported content:\n%s", content)
 	}
 	if !strings.Contains(output, "Imported: 1") {
@@ -225,7 +225,7 @@ func TestRunRulesAddRegistrySelectorShowsRulesetDescription(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
 	resetRulesFlags(t)
-	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+	stubRulesetRegistry(t, registryRulesetForTest("sample-guardrails", []string{"git", "github"}))
 
 	output := withStdin(t, "\n", func() string {
 		return captureStdout(t, func() {
@@ -235,7 +235,7 @@ func TestRunRulesAddRegistrySelectorShowsRulesetDescription(t *testing.T) {
 		})
 	})
 
-	if !strings.Contains(output, "Description for safety-guardrails") {
+	if !strings.Contains(output, "Description for sample-guardrails") {
 		t.Fatalf("expected selector output to include ruleset description, got:\n%s", output)
 	}
 }

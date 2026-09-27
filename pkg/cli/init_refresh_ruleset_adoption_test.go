@@ -14,7 +14,7 @@ func TestRunInitRefresh_AdoptsExistingStatusOnlyRulesetAsManaged(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)
-	registry := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
+	registry := registryRulesetForTest("sample-guardrails", []string{"git", "github"})
 	stubRulesetRegistry(t, registry)
 
 	if err := config.Save(tempDir, config.Default()); err != nil {

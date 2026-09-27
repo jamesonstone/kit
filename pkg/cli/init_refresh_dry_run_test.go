@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
-	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func TestRunInitRefresh_DryRunDiffPrintsPlannedChangesWithoutWriting(t *testing.T) {
@@ -39,7 +38,7 @@ func TestRunInitRefresh_DryRunDiffPrintsPlannedChangesWithoutWriting(t *testing.
 		"+++ b/.envrc",
 		"-source_env .custom",
 		"+dotenv_if_exists",
-		"Dry run complete. Planned Created: 0, Updated: 1, Merged: 0, Skipped: 0",
+		"Dry run complete. Planned Created: 0, Updated: 1, Merged: 0, Removed: 0, Skipped: 0",
 	} {
 		if !strings.Contains(output, check) {
 			t.Fatalf("expected dry-run diff output to contain %q, got:\n%s", check, output)
@@ -62,11 +61,11 @@ func TestRunInitRefresh_DryRunDoesNotWritePlannedRefresh(t *testing.T) {
 	stubRulesetRegistry(t)
 
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionVerbose
+	cfg.InstructionScaffoldVersion = config.LegacyInstructionScaffoldVersionVerbose
 	if err := config.Save(tempDir, cfg); err != nil {
 		t.Fatalf("failed to save config: %v", err)
 	}
-	writeFile(t, filepath.Join(tempDir, agentsMDPath), templates.LegacyAgentsMD)
+	writeFile(t, filepath.Join(tempDir, agentsMDPath), legacyAgentsForTest)
 
 	withInitFlags(t, func() {
 		initRefresh = true
@@ -84,7 +83,7 @@ func TestRunInitRefresh_DryRunDoesNotWritePlannedRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("config.Load() error = %v", err)
 	}
-	if unchanged.InstructionScaffoldVersion != config.InstructionScaffoldVersionVerbose {
+	if unchanged.InstructionScaffoldVersion != config.LegacyInstructionScaffoldVersionVerbose {
 		t.Fatalf("dry run updated config version = %d", unchanged.InstructionScaffoldVersion)
 	}
 
@@ -92,8 +91,10 @@ func TestRunInitRefresh_DryRunDoesNotWritePlannedRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read %s: %v", agentsMDPath, err)
 	}
-	if string(agentsContent) != templates.LegacyAgentsMD {
+	if string(agentsContent) != legacyAgentsForTest {
 		t.Fatalf("dry run updated %s", agentsMDPath)
 	}
 	assertFileDoesNotExist(t, filepath.Join(tempDir, "docs", "agents", "README.md"))
 }
+
+const legacyAgentsForTest = "# AGENTS\n\n## Source of truth\n\n- Legacy guidance.\n"

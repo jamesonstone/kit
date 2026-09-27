@@ -2,11 +2,13 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
 	"github.com/jamesonstone/kit/v3/internal/instructions"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 const (
@@ -19,21 +21,19 @@ type instructionFileWriteResult string
 
 type instructionFileWriteMode string
 
-type instructionFileSelection struct {
-	agentsMD bool
-	claude   bool
-	copilot  bool
-}
-
 const (
 	instructionFileCreated instructionFileWriteResult = "created"
 	instructionFileUpdated instructionFileWriteResult = "updated"
 	instructionFileMerged  instructionFileWriteResult = "merged"
 	instructionFileSkipped instructionFileWriteResult = "skipped"
+	// instructionFileRemoved deletes a retired Kit-owned file that Git can restore.
+	instructionFileRemoved instructionFileWriteResult = "removed"
 
+	// instructionFileWriteModeSkipExisting only creates missing files.
 	instructionFileWriteModeSkipExisting instructionFileWriteMode = "skip-existing"
-	instructionFileWriteModeOverwrite    instructionFileWriteMode = "overwrite"
-	instructionFileWriteModeAppendOnly   instructionFileWriteMode = "append-only"
+	// instructionFileWriteModeConverge migrates existing entry files onto the
+	// managed contract block and leaves the project-owned testing reference alone.
+	instructionFileWriteModeConverge instructionFileWriteMode = "converge"
 )
 
 type instructionFileWritePlan struct {
@@ -41,196 +41,72 @@ type instructionFileWritePlan struct {
 	absolutePath string
 	content      string
 	result       instructionFileWriteResult
-	// legacyContract marks an entry file that predates the managed contract block.
-	legacyContract bool
-}
-
-func (s instructionFileSelection) any() bool {
-	return s.agentsMD || s.claude || s.copilot
+	// converged is false when an entry file was left without a current block.
+	converged bool
+	note      string
 }
 
 func instructionFiles(cfg *config.Config) []string {
 	return instructions.InstructionRelativePaths(cfg)
 }
 
-func selectedInstructionFiles(cfg *config.Config, selection instructionFileSelection) []string {
-	if !selection.any() {
-		return instructionFiles(cfg)
-	}
-
-	files := make([]string, 0, 3)
-	if selection.agentsMD {
-		files = appendInstructionFile(files, agentsMDPath)
-	}
-	if selection.claude {
-		files = appendInstructionFile(files, claudeMDPath)
-	}
-	if selection.copilot {
-		files = appendInstructionFile(files, copilotInstructionsPath)
-	}
-
-	return files
+// instructionArtifactPaths lists every instruction artifact Kit generates: the
+// agent entry files and the testing reference.
+func instructionArtifactPaths(cfg *config.Config) []string {
+	return append(instructionFiles(cfg), templates.TestingReferencePath)
 }
 
-func appendInstructionFile(files []string, path string) []string {
-	for _, existing := range files {
-		if existing == path {
-			return files
-		}
+func instructionArtifactContent(relativePath string) string {
+	if filepath.ToSlash(relativePath) == templates.TestingReferencePath {
+		return templates.TestingReference
 	}
-
-	return append(files, path)
+	return templates.InstructionEntryFile(relativePath)
 }
 
-func writeInstructionFileWithMode(
-	projectRoot,
-	relativePath string,
-	mode instructionFileWriteMode,
-	version int,
-) (instructionFileWriteResult, error) {
-	plan, err := planInstructionFileWrite(projectRoot, relativePath, mode, version)
+func writeInstructionFileWithMode(projectRoot, relativePath string, mode instructionFileWriteMode) (instructionFileWriteResult, error) {
+	plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, false)
 	if err != nil {
 		return "", err
 	}
-
-	return applyInstructionFileWritePlan(plan)
-}
-
-func planInstructionFileWrite(
-	projectRoot,
-	relativePath string,
-	mode instructionFileWriteMode,
-	version int,
-) (instructionFileWritePlan, error) {
-	return planInstructionArtifactWrite(projectRoot, relativePath, mode, version)
+	if plan.result == instructionFileSkipped {
+		return instructionFileSkipped, nil
+	}
+	if err := document.Write(plan.absolutePath, plan.content); err != nil {
+		return "", fmt.Errorf("failed to write %s: %w", plan.relativePath, err)
+	}
+	return plan.result, nil
 }
 
 func planInstructionArtifactWrite(
 	projectRoot,
 	relativePath string,
 	mode instructionFileWriteMode,
-	version int,
+	force bool,
 ) (instructionFileWritePlan, error) {
-	absolutePath := filepath.Join(projectRoot, relativePath)
-	existed := document.Exists(absolutePath)
-	content, _, err := instructionArtifactContent(relativePath, version)
+	plan := instructionFileWritePlan{
+		relativePath: relativePath,
+		absolutePath: filepath.Join(projectRoot, filepath.FromSlash(relativePath)),
+		converged:    true,
+	}
+	if !document.Exists(plan.absolutePath) {
+		plan.content = instructionArtifactContent(relativePath)
+		plan.result = instructionFileCreated
+		return plan, nil
+	}
+	plan.result = instructionFileSkipped
+	if mode == instructionFileWriteModeSkipExisting || filepath.ToSlash(relativePath) == templates.TestingReferencePath {
+		return plan, nil
+	}
+	data, err := os.ReadFile(plan.absolutePath)
 	if err != nil {
-		return instructionFileWritePlan{}, err
+		return instructionFileWritePlan{}, fmt.Errorf("failed to read %s: %w", relativePath, err)
 	}
-
-	switch mode {
-	case instructionFileWriteModeSkipExisting:
-		if existed {
-			return instructionFileWritePlan{
-				relativePath: relativePath,
-				absolutePath: absolutePath,
-				result:       instructionFileSkipped,
-			}, nil
-		}
-		return instructionFileWritePlan{
-			relativePath: relativePath,
-			absolutePath: absolutePath,
-			content:      content,
-			result:       instructionFileCreated,
-		}, nil
-	case instructionFileWriteModeOverwrite:
-		result := instructionFileCreated
-		if existed {
-			existingContent, err := readInstructionFile(absolutePath)
-			if err != nil {
-				return instructionFileWritePlan{}, fmt.Errorf("failed to read %s: %w", relativePath, err)
-			}
-			if existingContent == content {
-				return instructionFileWritePlan{
-					relativePath: relativePath,
-					absolutePath: absolutePath,
-					result:       instructionFileSkipped,
-				}, nil
-			}
-			result = instructionFileUpdated
-		}
-		return instructionFileWritePlan{
-			relativePath: relativePath,
-			absolutePath: absolutePath,
-			content:      content,
-			result:       result,
-		}, nil
-	case instructionFileWriteModeAppendOnly:
-		if !existed {
-			return instructionFileWritePlan{
-				relativePath: relativePath,
-				absolutePath: absolutePath,
-				content:      content,
-				result:       instructionFileCreated,
-			}, nil
-		}
-
-		existingContent, err := readInstructionFile(absolutePath)
-		if err != nil {
-			return instructionFileWritePlan{}, fmt.Errorf("failed to read %s: %w", relativePath, err)
-		}
-
-		if block := mergeManagedContractBlock(existingContent, content); block.handled {
-			plan := instructionFileWritePlan{relativePath: relativePath, absolutePath: absolutePath}
-			switch {
-			case block.legacy:
-				plan.result = instructionFileSkipped
-				plan.legacyContract = true
-			case block.content == existingContent:
-				plan.result = instructionFileSkipped
-			default:
-				plan.content = block.content
-				plan.result = instructionFileUpdated
-			}
-			return plan, nil
-		}
-
-		mergedContent, changed, err := mergeInstructionFileContent(existingContent, content)
-		if err != nil {
-			return instructionFileWritePlan{}, fmt.Errorf(
-				"append-only merge failed for %s: %w. Use --force to overwrite or edit the file manually to add Kit section headings",
-				relativePath,
-				err,
-			)
-		}
-
-		if !changed {
-			return instructionFileWritePlan{
-				relativePath: relativePath,
-				absolutePath: absolutePath,
-				result:       instructionFileSkipped,
-			}, nil
-		}
-
-		return instructionFileWritePlan{
-			relativePath: relativePath,
-			absolutePath: absolutePath,
-			content:      mergedContent,
-			result:       instructionFileMerged,
-		}, nil
-	default:
-		return instructionFileWritePlan{}, fmt.Errorf("unsupported instruction file write mode %q", mode)
+	migration := migrateEntryFile(filepath.ToSlash(relativePath), string(data), force)
+	plan.converged = migration.converged
+	plan.note = migration.note
+	if migration.content != string(data) {
+		plan.content = migration.content
+		plan.result = instructionFileUpdated
 	}
-}
-
-func instructionArtifactPaths(
-	cfg *config.Config,
-	selection instructionFileSelection,
-	version int,
-	forceFullModel bool,
-) []string {
-	relativePaths := selectedInstructionFiles(cfg, selection)
-	if forceFullModel {
-		relativePaths = instructionFiles(cfg)
-	}
-
-	if !config.UsesInstructionSupportDocs(version) {
-		return relativePaths
-	}
-
-	for _, support := range instructions.SupportDocs(version) {
-		relativePaths = appendInstructionFile(relativePaths, support.RelativePath)
-	}
-
-	return relativePaths
+	return plan, nil
 }

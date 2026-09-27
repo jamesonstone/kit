@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
@@ -57,26 +56,11 @@ func TestRefreshKeepsFreshInitConstitutionBaseline(t *testing.T) {
 
 	// A v3 project still carrying the pre-contract baseline converges to the
 	// pointer baseline instead of keeping restated universal rules.
-	stale := strings.Replace(fresh, templates.ConstitutionBaselineSection, templates.LegacyConstitutionBaselineSection, 1)
-	restored, changed := upsertConstitutionBaseline(stale, templates.ConstitutionBaselineSectionFor(config.InstructionScaffoldVersionMemory))
+	legacyBaseline := "### " + templates.ConstitutionBaselineHeading + "\n\n<!-- BEGIN KIT-MANAGED BASELINE RULES -->\n- Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less.\n<!-- END KIT-MANAGED BASELINE RULES -->"
+	stale := strings.Replace(fresh, templates.ConstitutionBaselineSection, legacyBaseline, 1)
+	restored, changed := upsertConstitutionBaseline(stale, templates.ConstitutionBaselineSection)
 	if !changed || !strings.Contains(restored, templates.ConstitutionBaselineSection) || strings.Contains(restored, "300 physical lines") {
 		t.Fatalf("refresh did not converge to the v3 baseline:\n%s", restored)
-	}
-}
-
-func TestRefreshRestoresCompleteLegacyBaseline(t *testing.T) {
-	// Legacy scaffolds keep every baseline bullet; a refresh must restore the
-	// deletion-safety bullets that an older refresh stripped (GH-215).
-	legacy := strings.Replace(templates.Constitution, templates.ConstitutionBaselineSection, templates.LegacyConstitutionBaselineSection, 1)
-	var stale []string
-	for _, line := range strings.Split(legacy, "\n") {
-		if !strings.Contains(line, "deletion") {
-			stale = append(stale, line)
-		}
-	}
-	restored, changed := upsertConstitutionBaseline(strings.Join(stale, "\n"), templates.ConstitutionBaselineSectionFor(config.InstructionScaffoldVersionTOC))
-	if !changed || !strings.Contains(restored, templates.LegacyConstitutionBaselineSection) {
-		t.Fatalf("refresh did not restore the complete legacy baseline:\n%s", restored)
 	}
 }
 
