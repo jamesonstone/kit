@@ -208,12 +208,22 @@ func reconcileHasNoChanges(projectRoot string, opts initRefreshOptions) (bool, e
 	if err != nil {
 		return false, err
 	}
-	// Count only repository changes, the set `kit health` reports: a clean
-	// clone lacks the local-only .env and .envrc, which is not drift.
-	for _, change := range plan.changes {
-		if change.result != instructionFileSkipped && managedFileDeliveryPathEligible(projectRoot, change.relativePath) {
-			return false, nil
+	return len(actionableRefreshChanges(projectRoot, plan.changes)) == 0, nil
+}
+
+// actionableRefreshChanges is the one definition of pending Kit-managed
+// repository drift, shared by `kit reconcile` and `kit health`: planned writes
+// and removals of repository-delivered paths. Local-only files, such as a
+// clean clone's missing .env and .envrc, are not drift.
+func actionableRefreshChanges(projectRoot string, changes []initRefreshFileChange) []initRefreshFileChange {
+	var actionable []initRefreshFileChange
+	for _, change := range changes {
+		if change.result == instructionFileSkipped {
+			continue
+		}
+		if managedFileDeliveryPathEligible(projectRoot, normalizeManagedFileDeliveryPath(change.relativePath)) {
+			actionable = append(actionable, change)
 		}
 	}
-	return true, nil
+	return actionable
 }

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,8 +9,8 @@ import (
 )
 
 // A clean clone of a current project has no local-only .env or .envrc. That
-// is not drift: reconcile from its primary checkout creates no worktree and
-// writes nothing, matching what `kit health` reports.
+// is not drift: health reports the project current with nothing pending, and
+// reconcile from its primary checkout creates no worktree and writes nothing.
 func TestCleanCloneOfCurrentProjectReconcilesWithoutWriting(t *testing.T) {
 	setupMigrationEnvironment(t)
 	source := freshInitProject(t)
@@ -22,6 +23,24 @@ func TestCleanCloneOfCurrentProjectReconcilesWithoutWriting(t *testing.T) {
 	}
 	stubReconcileWorktreeRoot(t, t.TempDir())
 	setWorkingDirectory(t, clone)
+
+	cmd := healthCommandForTest(t, "--json")
+	out := &strings.Builder{}
+	cmd.SetOut(out)
+	if err := runHealth(cmd, nil); err != nil {
+		t.Fatalf("runHealth() error = %v", err)
+	}
+	var report healthReport
+	if err := json.Unmarshal([]byte(out.String()), &report); err != nil {
+		t.Fatal(err)
+	}
+	pending := report.Changes.Created + report.Changes.Updated + report.Changes.Merged + report.Changes.Removed
+	if report.State != statusKitManagedStateCurrent || pending != 0 || len(report.Files) != 0 {
+		t.Fatalf("health on a current clean clone = %#v", report)
+	}
+	if status := reconcileGitOutput(t, clone, "status", "--porcelain", "--ignored"); status != "" {
+		t.Fatalf("health wrote to the clone:\n%s", status)
+	}
 
 	var preview strings.Builder
 	if _, err := resolveReconcileTarget(&preview, clone, true, true); err != nil {
