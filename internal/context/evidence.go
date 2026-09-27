@@ -70,15 +70,16 @@ func (r *resolver) addPathHint(hint string) {
 	r.addDiagnostic("info", "path-hint-"+state, relativePath, "path hint recorded as "+state+"; nothing to load")
 }
 
-// missingPathEscapes reports whether the nearest existing ancestor of a
-// missing hint resolves outside the project root, such as a planned file
-// beneath a symlink that points elsewhere.
+// missingPathEscapes reports whether the nearest existing entry for a missing
+// hint, starting with the hint itself, resolves outside the project root or
+// cannot be resolved, such as a dangling symlink or a planned file beneath a
+// symlink that points elsewhere.
 func missingPathEscapes(root, value string) bool {
 	path := strings.TrimSpace(value)
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(root, filepath.FromSlash(path))
 	}
-	for dir := filepath.Dir(filepath.Clean(path)); ; dir = filepath.Dir(dir) {
+	for dir := filepath.Clean(path); ; dir = filepath.Dir(dir) {
 		if _, err := os.Lstat(dir); err == nil {
 			resolved, err := filepath.EvalSymlinks(dir)
 			if err != nil {

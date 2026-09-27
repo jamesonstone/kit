@@ -52,3 +52,17 @@ func TestResolveBlocksMissingPathHintBelowEscapingSymlink(t *testing.T) {
 		t.Fatalf("missing hint below escaping symlink did not block: %#v", result.Evidence)
 	}
 }
+
+func TestResolveBlocksDanglingSymlinkPathHint(t *testing.T) {
+	root := contextProject(t)
+	writeContextFile(t, root, "docs/references/workflows/main.md", workflowDocument("main", nil, nil, nil))
+	target := filepath.Join(t.TempDir(), "missing.go")
+	if err := os.Symlink(target, filepath.Join(root, "dangling.go")); err != nil {
+		t.Fatalf("Symlink() error = %v", err)
+	}
+
+	result := Resolve(root, Request{Workflow: "main", Paths: []string{"dangling.go"}})
+	if !result.Blocked {
+		t.Fatalf("dangling symlink hint did not block: %#v", result.Evidence)
+	}
+}
