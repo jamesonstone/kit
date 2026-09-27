@@ -145,7 +145,7 @@ func TestRunRulesViewShowsRegistryRulesetBeforeImport(t *testing.T) {
 	}
 
 	for _, check := range []string{
-		"Source: https://github.com/jamesonstone/kit/blob/main/docs/references/rules/safety-guardrails.md",
+		"Source: Kit " + Version + " embedded rule docs/references/rules/safety-guardrails.md",
 		"description: 'Description for safety-guardrails'",
 		"# Ruleset: safety-guardrails",
 	} {
@@ -178,17 +178,6 @@ func TestRunRulesViewPrefersLocalRuleset(t *testing.T) {
 		if !strings.Contains(out.String(), check) {
 			t.Fatalf("expected local view output to contain %q, got:\n%s", check, out.String())
 		}
-	}
-}
-
-func TestProjectRulesetRegistryFiltersMaintainerOnlyRules(t *testing.T) {
-	usage := registryRulesetForTest("kit-capabilities-usage", []string{"kit", "cli"})
-	maintainer := registryRulesetForTest("command-capabilities", []string{"kit", "cli"})
-	maintainer.Metadata.RegistryScope = rulesetRegistryScopeKitMaintainer
-
-	filtered := projectRulesetRegistry([]registryRuleset{usage, maintainer})
-	if len(filtered) != 1 || filtered[0].Slug != "kit-capabilities-usage" {
-		t.Fatalf("filtered registry = %#v, want only downstream usage rule", filtered)
 	}
 }
 

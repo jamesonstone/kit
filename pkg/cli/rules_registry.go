@@ -11,16 +11,12 @@ import (
 )
 
 const (
-	rulesetRegistryOwner              = "jamesonstone"
-	rulesetRegistryRepo               = "kit"
-	rulesetRegistryBranch             = "main"
-	rulesetRegistryAPIURL             = "https://api.github.com/repos/jamesonstone/kit/contents/docs/references/rules?ref=main"
-	rulesetRegistryScopeDownstream    = "downstream"
-	rulesetRegistryScopeKitMaintainer = "kit-maintainer"
-	inactiveRulesetStatus             = document.ReferenceStatusOptional
-	registryArtifactStateManaged      = "managed"
-	registryArtifactStateLocalCustom  = "local-custom"
-	registryArtifactStateConflict     = "conflict"
+	rulesetRegistryScopeDownstream   = "downstream"
+	rulesetRegistryScopeOptional     = "optional"
+	inactiveRulesetStatus            = document.ReferenceStatusOptional
+	registryArtifactStateManaged     = "managed"
+	registryArtifactStateLocalCustom = "local-custom"
+	registryArtifactStateConflict    = "conflict"
 
 	registrySelectorDefaultTableWidth = 118
 	registrySelectorMinimumTableWidth = 88
@@ -30,19 +26,13 @@ const (
 )
 
 type rulesetRegistryFetchFunc func(context.Context) ([]registryRuleset, error)
-type rulesetRegistryContentFetchFunc func(context.Context, string, string, string) (string, error)
 
-var rulesetRegistryFetcher rulesetRegistryFetchFunc = fetchGitHubRulesetRegistry
-var rulesetRegistryContentFetcher rulesetRegistryContentFetchFunc = fetchGitHubRegistryContent
+var rulesetRegistryFetcher rulesetRegistryFetchFunc = embeddedRulesetRegistry
 
 type registryRuleset struct {
 	Slug           string
 	Content        string
 	Metadata       rulesetMetadata
-	SourceRepo     string
-	SourceBranch   string
-	SourceCommit   string
-	SourcePath     string
 	NormalizedHash string
 }
 
@@ -76,7 +66,6 @@ func runRulesAddRegistrySelector(cmd interface {
 	if err != nil {
 		return err
 	}
-	registry = projectRulesetRegistry(registry)
 	if len(registry) == 0 {
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), "No registry rulesets found.")
 		return err
@@ -98,46 +87,11 @@ func runRulesAddRegistrySelector(cmd interface {
 }
 
 func rulesetRegistrySourceDescription() string {
-	return fmt.Sprintf(
-		"https://github.com/%s/%s/tree/%s/%s",
-		rulesetRegistryOwner,
-		rulesetRegistryRepo,
-		rulesetRegistryBranch,
-		rulesetDirRelPath,
-	)
+	return "rules embedded in Kit " + Version
 }
 
 func rulesetRegistryRulesetURL(slug string) string {
-	return fmt.Sprintf(
-		"https://github.com/%s/%s/blob/%s/%s/%s.md",
-		rulesetRegistryOwner,
-		rulesetRegistryRepo,
-		rulesetRegistryBranch,
-		rulesetDirRelPath,
-		slug,
-	)
-}
-
-func projectRulesetRegistry(registry []registryRuleset) []registryRuleset {
-	filtered := make([]registryRuleset, 0, len(registry))
-	for _, item := range registry {
-		if !rulesetRegistryVisibleToProjects(item) {
-			continue
-		}
-		filtered = append(filtered, item)
-	}
-	return filtered
-}
-
-func rulesetRegistryVisibleToProjects(item registryRuleset) bool {
-	switch strings.TrimSpace(item.Metadata.RegistryScope) {
-	case "", rulesetRegistryScopeDownstream:
-		return true
-	case rulesetRegistryScopeKitMaintainer:
-		return false
-	default:
-		return true
-	}
+	return "Kit " + Version + " embedded rule " + rulesetTarget(slug)
 }
 
 func ensureTrailingNewline(content string) string {

@@ -30,20 +30,3 @@ func TestInstructionTemplatesRouteHumanAuthorshipRule(t *testing.T) {
 		t.Fatal("Constitution template does not route human-authorship")
 	}
 }
-
-func TestImplementationDeliverySelectsHumanAuthorshipOptionally(t *testing.T) {
-	artifacts, err := ContextWorkflowArtifacts()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, artifact := range artifacts {
-		if artifact.Slug != "implementation-delivery" {
-			continue
-		}
-		if !strings.Contains(artifact.Content, "slug: human-authorship\n    required: false") {
-			t.Fatal("implementation-delivery does not select human-authorship as optional evidence")
-		}
-		return
-	}
-	t.Fatal("embedded implementation-delivery workflow not found")
-}

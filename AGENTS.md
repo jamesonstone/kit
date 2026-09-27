@@ -17,7 +17,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 - Treat the clone's primary checkout as read-only for agent work, whatever its branch or cleanliness. Make every repository change (code, tests, docs, specs, generated files, configuration) in a linked worktree at `~/worktrees/<owner>/<repository>/GH-<issue>` on branch `GH-<issue>`, created from the freshly fetched default branch, and deliver it through a ready pull request.
 - Default to a new human-assigned issue, branch, worktree, and ready pull request without asking. Continue an existing lane only when the user explicitly directs it for the same work. Repair of an exact existing pull request (review, CI, base refresh, conflicts, ordered merges) reuses that pull request's head branch and never opens a coordinating or corrective pull request. Never ask the user to choose between lanes; ask only when implementation intent or a named target is materially ambiguous.
-- If the primary checkout holds changes you did not make through a gated lane, preserve them: do not stage, commit, push, stash, reset, clean, discard, or transfer them. The only exception is command-owned leftovers after their matching worktree pull request has merged, handled by `work-lane-gating`.
+- If the primary checkout holds changes you did not make through a gated lane, preserve them: do not stage, commit, push, stash, reset, clean, discard, or transfer them. The only exception is command-owned leftovers after their matching worktree pull request has merged, handled by `delivery`.
 - Never commit directly to the default or a protected branch, force-push, rewrite pushed history, delete branches to clear a lane, or bypass branch protection, reviews, required checks, or merge queues.
 - Never stage secrets or `.env` files, and never print secret values.
 
@@ -36,7 +36,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 ## Engineering
 
-- Keep every handwritten source and test file at 300 physical lines or less (documentation, `docs/**`, generated, and vendored files are exempt); split oversized files by responsibility.
+- When `.kit.yaml` sets `source_file_line_limit`, keep handwritten source and test files within it and split by responsibility; `kit check --project` enforces it.
 - Preserve language-native tests and pull-request checks; end-to-end suites supplement them. Run the project's validation before calling work complete, and fix relevant failures.
 - Parallelize independent investigation when it helps. Delegated agents never mutate Git or GitHub and never write overlapping files concurrently; the primary agent owns integration, validation, and the final report.
 - Resolve in-scope problems autonomously until the goal is complete or a genuine blocker remains; diagnose before retrying.
@@ -51,10 +51,9 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 Read the named file under `docs/references/rules/` when its trigger applies; skip it otherwise.
 
-- Creating an issue, branch, commit, push, or pull request: `github-pr-delivery.md`, `work-lane-gating.md`, `human-authorship.md`; Git recon, recovery, or protected-branch questions: `safety-guardrails.md`; creating, repairing, or removing worktrees: `docs/references/worktrees.md`.
+- Creating an issue, branch, worktree, commit, push, or pull request, or repairing a pull request: `delivery.md`.
 - Any merge or merge-queue action: `github-pr-merge.md`.
-- Validation, end-to-end or browser testing: `testing-and-environment-validation.md`.
-- Splitting an oversized source file: `source-file-size.md`.
+- Adding tests, configuring CI, or end-to-end, browser, or production validation: `testing-and-environment-validation.md`.
 - Backend routes, services, repositories, or adapters: `backend-service-architecture.md`; frontend routes, state flows, or components: `frontend-application-architecture.md`.
 - Designing deletion or deleting persistent state: `deletion-safety.md`.
 - Infrastructure mutations or deployments: `infrastructure-change-approval.md`; AWS work: `aws-agent-toolkit-guidance.md`.
@@ -63,7 +62,6 @@ Read the named file under `docs/references/rules/` when its trigger applies; ski
 - Plans spanning repositories with dependent deliverables or staged activation: `cross-repository-program-coordination.md`.
 - The user explicitly declares a real deadline: `deadline-mode.md`.
 - Curating the Constitution: `constitution-curation.md`.
-- Writing a README header or `llms.txt`: `readme-header-tagline.md`, `llms-txt.md`.
-- Kit command side effects: `kit capabilities <command> --json`. A workflow's evidence list: `kit context resolve --workflow <slug> --json` (optional).
+- Optional rules added with `kit rules add` declare their own triggers in their `Applies When` section.
 
 <!-- END KIT-MANAGED CONTRACT -->

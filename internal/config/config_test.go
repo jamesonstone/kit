@@ -210,17 +210,6 @@ func TestUpdateProjectSchemaAndAWSPreservesUnknownFields(t *testing.T) {
 	}
 }
 
-func TestDefaultOmitsRetiredRuntimeConfiguration(t *testing.T) {
-	cfg := Default()
-
-	if !cfg.Loop.IsZero() {
-		t.Fatalf("Loop = %#v, want zero retired compatibility field", cfg.Loop)
-	}
-	if cfg.ProjectRefresh.Constitution != (ConstitutionRefreshConfig{}) {
-		t.Fatalf("ProjectRefresh = %#v, want zero retired compatibility field", cfg.ProjectRefresh)
-	}
-}
-
 func TestRetiredAllowOutOfOrderKeyIsAcceptedAndNotWritten(t *testing.T) {
 	projectRoot := t.TempDir()
 	path := filepath.Join(projectRoot, ConfigFileName)
@@ -244,38 +233,5 @@ func TestRetiredAllowOutOfOrderKeyIsAcceptedAndNotWritten(t *testing.T) {
 	}
 	if strings.Contains(string(data), "allow_out_of_order") {
 		t.Fatalf("default config still writes retired allow_out_of_order:\n%s", data)
-	}
-}
-
-func TestSaveOmitsDefaultLoopConfigAndKeepsCustomLoopConfig(t *testing.T) {
-	projectRoot := t.TempDir()
-	defaults := Default()
-	if err := Save(projectRoot, defaults); err != nil {
-		t.Fatalf("Save(defaults) error = %v", err)
-	}
-	data, err := os.ReadFile(filepath.Join(projectRoot, ConfigFileName))
-	if err != nil {
-		t.Fatalf("ReadFile(default config) error = %v", err)
-	}
-	if strings.Contains(string(data), "loop:") {
-		t.Fatalf("default loop config should be omitted, got:\n%s", data)
-	}
-	if strings.Contains(string(data), "github:") {
-		t.Fatalf("empty github config should be omitted, got:\n%s", data)
-	}
-
-	defaults.Loop.MaxIterations = 7
-	defaults.Loop.Agent.Command = "codex"
-	if err := Save(projectRoot, defaults); err != nil {
-		t.Fatalf("Save(custom loop) error = %v", err)
-	}
-	data, err = os.ReadFile(filepath.Join(projectRoot, ConfigFileName))
-	if err != nil {
-		t.Fatalf("ReadFile(custom config) error = %v", err)
-	}
-	for _, check := range []string{"loop:", "max_iterations: 7", "command: codex"} {
-		if !strings.Contains(string(data), check) {
-			t.Fatalf("custom loop config missing %q, got:\n%s", check, data)
-		}
 	}
 }

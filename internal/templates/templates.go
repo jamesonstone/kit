@@ -2,8 +2,6 @@
 package templates
 
 import (
-	"strings"
-
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
 )
@@ -172,37 +170,6 @@ References are tracked in front matter.
 <!-- TODO: state the next workflow step, usually kit spec <feature> -->
 `
 
-// BuildBrainstormArtifact seeds a new brainstorm document with the user's thesis.
-func BuildBrainstormArtifact(userThesis string) string {
-	userThesis = strings.TrimSpace(userThesis)
-	if userThesis == "" {
-		return BrainstormArtifact
-	}
-
-	return strings.Replace(
-		BrainstormArtifact,
-		"<!-- TODO: capture the user's issue or feature description in their own terms -->",
-		userThesis,
-		1,
-	)
-}
-
-// BuildBrainstormArtifactForFeature seeds a new brainstorm document with typed
-// front matter for the feature-specific metadata Kit can know at creation time.
-func BuildBrainstormArtifactForFeature(userThesis string, feature document.FeatureMetadata, references []document.MetadataReference) string {
-	content := BuildBrainstormArtifact(userThesis)
-	content = replaceTemplateSection(content, "RELATIONSHIPS", "Relationships are tracked in front matter.")
-	content = replaceTemplateSection(content, "DEPENDENCIES", "References are tracked in front matter.")
-	updated, _, err := document.UpsertMetadata(content, document.TypeBrainstorm, document.MetadataUpsert{
-		Feature:    feature,
-		References: references,
-	})
-	if err != nil {
-		return content
-	}
-	return updated
-}
-
 func BuildSpecArtifactForFeature(feature document.FeatureMetadata) string {
 	content := Spec
 	updated, _, err := document.UpsertMetadata(content, document.TypeSpec, document.MetadataUpsert{
@@ -214,74 +181,4 @@ func BuildSpecArtifactForFeature(feature document.FeatureMetadata) string {
 		return content
 	}
 	return updated
-}
-
-func BuildSpecV2ArtifactForFeature(feature document.FeatureMetadata) string {
-	content := SpecV2
-	updated, _, err := document.UpsertMetadata(content, document.TypeSpec, document.MetadataUpsert{
-		Feature:         feature,
-		WorkflowVersion: document.WorkflowVersionV2,
-		Phase:           "clarify",
-		Clarification:   clarificationMetadata(document.ClarificationStatusOpen, 0, 1),
-	})
-	if err != nil {
-		return content
-	}
-	return updated
-}
-
-func clarificationMetadata(status string, confidence int, unresolvedQuestions int) *document.MetadataClarification {
-	clarification := document.NewMetadataClarification(status, confidence, unresolvedQuestions)
-	return &clarification
-}
-
-func BuildPlanArtifactForFeature(feature document.FeatureMetadata) string {
-	content := replaceTemplateSection(Plan, "DEPENDENCIES", "References are tracked in front matter.")
-	updated, _, err := document.UpsertMetadata(content, document.TypePlan, document.MetadataUpsert{
-		Feature: feature,
-	})
-	if err != nil {
-		return content
-	}
-	return updated
-}
-
-func BuildTasksArtifactForFeature(feature document.FeatureMetadata) string {
-	updated, _, err := document.UpsertMetadata(Tasks, document.TypeTasks, document.MetadataUpsert{
-		Feature: feature,
-	})
-	if err != nil {
-		return Tasks
-	}
-	return updated
-}
-
-func replaceTemplateSection(content, sectionName, sectionBody string) string {
-	lines := strings.Split(content, "\n")
-	header := "## " + sectionName
-	start := -1
-	end := len(lines)
-
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if start == -1 {
-			if trimmed == header {
-				start = i
-			}
-			continue
-		}
-		if strings.HasPrefix(trimmed, "## ") {
-			end = i
-			break
-		}
-	}
-	if start == -1 {
-		return content
-	}
-
-	replacementLines := []string{header, "", sectionBody, ""}
-	updatedLines := append([]string{}, lines[:start]...)
-	updatedLines = append(updatedLines, replacementLines...)
-	updatedLines = append(updatedLines, lines[end:]...)
-	return strings.Join(updatedLines, "\n")
 }

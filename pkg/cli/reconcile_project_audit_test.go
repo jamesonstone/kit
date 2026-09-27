@@ -164,6 +164,7 @@ func TestRenderReconcileSummaryShowsCompactTable(t *testing.T) {
 	report := &reconcileReport{
 		ProjectRoot: projectRoot,
 		SourceFileAudit: &sourceFileAuditSummary{
+			Limit:          300,
 			CandidateCount: 8,
 			EligibleCount:  3,
 			ViolationCount: 1,
@@ -230,5 +231,18 @@ func TestReconcileProjectScopeWithCurrentInstructionFilesIsClean(t *testing.T) {
 
 	if len(report.Findings) != 0 {
 		t.Fatalf("expected clean project report, got %#v", report.Findings)
+	}
+}
+
+func TestMissingLocalEnvironmentFilesDoNotBlockCleanClones(t *testing.T) {
+	projectRoot := t.TempDir()
+	for _, finding := range auditInitScaffoldArtifacts(projectRoot) {
+		base := filepath.Base(finding.FilePath)
+		if (base == ".env" || base == ".envrc") && !finding.NonBlocking {
+			t.Fatalf("missing ignored %s blocks validation: %#v", base, finding)
+		}
+		if base == ".coderabbit.yaml" && finding.NonBlocking {
+			t.Fatal("missing tracked scaffold file must still block validation")
+		}
 	}
 }

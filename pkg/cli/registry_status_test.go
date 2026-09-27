@@ -92,7 +92,7 @@ func TestRunRegistryStatusReportsLocalCustomAttention(t *testing.T) {
 	setWorkingDirectory(t, projectRoot)
 	ruleset := registryRulesetForTest("safety-guardrails", []string{"git"})
 	local := strings.Replace(ruleset.Content, "## Examples", "Local guidance.\n\n## Examples", 1)
-	recordRulesetRegistryState(cfg, ruleset, registryArtifactStateLocalCustom, "", local)
+	recordRulesetRegistryState(cfg, ruleset, registryArtifactStateLocalCustom, "")
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
 	}

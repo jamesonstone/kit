@@ -123,24 +123,6 @@ func TestFreeTextInputConfig_InlineOverridesDefaultEditor(t *testing.T) {
 	}
 }
 
-func TestRemovedInlineIntakeFlagsAreNotExposed(t *testing.T) {
-	spec, _, err := rootCmd.Find([]string{"spec"})
-	if err != nil {
-		t.Fatalf("rootCmd.Find(spec) error = %v", err)
-	}
-	if spec.Flags().Lookup("inline") != nil {
-		t.Fatal("expected V3 spec command not to expose legacy inline intake")
-	}
-
-	dispatch, _, err := rootCmd.Find([]string{"dispatch"})
-	if err != nil {
-		t.Fatalf("rootCmd.Find(dispatch) error = %v", err)
-	}
-	if dispatch.Flags().Lookup("inline") != nil {
-		t.Fatal("expected dispatch not to expose --inline")
-	}
-}
-
 func TestFinalizeEditorInput_NormalizesAndDetectsChange(t *testing.T) {
 	got, changed, err := finalizeEditorInput("", []byte("  first line\nsecond line  \n"))
 	if err != nil {

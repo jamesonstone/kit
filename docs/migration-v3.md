@@ -40,11 +40,17 @@ and install paths gain `/v3`.
 
 ## CLI Changes
 
-- Remove `--max-subagents` from `kit dispatch` and `kit pr fix` invocations.
-  The flag is now unknown rather than deprecated.
-- Keep `--single-agent` when one supervisor lane is explicitly required.
-- Let the active coding-agent runtime report and own model availability,
-  continuation, waiting, parallel scheduling, and capacity.
+- Removed commands: `kit context resolve`, `kit capabilities`, `kit dispatch`,
+  `kit pr fix`, `kit pr orchestrate`, `kit improve run`, `kit instructions`,
+  and `kit rules link`, plus the `--profile`, `--single-agent`, and
+  `--max-subagents` flags. Agents use their host's tools, delegation, and
+  `kit <command> --help` instead.
+- Rules ship inside the binary; upgrade Kit to pick up rule changes. Nothing is
+  fetched from GitHub.
+- `docs/PROJECT_PROGRESS_SUMMARY.md` and `docs/references/workflows/` are no
+  longer generated or checked; existing copies are inert.
+- The 300-line source limit applies only when `.kit.yaml` sets
+  `source_file_line_limit`.
 
 ## Generated Agent Guidance
 

@@ -1,3 +1,0 @@
-# Constitution
-
-Dirty worktree fixture.

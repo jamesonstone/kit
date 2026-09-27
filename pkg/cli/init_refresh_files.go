@@ -57,11 +57,6 @@ func planRefreshInitScaffoldFiles(
 		}
 		changes = append(changes, change)
 	}
-	workflowChanges, err := planRefreshContextWorkflowFiles(projectRoot, opts, targets)
-	if err != nil {
-		return nil, err
-	}
-	changes = append(changes, workflowChanges...)
 	return changes, nil
 }
 

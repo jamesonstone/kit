@@ -39,7 +39,10 @@ func planRefreshInitRulesets(
 			before = string(data)
 		}
 		if !exists {
-			recordRulesetRegistryState(cfg, item, registryArtifactStateManaged, item.NormalizedHash, item.Content)
+			if _, tracked := rulesetRegistryState(cfg, item.Slug); !tracked && item.Metadata.RegistryScope == rulesetRegistryScopeOptional {
+				continue // optional rules install only through `kit rules add`
+			}
+			recordRulesetRegistryState(cfg, item, registryArtifactStateManaged, item.NormalizedHash)
 			registryChanged = true
 			changes = append(changes, *newInitRefreshFileChange(projectRoot, relativePath, before, item.Content, instructionFileCreated))
 			continue
@@ -49,7 +52,7 @@ func planRefreshInitRulesets(
 		if !tracked {
 			localHash, err := normalizedRulesetContentHash(before, item.Metadata.Status)
 			if err == nil && localHash == item.NormalizedHash {
-				recordRulesetRegistryState(cfg, item, registryArtifactStateManaged, item.NormalizedHash, before)
+				recordRulesetRegistryState(cfg, item, registryArtifactStateManaged, item.NormalizedHash)
 				registryChanged = true
 				changes = append(changes, *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped))
 				continue
@@ -59,19 +62,19 @@ func planRefreshInitRulesets(
 				if err != nil {
 					hash = ""
 				}
-				recordRulesetRegistryState(cfg, item, registryArtifactStateLocalCustom, hash, before)
+				recordRulesetRegistryState(cfg, item, registryArtifactStateLocalCustom, hash)
 				registryChanged = true
-				notes = append(notes, fmt.Sprintf("%s has local custom content; use --force to accept registry content", relativePath))
+				notes = append(notes, fmt.Sprintf("%s has local custom content; use --force to accept Kit's version", relativePath))
 				changes = append(changes, *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped))
 				continue
 			}
 		}
 
-		syncResult, err := syncRulesetRegistryContent(ctx, item, state, before, opts.force)
+		syncResult, err := syncRulesetRegistryContent(item, state, before, opts.force)
 		if err != nil {
 			return nil, nil, false, fmt.Errorf("failed to sync %s: %w", relativePath, err)
 		}
-		recordRefreshedRulesetRegistryState(cfg, item, state, syncResult.state, syncResult.hash, syncResult.content)
+		recordRulesetRegistryState(cfg, item, syncResult.state, syncResult.hash)
 		registryChanged = true
 		if len(syncResult.conflicts) > 0 {
 			notes = append(notes, syncResult.conflicts...)

@@ -1,114 +1,60 @@
 # Kit Commands
 
-Kit 3.0 preserves the deliberately reduced command tree while making its
-subagent prompts capability-aware. Command names below are supported; flags
-and output formats remain command-specific.
+Every command below does deterministic work that an agent cannot reproduce as
+safely or cheaply by itself. Agents are the primary callers; commands avoid
+interactive prompts unless a human runs them in a terminal.
 
-## Agent Evidence
+## Bootstrap And Memory
 
-| Command | Purpose |
+| Command | Why it exists |
 | --- | --- |
-| `kit capabilities [command]` | Read-only command capability and side-effect discovery. |
-| `kit context resolve` | Deterministically select ordered local workflow, rule, spec, reference, and source evidence. |
+| `kit init` | Scaffolds `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. `--refresh` converges Kit-managed files; `--dry-run --diff` previews. |
+| `kit spec <feature>` | Allocates a worktree-safe feature number and scaffolds or adopts `docs/specs/<id>-<feature>/SPEC.md`. |
 
-`kit context resolve` accepts `--workflow`, `--feature`, and repeatable
-`--path` hints plus `--json`. It performs no network access, writes, Git
-operations, model inference, or agent launch. Missing required evidence returns
-a blocked contract and nonzero status.
+## Rules
 
-## Bootstrap And Feature Memory
-
-| Command | Purpose |
+| Command | Why it exists |
 | --- | --- |
-| `kit init` | Canonical repository bootstrap and managed-file refresh. |
-| `kit spec [feature]` | Create, adopt, or orient a living V3 `SPEC.md`; existing V1/V2 specs remain readable. |
-| `kit instructions` | Print versioned provider-neutral agent instructions. |
+| `kit rules add` | Installs a rule shipped with this Kit version (for example the optional `readme-header-tagline` or `llms-txt`), or creates a project rule. |
+| `kit rules list` / `kit rules view <slug>` | Show installed and available rules. |
 
-Fresh initialization preserves existing project-owned files and materializes
-the current rules and workflow starters. Use `kit init --refresh --dry-run
---diff` to preview managed bootstrap changes.
+Rules ship inside the Kit binary. A released binary installs exactly the rules
+it was built and tested with; nothing is fetched from GitHub. Unmodified
+installed rules update on refresh; locally edited rules are preserved and
+reported unless `--force` is used.
 
-## Rules And Maintenance
+## Validation And Maintenance
 
-| Command | Purpose |
+| Command | Why it exists |
 | --- | --- |
-| `kit rules add` | Import or create a repository-local ruleset. |
-| `kit rules list` | List installed and available rulesets. |
-| `kit rules view` | Inspect a local or registry ruleset. |
-| `kit rules link` | Link a ruleset from feature metadata. |
-| `kit registry status` | Report registry and managed-file freshness. |
-| `kit reconcile` | Preserve the existing project/file/rule/document reconciliation interface. |
-| `kit health` | Apply safe managed updates and validate the project contract; supports `--dry-run --diff`. |
-
-Preview managed reconciliation before applying it:
-
-```bash
-kit reconcile --include-files --dry-run --diff
-kit reconcile --include-files
-```
-
-When an included non-dry-run refresh is requested from the clone's primary
-checkout, Kit preserves that checkout and emits the existing delivery prompt;
-run the same write-capable reconciliation in the selected canonical worktree.
-An invocation already running in a linked writable worktree applies the refresh
-directly as before.
-
-## Agent Execution Adapters
-
-| Command | Purpose |
-| --- | --- |
-| `kit dispatch` | Produce a lane plan prompt for a task set after native planning; optional PR/watch modes remain bounded. |
-| `kit pr fix` | Select or target a PR and produce a repair prompt from current unresolved review feedback. |
-| `kit pr orchestrate` | Resolve bounded repository scope into a deterministic dependency-aware release prompt; Kit does not execute the release. |
-
-These commands may perform their documented GitHub or exact-lane preparation,
-but do not launch or supervise coding agents. Resolve
-`pr-feedback-repair` context before agent repair work. Release agents resolve
-`release-orchestration` and then `pull-request-merge` before any authorized
-merge or merge-queue mutation.
-
-`kit dispatch` and `kit pr fix` no longer accept `--max-subagents`. The active
-coding-agent host owns capacity and scheduling; `--single-agent` remains the
-explicit root-level opt-out from shared subagent guidance.
-
-## Inspection And Validation
-
-| Command | Purpose |
-| --- | --- |
-| `kit status` | Show current feature and Kit-managed state. |
-| `kit check` | Validate feature or project documents. |
-| `kit config check` | Validate and safely repair `.kit.yaml`, including interactive AWS profile, account, and enabled-Region selection. |
-| `kit aws verify` | Verify the configured AWS profile, account, and Region. |
-| `kit improve run` | Run deterministic Kit harness benchmark suites. |
+| `kit check [feature]` / `kit check --project` | Validates spec front matter and relationships, duplicate feature numbers, rule documents, the managed contract block, and, when `.kit.yaml` sets `source_file_line_limit`, handwritten source-file length. Exits non-zero on blocking findings. |
+| `kit reconcile` | Audits Kit-managed drift and, with `--include-files`, applies managed refreshes from a linked worktree; from the primary checkout it defers the write. |
+| `kit health` | One-shot maintenance for scheduled automation: applies safe managed updates, then runs the project check. `--dry-run --diff` previews. |
+| `kit registry status` | Cheap read-only report of whether Kit-managed files and rules match this binary. |
+| `kit status` | Current feature and Kit-managed state. |
+| `kit config check` | Validates `.kit.yaml` and, interactively, repairs the AWS context. |
+| `kit aws verify` | Verifies the configured AWS profile, account, and Region before AWS work. |
 
 ## Local Usage
 
-| Command | Purpose |
+| Command | Why it exists |
 | --- | --- |
-| `kit usage` / `kit usage report` | Aggregate bounded local command usage; default window is 90 days. |
-| `kit usage status` | Show effective collection state, storage bounds, coverage, and diagnostics. |
-| `kit usage refresh` | Validate, rotate, and prune usage storage; supports `--dry-run`. |
-| `kit usage clear` | Remove all or filtered usage events with confirmation. |
-| `kit usage enable` / `disable` | Set exactly one `--global` or `--project` preference. |
+| `kit usage report` / `status` / `refresh` / `clear` / `enable` / `disable` | Local, minimal command-usage evidence for deciding what Kit should keep. |
 
-Usage collection is local-only and records no arguments, output, raw project
-identity, paths, content, environment values, or secrets. A global disable
-overrides project settings. Usage commands are excluded from their own data.
+Usage collection is local-only and records no arguments, output, paths,
+content, environment values, or secrets. Unversioned development builds, test binaries,
+`--help` lookups, and processes with `KIT_USAGE_DISABLED=1` never record.
 
 ## Utilities
 
-- `kit upgrade`
-- `kit version`
-- `kit completion`
-- normal `kit help`
+`kit upgrade`, `kit version`, `kit completion`, and `kit help`.
 
-## Removed In Version 2
+## Removed In Version 3
 
-The following former top-level groups are absent: backlog, brainstorm, catchup,
-CI diagnosis, completion lifecycle, eval, handoff, implement, legacy staged
-commands, loop runtime, map, notes, pause/resume/remove lifecycle, plan/tasks,
-project refresh, prompt library, reflect, replay/state/trace, scaffold, set,
-skill, summarize, and verify. `dispatch` is explicitly retained.
-
-Existing repository files are not deleted. Use the [migration
-guide](migration-v2.md) to replace command references safely.
+These no longer exist: `kit context resolve` and the workflow manifests under
+`docs/references/workflows/`, `kit capabilities`, `kit dispatch`, `kit pr fix`,
+`kit pr orchestrate`, `kit improve run`, `kit instructions`, `kit rules link`,
+the `--profile` and `--single-agent` flags, and the generated
+`docs/PROJECT_PROGRESS_SUMMARY.md`. The universal contract and each rule's
+`Applies When` section replace workflow routing; hosts already expose their
+own tools, delegation, and command help.

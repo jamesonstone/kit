@@ -34,7 +34,6 @@ type reconcileReport struct {
 	ProjectRoot            string
 	Feature                *feature.Feature
 	Findings               []reconcileFinding
-	NeedsRollup            bool
 	ReferenceMigration     bool
 	VerificationMigration  bool
 	DeliverySnapshot       []managedFileDeliverySnapshot
@@ -71,14 +70,13 @@ func buildReconcileReport(projectRoot string, cfg *config.Config, feat *feature.
 	}
 
 	if feat == nil {
-		sourceAudit := inspectSourceFileSizes(projectRoot)
+		sourceAudit := inspectSourceFileSizes(projectRoot, cfg.SourceFileLineLimit)
 		report.SourceFileAudit = &sourceAudit.Summary
 		report.Findings = append(report.Findings, sourceAudit.Findings...)
 		report.Findings = append(report.Findings, auditDuplicateFeatureNumbers(cfg.SpecsPath(projectRoot), projectRoot, features)...)
 		report.Findings = append(report.Findings, auditInitScaffoldArtifacts(projectRoot)...)
 		report.Findings = append(report.Findings, auditConstitution(projectRoot)...)
 		report.Findings = append(report.Findings, auditRulesets(projectRoot)...)
-		report.Findings = append(report.Findings, auditProjectProgressSummary(projectRoot, features)...)
 		for i := range features {
 			report.Findings = append(report.Findings, auditFeatureDocuments(projectRoot, &features[i], targets)...)
 		}
@@ -88,16 +86,8 @@ func buildReconcileReport(projectRoot string, cfg *config.Config, feat *feature.
 		report.Findings = append(report.Findings, auditInstructionFiles(projectRoot, cfg)...)
 	} else {
 		report.Findings = append(report.Findings, auditFeatureDocuments(projectRoot, feat, targets)...)
-		report.Findings = append(report.Findings, auditFeatureRollupCoverage(projectRoot, feat)...)
 		if activeVerificationFeature != nil && activeVerificationFeature.DirName == feat.DirName {
 			report.Findings = append(report.Findings, auditExecutableVerificationAdvisory(projectRoot, activeVerificationFeature)...)
-		}
-	}
-
-	for _, finding := range report.Findings {
-		if filepath.Base(finding.FilePath) == "PROJECT_PROGRESS_SUMMARY.md" {
-			report.NeedsRollup = true
-			break
 		}
 	}
 
@@ -163,7 +153,7 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 		if artifact.localOnly {
 			update = fmt.Sprintf("run `kit init` to create the missing %s and keep it covered by `.gitignore`", artifact.description)
 		}
-		findings = append(findings, newFinding(
+		finding := newFinding(
 			reconcileSeverityWarning,
 			absolutePath,
 			fmt.Sprintf("missing Kit init scaffold artifact `%s`", artifact.relativePath),
@@ -173,7 +163,11 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 				"kit init",
 				fmt.Sprintf("test -f %s", absolutePath),
 			},
-		))
+		)
+		// Ignored local environment files are per-checkout state, absent from
+		// clean clones such as CI; report them without failing validation.
+		finding.NonBlocking = artifact.localOnly
+		findings = append(findings, finding)
 	}
 
 	return findings

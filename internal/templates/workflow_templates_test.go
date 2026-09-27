@@ -213,16 +213,6 @@ func TestSpecTemplateUsesV3LivingSpecSections(t *testing.T) {
 	}
 }
 
-func TestBuildSpecV2ArtifactRemainsCompatible(t *testing.T) {
-	doc := document.Parse(BuildSpecV2ArtifactForFeature(document.FeatureMetadataFromDir("0001-sample")), "SPEC.md", document.TypeSpec)
-	if doc.Metadata == nil || doc.Metadata.WorkflowVersion != 2 || doc.Metadata.Phase != "clarify" {
-		t.Fatalf("expected V2 compatibility metadata, got %#v", doc.Metadata)
-	}
-	if !doc.HasSection("THESIS") || !doc.HasSection("VALIDATION MAP") {
-		t.Fatalf("expected V2 compatibility sections, got %#v", doc.RequiredSections())
-	}
-}
-
 func TestPlanTemplateUsesReferenceProseSection(t *testing.T) {
 	checks := []string{
 		"## DEPENDENCIES",

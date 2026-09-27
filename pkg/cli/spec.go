@@ -10,7 +10,6 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
 	"github.com/jamesonstone/kit/v3/internal/feature"
-	"github.com/jamesonstone/kit/v3/internal/rollup"
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
@@ -76,9 +75,6 @@ func runNativePlanSpec(cmd *cobra.Command, args []string) error {
 	if doc.Metadata != nil {
 		workflowVersion = doc.Metadata.WorkflowVersion
 	}
-	if err := rollup.Update(projectRoot, cfg); err != nil {
-		return fmt.Errorf("update PROJECT_PROGRESS_SUMMARY.md: %w", err)
-	}
 
 	action := "adopted"
 	if created || specCreated {
@@ -97,7 +93,7 @@ func runNativePlanSpec(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	if _, err := fmt.Fprintf(out, "Next: run `kit context resolve --feature %s --json`, use native agent planning, and keep material decisions, validation, and outcome current in SPEC.md.\n", feat.DirName); err != nil {
+	if _, err := fmt.Fprintf(out, "Next: plan natively and keep material decisions, validation, and outcome current in docs/specs/%s/SPEC.md.\n", feat.DirName); err != nil {
 		return err
 	}
 	_, err = fmt.Fprintln(out, "Managed guidance: run `kit status` and follow any Kit-managed refresh action before implementation.")

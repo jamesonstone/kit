@@ -12,10 +12,6 @@ import (
 )
 
 func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
-	previousSingleAgent := singleAgent
-	singleAgent = false
-	t.Cleanup(func() { singleAgent = previousSingleAgent })
-
 	projectRoot := t.TempDir()
 	report := &reconcileReport{
 		ProjectRoot: projectRoot,
@@ -24,7 +20,6 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 			DirName: "0001-sample",
 			Path:    filepath.Join(projectRoot, "docs", "specs", "0001-sample"),
 		},
-		NeedsRollup: true,
 		Findings: []reconcileFinding{
 			{
 				Severity:          reconcileSeverityError,
@@ -41,7 +36,6 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 	checks := []string{
 		"feature sample",
 		"Only update Kit-managed docs and scaffold files; do not modify product code, tests, runtime config, generated artifacts, or implementation files.",
-		"use subagents and queue work according to overlapping file changes",
 		"contract order:",
 		"Audit snapshot:",
 		"Files to fix:",
@@ -59,7 +53,6 @@ func TestBuildReconcilePromptIncludesScopeRulesAndVerification(t *testing.T) {
 		"create or update the ready pull request",
 		"disturb unrelated root-checkout or worktree changes",
 		"`kit check sample`",
-		"also refresh `PROJECT_PROGRESS_SUMMARY.md`",
 		"`Findings`",
 		"`Updates`",
 		"`Verification`",
@@ -174,28 +167,6 @@ func TestBuildReconcilePromptIncludesVerificationMigrationRules(t *testing.T) {
 		if !strings.Contains(prompt, check) {
 			t.Fatalf("expected verification migration prompt to contain %q, got %q", check, prompt)
 		}
-	}
-}
-
-func TestBuildReconcilePrompt_OmitsSubagentInstructionForSingleAgent(t *testing.T) {
-	previousSingleAgent := singleAgent
-	singleAgent = true
-	t.Cleanup(func() { singleAgent = previousSingleAgent })
-
-	report := &reconcileReport{
-		ProjectRoot: t.TempDir(),
-		Findings: []reconcileFinding{
-			{
-				Severity: reconcileSeverityError,
-				FilePath: "/tmp/TASKS.md",
-				Issue:    "task `T001` exists in `PROGRESS TABLE` but not in `TASK DETAILS`",
-			},
-		},
-	}
-
-	prompt := buildReconcilePrompt(report)
-	if strings.Contains(prompt, "use subagents and queue work according to overlapping file changes") {
-		t.Fatalf("expected single-agent prompt to omit explicit subagent instruction, got %q", prompt)
 	}
 }
 

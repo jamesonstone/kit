@@ -42,27 +42,8 @@ func (execCICommandRunner) OutputAllowError(dir string, name string, args ...str
 	return output, fmt.Errorf("%w: %s", err, detail)
 }
 
-type ciTarget struct {
-	Repository string `json:"repository"`
-	Branch     string `json:"branch,omitempty"`
-	PRNumber   int    `json:"pr_number,omitempty"`
-	HeadSHA    string `json:"head_sha,omitempty"`
-}
-
-type ciDiagnosis struct {
-	Target ciTarget `json:"target"`
-}
-
 func outputJSON(writer io.Writer, value any) error {
 	encoder := json.NewEncoder(writer)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(value)
-}
-
-func repoArgs(repository string, args ...string) []string {
-	result := append([]string(nil), args...)
-	if strings.TrimSpace(repository) != "" {
-		result = append(result, "--repo", repository)
-	}
-	return result
 }

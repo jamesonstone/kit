@@ -35,7 +35,7 @@ func buildProjectInitPrompt(
 		doc.Paragraph(fmt.Sprintf("Initialize project memory and verified command entrypoints for the repository at %s.", projectRoot))
 		doc.Paragraph("Constitution guidance:")
 		doc.BulletList(
-			"Read docs/agents/README.md before inspecting repository evidence or modifying project memory",
+			"Follow the Kit-managed contract in AGENTS.md before inspecting repository evidence or modifying project memory",
 			fmt.Sprintf("Treat the exact generated starter at %s as a valid bootstrap Constitution", constitutionFullPath),
 			"Inspect implemented behavior, validated outcomes, current canonical documentation, and recurring repository conventions as evidence",
 			"Do not ask the user to explain the entire project, infer permanent rules from initial aspiration, or derive project truth from Kit-generated scaffolding",
@@ -60,7 +60,6 @@ func buildProjectInitPrompt(
 		doc.Paragraph("Rules:")
 		doc.BulletList(
 			"Initial product ideas and feature intent belong in the accepted native plan and relevant SPEC.md, not in the Constitution until implementation demonstrates project-wide truth",
-			"PROJECT_PROGRESS_SUMMARY.md must reflect the highest completed artifact per feature at all times",
 		)
 		doc.Paragraph("Delivery of command-created files:")
 		doc.BulletList(managedFileDeliveryInstructions(projectRoot, snapshots...)...)

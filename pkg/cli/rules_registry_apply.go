@@ -56,7 +56,7 @@ func applyRegistryRulesetSelection(projectRoot string, entries []registrySelecto
 			state = registryArtifactStateLocalCustom
 			hash = normalizedHash
 		}
-		recordRulesetRegistryState(cfg, entry.Registry, state, hash, updated)
+		recordRulesetRegistryState(cfg, entry.Registry, state, hash)
 		configChanged = true
 
 		switch {
@@ -141,10 +141,13 @@ func loadRulesetViewContent(ctx context.Context, projectRoot, slug string) (stri
 	if err != nil {
 		return "", "", err
 	}
-	for _, item := range projectRulesetRegistry(registry) {
+	for _, item := range registry {
 		if item.Slug == slug {
 			return item.Content, rulesetRegistryRulesetURL(slug), nil
 		}
 	}
-	return "", "", fmt.Errorf("ruleset %q was not found locally or in the Kit registry", slug)
+	if replacement, ok := retiredRulesets[slug]; ok {
+		return "", "", fmt.Errorf("ruleset %q was retired; replaced by %s", slug, replacement)
+	}
+	return "", "", fmt.Errorf("ruleset %q was not found locally or among the rules shipped with Kit", slug)
 }

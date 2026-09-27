@@ -192,10 +192,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		if reconcileAllowsCodeChanges(report.Findings) {
 			scopeInstruction = "limit source/test edits to listed behavior-preserving responsibility splits and directly required tests or canonical docs"
 		}
-		printWorkflowInstructions("reconcile (supporting step)", []string{
-			"run the generated prompt in the current coding agent session",
-			scopeInstruction,
-		})
+		fmt.Printf("Next: run the generated prompt in the current coding agent session; %s.\n", scopeInstruction)
 	}
 
 	return outputPromptWithClipboardDefault(buildReconcilePrompt(report), outputOnly, reconcileCopy)

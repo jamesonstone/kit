@@ -46,26 +46,6 @@ func (preparer *Preparer) worktrees(ctx context.Context, cwd string) ([]worktree
 	return entries, nil
 }
 
-func (preparer *Preparer) fetchOrigin(ctx context.Context, cwd string) error {
-	if _, err := preparer.git(ctx, cwd, "fetch", "--no-tags", "origin"); err != nil {
-		return fmt.Errorf("fetch origin: %w", err)
-	}
-	return nil
-}
-
-func (preparer *Preparer) refExists(ctx context.Context, cwd, ref string) bool {
-	_, err := preparer.git(ctx, cwd, "rev-parse", "--verify", "--quiet", ref)
-	return err == nil
-}
-
-func (preparer *Preparer) gitText(ctx context.Context, cwd string, args ...string) (string, error) {
-	output, err := preparer.git(ctx, cwd, args...)
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(string(output)), nil
-}
-
 func (preparer *Preparer) git(ctx context.Context, cwd string, args ...string) ([]byte, error) {
 	return preparer.command(ctx, cwd, "git", args...)
 }

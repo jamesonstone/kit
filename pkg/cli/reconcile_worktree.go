@@ -34,12 +34,6 @@ func buildDeferredReconcileCommand(args []string) string {
 	if reconcileMigrateVerification {
 		command = append(command, "--migrate-verification")
 	}
-	if profile := currentPromptProfile(); profile != promptProfileNone {
-		command = append(command, "--profile="+shellQuoteArgument(string(profile)))
-	}
-	if singleAgent {
-		command = append(command, "--single-agent")
-	}
 	if reconcileCopy {
 		command = append(command, "--copy")
 	}

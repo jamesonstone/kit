@@ -104,7 +104,7 @@ func TestAuditSourceFileSizesWithoutGitScopesFilesAndExclusions(t *testing.T) {
 		t.Fatalf("os.Chmod() error = %v", err)
 	}
 
-	findings := auditSourceFileSizes(projectRoot)
+	findings := auditSourceFileSizes(projectRoot, 300)
 	if len(findings) != 2 {
 		t.Fatalf("findings = %#v, want main.go and executable script", findings)
 	}
@@ -121,7 +121,7 @@ func TestAuditSourceFileSizesUsesGitVersionControlEligibleSet(t *testing.T) {
 	writeLines(t, filepath.Join(projectRoot, "ignored.py"), 303, "value = True")
 	runGitForSourceAuditTest(t, projectRoot, "add", ".gitignore", "tracked.go")
 
-	findings := auditSourceFileSizes(projectRoot)
+	findings := auditSourceFileSizes(projectRoot, 300)
 	if len(findings) != 2 {
 		t.Fatalf("findings = %#v, want tracked and untracked non-ignored files", findings)
 	}
@@ -134,14 +134,14 @@ func TestAuditSourceFileSizesReportsGitEnumerationFailure(t *testing.T) {
 	writeFile(t, filepath.Join(projectRoot, ".git"), "not a worktree gitdir\n")
 	writeLines(t, filepath.Join(projectRoot, "main.go"), 301, "package main")
 
-	findings := auditSourceFileSizes(projectRoot)
+	findings := auditSourceFileSizes(projectRoot, 300)
 	if len(findings) != 1 || !strings.Contains(findings[0].Issue, "source-file-size audit unavailable") {
 		t.Fatalf("findings = %#v, want one unavailable-audit finding", findings)
 	}
 	if findings[0].AllowsCodeChanges {
 		t.Fatalf("enumeration failure must not authorize source edits: %#v", findings[0])
 	}
-	result := inspectSourceFileSizes(projectRoot)
+	result := inspectSourceFileSizes(projectRoot, 300)
 	if result.Summary.Complete || !strings.Contains(sourceFileAuditEvidence(&result.Summary), "clean result prohibited") {
 		t.Fatalf("summary = %#v, want explicit incomplete evidence", result.Summary)
 	}
@@ -154,6 +154,7 @@ func TestBuildReconcileReportIncludesWholeProjectSourceFileFindings(t *testing.T
 	if err != nil {
 		t.Fatalf("config.Load() error = %v", err)
 	}
+	cfg.SourceFileLineLimit = 300
 
 	report, err := buildReconcileReport(projectRoot, cfg, nil)
 	if err != nil {
@@ -167,12 +168,12 @@ func TestBuildReconcileReportIncludesWholeProjectSourceFileFindings(t *testing.T
 
 func TestBuildReconcilePromptAuthorizesOnlyBoundedSourceSplits(t *testing.T) {
 	projectRoot := t.TempDir()
-	_, ok, _ := auditSourceFileSize(projectRoot, "main.go")
+	_, ok, _ := auditSourceFileSize(projectRoot, "main.go", 300)
 	if ok {
 		t.Fatal("missing fixture must not produce source finding")
 	}
 	writeLines(t, filepath.Join(projectRoot, "main.go"), 301, "package main")
-	finding, ok, _ := auditSourceFileSize(projectRoot, "main.go")
+	finding, ok, _ := auditSourceFileSize(projectRoot, "main.go", 300)
 	if !ok {
 		t.Fatal("oversized source fixture produced no finding")
 	}
@@ -181,6 +182,7 @@ func TestBuildReconcilePromptAuthorizesOnlyBoundedSourceSplits(t *testing.T) {
 		ProjectRoot: projectRoot,
 		Findings:    []reconcileFinding{finding},
 		SourceFileAudit: &sourceFileAuditSummary{
+			Limit:          300,
 			CandidateCount: 1,
 			EligibleCount:  1,
 			ViolationCount: 1,

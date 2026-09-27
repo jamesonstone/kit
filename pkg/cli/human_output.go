@@ -68,15 +68,6 @@ func (s humanOutputStyle) muted(text string) string {
 	return dim + text + reset
 }
 
-func (s humanOutputStyle) bullet(text string) string {
-	prefix := "- "
-	if s.enabled {
-		prefix = "• "
-	}
-
-	return prefix + text
-}
-
 func (s humanOutputStyle) clipboardAcknowledgement() string {
 	if !s.enabled {
 		return "Copied the prepared text to the clipboard."
@@ -91,15 +82,6 @@ func (s humanOutputStyle) selectionTitle(text string) string {
 
 func (s humanOutputStyle) nextStepsTitle() string {
 	return s.title("🪜", "Next steps")
-}
-
-func (s humanOutputStyle) currentStepLine(step string) string {
-	label := "Current step:"
-	if s.enabled {
-		label = "📍 Current step:"
-	}
-
-	return fmt.Sprintf("%s %s", s.label(label), step)
 }
 
 func (s humanOutputStyle) sectionDivider() string {

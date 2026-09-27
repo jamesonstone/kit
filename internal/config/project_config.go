@@ -36,15 +36,6 @@ func (c *Config) sortRegistryArtifacts() {
 	})
 }
 
-func (c *Config) sortRemovedFeatures() {
-	sort.SliceStable(c.RemovedFeatures, func(i, j int) bool {
-		if c.RemovedFeatures[i].Number != c.RemovedFeatures[j].Number {
-			return c.RemovedFeatures[i].Number < c.RemovedFeatures[j].Number
-		}
-		return c.RemovedFeatures[i].DirName < c.RemovedFeatures[j].DirName
-	})
-}
-
 // FindProjectRoot traverses upward from the current directory to find .kit.yaml.
 // Returns the directory containing .kit.yaml, or an error if not found.
 func FindProjectRoot() (string, error) {
@@ -114,17 +105,7 @@ func (c *Config) SpecsPath(projectRoot string) string {
 	return filepath.Join(projectRoot, c.SpecsDir)
 }
 
-// SkillsPath returns the absolute path to the skills directory.
-func (c *Config) SkillsPath(projectRoot string) string {
-	return filepath.Join(projectRoot, c.SkillsDir)
-}
-
 // ConstitutionAbsPath returns the absolute path to the constitution file.
 func (c *Config) ConstitutionAbsPath(projectRoot string) string {
 	return filepath.Join(projectRoot, c.ConstitutionPath)
-}
-
-// ProgressSummaryPath returns the absolute path to PROJECT_PROGRESS_SUMMARY.md.
-func (c *Config) ProgressSummaryPath(projectRoot string) string {
-	return filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md")
 }

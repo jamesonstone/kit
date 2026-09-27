@@ -16,18 +16,6 @@ func initTestSupportFileContent(relativePath string) string {
 	return ""
 }
 
-func stringSlicesEqual(left, right []string) bool {
-	if len(left) != len(right) {
-		return false
-	}
-	for i := range left {
-		if left[i] != right[i] {
-			return false
-		}
-	}
-	return true
-}
-
 func withInitFlags(t *testing.T, run func()) {
 	t.Helper()
 

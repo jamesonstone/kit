@@ -86,10 +86,6 @@ func TestBuildDeferredReconcileCommandPreservesWriteIntent(t *testing.T) {
 
 	t.Run("filtered forced feature refresh", func(t *testing.T) {
 		resetReconcileFlags(t)
-		restorePromptProfileState(t, promptProfileFrontend, true)
-		previousSingleAgent := singleAgent
-		singleAgent = true
-		t.Cleanup(func() { singleAgent = previousSingleAgent })
 		reconcileForce = true
 		reconcileRefreshFiles = []string{"docs/rules/owner's-rule.md", "AGENTS.md"}
 		reconcileMigrateReferences = true
@@ -99,7 +95,7 @@ func TestBuildDeferredReconcileCommandPreservesWriteIntent(t *testing.T) {
 		got := buildDeferredReconcileCommand([]string{"sample feature"})
 		want := "kit reconcile 'sample feature' --include-files --force " +
 			"--file 'docs/rules/owner'\"'\"'s-rule.md' --file 'AGENTS.md' " +
-			"--migrate-references --migrate-verification --profile='frontend' --single-agent --copy --output-only"
+			"--migrate-references --migrate-verification --copy --output-only"
 		if got != want {
 			t.Fatalf("buildDeferredReconcileCommand() = %q, want %q", got, want)
 		}
@@ -116,7 +112,6 @@ func TestBuildDeferredReconcileCommandPreservesWriteIntent(t *testing.T) {
 func TestRunReconcileDefersPrimaryRefreshWithoutChangingOutputContract(t *testing.T) {
 	projectRoot := setupManagedSafetyGuidanceProject(t)
 	initializeReconcileGitFixture(t, projectRoot)
-	stubManagedSafetyRulesetRegistry(t)
 	setWorkingDirectory(t, projectRoot)
 
 	output := runManagedReconcileForWorktreeTest(t)
@@ -143,7 +138,6 @@ func TestRunReconcileAppliesManagedRefreshInLinkedWorktree(t *testing.T) {
 	initializeReconcileGitFixture(t, projectRoot)
 	linkedRoot := filepath.Join(t.TempDir(), "GH-160")
 	runGitForSourceAuditTest(t, projectRoot, "worktree", "add", "-b", "GH-160", linkedRoot, "main")
-	stubManagedSafetyRulesetRegistry(t)
 	setWorkingDirectory(t, linkedRoot)
 
 	output := runManagedReconcileForWorktreeTest(t)

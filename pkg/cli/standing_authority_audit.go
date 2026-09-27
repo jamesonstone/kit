@@ -12,6 +12,9 @@ func auditStandingAuthorityPolicy(projectRoot string) []reconcileFinding {
 	for _, check := range standingAuthorityChecks() {
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(check.path))
 		content, err := os.ReadFile(absolutePath)
+		if os.IsNotExist(err) {
+			continue
+		}
 		if err != nil {
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
@@ -25,20 +28,6 @@ func auditStandingAuthorityPolicy(projectRoot string) []reconcileFinding {
 		}
 		body := string(content)
 		normalizedBody := normalizeStandingAuthorityPolicy(body)
-		for _, required := range check.required {
-			if strings.Contains(normalizedBody, normalizeStandingAuthorityPolicy(required)) {
-				continue
-			}
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				fmt.Sprintf("policy document is missing standing-authority guidance %q", required),
-				templateSource(projectRoot),
-				"restore Kit's explicit bounded standing-authority, current-head readiness, standard-deployment, and pause/revocation boundaries",
-				[]string{fmt.Sprintf("rg -n %q %s", required, absolutePath)},
-			))
-			break
-		}
 		for _, forbidden := range check.forbidden {
 			if !strings.Contains(normalizedBody, normalizeStandingAuthorityPolicy(forbidden)) {
 				continue
@@ -59,23 +48,15 @@ func auditStandingAuthorityPolicy(projectRoot string) []reconcileFinding {
 
 type standingAuthorityCheck struct {
 	path      string
-	required  []string
 	forbidden []string
 }
 
+// standingAuthorityChecks guards locally customized rule copies against
+// reintroducing superseded merge and infrastructure authority (see spec 0075).
 func standingAuthorityChecks() []standingAuthorityCheck {
 	return []standingAuthorityCheck{
 		{
 			path: "docs/references/rules/github-pr-merge.md",
-			required: []string{
-				"Standing merge authority exists only when a human explicitly authorizes a",
-				"Bind later pull requests only when each is directly required",
-				"A changed in-scope head invalidates readiness, not standing",
-				"Only exact current `MERGE_READY` nodes may merge",
-				"A commit SHA or head OID identifies readiness evidence only",
-				"without exact-head reauthorization",
-				"Only an explicit human resume or new grant restores it",
-			},
 			forbidden: append(exactHeadReauthorizationPhrases(),
 				"accepted task or active `/goal`",
 				"accepted-task authority",
@@ -83,54 +64,10 @@ func standingAuthorityChecks() []standingAuthorityCheck {
 				"Merge only after a direct user request or accepted bounded merge plan names the exact authorized PR set",
 			),
 		},
-		{
-			path: "docs/references/rules/work-lane-gating.md",
-			required: []string{
-				"A commit SHA or head OID is readiness evidence, never an authorization",
-				"without exact-head reauthorization",
-			},
-			forbidden: exactHeadReauthorizationPhrases(),
-		},
-		{
-			path: "docs/references/rules/github-pr-delivery.md",
-			required: []string{
-				"A SHA or head OID identifies the evidence to revalidate",
-				"already-authorized standard deployment and browser retry",
-			},
-			forbidden: exactHeadReauthorizationPhrases(),
-		},
-		{
-			path: "docs/references/rules/cross-repository-program-coordination.md",
-			required: []string{
-				"A commit SHA or head OID is an evidence pointer, never an authorization",
-				"without exact-head reauthorization",
-			},
-			forbidden: exactHeadReauthorizationPhrases(),
-		},
-		{
-			path: "docs/references/workflows/pull-request-merge.md",
-			required: []string{
-				"Treat the SHA/head OID as the evidence key only",
-				"Do not request exact-head reauthorization after checks pass",
-			},
-			forbidden: exactHeadReauthorizationPhrases(),
-		},
-		{
-			path: "docs/references/workflows/release-orchestration.md",
-			required: []string{
-				"Each SHA/head OID identified readiness evidence only",
-				"No changed head required exact-head reauthorization",
-			},
-			forbidden: exactHeadReauthorizationPhrases(),
-		},
+		{path: "docs/references/rules/delivery.md", forbidden: exactHeadReauthorizationPhrases()},
+		{path: "docs/references/rules/cross-repository-program-coordination.md", forbidden: exactHeadReauthorizationPhrases()},
 		{
 			path: "docs/references/rules/infrastructure-change-approval.md",
-			required: []string{
-				"Standing merge/deploy authority never authorizes a covered mutation",
-				"### Standard Deployments Under Standing Authority",
-				"It excludes novel provider commands, new targets, workflow mutation, IAM",
-				"Deleting, destroying, or removing infrastructure always requires explicit",
-			},
 			forbidden: []string{
 				"Proceed autonomously when the graph contains only additive or rollback-preserving effects",
 				"Additive IAM, network topology",

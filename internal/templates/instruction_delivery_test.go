@@ -9,38 +9,6 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
-func TestMemoryWorktreeReferenceIsManagedAndNative(t *testing.T) {
-	generated := fileContentByPath(
-		InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
-		"docs/references/worktrees.md",
-	)
-	for _, want := range []string{
-		"Native `git worktree` commands and ordinary filesystem operations define this",
-		"The clone's primary checkout owns the shared repository-root `.env`",
-		"The user does not need to",
-		"`include` makes the existing diff part of the full repair review",
-		"`git worktree remove",
-		"Runtime services, databases, ports",
-	} {
-		if !strings.Contains(generated, want) {
-			t.Fatalf("expected V3 worktree reference to contain %q", want)
-		}
-	}
-	for _, forbidden := range []string{"git wt issue", "--no-link-env"} {
-		if strings.Contains(generated, forbidden) {
-			t.Fatalf("V3 worktree reference must not require optional wrapper syntax %q", forbidden)
-		}
-	}
-
-	checkedIn, err := os.ReadFile(filepath.Join("..", "..", "docs", "references", "worktrees.md"))
-	if err != nil {
-		t.Fatalf("read checked-in worktree reference: %v", err)
-	}
-	if string(checkedIn) != generated {
-		t.Fatal("checked-in worktree reference is not aligned with the V3 generator")
-	}
-}
-
 func TestInstructionTemplatesRouteTestingAndEnvironmentValidation(t *testing.T) {
 	routes := []string{
 		"Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md` and the project's `docs/references/testing.md`",

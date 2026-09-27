@@ -55,80 +55,21 @@ func TestRunInitRefresh_AdoptsExistingStatusOnlyRulesetAsManaged(t *testing.T) {
 	}
 }
 
-func TestRunInitRefresh_InstallsDownstreamCapabilitiesUsageRuleNotMaintainerRule(t *testing.T) {
-	tempDir := t.TempDir()
-	setupInitHome(t)
-	setWorkingDirectory(t, tempDir)
-	usage := registryRulesetWithContentForTest("kit-capabilities-usage", downstreamCapabilitiesUsageRulesetForTest(), "test-usage-commit")
-	maintainer := registryRulesetForTest("command-capabilities", []string{"kit", "cli", "capabilities"})
-	maintainer.Metadata.RegistryScope = rulesetRegistryScopeKitMaintainer
-	maintainer.Content = strings.Replace(
-		maintainer.Content,
-		"## Rules",
-		"## Rules\n\n- Update `pkg/cli/capabilities_catalog.go`.",
-		1,
-	)
-	stubRulesetRegistry(t, usage, maintainer)
-
-	if err := config.Save(tempDir, config.Default()); err != nil {
-		t.Fatalf("failed to save config: %v", err)
-	}
-
-	withInitFlags(t, func() {
-		initRefresh = true
-		initOutputOnly = true
-
-		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
-				t.Fatalf("runInit() error = %v", err)
-			}
-		})
-	})
-
-	usageContent, err := os.ReadFile(filepath.Join(tempDir, rulesetTarget("kit-capabilities-usage")))
-	if err != nil {
-		t.Fatalf("expected downstream usage ruleset to be installed: %v", err)
-	}
-	for _, check := range []string{
-		"slug: kit-capabilities-usage",
-		"kit capabilities <command> --json",
-		"Do not maintain Kit's internal command catalog from a downstream project",
-	} {
-		if !strings.Contains(string(usageContent), check) {
-			t.Fatalf("expected downstream usage ruleset to contain %q, got:\n%s", check, usageContent)
-		}
-	}
-	if document.Exists(filepath.Join(tempDir, rulesetTarget("command-capabilities"))) {
-		t.Fatalf("maintainer-only command-capabilities ruleset should not be installed in downstream refresh")
-	}
-
-	updated, err := config.Load(tempDir)
-	if err != nil {
-		t.Fatalf("config.Load() error = %v", err)
-	}
-	if _, ok := updated.RegistryArtifact(rulesetKind, "kit-capabilities-usage"); !ok {
-		t.Fatalf("expected registry state for downstream usage ruleset")
-	}
-	if _, ok := updated.RegistryArtifact(rulesetKind, "command-capabilities"); ok {
-		t.Fatalf("did not expect registry state for maintainer-only ruleset")
-	}
-}
-
 func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 	slugs := []string{
-		"agent-completion-output",
+		"agent-team-orchestration",
 		"aws-agent-toolkit-guidance",
 		"backend-service-architecture",
+		"constitution-curation",
 		"cross-repository-program-coordination",
 		"deadline-mode",
 		"deletion-safety",
+		"delivery",
 		"frontend-application-architecture",
-		"human-authorship",
+		"github-pr-merge",
 		"infrastructure-change-approval",
 		"slack-read-only",
-		"source-file-size",
 		"testing-and-environment-validation",
-		"work-lane-gating",
 	}
 	registry := make([]registryRuleset, 0, len(slugs))
 	expectedContent := make(map[string]string, len(slugs))
@@ -172,14 +113,9 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		if string(content) != expectedContent[slug] {
 			t.Errorf("installed %s ruleset differs from registry source", slug)
 		}
-		expectedPolicy := "read_policy_default: must"
-		if slug == "human-authorship" || slug == "deadline-mode" {
-			expectedPolicy = "read_policy_default: conditional"
-		}
 		for _, check := range []string{
 			"slug: " + slug,
 			"registry_scope: downstream",
-			expectedPolicy,
 		} {
 			if !strings.Contains(string(content), check) {
 				t.Errorf("expected installed %s ruleset to contain %q", slug, check)
@@ -276,5 +212,35 @@ func TestRunInitRefresh_AdoptsExistingCustomRulesetWithoutOverwriting(t *testing
 	artifact, ok := updated.RegistryArtifact(rulesetKind, registry.Slug)
 	if !ok || artifact.State != registryArtifactStateLocalCustom {
 		t.Fatalf("artifact = %#v, want local-custom", artifact)
+	}
+}
+
+func TestRunInitRefreshSkipsOptionalRulesUnlessAdded(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	core := registryRulesetForTest("delivery", []string{"git"})
+	optional := registryRulesetForTest("readme-header-tagline", []string{"readme"})
+	optional.Metadata.RegistryScope = rulesetRegistryScopeOptional
+	stubRulesetRegistry(t, core, optional)
+	if err := config.Save(tempDir, config.Default()); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+		_ = captureStdout(t, func() {
+			if err := runInit(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	if !document.Exists(filepath.Join(tempDir, rulesetTarget("delivery"))) {
+		t.Fatal("core rule was not installed")
+	}
+	if document.Exists(filepath.Join(tempDir, rulesetTarget("readme-header-tagline"))) {
+		t.Fatal("optional rule was installed without `kit rules add`")
 	}
 }

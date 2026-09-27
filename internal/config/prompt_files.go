@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -26,51 +24,6 @@ func LoadGlobal() (*Config, bool, error) {
 	}
 
 	return cfg, true, nil
-}
-
-func UpsertLocalPrompt(projectRoot, noun, verb string, prompt Prompt) error {
-	configPath := filepath.Join(projectRoot, ConfigFileName)
-	return UpsertPromptFile(configPath, noun, verb, prompt, false)
-}
-
-func UpsertGlobalPrompt(noun, verb string, prompt Prompt) error {
-	configPath, err := GlobalConfigPath()
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
-		return fmt.Errorf("failed to create global config directory: %w", err)
-	}
-
-	return UpsertPromptFile(configPath, noun, verb, prompt, true)
-}
-
-func UpsertPromptFile(configPath, noun, verb string, prompt Prompt, create bool) error {
-	if strings.TrimSpace(prompt.Content) == "" {
-		return fmt.Errorf("prompt %s %s content cannot be empty", noun, verb)
-	}
-
-	doc, err := readYAMLDocument(configPath, create)
-	if err != nil {
-		return err
-	}
-
-	root, err := documentMapping(doc, configPath)
-	if err != nil {
-		return err
-	}
-	prompts := findOrCreateMapping(root, "prompts")
-	nouns := findOrCreateMapping(prompts, noun)
-	verbNode := findOrCreateMapping(nouns, verb)
-
-	setScalar(verbNode, "content", prompt.Content)
-	if prompt.Description == "" {
-		removeKey(verbNode, "description")
-	} else {
-		setScalar(verbNode, "description", prompt.Description)
-	}
-
-	return writeYAMLDocument(configPath, doc)
 }
 
 func loadFile(configPath string) (*Config, error) {
@@ -136,21 +89,6 @@ func findOrCreateMapping(parent *yaml.Node, key string) *yaml.Node {
 	valueNode := &yaml.Node{Kind: yaml.MappingNode}
 	parent.Content = append(parent.Content, keyNode, valueNode)
 	return valueNode
-}
-
-func setScalar(parent *yaml.Node, key, value string) {
-	for i := 0; i+1 < len(parent.Content); i += 2 {
-		if parent.Content[i].Value == key {
-			parent.Content[i+1] = &yaml.Node{Kind: yaml.ScalarNode, Value: value}
-			return
-		}
-	}
-
-	parent.Content = append(
-		parent.Content,
-		&yaml.Node{Kind: yaml.ScalarNode, Value: key},
-		&yaml.Node{Kind: yaml.ScalarNode, Value: value},
-	)
 }
 
 func removeKey(parent *yaml.Node, key string) {

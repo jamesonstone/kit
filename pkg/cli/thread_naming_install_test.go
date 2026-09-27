@@ -38,12 +38,3 @@ func TestInitDoesNotInstallThreadNamingPolicy(t *testing.T) {
 		}
 	}
 }
-
-func TestInstructionsRejectsNamingAndTitleSubcommands(t *testing.T) {
-	for _, sub := range []string{"naming", "title"} {
-		_, err := executeInstructionsCommand(sub)
-		if err == nil {
-			t.Fatalf("kit instructions %s succeeded", sub)
-		}
-	}
-}

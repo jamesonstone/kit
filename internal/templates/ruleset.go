@@ -69,6 +69,6 @@ func BuildRulesetWithOptions(opts RulesetOptions) string {
 	builder.WriteString("- Confirm the referenced feature docs declare whether this ruleset is `must` or `conditional`.\n")
 	builder.WriteString("- Run the feature's declared checks after applying rules that affect behavior.\n\n")
 	builder.WriteString("## Examples\n\n")
-	builder.WriteString("- `kit rules link <feature> " + slug + " --read-policy conditional`\n")
+	builder.WriteString("- Reference `docs/references/rules/" + slug + ".md` from a feature's front matter with `read_policy: conditional`.\n")
 	return builder.String()
 }

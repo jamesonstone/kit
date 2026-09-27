@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/document"
-	"github.com/jamesonstone/kit/v3/internal/feature"
 )
 
 func validateRulesetDocument(ruleset rulesetDocument, expectedSlug string) []string {
@@ -58,7 +57,7 @@ func validateRulesetDocument(ruleset rulesetDocument, expectedSlug string) []str
 
 func validRulesetRegistryScope(scope string) bool {
 	switch strings.TrimSpace(scope) {
-	case "", rulesetRegistryScopeDownstream, rulesetRegistryScopeKitMaintainer:
+	case "", rulesetRegistryScopeDownstream, rulesetRegistryScopeOptional:
 		return true
 	default:
 		return false
@@ -66,7 +65,7 @@ func validRulesetRegistryScope(scope string) bool {
 }
 
 func requiredRulesetSections() []string {
-	return []string{"Purpose", "Applies When", "Rules", "Anti-Patterns", "Verification", "Examples"}
+	return []string{"Purpose", "Applies When", "Rules"}
 }
 
 func validRulesetStatus(value string) bool {
@@ -103,25 +102,6 @@ func rulesetReference(slug, readPolicy string) document.MetadataReference {
 	}
 }
 
-func rulesetLinkTargetDoc(feat *feature.Feature) (string, document.DocumentType, error) {
-	candidates := []struct {
-		name    string
-		docType document.DocumentType
-	}{
-		{name: "SPEC.md", docType: document.TypeSpec},
-		{name: "PLAN.md", docType: document.TypePlan},
-		{name: "BRAINSTORM.md", docType: document.TypeBrainstorm},
-		{name: "TASKS.md", docType: document.TypeTasks},
-	}
-	for _, candidate := range candidates {
-		path := filepath.Join(feat.Path, candidate.name)
-		if document.Exists(path) {
-			return path, candidate.docType, nil
-		}
-	}
-	return "", "", fmt.Errorf("feature %q has no document that can hold ruleset references", feat.Slug)
-}
-
 func featureRulesetReferenceErrors(projectRoot string, doc *document.Document) []string {
 	var errors []string
 	for _, reference := range doc.References() {
@@ -134,6 +114,9 @@ func featureRulesetReferenceErrors(projectRoot string, doc *document.Document) [
 			continue
 		}
 		if !document.Exists(path) {
+			if isRetiredRuleset(strings.TrimSuffix(filepath.Base(path), ".md")) {
+				continue // historical reference to a rule Kit retired
+			}
 			errors = append(errors, fmt.Sprintf("%s: ruleset reference %q points to missing file %s", doc.Path, reference.Name, filepath.ToSlash(strings.TrimSpace(reference.Target))))
 			continue
 		}

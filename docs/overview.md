@@ -1,64 +1,39 @@
 # Kit Overview
 
-Kit is a coding-agent-first repository contract and evidence harness. Humans
-bootstrap and maintain the repository contract; coding agents are the primary
-consumers of the resulting rules, workflows, specifications, strategies,
-references, and source evidence.
+Kit is a small, vendor-neutral harness for coding agents. It keeps the few
+project-level invariants that make agents safer and more correct, gives them a
+place for durable project memory, and provides deterministic commands where
+code is more reliable than model judgment.
 
-## Product Boundary
+## What Kit Does
 
-Kit:
+- Renders one universal agent contract into `AGENTS.md`, `CLAUDE.md`, and
+  `.github/copilot-instructions.md` inside a Kit-managed block.
+- Ships contextual rules with each release and installs the core set under
+  `docs/references/rules/`; agents read a rule only when the contract's trigger
+  for it applies.
+- Scaffolds project memory: `docs/CONSTITUTION.md`, `docs/specs/<feature>/SPEC.md`
+  (with worktree-safe numbering), and `docs/references/testing.md`.
+- Validates and converges Kit-managed state (`kit check`, `kit reconcile`,
+  `kit health`, `kit registry status`).
+- Verifies AWS identity before AWS work (`kit aws verify`).
+- Keeps local, minimal usage evidence (`kit usage`).
 
-- materializes repository-local rules and declarative workflow contracts;
-- preserves living feature specifications and project references;
-- reports command capabilities and mutation boundaries;
-- resolves deterministic, ordered local evidence for an explicit workflow; and
-- provides bounded prompt adapters for dispatch, pull-request repair, and
-  authority-aware release orchestration.
+## What Kit Deliberately Does Not Do
 
-Kit does not:
-
-- infer project truth;
-- call a model;
-- launch or supervise agents;
-- put network access or writes inside `kit context resolve`; or
-- replace native planning, Git, GitHub, test, or delivery authority.
-
-## Evidence Flow
-
-1. Use `kit capabilities <command> --json` when command behavior is uncertain.
-2. Run `kit context resolve --workflow <slug> --json` with relevant feature
-   and path hints.
-3. Load required selected artifacts in order.
-4. Use native agent planning and repository evidence.
-5. Create or adopt a living `SPEC.md` when material rationale must survive.
-6. Implement, validate, and curate the actual integrated outcome.
-7. Rerun resolution after material scope changes.
-
-Repository-local Markdown and source remain authoritative. Resolved JSON is a
-reproducible projection, not a second source of truth.
-
-## Conservative Major Reset
-
-Version 2 removes command families that duplicated native agent capabilities or
-had no durable role. It retains the bootstrap, specification, dispatch,
-rules-registry, reconciliation, health, inspection, validation, PR-repair, and
-utility surfaces. Historical specifications remain valid evidence; Kit does not
-mechanically rewrite them or delete downstream project-owned content.
-
-Local bounded usage telemetry supplies future removal evidence without network
-collection. The weekly health task retains its repository-maintenance behavior
-and adds one overall usage analysis per run.
+- Plan, route context, or choose which files an agent reads.
+- Describe host tools, models, or delegation mechanics; hosts expose those.
+- Generate prompts that wrap user intent in orchestration boilerplate.
+- Fetch rules or instructions from the network at runtime.
+- Launch, supervise, or orchestrate agents, or call a model.
 
 ## Core Artifacts
 
 | Artifact | Role |
 | --- | --- |
-| `.kit.yaml` | Project configuration, registry state, and optional project usage preference |
-| `docs/references/rules/*.md` | Durable just-in-time agent rules |
-| `docs/references/workflows/*.md` | Declarative execution contracts |
-| `docs/specs/<feature>/SPEC.md` | Living feature rationale, plan, validation, and outcome |
-| `docs/PROJECT_PROGRESS_SUMMARY.md` | Feature-history index |
+| `.kit.yaml` | Project configuration, installed-rule state, optional `source_file_line_limit` and AWS context |
+| `AGENTS.md`, `CLAUDE.md`, Copilot instructions | The universal contract in a Kit-managed block; project guidance goes outside it |
+| `docs/references/rules/*.md` | Contextual rules shipped with the Kit binary |
 | `docs/CONSTITUTION.md` | Demonstrated project-wide invariants |
-| `docs/references/*.md` | Reusable repository evidence |
-| `AGENTS.md` and provider files | Thin routes into the repository contract |
+| `docs/specs/<feature>/SPEC.md` | Living feature rationale, plan, validation, and outcome |
+| `docs/references/testing.md` | The project's validation commands |

@@ -51,7 +51,7 @@ func referencePolicyDiagnostics(field string, reference MetadataReference) []Met
 			"set status: stale or optional unless the active reference should be excluded from context plans",
 		))
 	}
-	if relation == ReferenceRelationConstrains && readPolicy != ReferenceReadPolicyMust {
+	if relation == ReferenceRelationConstrains && readPolicy != ReferenceReadPolicyMust && status != ReferenceStatusStale {
 		diagnostics = append(diagnostics, metadataWarning(
 			field+".read_policy",
 			"constraining reference should normally be must-read",

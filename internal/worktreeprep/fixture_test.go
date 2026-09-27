@@ -41,7 +41,6 @@ func newRepositoryFixture(t *testing.T) repositoryFixture {
 	gitCommand(t, primary, "push", "-u", "origin", "main")
 	gitCommand(t, remote, "symbolic-ref", "HEAD", "refs/heads/main")
 	preparer := New()
-	preparer.homeDir = func() (string, error) { return home, nil }
 	return repositoryFixture{
 		root:       root,
 		home:       home,
@@ -57,13 +56,6 @@ func (fixture repositoryFixture) createLocalBranch(t *testing.T, branch string) 
 	gitCommand(t, fixture.primary, "branch", branch)
 }
 
-func (fixture repositoryFixture) createRemoteBranch(t *testing.T, branch string) {
-	t.Helper()
-	fixture.createLocalBranch(t, branch)
-	gitCommand(t, fixture.primary, "push", "origin", branch)
-	gitCommand(t, fixture.primary, "branch", "-d", branch)
-}
-
 func gitCommand(t *testing.T, cwd string, args ...string) string {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
@@ -75,15 +67,4 @@ func gitCommand(t *testing.T, cwd string, args ...string) string {
 		t.Fatalf("git %s: %v\n%s", strings.Join(args, " "), err, output)
 	}
 	return strings.TrimSpace(string(output))
-}
-
-func assertSymlink(t *testing.T, path, target string) {
-	t.Helper()
-	actual, err := os.Readlink(path)
-	if err != nil {
-		t.Fatalf("readlink %s: %v", path, err)
-	}
-	if !samePath(actual, target) {
-		t.Fatalf("symlink %s target = %q, want %q", path, actual, target)
-	}
 }

@@ -37,14 +37,12 @@ type statusManagedFilesSummary struct {
 }
 
 type statusRegistrySummary struct {
-	SourceRepo   string `json:"source_repo,omitempty"`
-	SourceBranch string `json:"source_branch,omitempty"`
-	Total        int    `json:"total"`
-	Managed      int    `json:"managed"`
-	Missing      int    `json:"missing"`
-	LocalCustom  int    `json:"local_custom"`
-	Conflicts    int    `json:"conflicts"`
-	Unknown      int    `json:"unknown"`
+	Total       int `json:"total"`
+	Managed     int `json:"managed"`
+	Missing     int `json:"missing"`
+	LocalCustom int `json:"local_custom"`
+	Conflicts   int `json:"conflicts"`
+	Unknown     int `json:"unknown"`
 }
 
 type statusKitManagedItem struct {
@@ -66,10 +64,6 @@ func buildStatusKitManagedSummary(
 ) (*statusKitManagedSummary, error) {
 	summary := &statusKitManagedSummary{
 		State: statusKitManagedStateCurrent,
-		Registry: statusRegistrySummary{
-			SourceRepo:   cfg.Registry.Source.Repo,
-			SourceBranch: cfg.Registry.Source.Branch,
-		},
 	}
 
 	filePlan, err := planStatusManagedFileChanges(projectRoot)

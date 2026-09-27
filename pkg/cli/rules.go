@@ -45,7 +45,7 @@ var (
 var rulesCmd = &cobra.Command{
 	Use:   "rules",
 	Short: "Manage durable repo-local rulesets",
-	Long: `Import, preview, create, list, and link durable repo-local rulesets.
+	Long: `Import, preview, create, and list durable repo-local rulesets.
 
 Rulesets live under docs/references/rules/ and are loaded through feature
 front matter references. They are not inlined into always-loaded instruction
@@ -58,10 +58,12 @@ var rulesAddCmd = &cobra.Command{
 	Long: `Import or create a durable repo-local ruleset.
 
 Without a slug, opens the registry selector so users can import available
-rulesets from the Kit GitHub registry or toggle existing registry rules active
+rules shipped with this Kit binary or toggle existing registry rules active
 and inactive.
 
-With a slug argument, creates a custom ruleset non-interactively for scripts.
+With a slug argument, installs the rule of that name shipped with this Kit
+binary (for example llms-txt), or creates a custom ruleset when Kit ships
+none.
 Use --custom without a slug for the interactive custom ruleset builder; it asks
 for the ruleset name, loading policy, applicability, and rule context, then
 opens $EDITOR for the context by default, falls back to a vim-compatible editor
@@ -83,13 +85,6 @@ var rulesViewCmd = &cobra.Command{
 	Short: "View a local or registry ruleset before adding it",
 	Args:  cobra.ExactArgs(1),
 	RunE:  runRulesView,
-}
-
-var rulesLinkCmd = &cobra.Command{
-	Use:   "link <feature> <slug>",
-	Short: "Link a ruleset to a feature through canonical references",
-	Args:  cobra.ExactArgs(2),
-	RunE:  runRulesLink,
 }
 
 type rulesetMetadata struct {
@@ -130,12 +125,10 @@ func init() {
 	rulesAddCmd.Flags().BoolVar(&rulesAddSkip, "skip", false, "set read_policy_default to skip")
 	rulesAddCmd.Flags().BoolVar(&rulesAddCustom, "custom", false, "open the interactive custom ruleset builder instead of the registry selector")
 	rulesAddCmd.Flags().BoolVar(&rulesAddConditional, "conditional", false, "set read_policy_default to conditional")
-	rulesLinkCmd.Flags().StringVar(&rulesLinkReadPolicy, "read-policy", defaultRulesetReadPolicy, "ruleset read policy for this feature reference (must or conditional)")
 
 	rulesCmd.AddCommand(rulesAddCmd)
 	rulesCmd.AddCommand(rulesListCmd)
 	rulesCmd.AddCommand(rulesViewCmd)
-	rulesCmd.AddCommand(rulesLinkCmd)
 	rootCmd.AddCommand(rulesCmd)
 }
 
@@ -169,6 +162,10 @@ func runRulesAdd(cmd *cobra.Command, args []string) error {
 
 	slug := strings.TrimSpace(args[0])
 	if err := validateRulesetSlug(slug); err != nil {
+		return err
+	}
+
+	if installed, err := installShippedRuleset(cmd, projectRoot, slug); err != nil || installed {
 		return err
 	}
 
@@ -206,14 +203,6 @@ func runRulesAddInteractive(cmd *cobra.Command, projectRoot, readPolicyDefault s
 	prompt := buildRulesetOptimizationPrompt(projectRoot, path, input)
 	if err := outputPromptWithClipboardDefault(prompt, rulesAddOutputOnly, rulesAddCopy); err != nil {
 		return err
-	}
-
-	if !rulesAddOutputOnly {
-		printWorkflowInstructions("rules add", []string{
-			fmt.Sprintf("review and refine %s", path),
-			fmt.Sprintf("link the ruleset only where relevant with `kit rules link <feature> %s --read-policy conditional`", input.Slug),
-			"run `kit check --project` after agent optimization",
-		})
 	}
 
 	return nil
@@ -257,4 +246,31 @@ func runRulesList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 	return printRulesetList(cmd.OutOrStdout(), projectRoot, cfg, rulesets)
+}
+
+// installShippedRuleset installs a rule embedded in this binary by slug and
+// records it as managed. It reports false when no shipped rule has the slug.
+func installShippedRuleset(cmd *cobra.Command, projectRoot, slug string) (bool, error) {
+	registry, err := rulesetRegistryFetcher(cmd.Context())
+	if err != nil {
+		return false, err
+	}
+	for _, item := range registry {
+		if item.Slug != slug {
+			continue
+		}
+		if document.Exists(rulesetPath(projectRoot, slug)) && !rulesAddForce {
+			return true, fmt.Errorf("%s already exists; use --force to replace it with the shipped version", rulesetTarget(slug))
+		}
+		entry := registrySelectorEntry{Registry: item, DesiredActive: true}
+		if _, err := applyRegistryRulesetSelection(projectRoot, []registrySelectorEntry{entry}); err != nil {
+			return true, err
+		}
+		_, err := fmt.Fprintf(cmd.OutOrStdout(), "Installed Kit rule %s at %s\n", slug, rulesetTarget(slug))
+		return true, err
+	}
+	if replacement, ok := retiredRulesets[slug]; ok {
+		return true, fmt.Errorf("rule %s was retired; replaced by %s", slug, replacement)
+	}
+	return false, nil
 }

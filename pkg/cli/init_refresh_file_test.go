@@ -100,32 +100,6 @@ func TestRunInitRefresh_PrintsManagedFileDeliveryStepsAfterWrite(t *testing.T) {
 	}
 }
 
-func TestRunInitRefresh_CreatesV3WorktreeReference(t *testing.T) {
-	tempDir := t.TempDir()
-	relativePath := "docs/references/worktrees.md"
-
-	if err := runInitRefresh(tempDir, initRefreshOptions{
-		files:      []string{relativePath},
-		outputOnly: true,
-	}); err != nil {
-		t.Fatalf("runInitRefresh() error = %v", err)
-	}
-
-	var expected string
-	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionMemory) {
-		if support.RelativePath == relativePath {
-			expected = support.Content
-			break
-		}
-	}
-	if expected == "" {
-		t.Fatal("V3 instruction support files do not include the worktree reference")
-	}
-	if content := readFile(t, filepath.Join(tempDir, relativePath)); content != expected {
-		t.Fatalf("%s content did not match V3 support template", relativePath)
-	}
-}
-
 func TestRunInitRefresh_FileForcePreservesExistingMakefile(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
@@ -160,7 +134,7 @@ func TestRunInitRefresh_ForceDoesNotOverwriteExistingScaffoldFilesWithoutFileTar
 	stubRulesetRegistry(t)
 
 	writeFile(t, filepath.Join(tempDir, envrcPath), "source_env .custom\n")
-	writeFile(t, filepath.Join(tempDir, "docs", "agents", "README.md"), "# Agents Docs\n\nold\n")
+	writeFile(t, filepath.Join(tempDir, "docs", "references", "testing.md"), "# Testing Reference\n\nold\n")
 
 	withInitFlags(t, func() {
 		initRefresh = true
@@ -182,11 +156,11 @@ func TestRunInitRefresh_ForceDoesNotOverwriteExistingScaffoldFilesWithoutFileTar
 		t.Fatalf("%s content = %q, want custom content", envrcPath, envrcContent)
 	}
 
-	guardrailsContent, err := os.ReadFile(filepath.Join(tempDir, "docs", "agents", "README.md"))
+	guardrailsContent, err := os.ReadFile(filepath.Join(tempDir, "docs", "references", "testing.md"))
 	if err != nil {
-		t.Fatalf("failed to read docs/agents/README.md: %v", err)
+		t.Fatalf("failed to read docs/references/testing.md: %v", err)
 	}
-	if string(guardrailsContent) != initTestSupportFileContent("docs/agents/README.md") {
+	if string(guardrailsContent) != initTestSupportFileContent("docs/references/testing.md") {
 		t.Fatalf("expected generated docs support file to be overwritten on force, got:\n%s", guardrailsContent)
 	}
 }

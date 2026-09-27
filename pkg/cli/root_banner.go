@@ -19,8 +19,8 @@ const (
 func rootLong(style humanOutputStyle) string {
 	return rootBanner(style) + `
 Kit is a repository-local contract and evidence harness for coding agents.
-It materializes durable rules, workflows, specifications, strategies, and
-implementation patterns, then resolves only the evidence needed for the work.
+It renders one universal agent contract, ships contextual rules with each
+release, and validates and converges Kit-managed project state.
 Kit does not choose a model, infer project truth, or launch an agent.
 
 ` + flowDiagram(style)
@@ -55,23 +55,23 @@ func rootBanner(style humanOutputStyle) string {
 }
 
 func flowDiagram(style humanOutputStyle) string {
-	capabilities := rootColor(style, brainstorm, "kit capabilities <command> --json")
-	context := rootColor(style, plan, "kit context resolve --workflow <slug> --json")
+	initCommand := rootColor(style, brainstorm, "kit init")
+	check := rootColor(style, plan, "kit check --project")
 	agent := rootColor(style, implement, "Coding Agent")
 	reconcile := rootColor(style, constitution, "kit reconcile")
 
 	lines := []string{
 		rootHeading(style, "🔁 Agent-First Workflow"),
-		"  " + capabilities + rootMuted(style, " → establish command safety"),
-		"    " + rootArrow(style),
-		"  " + context + rootMuted(style, " → select ordered local evidence"),
+		"  " + initCommand + rootMuted(style, " → universal contract, core rules, project memory"),
 		"    " + rootArrow(style),
 		"  " + agent + rootMuted(style, " → plan, implement, validate, and curate memory"),
+		"    " + rootArrow(style),
+		"  " + check + rootMuted(style, " → validate specs, rules, contract, and source limits"),
 		"    " + rootArrow(style),
 		"  " + reconcile + rootMuted(style, " → detect and safely curate drift"),
 		"",
 		rootHeading(style, "🗂️ Canonical Inputs"),
-		"  " + rootColor(style, spec, "SPEC.md") + rootMuted(style, " · rules · workflows · Constitution · references · source evidence"),
+		"  " + rootColor(style, spec, "SPEC.md") + rootMuted(style, " · contextual rules · Constitution · testing reference · source"),
 	}
 
 	return strings.Join(lines, "\n")

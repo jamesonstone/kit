@@ -1,425 +1,50 @@
 ---
 kind: ruleset
 slug: testing-and-environment-validation
-description: Defines code-level PR checks, environment suites, immutable evidence, status reporting, and safe production end-to-end validation.
+description: Keeps code-level tests primary, validation honest, and browser and production testing safe.
 status: active
 registry_scope: downstream
 applies_to:
-  - coding-agent
-  - implementation
   - testing
   - validation
   - ci
-  - github-actions
-  - deployment
-  - local
-  - production
-  - end-to-end
-  - live-integration
   - browser-automation
-  - browser-testing
-read_policy_default: must
+  - production
+read_policy_default: conditional
 ---
 
 # Ruleset: testing-and-environment-validation
 
 ## Purpose
 
-- Make correctness validation a layered, repeatable part of development and
-  deployment in every Kit-managed project.
-- Preserve fast, precise language-native tests while adding environment-level
-  evidence for complete workflows and real integrations.
-- Produce immutable, redacted evidence that subsequent tests, coding agents,
-  and humans can inspect without overstating what a suite proved.
-- Keep production validation isolated, bounded, attributable, and safe.
+- Base completion claims on tests that actually ran against the changed behavior.
+- Keep browser and production validation from harming the user's machine, data, or customers.
 
 ## Applies When
 
-- A Kit-managed project implements, changes, validates, deploys, or releases
-  code, build behavior, generated contracts, CI, or runtime integrations.
-- A project creates or changes unit, component, contract, repository,
-  integration, end-to-end, live-integration, smoke, or production tests.
-- A pull-request or deployment workflow decides which correctness checks to
-  run or which evidence to retain.
-
-Load this rule before implementation and validation. Apply each test layer
-when the repository has that responsibility or boundary. Do not invent a
-deployment environment or external integration for a project that has none.
+- Changing behavior, adding or running tests, configuring CI, or running end-to-end, browser, or production validation.
 
 ## Rules
 
-### Confidence, Not Certainty
+### Code-Level Tests
 
-- Follow `agent-completion-output` for terminal reporting, which prescribes no
-  format. Keep observed validation results, gaps or non-passing evidence, and
-  any required rerun or remediation visible and distinct from one another.
-- Treat “near 100% correctness” as a risk-based confidence objective backed by
-  comprehensive evidence, not as a mathematical or absolute guarantee.
-- Map changed behavior and acceptance criteria to the narrowest tests that can
-  prove them, then add broader integration and end-to-end evidence for
-  boundary-spanning risks.
-- Report skipped, partial, blocked, flaky, and unavailable validation
-  literally. Do not convert unobserved behavior into a passing claim.
-- Use coverage reports to find untested behavior, not as a substitute for
-  meaningful assertions or as a universal percentage target.
-- For rule and instruction changes, baseline on a small eval set with outcome plus trajectory grading and human spot-checks; iterate from failure audits rather than a single static score.
+- Keep unit, integration, and contract tests in the language's native framework; they stay primary. End-to-end and live suites supplement them and never replace them.
+- Add or update the narrowest tests that prove each behavior change. Keep tests deterministic; fix flakiness instead of retrying it away.
+- Before handoff, run the project's validation commands from `docs/references/testing.md` and keep that file current when commands change.
+- Projects with code on GitHub should run their code-level checks on every pull request. Do not silently downgrade an integration test to a mock because CI lacks a dependency.
 
-### Preserve Code-Level Tests
+### Honest Results
 
-- Keep unit and other code-level tests in the language and framework's native
-  package, module, or test layout. Do not move them into the high-level suite
-  directories defined below.
-- End-to-end and live-integration tests supplement code-level tests and never
-  replace them.
-- Add or update the narrowest applicable tests for every behavior change,
-  including success, failure, boundary, authorization, concurrency,
-  idempotency, retry, and compatibility cases that materially affect risk.
-- Unit tests isolate deterministic logic from real networks, clocks,
-  randomness, processes, and persistent services unless the framework
-  provides a controlled substitute.
-- Component, controller, handler, client, contract, schema, and generated-code
-  tests verify their owned interface and translation behavior.
-- Repository and integration tests exercise real storage, queues, filesystems,
-  protocols, or faithful ephemeral fixtures when those boundaries determine
-  correctness.
-- Keep tests deterministic and independently repeatable. Diagnose and fix
-  flaky tests; do not hide them with unconditional retries, sleeps, relaxed
-  assertions, or permanent skips.
-- During development, run focused tests for fast feedback. Before handoff, run
-  the complete applicable code-level suite and record any genuine blocker.
-  This default may be superseded only by an active, explicitly recorded
-  `docs/references/rules/deadline-mode.md` authorization; supersession still
-  requires reporting deferred or reduced-scope validation literally, per
-  `agent-completion-output`, never as complete. The same authorization defers
-  UI and browser walkthrough verification during an in-progress merge or
-  deployment wave until every result is delivered, then requires one final
-  UI verification.
+- Report skipped, partial, flaky, blocked, and unavailable validation as exactly that. Coverage is a guide, not proof.
+- Keep generated run evidence out of Git (for example under an ignored `tmp/`), and redact secrets from any evidence.
 
-### Pull-Request CI
+### Browser Automation
 
-- GitHub-hosted projects with code must run all applicable code-level checks
-  on `pull_request`. This includes formatting, linting, static or type
-  analysis, unit, component, contract, repository, integration, schema,
-  generated-code, build, and security checks owned by the project.
-- Configure ephemeral services or faithful fixtures for integration checks.
-  Do not silently downgrade an integration test to a mock-only unit test
-  because CI lacks its boundary.
-- Make correctness jobs required when repository policy supports required
-  checks. Treat pending, skipped, cancelled, unavailable, and unobserved jobs
-  as distinct from passing jobs.
-- Run hermetic, stable, time-bounded local end-to-end suites in pull-request CI
-  when their dependencies and credentials can be isolated safely.
-- When a local end-to-end suite cannot run reliably in PR CI, document the
-  reason and require fresh local milestone evidence before implementation
-  handoff. The manual evidence does not replace mandatory code-level CI.
-- Upload CI-generated high-level run directories as workflow artifacts.
-  Never commit raw run evidence or let CI automatically edit the tracked
-  status map.
+- Never drive the user's active browser profile or personal sessions unless the user explicitly asks. Prefer the host's built-in or an isolated browser.
+- Own and name each browser session you start, close task-owned sessions and automation processes in teardown, and never terminate processes you did not start.
 
-### Merge Readiness
+### Production Validation
 
-Classify each authorized pull-request node from exact current-head evidence:
-
-- `MERGE_READY`: every required pre-merge gate has acceptable, attributable
-  evidence for the expected head, base, target, actor, and repository policy;
-- `BLOCKED`: a required gate failed or an explicit dependency or approval is
-  unmet; or
-- `UNKNOWN`: evidence is missing, stale, unavailable, ambiguous, or cannot be
-  attributed to the current head or target.
-
-Only `MERGE_READY` may enter a merge frontier. Never treat these as passing:
-
-- pending checks;
-- missing expected checks;
-- skipped checks without verified policy eligibility;
-- checks from an earlier head;
-- local tests substituted for required hosted checks; or
-- successful merge as deployment, runtime, integration, or production
-  evidence.
-
-Head or base drift invalidates readiness and requires revalidation. Preserve
-local, hosted, merge, deployment, runtime, and production results as separate
-claims.
-
-### High-Level Suite Layout
-
-- Put high-level executable suites under the repository-root `tests`
-  directory, organized first by test type and then by environment:
-
-```text
-tests/
-  end-to-end/
-    local/
-    production/
-  live-integration/
-    local/
-    production/
-  RUN_STATUS.md
-```
-
-- Adopt compatible existing directories instead of duplicating them. If an
-  existing path has incompatible semantics, use the collision-free sibling
-  `tests/end-to-end-kit` or `tests/live-integration-kit` with the same
-  environment children and document the choice in
-  `docs/references/testing.md`.
-- Keep shared scenarios and assertions environment-neutral when practical.
-  Environment wrappers own target URLs, credentials, preflight checks, and
-  environment-specific setup or cleanup.
-- End-to-end suites exercise a complete externally observable workflow across
-  the components that own it. Live-integration suites exercise a narrower
-  real external or shared boundary when a complete workflow is not the test's
-  purpose.
-- Do not relabel a narrow health probe or mocked component test as
-  end-to-end.
-
-### Browser Automation Lifecycle
-
-- For interactive browser work in Codex, follow the managed `AGENTS.md`
-  Browser policy: use `@Browser`; do not use `@Chrome`, control the user's
-  active Chrome profile, or launch external Chrome or Chromium through
-  Playwright, Selenium, Cypress, or browser MCP tools unless the user explicitly
-  requests it.
-- If `@Browser` is unavailable, report the limitation instead of silently
-  falling back to an external browser.
-- Treat explicit authorization for an external browser as bounded to the
-  requested task-owned run. Use an isolated automation-managed browser unless
-  the user explicitly requests their installed browser or profile.
-- Create one uniquely named browser session per task or test run. Reuse that
-  session for repeated operations instead of opening a new browser instance on
-  each step or attempt. Bound retries and never let a retry loop create
-  unbounded browser instances.
-- Record enough ownership information to distinguish the current task's
-  session, browser process, and automation daemon from an existing user-owned
-  browser or another task's automation. Process discovery alone does not grant
-  ownership.
-- Close every task-owned browser session, browser process, and automation
-  daemon during cleanup. When attaching to a user-owned browser, detach from
-  the automation connection without closing the browser or its user-owned
-  tabs, profiles, or processes.
-- Put browser and session cleanup in `finally`, `defer`, teardown hooks, or an
-  equivalent unconditional lifecycle mechanism. Cleanup must run on success,
-  failure, cancellation, timeout, and interrupted validation. A final `close`
-  command at the end of a linear script is insufficient.
-- Terminate only sessions and processes proven to be owned by the current task.
-  Never use broad cleanup such as `pkill Chrome`, `killall`, “close all
-  sessions,” or deletion of shared temporary directories during normal
-  validation.
-- Before claiming browser validation complete, verify that the task-owned
-  session, browser process, and automation daemon have exited. Treat any
-  cleanup or exit-verification failure as a validation failure, preserve the
-  original test result, and report the cleanup failure explicitly.
-- Do not disable or weaken macOS code-signing protections. Do not routinely
-  delete Chrome code-sign clone directories as a substitute for hermetic
-  browser selection, scoped ownership, and correct lifecycle cleanup.
-- Under an active `docs/references/rules/deadline-mode.md` authorization for
-  merge or deployment work, skip UI and browser walkthrough verification until
-  every result in that authorized wave is delivered, then run one final UI
-  verification. Report the deferred checks as `PARTIAL` or `SKIPPED`. This
-  does not skip required post-deployment production-suite checks in
-  `### Local And Production Execution`, browser lifecycle cleanup for any
-  session that did run, or the final UI verification itself.
-
-### Local And Production Execution
-
-- Run the applicable local suite after a coherent set of changes is developed
-  and before calling implementation validation complete.
-- Local suites use a production-like topology while keeping data and
-  dependencies isolated from production.
-- Run the applicable production suite only after deployment lands and after
-  verifying the exact target environment and deployed version or source
-  commit.
-- Automate production validation as a post-deployment job when the project can
-  do so safely and deterministically. Otherwise document an ordered operator
-  command and require its evidence before claiming production validation.
-- A failed production suite prevents a “production validated” claim.
-  Remediation and rollback follow the project's documented release policy;
-  this rule does not invent a universal rollback action.
-- A non-deployable project records production suites as `NOT_APPLICABLE`
-  rather than creating an artificial environment.
-
-### Immutable Run Evidence
-
-- Store every high-level execution beneath:
-
-```text
-tmp/<UTC-date>/<stable-test-id>/<positive-run-number>/
-```
-
-- Use a UTC date in `YYYY-MM-DD` form. Use a stable test identifier, normally
-  the executable basename including its extension. Use positive integer run
-  numbers scoped to the date and test identifier.
-- Reserve a run directory without overwriting. Concurrent or repeated runs
-  must atomically claim the next available positive integer or fail safely;
-  they must never reuse, truncate, or replace an existing run.
-- Give each execution a globally useful run ID in the form
-  `<YYYYMMDDTHHMMSSZ>-<short-unique-suffix>` and use that ID consistently in
-  evidence and synthetic resources.
-- Every run directory contains:
-  - `output.txt` with combined, readable, redacted execution output;
-  - `result.json` with the final machine-readable result;
-  - clearly named structured request, response, assertion, and diagnostic
-    files needed to explain the run.
-- `result.json` records at least:
-  - schema version, project, suite, stable test ID, and environment;
-  - run ID, run number, start and finish timestamps, and duration;
-  - result, exit code, source commit, and deployed version when applicable;
-  - target identity, assertion summary, cleanup status, and artifact paths.
-- Use only `PASS`, `FAIL`, `PARTIAL`, `BLOCKED`, `SKIPPED`, or
-  `NOT_APPLICABLE` as the final result.
-- Write a final result even when setup, assertions, or cleanup fail. Preserve
-  the original failure and report cleanup failure separately.
-- Redact credentials, authorization headers, cookies, private keys, signed URL
-  query strings, customer data, and other secrets from every artifact. Prefer
-  structured JSON, JSON Lines, Markdown, and plain text with stable field
-  names over terminal-only formatting.
-- Keep `tmp/` ignored by Git. Subsequent tests may read immutable structured
-  artifacts through documented paths, but must validate schema and status
-  before trusting them.
-
-### Curated Status Map
-
-- Track `tests/RUN_STATUS.md` as a curated current-state map, not as an
-  append-only command ledger.
-- Keep exactly one current row per suite and environment with these columns:
-
-```text
-| Suite | Environment | Current status | Latest attempt | Latest pass | Source/deployment | Run ID | Evidence | Active finding |
-```
-
-- Refresh the tracked map at meaningful validation milestones or when status,
-  deployed identity, evidence, or an active finding materially changes.
-- Preserve unresolved failures and diagnostically important recent failures in
-  `Active finding`. Do not add a new row for every repeated successful run.
-- Link or name immutable local evidence and CI artifacts precisely. Do not
-  claim that an expired, inaccessible, or unobserved artifact was inspected.
-- Local and CI tooling may generate a candidate complete status view under the
-  run directory, but must not silently rewrite or commit `RUN_STATUS.md`.
-
-### Safe Production Test Data
-
-- Permit bounded synthetic writes only when a genuine production workflow
-  cannot be validated read-only and the project provides safe write isolation.
-- Name every synthetic resource:
-
-```text
-kit-e2e-<project>-<environment>-<run-id>-<resource>[-<ordinal>]
-```
-
-- Keep the leading `kit-e2e-` marker visible. When identifier limits require
-  truncation, preserve that marker and store the complete identity in
-  supported metadata:
-  - `kit_e2e=true`
-  - `kit_e2e_project=<project>`
-  - `kit_e2e_environment=<environment>`
-  - `kit_e2e_run_id=<run-id>`
-  - `kit_e2e_created_at=<RFC3339 timestamp>`
-  - `kit_e2e_expires_at=<RFC3339 timestamp>` when retention is temporary
-- Before a mutating production test, verify the target environment, deployed
-  identity, dedicated least-privilege credentials, write authorization, rate
-  limit, cost limit, time limit, and cleanup or retention policy.
-- Operate only on synthetic resources carrying the execution's exact run ID.
-  Cleanup must select both the `kit-e2e-` marker and exact run ID; a broad
-  prefix alone is never deletion authority.
-- Follow `deletion-safety` for cleanup. Prefer a recoverable soft-delete,
-  quarantine, or provider-native recovery state. When the platform exposes
-  only hard deletion, inventory the exact created resources and obtain the
-  specific post-outline manual confirmation before purging them; pre-run test
-  approval or a generic cleanup policy does not count.
-- Record every created resource and the cleanup outcome in immutable evidence.
-- Never use customer data, reset production state, mutate infrastructure or
-  shared configuration, weaken authentication, change unrelated records, or
-  broaden credentials to make a test pass.
-- If safe write isolation is unavailable, restrict the suite to read-only
-  probes and report `PARTIAL`, not complete end-to-end validation.
-
-### Project Testing Reference
-
-- Keep `docs/references/testing.md` current with:
-  - language-native code-level commands and their PR workflow/check names;
-  - high-level suite inventory and canonical invocation order;
-  - local and production environment preflights;
-  - credential and secret names without values;
-  - synthetic-data, cleanup, retention, rate, cost, and timeout policy;
-  - automated jobs, uploaded artifact locations, and manual fallbacks;
-  - known gaps, partial coverage, blocked checks, and non-applicable
-    environments.
-- Keep feature-specific acceptance and observed validation in the active
-  `SPEC.md`. The testing reference records reusable project-wide operation,
-  not a duplicate history of every feature run.
-
-## Anti-Patterns
-
-- Replacing unit or integration tests with end-to-end scripts.
-- Moving language-native tests into `tests/end-to-end` or
-  `tests/live-integration`.
-- Claiming 100 percent correctness, production validation, or hosted CI success
-  from partial or unobserved evidence.
-- Treating pending, missing, stale-head, or policy-ineligible skipped checks as
-  merge-ready, or substituting local tests for required hosted checks.
-- Running only happy paths or using line coverage as the sole quality signal.
-- Hiding flaky tests with retries, long sleeps, weak assertions, or permanent
-  skips.
-- Overwriting a prior run directory or storing all output in one mutable log.
-- Committing raw run artifacts or appending every successful command to
-  `RUN_STATUS.md`.
-- Capturing secrets, signed URLs, customer data, or unredacted production
-  payloads in evidence.
-- Mutating production before exact target, deployment, identity, limits, and
-  cleanup preflights pass.
-- Cleaning by broad prefix, touching unrelated records, changing
-  infrastructure, or weakening authentication.
-- Treating test completion, exact-run ownership, or an expiry timestamp as
-  authority for unattended hard deletion.
-- Calling a read-only smoke probe complete end-to-end coverage.
-- Creating fake production suites for libraries or other non-deployable
-  projects.
-
-## Verification
-
-- Confirm changed behavior is covered at the narrowest applicable code-level
-  layer and broader boundary risks have integration or end-to-end evidence.
-- Confirm all applicable code-level checks run in pull-request CI and their
-  observed states are reported literally.
-- Confirm high-level executables are organized by test type and environment
-  without moving language-native tests.
-- Confirm repeated and concurrent runs cannot overwrite evidence.
-- Inspect `output.txt`, `result.json`, and structured artifacts for readability,
-  schema completeness, redaction, source/deployment identity, assertions, and
-  cleanup outcome.
-- Confirm `RUN_STATUS.md` has one current row per suite and environment,
-  preserves active findings, and is not automatically rewritten by CI.
-- Confirm CI uploads high-level evidence without committing it.
-- For production writes, confirm the exact `kit-e2e-` identity, metadata,
-  target, credentials, limits, created-resource inventory, and exact-run
-  cleanup proof.
-- Confirm unavailable safe production writes produce read-only `PARTIAL`
-  evidence and non-deployable projects use `NOT_APPLICABLE`.
-- Before merge, confirm only exact current-head `MERGE_READY` nodes enter the
-  frontier and that `BLOCKED` and `UNKNOWN` remain distinct.
-- Run the project commands documented in `docs/references/testing.md` and
-  record any skipped or blocked validation.
-
-## Examples
-
-Immutable LabCore-style run evidence:
-
-```text
-tmp/2026-07-27/labcore-biotouch-kit-order-prod-test.sh/1/
-  output.txt
-  result.json
-  create-order-request.json
-  create-order-response.json
-  assertions.jsonl
-```
-
-Synthetic production order:
-
-```text
-kit-e2e-labcore-production-20260727T153012Z-a1b2c3-order-001
-```
-
-Curated status row:
-
-```text
-| order lifecycle | production | PASS | 2026-07-27T15:36:44Z | 2026-07-27T15:36:44Z | v1.4.2 / abc123 | 20260727T153012Z-a1b2c3 | Actions artifact order-production-1 | none |
-```
+- Run production suites only after the deployment they validate has landed and only with authorization for that environment. Verify the target environment and deployed version first.
+- Write only clearly named synthetic data scoped to the run, never touch customer data, and clean up under `deletion-safety`. When safe write isolation is unavailable, validate read-only.
+- A failed or unrun production suite means production is not validated.

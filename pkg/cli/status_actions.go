@@ -16,7 +16,7 @@ func determineNextAction(status *feature.FeatureStatus) string {
 		return nextAction
 	}
 
-	return "Feature is paused in legacy project state. Adopt current work through SPEC.md and `kit context resolve`. Suggested next step: " + nextAction
+	return "Feature is paused in legacy project state. Adopt current work through SPEC.md. Suggested next step: " + nextAction
 }
 
 func determineUnpausedNextAction(status *feature.FeatureStatus) string {

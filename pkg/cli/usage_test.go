@@ -3,6 +3,8 @@ package cli
 import (
 	"bytes"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -12,10 +14,22 @@ import (
 )
 
 func TestRunUsageReportEmitsAggregatedVersionedJSON(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
-	if err := usage.Record(usage.RecordInput{
-		Command: "status", Version: "v2.0.0", Elapsed: time.Millisecond,
-	}); err != nil {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	// Test binaries never record usage, so seed the store directly.
+	dir := filepath.Join(home, ".config", "kit", "usage")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	event, err := json.Marshal(usage.Event{
+		SchemaVersion: usage.SchemaVersion, Timestamp: now, Command: "status",
+		Version: "v2.0.0", Success: true, ElapsedMS: 1, ProjectID: "test",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, now.Format("2006-01")+"-0001.jsonl"), append(event, '\n'), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	var output bytes.Buffer

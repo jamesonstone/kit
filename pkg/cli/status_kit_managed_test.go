@@ -56,7 +56,7 @@ func TestStatusManagedSummaryReportsRemoteRegistryRefresh(t *testing.T) {
 	stubRulesetRegistry(t, registryRulesetWithContentForTest(base.Slug, strings.Replace(base.Content, "## Verification", "- Remote registry addition.\n\n## Verification", 1), "new-commit"))
 
 	cfg := config.Default()
-	recordRulesetRegistryState(cfg, base, registryArtifactStateManaged, base.NormalizedHash, base.Content)
+	recordRulesetRegistryState(cfg, base, registryArtifactStateManaged, base.NormalizedHash)
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
 	}

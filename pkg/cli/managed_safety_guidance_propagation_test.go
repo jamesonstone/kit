@@ -8,6 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/v3/internal/config"
+	"github.com/jamesonstone/kit/v3/internal/document"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +51,6 @@ func TestHealthAndReconcileInstallManagedSafetyGuidance(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			projectRoot := setupManagedSafetyGuidanceProject(t)
-			stubManagedSafetyRulesetRegistry(t)
 			setWorkingDirectory(t, projectRoot)
 
 			tt.apply(t)
@@ -57,40 +59,13 @@ func TestHealthAndReconcileInstallManagedSafetyGuidance(t *testing.T) {
 	}
 }
 
-func TestInitRefreshInstallsStandingAuthorityGuidance(t *testing.T) {
-	projectRoot := setupManagedSafetyGuidanceProject(t)
-	stubManagedSafetyRulesetRegistry(t)
-	setWorkingDirectory(t, projectRoot)
-
-	withInitFlags(t, func() {
-		initRefresh = true
-		initForce = true
-		initOutputOnly = true
-		initRefreshFiles = []string{
-			"AGENTS.md",
-			"CLAUDE.md",
-			".github/copilot-instructions.md",
-			"docs/agents/GUARDRAILS.md",
-			"docs/references/rules/work-lane-gating.md",
-			"docs/references/rules/deletion-safety.md",
-			"docs/references/rules/agent-completion-output.md",
-			"docs/references/rules/human-authorship.md",
-			"docs/references/rules/slack-read-only.md",
-		}
-		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
-				t.Fatalf("runInit() error = %v", err)
-			}
-		})
-	})
-
-	assertManagedSafetyGuidance(t, projectRoot)
-}
-
 func setupManagedSafetyGuidanceProject(t *testing.T) string {
 	t.Helper()
-	projectRoot, _ := setupLifecycleTestProject(t)
-	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
+	projectRoot, cfg := setupLifecycleTestProject(t)
+	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionMemory
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatal(err)
+	}
 	for _, relativePath := range []string{
 		"AGENTS.md",
 		"CLAUDE.md",
@@ -104,103 +79,17 @@ func setupManagedSafetyGuidanceProject(t *testing.T) string {
 	return projectRoot
 }
 
-func stubManagedSafetyRulesetRegistry(t *testing.T) {
-	t.Helper()
-	workLane := readRepositoryFile(t, "docs/references/rules/work-lane-gating.md")
-	deletionSafety := readRepositoryFile(t, "docs/references/rules/deletion-safety.md")
-	completionOutput := readRepositoryFile(t, "docs/references/rules/agent-completion-output.md")
-	humanAuthorship := readRepositoryFile(t, "docs/references/rules/human-authorship.md")
-	slackReadOnly := readRepositoryFile(t, "docs/references/rules/slack-read-only.md")
-	stubRulesetRegistry(
-		t,
-		registryRulesetWithContentForTest("work-lane-gating", workLane, "test-work-lane"),
-		registryRulesetWithContentForTest("deletion-safety", deletionSafety, "test-deletion-safety"),
-		registryRulesetWithContentForTest("agent-completion-output", completionOutput, "test-completion-output"),
-		registryRulesetWithContentForTest("human-authorship", humanAuthorship, "test-human-authorship"),
-		registryRulesetWithContentForTest("slack-read-only", slackReadOnly, "test-slack-read-only"),
-	)
-}
-
 func assertManagedSafetyGuidance(t *testing.T, projectRoot string) {
 	t.Helper()
-	for _, relativePath := range []string{
-		"AGENTS.md",
-		"CLAUDE.md",
-		".github/copilot-instructions.md",
-		"docs/agents/GUARDRAILS.md",
-	} {
-		content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath)))
-		for _, snippet := range []string{
-			"Default to a new worklane without asking",
-			"one human-assigned",
-			"exact `GH-<issue-number>` branch",
-			"canonical non-primary",
-			"ready pull-request plan",
-			"Continue an existing lane only when the user explicitly directs",
-			"Never offer or ask the user to choose between lanes",
-			"review repair, CI repair, base",
-			"ordered merge coordination",
-			"coordination or corrective pull request",
-			"includes blocker repair",
-			"allocate a new lane",
-			"Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program",
-			"may bind later-created in-scope PRs and refreshed heads",
-			"Only exact current `MERGE_READY` nodes may merge",
-			"A changed in-scope head invalidates readiness, not standing authority",
-			"Standing merge/deploy authority covers only a named existing standard deployment workflow",
-			"IAM, network topology, KMS, secrets",
-			"Pause, hold, or revocation stops affected actions and dependents",
-			"## Slack: Read-Only by Default, Explicit Approval Required to Send",
-			"Drafting a Slack message is not authorization to send it",
-		} {
-			if !strings.Contains(content, snippet) {
-				t.Errorf("%s does not contain %q", relativePath, snippet)
-			}
-		}
-		for _, snippet := range []string{
-			"## Agent Completion Output Contract",
-			"Write each response, including terminal completions and handoffs, in the shape its content calls for",
-			"Match length to consequence rather than to effort spent",
-			"conveys what the user now has, what remains unfinished and why",
-			"the exact command or prompt when there is one",
-			"Say plainly whether the work is finished, partly finished, blocked, or failed",
-			"Keep blockers and unfinished scope as prominent as the successes",
-			"Report each check as observed",
-			"PENDING, UNKNOWN, SKIPPED, and NOT_APPLICABLE are preserved verbatim",
-			"Report a check as passing only when it ran and passed",
-			"When something could not be validated, say so and say why",
-			"Distinguish a verified fact from an inference and from a hypothesis",
-			"an account of where things stand, not an index of everything checked",
-			"Satisfy them on content; a heading alone satisfies none of them",
-			"When something could not be validated, say so and say why",
-		} {
-			if !strings.Contains(content, snippet) {
-				t.Errorf("%s does not contain %q", relativePath, snippet)
-			}
-		}
-		if strings.Contains(content, legacyOperatorActionTableHeader) {
-			t.Errorf("%s still contains leftover operator-action table %q", relativePath, legacyOperatorActionTableHeader)
-		}
-		for _, forbidden := range []string{
-			"# PASS|PARTIAL|BLOCKED|FAIL — <one-sentence outcome>",
-			"prioritized action list ordered Blocker, Incomplete, Next, Optional, then None",
-		} {
-			if strings.Contains(content, forbidden) {
-				t.Errorf("%s still contains superseded completion guidance %q", relativePath, forbidden)
-			}
+	block := templates.UniversalContractBlock()
+	for _, relativePath := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
+		if content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath))); !strings.Contains(content, block) {
+			t.Errorf("%s does not carry the universal contract block", relativePath)
 		}
 	}
-
-	for _, relativePath := range []string{
-		"docs/references/rules/work-lane-gating.md",
-		"docs/references/rules/deletion-safety.md",
-		"docs/references/rules/agent-completion-output.md",
-		"docs/references/rules/human-authorship.md",
-		"docs/references/rules/slack-read-only.md",
-	} {
-		content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath)))
-		if !strings.Contains(content, "registry_scope: downstream") {
-			t.Errorf("%s is not marked for downstream propagation", relativePath)
+	for _, slug := range []string{"delivery", "github-pr-merge", "deletion-safety", "slack-read-only", "infrastructure-change-approval"} {
+		if !document.Exists(filepath.Join(projectRoot, filepath.FromSlash(rulesetTarget(slug)))) {
+			t.Errorf("safety rule %s was not installed", slug)
 		}
 	}
 }
