@@ -42,17 +42,18 @@ func migrateEntryFile(relativePath, existing string, force bool) entryMigration 
 	doc := legacy.Classify(relativePath, existing)
 	if len(doc.Modified) > 0 && !force {
 		return entryMigration{content: existing, note: fmt.Sprintf(
-			"%s predates the Kit-managed contract and has edited Kit sections (%s); it was left unchanged. Review them, then run `kit reconcile --force` to replace Kit's sections with the contract (sections Kit never wrote are kept)",
-			relativePath, strings.Join(doc.ModifiedKeys(), ", "))}
+			"%s predates the Kit-managed contract and has edited Kit sections (%s); it was left unchanged. Move anything the project still needs out of those sections, then run `kit reconcile --force --file %s`, which replaces exactly those sections and Kit's unedited ones with the contract and keeps every other section",
+			relativePath, strings.Join(doc.ModifiedKeys(), ", "), relativePath)}
 	}
 
+	// A title is project-chosen; keep it and use Kit's only when there is none.
 	title := "# " + templates.InstructionEntryTitle(relativePath)
+	ownTitle, rest := splitEntryTitle(existing)
+	if ownTitle != "" {
+		title = ownTitle
+	}
 	if !kitWroteAnySection(doc) {
-		// Entirely project-authored: keep its own title and every line.
-		ownTitle, rest := splitEntryTitle(existing)
-		if ownTitle != "" {
-			title = ownTitle
-		}
+		// Entirely project-authored: keep every line.
 		return entryMigration{content: joinEntryFile(title, block, rest), converged: true}
 	}
 	var project strings.Builder

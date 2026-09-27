@@ -82,3 +82,11 @@ func TestFingerprintDataCoversEveryRetiredGeneratedPath(t *testing.T) {
 		}
 	}
 }
+
+func TestSectionsIgnoreHeadingsInsideFences(t *testing.T) {
+	content := "# T\n\n## Real\n\n```md\n## Not a section\n```\n\n~~~\n## Also not\n~~~\n"
+	sections := Sections(content)
+	if len(sections) != 2 || sections[1].Key != "REAL" || !strings.Contains(sections[1].Raw, "Also not") {
+		t.Fatalf("sections = %#v", sections)
+	}
+}

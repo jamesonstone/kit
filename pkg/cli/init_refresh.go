@@ -197,6 +197,9 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		}
 		if configChange != nil {
 			changes = append([]initRefreshFileChange{*configChange}, changes...)
+			if note := droppedConfigNote(configChange.before, configChange.after); note != "" {
+				notes = append(notes, note)
+			}
 		}
 	}
 

@@ -115,7 +115,7 @@ type Section struct {
 // Sections splits Markdown at `##` headings. The preamble is always first.
 func Sections(content string) []Section {
 	content = strings.ReplaceAll(content, "\r\n", "\n")
-	matches := sectionPattern.FindAllStringSubmatchIndex(content, -1)
+	matches := headingsOutsideFences(content)
 	if len(matches) == 0 {
 		return []Section{{Raw: content, Text: Normalize(content)}}
 	}
@@ -172,4 +172,38 @@ func RuleFingerprint(content string) string {
 func fingerprint(parts ...string) string {
 	sum := sha256.Sum256([]byte(strings.Join(parts, "\x00")))
 	return hex.EncodeToString(sum[:8])
+}
+
+// headingsOutsideFences finds `##` headings, ignoring lines inside fenced
+// code blocks so examples never split a section.
+func headingsOutsideFences(content string) [][]int {
+	var fenced [][2]int
+	inFence, start, offset := false, 0, 0
+	for _, line := range strings.SplitAfter(content, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "```") || strings.HasPrefix(strings.TrimSpace(line), "~~~") {
+			if inFence {
+				fenced = append(fenced, [2]int{start, offset + len(line)})
+			} else {
+				start = offset
+			}
+			inFence = !inFence
+		}
+		offset += len(line)
+	}
+	if inFence {
+		fenced = append(fenced, [2]int{start, len(content)})
+	}
+	var kept [][]int
+	for _, match := range sectionPattern.FindAllStringSubmatchIndex(content, -1) {
+		inside := false
+		for _, span := range fenced {
+			if match[0] >= span[0] && match[0] < span[1] {
+				inside = true
+			}
+		}
+		if !inside {
+			kept = append(kept, match)
+		}
+	}
+	return kept
 }

@@ -173,8 +173,16 @@ func planRefreshInitInstructionArtifacts(
 	var changes []initRefreshFileChange
 	var notes []string
 	converged := true
+	seen := map[string]bool{}
 	for _, relativePath := range instructionArtifactPaths(cfg) {
 		relativePath = filepath.ToSlash(relativePath)
+		// Entry files symlinked to one another are one file; plan it once.
+		if resolved, err := filepath.EvalSymlinks(filepath.Join(projectRoot, filepath.FromSlash(relativePath))); err == nil {
+			if seen[resolved] {
+				continue
+			}
+			seen[resolved] = true
+		}
 		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, opts.force)
 		if err != nil {
 			return nil, nil, false, err

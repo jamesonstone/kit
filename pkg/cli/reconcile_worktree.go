@@ -46,8 +46,12 @@ func resolveReconcileTarget(out io.Writer, projectRoot string, dryRun bool) (rec
 	if err != nil {
 		return reconcileTarget{}, fmt.Errorf("inspect reconcile worktree: %w", err)
 	}
-	if dryRun || !location.InsideGit || !location.IsPrimary {
+	if !location.InsideGit || !location.IsPrimary {
 		return reconcileTarget{projectRoot: projectRoot}, nil
+	}
+	if dryRun {
+		_, err := fmt.Fprintf(out, "Preview of this checkout. A writing run applies the migration in the %s linked worktree, based on %s, so unpushed local commits are not included.\n", reconcileBranch, reconcileBaseRef(location.Path))
+		return reconcileTarget{projectRoot: projectRoot}, err
 	}
 	target, err := prepareReconcileWorktree(projectRoot, location)
 	if err != nil {
@@ -62,16 +66,26 @@ func resolveReconcileTarget(out io.Writer, projectRoot string, dryRun bool) (rec
 }
 
 func prepareReconcileWorktree(projectRoot string, location worktreeprep.Location) (reconcileTarget, error) {
-	relative, err := filepath.Rel(location.Path, projectRoot)
+	// Git reports the project's place in the repository itself, so a symlinked
+	// working directory can never make the target escape the worktree.
+	prefix, err := runGit(projectRoot, "rev-parse", "--show-prefix")
 	if err != nil {
-		return reconcileTarget{}, err
+		return reconcileTarget{}, fmt.Errorf("resolve project path in repository: %w: %s", err, strings.TrimSpace(prefix))
 	}
+	relative := filepath.FromSlash(strings.TrimSuffix(strings.TrimSpace(prefix), "/"))
 	existing, err := worktreeprep.New().WorktreeForBranch(context.Background(), location.Path, reconcileBranch)
 	if err != nil {
 		return reconcileTarget{}, fmt.Errorf("list worktrees: %w", err)
 	}
 	target := reconcileTarget{worktree: true, path: existing}
-	if existing == "" {
+	switch {
+	case existing != "" && sameResolvedPath(existing, location.PrimaryPath):
+		return reconcileTarget{}, fmt.Errorf("the primary checkout is on branch %s; switch it to the default branch so reconcile can use a linked worktree", reconcileBranch)
+	case existing != "":
+		if top, err := runGit(existing, "rev-parse", "--show-toplevel"); err != nil || !sameResolvedPath(strings.TrimSpace(top), existing) {
+			return reconcileTarget{}, fmt.Errorf("worktree %s for branch %s is missing or broken; run `git worktree prune` and rerun", existing, reconcileBranch)
+		}
+	default:
 		if target.path, err = defaultReconcileWorktreePath(location.Path); err != nil {
 			return reconcileTarget{}, err
 		}
@@ -88,11 +102,24 @@ func prepareReconcileWorktree(projectRoot string, location worktreeprep.Location
 		}
 		target.created = true
 	}
-	if err := linkEnvironmentFiles(location.Path, target.path); err != nil {
+	target.projectRoot = filepath.Join(target.path, relative)
+	if rel, err := filepath.Rel(target.path, target.projectRoot); err != nil || strings.HasPrefix(rel, "..") {
+		return reconcileTarget{}, fmt.Errorf("reconcile target %s is outside worktree %s", target.projectRoot, target.path)
+	}
+	if err := linkEnvironmentFiles(filepath.Join(location.Path, relative), target.projectRoot); err != nil {
 		return reconcileTarget{}, err
 	}
-	target.projectRoot = filepath.Join(target.path, relative)
 	return target, nil
+}
+
+func sameResolvedPath(left, right string) bool {
+	resolve := func(path string) string {
+		if resolved, err := filepath.EvalSymlinks(path); err == nil {
+			return filepath.Clean(resolved)
+		}
+		return filepath.Clean(path)
+	}
+	return resolve(left) == resolve(right)
 }
 
 // defaultReconcileWorktreePath follows the lane layout
