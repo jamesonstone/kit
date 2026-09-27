@@ -14,7 +14,7 @@ func TestRunInit_DiffRequiresDryRun(t *testing.T) {
 		initRefresh = true
 		initDiff = true
 
-		err := runInit(initCmd, nil)
+		err := runInitForTest(initCmd, nil)
 		if err == nil || !strings.Contains(err.Error(), "--diff requires --dry-run") {
 			t.Fatalf("expected --diff without --dry-run error, got %v", err)
 		}

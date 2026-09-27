@@ -103,12 +103,11 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
-			force:                       reconcileForce,
-			dryRun:                      reconcileDryRun,
-			diff:                        reconcileDiff,
-			files:                       reconcileRefreshFiles,
-			outputOnly:                  reconcileOutputOnly,
-			suppressDocumentationPrompt: true,
+			force:      reconcileForce,
+			dryRun:     reconcileDryRun,
+			diff:       reconcileDiff,
+			files:      reconcileRefreshFiles,
+			outputOnly: reconcileOutputOnly,
 		})
 		if err != nil {
 			return err

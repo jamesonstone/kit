@@ -26,7 +26,7 @@ func TestRunInitRefresh_DryRunDiffPrintsPlannedChangesWithoutWriting(t *testing.
 		initRefreshFiles = []string{envrcPath}
 
 		output = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -73,7 +73,7 @@ func TestRunInitRefresh_DryRunDoesNotWritePlannedRefresh(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})

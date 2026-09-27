@@ -14,12 +14,11 @@ import (
 const constitutionBaselineHeading = templates.ConstitutionBaselineHeading
 
 type initRefreshOptions struct {
-	force                       bool
-	dryRun                      bool
-	diff                        bool
-	files                       []string
-	outputOnly                  bool
-	suppressDocumentationPrompt bool
+	force      bool
+	dryRun     bool
+	diff       bool
+	files      []string
+	outputOnly bool
 }
 
 type initRefreshStats struct {
@@ -52,11 +51,6 @@ func (e *initRefreshRegistryError) Error() string {
 
 func (e *initRefreshRegistryError) Unwrap() error {
 	return e.err
-}
-
-func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
-	_, err := runInitRefreshWithSnapshot(projectRoot, opts)
-	return err
 }
 
 func runInitRefreshWithSnapshot(
@@ -98,14 +92,6 @@ func runInitRefreshWithSnapshot(
 			plan.stats.skipped,
 		)
 		printInitRefreshNotes(plan.notes, opts)
-		if shouldOutputInitRefreshDocumentationPrompt(opts, plan.targets) {
-			if err := outputInitRefreshDocumentationPrompt(projectRoot, plan.cfg, deliverySnapshot); err != nil {
-				return nil, err
-			}
-		} else if plan.stats.changed() > 0 &&
-			!opts.suppressDocumentationPrompt {
-			printNumberedNextSteps(managedFileDeliveryInstructions(projectRoot, deliverySnapshot))
-		}
 	}
 	return deliverySnapshot, nil
 }
@@ -186,7 +172,8 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	notes = append(notes, retiredNotes...)
 	changes = append(changes, rulesetChanges...)
 	versionChanged := false
-	if entriesConverged && initRefreshTargetMatches(targets, config.ConfigFileName) && cfg.InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
+	if entriesConverged && requiredStructurePresent(projectRoot, cfg, registry, changes) &&
+		initRefreshTargetMatches(targets, config.ConfigFileName) && cfg.InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
 		cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 		versionChanged = true
 	}
@@ -214,10 +201,6 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		notes:   notes,
 		stats:   stats,
 	}, nil
-}
-
-func shouldOutputInitRefreshDocumentationPrompt(opts initRefreshOptions, targets map[string]bool) bool {
-	return opts.force && !opts.dryRun && !opts.outputOnly && !opts.suppressDocumentationPrompt && len(targets) == 0
 }
 
 func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map[string]bool {

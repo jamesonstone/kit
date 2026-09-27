@@ -1,7 +1,11 @@
 package cli
 
 import (
+	"fmt"
+	"os"
 	"testing"
+
+	"github.com/spf13/cobra"
 )
 
 func withInitFlags(t *testing.T, run func()) {
@@ -91,4 +95,35 @@ kit capabilities dispatch --json
 kit capabilities loop review --json
 ` + "```" + `
 `
+}
+
+// Test-only knobs for exercising the shared refresh engine (the one `kit
+// reconcile` applies) in place, now that `kit init --refresh` is gone.
+var (
+	initRefresh      bool
+	initForce        bool
+	initDryRun       bool
+	initDiff         bool
+	initRefreshFiles []string
+)
+
+func runInitForTest(cmd *cobra.Command, args []string) error {
+	if !initRefresh {
+		return runInit(cmd, args)
+	}
+	if initDiff && !initDryRun {
+		return fmt.Errorf("--diff requires --dry-run")
+	}
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	_, err = runInitRefreshWithSnapshot(cwd, initRefreshOptions{
+		force:      initForce,
+		dryRun:     initDryRun,
+		diff:       initDiff,
+		files:      initRefreshFiles,
+		outputOnly: initOutputOnly,
+	})
+	return err
 }

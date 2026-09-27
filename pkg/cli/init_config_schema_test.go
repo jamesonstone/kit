@@ -18,7 +18,7 @@ func TestRunInitCreatesCurrentConfigSchema(t *testing.T) {
 	withInitFlags(t, func() {
 		initOutputOnly = true
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -47,7 +47,7 @@ func TestRunInitRefreshMigratesUnversionedConfig(t *testing.T) {
 		initOutputOnly = true
 		initRefreshFiles = []string{config.ConfigFileName}
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -79,7 +79,7 @@ func TestRunInitRefreshForcePreservesAWSContext(t *testing.T) {
 		initOutputOnly = true
 		initRefreshFiles = []string{config.ConfigFileName}
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -106,9 +106,9 @@ func TestRunInitRejectsNewerConfigWithoutWriting(t *testing.T) {
 
 	withInitFlags(t, func() {
 		initOutputOnly = true
-		err := runInit(initCmd, nil)
-		if err == nil || !strings.Contains(err.Error(), "upgrade Kit") {
-			t.Fatalf("runInit() error = %v, want upgrade guidance", err)
+		err := runInitForTest(initCmd, nil)
+		if err == nil || !strings.Contains(err.Error(), "kit reconcile") {
+			t.Fatalf("runInit() error = %v, want refusal pointing to kit reconcile", err)
 		}
 	})
 	assertFileContent(t, path, content)
@@ -128,9 +128,9 @@ func TestRunInitRefreshRejectsNewerConfigWithoutWriting(t *testing.T) {
 		initRefresh = true
 		initOutputOnly = true
 		initRefreshFiles = []string{config.ConfigFileName}
-		err := runInit(initCmd, nil)
+		err := runInitForTest(initCmd, nil)
 		if err == nil || !strings.Contains(err.Error(), "upgrade Kit") {
-			t.Fatalf("runInit() error = %v, want upgrade guidance", err)
+			t.Fatalf("refresh error = %v, want upgrade guidance", err)
 		}
 	})
 	assertFileContent(t, path, content)

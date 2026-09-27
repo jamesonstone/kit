@@ -45,6 +45,9 @@ and install paths gain `/v3`.
   and `kit rules link`, plus the `--profile`, `--single-agent`, and
   `--max-subagents` flags. Agents use their host's tools, delegation, and
   `kit <command> --help` instead.
+- `kit init --refresh` is removed: `kit init` creates new projects only, and
+  `kit reconcile` updates existing ones. `kit health` no longer writes; it
+  reports what `kit reconcile` would change.
 - Rules ship inside the binary; upgrade Kit to pick up rule changes. Nothing is
   fetched from GitHub.
 - `docs/agents/`, `docs/references/workflows/`, the other retired support

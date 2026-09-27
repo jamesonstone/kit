@@ -29,7 +29,7 @@ func TestRunInitRefresh_AdoptsExistingStatusOnlyRulesetAsManaged(t *testing.T) {
 		initRefreshFiles = []string{rulesetTarget(registry.Slug)}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -95,7 +95,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -151,7 +151,7 @@ func TestRunInitRefresh_DryRunDiffReportsDownstreamCapabilitiesUsageRuleAdoption
 		initRefreshFiles = []string{rulesetTarget("kit-capabilities-usage")}
 
 		output = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -189,7 +189,7 @@ func TestRunInitRefresh_AdoptsExistingCustomRulesetWithoutOverwriting(t *testing
 		initRefreshFiles = []string{rulesetTarget(registry.Slug)}
 
 		output = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -231,7 +231,7 @@ func TestRunInitRefreshSkipsOptionalRulesUnlessAdded(t *testing.T) {
 		initRefresh = true
 		initOutputOnly = true
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})

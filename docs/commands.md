@@ -4,11 +4,15 @@ Every command below does deterministic work that an agent cannot reproduce as
 safely or cheaply by itself. Agents are the primary callers; commands avoid
 interactive prompts unless a human runs them in a terminal.
 
+One path per job: `kit init` creates a project, `kit reconcile` is the only
+command that migrates or repairs an existing one (and from the primary checkout
+it writes only to a linked worktree), and `kit health` diagnoses.
+
 ## Bootstrap And Memory
 
 | Command | Why it exists |
 | --- | --- |
-| `kit init` | Scaffolds a new project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. `--refresh` runs the same convergence as `kit reconcile` in place; `--dry-run --diff` previews. |
+| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. Refuses to run where `.kit.yaml` exists; use `kit reconcile`. |
 | `kit spec <feature>` | Allocates a worktree-safe feature number and scaffolds or adopts `docs/specs/<id>-<feature>/SPEC.md`. |
 
 ## Rules
@@ -29,7 +33,7 @@ reported unless `--force` is used.
 | --- | --- |
 | `kit check [feature]` / `kit check --project` | Validates spec front matter and relationships, duplicate feature numbers, rule documents, the managed contract block, and, when `.kit.yaml` sets `source_file_line_limit`, handwritten source-file length. Exits non-zero on blocking findings. |
 | `kit reconcile` | Migrates a project created by any Kit release to the current structure, then audits project documents. Keeps project and edited content, removes only unmodified retired Kit files that Git can restore, and reports what it kept. From the primary checkout it writes to a `kit-reconcile` linked worktree. `--dry-run --diff` previews; `--force` also replaces edited Kit sections and edited shipped rules. |
-| `kit health` | One-shot maintenance for scheduled automation: applies safe managed updates, then runs the project check. `--dry-run --diff` previews. |
+| `kit health` | Read-only diagnosis for people and scheduled automation: reports what `kit reconcile` would change (`--diff` shows it), runs the project check, and exits non-zero only when that check fails. Never writes. |
 | `kit registry status` | Cheap read-only report of whether Kit-managed files and rules match this binary. |
 | `kit status` | Current feature and Kit-managed state. |
 | `kit config check` | Validates `.kit.yaml` and, interactively, repairs the AWS context. |

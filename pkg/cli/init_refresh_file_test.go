@@ -3,10 +3,8 @@ package cli
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
@@ -25,7 +23,7 @@ func TestRunInitRefresh_FileForceOverwritesOnlySelectedExistingFile(t *testing.T
 		initRefreshFiles = []string{envrcPath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -60,7 +58,7 @@ func TestRunInitRefresh_CreatesMissingMakefile(t *testing.T) {
 		initRefreshFiles = []string{makefilePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -69,34 +67,6 @@ func TestRunInitRefresh_CreatesMissingMakefile(t *testing.T) {
 	content := readFile(t, filepath.Join(tempDir, makefilePath))
 	if content != templates.Makefile {
 		t.Fatalf("%s content = %q, want %q", makefilePath, content, templates.Makefile)
-	}
-}
-
-func TestRunInitRefresh_PrintsManagedFileDeliveryStepsAfterWrite(t *testing.T) {
-	tempDir := t.TempDir()
-	setupInitHome(t)
-	if err := config.Save(tempDir, config.Default()); err != nil {
-		t.Fatalf("config.Save() error = %v", err)
-	}
-
-	output := captureStdout(t, func() {
-		if err := runInitRefresh(tempDir, initRefreshOptions{
-			files: []string{makefilePath},
-		}); err != nil {
-			t.Fatalf("runInitRefresh() error = %v", err)
-		}
-	})
-
-	for _, check := range []string{
-		"`Makefile` (create; pre-command absent; expected sha256:",
-		"Pull-Request Landing Plan",
-		"trigger the work-lane tripwire",
-		"do not adopt, transfer, stage, commit, push, restore, discard",
-		"create or update the ready pull request",
-	} {
-		if !strings.Contains(output, check) {
-			t.Fatalf("expected refresh delivery guidance to contain %q, got:\n%s", check, output)
-		}
 	}
 }
 
@@ -115,7 +85,7 @@ func TestRunInitRefresh_FileForcePreservesExistingMakefile(t *testing.T) {
 		initRefreshFiles = []string{makefilePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -142,7 +112,7 @@ func TestRunInitRefresh_ForceDoesNotOverwriteExistingScaffoldFilesWithoutFileTar
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})

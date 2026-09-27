@@ -112,7 +112,7 @@ func freshInitProject(t *testing.T) string {
 	withInitFlags(t, func() {
 		initOutputOnly = true
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})

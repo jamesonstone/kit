@@ -196,3 +196,33 @@ func dirIsEmpty(dir string) bool {
 	entries, err := os.ReadDir(dir)
 	return err == nil && len(entries) == 0
 }
+
+// requiredStructurePresent reports whether every file of the current structure
+// exists after the planned changes: entry files, testing reference,
+// Constitution, and each default rule shipped with this binary. The scaffold
+// version is recorded as current only when this holds.
+func requiredStructurePresent(projectRoot string, cfg *config.Config, registry []registryRuleset, planned []initRefreshFileChange) bool {
+	result := map[string]instructionFileWriteResult{}
+	for _, change := range planned {
+		result[change.relativePath] = change.result
+	}
+	required := append(instructionArtifactPaths(cfg), filepath.ToSlash(cfg.ConstitutionPath))
+	for _, item := range registry {
+		if item.Metadata.RegistryScope != rulesetRegistryScopeOptional {
+			required = append(required, rulesetTarget(item.Slug))
+		}
+	}
+	for _, path := range required {
+		path = filepath.ToSlash(path)
+		switch result[path] {
+		case instructionFileRemoved:
+			return false
+		case instructionFileCreated, instructionFileUpdated, instructionFileMerged:
+			continue
+		}
+		if _, err := os.Stat(filepath.Join(projectRoot, filepath.FromSlash(path))); err != nil {
+			return false
+		}
+	}
+	return len(registry) > 0
+}

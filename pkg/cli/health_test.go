@@ -60,78 +60,56 @@ func TestRunHealthExplicitOptOutSkipsNetworkAndWrites(t *testing.T) {
 	}
 }
 
-func TestRunHealthDryRunPlansWithoutWriting(t *testing.T) {
+// Health is diagnostic: it reports what reconcile would change and never
+// writes, even when changes are pending.
+func TestRunHealthReportsPendingChangesWithoutWriting(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
+	writeInitScaffoldArtifacts(t, projectRoot)
 	setWorkingDirectory(t, projectRoot)
 	ruleset := registryRulesetForTest("sample-guardrails", []string{"git"})
 	stubRulesetRegistry(t, ruleset)
 	target := filepath.Join(projectRoot, rulesetTarget(ruleset.Slug))
+	configBefore := readFile(t, filepath.Join(projectRoot, config.ConfigFileName))
 
-	cmd := healthCommandForTest(t, "--dry-run", "--json")
+	for _, flags := range [][]string{{"--json"}, {"--dry-run", "--json"}} {
+		cmd := healthCommandForTest(t, flags...)
+		out := &strings.Builder{}
+		cmd.SetOut(out)
+		if err := runHealth(cmd, nil); err != nil {
+			t.Fatalf("runHealth(%v) error = %v", flags, err)
+		}
+		if _, err := os.Stat(target); !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("health wrote %s", target)
+		}
+		if readFile(t, filepath.Join(projectRoot, config.ConfigFileName)) != configBefore {
+			t.Fatal("health changed .kit.yaml")
+		}
+		var report healthReport
+		if err := json.Unmarshal([]byte(out.String()), &report); err != nil {
+			t.Fatalf("json.Unmarshal() error = %v", err)
+		}
+		if report.State != statusKitManagedStateRefreshAvailable || len(report.Files) == 0 || report.ProjectCheck != "passed" ||
+			!strings.Contains(strings.Join(report.NextActions, " "), "kit reconcile") {
+			t.Fatalf("report = %#v, want pending changes that point to kit reconcile", report)
+		}
+	}
+}
+
+func TestRunHealthIsCurrentAfterReconcile(t *testing.T) {
+	setupMigrationEnvironment(t)
+	freshInitProject(t)
+	cmd := healthCommandForTest(t, "--json")
 	out := &strings.Builder{}
 	cmd.SetOut(out)
 	if err := runHealth(cmd, nil); err != nil {
 		t.Fatalf("runHealth() error = %v", err)
 	}
-	if _, err := os.Stat(target); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("dry-run target stat error = %v, want not exist", err)
-	}
-
 	var report healthReport
 	if err := json.Unmarshal([]byte(out.String()), &report); err != nil {
-		t.Fatalf("json.Unmarshal() error = %v", err)
+		t.Fatal(err)
 	}
-	if report.State != statusKitManagedStateRefreshAvailable || len(report.Files) == 0 {
-		t.Fatalf("report = %#v, want planned refresh", report)
-	}
-}
-
-func TestRunHealthAppliesSafeRegistryUpdateAndChecksProject(t *testing.T) {
-	projectRoot, _ := setupLifecycleTestProject(t)
-	setWorkingDirectory(t, projectRoot)
-	ruleset := registryRulesetForTest("sample-guardrails", []string{"git"})
-	stubRulesetRegistry(t, ruleset)
-
-	cmd := healthCommandForTest(t, "--json")
-	out := &strings.Builder{}
-	cmd.SetOut(out)
-	if err := runHealth(cmd, nil); err != nil {
-		t.Fatalf("runHealth() error = %v\noutput: %s", err, out.String())
-	}
-	content, err := os.ReadFile(filepath.Join(projectRoot, rulesetTarget(ruleset.Slug)))
-	if err != nil {
-		t.Fatalf("os.ReadFile() error = %v", err)
-	}
-	if string(content) != ruleset.Content {
-		t.Fatalf("ruleset content mismatch:\n%s", content)
-	}
-
-	var report healthReport
-	if err := json.Unmarshal([]byte(out.String()), &report); err != nil {
-		t.Fatalf("json.Unmarshal() error = %v\noutput: %s", err, out.String())
-	}
-	if report.State != healthStateUpdated || report.ProjectCheck != "passed" || report.RegistryState != statusKitManagedStateCurrent {
-		t.Fatalf("report = %#v, want updated and healthy", report)
-	}
-	nextActions := strings.Join(report.NextActions, " ")
-	for _, check := range []string{
-		"Treat only this exact snapshot as command-owned evidence",
-		"Pull-Request Landing Plan",
-		"trigger the work-lane tripwire",
-		"do not adopt, transfer, stage, commit, push, restore, discard",
-		"create or update the ready pull request",
-	} {
-		if !strings.Contains(nextActions, check) {
-			t.Fatalf("expected health delivery guidance to contain %q, got %#v", check, report.NextActions)
-		}
-	}
-	for _, file := range report.Files {
-		if file.PreCommandState == "" || file.ResultState == "" {
-			t.Fatalf("health file snapshot is missing exact states: %#v", file)
-		}
-		if file.Path == ".env" || file.Path == ".envrc" {
-			t.Fatalf("health delivery snapshot contains machine-local path: %#v", file)
-		}
+	if report.State != statusKitManagedStateCurrent || len(report.Files) != 0 {
+		t.Fatalf("fresh project health = %#v", report)
 	}
 }
 
@@ -192,8 +170,7 @@ func TestRunHealthValidatesFlags(t *testing.T) {
 		flags []string
 		want  string
 	}{
-		{name: "diff requires dry run", flags: []string{"--diff"}, want: "--diff requires --dry-run"},
-		{name: "diff conflicts with json", flags: []string{"--dry-run", "--diff", "--json"}, want: "--diff cannot be combined with --json"},
+		{name: "diff conflicts with json", flags: []string{"--diff", "--json"}, want: "--diff cannot be combined with --json"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := healthCommandForTest(t, tt.flags...)

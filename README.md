@@ -47,6 +47,12 @@ kit reconcile --dry-run --diff   # preview
 kit reconcile                    # migrate to the current structure
 ```
 
+Diagnose without changing anything:
+
+```bash
+kit health
+```
+
 Reconcile keeps everything the project wrote: guidance outside the managed
 contract block, edited Kit sections, edited rules, and project rules. It removes
 retired Kit files (`docs/agents/`, `docs/references/workflows/`, the progress
