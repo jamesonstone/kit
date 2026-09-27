@@ -171,6 +171,13 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	notes = append(notes, rulesetNotes...)
 	notes = append(notes, retiredNotes...)
 	changes = append(changes, rulesetChanges...)
+	changes, blocked, guardNotes := guardLinkedTargets(projectRoot, changes)
+	notes = append(notes, guardNotes...)
+	for _, path := range instructionFiles(cfg) {
+		if blocked[filepath.ToSlash(path)] {
+			entriesConverged = false
+		}
+	}
 	versionChanged := false
 	if entriesConverged && requiredStructurePresent(projectRoot, cfg, registry, changes) &&
 		initRefreshTargetMatches(targets, config.ConfigFileName) && cfg.InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
@@ -190,6 +197,9 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		}
 	}
 
+	// Guard again so the .kit.yaml change finalized above is covered too.
+	changes, _, guardNotes = guardLinkedTargets(projectRoot, changes)
+	notes = append(notes, guardNotes...)
 	for _, change := range changes {
 		stats.recordFileChange(change)
 	}

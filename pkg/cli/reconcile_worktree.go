@@ -50,7 +50,7 @@ func resolveReconcileTarget(out io.Writer, projectRoot string, dryRun, upToDate 
 		return reconcileTarget{projectRoot: projectRoot}, nil
 	}
 	if dryRun {
-		_, err := fmt.Fprintf(out, "Preview of this checkout. A writing run applies the migration in the %s linked worktree, based on %s, so unpushed local commits are not included.\n", reconcileBranch, reconcileBaseRef(location.Path))
+		_, err := fmt.Fprintf(out, "Preview of this checkout. A writing run applies the migration in the %s linked worktree, based on %s; changes that are not in %s are not included.\n", reconcileBranch, reconcileBaseRef(location.Path), reconcileBaseRef(location.Path))
 		return reconcileTarget{projectRoot: projectRoot}, err
 	}
 	target, err := prepareReconcileWorktree(projectRoot, location)

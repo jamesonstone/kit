@@ -189,6 +189,10 @@ func planRefreshInitInstructionArtifacts(
 		}
 		converged = converged && plan.converged
 		if !initRefreshTargetMatches(targets, relativePath) {
+			// A pending change this run will not write is not converged yet.
+			if plan.result != instructionFileSkipped {
+				converged = false
+			}
 			continue
 		}
 		if plan.note != "" {

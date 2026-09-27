@@ -152,3 +152,22 @@ func stubReconcileWorktreeInspection(t *testing.T, location worktreeprep.Locatio
 	}
 	t.Cleanup(func() { inspectReconcileWorktree = previous })
 }
+
+// runManagedReconcileForWorktreeTestKeepingFlags runs reconcile with flags the
+// caller already set.
+func runManagedReconcileForWorktreeTestKeepingFlags(t *testing.T) string {
+	t.Helper()
+	reconcileOutputOnly = true
+	var out bytes.Buffer
+	cmd := &cobra.Command{}
+	cmd.Flags().Bool("output-only", true, "")
+	addPromptOnlyFlag(cmd)
+	cmd.SetContext(context.Background())
+	cmd.SetOut(&out)
+	stdout := captureStdout(t, func() {
+		if err := runReconcile(cmd, nil); err != nil {
+			t.Fatalf("runReconcile() error = %v", err)
+		}
+	})
+	return out.String() + stdout
+}
