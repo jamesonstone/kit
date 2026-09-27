@@ -31,19 +31,28 @@ binary ships the rules it was tested with and adds deterministic commands for
 bootstrap, validation, drift maintenance, spec allocation, and AWS identity
 checks. Agents plan, explore, and delegate with their own native tools.
 
+New project:
+
 ```bash
 kit init
 kit spec my-feature
 # coding agent plans, implements, validates, and curates repository memory
 kit check --project
-kit reconcile --all
 ```
 
-Existing projects should preview managed-file updates before applying them:
+Existing Kit project, created by any Kit release:
 
 ```bash
-kit reconcile --include-files --dry-run --diff
+kit reconcile --dry-run --diff   # preview
+kit reconcile                    # migrate to the current structure
 ```
+
+Reconcile keeps everything the project wrote: guidance outside the managed
+contract block, edited Kit sections, edited rules, and project rules. It removes
+retired Kit files (`docs/agents/`, `docs/references/workflows/`, the progress
+summary, retired rules) only when they are exactly as a Kit release generated
+them and committed to Git, and reports every file it keeps. From the primary
+checkout it writes to a `kit-reconcile` linked worktree for review.
 
 ## Command Surface
 

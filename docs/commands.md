@@ -8,7 +8,7 @@ interactive prompts unless a human runs them in a terminal.
 
 | Command | Why it exists |
 | --- | --- |
-| `kit init` | Scaffolds `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. `--refresh` converges Kit-managed files; `--dry-run --diff` previews. |
+| `kit init` | Scaffolds a new project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. `--refresh` runs the same convergence as `kit reconcile` in place; `--dry-run --diff` previews. |
 | `kit spec <feature>` | Allocates a worktree-safe feature number and scaffolds or adopts `docs/specs/<id>-<feature>/SPEC.md`. |
 
 ## Rules
@@ -28,7 +28,7 @@ reported unless `--force` is used.
 | Command | Why it exists |
 | --- | --- |
 | `kit check [feature]` / `kit check --project` | Validates spec front matter and relationships, duplicate feature numbers, rule documents, the managed contract block, and, when `.kit.yaml` sets `source_file_line_limit`, handwritten source-file length. Exits non-zero on blocking findings. |
-| `kit reconcile` | Audits Kit-managed drift and, with `--include-files`, applies managed refreshes from a linked worktree; from the primary checkout it defers the write. |
+| `kit reconcile` | Migrates a project created by any Kit release to the current structure, then audits project documents. Keeps project and edited content, removes only unmodified retired Kit files that Git can restore, and reports what it kept. From the primary checkout it writes to a `kit-reconcile` linked worktree. `--dry-run --diff` previews; `--force` also replaces edited Kit sections and edited shipped rules. |
 | `kit health` | One-shot maintenance for scheduled automation: applies safe managed updates, then runs the project check. `--dry-run --diff` previews. |
 | `kit registry status` | Cheap read-only report of whether Kit-managed files and rules match this binary. |
 | `kit status` | Current feature and Kit-managed state. |

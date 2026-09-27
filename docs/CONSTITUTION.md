@@ -52,7 +52,10 @@
 - Retired rules stay listed in `pkg/cli/rules_retired.go` so historical references and legacy installs remain recognizable.
 - `kit init` scaffolds the universal contract, the Constitution starter, `docs/references/testing.md`, the core rules, and the developer-experience starter files, preserving existing project-owned content.
 - `internal/templates/universal_contract.md` is the single source of the agent contract; checked-in entry files must match it.
-- `kit reconcile` retains its drift-detection, preview, inclusion, and primary-checkout deferral semantics until the final migration redesign.
+- `kit init` and `kit reconcile` converge every supported Kit generation on one structure (`instruction_scaffold_version` 4). Legacy generations (scaffold 1, 2, pre-contract 3, and the transitional contract release) are migration inputs only; Kit never generates them.
+- Ownership of legacy files is decided by evidence, not filenames: installed registry state and `internal/legacy` fingerprints of every released Kit's generated output and rule history. Unedited Kit output is replaced or removed; edited, project, and ambiguous content is kept and reported.
+- Migration removes a file only when it is exactly Kit-generated and tracked and unmodified in Git, so every removal is restorable; outside Git nothing is removed.
+- `kit reconcile` applies migration by default. From the primary checkout it writes only to a linked `kit-reconcile` worktree; `--dry-run --diff` previews anywhere without writing.
 - `kit health` is the scheduled-maintenance entry point: safe managed updates, then the project check.
 - `.kit.yaml` `source_file_line_limit` makes a line limit a deterministic project invariant; Kit sets 300 for itself.
 
@@ -108,7 +111,7 @@
 - Kit does not fetch rules, instructions, or evidence from the network at runtime.
 - Kit does not treat generated JSON, telemetry, prompts, or agent transcripts as canonical repository memory.
 - Kit does not preserve every historical CLI path across major releases.
-- Kit does not change `kit reconcile` semantics as part of the coding-agent-first pivot.
+- Kit does not keep legacy generators, legacy audits, or compatibility frameworks beyond the migration decoder.
 - Kit does not execute pull-request merges or silently overwrite project-owned content; coding agents may merge only under the exact active authorization contract.
 
 ## DEFINITIONS
