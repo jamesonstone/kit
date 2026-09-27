@@ -4,7 +4,7 @@ import "github.com/jamesonstone/kit/v3/internal/config"
 
 func defaultInitConfig() *config.Config {
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
+	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	return cfg
 }
 
@@ -19,15 +19,6 @@ func projectInitDeliveryPaths(cfg *config.Config) []string {
 		readmePath,
 		cfg.ConstitutionPath,
 	}
-	for _, version := range []int{
-		config.InstructionScaffoldVersionVerbose,
-		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
-	} {
-		paths = append(
-			paths,
-			instructionArtifactPaths(cfg, instructionFileSelection{}, version, true)...,
-		)
-	}
+	paths = append(paths, instructionArtifactPaths(cfg)...)
 	return paths
 }

@@ -47,6 +47,9 @@ func applyInitRefreshFileChangesAtomicallyWithRollback(
 }
 
 func rollbackInitRefreshFileChange(change initRefreshFileChange) error {
+	if change.result == instructionFileRemoved {
+		return document.Write(change.absolutePath, change.before)
+	}
 	if change.result == instructionFileCreated {
 		return os.Remove(change.absolutePath)
 	}
@@ -72,6 +75,13 @@ func newInitRefreshFileChange(
 
 func applyInitRefreshFileChange(change initRefreshFileChange) error {
 	if change.result == instructionFileSkipped {
+		return nil
+	}
+	if change.result == instructionFileRemoved {
+		if err := os.Remove(change.absolutePath); err != nil {
+			return fmt.Errorf("failed to remove %s: %w", change.relativePath, err)
+		}
+		removeEmptyRetiredDirectories(change.absolutePath)
 		return nil
 	}
 	if err := document.Write(change.absolutePath, change.after); err != nil {

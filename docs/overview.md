@@ -14,8 +14,9 @@ code is more reliable than model judgment.
   for it applies.
 - Scaffolds project memory: `docs/CONSTITUTION.md`, `docs/specs/<feature>/SPEC.md`
   (with worktree-safe numbering), and `docs/references/testing.md`.
-- Validates and converges Kit-managed state (`kit check`, `kit reconcile`,
-  `kit health`, `kit registry status`).
+- Creates projects (`kit init`), migrates any existing Kit project to the
+  current structure (`kit reconcile`), and diagnoses without writing
+  (`kit health`, `kit check`, `kit registry status`).
 - Verifies AWS identity before AWS work (`kit aws verify`).
 - Keeps local, minimal usage evidence (`kit usage`).
 

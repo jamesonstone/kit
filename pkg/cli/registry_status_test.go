@@ -50,7 +50,7 @@ func TestRunRegistryStatusExplicitOptOutSkipsRegistry(t *testing.T) {
 func TestRunRegistryStatusReportsRefreshAvailable(t *testing.T) {
 	projectRoot, _ := setupLifecycleTestProject(t)
 	setWorkingDirectory(t, projectRoot)
-	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git"}))
+	stubRulesetRegistry(t, registryRulesetForTest("sample-guardrails", []string{"git"}))
 
 	cmd := registryStatusCommandForTest(t, false)
 	out := &strings.Builder{}
@@ -90,7 +90,7 @@ func TestRunRegistryStatusReportsCurrentAfterRefreshConverges(t *testing.T) {
 func TestRunRegistryStatusReportsLocalCustomAttention(t *testing.T) {
 	projectRoot, cfg := setupLifecycleTestProject(t)
 	setWorkingDirectory(t, projectRoot)
-	ruleset := registryRulesetForTest("safety-guardrails", []string{"git"})
+	ruleset := registryRulesetForTest("sample-guardrails", []string{"git"})
 	local := strings.Replace(ruleset.Content, "## Examples", "Local guidance.\n\n## Examples", 1)
 	recordRulesetRegistryState(cfg, ruleset, registryArtifactStateLocalCustom, "")
 	if err := config.Save(projectRoot, cfg); err != nil {

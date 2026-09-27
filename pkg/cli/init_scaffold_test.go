@@ -18,7 +18,7 @@ func TestRunInit_CreatesCodeRabbitConfig(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -42,7 +42,7 @@ func TestRunInit_CreatesPullRequestTemplate(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -66,7 +66,7 @@ func TestRunInit_CreatesMakefileStarter(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -95,7 +95,7 @@ func TestRunInit_PreservesExistingMakefile(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -119,7 +119,7 @@ func TestRunInit_CreatesGitignoreWithKitLocalArtifacts(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -149,7 +149,7 @@ func TestRunInit_CreatesLocalEnvironmentFiles(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -190,7 +190,7 @@ func TestRunInit_PreservesExistingLocalEnvironmentFiles(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -227,7 +227,7 @@ func TestRunInit_PreservesExistingCodeRabbitConfig(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})

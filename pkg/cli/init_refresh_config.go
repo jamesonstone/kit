@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	stdreflect "reflect"
+	"sort"
+	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"gopkg.in/yaml.v3"
@@ -39,15 +42,19 @@ func initRefreshConfig(
 		inspection = currentInspection
 	}
 
-	if configSelected && opts.force {
+	// --force resets .kit.yaml only when it is named explicitly; a whole-project
+	// forced reconcile must never discard project configuration.
+	if configSelected && opts.force && len(targets) > 0 {
 		aws := cfg.AWS
 		instructionVersion := cfg.InstructionScaffoldVersion
+		registry := cfg.Registry
 		cfg = defaultInitConfig()
 		cfg.SchemaVersion = config.CurrentSchemaVersion
-		if exists && config.IsInstructionScaffoldVersionSupported(instructionVersion) {
+		if exists && config.IsKnownInstructionScaffoldVersion(instructionVersion) {
 			cfg.InstructionScaffoldVersion = instructionVersion
 		}
 		cfg.AWS = aws
+		cfg.Registry = registry
 		after, err := marshalInitRefreshConfig(cfg)
 		if err != nil {
 			return nil, nil, err
@@ -64,9 +71,8 @@ func initRefreshConfig(
 		cfg.SchemaVersion = config.CurrentSchemaVersion
 		configChanged = true
 	}
-	if !config.IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
-		cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
-		configChanged = true
+	if !exists {
+		cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	}
 	if configChanged && shouldTouchConfig {
 		after, err := marshalInitRefreshConfig(cfg)
@@ -110,10 +116,20 @@ func finalizeInitRefreshConfigChange(projectRoot string, cfg *config.Config, pla
 	if err != nil {
 		return nil, err
 	}
-	if before == after {
+	// Rewrite only for a change in content, which includes dropping keys Kit
+	// no longer reads; formatting and comments alone never trigger a rewrite.
+	if before == after || (planned == nil && sameYAMLContent(before, after)) {
 		return nil, nil
 	}
 	return newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, result), nil
+}
+
+func sameYAMLContent(left, right string) bool {
+	var a, b any
+	if yaml.Unmarshal([]byte(left), &a) != nil || yaml.Unmarshal([]byte(right), &b) != nil {
+		return false
+	}
+	return stdreflect.DeepEqual(a, b)
 }
 
 func marshalInitRefreshConfig(cfg *config.Config) (string, error) {
@@ -122,4 +138,34 @@ func marshalInitRefreshConfig(cfg *config.Config) (string, error) {
 		return "", fmt.Errorf("failed to marshal config: %w", err)
 	}
 	return string(data), nil
+}
+
+// droppedConfigNote names the top-level keys and comments a .kit.yaml rewrite
+// removes, so nothing disappears silently.
+func droppedConfigNote(before, after string) string {
+	var old, updated map[string]any
+	if before == "" || yaml.Unmarshal([]byte(before), &old) != nil || yaml.Unmarshal([]byte(after), &updated) != nil {
+		return ""
+	}
+	var dropped []string
+	for key := range old {
+		if _, ok := updated[key]; !ok {
+			dropped = append(dropped, key)
+		}
+	}
+	sort.Strings(dropped)
+	var parts []string
+	if len(dropped) > 0 {
+		parts = append(parts, "removed keys Kit no longer reads: "+strings.Join(dropped, ", "))
+	}
+	for _, line := range strings.Split(before, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			parts = append(parts, "comments are not preserved when Kit rewrites the file")
+			break
+		}
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return config.ConfigFileName + ": " + strings.Join(parts, "; ")
 }

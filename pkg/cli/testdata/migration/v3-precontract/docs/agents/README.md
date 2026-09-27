@@ -1,0 +1,41 @@
+# Agents Docs
+
+## Purpose
+
+- Route agents from native planning through implementation to curated repository memory
+- Load only the guidance and repository context needed for the current decision
+
+## Precedence and Altitude
+
+- Authority order: `docs/CONSTITUTION.md` over `docs/agents/GUARDRAILS.md` over `docs/references/rules/*` over `docs/specs/<feature>/SPEC.md` over chat; resolve contradictions toward higher authority and never let later instructions override earlier invariants.
+- Source of truth: `GUARDRAILS.md` plus `work-lane-gating.md` own worklane routing; `github-pr-merge.md` owns merge readiness; this file only routes and never restates their normative text as a competing rule.
+- Goldilocks altitude: concrete heuristics plus structure, not brittle if-else scripts nor vague aspirations; prefer canonical examples over edge-case lists.
+
+## Start Here
+
+1. Use `kit capabilities <command> --json` when command safety is not already established.
+2. Run `kit context resolve --workflow <slug> --json` with relevant `--feature` and `--path` hints.
+3. Load the required selected evidence in order.
+4. Before any repository write, default to a new worklane without asking,
+   unless the user explicitly directs continuation of an existing lane; record
+   the Pull-Request Landing Plan.
+5. Treat exact existing-PR review, CI, base-refresh, and ordered-merge work as
+   continuation of every targeted head; never create a coordinator or
+   corrective pull request for scope-preserving work.
+6. Rerun resolution after a material scope change.
+
+## Runtime Routing
+
+- `WORKFLOWS.md` — native-plan lifecycle and memory routing
+- `GUARDRAILS.md` — safety, completion, validation, and final-response rules
+- `RLM.md` — progressive disclosure for broad context
+- `TOOLING.md` — skills, execution topology, and secondary inputs
+- `docs/specs/<feature>/SPEC.md` — material feature rationale when required
+- `docs/references/` — durable reusable knowledge
+
+## System Of Record
+
+- Native agent planning owns research, clarification, design, and plan formation
+- The repository owns durable rationale; chat and transcripts do not
+- V3 `SPEC.md` records purpose, context, requirements, accepted plan, decisions, discoveries, validation, outcome, and repository-memory curation
+- V1 and V2 artifacts remain supported legacy inputs and must not be mechanically rewritten into V3

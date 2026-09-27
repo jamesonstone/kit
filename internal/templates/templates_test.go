@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
@@ -103,118 +102,6 @@ func TestBrainstormTemplateUsesReferenceProseSection(t *testing.T) {
 	for _, check := range checks {
 		if !strings.Contains(BrainstormArtifact, check) {
 			t.Fatalf("expected BrainstormArtifact to contain %q", check)
-		}
-	}
-}
-
-func TestInstructionTemplatesRequirePopulatedSections(t *testing.T) {
-	checks := []string{
-		"## Document Completeness",
-		"every required `SPEC.md` section must be populated",
-		"`not applicable`, `not required`, or `no additional information required`",
-	}
-
-	templates := map[string]string{
-		"AGENTS.md":                       LegacyAgentsMD,
-		"CLAUDE.md":                       LegacyClaudeMD,
-		".github/copilot-instructions.md": LegacyCopilotInstructionsMD,
-	}
-
-	for name, content := range templates {
-		for _, check := range checks {
-			if !strings.Contains(content, check) {
-				t.Fatalf("expected %s to contain %q", name, check)
-			}
-		}
-	}
-}
-
-func TestInstructionTemplatesIncludeReadinessGate(t *testing.T) {
-	checks := []string{
-		"v2 readiness gates",
-		"update the canonical docs first",
-	}
-
-	for name, content := range map[string]string{
-		"WORKFLOWS.md": fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/agents/WORKFLOWS.md"),
-	} {
-		for _, check := range checks {
-			if !strings.Contains(content, check) {
-				t.Fatalf("expected %s to contain %q", name, check)
-			}
-		}
-	}
-}
-
-func TestInstructionTemplatesDistinguishRLMAndDispatch(t *testing.T) {
-	checks := map[string][]string{
-		"RLM.md": {
-			"RLM is Kit's just-in-time context-routing pattern",
-			"Use it for any task where loading full context would be noisy or wasteful",
-			"## Runtime Loop",
-			"identify the immediate decision",
-			"stop loading once the decision is supported",
-			"## Context Budget Rules",
-			"specific section over full file",
-			"docs/PROJECT_PROGRESS_SUMMARY.md",
-			"conditional reads only",
-			"agent-team-orchestration.md",
-			"mandatory first-pass evaluation before finalizing any native implementation plan",
-			"shared interface or contract",
-			"Inspect as many prior feature directories as materially relevant",
-			"discovery and context selection first",
-			"do not jump straight into parallel execution",
-			"Always update affected documentation",
-		},
-		"TOOLING.md": {
-			"## Command Capability Discovery",
-			"Use `kit capabilities` when choosing among Kit commands",
-			"`docs/references/rules/kit-capabilities-usage.md`",
-			"do not maintain Kit's internal command catalog from a downstream project",
-			"safe Agent Team Plan",
-			"agent-team-orchestration.md",
-			"Use subagents when the work cleanly separates into low-overlap lanes after discovery",
-			"Let the host govern concurrency; never invent a static numeric cap",
-			"Keep broad or noisy discovery in RLM first",
-			"Use `kit pr fix` as the default PR review feedback entrypoint",
-			"uses the prompt-producing `kit dispatch --pr` path",
-			"copies the resulting dispatch prompt directly",
-			"Pass `--edit` to review and change the task list",
-			"does not launch an agent",
-			"post-push reflection cycle before review-thread resolution",
-			"resolve matching current unresolved review threads",
-			"including human reviewer and CodeRabbit feedback",
-		},
-	}
-
-	for name, snippets := range checks {
-		content := fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/agents/"+name)
-		for _, snippet := range snippets {
-			if !strings.Contains(content, snippet) {
-				t.Fatalf("expected %s to contain %q", name, snippet)
-			}
-		}
-	}
-}
-
-func TestInstructionTemplatesIncludeDocAndExportHygiene(t *testing.T) {
-	checks := map[string][]string{
-		"GUARDRAILS.md": {
-			"Always update affected documentation",
-			"unused exports",
-			"reduce its visibility",
-			"attached pasted-text file",
-			"self-review and no-known-errors gate",
-			"Before staging or committing, self-review the diff",
-		},
-	}
-
-	for name, snippets := range checks {
-		content := fileContentByPath(InstructionSupportFiles(config.InstructionScaffoldVersionTOC), "docs/agents/"+name)
-		for _, snippet := range snippets {
-			if !strings.Contains(content, snippet) {
-				t.Fatalf("expected %s to contain %q", name, snippet)
-			}
 		}
 	}
 }

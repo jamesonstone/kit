@@ -26,7 +26,7 @@ func TestRunInitRefresh_UpdatesManagedAutoAssignWorkflowWhenAssigneesChange(t *t
 		initRefresh = true
 		initOutputOnly = true
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -60,7 +60,7 @@ func TestRunInitRefresh_DoesNotOverwriteCustomAutoAssignWorkflowWithoutForceTarg
 		initRefresh = true
 		initOutputOnly = true
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -90,7 +90,7 @@ func TestRunInitRefresh_FileForceOverwritesCustomAutoAssignWorkflow(t *testing.T
 		initOutputOnly = true
 		initRefreshFiles = []string{autoAssignWorkflowPath}
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -110,7 +110,7 @@ func TestRunInitRefresh_RejectsUnsupportedFileTarget(t *testing.T) {
 	withInitFlags(t, func() {
 		initRefresh = true
 		initRefreshFiles = []string{"NOT_MANAGED.md"}
-		err := runInit(initCmd, nil)
+		err := runInitForTest(initCmd, nil)
 		if err == nil || !strings.Contains(err.Error(), "not a Kit-managed refresh target") {
 			t.Fatalf("expected unsupported target error, got %v", err)
 		}

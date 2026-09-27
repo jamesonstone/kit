@@ -14,55 +14,53 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
-const (
-	healthStateUpdated   = "updated"
-	healthStateUnhealthy = "unhealthy"
-)
+const healthStateUnhealthy = "unhealthy"
 
 type healthChangeSummary struct {
 	Created int `json:"created"`
 	Updated int `json:"updated"`
 	Merged  int `json:"merged"`
+	Removed int `json:"removed"`
 	Skipped int `json:"skipped"`
 }
 
 type healthReport struct {
-	State         string                        `json:"state"`
-	Managed       bool                          `json:"managed"`
-	DryRun        bool                          `json:"dry_run"`
-	Changes       healthChangeSummary           `json:"changes"`
-	Files         []managedFileDeliverySnapshot `json:"files,omitempty"`
-	RegistryState string                        `json:"registry_state,omitempty"`
-	ProjectCheck  string                        `json:"project_check"`
-	Notes         []string                      `json:"notes,omitempty"`
-	NextActions   []string                      `json:"next_actions,omitempty"`
-	CheckError    string                        `json:"check_error,omitempty"`
+	State        string                        `json:"state"`
+	Managed      bool                          `json:"managed"`
+	Changes      healthChangeSummary           `json:"pending_changes"`
+	Files        []managedFileDeliverySnapshot `json:"pending_files,omitempty"`
+	ProjectCheck string                        `json:"project_check"`
+	Notes        []string                      `json:"notes,omitempty"`
+	NextActions  []string                      `json:"next_actions,omitempty"`
+	CheckError   string                        `json:"check_error,omitempty"`
 }
 
 var healthCmd = &cobra.Command{
 	Use:   "health",
-	Short: "Refresh and validate Kit-managed project health",
-	Long: `Apply safe Kit-managed rules, instructions, configuration, and scaffold
-updates, then validate the project contract. Local customizations and conflicts
-are never force-overwritten; they remain explicit maintenance work for review.`,
+	Short: "Report whether a Kit project is current and healthy (read-only)",
+	Long: `Diagnose a Kit project without changing it: compute what ` + "`kit reconcile`" + `
+would change, run the project check, and report actionable findings.
+
+Health never writes files. Run ` + "`kit reconcile`" + ` to apply pending changes; it
+keeps the primary checkout read-only by writing to a linked worktree.
+
+Exits non-zero only when the project check fails. Pending reconcile changes are
+reported as state refresh_available.`,
 	Args: cobra.NoArgs,
 	RunE: runHealth,
 }
 
 func init() {
-	healthCmd.Flags().Bool("dry-run", false, "preview Kit health changes without writing files")
-	healthCmd.Flags().Bool("diff", false, "print the planned unified diff with --dry-run")
+	healthCmd.Flags().Bool("diff", false, "print the changes kit reconcile would make as a unified diff")
 	healthCmd.Flags().Bool("json", false, "output the Kit health result as JSON")
+	healthCmd.Flags().Bool("dry-run", false, "accepted for compatibility; health is always read-only")
+	_ = healthCmd.Flags().MarkHidden("dry-run")
 	rootCmd.AddCommand(healthCmd)
 }
 
 func runHealth(cmd *cobra.Command, _ []string) error {
-	dryRun, _ := cmd.Flags().GetBool("dry-run")
 	diffOutput, _ := cmd.Flags().GetBool("diff")
 	jsonOutput, _ := cmd.Flags().GetBool("json")
-	if diffOutput && !dryRun {
-		return fmt.Errorf("--diff requires --dry-run")
-	}
 	if diffOutput && jsonOutput {
 		return fmt.Errorf("--diff cannot be combined with --json")
 	}
@@ -75,11 +73,7 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	report := healthReport{
-		Managed:      cfg.IsHealthManaged(),
-		DryRun:       dryRun,
-		ProjectCheck: "not_run",
-	}
+	report := healthReport{Managed: cfg.IsHealthManaged(), ProjectCheck: "not_run"}
 	if !report.Managed {
 		report.State = statusKitManagedStateDisabled
 		return writeHealthReport(cmd.OutOrStdout(), report, jsonOutput)
@@ -87,14 +81,13 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 
 	ctx, cancel := context.WithTimeout(cmd.Context(), statusKitManagedRefreshTimeout)
 	defer cancel()
-	plan, err := buildInitRefreshPlan(ctx, projectRoot, initRefreshOptions{dryRun: dryRun, diff: diffOutput, outputOnly: true})
+	plan, err := buildInitRefreshPlan(ctx, projectRoot, initRefreshOptions{dryRun: true, outputOnly: true})
 	if err != nil {
 		var registryErr *initRefreshRegistryError
 		if errors.As(err, &registryErr) || errors.Is(err, context.DeadlineExceeded) {
 			report.State = statusKitManagedStateUnknown
-			report.RegistryState = statusKitManagedStateUnknown
 			report.CheckError = err.Error()
-			report.NextActions = []string{"rerun `kit health` when registry access is restored"}
+			report.NextActions = []string{"rerun `kit health`"}
 			return writeHealthReport(cmd.OutOrStdout(), report, jsonOutput)
 		}
 		return err
@@ -103,51 +96,29 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 		Created: plan.stats.created,
 		Updated: plan.stats.updated,
 		Merged:  plan.stats.merged,
+		Removed: plan.stats.removed,
 		Skipped: plan.stats.skipped,
 	}
-	report.Files = healthChangedFiles(projectRoot, plan.changes)
+	report.Files = managedFileDeliverySnapshotFromInitRefresh(projectRoot, plan.changes)
 	report.Notes = append(report.Notes, plan.notes...)
-
-	if dryRun {
-		report.State = healthPlannedState(report)
-		report.RegistryState = report.State
-		report.NextActions = healthNextActions(report, projectRoot)
-		if diffOutput {
-			if diff := renderInitRefreshDiff(plan.changes); strings.TrimSpace(diff) != "" {
-				if _, err := fmt.Fprint(cmd.OutOrStdout(), diff); err != nil {
-					return err
-				}
+	if diffOutput {
+		if diff := renderInitRefreshDiff(plan.changes); strings.TrimSpace(diff) != "" {
+			if _, err := fmt.Fprint(cmd.OutOrStdout(), diff); err != nil {
+				return err
 			}
 		}
-		return writeHealthReport(cmd.OutOrStdout(), report, jsonOutput)
-	}
-
-	if err := applyInitRefreshFileChangesAtomically(plan.changes); err != nil {
-		return err
-	}
-	updatedCfg, err := config.Load(projectRoot)
-	if err != nil {
-		return fmt.Errorf("failed to reload config after Kit health refresh: %w", err)
-	}
-	registryReport, err := buildRegistryStatusReport(projectRoot, updatedCfg)
-	if err != nil {
-		return err
-	}
-	report.RegistryState = registryReport.State
-	if registryReport.CheckError != "" {
-		report.CheckError = registryReport.CheckError
 	}
 
 	var checkOutput bytes.Buffer
-	checkErr := checkProjectContractTo(&checkOutput, projectRoot, updatedCfg)
+	checkErr := checkProjectContractTo(&checkOutput, projectRoot, cfg)
 	if checkErr == nil {
 		report.ProjectCheck = "passed"
 	} else {
 		report.ProjectCheck = "failed"
 		report.CheckError = checkErr.Error()
 	}
-	report.State = healthFinalState(report, checkErr)
-	report.NextActions = healthNextActions(report, projectRoot)
+	report.State = healthState(report, checkErr)
+	report.NextActions = healthNextActions(report)
 
 	if !jsonOutput {
 		if _, err := io.Copy(cmd.OutOrStdout(), &checkOutput); err != nil {
@@ -163,66 +134,29 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func healthChangedFiles(
-	projectRoot string,
-	changes []initRefreshFileChange,
-) []managedFileDeliverySnapshot {
-	return managedFileDeliverySnapshotFromInitRefresh(projectRoot, changes)
-}
-
-func healthPlannedState(report healthReport) string {
-	if healthNotesNeedAttention(report.Notes) {
-		return statusKitManagedStateAttentionNeeded
-	}
-	if len(report.Files) > 0 {
-		return statusKitManagedStateRefreshAvailable
-	}
-	return statusKitManagedStateCurrent
-}
-
-func healthFinalState(report healthReport, checkErr error) string {
-	if checkErr != nil {
+func healthState(report healthReport, checkErr error) string {
+	switch {
+	case checkErr != nil:
 		return healthStateUnhealthy
-	}
-	if healthNotesNeedAttention(report.Notes) || report.RegistryState == statusKitManagedStateAttentionNeeded || report.RegistryState == statusKitManagedStateRefreshAvailable {
+	case len(report.Notes) > 0:
 		return statusKitManagedStateAttentionNeeded
+	case len(report.Files) > 0:
+		return statusKitManagedStateRefreshAvailable
+	default:
+		return statusKitManagedStateCurrent
 	}
-	if report.RegistryState == statusKitManagedStateUnknown {
-		return statusKitManagedStateUnknown
-	}
-	if len(report.Files) > 0 {
-		return healthStateUpdated
-	}
-	return statusKitManagedStateCurrent
 }
 
-func healthNotesNeedAttention(notes []string) bool {
-	for _, note := range notes {
-		if strings.HasPrefix(note, "migrated exact generated V2 instruction artifacts") ||
-			strings.HasPrefix(note, "exact legacy V1 instruction artifacts were refreshed") {
-			continue
-		}
-		return true
-	}
-	return false
-}
-
-func healthNextActions(report healthReport, projectRoot string) []string {
+func healthNextActions(report healthReport) []string {
 	var actions []string
-	if report.State == statusKitManagedStateRefreshAvailable {
-		actions = append(actions, "run `kit health` to apply the planned safe Kit-managed updates")
+	if len(report.Files) > 0 {
+		actions = append(actions, "run `kit reconcile` to apply the pending changes (preview with `kit reconcile --dry-run --diff`)")
 	}
-	if report.State == statusKitManagedStateAttentionNeeded {
-		actions = append(actions, "run `kit reconcile --output-only`, curate unresolved Kit-managed files, and rerun `kit health`")
+	if len(report.Notes) > 0 {
+		actions = append(actions, "review the notes; Kit keeps edited or ambiguous files until you resolve them")
 	}
-	if report.State == healthStateUpdated {
-		actions = append(actions, "review and validate the complete Kit health diff before delivery")
-	}
-	if report.State == statusKitManagedStateUnknown {
-		actions = append(actions, "rerun `kit health` when registry access is restored")
-	}
-	if !report.DryRun && len(report.Files) > 0 {
-		actions = append(actions, managedFileDeliveryInstructions(projectRoot, report.Files)...)
+	if report.State == healthStateUnhealthy {
+		actions = append(actions, "fix the project check findings, then rerun `kit health`")
 	}
 	return actions
 }
@@ -237,19 +171,18 @@ func writeHealthReport(out io.Writer, report healthReport, jsonOutput bool) erro
 		_, err := fmt.Fprintln(out, "Kit health disabled (health.managed=false).")
 		return err
 	}
-	if _, err := fmt.Fprintf(out, "Kit health: %s\n", report.State); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintf(out, "Changes: %d created, %d updated, %d merged, %d skipped\n", report.Changes.Created, report.Changes.Updated, report.Changes.Merged, report.Changes.Skipped); err != nil {
-		return err
+	lines := []string{
+		fmt.Sprintf("Kit health: %s", report.State),
+		fmt.Sprintf("Pending reconcile changes: %d created, %d updated, %d merged, %d removed", report.Changes.Created, report.Changes.Updated, report.Changes.Merged, report.Changes.Removed),
 	}
 	for _, note := range report.Notes {
-		if _, err := fmt.Fprintf(out, "Note: %s\n", note); err != nil {
-			return err
-		}
+		lines = append(lines, "Note: "+note)
 	}
 	for _, action := range report.NextActions {
-		if _, err := fmt.Fprintf(out, "Next: %s\n", action); err != nil {
+		lines = append(lines, "Next: "+action)
+	}
+	for _, line := range lines {
+		if _, err := fmt.Fprintln(out, line); err != nil {
 			return err
 		}
 	}

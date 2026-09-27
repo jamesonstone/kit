@@ -34,16 +34,17 @@ func printInitRefreshDryRun(changes []initRefreshFileChange, stats initRefreshSt
 			}
 			fmt.Printf("   %s %s\n", dryRunActionLabel(change.result), change.relativePath)
 		}
-		if stats.created+stats.updated+stats.merged == 0 {
+		if stats.changed() == 0 {
 			fmt.Println("   No Kit-managed file changes planned.")
 		}
 	}
 
 	fmt.Printf(
-		"\nDry run complete. Planned Created: %d, Updated: %d, Merged: %d, Skipped: %d\n",
+		"\nDry run complete. Planned Created: %d, Updated: %d, Merged: %d, Removed: %d, Skipped: %d\n",
 		stats.created,
 		stats.updated,
 		stats.merged,
+		stats.removed,
 		stats.skipped,
 	)
 }
@@ -56,6 +57,8 @@ func dryRunActionLabel(result instructionFileWriteResult) string {
 		return "update"
 	case instructionFileMerged:
 		return "merge"
+	case instructionFileRemoved:
+		return "remove"
 	default:
 		return "skip"
 	}
@@ -81,13 +84,19 @@ func renderInitRefreshFileDiff(change initRefreshFileChange) string {
 
 	var builder strings.Builder
 	fmt.Fprintf(&builder, "diff --git %s %s\n", oldPath, newPath)
-	if change.result == instructionFileCreated {
+	switch change.result {
+	case instructionFileCreated:
 		builder.WriteString("new file mode 100644\n")
 		builder.WriteString("--- /dev/null\n")
-	} else {
+		fmt.Fprintf(&builder, "+++ %s\n", newPath)
+	case instructionFileRemoved:
+		builder.WriteString("deleted file mode 100644\n")
 		fmt.Fprintf(&builder, "--- %s\n", oldPath)
+		builder.WriteString("+++ /dev/null\n")
+	default:
+		fmt.Fprintf(&builder, "--- %s\n", oldPath)
+		fmt.Fprintf(&builder, "+++ %s\n", newPath)
 	}
-	fmt.Fprintf(&builder, "+++ %s\n", newPath)
 
 	for _, hunk := range unifiedDiffHunks(splitDiffLines(change.before), splitDiffLines(change.after), initRefreshDiffContext) {
 		builder.WriteString(hunk)

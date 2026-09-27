@@ -14,147 +14,96 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func TestResolveReconcileRefreshDecisionDefersPrimaryWrites(t *testing.T) {
-	stubReconcileWorktreeInspection(t, worktreeprep.Location{
-		InsideGit: true,
-		IsPrimary: true,
-	})
-
-	decision, err := resolveReconcileRefreshDecision("/repo", true, false)
-	if err != nil {
-		t.Fatalf("resolveReconcileRefreshDecision() error = %v", err)
-	}
-	if decision.Apply || !decision.Deferred {
-		t.Fatalf("decision = %#v, want deferred without apply", decision)
-	}
-}
-
-func TestResolveReconcileRefreshDecisionPreservesWritableAndReadOnlyPaths(t *testing.T) {
+func TestResolveReconcileTargetWritesInPlaceOutsidePrimaryCheckout(t *testing.T) {
 	for _, test := range []struct {
-		name      string
-		location  worktreeprep.Location
-		requested bool
-		dryRun    bool
-		wantApply bool
+		name     string
+		location worktreeprep.Location
+		dryRun   bool
 	}{
-		{name: "linked worktree", location: worktreeprep.Location{InsideGit: true}, requested: true, wantApply: true},
-		{name: "non-Git project", requested: true, wantApply: true},
-		{name: "primary dry-run", location: worktreeprep.Location{InsideGit: true, IsPrimary: true}, requested: true, dryRun: true, wantApply: true},
-		{name: "not requested", location: worktreeprep.Location{InsideGit: true, IsPrimary: true}},
+		{name: "linked worktree", location: worktreeprep.Location{InsideGit: true}},
+		{name: "non-Git project"},
+		{name: "primary dry run", location: worktreeprep.Location{InsideGit: true, IsPrimary: true}, dryRun: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			stubReconcileWorktreeInspection(t, test.location)
-			decision, err := resolveReconcileRefreshDecision("/repo", test.requested, test.dryRun)
-			if err != nil {
-				t.Fatalf("resolveReconcileRefreshDecision() error = %v", err)
-			}
-			if decision.Apply != test.wantApply || decision.Deferred {
-				t.Fatalf("decision = %#v", decision)
+			target, err := resolveReconcileTarget(&bytes.Buffer{}, "/repo", test.dryRun, false)
+			if err != nil || target.worktree || target.projectRoot != "/repo" {
+				t.Fatalf("target = %#v, err = %v", target, err)
 			}
 		})
 	}
 }
 
-func TestResolveReconcileRefreshDecisionFailsClosed(t *testing.T) {
+func TestResolveReconcileTargetFailsClosed(t *testing.T) {
 	previous := inspectReconcileWorktree
 	inspectReconcileWorktree = func(string) (worktreeprep.Location, error) {
-		return worktreeprep.Location{}, errors.New("inspect failed")
+		return worktreeprep.Location{}, errors.New("broken git metadata")
 	}
 	t.Cleanup(func() { inspectReconcileWorktree = previous })
-
-	_, err := resolveReconcileRefreshDecision("/repo", true, false)
-	if err == nil {
-		t.Fatal("resolveReconcileRefreshDecision() unexpectedly succeeded")
+	if _, err := resolveReconcileTarget(&bytes.Buffer{}, "/repo", false, false); err == nil {
+		t.Fatal("expected inspection failure to stop reconcile")
 	}
 }
 
-func TestBuildDeferredReconcileCommandPreservesWriteIntent(t *testing.T) {
-	t.Run("default interactive refresh", func(t *testing.T) {
-		resetReconcileFlags(t)
-		if got := buildDeferredReconcileCommand(nil); got != "kit reconcile --include-files --output-only" {
-			t.Fatalf("buildDeferredReconcileCommand() = %q", got)
-		}
-	})
-
-	t.Run("whole project", func(t *testing.T) {
-		resetReconcileFlags(t)
-		reconcileAll = true
-		if got := buildDeferredReconcileCommand(nil); got != "kit reconcile --all --include-files --output-only" {
-			t.Fatalf("buildDeferredReconcileCommand() = %q", got)
-		}
-	})
-
-	t.Run("filtered forced feature refresh", func(t *testing.T) {
-		resetReconcileFlags(t)
-		reconcileForce = true
-		reconcileRefreshFiles = []string{"docs/rules/owner's-rule.md", "AGENTS.md"}
-		reconcileMigrateReferences = true
-		reconcileMigrateVerification = true
-		reconcileCopy = true
-
-		got := buildDeferredReconcileCommand([]string{"sample feature"})
-		want := "kit reconcile 'sample feature' --include-files --force " +
-			"--file 'docs/rules/owner'\"'\"'s-rule.md' --file 'AGENTS.md' " +
-			"--migrate-references --migrate-verification --copy --output-only"
-		if got != want {
-			t.Fatalf("buildDeferredReconcileCommand() = %q, want %q", got, want)
-		}
-		instructions := strings.Join(
-			managedFileDeliveryInstructionsForCommand("/repo", got),
-			"\n",
-		)
-		if !strings.Contains(instructions, got) {
-			t.Fatalf("delivery instructions omit exact rerun command:\n%s", instructions)
-		}
-	})
-}
-
-func TestRunReconcileDefersPrimaryRefreshWithoutChangingOutputContract(t *testing.T) {
-	projectRoot := setupManagedSafetyGuidanceProject(t)
+func TestRunReconcileFromPrimaryMigratesLinkedWorktreeAndLeavesPrimaryUntouched(t *testing.T) {
+	projectRoot, _ := setupLifecycleTestProject(t)
+	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), "# AGENTS\n\n## Team Notes\n\n- Keep me.\n")
+	writeFile(t, filepath.Join(projectRoot, envPath), "SECRET=local\n")
+	writeFile(t, filepath.Join(projectRoot, ".gitignore"), ".env\n")
 	initializeReconcileGitFixture(t, projectRoot)
+	worktreeRoot := t.TempDir()
+	stubReconcileWorktreeRoot(t, worktreeRoot)
 	setWorkingDirectory(t, projectRoot)
 
 	output := runManagedReconcileForWorktreeTest(t)
 	if status := reconcileGitOutput(t, projectRoot, "status", "--porcelain"); status != "" {
 		t.Fatalf("primary checkout changed:\n%s", status)
 	}
-	if _, err := os.Stat(filepath.Join(projectRoot, "AGENTS.md")); !os.IsNotExist(err) {
-		t.Fatal("primary checkout unexpectedly received managed AGENTS.md")
+	linked := filepath.Join(worktreeRoot, filepath.Base(projectRoot), reconcileBranch)
+	agents := readFile(t, filepath.Join(linked, "AGENTS.md"))
+	if strings.Count(agents, "BEGIN KIT-MANAGED CONTRACT") != 1 || !strings.Contains(agents, "- Keep me.") {
+		t.Fatalf("linked AGENTS.md was not migrated with project guidance kept:\n%s", agents)
 	}
-	for _, expected := range []string{
-		"Delivery of command-created files:",
-		"No exact command-owned path snapshot is present",
-		"canonical non-primary writable worktree",
-		"rerun the write-capable Kit command with this exact shell-safe invocation: kit reconcile --include-files --output-only",
-	} {
-		if !strings.Contains(output, expected) {
-			t.Fatalf("deferred reconcile output missing %q:\n%s", expected, output)
-		}
+	if target, err := os.Readlink(filepath.Join(linked, envPath)); err != nil || filepath.Base(target) != envPath || readFile(t, target) != "SECRET=local\n" {
+		t.Fatalf(".env link = %q, %v", target, err)
+	}
+	if branch := reconcileGitOutput(t, linked, "branch", "--show-current"); branch != reconcileBranch {
+		t.Fatalf("linked branch = %q", branch)
+	}
+	if !strings.Contains(output, linked) || !strings.Contains(output, "git -C") {
+		t.Fatalf("output does not point at the worktree:\n%s", output)
+	}
+
+	// A second run reuses the worktree and changes nothing.
+	output = runManagedReconcileForWorktreeTest(t)
+	if !strings.Contains(output, "reusing worktree") {
+		t.Fatalf("second run did not reuse the worktree:\n%s", output)
+	}
+	if status := reconcileGitOutput(t, projectRoot, "status", "--porcelain"); status != "" {
+		t.Fatalf("primary checkout changed on rerun:\n%s", status)
 	}
 }
 
-func TestRunReconcileAppliesManagedRefreshInLinkedWorktree(t *testing.T) {
-	projectRoot := setupManagedSafetyGuidanceProject(t)
+func TestReconcileWorktreeRefusesUnrelatedExistingPath(t *testing.T) {
+	projectRoot, _ := setupLifecycleTestProject(t)
 	initializeReconcileGitFixture(t, projectRoot)
-	linkedRoot := filepath.Join(t.TempDir(), "GH-160")
-	runGitForSourceAuditTest(t, projectRoot, "worktree", "add", "-b", "GH-160", linkedRoot, "main")
-	setWorkingDirectory(t, linkedRoot)
+	worktreeRoot := t.TempDir()
+	stubReconcileWorktreeRoot(t, worktreeRoot)
+	writeFile(t, filepath.Join(worktreeRoot, filepath.Base(projectRoot), reconcileBranch, "keep.txt"), "mine\n")
+	location, err := worktreeprep.New().Inspect(context.Background(), projectRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := prepareReconcileWorktree(projectRoot, location); err == nil || !strings.Contains(err.Error(), "move it aside") {
+		t.Fatalf("expected refusal, got %v", err)
+	}
+}
 
-	output := runManagedReconcileForWorktreeTest(t)
-	if info, err := os.Stat(filepath.Join(linkedRoot, "AGENTS.md")); err != nil || !info.Mode().IsRegular() {
-		t.Fatal("linked worktree did not receive managed AGENTS.md")
-	}
-	if status := reconcileGitOutput(t, projectRoot, "status", "--porcelain"); status != "" {
-		t.Fatalf("primary checkout changed:\n%s", status)
-	}
-	for _, expected := range []string{
-		"Delivery of command-created files:",
-		"Treat only this exact snapshot as command-owned evidence",
-	} {
-		if !strings.Contains(output, expected) {
-			t.Fatalf("linked reconcile output missing %q:\n%s", expected, output)
-		}
-	}
+func stubReconcileWorktreeRoot(t *testing.T, root string) {
+	t.Helper()
+	previous := reconcileWorktreeRoot
+	reconcileWorktreeRoot = func() (string, error) { return root, nil }
+	t.Cleanup(func() { reconcileWorktreeRoot = previous })
 }
 
 func initializeReconcileGitFixture(t *testing.T, projectRoot string) {
@@ -169,7 +118,6 @@ func initializeReconcileGitFixture(t *testing.T, projectRoot string) {
 func runManagedReconcileForWorktreeTest(t *testing.T) string {
 	t.Helper()
 	resetReconcileFlags(t)
-	reconcileIncludeFiles = true
 	reconcileOutputOnly = true
 
 	var out bytes.Buffer
@@ -203,4 +151,23 @@ func stubReconcileWorktreeInspection(t *testing.T, location worktreeprep.Locatio
 		return location, nil
 	}
 	t.Cleanup(func() { inspectReconcileWorktree = previous })
+}
+
+// runManagedReconcileForWorktreeTestKeepingFlags runs reconcile with flags the
+// caller already set.
+func runManagedReconcileForWorktreeTestKeepingFlags(t *testing.T) string {
+	t.Helper()
+	reconcileOutputOnly = true
+	var out bytes.Buffer
+	cmd := &cobra.Command{}
+	cmd.Flags().Bool("output-only", true, "")
+	addPromptOnlyFlag(cmd)
+	cmd.SetContext(context.Background())
+	cmd.SetOut(&out)
+	stdout := captureStdout(t, func() {
+		if err := runReconcile(cmd, nil); err != nil {
+			t.Fatalf("runReconcile() error = %v", err)
+		}
+	})
+	return out.String() + stdout
 }

@@ -27,7 +27,7 @@ func TestRunInitRefresh_AddsManagedReadmeBadgesAndStaysIdempotent(t *testing.T) 
 		initRefreshFiles = []string{readmePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -69,7 +69,7 @@ func TestRunInitRefresh_AddsManagedReadmeBadgesAndStaysIdempotent(t *testing.T) 
 		initRefreshFiles = []string{readmePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("second runInit() error = %v", err)
 			}
 		})
@@ -98,7 +98,7 @@ func TestRunInitRefresh_CreatesReadmeStarterWithManagedBadges(t *testing.T) {
 		initRefreshFiles = []string{readmePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -141,7 +141,7 @@ func TestRunInitRefresh_ReplacesMaintainerSectionAndKeepsMaintainersLast(t *test
 		initRefreshFiles = []string{readmePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -176,7 +176,7 @@ func TestRunInitRefresh_AddsMaintainersWithoutGitHubRemote(t *testing.T) {
 		initRefreshFiles = []string{readmePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})

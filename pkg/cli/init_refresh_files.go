@@ -110,37 +110,32 @@ func planRefreshInitScaffoldFile(
 	return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileCreated), nil
 }
 
-func planRefreshInitConstitution(projectRoot string, cfg *config.Config, targets map[string]bool, plannedInstructions []initRefreshFileChange) (*initRefreshFileChange, error) {
+func planRefreshInitConstitution(projectRoot string, cfg *config.Config, targets map[string]bool, entriesConverged bool) (*initRefreshFileChange, error) {
 	relativePath := filepath.ToSlash(cfg.ConstitutionPath)
 	if !initRefreshTargetMatches(targets, relativePath) {
 		return nil, nil
 	}
 
 	path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
-	exists := document.Exists(path)
-	before := ""
-	after := templates.Constitution
-	result := instructionFileCreated
-	if exists {
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read %s: %w", relativePath, err)
-		}
-		before = string(data)
-		after = before
-		result = instructionFileSkipped
+	if !document.Exists(path) {
+		after, _ := upsertConstitutionBaseline(templates.Constitution, templates.ConstitutionBaselineSection)
+		return newInitRefreshFileChange(projectRoot, relativePath, "", after, instructionFileCreated), nil
 	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read %s: %w", relativePath, err)
+	}
+	before := string(data)
+	after := migrateConstitutionSections(before, entriesConverged)
 	after = mergeDocumentContent(relativePath, after, templates.Constitution, document.TypeConstitution)
-	updated, changed := upsertConstitutionBaseline(after, constitutionBaselineForProject(projectRoot, cfg, plannedInstructions))
-	if changed {
-		after = updated
+	// The baseline points at the contract, so it moves only once every entry
+	// file carries the managed block; otherwise the existing baseline stays.
+	if entriesConverged {
+		after, _ = upsertConstitutionBaseline(after, templates.ConstitutionBaselineSection)
 	}
-
-	if exists && before != after {
+	result := instructionFileSkipped
+	if before != after {
 		result = instructionFileMerged
-	}
-	if exists && before == after {
-		result = instructionFileSkipped
 	}
 	return newInitRefreshFileChange(projectRoot, relativePath, before, after, result), nil
 }
@@ -159,66 +154,54 @@ func mergeDocumentContent(path string, content string, templateContent string, d
 		return content
 	}
 
-	merged := content
+	merged := strings.TrimRight(content, "\n")
 	for _, section := range missingSections {
-		merged += fmt.Sprintf("\n\n## %s\n\n%s", section.Name, section.Content)
+		merged += fmt.Sprintf("\n\n## %s\n\n%s", section.Name, strings.TrimSpace(section.Content))
 	}
-	return merged
+	return merged + "\n"
 }
 
+// planRefreshInitInstructionArtifacts creates missing instruction artifacts and
+// migrates existing entry files onto the managed contract block. It reports
+// whether every entry file carries exactly one current block afterwards.
 func planRefreshInitInstructionArtifacts(
 	projectRoot string,
 	opts initRefreshOptions,
 	cfg *config.Config,
 	targets map[string]bool,
 ) ([]initRefreshFileChange, []string, bool, error) {
-	currentVersion := cfg.EffectiveInstructionScaffoldVersion()
-	targetVersion := currentVersion
-	migrated := false
+	var changes []initRefreshFileChange
 	var notes []string
-	fullRefresh := len(targets) == 0
-	fullV2Refresh := fullRefresh && currentVersion == config.InstructionScaffoldVersionTOC
-	if fullV2Refresh {
-		if exactGeneratedInstructionScaffold(projectRoot, cfg, config.InstructionScaffoldVersionTOC) {
-			targetVersion = config.InstructionScaffoldVersionMemory
-			cfg.InstructionScaffoldVersion = targetVersion
-			migrated = true
-			notes = append(notes, "migrated exact generated V2 instruction artifacts to instruction_scaffold_version 3")
+	converged := true
+	// Entry files symlinked to one another are one file: plan it under its
+	// real (non-link) path and skip the linked names.
+	real := map[string]bool{}
+	for _, relativePath := range instructionArtifactPaths(cfg) {
+		path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+		if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink == 0 {
+			real[resolvedOrClean(path)] = true
 		}
 	}
-
-	var changes []initRefreshFileChange
-	legacyV1Refreshed := false
-	customizedV2Preserved := false
-	legacyContract := false
-	for _, relativePath := range instructionArtifactPaths(
-		cfg,
-		instructionFileSelection{},
-		targetVersion,
-		true,
-	) {
+	for _, relativePath := range instructionArtifactPaths(cfg) {
 		relativePath = filepath.ToSlash(relativePath)
-		if !initRefreshTargetMatches(targets, relativePath) {
+		path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+		if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink != 0 && real[resolvedOrClean(path)] {
 			continue
 		}
-		exactLegacy := exactLegacyInstructionArtifact(projectRoot, relativePath)
-		if fullV2Refresh && !migrated && document.Exists(filepath.Join(projectRoot, filepath.FromSlash(relativePath))) {
-			if exactLegacy {
-				legacyV1Refreshed = true
-			} else if !exactGeneratedInstructionArtifact(projectRoot, relativePath, currentVersion) {
-				customizedV2Preserved = true
-			}
-		}
-		mode := instructionFileWriteModeAppendOnly
-		if opts.force || migrated || exactLegacy {
-			mode = instructionFileWriteModeOverwrite
-		}
-		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, targetVersion)
+		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, opts.force)
 		if err != nil {
 			return nil, nil, false, err
 		}
-		if plan.legacyContract {
-			legacyContract = true
+		converged = converged && plan.converged
+		if !initRefreshTargetMatches(targets, relativePath) {
+			// A pending change this run will not write is not converged yet.
+			if plan.result != instructionFileSkipped {
+				converged = false
+			}
+			continue
+		}
+		if plan.note != "" {
+			notes = append(notes, plan.note)
 		}
 		change, err := initRefreshChangeFromInstructionPlan(projectRoot, plan)
 		if err != nil {
@@ -226,37 +209,7 @@ func planRefreshInitInstructionArtifacts(
 		}
 		changes = append(changes, change)
 	}
-	if legacyV1Refreshed {
-		notes = append(notes, "exact legacy V1 instruction artifacts were refreshed to instruction_scaffold_version 2")
-	}
-	if customizedV2Preserved {
-		notes = append(notes, "customized V2 instruction artifacts were preserved; preview a targeted replacement with `kit reconcile --include-files --force --dry-run --diff`")
-	}
-	if legacyContract {
-		notes = append(notes, legacyContractNote)
-	}
-	return changes, notes, migrated, nil
-}
-
-const legacyContractNote = "instruction entry files predate the Kit-managed contract block and were left unchanged; preview a targeted replacement with `kit reconcile --include-files --force --dry-run --diff`"
-
-func exactGeneratedInstructionScaffold(projectRoot string, cfg *config.Config, version int) bool {
-	for _, relativePath := range instructionArtifactPaths(cfg, instructionFileSelection{}, version, true) {
-		if !exactGeneratedInstructionArtifact(projectRoot, relativePath, version) {
-			return false
-		}
-	}
-	return true
-}
-
-func exactGeneratedInstructionArtifact(projectRoot, relativePath string, version int) bool {
-	path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return false
-	}
-	expected, _, err := instructionArtifactContent(relativePath, version)
-	return err == nil && strings.TrimSpace(string(content)) == strings.TrimSpace(expected)
+	return changes, notes, converged, nil
 }
 
 func initRefreshChangeFromInstructionPlan(projectRoot string, plan instructionFileWritePlan) (initRefreshFileChange, error) {

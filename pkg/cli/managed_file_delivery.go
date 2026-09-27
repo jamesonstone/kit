@@ -58,62 +58,18 @@ func managedFileDeliverySnapshotFromInitRefresh(
 		if change.result != instructionFileCreated {
 			preCommandState = managedFileContentState(change.before)
 		}
+		resultState := managedFileContentState(change.after)
+		if change.result == instructionFileRemoved {
+			resultState = managedFileAbsentState
+		}
 		snapshot = append(snapshot, managedFileDeliverySnapshot{
 			Path:            relativePath,
 			Action:          dryRunActionLabel(change.result),
 			PreCommandState: preCommandState,
-			ResultState:     managedFileContentState(change.after),
+			ResultState:     resultState,
 		})
 	}
 	return snapshot
-}
-
-func managedFileDeliverySnapshotFromScaffold(
-	projectRoot string,
-	plans []instructionFileWritePlan,
-	cleanupPlans []instructionRemovalPlan,
-) ([]managedFileDeliverySnapshot, error) {
-	snapshot := make([]managedFileDeliverySnapshot, 0, len(plans)+len(cleanupPlans))
-	for _, plan := range plans {
-		relativePath := normalizeManagedFileDeliveryPath(plan.relativePath)
-		if plan.result == instructionFileSkipped ||
-			!managedFileDeliveryPathEligible(projectRoot, relativePath) {
-			continue
-		}
-
-		preCommandState := managedFileAbsentState
-		if plan.result != instructionFileCreated {
-			content, err := readManagedFileDeliveryContent(plan.absolutePath)
-			if err != nil {
-				return nil, fmt.Errorf("failed to snapshot %s before instruction scaffolding: %w", plan.relativePath, err)
-			}
-			preCommandState = managedFileContentState(content)
-		}
-		snapshot = append(snapshot, managedFileDeliverySnapshot{
-			Path:            relativePath,
-			Action:          dryRunActionLabel(plan.result),
-			PreCommandState: preCommandState,
-			ResultState:     managedFileContentState(plan.content),
-		})
-	}
-
-	for _, plan := range cleanupPlans {
-		relativePath := normalizeManagedFileDeliveryPath(plan.relativePath)
-		if !managedFileDeliveryPathEligible(projectRoot, relativePath) {
-			continue
-		}
-		content, err := readManagedFileDeliveryContent(plan.absolutePath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to snapshot %s before instruction cleanup: %w", plan.relativePath, err)
-		}
-		snapshot = append(snapshot, managedFileDeliverySnapshot{
-			Path:            relativePath,
-			Action:          "remove",
-			PreCommandState: managedFileContentState(content),
-			ResultState:     managedFileAbsentState,
-		})
-	}
-	return snapshot, nil
 }
 
 func appendManagedFileDeliveryTransition(
@@ -234,17 +190,6 @@ func readManagedFileDeliveryState(path string) (string, bool, error) {
 		return "", false, err
 	}
 	return string(content), true, nil
-}
-
-func readManagedFileDeliveryContent(path string) (string, error) {
-	content, exists, err := readManagedFileDeliveryState(path)
-	if err != nil {
-		return "", err
-	}
-	if !exists {
-		return "", os.ErrNotExist
-	}
-	return content, nil
 }
 
 func managedFileDeliveryPathEligible(projectRoot, relativePath string) bool {

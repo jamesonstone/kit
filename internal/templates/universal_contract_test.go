@@ -6,8 +6,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 // criticalInvariants maps each universal invariant to one marker that must stay
@@ -59,7 +57,7 @@ func TestVendorAdaptersRenderOneContract(t *testing.T) {
 		"CLAUDE.md":                       "CLAUDE",
 		".github/copilot-instructions.md": "GitHub Copilot Repository Instructions",
 	} {
-		got := InstructionFileForVersion(path, config.InstructionScaffoldVersionMemory)
+		got := InstructionEntryFile(path)
 		if want := "# " + title + "\n\n" + block; got != want {
 			t.Errorf("%s is not the title plus the shared contract block:\n%s", path, got)
 		}
@@ -87,16 +85,6 @@ func TestContractContextualRulesExist(t *testing.T) {
 	}
 }
 
-func TestV3SupportDocsDoNotRestateContract(t *testing.T) {
-	for _, file := range InstructionSupportFiles(config.InstructionScaffoldVersionMemory) {
-		for name, marker := range criticalInvariants {
-			if strings.Contains(file.Content, marker) {
-				t.Errorf("%s restates contract invariant %s; derive it from the contract instead", file.RelativePath, name)
-			}
-		}
-	}
-}
-
 func TestCheckedInAgentSurfacesMatchGenerator(t *testing.T) {
 	block := UniversalContractBlock()
 	for _, path := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
@@ -109,15 +97,15 @@ func TestCheckedInAgentSurfacesMatchGenerator(t *testing.T) {
 			t.Errorf("checked-in %s managed block drifted from the universal contract; regenerate it", path)
 		}
 	}
-	for _, file := range InstructionSupportFiles(config.InstructionScaffoldVersionMemory) {
-		if file.RelativePath != "docs/references/testing.md" {
-			t.Errorf("v3 generates %s; only the validation reference is project memory Kit scaffolds", file.RelativePath)
+	for name, marker := range criticalInvariants {
+		if strings.Contains(TestingReference, marker) {
+			t.Errorf("testing reference restates contract invariant %s; derive it from the contract instead", name)
 		}
 	}
 }
 
 func TestV3ConstitutionBaselineDoesNotRestateContract(t *testing.T) {
-	baseline := ConstitutionBaselineSectionFor(config.InstructionScaffoldVersionMemory)
+	baseline := ConstitutionBaselineSection
 	for name, marker := range criticalInvariants {
 		if strings.Contains(baseline, marker) {
 			t.Errorf("v3 Constitution baseline restates contract invariant %s", name)

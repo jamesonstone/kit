@@ -24,6 +24,8 @@ func (s *initRefreshStats) recordResult(result instructionFileWriteResult) {
 		s.updated++
 	case instructionFileMerged:
 		s.merged++
+	case instructionFileRemoved:
+		s.removed++
 	case instructionFileSkipped:
 		s.skipped++
 	}

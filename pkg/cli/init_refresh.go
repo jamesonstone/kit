@@ -14,19 +14,23 @@ import (
 const constitutionBaselineHeading = templates.ConstitutionBaselineHeading
 
 type initRefreshOptions struct {
-	force                       bool
-	dryRun                      bool
-	diff                        bool
-	files                       []string
-	outputOnly                  bool
-	suppressDocumentationPrompt bool
+	force      bool
+	dryRun     bool
+	diff       bool
+	files      []string
+	outputOnly bool
 }
 
 type initRefreshStats struct {
 	created int
 	updated int
 	merged  int
+	removed int
 	skipped int
+}
+
+func (s initRefreshStats) changed() int {
+	return s.created + s.updated + s.merged + s.removed
 }
 
 type initRefreshPlan struct {
@@ -47,11 +51,6 @@ func (e *initRefreshRegistryError) Error() string {
 
 func (e *initRefreshRegistryError) Unwrap() error {
 	return e.err
-}
-
-func runInitRefresh(projectRoot string, opts initRefreshOptions) error {
-	_, err := runInitRefreshWithSnapshot(projectRoot, opts)
-	return err
 }
 
 func runInitRefreshWithSnapshot(
@@ -81,25 +80,18 @@ func runInitRefreshWithSnapshot(
 
 	if !opts.outputOnly {
 		fmt.Println("\n✅ Kit managed refresh complete!")
-		if plan.stats.created+plan.stats.updated+plan.stats.merged == 0 {
+		if plan.stats.changed() == 0 {
 			fmt.Println("   No Kit-managed project changes needed.")
 		}
 		fmt.Printf(
-			"   Created: %d, Updated: %d, Merged: %d, Skipped: %d\n",
+			"   Created: %d, Updated: %d, Merged: %d, Removed: %d, Skipped: %d\n",
 			plan.stats.created,
 			plan.stats.updated,
 			plan.stats.merged,
+			plan.stats.removed,
 			plan.stats.skipped,
 		)
 		printInitRefreshNotes(plan.notes, opts)
-		if shouldOutputInitRefreshDocumentationPrompt(opts, plan.targets) {
-			if err := outputInitRefreshDocumentationPrompt(projectRoot, plan.cfg, deliverySnapshot); err != nil {
-				return nil, err
-			}
-		} else if plan.stats.created+plan.stats.updated+plan.stats.merged > 0 &&
-			!opts.suppressDocumentationPrompt {
-			printNumberedNextSteps(managedFileDeliveryInstructions(projectRoot, deliverySnapshot))
-		}
 	}
 	return deliverySnapshot, nil
 }
@@ -152,13 +144,13 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	if readmeChange != nil {
 		changes = append(changes, *readmeChange)
 	}
-	// Plan instruction artifacts first: a V2-to-V3 migration changes which
-	// Constitution baseline applies, and refresh must converge in one pass.
-	instructionChanges, instructionNotes, instructionMigrated, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
+	// Plan entry files first: the Constitution baseline moves to the contract
+	// pointer only when every entry file converges, in the same pass.
+	instructionChanges, instructionNotes, entriesConverged, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
 	if err != nil {
 		return nil, err
 	}
-	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets, instructionChanges)
+	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets, entriesConverged)
 	if err != nil {
 		return nil, err
 	}
@@ -167,22 +159,48 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	}
 	changes = append(changes, instructionChanges...)
 	notes = append(notes, instructionNotes...)
+	retiredChanges, retiredNotes, retiredRegistryChanged, err := planRetiredArtifacts(projectRoot, cfg, targets)
+	if err != nil {
+		return nil, err
+	}
+	changes = append(changes, retiredChanges...)
 	rulesetChanges, rulesetNotes, registryChanged, err := planRefreshInitRulesets(ctx, projectRoot, opts, cfg, targets, registry)
 	if err != nil {
 		return nil, err
 	}
 	notes = append(notes, rulesetNotes...)
+	notes = append(notes, retiredNotes...)
 	changes = append(changes, rulesetChanges...)
-	if configChange != nil || registryChanged || instructionMigrated {
+	changes, blocked, guardNotes := guardLinkedTargets(projectRoot, changes)
+	notes = append(notes, guardNotes...)
+	recordBlockedRulesAsLocal(projectRoot, cfg, registry, blocked)
+	for _, path := range instructionFiles(cfg) {
+		if blocked[filepath.ToSlash(path)] {
+			entriesConverged = false
+		}
+	}
+	versionChanged := false
+	if entriesConverged && requiredStructurePresent(projectRoot, cfg, registry, changes) &&
+		initRefreshTargetMatches(targets, config.ConfigFileName) && cfg.InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
+		cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
+		versionChanged = true
+	}
+	if configChange != nil || registryChanged || retiredRegistryChanged || versionChanged || initRefreshTargetMatches(targets, config.ConfigFileName) {
 		configChange, err = finalizeInitRefreshConfigChange(projectRoot, cfg, configChange)
 		if err != nil {
 			return nil, err
 		}
 		if configChange != nil {
 			changes = append([]initRefreshFileChange{*configChange}, changes...)
+			if note := droppedConfigNote(configChange.before, configChange.after); note != "" {
+				notes = append(notes, note)
+			}
 		}
 	}
 
+	// Guard again so the .kit.yaml change finalized above is covered too.
+	changes, _, guardNotes = guardLinkedTargets(projectRoot, changes)
+	notes = append(notes, guardNotes...)
 	for _, change := range changes {
 		stats.recordFileChange(change)
 	}
@@ -194,10 +212,6 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		notes:   notes,
 		stats:   stats,
 	}, nil
-}
-
-func shouldOutputInitRefreshDocumentationPrompt(opts initRefreshOptions, targets map[string]bool) bool {
-	return opts.force && !opts.dryRun && !opts.outputOnly && !opts.suppressDocumentationPrompt && len(targets) == 0
 }
 
 func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map[string]bool {
@@ -214,12 +228,7 @@ func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map
 		cfg.ConstitutionPath:                   true,
 		filepath.ToSlash(cfg.ConstitutionPath): true,
 	}
-	for _, relativePath := range instructionArtifactPaths(
-		cfg,
-		instructionFileSelection{},
-		cfg.EffectiveInstructionScaffoldVersion(),
-		true,
-	) {
+	for _, relativePath := range instructionArtifactPaths(cfg) {
 		known[filepath.ToSlash(relativePath)] = true
 	}
 	for _, item := range registry {
@@ -270,7 +279,7 @@ func printInitRefreshNotes(notes []string, opts initRefreshOptions) {
 		return
 	}
 	fmt.Println()
-	fmt.Println("Ruleset registry notes:")
+	fmt.Println("Notes:")
 	for _, note := range notes {
 		fmt.Printf("   - %s\n", note)
 	}

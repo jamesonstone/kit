@@ -30,7 +30,7 @@ func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 		}
 
 		output := captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -110,7 +110,7 @@ func TestRunInit_OutputOnlyPrintsRawPromptAndSkipsDefaultCopy(t *testing.T) {
 		}
 
 		output := captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -150,7 +150,7 @@ func TestRunInit_OutputOnlyAndCopyDoesBoth(t *testing.T) {
 		}
 
 		output := captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -173,7 +173,7 @@ func TestRunInit_PopulatesGlobalConfig(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -190,8 +190,8 @@ func TestRunInit_PopulatesGlobalConfig(t *testing.T) {
 		if !found {
 			t.Fatal("config.LoadGlobal() found = false, want true")
 		}
-		if cfg.InstructionScaffoldVersion != config.DefaultInstructionScaffoldVersion {
-			t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, config.DefaultInstructionScaffoldVersion)
+		if cfg.InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
+			t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, config.CurrentInstructionScaffoldVersion)
 		}
 	})
 }
@@ -211,7 +211,7 @@ func TestRunInit_CreatesAutoAssignWorkflowFromGlobalFallback(t *testing.T) {
 		initOutputOnly = true
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -252,9 +252,10 @@ func TestRunInit_UsesProjectAutoAssignAssigneesBeforeGlobalFallback(t *testing.T
 
 	withInitFlags(t, func() {
 		initOutputOnly = true
+		initRefresh = true // reconcile applies project assignees to an existing project
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})

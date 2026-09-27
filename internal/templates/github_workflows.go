@@ -11,7 +11,7 @@ import (
 func BuildAutoAssignWorkflow(assignees []string) string {
 	var builder strings.Builder
 	builder.WriteString(`# Kit-managed auto-assignment workflow.
-# Update github.default_assignees in .kit.yaml or ~/.config/kit/.kit.yaml, then run kit init --refresh.
+# Update github.default_assignees in .kit.yaml or ~/.config/kit/.kit.yaml, then run kit reconcile.
 # Configured maintainers are always included; the issue or pull request initiator is added automatically.
 name: Auto assign
 

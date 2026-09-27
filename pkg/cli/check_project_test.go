@@ -109,20 +109,14 @@ func TestCheckFeatureFailsWhenFrontMatterIdentityDriftsFromDirectory(t *testing.
 func TestRunCheckProjectFailsOnDuplicateFeatureNumbers(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
 	}
 
 	writeFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), validConstitution())
-	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
-	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
-	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
-	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
 	writeInitScaffoldArtifacts(t, projectRoot)
-	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
-		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
-	}
+	writeCurrentInstructionArtifacts(t, projectRoot)
 	writeFile(t, filepath.Join(projectRoot, "docs", "specs", "0012-alpha", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\nnone\n")
 	writeFile(t, filepath.Join(projectRoot, "docs", "specs", "0012-beta", "SPEC.md"), "# SPEC\n\n## RELATIONSHIPS\n\nnone\n")
 	setWorkingDirectory(t, projectRoot)
@@ -146,20 +140,14 @@ func setupCoherentProjectForCheck(t *testing.T) string {
 
 	projectRoot := t.TempDir()
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
 	}
 
 	writeFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), validConstitution())
-	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
-	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
-	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
-	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
 	writeInitScaffoldArtifacts(t, projectRoot)
-	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
-		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
-	}
+	writeCurrentInstructionArtifacts(t, projectRoot)
 	writeStandingAuthorityPolicies(t, projectRoot)
 
 	return projectRoot

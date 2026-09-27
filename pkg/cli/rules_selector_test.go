@@ -12,7 +12,7 @@ import (
 )
 
 func TestRenderRegistryRulesetSelectorUsesStructuredTable(t *testing.T) {
-	registry := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
+	registry := registryRulesetForTest("sample-guardrails", []string{"git", "github"})
 	entries := []registrySelectorEntry{
 		{
 			Registry:      registry,
@@ -35,7 +35,7 @@ func TestRenderRegistryRulesetSelectorUsesStructuredTable(t *testing.T) {
 		"[x]",
 		"ACTIVE",
 		"REGISTRY",
-		"Description for safety-guardrails",
+		"Description for sample-guardrails",
 	} {
 		if !strings.Contains(rendered, check) {
 			t.Fatalf("expected selector table to contain %q, got:\n%s", check, rendered)
@@ -135,19 +135,19 @@ func TestRunRulesViewShowsRegistryRulesetBeforeImport(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
 	resetRulesFlags(t)
-	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
+	stubRulesetRegistry(t, registryRulesetForTest("sample-guardrails", []string{"git", "github"}))
 
 	var out bytes.Buffer
 	cmd := &cobra.Command{}
 	cmd.SetOut(&out)
-	if err := runRulesView(cmd, []string{"safety-guardrails"}); err != nil {
+	if err := runRulesView(cmd, []string{"sample-guardrails"}); err != nil {
 		t.Fatalf("runRulesView() error = %v", err)
 	}
 
 	for _, check := range []string{
-		"Source: Kit " + Version + " embedded rule docs/references/rules/safety-guardrails.md",
-		"description: 'Description for safety-guardrails'",
-		"# Ruleset: safety-guardrails",
+		"Source: Kit " + Version + " embedded rule docs/references/rules/sample-guardrails.md",
+		"description: 'Description for sample-guardrails'",
+		"# Ruleset: sample-guardrails",
 	} {
 		if !strings.Contains(out.String(), check) {
 			t.Fatalf("expected view output to contain %q, got:\n%s", check, out.String())
@@ -159,20 +159,20 @@ func TestRunRulesViewPrefersLocalRuleset(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
 	resetRulesFlags(t)
-	stubRulesetRegistry(t, registryRulesetForTest("safety-guardrails", []string{"git", "github"}))
-	local := registryRulesetForTest("safety-guardrails", []string{"git", "github"})
-	local.Content = strings.Replace(local.Content, "Description for safety-guardrails", "Local description", 1)
-	writeFile(t, filepath.Join(projectRoot, "docs", "references", "rules", "safety-guardrails.md"), local.Content)
+	stubRulesetRegistry(t, registryRulesetForTest("sample-guardrails", []string{"git", "github"}))
+	local := registryRulesetForTest("sample-guardrails", []string{"git", "github"})
+	local.Content = strings.Replace(local.Content, "Description for sample-guardrails", "Local description", 1)
+	writeFile(t, filepath.Join(projectRoot, "docs", "references", "rules", "sample-guardrails.md"), local.Content)
 
 	var out bytes.Buffer
 	cmd := &cobra.Command{}
 	cmd.SetOut(&out)
-	if err := runRulesView(cmd, []string{"safety-guardrails"}); err != nil {
+	if err := runRulesView(cmd, []string{"sample-guardrails"}); err != nil {
 		t.Fatalf("runRulesView() error = %v", err)
 	}
 
 	for _, check := range []string{
-		"Source: docs/references/rules/safety-guardrails.md",
+		"Source: docs/references/rules/sample-guardrails.md",
 		"Local description",
 	} {
 		if !strings.Contains(out.String(), check) {

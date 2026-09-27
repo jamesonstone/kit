@@ -7,7 +7,6 @@ import (
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/feature"
-	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 func TestBuildReconcileReportFeatureScopeFindsRelationshipAndTaskDrift(t *testing.T) {
@@ -162,7 +161,7 @@ func TestBuildReconcileReportSkipsHistoricalFeatureScopedVerificationFields(t *t
 func TestBuildReconcileReportProjectScopeWarnsOnlyActiveFeature(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatalf("config.Save() error = %v", err)
 	}
@@ -171,13 +170,8 @@ func TestBuildReconcileReportProjectScopeWarnsOnlyActiveFeature(t *testing.T) {
 	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummaryForFeatures(
 		[]string{"0001-historical", "0002-active"},
 	))
-	writeFile(t, filepath.Join(projectRoot, "AGENTS.md"), templates.AgentsMD)
-	writeFile(t, filepath.Join(projectRoot, "CLAUDE.md"), templates.ClaudeMD)
-	writeFile(t, filepath.Join(projectRoot, ".github", "copilot-instructions.md"), templates.CopilotInstructionsMD)
 	writeInitScaffoldArtifacts(t, projectRoot)
-	for _, support := range templates.InstructionSupportFiles(config.InstructionScaffoldVersionTOC) {
-		writeFile(t, filepath.Join(projectRoot, support.RelativePath), support.Content)
-	}
+	writeCurrentInstructionArtifacts(t, projectRoot)
 
 	historicalPath := filepath.Join(projectRoot, "docs", "specs", "0001-historical")
 	writeFile(t, filepath.Join(historicalPath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-historical"))
@@ -254,7 +248,6 @@ func TestBuildReconcileReportProjectScopeFindsInstructionFileDrift(t *testing.T)
 	}
 
 	writeFile(t, filepath.Join(projectRoot, "docs", "CONSTITUTION.md"), validConstitution())
-	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
 
 	report, err := buildReconcileReport(projectRoot, cfg, nil)
 	if err != nil {
@@ -262,7 +255,7 @@ func TestBuildReconcileReportProjectScopeFindsInstructionFileDrift(t *testing.T)
 	}
 
 	issues := findingsIssues(report.Findings)
-	if !strings.Contains(issues, "missing Kit-managed repository instruction file") {
+	if !strings.Contains(issues, "missing Kit-managed agent entry file") {
 		t.Fatalf("expected instruction-file drift finding, got %q", issues)
 	}
 }

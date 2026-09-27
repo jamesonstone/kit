@@ -14,11 +14,6 @@ import (
 
 var initCopy bool
 var initOutputOnly bool
-var initRefresh bool
-var initForce bool
-var initDryRun bool
-var initDiff bool
-var initRefreshFiles []string
 
 var initCmd = &cobra.Command{
 	Use:   "init",
@@ -39,77 +34,35 @@ Creates:
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
   - The core rules shipped with this Kit binary
 
-If files already exist, Kit preserves them. Kit-managed markdown documents may
-be merged by adding missing required sections.
+Init is for projects that are not yet Kit projects. Existing files are
+preserved. In a project that already has .kit.yaml, run ` + "`kit reconcile`" + `
+instead: it brings any existing Kit project to the current structure.
 
 The generated Constitution starter is a valid bootstrap state. The prepared
 prompt promotes only durable project-wide truth supported by repository evidence
 and leaves empty-project Constitution sections unchanged.
 
-Modes:
-  Default:        Copy the prepared project initialization prompt to the clipboard and show next steps
-  --refresh:      Refresh Kit-managed project files for an existing Kit project
-
-Flags:
-  --output-only:  Output the raw prompt to stdout instead of copying it to the clipboard
-  --copy:         Copy prompt to clipboard even with --output-only
-  --dry-run:      Preview --refresh without writing files
-  --diff:         Print planned --refresh changes as a unified diff with --dry-run
-  --force:        Overwrite refreshable generated docs during --refresh and copy a documentation review prompt
-  --file:         Limit --refresh to one Kit-managed file; repeat for multiple files`,
+Init copies the prepared project initialization prompt to the clipboard and
+shows next steps; --output-only prints it instead.`,
 	RunE: runInit,
 }
 
 func init() {
 	initCmd.Flags().BoolVar(&initCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	initCmd.Flags().BoolVar(&initOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
-	initCmd.Flags().BoolVar(&initRefresh, "refresh", false, "refresh Kit-managed project files instead of creating a new-project prompt")
-	initCmd.Flags().BoolVar(&initDryRun, "dry-run", false, "preview --refresh without writing files")
-	initCmd.Flags().BoolVar(&initDiff, "diff", false, "print planned --refresh changes as a unified diff with --dry-run")
-	initCmd.Flags().BoolVarP(&initForce, "force", "f", false, "overwrite refreshable generated docs during --refresh")
-	initCmd.Flags().StringArrayVar(&initRefreshFiles, "file", nil, "limit --refresh to a Kit-managed file; repeat for multiple files")
 	rootCmd.AddCommand(initCmd)
 }
 
 func runInit(cmd *cobra.Command, args []string) error {
-	if initForce && !initRefresh {
-		return fmt.Errorf("--force requires --refresh")
-	}
-	if initDryRun && !initRefresh {
-		return fmt.Errorf("--dry-run requires --refresh")
-	}
-	if initDiff && !initRefresh {
-		return fmt.Errorf("--diff requires --refresh")
-	}
-	if initDiff && !initDryRun {
-		return fmt.Errorf("--diff requires --dry-run")
-	}
-	if len(initRefreshFiles) > 0 && !initRefresh {
-		return fmt.Errorf("--file requires --refresh")
-	}
-
 	cwd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
-
-	if initRefresh {
-		return runInitRefresh(cwd, initRefreshOptions{
-			force:      initForce,
-			dryRun:     initDryRun,
-			diff:       initDiff,
-			files:      initRefreshFiles,
-			outputOnly: initOutputOnly,
-		})
+	if config.Exists(cwd) {
+		return fmt.Errorf("%s already exists, so this is a Kit project; run `kit reconcile` to bring it to the current structure", config.ConfigFileName)
 	}
 
 	deliveryCfg := defaultInitConfig()
-	if config.Exists(cwd) {
-		deliveryCfg, err = config.Load(cwd)
-		if err != nil {
-			return err
-		}
-	}
 	deliveryBaseline, err := captureManagedFileDeliveryBaseline(
 		cwd,
 		projectInitDeliveryPaths(deliveryCfg),
@@ -122,33 +75,12 @@ func runInit(cmd *cobra.Command, args []string) error {
 		fmt.Println("🎒 Initializing Kit project...")
 	}
 
-	// create or merge .kit.yaml
 	cfg := defaultInitConfig()
-	if config.Exists(cwd) {
-		if !initOutputOnly {
-			fmt.Println("  ✓ .kit.yaml exists, merging...")
-		}
-		existing, err := config.Load(cwd)
-		if err != nil {
-			return err
-		}
-		cfg = existing
-		if !config.IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
-			cfg.InstructionScaffoldVersion = detectInstructionScaffoldVersion(cwd, cfg)
-			if cfg.InstructionScaffoldVersion == instructionScaffoldVersionUnknown {
-				cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
-			}
-			if err := config.Save(cwd, cfg); err != nil {
-				return fmt.Errorf("failed to update %s: %w", config.ConfigFileName, err)
-			}
-		}
-	} else {
-		if err := config.Save(cwd, cfg); err != nil {
-			return fmt.Errorf("failed to create .kit.yaml: %w", err)
-		}
-		if !initOutputOnly {
-			fmt.Println("  ✓ Created .kit.yaml")
-		}
+	if err := config.Save(cwd, cfg); err != nil {
+		return fmt.Errorf("failed to create .kit.yaml: %w", err)
+	}
+	if !initOutputOnly {
+		fmt.Println("  ✓ Created .kit.yaml")
 	}
 	if !initOutputOnly && streamsHaveInteractiveTerminal(os.Stdin, os.Stdout) {
 		inspectionCfg, inspection, err := config.LoadWithInspection(cwd)
@@ -227,18 +159,8 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	// scaffold repository instruction files
-	for _, relativePath := range instructionArtifactPaths(
-		cfg,
-		instructionFileSelection{},
-		cfg.InstructionScaffoldVersion,
-		true,
-	) {
-		result, err := writeInstructionFileWithMode(
-			cwd,
-			relativePath,
-			instructionFileWriteModeSkipExisting,
-			cfg.InstructionScaffoldVersion,
-		)
+	for _, relativePath := range instructionArtifactPaths(cfg) {
+		result, err := writeInstructionFileWithMode(cwd, relativePath, instructionFileWriteModeSkipExisting)
 		if err != nil {
 			return err
 		}

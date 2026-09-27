@@ -78,6 +78,9 @@ func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
 	}
 
 	cfg := Default()
+	// An existing file without a scaffold version predates versioning: it is
+	// legacy input for migration, never the current structure by default.
+	cfg.InstructionScaffoldVersion = 0
 	if err := yaml.Unmarshal(data, cfg); err != nil {
 		return nil, Inspection{}, fmt.Errorf("failed to parse %s: %w", ConfigFileName, err)
 	}
@@ -166,7 +169,7 @@ func semanticFindings(cfg *Config) []Finding {
 			findings = append(findings, Finding{Field: item.field, Severity: FindingError, Message: item.field + " must not be empty"})
 		}
 	}
-	if cfg.InstructionScaffoldVersion != 0 && !IsInstructionScaffoldVersionSupported(cfg.InstructionScaffoldVersion) {
+	if cfg.InstructionScaffoldVersion != 0 && !IsKnownInstructionScaffoldVersion(cfg.InstructionScaffoldVersion) {
 		findings = append(findings, Finding{Field: "instruction_scaffold_version", Severity: FindingError, Message: "instruction_scaffold_version is unsupported"})
 	}
 	if cfg.FeatureNaming.NumericWidth <= 0 {

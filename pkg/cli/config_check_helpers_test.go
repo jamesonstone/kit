@@ -13,7 +13,7 @@ func setupConfigCheckProject(t *testing.T) (string, *config.Config, config.Inspe
 	t.Helper()
 	root := t.TempDir()
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.DefaultInstructionScaffoldVersion
+	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	if err := config.Save(root, cfg); err != nil {
 		t.Fatalf("Save() error = %v", err)
 	}

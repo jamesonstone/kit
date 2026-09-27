@@ -28,7 +28,7 @@ func TestRunInitRefresh_UsesOnlyWorkflowBadgeForPrivateRepository(t *testing.T) 
 		initRefreshFiles = []string{readmePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})
@@ -79,7 +79,7 @@ func TestRunInitRefresh_RemovesManagedReadmeBadgesForPrivateRepositoryWithoutWor
 		initRefreshFiles = []string{readmePath}
 
 		_ = captureStdout(t, func() {
-			if err := runInit(initCmd, nil); err != nil {
+			if err := runInitForTest(initCmd, nil); err != nil {
 				t.Fatalf("runInit() error = %v", err)
 			}
 		})

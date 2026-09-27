@@ -12,7 +12,7 @@ func TestReadmeDocumentsCurrentSurface(t *testing.T) {
 	for _, required := range []string{
 		"github.com/jamesonstone/kit/v3/cmd/kit@latest",
 		"docs/migration-v3.md",
-		"kit reconcile --include-files --dry-run --diff",
+		"kit reconcile --dry-run --diff",
 		"kit spec my-feature",
 		"kit usage disable --global",
 		"never records command arguments",

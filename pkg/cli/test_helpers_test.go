@@ -40,18 +40,12 @@ func setupLifecycleTestProject(t *testing.T) (string, *config.Config) {
 	t.Helper()
 	projectRoot := t.TempDir()
 	cfg := config.Default()
-	cfg.InstructionScaffoldVersion = config.InstructionScaffoldVersionTOC
+	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	if err := config.Save(projectRoot, cfg); err != nil {
 		t.Fatal(err)
 	}
 	writeFile(t, filepath.Join(projectRoot, cfg.ConstitutionPath), readyConstitutionForTest())
-	for _, relativePath := range instructionArtifactPaths(cfg, instructionFileSelection{}, cfg.InstructionScaffoldVersion, true) {
-		content, _, err := instructionArtifactContent(relativePath, cfg.InstructionScaffoldVersion)
-		if err != nil {
-			t.Fatal(err)
-		}
-		writeFile(t, filepath.Join(projectRoot, relativePath), content)
-	}
+	writeCurrentInstructionArtifacts(t, projectRoot)
 	writeStandingAuthorityPolicies(t, projectRoot)
 	if err := os.MkdirAll(filepath.Join(projectRoot, "docs", "specs"), 0o755); err != nil {
 		t.Fatal(err)
@@ -224,4 +218,13 @@ None.
 
 Evidence.
 `
+}
+
+// writeCurrentInstructionArtifacts writes the entry files and testing
+// reference exactly as the current Kit generates them.
+func writeCurrentInstructionArtifacts(t *testing.T, projectRoot string) {
+	t.Helper()
+	for _, relativePath := range instructionArtifactPaths(config.Default()) {
+		writeFile(t, filepath.Join(projectRoot, relativePath), instructionArtifactContent(relativePath))
+	}
 }

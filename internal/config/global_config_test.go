@@ -80,7 +80,7 @@ func TestPopulateGlobalConfigCreatesDefaults(t *testing.T) {
 	t.Setenv("HOME", home)
 
 	defaults := Default()
-	defaults.InstructionScaffoldVersion = DefaultInstructionScaffoldVersion
+	defaults.InstructionScaffoldVersion = CurrentInstructionScaffoldVersion
 
 	path, changed, err := PopulateGlobalConfig(defaults)
 	if err != nil {
@@ -101,7 +101,7 @@ func TestPopulateGlobalConfigCreatesDefaults(t *testing.T) {
 	if !found {
 		t.Fatal("LoadGlobal() found = false, want true")
 	}
-	if cfg.InstructionScaffoldVersion != DefaultInstructionScaffoldVersion {
-		t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, DefaultInstructionScaffoldVersion)
+	if cfg.InstructionScaffoldVersion != CurrentInstructionScaffoldVersion {
+		t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, CurrentInstructionScaffoldVersion)
 	}
 }

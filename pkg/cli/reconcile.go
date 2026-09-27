@@ -1,16 +1,11 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"os"
-	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/feature"
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 )
 
 var reconcileCopy bool
@@ -24,27 +19,33 @@ var reconcileDryRun bool
 var reconcileDiff bool
 var reconcileRefreshFiles []string
 
-var promptReconcileMenu = readReconcileMenu
-
-type reconcileMenuChoice struct {
-	IncludeFiles bool
-	Force        bool
-	OutputPrompt bool
-}
-
 var reconcileCmd = &cobra.Command{
 	Use:   "reconcile [feature]",
-	Short: "Reconcile Kit-managed project files, rules, and docs",
-	Long: `Audit Kit-managed project documents and scaffold artifacts against the
-current Kit contract, and optionally apply Kit-managed project-file and
-ruleset refreshes.
+	Short: "Migrate a Kit project to the current structure and audit its docs",
+	Long: `Bring an existing Kit project, created by any Kit release, to the current
+Kit structure, then audit project documents against the current contract.
 
-Without a feature argument, reconciles the whole project by default.
-Use --all as an explicit alias for whole-project mode.
-With a feature argument, audits only that feature's docs plus related project-summary drift.
+Reconcile:
+  - puts exactly one current Kit-managed contract block in AGENTS.md,
+    CLAUDE.md, and .github/copilot-instructions.md, keeping project guidance
+    outside the block
+  - updates unedited Kit sections of docs/CONSTITUTION.md and its baseline
+  - updates shipped rules Kit installed and nobody edited
+  - removes retired Kit files (docs/agents/, docs/references/workflows/,
+    docs/PROJECT_PROGRESS_SUMMARY.md, retired rules) only when they are exactly
+    as a Kit release generated them and committed to Git, so Git can restore them
+  - prunes retired rules and obsolete keys from .kit.yaml and records the
+    current instruction_scaffold_version
 
-In an interactive terminal, Kit asks whether to include files, whether to force
-the file refresh, and whether to output a coding-agent prompt too.`,
+Anything edited, ambiguous, or uncommitted is kept and reported. --force also
+replaces edited Kit sections of pre-contract entry files and edited shipped
+rules; sections Kit never wrote are always kept.
+
+In the primary checkout, reconcile applies changes in a linked worktree on
+branch kit-reconcile (created or reused) and prints where to review them.
+Use --dry-run --diff to preview without writing anything.
+
+With a feature argument, audits only that feature's docs.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runReconcile,
 }
@@ -52,14 +53,15 @@ the file refresh, and whether to output a coding-agent prompt too.`,
 func init() {
 	reconcileCmd.Flags().BoolVar(&reconcileCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	reconcileCmd.Flags().BoolVar(&reconcileOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
-	reconcileCmd.Flags().BoolVar(&reconcileAll, "all", false, "audit the whole project explicitly")
+	reconcileCmd.Flags().BoolVar(&reconcileAll, "all", false, "reconcile the whole project explicitly")
 	reconcileCmd.Flags().BoolVar(&reconcileMigrateReferences, "migrate-references", false, "include instructions for migrating deprecated front matter dependencies to references")
 	reconcileCmd.Flags().BoolVar(&reconcileMigrateVerification, "migrate-verification", false, "include advisory instructions for adding executable verification fields to active tasks")
-	reconcileCmd.Flags().BoolVar(&reconcileIncludeFiles, "include-files", false, "include Kit-managed file and ruleset refreshes before auditing docs")
-	reconcileCmd.Flags().BoolVarP(&reconcileForce, "force", "f", false, "force included Kit-managed file and ruleset refreshes")
-	reconcileCmd.Flags().BoolVar(&reconcileDryRun, "dry-run", false, "preview included file refreshes without writing files")
-	reconcileCmd.Flags().BoolVar(&reconcileDiff, "diff", false, "print planned included file refreshes as a unified diff with --dry-run")
-	reconcileCmd.Flags().StringArrayVar(&reconcileRefreshFiles, "file", nil, "limit included refresh to one Kit-managed file; repeat for multiple files")
+	reconcileCmd.Flags().BoolVar(&reconcileIncludeFiles, "include-files", false, "accepted for compatibility; whole-project reconcile always includes Kit-managed files")
+	_ = reconcileCmd.Flags().MarkHidden("include-files")
+	reconcileCmd.Flags().BoolVarP(&reconcileForce, "force", "f", false, "also replace edited Kit sections and edited shipped rules")
+	reconcileCmd.Flags().BoolVar(&reconcileDryRun, "dry-run", false, "preview Kit-managed file changes without writing files")
+	reconcileCmd.Flags().BoolVar(&reconcileDiff, "diff", false, "print planned file changes as a unified diff with --dry-run")
+	reconcileCmd.Flags().StringArrayVar(&reconcileRefreshFiles, "file", nil, "limit the file migration to one Kit-managed file; repeat for multiple files")
 	addPromptOnlyFlag(reconcileCmd)
 	rootCmd.AddCommand(reconcileCmd)
 }
@@ -71,12 +73,14 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	if reconcileDiff && !reconcileDryRun {
 		return fmt.Errorf("--diff requires --dry-run")
 	}
+	if len(args) > 0 && (len(reconcileRefreshFiles) > 0 || reconcileForce) {
+		return fmt.Errorf("--file and --force apply to whole-project reconcile only")
+	}
 
 	projectRoot, err := config.FindProjectRoot()
 	if err != nil {
 		return err
 	}
-
 	cfg, err := config.Load(projectRoot)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
@@ -91,51 +95,38 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	}
 
 	promptOnly := promptOnlyEnabled(cmd)
-	includeFiles := reconcileIncludeFiles || reconcileForce || reconcileDryRun || reconcileDiff || len(reconcileRefreshFiles) > 0
-	outputPrompt := !reconcileDryRun && !reconcileDiff
-	if shouldPromptReconcileMenu(cmd, len(args) > 0, promptOnly) {
-		choice, err := promptReconcileMenu(cmd.InOrStdin(), cmd.OutOrStdout())
+	applyFiles := feat == nil && !promptOnly
+	var deliverySnapshot []managedFileDeliverySnapshot
+	if applyFiles {
+		opts := initRefreshOptions{force: reconcileForce, files: reconcileRefreshFiles}
+		upToDate, err := reconcileHasNoChanges(projectRoot, opts)
 		if err != nil {
 			return err
 		}
-		includeFiles = choice.IncludeFiles
-		reconcileForce = choice.Force
-		outputPrompt = choice.OutputPrompt
-	}
-	if promptOnly {
-		includeFiles = false
-		outputPrompt = true
-	}
-	refreshRequested := includeFiles
-	refreshDecision, err := resolveReconcileRefreshDecision(projectRoot, includeFiles, reconcileDryRun)
-	if err != nil {
-		return err
-	}
-	includeFiles = refreshDecision.Apply
-	deferredRefreshCommand := ""
-	if refreshDecision.Deferred {
-		outputPrompt = true
-		deferredRefreshCommand = buildDeferredReconcileCommand(args)
-	}
-	var deliverySnapshot []managedFileDeliverySnapshot
-	if includeFiles {
-		deliverySnapshot, err = runInitRefreshWithSnapshot(projectRoot, initRefreshOptions{
-			force:                       reconcileForce,
-			dryRun:                      reconcileDryRun,
-			diff:                        reconcileDiff,
-			files:                       reconcileRefreshFiles,
-			outputOnly:                  reconcileOutputOnly,
-			suppressDocumentationPrompt: true,
+		target, err := resolveReconcileTarget(cmd.OutOrStdout(), projectRoot, reconcileDryRun, upToDate)
+		if err != nil {
+			return err
+		}
+		deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
+			force:      reconcileForce,
+			dryRun:     reconcileDryRun,
+			diff:       reconcileDiff,
+			files:      reconcileRefreshFiles,
+			outputOnly: reconcileOutputOnly,
 		})
 		if err != nil {
 			return err
 		}
-		if !reconcileDryRun {
-			cfg, err = config.Load(projectRoot)
-			if err != nil {
-				return fmt.Errorf("failed to reload config after included file refresh: %w", err)
-			}
+		if target.worktree {
+			printReconcileWorktreeNextSteps(cmd.OutOrStdout(), target, reconcileDryRun)
 		}
+		projectRoot = target.projectRoot
+		if cfg, err = config.Load(projectRoot); err != nil {
+			return fmt.Errorf("failed to reload config after reconcile: %w", err)
+		}
+	}
+	if reconcileDryRun {
+		return nil
 	}
 
 	report, err := buildReconcileReport(projectRoot, cfg, feat)
@@ -144,10 +135,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	}
 	report.ReferenceMigration = reconcileMigrateReferences
 	report.VerificationMigration = reconcileMigrateVerification
-	report.DeferredRefreshCommand = deferredRefreshCommand
-	if !reconcileDryRun {
-		report.DeliverySnapshot = deliverySnapshot
-	}
+	report.DeliverySnapshot = deliverySnapshot
 	if active, err := feature.FindActiveFeatureWithState(cfg.SpecsPath(projectRoot), cfg); err != nil {
 		return fmt.Errorf("failed to resolve active feature: %w", err)
 	} else if feat == nil || (active != nil && active.DirName == feat.DirName) {
@@ -155,37 +143,11 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(report.Findings) == 0 && !report.ReferenceMigration && !report.VerificationMigration {
-		if outputPrompt && refreshRequested && !reconcileDryRun {
-			if !reconcileOutputOnly {
-				if _, err := fmt.Fprintln(cmd.OutOrStdout(), "\nCoding-agent prompt:"); err != nil {
-					return err
-				}
-			}
-			return outputPromptWithClipboardDefault(
-				buildInitRefreshDocumentationPromptForCommand(
-					projectRoot,
-					cfg,
-					deferredRefreshCommand,
-					deliverySnapshot,
-				),
-				reconcileOutputOnly,
-				reconcileCopy,
-			)
-		}
-		_, err := fmt.Fprintln(
-			cmd.OutOrStdout(),
-			reconcileCleanResult(report, includeFiles, reconcileDryRun, len(deliverySnapshot)),
-		)
+		_, err := fmt.Fprintln(cmd.OutOrStdout(), report.cleanResult())
 		return err
 	}
 
 	outputOnly, _ := cmd.Flags().GetBool("output-only")
-	if !outputPrompt {
-		if !outputOnly {
-			printReconcileSummary(report)
-		}
-		return nil
-	}
 	if !outputOnly {
 		printReconcileSummary(report)
 		scopeInstruction := "keep changes limited to documentation reconciliation"
@@ -194,102 +156,5 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Printf("Next: run the generated prompt in the current coding agent session; %s.\n", scopeInstruction)
 	}
-
 	return outputPromptWithClipboardDefault(buildReconcilePrompt(report), outputOnly, reconcileCopy)
-}
-
-func reconcileCleanResult(
-	report *reconcileReport,
-	includeFiles bool,
-	dryRun bool,
-	managedFileChanges int,
-) string {
-	if includeFiles && dryRun && managedFileChanges > 0 {
-		noun := "files"
-		if managedFileChanges == 1 {
-			noun = "file"
-		}
-		result := fmt.Sprintf(
-			"Managed-file refresh pending for %d %s. The semantic documentation audit is clean for this scope.",
-			managedFileChanges,
-			noun,
-		)
-		if evidence := sourceFileAuditEvidence(report.SourceFileAudit); evidence != "" {
-			result += " " + evidence + "."
-		}
-		return result
-	}
-	return report.cleanResult()
-}
-
-func shouldPromptReconcileMenu(cmd *cobra.Command, featureScoped bool, promptOnly bool) bool {
-	if featureScoped || promptOnly || reconcileOutputOnly {
-		return false
-	}
-	for _, flag := range []string{"include-files", "force", "dry-run", "diff", "file", "migrate-references", "migrate-verification"} {
-		if cmd.Flags().Changed(flag) {
-			return false
-		}
-	}
-	inFile, ok := cmd.InOrStdin().(*os.File)
-	if !ok {
-		return false
-	}
-	return term.IsTerminal(int(inFile.Fd()))
-}
-
-func readReconcileMenu(in io.Reader, out io.Writer) (reconcileMenuChoice, error) {
-	style := styleForWriter(out)
-	if _, err := fmt.Fprintln(out); err != nil {
-		return reconcileMenuChoice{}, err
-	}
-	if _, err := fmt.Fprintln(out, style.title("🧩", "Reconcile Options")); err != nil {
-		return reconcileMenuChoice{}, err
-	}
-	reader := bufio.NewReader(in)
-	includeFiles, err := promptReconcileBool(reader, out, "include files?", true)
-	if err != nil {
-		return reconcileMenuChoice{}, err
-	}
-	force := false
-	if includeFiles {
-		force, err = promptReconcileBool(reader, out, "force these changes?", false)
-		if err != nil {
-			return reconcileMenuChoice{}, err
-		}
-	}
-	outputPrompt, err := promptReconcileBool(reader, out, "output coding-agent prompt too?", true)
-	if err != nil {
-		return reconcileMenuChoice{}, err
-	}
-	return reconcileMenuChoice{
-		IncludeFiles: includeFiles,
-		Force:        force,
-		OutputPrompt: outputPrompt,
-	}, nil
-}
-
-func promptReconcileBool(reader *bufio.Reader, out io.Writer, question string, defaultValue bool) (bool, error) {
-	suffix := "[Y/n]"
-	if !defaultValue {
-		suffix = "[y/N]"
-	}
-	if _, err := fmt.Fprintf(out, "  %s %s ", question, suffix); err != nil {
-		return false, err
-	}
-	line, err := reader.ReadString('\n')
-	if err != nil && err != io.EOF {
-		return false, fmt.Errorf("failed to read reconcile option %q: %w", question, err)
-	}
-	answer := strings.ToLower(strings.TrimSpace(line))
-	switch answer {
-	case "":
-		return defaultValue, nil
-	case "y", "yes":
-		return true, nil
-	case "n", "no":
-		return false, nil
-	default:
-		return false, fmt.Errorf("%s must be yes or no", question)
-	}
 }

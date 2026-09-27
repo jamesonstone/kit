@@ -9,10 +9,10 @@ generated guidance, and Go installation/import surface.
 
 1. Commit or otherwise preserve project-owned work.
 2. Record the current binary version with `kit version`.
-3. Preview managed guidance changes:
+3. Preview the migration:
 
    ```bash
-   kit reconcile --include-files --dry-run --diff
+   kit reconcile --dry-run --diff
    ```
 
 4. Check scripts and automation for `--max-subagents` and the old unversioned
@@ -45,10 +45,15 @@ and install paths gain `/v3`.
   and `kit rules link`, plus the `--profile`, `--single-agent`, and
   `--max-subagents` flags. Agents use their host's tools, delegation, and
   `kit <command> --help` instead.
+- `kit init --refresh` is removed: `kit init` creates new projects only, and
+  `kit reconcile` updates existing ones. `kit health` no longer writes; it
+  reports what `kit reconcile` would change.
 - Rules ship inside the binary; upgrade Kit to pick up rule changes. Nothing is
   fetched from GitHub.
-- `docs/PROJECT_PROGRESS_SUMMARY.md` and `docs/references/workflows/` are no
-  longer generated or checked; existing copies are inert.
+- `docs/agents/`, `docs/references/workflows/`, the other retired support
+  documents, `docs/PROJECT_PROGRESS_SUMMARY.md`, and retired rules are no longer
+  generated. `kit reconcile` removes copies that are exactly as a Kit release
+  generated them and committed to Git, and reports edited copies it keeps.
 - The 300-line source limit applies only when `.kit.yaml` sets
   `source_file_line_limit`.
 
@@ -61,15 +66,20 @@ Kit retains exactly three default instruction targets: `AGENTS.md`,
 All three files render the same Kit-managed universal contract block from one
 canonical source, with no vendor-specific bindings. Specialized rules under
 `docs/references/rules/` load only when the contract's trigger for them applies.
-Instruction files that predate the managed block are left unchanged by refresh
-and reported by `kit reconcile` until you preview and apply a replacement.
-
-Apply reviewed managed updates only after the preview is understood:
+`kit reconcile` migrates instruction files that predate the managed block:
+Kit-generated sections are replaced by the block and sections Kit never wrote
+are kept below it. When a Kit-generated section was edited, reconcile leaves the
+file unchanged and names the section; review it, then run
+`kit reconcile --force`, which replaces Kit's sections and still keeps project
+sections.
 
 ```bash
-kit reconcile --include-files
+kit reconcile
 kit check --project
 ```
+
+Run from the primary checkout, reconcile writes to a `kit-reconcile` linked
+worktree and prints how to review, commit, and open a pull request.
 
 ## Compatibility Evidence
 

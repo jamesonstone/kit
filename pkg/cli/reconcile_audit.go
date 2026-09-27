@@ -31,14 +31,13 @@ type reconcileFinding struct {
 }
 
 type reconcileReport struct {
-	ProjectRoot            string
-	Feature                *feature.Feature
-	Findings               []reconcileFinding
-	ReferenceMigration     bool
-	VerificationMigration  bool
-	DeliverySnapshot       []managedFileDeliverySnapshot
-	DeferredRefreshCommand string
-	SourceFileAudit        *sourceFileAuditSummary
+	ProjectRoot           string
+	Feature               *feature.Feature
+	Findings              []reconcileFinding
+	ReferenceMigration    bool
+	VerificationMigration bool
+	DeliverySnapshot      []managedFileDeliverySnapshot
+	SourceFileAudit       *sourceFileAuditSummary
 }
 
 func (r *reconcileReport) cleanResult() string {
