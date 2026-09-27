@@ -155,15 +155,11 @@ func ValidAWSRegion(value string) bool {
 
 func semanticFindings(cfg *Config) []Finding {
 	var findings []Finding
-	if cfg.GoalPercentage < 1 || cfg.GoalPercentage > 100 {
-		findings = append(findings, Finding{Field: "goal_percentage", Severity: FindingError, Message: "goal_percentage must be between 1 and 100"})
-	}
 	for _, item := range []struct {
 		field string
 		value string
 	}{
 		{field: "specs_dir", value: cfg.SpecsDir},
-		{field: "skills_dir", value: cfg.SkillsDir},
 		{field: "constitution_path", value: cfg.ConstitutionPath},
 	} {
 		if strings.TrimSpace(item.value) == "" {

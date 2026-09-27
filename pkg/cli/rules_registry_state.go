@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -15,10 +14,6 @@ type rulesetRegistrySyncResult struct {
 	state     string
 	hash      string
 	conflicts []string
-}
-
-func rulesetRegistryRepoFullName() string {
-	return rulesetRegistryOwner + "/" + rulesetRegistryRepo
 }
 
 func normalizedRulesetContentHash(content, registryStatus string) (string, error) {
@@ -48,57 +43,22 @@ func rulesetLocalStatus(content, fallback string) string {
 	return rulesetReferenceStatus
 }
 
-func registryArtifactForRuleset(item registryRuleset, state string, installedHash string, content string) config.RegistryArtifact {
-	artifact := config.RegistryArtifact{
+func registryArtifactForRuleset(item registryRuleset, state string, installedHash string) config.RegistryArtifact {
+	return config.RegistryArtifact{
 		Kind:          rulesetKind,
 		Slug:          item.Slug,
 		Path:          rulesetTarget(item.Slug),
-		SourceRepo:    firstNonEmpty(item.SourceRepo, rulesetRegistryRepoFullName()),
-		SourceBranch:  firstNonEmpty(item.SourceBranch, rulesetRegistryBranch),
-		SourceCommit:  item.SourceCommit,
-		SourcePath:    firstNonEmpty(item.SourcePath, rulesetTarget(item.Slug)),
 		InstalledHash: installedHash,
 		State:         state,
 	}
-	if state == registryArtifactStateManaged && installedHash != "" && installedHash != item.NormalizedHash {
-		artifact.Sections = rulesetRegistrySectionArtifacts(content, item.Metadata.Status)
-	}
-	return artifact
 }
 
-func recordRulesetRegistryState(cfg *config.Config, item registryRuleset, state string, installedHash string, content string) {
+func recordRulesetRegistryState(cfg *config.Config, item registryRuleset, state string, installedHash string) {
 	if cfg == nil {
 		return
 	}
 	cfg.Registry.SchemaVersion = registryArtifactSchemaVersion
-	cfg.Registry.Source = config.RegistrySource{
-		Repo:   rulesetRegistryRepoFullName(),
-		Branch: rulesetRegistryBranch,
-	}
-	cfg.UpsertRegistryArtifact(registryArtifactForRuleset(item, state, installedHash, content))
-}
-
-func recordRefreshedRulesetRegistryState(
-	cfg *config.Config,
-	item registryRuleset,
-	previous config.RegistryArtifact,
-	state string,
-	installedHash string,
-	content string,
-) {
-	if installedHash != "" &&
-		installedHash == previous.InstalledHash &&
-		previous.SourceCommit != "" &&
-		rulesetRegistrySourceIdentityMatches(item, previous) {
-		item.SourceCommit = previous.SourceCommit
-	}
-	recordRulesetRegistryState(cfg, item, state, installedHash, content)
-}
-
-func rulesetRegistrySourceIdentityMatches(item registryRuleset, artifact config.RegistryArtifact) bool {
-	return firstNonEmpty(item.SourceRepo, rulesetRegistryRepoFullName()) == artifact.SourceRepo &&
-		firstNonEmpty(item.SourceBranch, rulesetRegistryBranch) == artifact.SourceBranch &&
-		firstNonEmpty(item.SourcePath, rulesetTarget(item.Slug)) == artifact.SourcePath
+	cfg.UpsertRegistryArtifact(registryArtifactForRuleset(item, state, installedHash))
 }
 
 func rulesetRegistryState(cfg *config.Config, slug string) (config.RegistryArtifact, bool) {
@@ -108,162 +68,53 @@ func rulesetRegistryState(cfg *config.Config, slug string) (config.RegistryArtif
 	return cfg.RegistryArtifact(rulesetKind, slug)
 }
 
+// syncRulesetRegistryContent reconciles a local rule with the rule embedded in
+// this binary: identical or Kit-written-and-unmodified files take the embedded
+// version; locally edited files are preserved unless forced.
 func syncRulesetRegistryContent(
-	ctx context.Context,
 	item registryRuleset,
 	state config.RegistryArtifact,
 	localContent string,
 	force bool,
 ) (rulesetRegistrySyncResult, error) {
 	localStatus := rulesetLocalStatus(localContent, item.Metadata.Status)
-	remoteHash := item.NormalizedHash
-	if remoteHash == "" {
+	embeddedHash := item.NormalizedHash
+	if embeddedHash == "" {
 		var err error
-		remoteHash, err = normalizedRulesetContentHash(item.Content, item.Metadata.Status)
-		if err != nil {
+		if embeddedHash, err = normalizedRulesetContentHash(item.Content, item.Metadata.Status); err != nil {
 			return rulesetRegistrySyncResult{}, err
 		}
 	}
-	localHash, localHashErr := normalizedRulesetContentHash(localContent, item.Metadata.Status)
-	if force {
+	embedded := func() (rulesetRegistrySyncResult, error) {
 		updated, err := setRulesetStatus(item.Content, localStatus)
 		if err != nil {
 			return rulesetRegistrySyncResult{}, err
 		}
-		return rulesetRegistrySyncResult{
-			content: updated,
-			state:   registryArtifactStateManaged,
-			hash:    remoteHash,
-		}, nil
+		return rulesetRegistrySyncResult{content: updated, state: registryArtifactStateManaged, hash: embeddedHash}, nil
 	}
-	if localHashErr != nil {
+	if force {
+		return embedded()
+	}
+	localHash, err := normalizedRulesetContentHash(localContent, item.Metadata.Status)
+	if err != nil {
 		return rulesetRegistrySyncResult{
 			content:   localContent,
 			state:     registryArtifactStateLocalCustom,
 			hash:      state.InstalledHash,
-			conflicts: []string{fmt.Sprintf("%s has invalid local ruleset content: %v", rulesetTarget(item.Slug), localHashErr)},
+			conflicts: []string{fmt.Sprintf("%s has invalid local ruleset content: %v", rulesetTarget(item.Slug), err)},
 		}, nil
 	}
-	if localHash == remoteHash {
-		return rulesetRegistrySyncResult{
-			content: localContent,
-			state:   registryArtifactStateManaged,
-			hash:    remoteHash,
-		}, nil
-	}
-	if state.State == registryArtifactStateLocalCustom || strings.TrimSpace(state.InstalledHash) == "" {
+	switch {
+	case localHash == embeddedHash:
+		return rulesetRegistrySyncResult{content: localContent, state: registryArtifactStateManaged, hash: embeddedHash}, nil
+	case state.State != registryArtifactStateLocalCustom && strings.TrimSpace(state.InstalledHash) != "" && localHash == state.InstalledHash:
+		return embedded()
+	default:
 		return rulesetRegistrySyncResult{
 			content:   localContent,
 			state:     registryArtifactStateLocalCustom,
 			hash:      localHash,
-			conflicts: []string{fmt.Sprintf("%s has local custom content; use --force to accept registry content", rulesetTarget(item.Slug))},
+			conflicts: []string{fmt.Sprintf("%s has local custom content; use --force to accept Kit's version", rulesetTarget(item.Slug))},
 		}, nil
 	}
-	if state.SourceCommit != "" && item.SourceCommit != "" && state.SourceCommit == item.SourceCommit {
-		if localHash == state.InstalledHash {
-			return rulesetRegistrySyncResult{
-				content: localContent,
-				state:   registryArtifactStateManaged,
-				hash:    state.InstalledHash,
-			}, nil
-		}
-		return rulesetRegistrySyncResult{
-			content:   localContent,
-			state:     registryArtifactStateLocalCustom,
-			hash:      state.InstalledHash,
-			conflicts: []string{fmt.Sprintf("%s has local custom content; use --force to accept registry content", rulesetTarget(item.Slug))},
-		}, nil
-	}
-	if len(state.Sections) > 0 {
-		return syncRulesetRegistryContentFromSections(item, state, localContent, localStatus)
-	}
-	if localHash == state.InstalledHash {
-		updated, err := setRulesetStatus(item.Content, localStatus)
-		if err != nil {
-			return rulesetRegistrySyncResult{}, err
-		}
-		return rulesetRegistrySyncResult{
-			content: updated,
-			state:   registryArtifactStateManaged,
-			hash:    remoteHash,
-		}, nil
-	}
-	if remoteHash == state.InstalledHash {
-		return rulesetRegistrySyncResult{
-			content: localContent,
-			state:   registryArtifactStateLocalCustom,
-			hash:    state.InstalledHash,
-		}, nil
-	}
-
-	return syncRulesetRegistryContentFromFetchedBase(ctx, item, state, localContent, localStatus)
-}
-
-func syncRulesetRegistryContentFromSections(
-	item registryRuleset,
-	state config.RegistryArtifact,
-	localContent string,
-	localStatus string,
-) (rulesetRegistrySyncResult, error) {
-	merged, conflicts, err := mergeRulesetSectionsFromState(item, state, localContent, localStatus)
-	if err != nil {
-		return rulesetRegistrySyncResult{}, err
-	}
-	if len(conflicts) > 0 {
-		return rulesetRegistrySyncResult{
-			content:   localContent,
-			state:     registryArtifactStateConflict,
-			hash:      state.InstalledHash,
-			conflicts: conflicts,
-		}, nil
-	}
-	mergedHash, err := normalizedRulesetContentHash(merged, item.Metadata.Status)
-	if err != nil {
-		return rulesetRegistrySyncResult{}, err
-	}
-	return rulesetRegistrySyncResult{
-		content: merged,
-		state:   registryArtifactStateManaged,
-		hash:    mergedHash,
-	}, nil
-}
-
-func syncRulesetRegistryContentFromFetchedBase(
-	ctx context.Context,
-	item registryRuleset,
-	state config.RegistryArtifact,
-	localContent string,
-	localStatus string,
-) (rulesetRegistrySyncResult, error) {
-	baseContent, err := rulesetRegistryContentFetcher(ctx, firstNonEmpty(state.SourceRepo, item.SourceRepo), state.SourceCommit, firstNonEmpty(state.SourcePath, item.SourcePath))
-	if err != nil {
-		return rulesetRegistrySyncResult{
-			content:   localContent,
-			state:     registryArtifactStateConflict,
-			hash:      state.InstalledHash,
-			conflicts: []string{fmt.Sprintf("%s cannot fetch registry base %s: %v", rulesetTarget(item.Slug), state.SourceCommit, err)},
-		}, nil
-	}
-	baseHash, err := normalizedRulesetContentHash(baseContent, item.Metadata.Status)
-	if err != nil {
-		return rulesetRegistrySyncResult{}, err
-	}
-	if baseHash != state.InstalledHash {
-		return rulesetRegistrySyncResult{
-			content:   localContent,
-			state:     registryArtifactStateConflict,
-			hash:      state.InstalledHash,
-			conflicts: []string{fmt.Sprintf("%s registry base hash mismatch for %s", rulesetTarget(item.Slug), state.SourceCommit)},
-		}, nil
-	}
-	return syncRulesetRegistryContentFromBase(item, state, baseContent, localContent, localStatus)
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if strings.TrimSpace(value) != "" {
-			return value
-		}
-	}
-	return ""
 }

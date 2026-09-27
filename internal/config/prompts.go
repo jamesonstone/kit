@@ -8,11 +8,6 @@ import (
 
 const GlobalConfigDirName = "kit"
 
-type Prompt struct {
-	Content     string `yaml:"content"`
-	Description string `yaml:"description,omitempty"`
-}
-
 func FindProjectRootOptional() (string, bool, error) {
 	dir, err := os.Getwd()
 	if err != nil {

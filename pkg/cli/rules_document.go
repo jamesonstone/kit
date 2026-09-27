@@ -12,7 +12,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
-	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
 func parseRulesetAppliesTo(raw string) ([]string, error) {
@@ -182,14 +181,6 @@ func rulesetListRegistryState(cfg *config.Config, slug string) string {
 		return "untracked"
 	}
 	return artifact.State
-}
-
-func loadRuleset(projectRoot, slug string) (rulesetDocument, error) {
-	path := rulesetPath(projectRoot, slug)
-	if !document.Exists(path) {
-		return rulesetDocument{}, fmt.Errorf("ruleset %q not found at %s", slug, rulesetTarget(slug))
-	}
-	return parseRulesetFile(path)
 }
 
 func parseRulesetFile(path string) (rulesetDocument, error) {

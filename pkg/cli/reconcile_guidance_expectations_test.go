@@ -74,10 +74,6 @@ func TestAuditV2SupportGuidanceFindsStaleTestingSemantics(t *testing.T) {
 			snippet: "`docs/references/rules/testing-and-environment-validation.md`",
 		},
 		{
-			path:    "docs/references/README.md",
-			snippet: "`rules/testing-and-environment-validation.md`",
-		},
-		{
 			path:    "docs/references/testing.md",
 			snippet: "## High-Level Suites",
 		},
@@ -108,16 +104,8 @@ func TestAuditV3SupportGuidanceFindsStaleReferenceDocuments(t *testing.T) {
 		snippet string
 	}{
 		{
-			path:    "docs/references/README.md",
-			snippet: "## Starter Files",
-		},
-		{
 			path:    "docs/references/testing.md",
 			snippet: "## High-Level Suites",
-		},
-		{
-			path:    "docs/references/worktrees.md",
-			snippet: "Resolution proves the current clone owns the requested repository",
 		},
 	}
 
@@ -164,6 +152,7 @@ func TestReconcileCleanResultReportsPendingManagedFileDryRun(t *testing.T) {
 func TestReconcileCleanResultIncludesSourceAuditDuringPendingDryRun(t *testing.T) {
 	report := &reconcileReport{
 		SourceFileAudit: &sourceFileAuditSummary{
+			Limit:          300,
 			CandidateCount: 12,
 			EligibleCount:  7,
 			Complete:       true,

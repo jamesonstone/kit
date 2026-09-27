@@ -1,12 +1,10 @@
 package cli
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
@@ -47,8 +45,4 @@ func isLivingSpecFeature(feat *feature.Feature) bool {
 
 func normalizeSpecAnswer(raw string) string {
 	return strings.TrimSpace(strings.ReplaceAll(raw, "\r\n", "\n"))
-}
-
-func isTerminal() bool {
-	return term.IsTerminal(int(os.Stdin.Fd()))
 }

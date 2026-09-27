@@ -4,14 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
-	"github.com/jamesonstone/kit/v3/internal/feature"
 )
 
 func runRulesView(cmd *cobra.Command, args []string) error {
@@ -28,69 +26,6 @@ func runRulesView(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	_, err = fmt.Fprintf(cmd.OutOrStdout(), "Source: %s\n\n%s", source, ensureTrailingNewline(content))
-	return err
-}
-
-func runRulesLink(cmd *cobra.Command, args []string) error {
-	projectRoot, err := config.FindProjectRoot()
-	if err != nil {
-		return err
-	}
-	cfg, err := config.Load(projectRoot)
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
-	feat, err := feature.Resolve(cfg.SpecsPath(projectRoot), args[0])
-	if err != nil {
-		return fmt.Errorf("feature %q not found", args[0])
-	}
-
-	slug := strings.TrimSpace(args[1])
-	if err := validateRulesetSlug(slug); err != nil {
-		return err
-	}
-	readPolicy := strings.TrimSpace(rulesLinkReadPolicy)
-	if readPolicy != document.ReferenceReadPolicyMust && readPolicy != document.ReferenceReadPolicyConditional {
-		return fmt.Errorf("--read-policy must be one of: must, conditional")
-	}
-
-	ruleset, err := loadRuleset(projectRoot, slug)
-	if err != nil {
-		return err
-	}
-	if issues := validateRulesetDocument(ruleset, slug); len(issues) > 0 {
-		return fmt.Errorf("ruleset %q is invalid: %s", slug, strings.Join(issues, "; "))
-	}
-
-	targetPath, docType, err := rulesetLinkTargetDoc(feat)
-	if err != nil {
-		return err
-	}
-	content, err := os.ReadFile(targetPath)
-	if err != nil {
-		return fmt.Errorf("failed to read %s: %w", targetPath, err)
-	}
-
-	reference := rulesetReference(slug, readPolicy)
-	updated, changed, err := document.UpsertMetadata(string(content), docType, document.MetadataUpsert{
-		Feature:    document.FeatureMetadataFromDir(feat.DirName),
-		References: []document.MetadataReference{reference},
-	})
-	if err != nil {
-		return fmt.Errorf("failed to update feature references in %s: %w", targetPath, err)
-	}
-	if changed {
-		if err := document.Write(targetPath, updated); err != nil {
-			return fmt.Errorf("failed to write feature references in %s: %w", targetPath, err)
-		}
-	}
-
-	relPath, _ := filepath.Rel(projectRoot, targetPath)
-	action := "Updated"
-	if !changed {
-		action = "Already linked"
-	}
-	_, err = fmt.Fprintf(cmd.OutOrStdout(), "%s ruleset %s in %s\n", action, slug, filepath.ToSlash(relPath))
 	return err
 }
 

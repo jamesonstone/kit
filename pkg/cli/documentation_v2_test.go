@@ -7,19 +7,13 @@ import (
 	"testing"
 )
 
-func TestReadmeDocumentsV3BoundaryAndPrimaryFlow(t *testing.T) {
+func TestReadmeDocumentsCurrentSurface(t *testing.T) {
 	content := readRepositoryFile(t, "README.md")
 	for _, required := range []string{
-		"## Major Update",
-		"Kit 3.0 makes subagent orchestration capability-aware",
 		"github.com/jamesonstone/kit/v3/cmd/kit@latest",
 		"docs/migration-v3.md",
 		"kit reconcile --include-files --dry-run --diff",
-		"kit capabilities context resolve --json",
 		"kit spec my-feature",
-		"kit context resolve --workflow implementation-delivery --feature my-feature --json",
-		"`release-orchestration`",
-		"`kit pr orchestrate`",
 		"kit usage disable --global",
 		"never records command arguments",
 		"365 days",
@@ -29,10 +23,7 @@ func TestReadmeDocumentsV3BoundaryAndPrimaryFlow(t *testing.T) {
 			t.Errorf("README missing %q", required)
 		}
 	}
-	if strings.Index(content, "kit spec my-feature") > strings.Index(content, "kit context resolve --workflow implementation-delivery") {
-		t.Error("README resolves a feature before creating or adopting its spec")
-	}
-	for _, removed := range []string{"git-wt", "git wt"} {
+	for _, removed := range []string{"git-wt", "git wt", "kit context resolve", "kit capabilities", "kit dispatch", "kit pr fix", "kit pr orchestrate", "kit improve", "kit instructions"} {
 		if strings.Contains(content, removed) {
 			t.Errorf("README still documents removed command %q", removed)
 		}

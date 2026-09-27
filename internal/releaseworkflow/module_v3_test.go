@@ -65,6 +65,7 @@ func TestGoSelfImportsUseV3Identity(t *testing.T) {
 				return err
 			}
 			if strings.HasPrefix(importPath, moduleRoot+"/") &&
+				importPath != moduleRoot+"/v3" &&
 				!strings.HasPrefix(importPath, moduleRoot+"/v3/") {
 				t.Errorf("%s contains unversioned self-import %q", path, importPath)
 			}

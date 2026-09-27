@@ -3,7 +3,7 @@ kind: ruleset
 slug: readme-header-tagline
 description: Standardizes top-level README openings with a Flowcore-style header, tagline, and concise product paragraph.
 status: active
-registry_scope: downstream
+registry_scope: optional
 applies_to:
   - readme
   - documentation

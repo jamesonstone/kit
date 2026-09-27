@@ -115,7 +115,7 @@ func outputStatusText(w io.Writer, status *feature.FeatureStatus, version string
 		return err
 	}
 	if status.Paused {
-		if err := printStatusField(w, style, "Next", "Review the legacy paused state and adopt current work through SPEC.md and `kit context resolve`"); err != nil {
+		if err := printStatusField(w, style, "Next", "Review the legacy paused state and adopt current work through SPEC.md"); err != nil {
 			return err
 		}
 		if err := printStatusField(w, style, "After resume", determineUnpausedNextAction(status)); err != nil {

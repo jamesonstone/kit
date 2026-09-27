@@ -76,6 +76,9 @@ func recordUsage(executed *cobra.Command, commandErr error, elapsed time.Duratio
 	if !commandset.IsTelemetryPath(path) {
 		return
 	}
+	if help, _ := executed.Flags().GetBool("help"); help {
+		return // help lookups are not command use
+	}
 	exitCode := 0
 	if commandErr != nil {
 		exitCode = 1

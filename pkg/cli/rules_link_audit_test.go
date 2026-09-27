@@ -1,9 +1,7 @@
 package cli
 
 import (
-	"bytes"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 
@@ -11,35 +9,7 @@ import (
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
-	"github.com/jamesonstone/kit/v3/internal/templates"
 )
-
-func TestRulesetRegistrySectionArtifactsUseHeadingPathsAndSkipFences(t *testing.T) {
-	registry := registryRulesetForTest("section-keys", []string{"git"})
-	content := registry.Content + "\n## Parent One\n\n### Duplicate\n\none\n\n## Parent Two\n\n### Duplicate\n\ntwo\n\n```bash\n# not a heading\n## also not a heading\n```\n"
-
-	sections := rulesetRegistrySectionArtifacts(content, registry.Metadata.Status)
-	var keys []string
-	for _, section := range sections {
-		keys = append(keys, section.Key)
-	}
-	for _, want := range []string{
-		"# ruleset: section-keys",
-		"# ruleset: section-keys > ## purpose",
-		"# ruleset: section-keys > ## rules",
-		"# ruleset: section-keys > ## parent one > ### duplicate",
-		"# ruleset: section-keys > ## parent two > ### duplicate",
-	} {
-		if !slices.Contains(keys, want) {
-			t.Fatalf("expected section key %q in %#v", want, keys)
-		}
-	}
-	for _, unwanted := range []string{"# not a heading", "## also not a heading"} {
-		if slices.Contains(keys, unwanted) {
-			t.Fatalf("unexpected fenced-code section key %q in %#v", unwanted, keys)
-		}
-	}
-}
 
 func TestFormatRulesetStateTokenUsesColorWhenEnabled(t *testing.T) {
 	rendered := formatRulesetStateToken(humanOutputStyle{enabled: true}, "ACTIVE", plan)
@@ -51,50 +21,6 @@ func TestFormatRulesetStateTokenUsesColorWhenEnabled(t *testing.T) {
 func TestRulesCommandDoesNotRetainSingularAlias(t *testing.T) {
 	if _, _, err := rootCmd.Find([]string{"rule", "list"}); err == nil {
 		t.Fatal("expected removed singular rule alias to be rejected")
-	}
-}
-
-func TestRunRulesLinkPreservesFrontMatterAndAvoidsDuplicates(t *testing.T) {
-	projectRoot := setupRulesProject(t)
-	setWorkingDirectory(t, projectRoot)
-	resetRulesFlags(t)
-
-	featurePath := filepath.Join(projectRoot, "docs", "specs", "0001-alpha")
-	writeFile(t, filepath.Join(featurePath, "SPEC.md"), withFeatureFrontMatter(validSpecWithRelationships("none\n"), "spec", "0001-alpha"))
-	writeFile(t, filepath.Join(projectRoot, "docs", "references", "rules", "api-conventions.md"), templates.BuildRuleset("api-conventions", []string{"api"}))
-
-	var out bytes.Buffer
-	cmd := &cobra.Command{}
-	cmd.SetOut(&out)
-	rulesLinkReadPolicy = document.ReferenceReadPolicyMust
-	if err := runRulesLink(cmd, []string{"alpha", "api-conventions"}); err != nil {
-		t.Fatalf("runRulesLink() error = %v", err)
-	}
-	if err := runRulesLink(cmd, []string{"alpha", "api-conventions"}); err != nil {
-		t.Fatalf("second runRulesLink() error = %v", err)
-	}
-
-	doc, err := document.ParseFile(filepath.Join(featurePath, "SPEC.md"), document.TypeSpec)
-	if err != nil {
-		t.Fatalf("ParseFile() error = %v", err)
-	}
-	if doc.Metadata == nil || doc.Metadata.Feature.Slug != "alpha" {
-		t.Fatalf("expected feature front matter to be preserved, got %#v", doc.Metadata)
-	}
-	var count int
-	for _, reference := range doc.References() {
-		if reference.ID == "ruleset-api-conventions" {
-			count++
-			if reference.ReadPolicy != document.ReferenceReadPolicyMust {
-				t.Fatalf("ReadPolicy = %q, want must", reference.ReadPolicy)
-			}
-			if reference.Target != "docs/references/rules/api-conventions.md" {
-				t.Fatalf("Target = %q", reference.Target)
-			}
-		}
-	}
-	if count != 1 {
-		t.Fatalf("expected one ruleset reference, got %d in %#v", count, doc.References())
 	}
 }
 

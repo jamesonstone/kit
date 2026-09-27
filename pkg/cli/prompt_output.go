@@ -19,11 +19,7 @@ func formatAgentInstructionBlock(prompt string) string {
 }
 
 func outputPromptWithClipboardDefault(prompt string, outputOnly, copy bool) error {
-	return writePromptWithClipboardDefault(prepareAgentPrompt(prompt), outputOnly, copy)
-}
-
-func outputPromptWithoutSubagentsWithClipboardDefault(prompt string, outputOnly, copy bool) error {
-	return writePromptWithClipboardDefault(preparePromptWithoutSubagents(prompt), outputOnly, copy)
+	return writePromptWithClipboardDefault(prompt, outputOnly, copy)
 }
 
 func writePromptWithClipboardDefault(prompt string, outputOnly, copy bool) error {
@@ -41,24 +37,4 @@ func writePromptWithClipboardDefault(prompt string, outputOnly, copy bool) error
 
 	fmt.Println(styleForStdout().clipboardAcknowledgement())
 	return nil
-}
-
-func printWorkflowInstructions(currentStep string, nextSteps []string) {
-	style := styleForStdout()
-
-	fmt.Println(style.title("🧭", "Workflow"))
-	if divider := style.sectionDivider(); divider != "" {
-		fmt.Println(divider)
-	}
-	fmt.Println(style.muted("Pipeline: [optional brainstorm] -> spec -> plan -> tasks -> implement -> reflect"))
-	fmt.Println()
-	fmt.Println(style.currentStepLine(currentStep))
-	if len(nextSteps) > 0 {
-		fmt.Println()
-		fmt.Println(style.nextStepsTitle())
-		for _, step := range nextSteps {
-			fmt.Printf("  %s\n", style.bullet(step))
-		}
-	}
-	fmt.Println()
 }

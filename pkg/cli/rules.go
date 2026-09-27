@@ -45,7 +45,7 @@ var (
 var rulesCmd = &cobra.Command{
 	Use:   "rules",
 	Short: "Manage durable repo-local rulesets",
-	Long: `Import, preview, create, list, and link durable repo-local rulesets.
+	Long: `Import, preview, create, and list durable repo-local rulesets.
 
 Rulesets live under docs/references/rules/ and are loaded through feature
 front matter references. They are not inlined into always-loaded instruction
@@ -83,13 +83,6 @@ var rulesViewCmd = &cobra.Command{
 	Short: "View a local or registry ruleset before adding it",
 	Args:  cobra.ExactArgs(1),
 	RunE:  runRulesView,
-}
-
-var rulesLinkCmd = &cobra.Command{
-	Use:   "link <feature> <slug>",
-	Short: "Link a ruleset to a feature through canonical references",
-	Args:  cobra.ExactArgs(2),
-	RunE:  runRulesLink,
 }
 
 type rulesetMetadata struct {
@@ -130,12 +123,10 @@ func init() {
 	rulesAddCmd.Flags().BoolVar(&rulesAddSkip, "skip", false, "set read_policy_default to skip")
 	rulesAddCmd.Flags().BoolVar(&rulesAddCustom, "custom", false, "open the interactive custom ruleset builder instead of the registry selector")
 	rulesAddCmd.Flags().BoolVar(&rulesAddConditional, "conditional", false, "set read_policy_default to conditional")
-	rulesLinkCmd.Flags().StringVar(&rulesLinkReadPolicy, "read-policy", defaultRulesetReadPolicy, "ruleset read policy for this feature reference (must or conditional)")
 
 	rulesCmd.AddCommand(rulesAddCmd)
 	rulesCmd.AddCommand(rulesListCmd)
 	rulesCmd.AddCommand(rulesViewCmd)
-	rulesCmd.AddCommand(rulesLinkCmd)
 	rootCmd.AddCommand(rulesCmd)
 }
 
@@ -206,14 +197,6 @@ func runRulesAddInteractive(cmd *cobra.Command, projectRoot, readPolicyDefault s
 	prompt := buildRulesetOptimizationPrompt(projectRoot, path, input)
 	if err := outputPromptWithClipboardDefault(prompt, rulesAddOutputOnly, rulesAddCopy); err != nil {
 		return err
-	}
-
-	if !rulesAddOutputOnly {
-		printWorkflowInstructions("rules add", []string{
-			fmt.Sprintf("review and refine %s", path),
-			fmt.Sprintf("link the ruleset only where relevant with `kit rules link <feature> %s --read-policy conditional`", input.Slug),
-			"run `kit check --project` after agent optimization",
-		})
 	}
 
 	return nil

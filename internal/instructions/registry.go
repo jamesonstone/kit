@@ -42,7 +42,8 @@ func DetectVersion(projectRoot string, cfg *config.Config) int {
 		return cfg.InstructionScaffoldVersion
 	}
 
-	for _, doc := range SupportDocs(config.DefaultInstructionScaffoldVersion) {
+	// Legacy support docs identify unconfigured pre-contract repositories.
+	for _, doc := range SupportDocs(config.InstructionScaffoldVersionTOC) {
 		if document.Exists(filepath.Join(projectRoot, filepath.FromSlash(doc.RelativePath))) {
 			// Support docs alone cannot distinguish v2 from v3. Treat an
 			// unconfigured repository as the legacy TOC version so migration is
@@ -151,23 +152,15 @@ func SupportDocs(version int) []Doc {
 		},
 	}
 	if version == config.InstructionScaffoldVersionMemory {
-		// The v3 universal contract lives in the entry files; only the agents
-		// map and project references remain as support documents.
+		// The v3 universal contract lives in the entry files; the only generated
+		// project-memory document is the validation reference it points to.
 		kept := docs[:0]
 		for _, doc := range docs {
-			switch doc.Label {
-			case "WORKFLOWS", "RLM", "TOOLING", "GUARDRAILS":
-				continue
+			if doc.Label == "TESTING REFERENCE" {
+				kept = append(kept, doc)
 			}
-			kept = append(kept, doc)
 		}
-		docs = append(kept, Doc{
-			Label:        "WORKTREES",
-			RelativePath: "docs/references/worktrees.md",
-			Use:          "portable native Git worktree workflow and safety model",
-			Required:     true,
-			ManagedBy:    "kit init",
-		})
+		docs = kept
 	}
 	return docs
 }

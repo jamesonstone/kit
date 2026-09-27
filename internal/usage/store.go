@@ -27,6 +27,9 @@ type shard struct {
 }
 
 func Record(input RecordInput) error {
+	if suppressed(input.Version) {
+		return nil
+	}
 	settings, err := EffectiveSettings(input.ProjectRoot)
 	if err != nil || !settings.Enabled || strings.HasPrefix(input.Command, "usage") {
 		return err

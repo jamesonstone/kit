@@ -20,11 +20,9 @@ func TestInspectIdentifiesPrimaryAndLinkedWorktrees(t *testing.T) {
 	}
 
 	fixture.createLocalBranch(t, "GH-160")
-	prepared, err := fixture.preparer.PrepareBranch(context.Background(), fixture.primary, "GH-160", false)
-	if err != nil {
-		t.Fatalf("PrepareBranch() error = %v", err)
-	}
-	linked, err := fixture.preparer.Inspect(context.Background(), prepared.Path)
+	linkedPath := filepath.Join(fixture.root, "linked")
+	gitCommand(t, fixture.primary, "worktree", "add", linkedPath, "GH-160")
+	linked, err := fixture.preparer.Inspect(context.Background(), linkedPath)
 	if err != nil {
 		t.Fatalf("Inspect(linked) error = %v", err)
 	}

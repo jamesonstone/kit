@@ -3,7 +3,7 @@ kind: ruleset
 slug: llms-txt
 description: Requires Kit-managed web services, websites, and APIs to expose an LLM-friendly /llms.txt endpoint.
 status: active
-registry_scope: downstream
+registry_scope: optional
 applies_to:
   - web
   - website

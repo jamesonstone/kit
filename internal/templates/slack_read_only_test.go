@@ -51,23 +51,6 @@ func TestInstructionSupportRoutesSlackReadOnly(t *testing.T) {
 	}
 }
 
-func TestImplementationDeliverySelectsSlackReadOnlyOptionally(t *testing.T) {
-	artifacts, err := ContextWorkflowArtifacts()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, artifact := range artifacts {
-		if artifact.Slug != "implementation-delivery" {
-			continue
-		}
-		if !strings.Contains(artifact.Content, "slug: slack-read-only\n    required: false") {
-			t.Fatal("implementation-delivery does not select slack-read-only as optional evidence")
-		}
-		return
-	}
-	t.Fatal("embedded implementation-delivery workflow not found")
-}
-
 func TestConstitutionTemplateRoutesSlackReadOnly(t *testing.T) {
 	for _, check := range []string{
 		"docs/references/rules/slack-read-only.md",

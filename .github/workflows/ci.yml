@@ -40,6 +40,11 @@ jobs:
       - name: Build
         run: make build
 
+      - name: Kit project check
+        env:
+          KIT_USAGE_DISABLED: "1"
+        run: ./bin/kit check --project
+
       - name: Lint
         uses: golangci/golangci-lint-action@v8
         with:

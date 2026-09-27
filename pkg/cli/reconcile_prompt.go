@@ -55,15 +55,6 @@ func buildReconcilePrompt(report *reconcileReport) string {
 			initProjectSource(report.ProjectRoot),
 		),
 	}
-	if !singleAgent {
-		rules = append(
-			rules[:2],
-			append(
-				[]string{"use subagents and queue work according to overlapping file changes; keep overlapping files in the same lane"},
-				rules[2:]...,
-			)...,
-		)
-	}
 	if report.ReferenceMigration {
 		rules = append(rules,
 			"migrate deprecated front matter `dependencies` to canonical `references`; do not preserve the old front matter field",
@@ -97,11 +88,6 @@ func buildReconcilePrompt(report *reconcileReport) string {
 	}
 	if report.VerificationMigration {
 		snapshot = append(snapshot, "verification migration: enabled")
-	}
-	if report.NeedsRollup {
-		snapshot = append(snapshot, "also refresh `PROJECT_PROGRESS_SUMMARY.md`")
-	} else {
-		snapshot = append(snapshot, "refresh `PROJECT_PROGRESS_SUMMARY.md` only if it changes")
 	}
 
 	issueBullets := make([]string, 0, len(fileSummaries))
@@ -246,8 +232,6 @@ func reconcileFindingCategory(finding reconcileFinding) string {
 		return "tasks"
 	case strings.Contains(lowerIssue, "instruction file"):
 		return "instruction files"
-	case strings.Contains(lowerIssue, "progress summary") || base == "PROJECT_PROGRESS_SUMMARY.md":
-		return "progress summary"
 	case strings.Contains(lowerIssue, "table"):
 		return "tables"
 	case strings.Contains(lowerIssue, "section"):

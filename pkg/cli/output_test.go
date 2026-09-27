@@ -131,66 +131,6 @@ func TestWritePromptWithClipboardDefault_OutputOnlyAndCopyDoesBoth(t *testing.T)
 	}
 }
 
-func TestOutputPromptWithoutSubagentsWithClipboardDefault_SkipsSubagentSuffix(t *testing.T) {
-	previousCopy := clipboardCopyFunc
-	previousSingleAgent := singleAgent
-	defer func() {
-		clipboardCopyFunc = previousCopy
-		singleAgent = previousSingleAgent
-	}()
-
-	var copied string
-	clipboardCopyFunc = func(text string) error {
-		copied = text
-		return nil
-	}
-	singleAgent = false
-
-	output := captureStdout(t, func() {
-		if err := outputPromptWithoutSubagentsWithClipboardDefault("prompt text", false, false); err != nil {
-			t.Fatalf("outputPromptWithoutSubagentsWithClipboardDefault() error = %v", err)
-		}
-	})
-
-	if strings.Contains(copied, "## Subagent Orchestration") {
-		t.Fatalf("expected dispatch-style helper to skip subagent suffix, got %q", copied)
-	}
-
-	if output != "Copied the prepared text to the clipboard.\n" {
-		t.Fatalf("unexpected stdout: %q", output)
-	}
-}
-
-func TestOutputPromptWithoutSubagentsWithFrontendProfileKeepsFrontendSuffix(t *testing.T) {
-	previousCopy := clipboardCopyFunc
-	previousSingleAgent := singleAgent
-	defer func() {
-		clipboardCopyFunc = previousCopy
-		singleAgent = previousSingleAgent
-	}()
-	restorePromptProfileState(t, promptProfileFrontend, true)
-
-	var copied string
-	clipboardCopyFunc = func(text string) error {
-		copied = text
-		return nil
-	}
-	singleAgent = false
-
-	_ = captureStdout(t, func() {
-		if err := outputPromptWithoutSubagentsWithClipboardDefault("prompt text", false, false); err != nil {
-			t.Fatalf("outputPromptWithoutSubagentsWithClipboardDefault() error = %v", err)
-		}
-	})
-
-	if !strings.Contains(copied, "## Frontend Profile") {
-		t.Fatalf("expected frontend profile suffix, got %q", copied)
-	}
-	if strings.Contains(copied, "## Subagent Orchestration") {
-		t.Fatalf("expected dispatch-style helper to skip subagent suffix, got %q", copied)
-	}
-}
-
 func TestHelpTemplateIncludesHumanReadableHeadings(t *testing.T) {
 	got := helpTemplate(true)
 

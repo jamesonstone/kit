@@ -56,7 +56,7 @@ func applyRegistryRulesetSelection(projectRoot string, entries []registrySelecto
 			state = registryArtifactStateLocalCustom
 			hash = normalizedHash
 		}
-		recordRulesetRegistryState(cfg, entry.Registry, state, hash, updated)
+		recordRulesetRegistryState(cfg, entry.Registry, state, hash)
 		configChanged = true
 
 		switch {
@@ -141,7 +141,7 @@ func loadRulesetViewContent(ctx context.Context, projectRoot, slug string) (stri
 	if err != nil {
 		return "", "", err
 	}
-	for _, item := range projectRulesetRegistry(registry) {
+	for _, item := range registry {
 		if item.Slug == slug {
 			return item.Content, rulesetRegistryRulesetURL(slug), nil
 		}

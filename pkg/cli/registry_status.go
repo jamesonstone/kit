@@ -16,8 +16,7 @@ const statusKitManagedStateDisabled = "disabled"
 type registryStatusReport struct {
 	State          string                 `json:"state"`
 	Managed        bool                   `json:"managed"`
-	SourceRepo     string                 `json:"source_repo,omitempty"`
-	SourceBranch   string                 `json:"source_branch,omitempty"`
+	RulesVersion   string                 `json:"rules_version"`
 	PlannedChanges int                    `json:"planned_changes"`
 	Registry       statusRegistrySummary  `json:"registry"`
 	Items          []statusKitManagedItem `json:"items,omitempty"`
@@ -67,8 +66,7 @@ func runRegistryStatus(cmd *cobra.Command, _ []string) error {
 func buildRegistryStatusReport(projectRoot string, cfg *config.Config) (registryStatusReport, error) {
 	report := registryStatusReport{
 		Managed:      cfg.IsHealthManaged(),
-		SourceRepo:   cfg.Registry.Source.Repo,
-		SourceBranch: cfg.Registry.Source.Branch,
+		RulesVersion: Version,
 	}
 	if !report.Managed {
 		report.State = statusKitManagedStateDisabled
@@ -85,12 +83,6 @@ func buildRegistryStatusReport(projectRoot string, cfg *config.Config) (registry
 	report.Items = summary.Items
 	report.NextActions = summary.NextActions
 	report.CheckError = summary.ManagedFiles.CheckError
-	if report.SourceRepo == "" {
-		report.SourceRepo = summary.Registry.SourceRepo
-	}
-	if report.SourceBranch == "" {
-		report.SourceBranch = summary.Registry.SourceBranch
-	}
 	return report, nil
 }
 

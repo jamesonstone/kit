@@ -4,12 +4,10 @@
 
 ### Coding-Agent-First, Repository-Native
 
-- Kit is a repository contract and evidence harness for coding agents, with bounded human-facing command adapters.
+- Kit is a small, vendor-neutral harness for coding agents: a universal contract, contextual rules, project memory, and deterministic commands.
 - Repository-local Markdown is authoritative. Machine-readable output is a deterministic view of that local evidence, not a second source of truth.
 - Native agent planning owns research, clarification, design, and implementation planning. Kit supplies evidence and guardrails; it does not infer project truth or launch or supervise agents.
 - Kit owns one canonical universal agent contract (`internal/templates/universal_contract.md`). Agent entry files render it deterministically inside a Kit-managed block; contextual rules load only when their trigger applies. Never restate universal rules in other Kit-owned documents.
-- `kit capabilities <command> --json` reports command side effects, and `kit context resolve --workflow <slug> --json` lists a workflow's evidence; both are optional aids, not mandatory steps.
-- A blocked context contract is an evidence gap, never permission to guess.
 - Agents use their host's native delegation. One primary agent owns integration and reporting, and reports distinguish actual separate agents from logical lanes and self-review.
 
 ### Evidence Before Mutation
@@ -42,61 +40,28 @@
 - Kit's universal agent rules live in the Kit-managed block of `AGENTS.md` (rendered identically into `CLAUDE.md` and `.github/copilot-instructions.md`), and contextual rules live in `docs/references/rules/`. This Constitution records project-specific invariants and does not restate them.
 <!-- END KIT-MANAGED BASELINE RULES -->
 
-### Supported v3 Command Surface
+### Supported Command Surface
 
-- The v3 major release preserves only these user-facing paths and their parent groups:
-  - `kit init`
-  - `kit spec`
-  - `kit context resolve`
-  - `kit usage`, `report`, `status`, `refresh`, `clear`, `enable`, and `disable`
-  - `kit status`
-  - `kit registry status`
-  - `kit health`
-  - `kit capabilities`
-  - `kit config check`
-  - `kit aws verify`
-  - `kit check`
-  - `kit pr fix`
-  - `kit pr orchestrate`
-  - `kit improve run`
-  - `kit rules add`, `list`, `view`, and `link`
-  - `kit reconcile`
-  - `kit dispatch`
-  - `kit instructions`
-  - `kit upgrade`, `version`, and `completion`
+- User-facing paths: `kit init`, `kit spec`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
+- A command exists only when it does deterministic work an agent cannot reproduce as safely or cheaply: bootstrap and managed-file convergence, validation, spec allocation, AWS identity verification, or usage evidence. Kit adds no prompt wrappers, context routers, capability catalogs, or orchestration commands.
 - Removed command groups are absent, not hidden compatibility aliases.
-- Legacy loop, prompt, feature-state, removed-feature, and project-refresh
-  configuration remains parse-compatible where represented by the current
-  schema, but retired command groups do not regain runtime behavior and forced
-  fresh configuration omits retired defaults.
-- `kit dispatch` remains a prompt-producing adapter. It does not become an agent runtime.
 
-### Context Resolution
+### Rules, Initialization, Reconciliation, and Health
 
-- `kit context resolve` emits schema `kit.context/v1`.
-- Resolution is deterministic, local-only, and read-only: no network access, writes, Git mutation, model inference, or agent launch.
-- Workflows under `docs/references/workflows/` declare ordered dependencies, required rules, evidence, phases, and completion gates.
-- The supported workflow set is repository bootstrap, implementation delivery, repository maintenance, PR feedback repair, pull-request merge, release orchestration, and cross-repository program coordination.
-- Required missing or invalid evidence blocks resolution with a nonzero exit; optional gaps remain explicit diagnostics.
-- Feature and path hints narrow evidence selection without changing canonical documents.
-
-### Initialization, Registry, Reconciliation, and Health
-
-- `kit init` is the canonical project bootstrap. It preserves existing project-owned content and materializes routing, references, registry-backed rules, and local workflow contracts.
-- `internal/templates` remains the canonical embedded scaffold architecture and must stay synchronized with checked-in generated artifacts.
-- Rules remain registry-backed, provenance-aware, and materialized under `docs/references/rules/`.
-- `kit reconcile` retains its established drift-detection, preview, inclusion, merge, and safety semantics in v3.
-- `kit health` retains its established maintenance interface, including the existing weekly scheduled-task behavior.
-- The weekly health task reads capabilities and bounded usage analysis once per
-  overall run; its repository set, cadence, maintenance actions, no-merge
-  rule, and existing output remain unchanged.
+- Rules ship inside the released binary (`rules.go` embeds `docs/references/rules/`); Kit never fetches rules or instructions at runtime. Unmodified installed rules update on refresh, locally edited rules are preserved and reported, and optional rules install only through `kit rules add`.
+- Retired rules stay listed in `pkg/cli/rules_retired.go` so historical references and legacy installs remain recognizable.
+- `kit init` scaffolds the universal contract, the Constitution starter, `docs/references/testing.md`, the core rules, and the developer-experience starter files, preserving existing project-owned content.
+- `internal/templates/universal_contract.md` is the single source of the agent contract; checked-in entry files must match it.
+- `kit reconcile` retains its drift-detection, preview, inclusion, and primary-checkout deferral semantics until the final migration redesign.
+- `kit health` is the scheduled-maintenance entry point: safe managed updates, then the project check.
+- `.kit.yaml` `source_file_line_limit` makes a line limit a deterministic project invariant; Kit sets 300 for itself.
 
 ### Local Usage Telemetry
 
 - Usage telemetry is local-only, best-effort, and enabled by default.
 - Events contain only schema version, timestamp, normalized command path, Kit version, exit outcome, elapsed time, anonymized project identity, and interactivity.
 - Never record arguments, command output, repository paths or names, file contents, environment values, secrets, or network identifiers.
-- Usage commands do not record themselves.
+- Usage commands, `--help` lookups, development builds, test binaries, and processes with `KIT_USAGE_DISABLED=1` do not record.
 - A global disable is absolute. A project may opt out but cannot override a global disable.
 - Retain at most 365 days, 16 MiB total, and 2 MiB per JSONL shard. Maintenance prunes complete oldest shards rather than partially truncating one.
 - `kit usage refresh`, `clear`, `enable`, and `disable` are the only maintenance and control surfaces for usage data.
@@ -111,7 +76,8 @@
 
 ### Testing and Source Size
 
-- Kit's validation commands live in `docs/references/testing.md`; pull-request CI runs formatting, vet, tests, build, and lint.
+- Kit's validation commands live in `docs/references/testing.md`; pull-request CI runs formatting, vet, tests, build, lint, and `kit check --project`.
+- Handwritten Go source and test files stay at 300 physical lines or less (enforced by `kit check --project`).
 - Run formatting, vetting, complete Go tests, race tests, linting, binary builds, release packaging, security checks, self-host validation, and affected source-size audits for a major release.
 
 ### Delivery and Release
@@ -139,7 +105,7 @@
 ## NON-GOALS
 
 - Kit does not choose models, prescribe a planning or delegation lifecycle, launch coding agents, supervise agent processes, or replace native agent planning.
-- Kit does not fetch external evidence during context resolution.
+- Kit does not fetch rules, instructions, or evidence from the network at runtime.
 - Kit does not treat generated JSON, telemetry, prompts, or agent transcripts as canonical repository memory.
 - Kit does not preserve every historical CLI path across major releases.
 - Kit does not change `kit reconcile` semantics as part of the coding-agent-first pivot.
@@ -149,9 +115,6 @@
 
 - **Universal contract** — Kit's single canonical agent contract, rendered into the Kit-managed block of each agent entry file.
 - **Contextual rule** — a ruleset under `docs/references/rules/` that an agent reads only when the contract's trigger for it applies.
-- **Capability metadata** — read-only command behavior and safety information returned by `kit capabilities`.
-- **Context resolution** — deterministic projection of applicable local evidence into `kit.context/v1`.
-- **Workflow** — a declarative repository-local execution contract containing dependencies, rules, evidence, phases, and completion gates.
 - **Ruleset** — a durable Markdown policy artifact managed through the rules registry.
 - **Living spec** — a V3 `SPEC.md` maintained from accepted planning through actual outcome and repository-memory disposition.
 - **Project-owned content** — repository material outside a bounded Kit-managed section or artifact contract.

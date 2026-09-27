@@ -65,14 +65,9 @@ func v2GuidanceExpectations() map[string][]string {
 }
 
 func v3GuidanceExpectations() map[string][]string {
+	// Agent entry files are verified against the rendered contract block; the
+	// generated validation reference keeps its structural headings.
 	return map[string][]string{
-		// Agent entry files are verified against the rendered contract block;
-		// only project reference documents keep structural expectations.
-		"docs/references/README.md": {
-			"`rules/<slug>.md`",
-			"Contextual Rules",
-			"## Starter Files",
-		},
 		"docs/references/testing.md": {
 			"`rules/testing-and-environment-validation.md`",
 			"## Code-Level Validation",
@@ -80,15 +75,6 @@ func v3GuidanceExpectations() map[string][]string {
 			"## Environment Preflights",
 			"## Evidence And Retention",
 			"## Known Gaps",
-		},
-		"docs/references/worktrees.md": {
-			"Native `git worktree` commands and ordinary filesystem operations define this",
-			"## Target-Aware Kit Repair Commands",
-			"Resolution proves the current clone owns the requested repository",
-			"## Writable-Lane Environment Links",
-			"Link each stable source into writable lanes by default",
-			"Preserve a regular destination",
-			"Never use `--force`, reset, clean, stash, or branch deletion",
 		},
 	}
 }

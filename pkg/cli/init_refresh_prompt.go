@@ -42,9 +42,7 @@ func buildInitRefreshDocumentationPromptForCommand(
 	snapshots ...[]managedFileDeliverySnapshot,
 ) string {
 	constitutionPath := cfg.ConstitutionAbsPath(projectRoot)
-	summaryPath := cfg.ProgressSummaryPath(projectRoot)
 	specsPath := cfg.SpecsPath(projectRoot)
-	agentsPath := filepath.Join(projectRoot, "docs", "agents")
 	referencesPath := filepath.Join(projectRoot, "docs", "references")
 	commandsPath := filepath.Join(projectRoot, "docs", "commands.md")
 	readmePath := filepath.Join(projectRoot, "docs", "README.md")
@@ -63,8 +61,6 @@ func buildInitRefreshDocumentationPromptForCommand(
 			fmt.Sprintf("Constitution: %s", constitutionPath),
 			fmt.Sprintf("Project docs index: %s", readmePath),
 			fmt.Sprintf("Command docs: %s", commandsPath),
-			fmt.Sprintf("Project summary: %s", summaryPath),
-			fmt.Sprintf("Agent routing docs: %s", agentsPath),
 			fmt.Sprintf("References and rulesets: %s", referencesPath),
 			fmt.Sprintf("Feature specs: %s", specsPath),
 			"`AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` when present",
@@ -74,7 +70,6 @@ func buildInitRefreshDocumentationPromptForCommand(
 			"`git status --short`",
 			"`git diff -- docs AGENTS.md CLAUDE.md .github/copilot-instructions.md README.md`",
 			"`kit rules list`",
-			"`kit capabilities reconcile --json`",
 			"`kit check --project`",
 		)
 		doc.Paragraph("Update guidance:")

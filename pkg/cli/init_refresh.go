@@ -124,7 +124,6 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		if err != nil {
 			return nil, &initRefreshRegistryError{err: err}
 		}
-		registry = projectRulesetRegistry(registry)
 	}
 
 	cfg, configChange, err := initRefreshConfig(projectRoot, opts, targets)
@@ -225,9 +224,6 @@ func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map
 	}
 	for _, item := range registry {
 		known[rulesetTarget(item.Slug)] = true
-	}
-	if err := addContextWorkflowTargets(known); err != nil {
-		return nil
 	}
 	return known
 }

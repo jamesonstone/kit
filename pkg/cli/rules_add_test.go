@@ -13,54 +13,6 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
-func TestWorkLaneGatingRulesetDefaultsToNewPullRequestLane(t *testing.T) {
-	path := filepath.Join("..", "..", "docs", "references", "rules", "work-lane-gating.md")
-	ruleset, err := parseRulesetFile(path)
-	if err != nil {
-		t.Fatalf("parseRulesetFile() error = %v", err)
-	}
-	if issues := validateRulesetDocument(ruleset, "work-lane-gating"); len(issues) > 0 {
-		t.Fatalf("work-lane-gating ruleset issues = %#v", issues)
-	}
-	normalizedBody := strings.Join(strings.Fields(ruleset.Body), " ")
-	for _, check := range []string{
-		"Do not ask whether to create a new lane or continue an existing lane",
-		"Default to a new worklane even when the current checkout is clean, dirty",
-		"Search for one exact matching issue and reusable complete lane",
-		"Continue an existing lane only when the user explicitly directs continuation",
-		"Never offer continuation as a choice",
-		"Existing Pull-Request Lifecycle Precedence",
-		"review repair, CI repair, base refresh, conflict resolution",
-		"dependency-ordered merge coordination",
-		"Do not allocate a new coordination issue, branch, worktree, or pull request",
-		"never create recursive corrective pull requests",
-		"Missing repair authority is not a reason to allocate a new worklane",
-		"Ask only when implementation intent or a user-named target is materially ambiguous",
-		"Do not ask for a new-versus-existing lane preference",
-		"Pull-Request Landing Plan",
-		"source, tests, documentation, specs, plans, notes, generated",
-		"not an explicit continuation direction",
-		"Treat that exact checkout as read-only",
-		"Never use the primary checkout as a temporary edit location",
-		"Do not create another lane for routine",
-		"Creating a coordination or corrective pull request",
-		"Do not stage, commit, push",
-	} {
-		if !strings.Contains(normalizedBody, check) {
-			t.Fatalf("expected work-lane-gating ruleset to contain %q", check)
-		}
-	}
-	for _, forbidden := range []string{
-		"automatic clean-preflight decision",
-		"Before I make any repository changes, should I create a new GitHub issue",
-		"`c` means continue existing",
-	} {
-		if strings.Contains(normalizedBody, forbidden) {
-			t.Fatalf("expected work-lane-gating ruleset to omit %q", forbidden)
-		}
-	}
-}
-
 func TestRunRulesAddSupportsPolicyFlags(t *testing.T) {
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)

@@ -190,9 +190,6 @@ func TestRunInit_PopulatesGlobalConfig(t *testing.T) {
 		if !found {
 			t.Fatal("config.LoadGlobal() found = false, want true")
 		}
-		if cfg.GoalPercentage != 95 {
-			t.Fatalf("GoalPercentage = %d, want 95", cfg.GoalPercentage)
-		}
 		if cfg.InstructionScaffoldVersion != config.DefaultInstructionScaffoldVersion {
 			t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, config.DefaultInstructionScaffoldVersion)
 		}

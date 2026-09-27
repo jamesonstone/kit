@@ -2,58 +2,12 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/document"
 	"github.com/jamesonstone/kit/v3/internal/feature"
 )
-
-func auditProjectProgressSummary(projectRoot string, features []feature.Feature) []reconcileFinding {
-	path := filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md")
-	if !document.Exists(path) {
-		return []reconcileFinding{newFinding(
-			reconcileSeverityError,
-			path,
-			"missing `PROJECT_PROGRESS_SUMMARY.md`",
-			templateSource(projectRoot),
-			"create the progress summary from the template and current feature docs",
-			[]string{
-				fmt.Sprintf("sed -n '1,220p' %s", templateSource(projectRoot)),
-				fmt.Sprintf("ls %s", filepath.Join(projectRoot, "docs", "specs")),
-			},
-		)}
-	}
-
-	findings := auditStructuredDocument(path, document.TypeProgressSummary, projectRoot, nil)
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return append(findings, newFinding(
-			reconcileSeverityError,
-			path,
-			"failed to read `PROJECT_PROGRESS_SUMMARY.md`",
-			templateSource(projectRoot),
-			"fix file readability before reconciliation can continue",
-			[]string{fmt.Sprintf("sed -n '1,240p' %s", path)},
-		))
-	}
-
-	body := string(content)
-	for i := range features {
-		findings = append(findings, auditFeatureRollupCoverageFromContent(projectRoot, body, &features[i])...)
-	}
-	return findings
-}
-
-func auditFeatureRollupCoverage(projectRoot string, feat *feature.Feature) []reconcileFinding {
-	summaryPath := filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md")
-	content, err := os.ReadFile(summaryPath)
-	if err != nil {
-		return nil
-	}
-	return auditFeatureRollupCoverageFromContent(projectRoot, string(content), feat)
-}
 
 func auditDuplicateFeatureNumbers(specsPath, projectRoot string, features []feature.Feature) []reconcileFinding {
 	duplicates := feature.DuplicateNumberGroups(features)
@@ -76,43 +30,6 @@ func auditDuplicateFeatureNumbers(specsPath, projectRoot string, features []feat
 			[]string{
 				fmt.Sprintf("ls %s", specsPath),
 				fmt.Sprintf("rg -n \"^# (BRAINSTORM|SPEC|PLAN|TASKS)\" %s", specsPath),
-			},
-		))
-	}
-
-	return findings
-}
-
-func auditFeatureRollupCoverageFromContent(projectRoot, content string, feat *feature.Feature) []reconcileFinding {
-	summaryPath := filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md")
-	rowSnippet := fmt.Sprintf("| %04d | %s |", feat.Number, feat.Slug)
-	headingSnippet := fmt.Sprintf("### %s\n", feat.Slug)
-	var findings []reconcileFinding
-
-	if !strings.Contains(content, rowSnippet) {
-		findings = append(findings, newFinding(
-			reconcileSeverityWarning,
-			summaryPath,
-			fmt.Sprintf("progress summary is missing the feature-table row for `%s`", feat.DirName),
-			templateSource(projectRoot),
-			"refresh `PROJECT_PROGRESS_SUMMARY.md` after reconciling feature docs",
-			[]string{
-				fmt.Sprintf("rg -n \"^\\| %04d \\| %s \\|\" %s", feat.Number, feat.Slug, summaryPath),
-				fmt.Sprintf("ls %s", filepath.Join(projectRoot, "docs", "specs")),
-			},
-		))
-	}
-
-	if !strings.Contains(content, headingSnippet) {
-		findings = append(findings, newFinding(
-			reconcileSeverityWarning,
-			summaryPath,
-			fmt.Sprintf("progress summary is missing the feature summary heading for `%s`", feat.DirName),
-			templateSource(projectRoot),
-			"refresh `PROJECT_PROGRESS_SUMMARY.md` after reconciliation so every current feature has a summary section",
-			[]string{
-				fmt.Sprintf("rg -n \"^### %s$\" %s", feat.Slug, summaryPath),
-				fmt.Sprintf("ls %s", filepath.Join(projectRoot, "docs", "specs")),
 			},
 		))
 	}

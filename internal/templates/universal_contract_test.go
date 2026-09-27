@@ -31,7 +31,7 @@ var criticalInvariants = map[string]string{
 	"secrets":                   "Never stage secrets",
 	"aws identity":              "run `kit aws verify`",
 	"human pause":               "A direct human pause, hold, or revocation stops the affected action",
-	"source size":               "300 physical lines or less",
+	"source size":               "`source_file_line_limit`",
 	"delegation safety":         "Delegated agents never mutate Git or GitHub",
 	"truthful checks":           "Never present a pending, skipped, unavailable, or unrun check as passing",
 	"recoverable change report": "needed to find or undo every change",
@@ -109,12 +109,10 @@ func TestCheckedInAgentSurfacesMatchGenerator(t *testing.T) {
 			t.Errorf("checked-in %s managed block drifted from the universal contract; regenerate it", path)
 		}
 	}
-	readme, err := os.ReadFile(filepath.Join("..", "..", "docs", "agents", "README.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(readme) != memoryInstructionSupportContent("docs/agents/README.md") {
-		t.Error("checked-in docs/agents/README.md drifted from the generator")
+	for _, file := range InstructionSupportFiles(config.InstructionScaffoldVersionMemory) {
+		if file.RelativePath != "docs/references/testing.md" {
+			t.Errorf("v3 generates %s; only the validation reference is project memory Kit scaffolds", file.RelativePath)
+		}
 	}
 }
 

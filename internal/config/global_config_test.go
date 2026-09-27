@@ -6,43 +6,6 @@ import (
 	"testing"
 )
 
-func TestRecordRemovedFeatureClearsPausedStateAndReplacesTombstone(t *testing.T) {
-	cfg := Default()
-	cfg.SetFeaturePaused("0002-bravo", true)
-	cfg.RecordRemovedFeature(RemovedFeature{
-		Number:    2,
-		Slug:      "bravo",
-		DirName:   "0002-bravo",
-		CreatedAt: "2026-04-05T00:00:00Z",
-		RemovedAt: "2026-05-06T12:00:00Z",
-	})
-
-	if cfg.IsFeaturePaused("0002-bravo") {
-		t.Fatalf("expected removed feature to clear paused state")
-	}
-	if len(cfg.RemovedFeatures) != 1 {
-		t.Fatalf("RemovedFeatures length = %d, want 1", len(cfg.RemovedFeatures))
-	}
-	if cfg.RemovedFeatures[0].RemovedAt != "2026-05-06T12:00:00Z" {
-		t.Fatalf("RemovedAt = %q, want first timestamp", cfg.RemovedFeatures[0].RemovedAt)
-	}
-
-	cfg.RecordRemovedFeature(RemovedFeature{
-		Number:    2,
-		Slug:      "bravo",
-		DirName:   "0002-bravo",
-		CreatedAt: "2026-04-05T00:00:00Z",
-		RemovedAt: "2026-05-07T12:00:00Z",
-	})
-
-	if len(cfg.RemovedFeatures) != 1 {
-		t.Fatalf("RemovedFeatures length after replace = %d, want 1", len(cfg.RemovedFeatures))
-	}
-	if cfg.RemovedFeatures[0].RemovedAt != "2026-05-07T12:00:00Z" {
-		t.Fatalf("RemovedAt = %q, want replacement timestamp", cfg.RemovedFeatures[0].RemovedAt)
-	}
-}
-
 func TestFindProjectRootOptionalReturnsRootWhenConfigExists(t *testing.T) {
 	projectRoot := t.TempDir()
 	nested := filepath.Join(projectRoot, "a", "b")
@@ -110,9 +73,6 @@ func TestLoadGlobalReturnsDefaultWhenAbsent(t *testing.T) {
 	if cfg == nil {
 		t.Fatal("LoadGlobal() cfg = nil")
 	}
-	if cfg.Prompts != nil {
-		t.Fatalf("Prompts = %v, want nil", cfg.Prompts)
-	}
 }
 
 func TestPopulateGlobalConfigCreatesDefaults(t *testing.T) {
@@ -141,117 +101,7 @@ func TestPopulateGlobalConfigCreatesDefaults(t *testing.T) {
 	if !found {
 		t.Fatal("LoadGlobal() found = false, want true")
 	}
-	if cfg.GoalPercentage != defaults.GoalPercentage {
-		t.Fatalf("GoalPercentage = %d, want %d", cfg.GoalPercentage, defaults.GoalPercentage)
-	}
 	if cfg.InstructionScaffoldVersion != DefaultInstructionScaffoldVersion {
 		t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, DefaultInstructionScaffoldVersion)
-	}
-}
-
-func TestPopulateGlobalConfigPreservesPromptsAndAddsMissingDefaults(t *testing.T) {
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-
-	configPath := filepath.Join(home, ".config", "kit", ConfigFileName)
-	initial := []byte(`prompts:
-  custom:
-    review:
-      content: keep existing prompt
-      description: existing description
-`)
-	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
-		t.Fatalf("MkdirAll() error = %v", err)
-	}
-	if err := os.WriteFile(configPath, initial, 0644); err != nil {
-		t.Fatalf("WriteFile() error = %v", err)
-	}
-
-	defaults := Default()
-	defaults.InstructionScaffoldVersion = DefaultInstructionScaffoldVersion
-
-	_, changed, err := PopulateGlobalConfig(defaults)
-	if err != nil {
-		t.Fatalf("PopulateGlobalConfig() error = %v", err)
-	}
-	if !changed {
-		t.Fatal("PopulateGlobalConfig() changed = false, want true")
-	}
-
-	cfg, found, err := LoadGlobal()
-	if err != nil {
-		t.Fatalf("LoadGlobal() error = %v", err)
-	}
-	if !found {
-		t.Fatal("LoadGlobal() found = false, want true")
-	}
-	got := cfg.Prompts["custom"]["review"]
-	if got.Content != "keep existing prompt" {
-		t.Fatalf("Content = %q, want keep existing prompt", got.Content)
-	}
-	if got.Description != "existing description" {
-		t.Fatalf("Description = %q, want existing description", got.Description)
-	}
-	if cfg.GoalPercentage != defaults.GoalPercentage {
-		t.Fatalf("GoalPercentage = %d, want %d", cfg.GoalPercentage, defaults.GoalPercentage)
-	}
-	if cfg.InstructionScaffoldVersion != DefaultInstructionScaffoldVersion {
-		t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, DefaultInstructionScaffoldVersion)
-	}
-}
-
-func TestUpsertGlobalPromptCreatesConfig(t *testing.T) {
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-
-	err := UpsertGlobalPrompt("coding-agent", "short", Prompt{
-		Content:     "clarify first",
-		Description: "short prompt",
-	})
-	if err != nil {
-		t.Fatalf("UpsertGlobalPrompt() error = %v", err)
-	}
-
-	cfg, found, err := LoadGlobal()
-	if err != nil {
-		t.Fatalf("LoadGlobal() error = %v", err)
-	}
-	if !found {
-		t.Fatal("LoadGlobal() found = false, want true")
-	}
-	got := cfg.Prompts["coding-agent"]["short"]
-	if got.Content != "clarify first" {
-		t.Fatalf("Content = %q, want clarify first", got.Content)
-	}
-	if got.Description != "short prompt" {
-		t.Fatalf("Description = %q, want short prompt", got.Description)
-	}
-}
-
-func TestUpsertLocalPromptWritesProjectConfig(t *testing.T) {
-	projectRoot := t.TempDir()
-	configPath := filepath.Join(projectRoot, ConfigFileName)
-	if err := os.WriteFile(configPath, []byte("goal_percentage: 90\n"), 0644); err != nil {
-		t.Fatalf("WriteFile() error = %v", err)
-	}
-
-	err := UpsertLocalPrompt(projectRoot, "coding-agent", "short", Prompt{
-		Content:     "clarify first",
-		Description: "short prompt",
-	})
-	if err != nil {
-		t.Fatalf("UpsertLocalPrompt() error = %v", err)
-	}
-
-	cfg, err := Load(projectRoot)
-	if err != nil {
-		t.Fatalf("Load() error = %v", err)
-	}
-	got := cfg.Prompts["coding-agent"]["short"]
-	if got.Content != "clarify first" {
-		t.Fatalf("Content = %q, want clarify first", got.Content)
-	}
-	if got.Description != "short prompt" {
-		t.Fatalf("Description = %q, want short prompt", got.Description)
 	}
 }

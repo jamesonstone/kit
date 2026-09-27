@@ -126,7 +126,7 @@ func v3GuidanceFinding(projectRoot, absolutePath, relativePath, issue, action, s
 }
 
 func auditInstructionPromptEntrypoints(projectRoot string, cfg *config.Config, version int) []reconcileFinding {
-	if repoKnowledgeEntrypointPath(projectRoot, cfg) != "" {
+	if version == config.InstructionScaffoldVersionMemory || repoKnowledgeEntrypointPath(projectRoot, cfg) != "" {
 		return nil
 	}
 

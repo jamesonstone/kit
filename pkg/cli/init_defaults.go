@@ -29,5 +29,5 @@ func projectInitDeliveryPaths(cfg *config.Config) []string {
 			instructionArtifactPaths(cfg, instructionFileSelection{}, version, true)...,
 		)
 	}
-	return appendContextWorkflowDeliveryPaths(paths, cfg)
+	return paths
 }

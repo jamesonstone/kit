@@ -119,34 +119,6 @@ func assertFileDoesNotExist(t *testing.T, path string) {
 	}
 }
 
-func restorePromptProfileState(t *testing.T, profile promptProfile, explicit bool) {
-	t.Helper()
-	previousProfile := selectedPromptProfile
-	previousExplicit := selectedPromptProfileExplicit
-	selectedPromptProfile = profile
-	selectedPromptProfileExplicit = explicit
-	t.Cleanup(func() {
-		selectedPromptProfile = previousProfile
-		selectedPromptProfileExplicit = previousExplicit
-	})
-}
-
-func chdirForTest(t *testing.T, directory string) func() {
-	t.Helper()
-	previous, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Chdir(directory); err != nil {
-		t.Fatal(err)
-	}
-	return func() {
-		if err := os.Chdir(previous); err != nil {
-			t.Errorf("restore working directory: %v", err)
-		}
-	}
-}
-
 func withStdin(t *testing.T, input string, function func() string) string {
 	t.Helper()
 	previous := os.Stdin

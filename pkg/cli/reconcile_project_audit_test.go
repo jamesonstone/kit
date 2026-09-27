@@ -164,6 +164,7 @@ func TestRenderReconcileSummaryShowsCompactTable(t *testing.T) {
 	report := &reconcileReport{
 		ProjectRoot: projectRoot,
 		SourceFileAudit: &sourceFileAuditSummary{
+			Limit:          300,
 			CandidateCount: 8,
 			EligibleCount:  3,
 			ViolationCount: 1,

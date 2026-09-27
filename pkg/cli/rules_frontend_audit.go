@@ -26,7 +26,7 @@ func auditActiveFrontendRulesetAdvisory(projectRoot string, feat *feature.Featur
 		feat.Path,
 		"active frontend feature has no active frontend ruleset reference",
 		templateSource(projectRoot),
-		"create or link a frontend ruleset with `kit rules add frontend-ui` and `kit rules link "+feat.Slug+" frontend-ui --read-policy conditional` if durable frontend rules apply",
+		"create a frontend ruleset with `kit rules add frontend-ui` and reference it from "+feat.Slug+" front matter if durable frontend rules apply",
 		[]string{
 			fmt.Sprintf("rg -n \"type: %s|%s|%s\" %s", rulesetReferenceType, rulesetDirRelPath, frontendProfileReferenceMarker, feat.Path),
 			fmt.Sprintf("find %s -maxdepth 1 -type f -name '*.md' -print", filepath.Join(projectRoot, filepath.FromSlash(rulesetDirRelPath))),

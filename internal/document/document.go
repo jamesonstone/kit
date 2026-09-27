@@ -12,13 +12,12 @@ import (
 type DocumentType string
 
 const (
-	TypeConstitution    DocumentType = "CONSTITUTION"
-	TypeBrainstorm      DocumentType = "BRAINSTORM"
-	TypeSpec            DocumentType = "SPEC"
-	TypePlan            DocumentType = "PLAN"
-	TypeTasks           DocumentType = "TASKS"
-	TypeAnalysis        DocumentType = "ANALYSIS"
-	TypeProgressSummary DocumentType = "PROJECT_PROGRESS_SUMMARY"
+	TypeConstitution DocumentType = "CONSTITUTION"
+	TypeBrainstorm   DocumentType = "BRAINSTORM"
+	TypeSpec         DocumentType = "SPEC"
+	TypePlan         DocumentType = "PLAN"
+	TypeTasks        DocumentType = "TASKS"
+	TypeAnalysis     DocumentType = "ANALYSIS"
 )
 
 const (
@@ -28,13 +27,12 @@ const (
 
 // RequiredSections returns the required sections for each document type.
 var RequiredSections = map[DocumentType][]string{
-	TypeConstitution:    {"PRINCIPLES", "CONSTRAINTS", "NON-GOALS", "DEFINITIONS"},
-	TypeBrainstorm:      {"SUMMARY", "USER THESIS", "RELATIONSHIPS", "CODEBASE FINDINGS", "AFFECTED FILES", "DEPENDENCIES", "QUESTIONS", "OPTIONS", "RECOMMENDED STRATEGY", "NEXT STEP"},
-	TypeSpec:            {"SUMMARY", "PROBLEM", "GOALS", "NON-GOALS", "USERS", "SKILLS", "RELATIONSHIPS", "DEPENDENCIES", "REQUIREMENTS", "ACCEPTANCE", "EDGE-CASES", "OPEN-QUESTIONS"},
-	TypePlan:            {"SUMMARY", "APPROACH", "COMPONENTS", "DATA", "INTERFACES", "DEPENDENCIES", "RISKS", "TESTING"},
-	TypeTasks:           {"PROGRESS TABLE", "TASK LIST", "TASK DETAILS", "DEPENDENCIES", "NOTES"},
-	TypeAnalysis:        {"UNDERSTANDING", "QUESTIONS", "RESEARCH", "CLARIFICATIONS", "ASSUMPTIONS", "RISKS"},
-	TypeProgressSummary: {"FEATURE PROGRESS TABLE", "PROJECT INTENT", "GLOBAL CONSTRAINTS", "FEATURE SUMMARIES", "LAST UPDATED"},
+	TypeConstitution: {"PRINCIPLES", "CONSTRAINTS", "NON-GOALS", "DEFINITIONS"},
+	TypeBrainstorm:   {"SUMMARY", "USER THESIS", "RELATIONSHIPS", "CODEBASE FINDINGS", "AFFECTED FILES", "DEPENDENCIES", "QUESTIONS", "OPTIONS", "RECOMMENDED STRATEGY", "NEXT STEP"},
+	TypeSpec:         {"SUMMARY", "PROBLEM", "GOALS", "NON-GOALS", "USERS", "SKILLS", "RELATIONSHIPS", "DEPENDENCIES", "REQUIREMENTS", "ACCEPTANCE", "EDGE-CASES", "OPEN-QUESTIONS"},
+	TypePlan:         {"SUMMARY", "APPROACH", "COMPONENTS", "DATA", "INTERFACES", "DEPENDENCIES", "RISKS", "TESTING"},
+	TypeTasks:        {"PROGRESS TABLE", "TASK LIST", "TASK DETAILS", "DEPENDENCIES", "NOTES"},
+	TypeAnalysis:     {"UNDERSTANDING", "QUESTIONS", "RESEARCH", "CLARIFICATIONS", "ASSUMPTIONS", "RISKS"},
 }
 
 var SpecV2RequiredSections = []string{

@@ -15,8 +15,7 @@
 | Unit and integration | `make test` (`go test -v ./...`) | `CI / go` | yes | Hermetic; tests use temp dirs, git fixtures, and stubbed registry/GitHub access |
 | Build | `make build` | `CI / go`, local `.githooks/pre-commit` | yes | Hook enabled with `make install-git-hooks` |
 | Release workflow contract | `go test ./internal/releaseworkflow` | included in `make test` | yes | Guards release scripts, workflows, and the v3 module path |
-| Source size | `kit reconcile --all --dry-run` (source-file audit) | not in CI | yes before delivery | 300-line limit for handwritten Go source and tests |
-| Improve smoke suites | `kit improve run --suite default --json` | `Kit Improve Validate` (path-filtered) | no | String-level CLI smoke checks; no model involved |
+| Project check | `kit check --project` (includes the 300-line source audit from `.kit.yaml`) | `CI / go` | yes | Also verifies the managed contract block and rule documents |
 
 ## High-Level Suites
 
@@ -32,7 +31,7 @@
 ## Credentials And Test Data
 
 - Tests need no credentials; registry and GitHub calls are stubbed
-- Avoid recording usage events from test or development binaries into `~/.config/kit/usage`; point `HOME` at a temporary directory when running built binaries manually
+- Test binaries and development builds never record usage; set `KIT_USAGE_DISABLED=1` when running a released binary against scratch projects
 - Follow `rules/deletion-safety.md` for cleanup: default retained state to recoverable deletion and require exact post-outline manual confirmation before hard delete
 
 ## Evidence And Retention
@@ -42,10 +41,9 @@
 
 ## Automation And Fallbacks
 
-- `.github/workflows/ci.yml` runs formatting, vet, tests, build, and lint on every pull request
+- `.github/workflows/ci.yml` runs formatting, vet, tests, build, lint, and `kit check --project` on every pull request
 - Release workflows rerun `make vet` and `make test` before tagging
 
 ## Known Gaps
 
-- The source-size audit is not yet enforced in CI
-- `kit improve` smoke suites run only when their path filter matches
+- None known

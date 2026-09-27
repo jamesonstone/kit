@@ -7,9 +7,8 @@ repository evidence, and a reduced human maintenance surface.
 
 | Guide | Purpose |
 | --- | --- |
-| [Overview](overview.md) | Product boundary and evidence model. |
+| [Overview](overview.md) | What Kit does and deliberately does not do. |
 | [Commands](commands.md) | Exact supported command groups and removed surfaces. |
-| [Workflows](workflows.md) | Agent evidence, native planning, implementation, and maintenance flow. |
 | [Migration to v3](migration-v3.md) | Capability-aware orchestration and Go module migration. |
 | [v3.0.0 release notes](releases/v3.0.0.md) | Breaking changes and release boundary. |
 | [Historical migration to v2](migration-v2.md) | Prior conservative major-upgrade procedure. |
@@ -20,9 +19,7 @@ repository evidence, and a reduced human maintenance surface.
 | Document | Purpose |
 | --- | --- |
 | [CONSTITUTION.md](CONSTITUTION.md) | Current project invariants and architecture. |
-| [PROJECT_PROGRESS_SUMMARY.md](PROJECT_PROGRESS_SUMMARY.md) | Historical feature index. |
-| [agents/README.md](agents/README.md) | Map of the universal contract, contextual rules, and project memory. |
-| [references/README.md](references/README.md) | Durable rules, workflows, and reusable evidence. |
+| [references/README.md](references/README.md) | Rules index and reusable project references. |
 
 ## Feature History
 

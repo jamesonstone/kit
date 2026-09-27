@@ -32,49 +32,6 @@ func TestRepositoryMemoryWorkflowFixturesCoverMaterialAndCodeSufficientOutcomes(
 	}
 }
 
-func TestFeatureArtifactBuildersIncludeCanonicalFrontMatter(t *testing.T) {
-	featureMeta := document.FeatureMetadataFromDir("0001-sample-feature")
-	cases := []struct {
-		name    string
-		docType document.DocumentType
-		content string
-	}{
-		{
-			name:    "brainstorm",
-			docType: document.TypeBrainstorm,
-			content: BuildBrainstormArtifactForFeature("user thesis", featureMeta, []document.MetadataReference{{
-				Name:       "Architecture reference",
-				Type:       "reference",
-				Target:     "docs/references/architecture.md",
-				Relation:   document.ReferenceRelationInforms,
-				ReadPolicy: document.ReferenceReadPolicyConditional,
-				UsedFor:    "implementation boundary",
-				Status:     document.ReferenceStatusOptional,
-			}}),
-		},
-		{name: "spec", docType: document.TypeSpec, content: BuildSpecArtifactForFeature(featureMeta)},
-		{name: "plan", docType: document.TypePlan, content: BuildPlanArtifactForFeature(featureMeta)},
-		{name: "tasks", docType: document.TypeTasks, content: BuildTasksArtifactForFeature(featureMeta)},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			doc := document.Parse(tc.content, tc.name+".md", tc.docType)
-			if !doc.FrontMatterPresent {
-				t.Fatal("expected generated artifact to include front matter")
-			}
-			if doc.Metadata == nil || doc.Metadata.Feature.Dir != "0001-sample-feature" || doc.Metadata.Artifact != document.ArtifactForDocumentType(tc.docType) {
-				t.Fatalf("unexpected metadata: %#v", doc.Metadata)
-			}
-			for _, section := range doc.RequiredSections() {
-				if !doc.HasSection(section) {
-					t.Fatalf("expected generated artifact to keep required section %q", section)
-				}
-			}
-		})
-	}
-}
-
 func TestBuildAutoAssignWorkflowRendersSafeGitHubActionsWorkflow(t *testing.T) {
 	content := BuildAutoAssignWorkflow([]string{"jamesonstone", "octocat"})
 
@@ -133,24 +90,6 @@ func TestMakefileTemplateProvidesSafeStarter(t *testing.T) {
 	for _, unverified := range []string{"TODO", "dev:", "npm ", "go run ", "docker compose"} {
 		if strings.Contains(Makefile, unverified) {
 			t.Fatalf("Makefile template must not contain unverified command %q:\n%s", unverified, Makefile)
-		}
-	}
-}
-
-func TestFeatureArtifactBuildersDoNotDuplicateCanonicalBodyTables(t *testing.T) {
-	featureMeta := document.FeatureMetadataFromDir("0001-sample-feature")
-	for name, content := range map[string]string{
-		"brainstorm": BuildBrainstormArtifactForFeature("user thesis", featureMeta, nil),
-		"spec":       BuildSpecArtifactForFeature(featureMeta),
-		"plan":       BuildPlanArtifactForFeature(featureMeta),
-	} {
-		for _, tableHeader := range []string{
-			"| Dependency | Type | Location | Used For | Status |",
-			"| SKILL | SOURCE | PATH | TRIGGER | REQUIRED |",
-		} {
-			if strings.Contains(content, tableHeader) {
-				t.Fatalf("expected %s builder not to duplicate body table %q", name, tableHeader)
-			}
 		}
 	}
 }

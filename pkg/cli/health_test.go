@@ -169,51 +169,6 @@ func TestRunHealthRegistryFailureIsReadOnlyUnknown(t *testing.T) {
 	}
 }
 
-func TestRunHealthPreservesConflictedRulesetAndReportsAttention(t *testing.T) {
-	deliveryPolicy := readRepositoryFile(t, "docs/references/rules/github-pr-delivery.md")
-	projectRoot, cfg := setupLifecycleTestProject(t)
-	setWorkingDirectory(t, projectRoot)
-	writeFile(t, filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("", ""))
-	base := registryRulesetWithContentForTest(
-		"github-pr-delivery",
-		deliveryPolicy,
-		"test-github-pr-delivery-commit",
-	)
-	local := strings.Replace(base.Content, "## Rules", "- Local rule change.\n\n## Rules", 1)
-	remoteContent := strings.Replace(base.Content, "## Rules", "- Remote rule change.\n\n## Rules", 1)
-	remote := registryRulesetWithContentForTest(base.Slug, remoteContent, "new-commit")
-	recordRulesetRegistryState(cfg, base, registryArtifactStateManaged, base.NormalizedHash, base.Content)
-	if err := config.Save(projectRoot, cfg); err != nil {
-		t.Fatalf("config.Save() error = %v", err)
-	}
-	target := filepath.Join(projectRoot, rulesetTarget(base.Slug))
-	writeFile(t, target, local)
-	stubRulesetRegistry(t, remote)
-	stubRulesetRegistryContent(t, map[string]string{base.SourceCommit: base.Content})
-
-	cmd := healthCommandForTest(t, "--json")
-	out := &strings.Builder{}
-	cmd.SetOut(out)
-	if err := runHealth(cmd, nil); err != nil {
-		t.Fatalf("runHealth() error = %v\noutput: %s", err, out.String())
-	}
-	after, err := os.ReadFile(target)
-	if err != nil {
-		t.Fatalf("os.ReadFile() error = %v", err)
-	}
-	if string(after) != local {
-		t.Fatalf("conflicted ruleset was overwritten:\n%s", after)
-	}
-
-	var report healthReport
-	if err := json.Unmarshal([]byte(out.String()), &report); err != nil {
-		t.Fatalf("json.Unmarshal() error = %v", err)
-	}
-	if report.State != statusKitManagedStateAttentionNeeded || report.RegistryState != statusKitManagedStateAttentionNeeded || report.ProjectCheck != "passed" {
-		t.Fatalf("report = %#v, want preserved conflict requiring attention", report)
-	}
-}
-
 func TestHealthAndRegistryCommandsSkipAutomaticConfigPreflight(t *testing.T) {
 	for _, cmd := range []*cobra.Command{healthCmd, registryStatusCmd} {
 		if !skipAutomaticConfigCheck(cmd) {
@@ -263,4 +218,12 @@ func healthCommandForTest(t *testing.T, flags ...string) *cobra.Command {
 		}
 	}
 	return cmd
+}
+
+type errorWriter struct {
+	err error
+}
+
+func (w errorWriter) Write([]byte) (int, error) {
+	return 0, w.err
 }
