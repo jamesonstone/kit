@@ -51,7 +51,7 @@ reported as state refresh_available.`,
 }
 
 func init() {
-	healthCmd.Flags().Bool("diff", false, "print the changes `kit reconcile` would make as a unified diff")
+	healthCmd.Flags().Bool("diff", false, "print the changes kit reconcile would make as a unified diff")
 	healthCmd.Flags().Bool("json", false, "output the Kit health result as JSON")
 	healthCmd.Flags().Bool("dry-run", false, "accepted for compatibility; health is always read-only")
 	_ = healthCmd.Flags().MarkHidden("dry-run")

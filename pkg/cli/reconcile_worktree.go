@@ -41,12 +41,12 @@ var reconcileWorktreeRoot = func() (string, error) {
 // reconcile run there migrates a linked worktree on branch kit-reconcile
 // instead. Linked worktrees, non-Git projects, and dry runs use the project in
 // place.
-func resolveReconcileTarget(out io.Writer, projectRoot string, dryRun bool) (reconcileTarget, error) {
+func resolveReconcileTarget(out io.Writer, projectRoot string, dryRun, upToDate bool) (reconcileTarget, error) {
 	location, err := inspectReconcileWorktree(projectRoot)
 	if err != nil {
 		return reconcileTarget{}, fmt.Errorf("inspect reconcile worktree: %w", err)
 	}
-	if !location.InsideGit || !location.IsPrimary {
+	if upToDate || !location.InsideGit || !location.IsPrimary {
 		return reconcileTarget{projectRoot: projectRoot}, nil
 	}
 	if dryRun {
@@ -190,4 +190,16 @@ func runGit(dir string, args ...string) (string, error) {
 	cmd.Dir = dir
 	out, err := cmd.CombinedOutput()
 	return string(out), err
+}
+
+// reconcileHasNoChanges plans in place without writing; a project that is
+// already current needs no linked worktree.
+func reconcileHasNoChanges(projectRoot string, opts initRefreshOptions) (bool, error) {
+	opts.dryRun = true
+	opts.outputOnly = true
+	plan, err := buildInitRefreshPlan(context.Background(), projectRoot, opts)
+	if err != nil {
+		return false, err
+	}
+	return plan.stats.changed() == 0, nil
 }

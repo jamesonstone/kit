@@ -98,7 +98,12 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	applyFiles := feat == nil && !promptOnly
 	var deliverySnapshot []managedFileDeliverySnapshot
 	if applyFiles {
-		target, err := resolveReconcileTarget(cmd.OutOrStdout(), projectRoot, reconcileDryRun)
+		opts := initRefreshOptions{force: reconcileForce, files: reconcileRefreshFiles}
+		upToDate, err := reconcileHasNoChanges(projectRoot, opts)
+		if err != nil {
+			return err
+		}
+		target, err := resolveReconcileTarget(cmd.OutOrStdout(), projectRoot, reconcileDryRun, upToDate)
 		if err != nil {
 			return err
 		}

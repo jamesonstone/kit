@@ -26,7 +26,7 @@ func TestResolveReconcileTargetWritesInPlaceOutsidePrimaryCheckout(t *testing.T)
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			stubReconcileWorktreeInspection(t, test.location)
-			target, err := resolveReconcileTarget(&bytes.Buffer{}, "/repo", test.dryRun)
+			target, err := resolveReconcileTarget(&bytes.Buffer{}, "/repo", test.dryRun, false)
 			if err != nil || target.worktree || target.projectRoot != "/repo" {
 				t.Fatalf("target = %#v, err = %v", target, err)
 			}
@@ -40,7 +40,7 @@ func TestResolveReconcileTargetFailsClosed(t *testing.T) {
 		return worktreeprep.Location{}, errors.New("broken git metadata")
 	}
 	t.Cleanup(func() { inspectReconcileWorktree = previous })
-	if _, err := resolveReconcileTarget(&bytes.Buffer{}, "/repo", false); err == nil {
+	if _, err := resolveReconcileTarget(&bytes.Buffer{}, "/repo", false, false); err == nil {
 		t.Fatal("expected inspection failure to stop reconcile")
 	}
 }

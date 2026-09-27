@@ -37,7 +37,7 @@ func TestReconcileRefusesPrimaryOnReconcileBranch(t *testing.T) {
 	runGitForSourceAuditTest(t, root, "checkout", "-q", "-b", reconcileBranch)
 	setWorkingDirectory(t, root)
 	resetReconcileFlags(t)
-	target, err := resolveReconcileTarget(&strings.Builder{}, root, false)
+	target, err := resolveReconcileTarget(&strings.Builder{}, root, false, false)
 	if err == nil || !strings.Contains(err.Error(), "primary checkout is on branch") {
 		t.Fatalf("target = %#v, err = %v", target, err)
 	}
@@ -53,7 +53,7 @@ func TestReconcileRefusesStaleWorktree(t *testing.T) {
 	if err := os.RemoveAll(filepath.Join(worktrees, filepath.Base(root), reconcileBranch)); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := resolveReconcileTarget(&strings.Builder{}, root, false); err == nil || !strings.Contains(err.Error(), "git worktree prune") {
+	if _, err := resolveReconcileTarget(&strings.Builder{}, root, false, false); err == nil || !strings.Contains(err.Error(), "git worktree prune") {
 		t.Fatalf("expected stale worktree refusal, got %v", err)
 	}
 }
@@ -123,5 +123,18 @@ func TestSymlinkedEntryFilesConvergeInOnePass(t *testing.T) {
 	}
 	if loadMigratedConfig(t, root).InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
 		t.Fatal("symlinked entry files did not converge")
+	}
+}
+
+func TestCurrentPrimaryCheckoutReconcileCreatesNoWorktree(t *testing.T) {
+	setupMigrationEnvironment(t)
+	root := freshInitProject(t)
+	stubReconcileWorktreeRoot(t, t.TempDir())
+	runManagedReconcileForWorktreeTest(t)
+	if branches := reconcileGitOutput(t, root, "branch", "--list", reconcileBranch); branches != "" {
+		t.Fatalf("no-op reconcile created branch %q", branches)
+	}
+	if status := reconcileGitOutput(t, root, "status", "--porcelain"); status != "" {
+		t.Fatalf("no-op reconcile changed the primary checkout:\n%s", status)
 	}
 }
