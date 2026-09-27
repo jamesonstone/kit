@@ -110,7 +110,7 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - If unrelated dirty files exist, leave them alone.
 - If dirty files overlap the requested work, preserve them and resolve the overlap autonomously when ownership and intent are evident; otherwise complete unblocked work and request the smallest clarification needed without discarding changes.
 - Work in the existing checkout only when it is the exact non-primary worktree
-  that owns the user-selected writable lane.
+  that owns the recorded writable lane.
 - When the current checkout contains unrelated work or another active lane, preserve it and use a separate canonical worktree rather than switching, stashing, resetting, cleaning, or mixing branches.
 
 ### Worktree Lane Selection
@@ -125,7 +125,7 @@ gh pr list --head "$CURRENT_BRANCH" --state all --json number,url,state,isDraft,
 - Treat the exact primary/root checkout as read-only for coding-agent work,
   even when it is clean, on a feature branch, or has a pull-request plan. Do
   not edit files, generate artifacts, stage, commit, or switch branches there.
-- Perform every repository mutation directly in the user-selected non-primary
+- Perform every repository mutation directly in the recorded non-primary
   durable worktree. Never edit the primary checkout with a plan to move the
   diff later.
 - Use native `git worktree` commands and ordinary filesystem operations as the portable authority. Rules and reconciled guidance must not require `git-wt`, an alias, plugin, or other wrapper.

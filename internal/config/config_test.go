@@ -221,6 +221,32 @@ func TestDefaultOmitsRetiredRuntimeConfiguration(t *testing.T) {
 	}
 }
 
+func TestRetiredAllowOutOfOrderKeyIsAcceptedAndNotWritten(t *testing.T) {
+	projectRoot := t.TempDir()
+	path := filepath.Join(projectRoot, ConfigFileName)
+	if err := os.WriteFile(path, []byte("goal_percentage: 95\nallow_out_of_order: true\n"), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	cfg, inspection, err := LoadWithInspection(projectRoot)
+	if err != nil || inspection.HasErrors() {
+		t.Fatalf("LoadWithInspection() error = %v, findings = %#v", err, inspection.Findings)
+	}
+	if err := Save(t.TempDir(), cfg); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+	fresh := t.TempDir()
+	if err := Save(fresh, Default()); err != nil {
+		t.Fatalf("Save(defaults) error = %v", err)
+	}
+	data, err := os.ReadFile(filepath.Join(fresh, ConfigFileName))
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	if strings.Contains(string(data), "allow_out_of_order") {
+		t.Fatalf("default config still writes retired allow_out_of_order:\n%s", data)
+	}
+}
+
 func TestSaveOmitsDefaultLoopConfigAndKeepsCustomLoopConfig(t *testing.T) {
 	projectRoot := t.TempDir()
 	defaults := Default()

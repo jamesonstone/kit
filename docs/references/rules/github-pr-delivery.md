@@ -216,7 +216,7 @@ Include:
 ### Project-Oriented Worktree Delivery
 
 - Work in the existing checkout only when it is the exact non-primary linked
-  worktree that owns the user-selected issue branch and does not contain
+  worktree that owns the recorded issue branch and does not contain
   unrelated user work.
 - For a separate issue or pull-request lane, preserve every existing checkout and use only `~/worktrees/<owner>/<repository>/<lane>`.
 - Before creating a linked worktree, inspect the registered worktrees and reuse the exact branch path when one exists.
@@ -592,17 +592,19 @@ gh issue view 123 --json number,url,assignees
 gh issue edit 123 --add-assignee @me
 ```
 
-Create and confirm the issue-number branch:
+Create and confirm the issue-number branch in its canonical worktree:
 
 ```bash
 git fetch origin "$BASE_BRANCH"
-git rev-list --left-right --count "$BASE_BRANCH...origin/$BASE_BRANCH" 2>/dev/null || true
-git checkout -b GH-123 origin/$BASE_BRANCH
+WORKTREE_PATH="$HOME/worktrees/<owner>/<repository>/GH-123"
+mkdir -p "$(dirname "$WORKTREE_PATH")"
+git worktree add -b GH-123 "$WORKTREE_PATH" "origin/$BASE_BRANCH"
+cd "$WORKTREE_PATH"
 test "$(git rev-parse --abbrev-ref HEAD)" = "GH-123" || { echo "ABORT: wrong branch"; exit 1; }
-test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BASE_BRANCH)" || { echo "ABORT: branch base not at remote head"; exit 1; }
+test "$(git rev-parse HEAD)" = "$(git rev-parse "origin/$BASE_BRANCH")" || { echo "ABORT: branch base not at remote head"; exit 1; }
 ```
 
-Review, stage, and inspect:
+Review, stage, and inspect from that worktree:
 
 ```bash
 git diff -- path/to/file_one.ts

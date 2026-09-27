@@ -39,18 +39,12 @@ help:
 	@printf '%s\n' 'Run the Kit initialization prompt to add project-specific targets.'
 `
 
-// Constitution template per spec section 6.1
-const Constitution = `# CONSTITUTION
+// ConstitutionBaselineHeading names the Kit-managed Constitution baseline section.
+const ConstitutionBaselineHeading = "Kit-Managed Baseline Rules"
 
-## PRINCIPLES
-
-<!-- TODO: define core principles that guide all decisions -->
-
-## CONSTRAINTS
-
-<!-- TODO: define invariant rules that must never be violated -->
-
-### Kit-Managed Baseline Rules
+// ConstitutionBaselineSection is the single source for the Kit-managed
+// Constitution baseline used by both fresh initialization and refresh.
+const ConstitutionBaselineSection = `### ` + ConstitutionBaselineHeading + `
 
 <!-- BEGIN KIT-MANAGED BASELINE RULES -->
 - Treat ` + "`docs/CONSTITUTION.md`" + ` as the canonical project contract.
@@ -68,7 +62,20 @@ const Constitution = `# CONSTITUTION
 - Before delivery, audit the complete affected source/test scope; whole-project reconcile and scheduled maintenance audit the entire repository.
 - Exclude documentation files, all ` + "`docs/**`" + `, all ` + "`.kit/**`" + `, ` + "`.kit.yaml`" + `, ignored files, vendored dependencies, and proven generated files.
 - Split oversized files by semantic responsibility while preserving stable public entry points and behavior; never use minification or arbitrary numbered chunks to claim compliance.
-<!-- END KIT-MANAGED BASELINE RULES -->
+<!-- END KIT-MANAGED BASELINE RULES -->`
+
+// Constitution template per spec section 6.1
+const Constitution = `# CONSTITUTION
+
+## PRINCIPLES
+
+<!-- TODO: define core principles that guide all decisions -->
+
+## CONSTRAINTS
+
+<!-- TODO: define invariant rules that must never be violated -->
+
+` + ConstitutionBaselineSection + `
 
 ## CHANGE CLASSIFICATION
 

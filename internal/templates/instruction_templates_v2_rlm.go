@@ -57,7 +57,7 @@ const agentsRLM = `# RLM
 - Load ` + "`docs/references/rules/cross-repository-program-coordination.md`" + ` before implementing or resuming an accepted plan that spans multiple repositories with dependent deliverables, staged deployment or activation, or expected agent or session handoff
 - Load ` + "`docs/references/rules/agent-team-orchestration.md`" + ` as a mandatory first-pass evaluation before finalizing any native implementation plan for a new feature, a substantial architectural or behavioral change, or a multi-file refactor; the recorded decision may still be single-lane, but the evaluation itself is never skipped for those tasks
 - Load ` + "`docs/references/rules/agent-completion-output.md`" + ` before a substantial terminal completion or handoff response; it requires no response format and names only the facts a response must not leave out
-- Use indices first: start with ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` and explicit SPEC relationships to shortlist candidate prior features under ` + "`docs/specs/`" + `
+- Use indices first: start with explicit SPEC relationships and the ` + "`docs/specs/`" + ` listing to shortlist candidate prior features; treat the generated ` + "`docs/PROJECT_PROGRESS_SUMMARY.md`" + ` rollup as historical, since it can describe retired commands
 - Treat prior feature docs, repo references, and secondary global inputs as conditional reads only
 - Do not load every ruleset by default; feature front matter references determine when a ruleset is must-read, conditional, evidence, or skipped
 - Open a prior feature doc only when it affects a shared interface or contract, overlapping files or modules, migrations or data shape, acceptance criteria, or an explicit relationship or reference link

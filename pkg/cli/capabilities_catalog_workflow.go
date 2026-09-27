@@ -16,7 +16,7 @@ func workflowCapabilityRecords() []capabilityRecord {
 			withExamples("kit context resolve --json")),
 		capability("context resolve", "Agent Workflow", "Resolve ordered workflows, rules, specs, strategies, and implementation evidence.", mutationNone,
 			withNetwork("none"), withFileWrites("none"), withGitMutation("none"),
-			withFlags(flag("--workflow", "select a local workflow"), flag("--feature", "include feature and related historical specs"), flag("--path", "add a required repository-confined path hint"), flag("--json", "emit kit.context/v1 JSON", "read-only")),
+			withFlags(flag("--workflow", "select a local workflow"), flag("--feature", "include feature and related historical specs"), flag("--path", "add a repository-confined path hint; existing files become required evidence, while planned files and directories are recorded without blocking"), flag("--json", "emit kit.context/v1 JSON", "read-only")),
 			withWhenToUse("Run before coding-agent work and rerun after material scope changes."),
 			withWhenNotToUse("Do not use it for network access, model inference, agent launch, Git mutation, or writes."),
 			withExamples("kit context resolve --workflow implementation-delivery --feature invitation-flow --json"),
