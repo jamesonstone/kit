@@ -98,19 +98,23 @@ func TestV3SupportDocsDoNotRestateContract(t *testing.T) {
 }
 
 func TestCheckedInAgentSurfacesMatchGenerator(t *testing.T) {
-	for path, want := range map[string]string{
-		"AGENTS.md":                       MemoryAgentsMD,
-		"CLAUDE.md":                       MemoryClaudeMD,
-		".github/copilot-instructions.md": MemoryCopilotInstructionsMD,
-		"docs/agents/README.md":           memoryInstructionSupportContent("docs/agents/README.md"),
-	} {
+	block := UniversalContractBlock()
+	for _, path := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
 		got, err := os.ReadFile(filepath.Join("..", "..", filepath.FromSlash(path)))
 		if err != nil {
 			t.Fatal(err)
 		}
-		if string(got) != want {
-			t.Errorf("checked-in %s drifted from the generator; regenerate it from the universal contract", path)
+		// Project guidance may live outside the block; only the block is generated.
+		if strings.Count(string(got), UniversalContractBeginMarker) != 1 || !strings.Contains(string(got), block) {
+			t.Errorf("checked-in %s managed block drifted from the universal contract; regenerate it", path)
 		}
+	}
+	readme, err := os.ReadFile(filepath.Join("..", "..", "docs", "agents", "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(readme) != memoryInstructionSupportContent("docs/agents/README.md") {
+		t.Error("checked-in docs/agents/README.md drifted from the generator")
 	}
 }
 

@@ -112,3 +112,24 @@ func TestConstitutionBaselineFollowsContractPresence(t *testing.T) {
 		t.Fatal("entry files carrying the contract block must use the pointer baseline")
 	}
 }
+
+func TestManagedContractBlockUsesEndMarkerAfterBegin(t *testing.T) {
+	block := templates.UniversalContractBlock()
+	stray := "Quoted marker: " + templates.UniversalContractEndMarker + "\n\n"
+	merged := mergeManagedContractBlock(stray+strings.Replace(block, "Slack", "Chat", 1), "# AGENTS\n\n"+block)
+	if !merged.handled || merged.legacy || merged.content != stray+block {
+		t.Fatalf("merge did not replace the real block: %#v", merged)
+	}
+	incomplete := templates.UniversalContractBeginMarker + "\nno end marker\n"
+	if got := mergeManagedContractBlock(incomplete, "# AGENTS\n\n"+block); !got.legacy || got.content != incomplete {
+		t.Fatalf("incomplete block must be treated as pre-contract: %#v", got)
+	}
+	cfg := config.Default()
+	var planned []initRefreshFileChange
+	for _, path := range instructionFiles(cfg) {
+		planned = append(planned, initRefreshFileChange{relativePath: path, after: incomplete})
+	}
+	if constitutionBaselineForProject(t.TempDir(), cfg, planned) != templates.LegacyConstitutionBaselineSection {
+		t.Fatal("an incomplete block must keep the legacy Constitution baseline")
+	}
+}

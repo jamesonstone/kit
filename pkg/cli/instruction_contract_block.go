@@ -26,22 +26,33 @@ func mergeManagedContractBlock(existing, template string) contractBlockMerge {
 	if !ok {
 		return contractBlockMerge{}
 	}
-	start := strings.Index(existing, templates.UniversalContractBeginMarker)
-	end := strings.Index(existing, templates.UniversalContractEndMarker)
-	if start < 0 || end < start {
+	start, end, ok := managedContractBlockBounds(existing)
+	if !ok {
 		return contractBlockMerge{handled: true, legacy: true, content: existing}
 	}
-	end += len(templates.UniversalContractEndMarker)
 	return contractBlockMerge{handled: true, content: existing[:start] + block + existing[end:]}
 }
 
 func managedContractBlock(content string) (string, bool) {
-	start := strings.Index(content, templates.UniversalContractBeginMarker)
-	end := strings.Index(content, templates.UniversalContractEndMarker)
-	if start < 0 || end < start {
+	start, end, ok := managedContractBlockBounds(content)
+	if !ok {
 		return "", false
 	}
-	return content[start : end+len(templates.UniversalContractEndMarker)], true
+	return content[start:end], true
+}
+
+// managedContractBlockBounds locates a complete block: the first begin marker
+// and the first end marker after it.
+func managedContractBlockBounds(content string) (int, int, bool) {
+	start := strings.Index(content, templates.UniversalContractBeginMarker)
+	if start < 0 {
+		return 0, 0, false
+	}
+	rel := strings.Index(content[start:], templates.UniversalContractEndMarker)
+	if rel < 0 {
+		return 0, 0, false
+	}
+	return start, start + rel + len(templates.UniversalContractEndMarker), true
 }
 
 // constitutionBaselineForProject points the Constitution at the universal
@@ -65,7 +76,7 @@ func constitutionBaselineForProject(projectRoot string, cfg *config.Config, plan
 				}
 				content = string(data)
 			}
-			if !strings.Contains(content, templates.UniversalContractBeginMarker) {
+			if _, ok := managedContractBlock(content); !ok {
 				version = config.InstructionScaffoldVersionTOC
 				break
 			}
