@@ -42,7 +42,7 @@
 - Never offer or ask the user to choose between lanes.
 - Treat exact existing-PR lifecycle work as continuation: review repair, CI repair, base refresh, conflict resolution, and ordered merge coordination reuse every targeted pull-request head. Never create coordination or corrective pull requests for scope-preserving work. A standing-authority grant that includes blocker repair covers later in-scope repairs and refreshed heads; an explicit repair hold prevails. Do not allocate a new lane merely because the PR number or final head was unknown when authority was granted.
 - Record a Pull-Request Landing Plan covering the repository, issue, branch, canonical non-primary worktree, protected base, and create-or-update PR target. Verify that plan still matches before every mutation. Ask only when implementation intent or an explicitly named target is materially ambiguous and cannot be resolved from repository evidence.
-- Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it.
+- Treat the primary/root checkout as read-only. If an ungated or root change exists, preserve it: Do not stage, commit, push, stash, reset, clean, discard, or silently transfer it. The only exception is command-owned leftovers after their matching worktree pull request has merged, handled by the `work-lane-gating` post-merge cleanup.
 
 
 ## Coding Agent Context Gate

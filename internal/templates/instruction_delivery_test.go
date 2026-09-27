@@ -259,7 +259,23 @@ func TestInstructionTemplatesRouteTestingAndEnvironmentValidation(t *testing.T) 
 	if err != nil {
 		t.Fatalf("read checked-in testing reference: %v", err)
 	}
-	if string(checkedInTesting) != generatedTesting {
-		t.Fatal("checked-in testing reference is not aligned with the V3 generator")
+	// testing.md is a project-owned reference seeded by the generator; Kit's
+	// own copy records real commands, so require the scaffold structure only.
+	for _, heading := range []string{
+		"rules/testing-and-environment-validation.md",
+		"## Code-Level Validation",
+		"## High-Level Suites",
+		"## Environment Preflights",
+		"## Credentials And Test Data",
+		"## Evidence And Retention",
+		"## Automation And Fallbacks",
+		"## Known Gaps",
+	} {
+		if !strings.Contains(string(checkedInTesting), heading) {
+			t.Errorf("checked-in testing reference missing %q", heading)
+		}
+	}
+	if strings.Contains(string(checkedInTesting), "Document the canonical command") {
+		t.Error("checked-in testing reference still contains unfilled template placeholders")
 	}
 }

@@ -136,8 +136,8 @@ Current provider references: [Codex subagents](https://learn.chatgpt.com/docs/ag
 - Optional wrappers are manual conveniences only and must preserve the same path and safety contract
 - Treat the primary/root checkout as read-only for coding-agent work regardless
   of branch or cleanliness; never edit there with a plan to move the diff later
-- Work directly in the user-selected durable lane and re-open the choice before
-  materially new or tangential scope
+- Work directly in the recorded durable lane; materially new or tangential scope
+  defaults to another new lane without asking the user to choose
 - Do not stash, reset, clean, force-remove, or delete a branch to create or clear a worktree
 - Link the primary checkout's `.env` and `.envrc` into writable lanes by default when each exists, using only exact verified symlinks; omit both links when isolation is required
 - Never copy environment contents or overwrite destination environment material; preserve a repository- or user-supplied `.envrc`, and remember that direnv approval remains path-specific; worktree tooling does not manage runtime services, databases, ports, Temporal state, processes, or sibling repositories
