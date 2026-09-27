@@ -57,7 +57,7 @@ func Resolve(projectRoot string, request Request) Contract {
 		r.resolveFeature(request.Feature)
 	}
 	for _, hint := range request.Paths {
-		r.addEvidence("path", hint, true, "explicit path hint")
+		r.addPathHint(hint)
 	}
 	return finalize(r.contract)
 }

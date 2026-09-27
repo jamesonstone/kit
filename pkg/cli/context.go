@@ -45,7 +45,7 @@ func newContextResolveCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&opts.workflow, "workflow", opts.workflow, "workflow slug to resolve")
 	cmd.Flags().StringVar(&opts.feature, "feature", "", "feature slug or directory to include")
-	cmd.Flags().StringArrayVar(&opts.paths, "path", nil, "required repository-relative path hint; repeatable")
+	cmd.Flags().StringArrayVar(&opts.paths, "path", nil, "repository-relative path hint; existing files are required evidence, planned files and directories are recorded; repeatable")
 	cmd.Flags().BoolVar(&opts.jsonOutput, "json", false, "emit versioned machine-readable JSON")
 	return cmd
 }

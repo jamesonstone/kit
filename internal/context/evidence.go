@@ -43,6 +43,35 @@ func (r *resolver) addEvidence(kind, path string, required bool, reason string) 
 	return data
 }
 
+// addPathHint records an explicit --path hint. A hint scopes the task, so a
+// path the agent is about to create, or a directory, is recorded without
+// blocking resolution; hints that escape the project root still fail.
+func (r *resolver) addPathHint(hint string) {
+	relativePath, _, err := secureRead(r.root, hint)
+	if err == nil {
+		r.addEvidence("path", hint, true, "explicit path hint")
+		return
+	}
+	state := ""
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+		state = "absent"
+	case err.Error() == errEvidenceDirectory:
+		state = "directory"
+	default:
+		r.addEvidence("path", hint, true, "explicit path hint")
+		return
+	}
+	if _, ok := r.evidenceIndex[relativePath]; ok {
+		return
+	}
+	r.evidenceIndex[relativePath] = len(r.contract.Evidence)
+	r.contract.Evidence = append(r.contract.Evidence, EvidenceItem{Kind: "path", Path: relativePath, State: state, Reasons: []string{"explicit path hint"}})
+	r.addDiagnostic("info", "path-hint-"+state, relativePath, "path hint recorded as "+state+"; nothing to load")
+}
+
+const errEvidenceDirectory = "evidence path is a directory"
+
 func secureRead(root, value string) (string, []byte, error) {
 	value = strings.TrimSpace(value)
 	if value == "" {
@@ -74,7 +103,7 @@ func secureRead(root, value string) (string, []byte, error) {
 		return relative, nil, err
 	}
 	if info.IsDir() {
-		return relative, nil, fmt.Errorf("evidence path is a directory")
+		return relative, nil, errors.New(errEvidenceDirectory)
 	}
 	data, err := os.ReadFile(resolved)
 	return relative, data, err
