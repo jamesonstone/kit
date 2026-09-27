@@ -277,3 +277,27 @@ func TestRunRulesAddInstallsShippedRuleBySlug(t *testing.T) {
 		t.Fatalf("expected retired rule error, got %v", err)
 	}
 }
+
+func TestRunRulesAddForceReplacesEditedShippedRule(t *testing.T) {
+	projectRoot := setupRulesProject(t)
+	setWorkingDirectory(t, projectRoot)
+	resetRulesFlags(t)
+
+	cmd := &cobra.Command{}
+	cmd.SetOut(io.Discard)
+	if err := runRulesAdd(cmd, []string{"llms-txt"}); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(projectRoot, "docs", "references", "rules", "llms-txt.md")
+	writeFile(t, path, readFile(t, path)+"\n- local edit\n")
+	if err := runRulesAdd(cmd, []string{"llms-txt"}); err == nil {
+		t.Fatal("expected existing rule to be preserved without --force")
+	}
+	rulesAddForce = true
+	if err := runRulesAdd(cmd, []string{"llms-txt"}); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(readFile(t, path), "local edit") {
+		t.Fatal("--force did not replace the edited rule")
+	}
+}

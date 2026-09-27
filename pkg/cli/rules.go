@@ -259,8 +259,8 @@ func installShippedRuleset(cmd *cobra.Command, projectRoot, slug string) (bool, 
 		if item.Slug != slug {
 			continue
 		}
-		if document.Exists(rulesetPath(projectRoot, slug)) {
-			return true, fmt.Errorf("%s already exists; run `kit init --refresh` to update it", rulesetTarget(slug))
+		if document.Exists(rulesetPath(projectRoot, slug)) && !rulesAddForce {
+			return true, fmt.Errorf("%s already exists; use --force to replace it with the shipped version", rulesetTarget(slug))
 		}
 		entry := registrySelectorEntry{Registry: item, DesiredActive: true}
 		if _, err := applyRegistryRulesetSelection(projectRoot, []registrySelectorEntry{entry}); err != nil {
