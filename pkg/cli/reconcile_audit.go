@@ -153,7 +153,7 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 		if artifact.localOnly {
 			update = fmt.Sprintf("run `kit init` to create the missing %s and keep it covered by `.gitignore`", artifact.description)
 		}
-		findings = append(findings, newFinding(
+		finding := newFinding(
 			reconcileSeverityWarning,
 			absolutePath,
 			fmt.Sprintf("missing Kit init scaffold artifact `%s`", artifact.relativePath),
@@ -163,7 +163,11 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 				"kit init",
 				fmt.Sprintf("test -f %s", absolutePath),
 			},
-		))
+		)
+		// Ignored local environment files are per-checkout state, absent from
+		// clean clones such as CI; report them without failing validation.
+		finding.NonBlocking = artifact.localOnly
+		findings = append(findings, finding)
 	}
 
 	return findings
