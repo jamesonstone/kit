@@ -96,7 +96,7 @@ func exactLegacyInstructionArtifact(projectRoot, relativePath string) bool {
 	return strings.TrimSpace(string(content)) == strings.TrimSpace(templates.InstructionFileForVersion(relativePath, config.InstructionScaffoldVersionVerbose))
 }
 
-func upsertConstitutionBaseline(content string) (string, bool) {
+func upsertConstitutionBaseline(content, baselineSection string) (string, bool) {
 	lines := strings.Split(strings.TrimRight(content, "\n"), "\n")
 	start := -1
 	for i, line := range lines {
@@ -106,7 +106,7 @@ func upsertConstitutionBaseline(content string) (string, bool) {
 		}
 	}
 
-	baselineLines := strings.Split(constitutionBaselineSection, "\n")
+	baselineLines := strings.Split(baselineSection, "\n")
 	if start >= 0 {
 		end := -1
 		for i := start; i < len(lines); i++ {
@@ -140,7 +140,7 @@ func upsertConstitutionBaseline(content string) (string, bool) {
 		}
 	}
 	if constraints == -1 {
-		updated := strings.TrimRight(content, "\n") + "\n\n## CONSTRAINTS\n\n" + constitutionBaselineSection + "\n"
+		updated := strings.TrimRight(content, "\n") + "\n\n## CONSTRAINTS\n\n" + baselineSection + "\n"
 		return updated, true
 	}
 

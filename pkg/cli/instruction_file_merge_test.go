@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
@@ -19,7 +20,7 @@ first
 second
 `
 
-	_, _, err := mergeInstructionFileContent(existing, templates.InstructionFile(agentsMDPath))
+	_, _, err := mergeInstructionFileContent(existing, templates.InstructionFileForVersion(agentsMDPath, config.InstructionScaffoldVersionTOC))
 	if err == nil || !strings.Contains(err.Error(), "duplicate recognized section") {
 		t.Fatalf("expected duplicate recognized section error, got %v", err)
 	}

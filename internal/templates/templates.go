@@ -4,6 +4,7 @@ package templates
 import (
 	"strings"
 
+	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
@@ -43,8 +44,27 @@ help:
 const ConstitutionBaselineHeading = "Kit-Managed Baseline Rules"
 
 // ConstitutionBaselineSection is the single source for the Kit-managed
-// Constitution baseline used by both fresh initialization and refresh.
+// Constitution baseline written by fresh initialization and refresh. It points
+// at the universal contract instead of restating it in project memory.
 const ConstitutionBaselineSection = `### ` + ConstitutionBaselineHeading + `
+
+<!-- BEGIN KIT-MANAGED BASELINE RULES -->
+- Kit's universal agent rules live in the Kit-managed block of ` + "`AGENTS.md`" + ` (rendered identically into ` + "`CLAUDE.md`" + ` and ` + "`.github/copilot-instructions.md`" + `), and contextual rules live in ` + "`docs/references/rules/`" + `. This Constitution records project-specific invariants and does not restate them.
+<!-- END KIT-MANAGED BASELINE RULES -->`
+
+// ConstitutionBaselineSectionFor returns the baseline for an instruction
+// scaffold version.
+func ConstitutionBaselineSectionFor(version int) string {
+	if version == config.InstructionScaffoldVersionMemory {
+		return ConstitutionBaselineSection
+	}
+	return LegacyConstitutionBaselineSection
+}
+
+// LegacyConstitutionBaselineSection keeps the pre-contract baseline for
+// instruction scaffold versions 1 and 2, whose entry files do not carry every
+// universal invariant. Retire it with the legacy scaffolds.
+const LegacyConstitutionBaselineSection = `### ` + ConstitutionBaselineHeading + `
 
 <!-- BEGIN KIT-MANAGED BASELINE RULES -->
 - Treat ` + "`docs/CONSTITUTION.md`" + ` as the canonical project contract.

@@ -21,7 +21,7 @@ repository evidence, and a reduced human maintenance surface.
 | --- | --- |
 | [CONSTITUTION.md](CONSTITUTION.md) | Current project invariants and architecture. |
 | [PROJECT_PROGRESS_SUMMARY.md](PROJECT_PROGRESS_SUMMARY.md) | Historical feature index. |
-| [agents/README.md](agents/README.md) | Coding-agent routing entrypoint. |
+| [agents/README.md](agents/README.md) | Map of the universal contract, contextual rules, and project memory. |
 | [references/README.md](references/README.md) | Durable rules, workflows, and reusable evidence. |
 
 ## Feature History

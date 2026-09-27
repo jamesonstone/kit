@@ -3,25 +3,17 @@ kind: workflow
 slug: repository-maintenance
 description: Review structural and semantic repository drift without changing kit reconcile semantics.
 rules:
-  - slug: coding-agent-context-usage
-    required: true
   - slug: agent-completion-output
-    required: true
+    required: false
   - slug: deletion-safety
-    required: true
+    required: false
   - slug: constitution-curation
     required: true
   - slug: testing-and-environment-validation
-    required: true
+    required: false
   - slug: source-file-size
-    required: true
+    required: false
 evidence:
-  - kind: routing
-    path: docs/agents/README.md
-    required: true
-  - kind: maintenance-strategy
-    path: docs/agents/WORKFLOWS.md
-    required: true
   - kind: project-memory
     path: docs/CONSTITUTION.md
     required: true

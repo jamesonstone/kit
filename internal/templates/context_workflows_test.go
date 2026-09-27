@@ -3,6 +3,8 @@ package templates
 import (
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -68,7 +70,7 @@ func TestPullRequestMergeWorkflowPreservesInPlaceRemediationBoundary(t *testing.
 	t.Fatal("embedded pull-request-merge workflow not found")
 }
 
-func TestPRFeedbackWorkflowUsesCapabilityAwareOrchestration(t *testing.T) {
+func TestPRFeedbackWorkflowKeepsDelegationSafe(t *testing.T) {
 	artifacts, err := ContextWorkflowArtifacts()
 	if err != nil {
 		t.Fatal(err)
@@ -78,11 +80,9 @@ func TestPRFeedbackWorkflowUsesCapabilityAwareOrchestration(t *testing.T) {
 			continue
 		}
 		for _, want := range []string{
-			"Negotiate host-confirmed agent controls",
-			"actual agents from logical and omitted lanes",
-			"requested from effective profiles",
-			"confirmed from unconfirmed parallelism",
-			"replacement rebriefs",
+			"Parallelize independent investigation",
+			"serialize writes to shared files",
+			"keep Git and GitHub mutations in the primary agent",
 			"fresh independent read-only verifier",
 			"supervisor self-review",
 		} {
@@ -98,4 +98,43 @@ func TestPRFeedbackWorkflowUsesCapabilityAwareOrchestration(t *testing.T) {
 		return
 	}
 	t.Fatal("embedded pr-feedback-repair workflow not found")
+}
+
+// Workflow contracts require only the rules that define their own domain;
+// everything else is contextual so unrelated tasks do not load it.
+func TestContextWorkflowsRequireOnlyDomainRules(t *testing.T) {
+	domain := map[string][]string{
+		"implementation-delivery":               nil,
+		"pr-feedback-repair":                    {"github-pr-delivery", "work-lane-gating"},
+		"pull-request-merge":                    {"github-pr-merge"},
+		"release-orchestration":                 {"github-pr-merge"},
+		"repository-bootstrap":                  {"constitution-curation"},
+		"repository-maintenance":                {"constitution-curation"},
+		"cross-repository-program-coordination": {"cross-repository-program-coordination"},
+	}
+	artifacts, err := ContextWorkflowArtifacts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, artifact := range artifacts {
+		allowed, ok := domain[artifact.Slug]
+		if !ok {
+			t.Errorf("unexpected workflow %s", artifact.Slug)
+			continue
+		}
+		required := regexp.MustCompile(`(?m)^  - slug: (\S+)\n    required: true`).FindAllStringSubmatch(artifact.Content, -1)
+		if len(required) != len(allowed) {
+			t.Errorf("workflow %s requires %d rules, want %d domain rules", artifact.Slug, len(required), len(allowed))
+		}
+		for _, match := range required {
+			if !slices.Contains(allowed, match[1]) {
+				t.Errorf("workflow %s requires non-domain rule %s", artifact.Slug, match[1])
+			}
+		}
+		for _, retired := range []string{"docs/agents/GUARDRAILS.md", "docs/agents/RLM.md", "docs/agents/TOOLING.md", "docs/agents/WORKFLOWS.md", "coding-agent-context-usage"} {
+			if strings.Contains(artifact.Content, retired) {
+				t.Errorf("workflow %s still references %s", artifact.Slug, retired)
+			}
+		}
+	}
 }

@@ -54,7 +54,7 @@ func TestInstructionTemplatesScopeCodeFileSizeGuidance(t *testing.T) {
 	}
 }
 
-func TestConstitutionTemplateIncludesKitManagedBaselineRules(t *testing.T) {
+func TestLegacyConstitutionBaselineKeepsUniversalRules(t *testing.T) {
 	for _, check := range []string{
 		"### Kit-Managed Baseline Rules",
 		"BEGIN KIT-MANAGED BASELINE RULES",
@@ -64,7 +64,7 @@ func TestConstitutionTemplateIncludesKitManagedBaselineRules(t *testing.T) {
 		"vendored dependencies, and proven generated files",
 		"never use minification or arbitrary numbered chunks",
 	} {
-		if !strings.Contains(Constitution, check) {
+		if !strings.Contains(LegacyConstitutionBaselineSection, check) {
 			t.Fatalf("expected Constitution template to contain %q", check)
 		}
 	}

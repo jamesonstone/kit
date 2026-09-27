@@ -151,7 +151,17 @@ func SupportDocs(version int) []Doc {
 		},
 	}
 	if version == config.InstructionScaffoldVersionMemory {
-		docs = append(docs, Doc{
+		// The v3 universal contract lives in the entry files; only the agents
+		// map and project references remain as support documents.
+		kept := docs[:0]
+		for _, doc := range docs {
+			switch doc.Label {
+			case "WORKFLOWS", "RLM", "TOOLING", "GUARDRAILS":
+				continue
+			}
+			kept = append(kept, doc)
+		}
+		docs = append(kept, Doc{
 			Label:        "WORKTREES",
 			RelativePath: "docs/references/worktrees.md",
 			Use:          "portable native Git worktree workflow and safety model",

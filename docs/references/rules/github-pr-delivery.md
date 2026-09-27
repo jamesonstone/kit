@@ -55,9 +55,8 @@ read_policy_default: conditional
   when the user explicitly directs that outcome for the current scope.
 - Before any GitHub delivery mutation, load repo-local workflow entrypoints:
   - `.kit.yaml`
-  - `docs/agents/README.md`
-  - `docs/agents/GUARDRAILS.md`
-  - `docs/agents/TOOLING.md`
+  - the repository's agent entry file (`AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`), whose Kit-managed block holds the universal contract
+  - `docs/agents/GUARDRAILS.md` and `docs/agents/TOOLING.md` only in projects still on instruction scaffold version 2
   - rulesets under `docs/references/rules/*` relevant to git, GitHub, branches, issues, commits, or PRs
   - `.github/pull_request_template.md` and issue templates when present
 - Run and report delivery recon before any GitHub delivery mutation:

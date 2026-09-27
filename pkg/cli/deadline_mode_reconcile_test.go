@@ -22,25 +22,11 @@ func TestReconcileFindsStaleDeadlineModeGuidance(t *testing.T) {
 			audit:   auditV2SupportGuidance,
 		},
 		{
-			name:    "V3 RLM route",
-			version: config.InstructionScaffoldVersionMemory,
-			path:    "docs/agents/RLM.md",
-			snippet: "Load `docs/references/rules/deadline-mode.md` only when the user explicitly signals a real time constraint or deadline in-thread; never infer or proactively suggest deadline mode",
-			audit:   auditV3SupportGuidance,
-		},
-		{
 			name:    "V2 references index",
 			version: config.InstructionScaffoldVersionTOC,
 			path:    "docs/references/README.md",
 			snippet: "`rules/deadline-mode.md`",
 			audit:   auditV2SupportGuidance,
-		},
-		{
-			name:    "V3 references index",
-			version: config.InstructionScaffoldVersionMemory,
-			path:    "docs/references/README.md",
-			snippet: "`rules/deadline-mode.md`",
-			audit:   auditV3SupportGuidance,
 		},
 	}
 

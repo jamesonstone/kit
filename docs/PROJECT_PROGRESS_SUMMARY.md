@@ -82,6 +82,7 @@
 | 0079 | thread-naming | `docs/specs/0079-thread-naming` | deliver | no | 2026-09-15 | Shared current-ownership conversation titles across coding hosts. |
 | 0080 | slack-read-only | `docs/specs/0080-slack-read-only` | deliver | no | 2026-09-19 | Treat Slack as read-only by default and require explicit, message-specific human approval before any Slack send or other Slack mutation. |
 | 0081 | retire-thread-naming | `docs/specs/0081-retire-thread-naming` | deliver | no | 2026-09-24 | Stop Kit from telling coding agents to rename or pin conversations. |
+| 0082 | universal-agent-contract | `docs/specs/0082-universal-agent-contract` | deliver | no | 2026-09-27 | Replace duplicated always-loaded gates with one canonical universal contract, derived vendor adapters, and contextual rules. |
 
 ## PROJECT INTENT
 
@@ -792,6 +793,15 @@ See `docs/CONSTITUTION.md` for project-wide constraints and principles.
 - **APPROACH**: Drop always-loaded Conversation Naming and the Codex Thread Initialization Hard Gate, delete the naming policy and pin/init ruleset, remove `kit instructions naming`/`title`, publish frozen `v17`, and deliver one ready PR for GH-213.
 - **OPEN ITEMS**: deliver GH-213 through its ready pull request; merge requires separate authorization
 - **POINTERS**: `docs/specs/0081-retire-thread-naming/SPEC.md`
+
+### universal-agent-contract
+
+- **STATUS**: deliver
+- **PAUSED**: no
+- **INTENT**: Replace duplicated always-loaded gates with one canonical universal contract, derived vendor adapters, and contextual rules.
+- **APPROACH**: Render `internal/templates/universal_contract.md` into a Kit-managed block in every entry file, drop v3 GUARDRAILS/RLM/TOOLING/WORKFLOWS, make specialized rules trigger-loaded, reduce orchestration to invariants, and test derivation instead of phrasing.
+- **OPEN ITEMS**: deliver GH-217 through its ready pull request; merge requires separate authorization
+- **POINTERS**: `docs/specs/0082-universal-agent-contract/SPEC.md`, `internal/templates/universal_contract.md`
 
 ## LAST UPDATED
 

@@ -1,8 +1,6 @@
 package templates
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -13,7 +11,6 @@ import (
 func TestCapabilityAwareHostAdapterIsSharedAndProviderNeutral(t *testing.T) {
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		tooling := fileContentByPath(
 			InstructionSupportFiles(version),
@@ -68,38 +65,6 @@ func TestCapabilityAwareHostAdapterIsSharedAndProviderNeutral(t *testing.T) {
 	}
 }
 
-func TestConditionalCodexBindingAppearsOnlyOnceInMemoryAgents(t *testing.T) {
-	const heading = "## Conditional Codex Subagent Binding"
-	if count := strings.Count(MemoryAgentsMD, heading); count != 1 {
-		t.Fatalf("V3 AGENTS.md contains Codex binding %d times, want 1", count)
-	}
-	for _, want := range []string{
-		"only when the active coding host is Codex",
-		"Warp/Oz and every other host",
-		"`list_agents`",
-		"`spawn_agent`",
-		"`followup_task`",
-		"`wait_agent`",
-		"`model`",
-		"`reasoning_effort`",
-		"children must not spawn descendants",
-	} {
-		if !strings.Contains(MemoryAgentsMD, want) {
-			t.Errorf("V3 AGENTS.md Codex binding missing %q", want)
-		}
-	}
-
-	for name, content := range map[string]string{
-		"V2 AGENTS.md":                       AgentsMD,
-		"V3 CLAUDE.md":                       MemoryClaudeMD,
-		"V3 .github/copilot-instructions.md": MemoryCopilotInstructionsMD,
-	} {
-		if strings.Contains(content, heading) || strings.Contains(content, "`spawn_agent`") {
-			t.Errorf("%s unexpectedly contains the Codex-only binding", name)
-		}
-	}
-}
-
 func TestCapabilityAdapterKeepsDefaultInstructionTargets(t *testing.T) {
 	got := instructions.InstructionRelativePaths(config.Default())
 	want := []string{
@@ -118,27 +83,6 @@ func TestCapabilityAdapterKeepsDefaultInstructionTargets(t *testing.T) {
 	for _, path := range got {
 		if strings.Contains(strings.ToLower(path), "warp") {
 			t.Fatalf("default instruction targets unexpectedly include %q", path)
-		}
-	}
-}
-
-func TestCheckedInCapabilityAdapterMatchesGeneratedArtifacts(t *testing.T) {
-	generated := map[string]string{
-		"AGENTS.md": MemoryAgentsMD,
-		"CLAUDE.md": MemoryClaudeMD,
-		"docs/agents/TOOLING.md": fileContentByPath(
-			InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
-			"docs/agents/TOOLING.md",
-		),
-		".github/copilot-instructions.md": MemoryCopilotInstructionsMD,
-	}
-	for relativePath, want := range generated {
-		got, err := os.ReadFile(filepath.Join("..", "..", filepath.FromSlash(relativePath)))
-		if err != nil {
-			t.Fatalf("read checked-in %s: %v", relativePath, err)
-		}
-		if string(got) != want {
-			t.Errorf("checked-in %s is not aligned with the V3 generator", relativePath)
 		}
 	}
 }

@@ -3,23 +3,15 @@ kind: workflow
 slug: repository-bootstrap
 description: Establish repository-local evidence and durable project memory from verified repository sources.
 rules:
-  - slug: coding-agent-context-usage
-    required: true
   - slug: agent-completion-output
-    required: true
+    required: false
   - slug: deletion-safety
-    required: true
+    required: false
   - slug: constitution-curation
     required: true
   - slug: kit-capabilities-usage
-    required: true
+    required: false
 evidence:
-  - kind: routing
-    path: docs/agents/README.md
-    required: true
-  - kind: strategy
-    path: docs/agents/RLM.md
-    required: true
   - kind: project-memory
     path: docs/CONSTITUTION.md
     required: true

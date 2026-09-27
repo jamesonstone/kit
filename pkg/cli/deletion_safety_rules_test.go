@@ -71,7 +71,6 @@ func TestDeletionSafetyRegistryRulesetIsValid(t *testing.T) {
 func TestDeletionSafetyIsIntegratedWithRelatedRules(t *testing.T) {
 	checks := map[string][]string{
 		"docs/references/README.md": {
-			"Use `rules/deletion-safety.md`",
 			"| `deletion-safety` |",
 		},
 		"docs/references/rules/safety-guardrails.md": {

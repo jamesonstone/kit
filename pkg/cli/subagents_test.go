@@ -43,32 +43,12 @@ func TestPrepareAgentPromptWithSubagentsByDefault(t *testing.T) {
 
 	got := prepareAgentPrompt("Please review the plan.\n")
 	checks := []string{
-		"Please review the plan.",
-		"## Skills",
 		"## Subagent Orchestration",
-		"agent-team-orchestration.md",
-		"The supervisor owns scope",
-		"Agent Team Plan",
-		"CAPABILITY_NEGOTIATING",
-		"Capability Manifest",
-		"controls exposed by the active runtime",
-		"Preserve `unknown` literally",
-		"no child primitive is confirmed",
-		"Only the root supervisor may launch agents",
-		"actual agent only when the runtime creates a separate execution",
-		"logical-only and omitted lanes",
-		"requested and effective provider-neutral profiles",
-		"runtime-selected/unverified",
-		"parallel execution only when the host confirms overlap",
-		"stable agent reference",
-		"continuity loss",
-		"fresh independent read-only verification by a verifier",
-		"supervisor self-review",
-		"verification was not independent",
-		"verification_independent: true | false | unknown",
-		"single supervisor lane; no specialist or verification agents spawned",
-		"supervisor-prepared, explicitly assigned worktree",
-		"may not create, switch, move, or remove worktrees",
+		"Preserve the command's scope, phase, safety, and mutation boundaries",
+		"The primary agent owns scope, integration, validation, delivery, and the final report",
+		"Delegated agents never mutate Git or GitHub delivery state",
+		"docs/references/rules/agent-team-orchestration.md",
+		"report only topology and verification that actually ran",
 	}
 
 	for _, check := range checks {

@@ -160,7 +160,7 @@ func TestRunInitRefresh_ForceDoesNotOverwriteExistingScaffoldFilesWithoutFileTar
 	stubRulesetRegistry(t)
 
 	writeFile(t, filepath.Join(tempDir, envrcPath), "source_env .custom\n")
-	writeFile(t, filepath.Join(tempDir, "docs", "agents", "GUARDRAILS.md"), "# Guardrails\n\nold\n")
+	writeFile(t, filepath.Join(tempDir, "docs", "agents", "README.md"), "# Agents Docs\n\nold\n")
 
 	withInitFlags(t, func() {
 		initRefresh = true
@@ -182,11 +182,11 @@ func TestRunInitRefresh_ForceDoesNotOverwriteExistingScaffoldFilesWithoutFileTar
 		t.Fatalf("%s content = %q, want custom content", envrcPath, envrcContent)
 	}
 
-	guardrailsContent, err := os.ReadFile(filepath.Join(tempDir, "docs", "agents", "GUARDRAILS.md"))
+	guardrailsContent, err := os.ReadFile(filepath.Join(tempDir, "docs", "agents", "README.md"))
 	if err != nil {
-		t.Fatalf("failed to read GUARDRAILS.md: %v", err)
+		t.Fatalf("failed to read docs/agents/README.md: %v", err)
 	}
-	if string(guardrailsContent) != initTestSupportFileContent("docs/agents/GUARDRAILS.md") {
+	if string(guardrailsContent) != initTestSupportFileContent("docs/agents/README.md") {
 		t.Fatalf("expected generated docs support file to be overwritten on force, got:\n%s", guardrailsContent)
 	}
 }

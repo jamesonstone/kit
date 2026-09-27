@@ -136,23 +136,6 @@ func standingAuthorityChecks() []standingAuthorityCheck {
 				"Additive IAM, network topology",
 			},
 		},
-		instructionStandingAuthorityCheck("AGENTS.md"),
-		instructionStandingAuthorityCheck("CLAUDE.md"),
-		instructionStandingAuthorityCheck(".github/copilot-instructions.md"),
-		instructionStandingAuthorityCheck("docs/agents/GUARDRAILS.md"),
-		instructionStandingAuthorityCheck("docs/agents/TOOLING.md"),
-	}
-}
-
-func instructionStandingAuthorityCheck(path string) standingAuthorityCheck {
-	return standingAuthorityCheck{
-		path: path,
-		required: []string{
-			"A commit SHA or head OID identifies readiness evidence only",
-			"Never request exact-head reauthorization",
-			"After final-head evidence restores `MERGE_READY`",
-		},
-		forbidden: exactHeadReauthorizationPhrases(),
 	}
 }
 

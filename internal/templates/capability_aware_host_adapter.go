@@ -38,18 +38,3 @@ Use ` + "`docs/references/rules/agent-team-orchestration.md`" + ` for the canoni
 Current provider references: [Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Claude Code subagents](https://code.claude.com/docs/en/sub-agents), [GitHub Copilot custom-agent invocation](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/invoke-custom-agents), [Warp orchestration](https://docs.warp.dev/platform/orchestration/), and [Warp project rules](https://docs.warp.dev/agents/capabilities/rules/). Treat these as evidence sources to re-check, not as pinned capability promises.
 
 `
-
-func codexCapabilityAwareHostBinding(title string) string {
-	if title != "AGENTS" {
-		return ""
-	}
-
-	return `## Conditional Codex Subagent Binding
-
-- Apply this section only when the active coding host is Codex. Warp/Oz and every other host that reads ` + "`AGENTS.md`" + ` must skip it.
-- Before delegating, inspect the live Codex roster with ` + "`list_agents`" + `. The root supervisor may use ` + "`spawn_agent`" + ` with host-exposed ` + "`model`" + ` and ` + "`reasoning_effort`" + ` controls, ` + "`followup_task`" + ` for same-agent continuation, and ` + "`wait_agent`" + ` for status and joining; children must not spawn descendants.
-- Resolve profiles from the live roster rather than static model IDs or a presumed capacity. If a native control is unavailable or fails, follow the shared host-adapter fallback and report the requested and effective profile, model, effort, continuity, and degradation.
-- Capability descriptors live in ` + "`docs/references/host-adapters/codex.md`" + `; normative topology lives in ` + "`docs/references/rules/agent-team-orchestration.md`" + `.
-
-`
-}

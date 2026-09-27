@@ -77,7 +77,7 @@ func TestExistingSupportDocsFiltersMissingFiles(t *testing.T) {
 	}
 }
 
-func TestSupportDocsAddsWorktreeGuideOnlyForV3(t *testing.T) {
+func TestV3SupportDocsAddWorktreeGuideAndDropContractCopies(t *testing.T) {
 	v2 := SupportDocs(config.InstructionScaffoldVersionTOC)
 	v3 := SupportDocs(config.InstructionScaffoldVersionMemory)
 
@@ -86,8 +86,14 @@ func TestSupportDocsAddsWorktreeGuideOnlyForV3(t *testing.T) {
 			t.Fatal("V2 support documents unexpectedly include the V3 worktree guide")
 		}
 	}
-	if len(v3) != len(v2)+1 {
-		t.Fatalf("V3 support document count = %d, want %d", len(v3), len(v2)+1)
+	for _, doc := range v3 {
+		switch doc.Label {
+		case "WORKFLOWS", "RLM", "TOOLING", "GUARDRAILS":
+			t.Fatalf("V3 support documents restate the universal contract via %s", doc.RelativePath)
+		}
+	}
+	if len(v3) != len(v2)-3 {
+		t.Fatalf("V3 support document count = %d, want %d", len(v3), len(v2)-3)
 	}
 	worktrees := v3[len(v3)-1]
 	if worktrees.RelativePath != "docs/references/worktrees.md" || !worktrees.Required {

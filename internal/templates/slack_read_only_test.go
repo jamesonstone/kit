@@ -24,13 +24,6 @@ func TestInstructionTemplatesRequireSlackReadOnly(t *testing.T) {
 		"V2 AGENTS.md":            AgentsMD,
 		"V2 CLAUDE.md":            ClaudeMD,
 		"V2 Copilot instructions": CopilotInstructionsMD,
-		"V3 AGENTS.md":            MemoryAgentsMD,
-		"V3 CLAUDE.md":            MemoryClaudeMD,
-		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
-		"V3 GUARDRAILS.md": fileContentByPath(
-			InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
-			"docs/agents/GUARDRAILS.md",
-		),
 	} {
 		for _, check := range required {
 			if !strings.Contains(content, check) {
@@ -45,7 +38,6 @@ func TestInstructionSupportRoutesSlackReadOnly(t *testing.T) {
 	indexRoute := "Use `rules/slack-read-only.md` when Slack is in scope"
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
@@ -82,7 +74,7 @@ func TestConstitutionTemplateRoutesSlackReadOnly(t *testing.T) {
 		"Treat Slack as read-only by default",
 		"explicit, message-specific human approval",
 	} {
-		if !strings.Contains(Constitution, check) {
+		if !strings.Contains(LegacyConstitutionBaselineSection, check) {
 			t.Errorf("expected Constitution template to contain %q", check)
 		}
 	}

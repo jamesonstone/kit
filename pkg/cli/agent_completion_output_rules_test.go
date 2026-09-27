@@ -142,9 +142,7 @@ func TestAgentCompletionOutputExamplesModelUnstructuredResponses(t *testing.T) {
 func TestAgentCompletionOutputIsIntegratedWithRelatedRules(t *testing.T) {
 	checks := map[string][]string{
 		"docs/references/README.md": {
-			"Use `rules/agent-completion-output.md`",
 			"| `agent-completion-output` |",
-			"it requires no response format and names only the facts a response must not leave out",
 		},
 		"docs/references/rules/github-pr-delivery.md": {
 			"Follow `agent-completion-output`, which prescribes no format",
@@ -153,10 +151,6 @@ func TestAgentCompletionOutputIsIntegratedWithRelatedRules(t *testing.T) {
 		"docs/references/rules/testing-and-environment-validation.md": {
 			"Follow `agent-completion-output` for terminal reporting, which prescribes no format",
 			"Keep observed validation results, gaps or non-passing evidence, and any required rerun or remediation visible and distinct",
-		},
-		"docs/references/rules/agent-team-orchestration.md": {
-			"State `task_outcome` plainly",
-			"report degraded or unsatisfied conformance as its own fact",
 		},
 		"docs/references/rules/cross-repository-program-coordination.md": {
 			"Render the terminal program result through `agent-completion-output`, which prescribes no format",

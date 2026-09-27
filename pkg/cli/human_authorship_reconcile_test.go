@@ -22,25 +22,11 @@ func TestReconcileFindsStaleHumanAuthorshipGuidance(t *testing.T) {
 			audit:   auditV2SupportGuidance,
 		},
 		{
-			name:    "V3 RLM route",
-			version: config.InstructionScaffoldVersionMemory,
-			path:    "docs/agents/RLM.md",
-			snippet: "Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text",
-			audit:   auditV3SupportGuidance,
-		},
-		{
 			name:    "V2 references index",
 			version: config.InstructionScaffoldVersionTOC,
 			path:    "docs/references/README.md",
 			snippet: "`rules/human-authorship.md`",
 			audit:   auditV2SupportGuidance,
-		},
-		{
-			name:    "V3 references index",
-			version: config.InstructionScaffoldVersionMemory,
-			path:    "docs/references/README.md",
-			snippet: "`rules/human-authorship.md`",
-			audit:   auditV3SupportGuidance,
 		},
 	}
 

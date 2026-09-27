@@ -22,12 +22,6 @@ func TestMergeOrchestrationRulesStayContextAwareAndConcise(t *testing.T) {
 			"are not infrastructure-approval batches",
 			"never authorize deletion or removal",
 		},
-		"agent-team-orchestration.md": {
-			"lower-cost or lower-capability configuration",
-			"keep graph,",
-			"repair, recovery, and acceptance decisions",
-			"event-driven waits or bounded backoff",
-		},
 		"agent-completion-output.md": {
 			"smallest evidence set that proves each",
 			"terminal node",

@@ -57,7 +57,7 @@ directly as before.
 
 | Command | Purpose |
 | --- | --- |
-| `kit dispatch` | Produce an Agent Team Plan prompt after native planning; optional PR/watch modes remain bounded. |
+| `kit dispatch` | Produce a lane plan prompt for a task set after native planning; optional PR/watch modes remain bounded. |
 | `kit pr fix` | Select or target a PR and produce a repair prompt from current unresolved review feedback. |
 | `kit pr orchestrate` | Resolve bounded repository scope into a deterministic dependency-aware release prompt; Kit does not execute the release. |
 

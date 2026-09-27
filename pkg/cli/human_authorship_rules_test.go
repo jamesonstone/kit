@@ -52,7 +52,6 @@ func TestHumanAuthorshipRegistryRulesetIsValid(t *testing.T) {
 func TestHumanAuthorshipIsIntegratedWithRelatedRules(t *testing.T) {
 	checks := map[string][]string{
 		"docs/references/README.md": {
-			"Use `rules/human-authorship.md`",
 			"| `human-authorship` |",
 		},
 		"docs/references/rules/github-pr-delivery.md": {
@@ -60,12 +59,6 @@ func TestHumanAuthorshipIsIntegratedWithRelatedRules(t *testing.T) {
 		},
 		"docs/references/rules/safety-guardrails.md": {
 			"Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, comment, or other attribution text",
-		},
-		"docs/agents/RLM.md": {
-			"Load `docs/references/rules/human-authorship.md` before any commit, pull request, issue, review comment, or other attribution text",
-		},
-		"docs/CONSTITUTION.md": {
-			"load `docs/references/rules/human-authorship.md`",
 		},
 		"docs/references/workflows/implementation-delivery.md": {
 			"slug: human-authorship",

@@ -6,7 +6,7 @@ fixture: docs/evals/kit-improve/fixtures/repos/prompt-system-project
 persona: supervisor
 timeout_seconds: 30
 input_prompt: Render an Agent Team Plan from two representative tasks.
-expected_behavior: The prompt requires overlap discovery, bounded concurrency, one accountable supervisor, and read-only verification.
+expected_behavior: The prompt requires overlap discovery, bounded concurrency, one accountable primary agent, and no overlapping concurrent writes.
 oracle: deterministic-prompt
 mutation_policy: read-only
 allowed_surfaces: []
@@ -25,10 +25,10 @@ assertions:
     value: file overlap
   - type: stdout_contains
     command_index: 0
-    value: read-only verification
+    value: overlapping files
   - type: stdout_contains
     command_index: 0
-    value: accountable supervisor
+    value: accountable primary agent
   - type: stdout_not_contains
     command_index: 0
     value: Waiting for approval

@@ -5,36 +5,6 @@ import (
 	"testing"
 )
 
-func TestActivePolicyUsesOneMergeAuthorityModel(t *testing.T) {
-	files := map[string]string{
-		"AGENTS.md":  readRepositoryFile(t, "AGENTS.md"),
-		"CLAUDE.md":  readRepositoryFile(t, "CLAUDE.md"),
-		"Copilot":    readRepositoryFile(t, ".github/copilot-instructions.md"),
-		"Guardrails": readRepositoryFile(t, "docs/agents/GUARDRAILS.md"),
-	}
-	for name, content := range files {
-		for _, check := range []string{
-			"Standing merge authority exists only when a human explicitly authorizes a bounded task, goal, or program",
-			"may bind later-created in-scope PRs and refreshed heads",
-			"Only exact current `MERGE_READY` nodes may merge",
-			"A changed in-scope head invalidates readiness, not standing authority",
-			"A commit SHA or head OID identifies readiness evidence only",
-			"Never request exact-head reauthorization",
-			"Pause, hold, or revocation stops affected actions and dependents",
-			"Never bypass protection",
-		} {
-			if !strings.Contains(content, check) {
-				t.Errorf("%s missing active merge policy %q", name, check)
-			}
-		}
-	}
-	for _, path := range []string{"AGENTS.md", "CLAUDE.md"} {
-		if !strings.Contains(files[path], "Issue, branch, staging, commit, push, PR, and merge actions are distinct mutation boundaries") {
-			t.Errorf("%s mutation list does not include merge distinctly", path)
-		}
-	}
-}
-
 func TestActivePolicyRejectsContradictoryMergeAuthority(t *testing.T) {
 	activePaths := []string{
 		"docs/references/rules/safety-guardrails.md",

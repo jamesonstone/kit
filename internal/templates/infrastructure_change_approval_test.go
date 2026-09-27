@@ -32,13 +32,6 @@ func TestInstructionTemplatesRequireInfrastructureChangeApproval(t *testing.T) {
 		"V2 AGENTS.md":            AgentsMD,
 		"V2 CLAUDE.md":            ClaudeMD,
 		"V2 Copilot instructions": CopilotInstructionsMD,
-		"V3 AGENTS.md":            MemoryAgentsMD,
-		"V3 CLAUDE.md":            MemoryClaudeMD,
-		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
-		"V3 GUARDRAILS.md": fileContentByPath(
-			InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
-			"docs/agents/GUARDRAILS.md",
-		),
 	} {
 		for _, check := range required {
 			if !strings.Contains(content, check) {
@@ -51,7 +44,6 @@ func TestInstructionTemplatesRequireInfrastructureChangeApproval(t *testing.T) {
 func TestInstructionSupportRoutesInfrastructureChangeApproval(t *testing.T) {
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")

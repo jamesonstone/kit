@@ -103,7 +103,7 @@ for the clone with `make install-git-hooks`.
 - [Coding-agent workflow](docs/workflows.md)
 - [Migration to v3](docs/migration-v3.md)
 - [Historical v2 migration](docs/migration-v2.md)
-- [Agent routing](docs/agents/README.md)
+- [Agent instruction map](docs/agents/README.md)
 - [Rules and references](docs/references/README.md)
 - [Project Constitution](docs/CONSTITUTION.md)
 

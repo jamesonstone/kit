@@ -7,36 +7,17 @@
 - Kit is a repository contract and evidence harness for coding agents, with bounded human-facing command adapters.
 - Repository-local Markdown is authoritative. Machine-readable output is a deterministic view of that local evidence, not a second source of truth.
 - Native agent planning owns research, clarification, design, and implementation planning. Kit supplies evidence and guardrails; it does not infer project truth or launch or supervise agents.
-- Coding agents use `kit capabilities <command> --json` to establish command behavior and `kit context resolve --workflow <slug> --json` to select the smallest relevant local evidence set.
+- Kit owns one canonical universal agent contract (`internal/templates/universal_contract.md`). Agent entry files render it deterministically inside a Kit-managed block; contextual rules load only when their trigger applies. Never restate universal rules in other Kit-owned documents.
+- `kit capabilities <command> --json` reports command side effects, and `kit context resolve --workflow <slug> --json` lists a workflow's evidence; both are optional aids, not mandatory steps.
 - A blocked context contract is an evidence gap, never permission to guess.
-- When execution topology matters, the active coding agent negotiates only
-  host-confirmed capabilities, maps provider-neutral profiles to the live
-  roster, and treats unknown controls as unavailable for routing.
-- One accountable root owns delegation at depth one. Reporting distinguishes
-  actual children from logical lanes, continuity from replacement, and
-  independent verification from supervisor self-review.
+- Agents use their host's native delegation. One primary agent owns integration and reporting, and reports distinguish actual separate agents from logical lanes and self-review.
 
 ### Evidence Before Mutation
 
 - Inspect repository state, durable memory, work-lane ownership, and applicable safety rules before mutation.
-- Before any coding-agent repository mutation, default to a new
-  issue/branch/worktree/pull-request lane without asking, unless the human
-  explicitly directs continuation of an existing pull-request lane; then
-  record the exact landing plan.
-- Exact existing pull requests targeted for review repair, CI repair, base
-  refresh, or ordered merge coordination retain their current head branches and
-  pull-request identities. Scope-preserving lifecycle work never creates a
-  coordinator or recursively corrective pull request.
-- Perform coding-agent repository changes only in the selected non-primary
-  writable worktree. The clone's primary checkout remains read-only regardless
-  of branch, cleanliness, file type, or planned delivery.
+- Delivery, merge, deployment, infrastructure, deletion, and authorship boundaries are defined once in the universal contract and its contextual rules.
 - Validate findings against current source and current external state before acting.
 - Preserve unrelated and project-owned changes. Fail closed when ownership, target identity, or mutation scope is ambiguous.
-- Report validation literally; planning evidence, local checks, hosted checks, deployment, and production proof are distinct claims.
-- Pull-request merge is a distinct mutation boundary. Explicit bounded standing authority may cover later-created in-scope PRs and refreshed heads, but every exact current node must be `MERGE_READY`; generic task acceptance, delivery consent, checks, assignments, and ledgers create neither authority nor readiness. Direct human pause or revocation prevails until explicit resume.
-- Commit SHAs and head OIDs identify readiness evidence only; they are never authorization identities. Changed heads invalidate checks and review, not standing authority, and must not trigger exact-head reauthorization after fresh evidence restores `MERGE_READY`.
-- Only current `MERGE_READY` nodes may merge, and merge success is not deployment, runtime, production, or integrated-system proof.
-- Standing deployment authority covers only a named existing standard workflow, authorized environment, and exact merged artifact on already-provisioned resources, followed by runtime verification. IAM, network, KMS, secrets, database schema/data-loss, infrastructure creation/replacement/deletion, destructive, and nonstandard deployment effects retain their separate approval boundaries.
 
 ### Durable Repository Memory
 
@@ -58,21 +39,7 @@
 ### Kit-Managed Baseline Rules
 
 <!-- BEGIN KIT-MANAGED BASELINE RULES -->
-- Treat `docs/CONSTITUTION.md` as the canonical project contract.
-- Keep `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` aligned with the repo-local docs tree.
-- Use native agent planning for research, clarification, design, and implementation planning.
-- Before implementation, inspect code and repository memory; create or adopt `SPEC.md` when material rationale exists.
-- After validation, curate feature rationale, project invariants, reusable practices, and domain knowledge into their scope-appropriate canonical documents.
-- Allow a justified `not required` repository-memory decision when code and tests preserve the complete durable truth.
-- Before a substantial terminal completion or handoff response, load `docs/references/rules/agent-completion-output.md` which requires no response format; write in the shape the content calls for and never leave the reader wrong about a blocker, incomplete scope, a required action, or a failing or unobserved check.
-- Before commit, pull request, issue, comment, or other attribution text, load `docs/references/rules/human-authorship.md`. Only the human user may be displayed as author; do not attribute coding agents, tools, or bots.
-- Before designing deletion behavior or deleting persistent project, user, business, or external-system state, load `docs/references/rules/deletion-safety.md`.
-- Default unqualified deletion to a recoverable soft delete; require a post-outline specific manual confirmation for the exact current targets before any hard delete.
-- Treat Slack as read-only by default. Load `docs/references/rules/slack-read-only.md` before any Slack write. Drafting is not authorization to send; require explicit, message-specific human approval.
-- Keep every version-control-eligible handwritten implementation/source and test file at 300 physical lines or less.
-- Before delivery, audit the complete affected source/test scope; whole-project reconcile and scheduled maintenance audit the entire repository.
-- Exclude documentation files, all `docs/**`, all `.kit/**`, `.kit.yaml`, ignored files, vendored dependencies, and proven generated files.
-- Split oversized files by semantic responsibility while preserving stable public entry points and behavior; never use minification or arbitrary numbered chunks to claim compliance.
+- Kit's universal agent rules live in the Kit-managed block of `AGENTS.md` (rendered identically into `CLAUDE.md` and `.github/copilot-instructions.md`), and contextual rules live in `docs/references/rules/`. This Constitution records project-specific invariants and does not restate them.
 <!-- END KIT-MANAGED BASELINE RULES -->
 
 ### Supported v3 Command Surface
@@ -144,15 +111,11 @@
 
 ### Testing and Source Size
 
-- Load `docs/references/rules/testing-and-environment-validation.md` and `docs/references/testing.md` before implementation or validation.
-- Preserve language-native unit and integration tests and pull-request checks; end-to-end or live integration supplements rather than replaces them.
-- Keep every version-control-eligible handwritten source and test file at 300 physical lines or less.
+- Kit's validation commands live in `docs/references/testing.md`; pull-request CI runs formatting, vet, tests, build, and lint.
 - Run formatting, vetting, complete Go tests, race tests, linting, binary builds, release packaging, security checks, self-host validation, and affected source-size audits for a major release.
 
 ### Delivery and Release
 
-- Issue, branch, staging, commit, push, and pull-request operations follow the repository GitHub delivery rules.
-- Work happens on the exact owned writable lane. Subagents may not mutate Git or GitHub delivery state.
 - Release quality gates run before tag creation. Mint owns immutable tag and
   GitHub Release state; Kit retains exact version selection, GoReleaser builds
   and checksums, and idempotent artifact upload.
@@ -175,7 +138,7 @@
 
 ## NON-GOALS
 
-- Kit mandates evaluation of multi-agent and parallel execution topology before a native implementation plan is finalized, but it does not choose the concrete model, force parallel execution, launch coding agents, supervise agent processes, or replace native agent planning.
+- Kit does not choose models, prescribe a planning or delegation lifecycle, launch coding agents, supervise agent processes, or replace native agent planning.
 - Kit does not fetch external evidence during context resolution.
 - Kit does not treat generated JSON, telemetry, prompts, or agent transcripts as canonical repository memory.
 - Kit does not preserve every historical CLI path across major releases.
@@ -184,11 +147,12 @@
 
 ## DEFINITIONS
 
-- **Coding-agent contract** — the ordered repository-local workflows, rules, specifications, references, and source evidence selected for a task.
+- **Universal contract** — Kit's single canonical agent contract, rendered into the Kit-managed block of each agent entry file.
+- **Contextual rule** — a ruleset under `docs/references/rules/` that an agent reads only when the contract's trigger for it applies.
 - **Capability metadata** — read-only command behavior and safety information returned by `kit capabilities`.
 - **Context resolution** — deterministic projection of applicable local evidence into `kit.context/v1`.
 - **Workflow** — a declarative repository-local execution contract containing dependencies, rules, evidence, phases, and completion gates.
-- **Ruleset** — a durable, pointer-loaded Markdown policy artifact managed through the rules registry.
+- **Ruleset** — a durable Markdown policy artifact managed through the rules registry.
 - **Living spec** — a V3 `SPEC.md` maintained from accepted planning through actual outcome and repository-memory disposition.
 - **Project-owned content** — repository material outside a bounded Kit-managed section or artifact contract.
 - **Usage telemetry** — bounded local aggregateable command events with no arguments, content, secrets, or network transport.

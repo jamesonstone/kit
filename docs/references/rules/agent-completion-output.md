@@ -99,8 +99,8 @@ nothing about layout, and a heading alone satisfies none of them.
   assignee to be recoverable from the response.
 - `testing-and-environment-validation` requires observed results and every
   non-passing or unavailable evidence state to be visible and distinct.
-- `agent-team-orchestration` requires the task outcome, and any degraded or
-  unsatisfied conformance, to be stated in its own right.
+- `agent-team-orchestration` requires reporting only delegation and
+  verification that actually ran.
 - Cross-repository program work requires each workstream's state, unresolved
   dependencies, and exact handoffs to be identifiable.
 - Repository-memory decisions, including `not required`, are stated once.

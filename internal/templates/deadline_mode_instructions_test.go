@@ -13,7 +13,6 @@ func TestInstructionTemplatesRouteDeadlineModeRule(t *testing.T) {
 
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
@@ -26,7 +25,7 @@ func TestInstructionTemplatesRouteDeadlineModeRule(t *testing.T) {
 		}
 	}
 
-	if strings.Contains(Constitution, "deadline-mode") {
+	if strings.Contains(LegacyConstitutionBaselineSection, "deadline-mode") {
 		t.Fatal("Constitution template must not route deadline-mode; it stays conditional and pointer-loaded only")
 	}
 }

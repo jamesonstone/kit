@@ -4,15 +4,15 @@ slug: pull-request-merge
 description: Resolve bounded standing authority to exact current pull requests and reconcile policy, identity, readiness, dependencies, deployment, and risk gates.
 rules:
   - slug: safety-guardrails
-    required: true
+    required: false
   - slug: agent-completion-output
-    required: true
+    required: false
   - slug: deletion-safety
-    required: true
+    required: false
   - slug: github-pr-merge
     required: true
   - slug: testing-and-environment-validation
-    required: true
+    required: false
   - slug: infrastructure-change-approval
     required: false
   - slug: agent-team-orchestration
@@ -20,12 +20,6 @@ rules:
   - slug: cross-repository-program-coordination
     required: false
 evidence:
-  - kind: routing
-    path: docs/agents/README.md
-    required: true
-  - kind: guardrails
-    path: docs/agents/GUARDRAILS.md
-    required: true
   - kind: project-memory
     path: docs/CONSTITUTION.md
     required: true

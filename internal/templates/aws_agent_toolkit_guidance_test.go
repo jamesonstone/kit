@@ -24,9 +24,6 @@ func TestInstructionTemplatesRouteAWSAgentToolkitGuidance(t *testing.T) {
 		"V2 AGENTS.md":            AgentsMD,
 		"V2 CLAUDE.md":            ClaudeMD,
 		"V2 Copilot instructions": CopilotInstructionsMD,
-		"V3 AGENTS.md":            MemoryAgentsMD,
-		"V3 CLAUDE.md":            MemoryClaudeMD,
-		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
 	} {
 		for _, check := range required {
 			if !strings.Contains(content, check) {
@@ -41,31 +38,9 @@ func TestInstructionTemplatesRouteAWSAgentToolkitGuidance(t *testing.T) {
 	}
 }
 
-func TestMemoryInstructionsPreserveAWSIdentityGate(t *testing.T) {
-	for _, check := range []string{
-		"## AWS Context Hard Gate",
-		"If `.kit.yaml` defines an enabled AWS context",
-		"run `kit aws verify` before the first AWS-dependent command",
-		"Treat the verified account, ARN, and Region as authoritative",
-		"Use the verified configured profile and Region explicitly",
-		"After verification, never use default, another discovered profile, or ambient credentials",
-	} {
-		for name, content := range map[string]string{
-			"AGENTS.md":               MemoryAgentsMD,
-			"CLAUDE.md":               MemoryClaudeMD,
-			"copilot-instructions.md": MemoryCopilotInstructionsMD,
-		} {
-			if !strings.Contains(content, check) {
-				t.Errorf("expected V3 %s to contain %q", name, check)
-			}
-		}
-	}
-}
-
 func TestInstructionSupportRoutesAWSAgentToolkitGuidance(t *testing.T) {
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
