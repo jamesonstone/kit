@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 // guardLinkedTargets turns every planned write or removal whose path is a
@@ -47,4 +49,24 @@ func resolvedOrClean(path string) string {
 		return path
 	}
 	return filepath.Join(resolvedOrClean(parent), filepath.Base(path))
+}
+
+// recordBlockedRulesAsLocal keeps the registry honest when the guard skipped a
+// rule: the file on disk was not replaced, so it is recorded as local-custom
+// with its actual hash.
+func recordBlockedRulesAsLocal(projectRoot string, cfg *config.Config, registry []registryRuleset, blocked map[string]bool) {
+	for _, item := range registry {
+		if !blocked[rulesetTarget(item.Slug)] {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join(projectRoot, filepath.FromSlash(rulesetTarget(item.Slug))))
+		if err != nil {
+			continue
+		}
+		hash, err := normalizedRulesetContentHash(string(data), item.Metadata.Status)
+		if err != nil {
+			hash = ""
+		}
+		recordRulesetRegistryState(cfg, item, registryArtifactStateLocalCustom, hash)
+	}
 }

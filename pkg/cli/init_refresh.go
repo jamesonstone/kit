@@ -173,6 +173,7 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	changes = append(changes, rulesetChanges...)
 	changes, blocked, guardNotes := guardLinkedTargets(projectRoot, changes)
 	notes = append(notes, guardNotes...)
+	recordBlockedRulesAsLocal(projectRoot, cfg, registry, blocked)
 	for _, path := range instructionFiles(cfg) {
 		if blocked[filepath.ToSlash(path)] {
 			entriesConverged = false

@@ -58,6 +58,41 @@ func TestForcedWriteNeverFollowsLinkOutsideProject(t *testing.T) {
 	if !strings.Contains(strings.Join(plan.notes, "\n"), "is a symbolic link") {
 		t.Fatalf("missing link note: %v", plan.notes)
 	}
+	if artifact, _ := loadMigratedConfig(t, root).RegistryArtifact(rulesetKind, "deletion-safety"); artifact.State != registryArtifactStateLocalCustom {
+		t.Fatalf("skipped linked rule recorded as %q, want local-custom", artifact.State)
+	}
+}
+
+// Linked entry files converge whichever name is the link.
+func TestLinkedEntryFilesConvergeInEitherDirection(t *testing.T) {
+	for _, link := range []struct{ name, target string }{{"CLAUDE.md", "AGENTS.md"}, {"AGENTS.md", "CLAUDE.md"}} {
+		t.Run(link.name, func(t *testing.T) {
+			setupMigrationEnvironment(t)
+			root := copyMigrationFixture(t, "v3-precontract", func(root string) {
+				path := filepath.Join(root, link.name)
+				if err := os.Remove(path); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink(link.target, path); err != nil {
+					t.Fatal(err)
+				}
+			})
+			setWorkingDirectory(t, root)
+			plan := migrateProject(t, root, false)
+			if strings.Contains(strings.Join(plan.notes, "\n"), "edited Kit sections") {
+				t.Fatalf("false edited-section diagnostic: %v", plan.notes)
+			}
+			if info, err := os.Lstat(filepath.Join(root, link.name)); err != nil || info.Mode()&os.ModeSymlink == 0 {
+				t.Fatal("link replaced")
+			}
+			if loadMigratedConfig(t, root).InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
+				t.Fatal("linked entry files did not converge")
+			}
+			if changes := plannedChanges(t, root); len(changes) != 0 {
+				t.Fatalf("second pass not a no-op: %v", changes)
+			}
+		})
+	}
 }
 
 func TestTargetedRunDoesNotRecordVersionWithUnmigratedEntries(t *testing.T) {

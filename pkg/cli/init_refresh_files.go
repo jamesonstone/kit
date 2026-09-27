@@ -173,15 +173,20 @@ func planRefreshInitInstructionArtifacts(
 	var changes []initRefreshFileChange
 	var notes []string
 	converged := true
-	seen := map[string]bool{}
+	// Entry files symlinked to one another are one file: plan it under its
+	// real (non-link) path and skip the linked names.
+	real := map[string]bool{}
+	for _, relativePath := range instructionArtifactPaths(cfg) {
+		path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+		if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink == 0 {
+			real[resolvedOrClean(path)] = true
+		}
+	}
 	for _, relativePath := range instructionArtifactPaths(cfg) {
 		relativePath = filepath.ToSlash(relativePath)
-		// Entry files symlinked to one another are one file; plan it once.
-		if resolved, err := filepath.EvalSymlinks(filepath.Join(projectRoot, filepath.FromSlash(relativePath))); err == nil {
-			if seen[resolved] {
-				continue
-			}
-			seen[resolved] = true
+		path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+		if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink != 0 && real[resolvedOrClean(path)] {
+			continue
 		}
 		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, opts.force)
 		if err != nil {
