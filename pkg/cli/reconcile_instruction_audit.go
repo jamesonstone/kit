@@ -42,7 +42,27 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 			continue
 		}
 
+		if plan.legacyContract {
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				"repository instruction file predates the Kit-managed contract block",
+				templateSource(projectRoot),
+				fmt.Sprintf("move project-specific guidance outside Kit's block after previewing `kit reconcile --include-files --force --dry-run --diff --file %s`", relativePath),
+				[]string{fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", relativePath)},
+			))
+			continue
+		}
 		switch plan.result {
+		case instructionFileUpdated:
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				"Kit-managed contract block differs from the current universal contract",
+				templateSource(projectRoot),
+				fmt.Sprintf("preview the regenerated block with `kit reconcile --include-files --dry-run --diff --file %s`, then apply after review", relativePath),
+				[]string{fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath)},
+			))
 		case instructionFileCreated:
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
@@ -113,7 +133,6 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 		findings = append(findings, auditInstructionPromptEntrypoints(projectRoot, cfg, version)...)
 		findings = append(findings, auditAlwaysLoadedCoreDocs(projectRoot)...)
 	}
-	findings = append(findings, auditWorkLaneDefaultGuidance(projectRoot)...)
 	findings = append(findings, auditStandingAuthorityPolicy(projectRoot)...)
 	if version == config.InstructionScaffoldVersionTOC && !exactGeneratedInstructionScaffold(projectRoot, cfg, version) {
 		finding := newFinding(
@@ -199,7 +218,8 @@ func auditInstructionEntrypoints(projectRoot string, alreadyAudited map[string]b
 		}
 
 		body := string(content)
-		if !strings.Contains(body, "docs/agents/README.md") {
+		// v3 entry files carry the self-contained universal contract block.
+		if version != config.InstructionScaffoldVersionMemory && !strings.Contains(body, "docs/agents/README.md") {
 			findings = append(findings, newFinding(
 				reconcileSeverityWarning,
 				absolutePath,

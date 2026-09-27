@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -43,7 +44,11 @@ func TestReconcileGuidanceExpectationsMatchCurrentTemplates(t *testing.T) {
 			}
 			if tt.name == "V3" {
 				for relativePath, snippets := range v3ForbiddenGuidance() {
-					content := readFile(t, filepath.Join(projectRoot, filepath.FromSlash(relativePath)))
+					path := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
+					if _, err := os.Stat(path); err != nil {
+						continue // retired V3 support documents are no longer generated
+					}
+					content := readFile(t, path)
 					for _, snippet := range snippets {
 						if strings.Contains(content, snippet) {
 							t.Fatalf("%s still contains forbidden guidance %q", relativePath, snippet)
@@ -97,38 +102,14 @@ func TestAuditV2SupportGuidanceFindsStaleTestingSemantics(t *testing.T) {
 	}
 }
 
-func TestAuditV3SupportGuidanceFindsStaleSessionBrowserTestingAndWorktreeSemantics(t *testing.T) {
+func TestAuditV3SupportGuidanceFindsStaleReferenceDocuments(t *testing.T) {
 	tests := []struct {
 		path    string
 		snippet string
 	}{
 		{
-			path:    "AGENTS.md",
-			snippet: "For interactive browser work, use Codex's built-in browser through `@Browser`.",
-		},
-		{
-			path:    "AGENTS.md",
-			snippet: "unless I explicitly request it.",
-		},
-		{
-			path:    "AGENTS.md",
-			snippet: "When I explicitly authorize an external browser, terminate and verify all",
-		},
-		{
-			path:    ".github/copilot-instructions.md",
-			snippet: "Before implementation or validation, including browser automation and browser testing, load `docs/references/rules/testing-and-environment-validation.md`",
-		},
-		{
-			path:    "docs/agents/RLM.md",
-			snippet: "`docs/references/rules/testing-and-environment-validation.md`",
-		},
-		{
-			path:    "docs/agents/TOOLING.md",
-			snippet: "Link the primary checkout's `.env` and `.envrc` into writable lanes by default",
-		},
-		{
 			path:    "docs/references/README.md",
-			snippet: "`worktrees.md` for the canonical native Git worktree hierarchy",
+			snippet: "## Starter Files",
 		},
 		{
 			path:    "docs/references/testing.md",

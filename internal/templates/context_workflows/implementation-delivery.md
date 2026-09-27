@@ -3,20 +3,18 @@ kind: workflow
 slug: implementation-delivery
 description: Route a feature from accepted native planning through implementation, validation, memory curation, and delivery.
 rules:
-  - slug: coding-agent-context-usage
-    required: true
   - slug: agent-completion-output
-    required: true
+    required: false
   - slug: deletion-safety
-    required: true
+    required: false
   - slug: testing-and-environment-validation
-    required: true
+    required: false
   - slug: source-file-size
-    required: true
+    required: false
   - slug: work-lane-gating
-    required: true
+    required: false
   - slug: agent-team-orchestration
-    required: true
+    required: false
   - slug: github-pr-delivery
     required: false
   - slug: human-authorship
@@ -26,17 +24,11 @@ rules:
   - slug: slack-read-only
     required: false
 evidence:
-  - kind: routing
-    path: docs/agents/README.md
-    required: true
-  - kind: strategy
-    path: docs/agents/WORKFLOWS.md
-    required: true
-  - kind: guardrails
-    path: docs/agents/GUARDRAILS.md
-    required: true
   - kind: project-memory
     path: docs/CONSTITUTION.md
+    required: true
+  - kind: project-validation
+    path: docs/references/testing.md
     required: true
   - kind: implementation-patterns
     path: docs/references/tooling.md

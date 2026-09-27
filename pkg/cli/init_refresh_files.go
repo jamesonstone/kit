@@ -115,7 +115,7 @@ func planRefreshInitScaffoldFile(
 	return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileCreated), nil
 }
 
-func planRefreshInitConstitution(projectRoot string, cfg *config.Config, targets map[string]bool) (*initRefreshFileChange, error) {
+func planRefreshInitConstitution(projectRoot string, cfg *config.Config, targets map[string]bool, plannedInstructions []initRefreshFileChange) (*initRefreshFileChange, error) {
 	relativePath := filepath.ToSlash(cfg.ConstitutionPath)
 	if !initRefreshTargetMatches(targets, relativePath) {
 		return nil, nil
@@ -136,7 +136,7 @@ func planRefreshInitConstitution(projectRoot string, cfg *config.Config, targets
 		result = instructionFileSkipped
 	}
 	after = mergeDocumentContent(relativePath, after, templates.Constitution, document.TypeConstitution)
-	updated, changed := upsertConstitutionBaseline(after)
+	updated, changed := upsertConstitutionBaseline(after, constitutionBaselineForProject(projectRoot, cfg, plannedInstructions))
 	if changed {
 		after = updated
 	}
@@ -195,6 +195,7 @@ func planRefreshInitInstructionArtifacts(
 	var changes []initRefreshFileChange
 	legacyV1Refreshed := false
 	customizedV2Preserved := false
+	legacyContract := false
 	for _, relativePath := range instructionArtifactPaths(
 		cfg,
 		instructionFileSelection{},
@@ -221,6 +222,9 @@ func planRefreshInitInstructionArtifacts(
 		if err != nil {
 			return nil, nil, false, err
 		}
+		if plan.legacyContract {
+			legacyContract = true
+		}
 		change, err := initRefreshChangeFromInstructionPlan(projectRoot, plan)
 		if err != nil {
 			return nil, nil, false, err
@@ -233,8 +237,13 @@ func planRefreshInitInstructionArtifacts(
 	if customizedV2Preserved {
 		notes = append(notes, "customized V2 instruction artifacts were preserved; preview a targeted replacement with `kit reconcile --include-files --force --dry-run --diff`")
 	}
+	if legacyContract {
+		notes = append(notes, legacyContractNote)
+	}
 	return changes, notes, migrated, nil
 }
+
+const legacyContractNote = "instruction entry files predate the Kit-managed contract block and were left unchanged; preview a targeted replacement with `kit reconcile --include-files --force --dry-run --diff`"
 
 func exactGeneratedInstructionScaffold(projectRoot string, cfg *config.Config, version int) bool {
 	for _, relativePath := range instructionArtifactPaths(cfg, instructionFileSelection{}, version, true) {

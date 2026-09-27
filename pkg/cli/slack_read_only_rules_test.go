@@ -62,33 +62,11 @@ func TestSlackReadOnlyRegistryRulesetIsValid(t *testing.T) {
 func TestSlackReadOnlyIsIntegratedWithRelatedRules(t *testing.T) {
 	checks := map[string][]string{
 		"docs/references/README.md": {
-			"Use `rules/slack-read-only.md`",
 			"| `slack-read-only` |",
-		},
-		"docs/agents/RLM.md": {
-			"Load `docs/references/rules/slack-read-only.md` before any Slack write, and when a Slack link, channel, thread, or search is part of the task",
-		},
-		"docs/CONSTITUTION.md": {
-			"Load `docs/references/rules/slack-read-only.md`",
-			"Treat Slack as read-only by default",
 		},
 		"docs/references/workflows/implementation-delivery.md": {
 			"slug: slack-read-only",
 			"required: false",
-		},
-		"AGENTS.md": {
-			"## Slack: Read-Only by Default, Explicit Approval Required to Send",
-			"Drafting a Slack message is not authorization to send it",
-		},
-		"CLAUDE.md": {
-			"## Slack: Read-Only by Default, Explicit Approval Required to Send",
-		},
-		".github/copilot-instructions.md": {
-			"## Slack: Read-Only by Default, Explicit Approval Required to Send",
-		},
-		"docs/agents/GUARDRAILS.md": {
-			"## Slack: Read-Only by Default, Explicit Approval Required to Send",
-			"Follow `docs/references/rules/slack-read-only.md` before any Slack write",
 		},
 	}
 	for path, required := range checks {

@@ -35,13 +35,6 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 		"V2 AGENTS.md":            AgentsMD,
 		"V2 CLAUDE.md":            ClaudeMD,
 		"V2 Copilot instructions": CopilotInstructionsMD,
-		"V3 AGENTS.md":            MemoryAgentsMD,
-		"V3 CLAUDE.md":            MemoryClaudeMD,
-		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
-		"V3 GUARDRAILS.md": fileContentByPath(
-			InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
-			"docs/agents/GUARDRAILS.md",
-		),
 	} {
 		for _, check := range required {
 			if !strings.Contains(content, check) {
@@ -69,7 +62,6 @@ func TestInstructionTemplatesRequireAgentCompletionOutput(t *testing.T) {
 func TestInstructionSupportRoutesAgentCompletionOutput(t *testing.T) {
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
@@ -83,18 +75,6 @@ func TestInstructionSupportRoutesAgentCompletionOutput(t *testing.T) {
 	}
 }
 
-func TestContextWorkflowsRequireAgentCompletionOutput(t *testing.T) {
-	artifacts, err := ContextWorkflowArtifacts()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, artifact := range artifacts {
-		if !strings.Contains(artifact.Content, "  - slug: agent-completion-output\n    required: true") {
-			t.Errorf("workflow %s does not require agent-completion-output", artifact.Slug)
-		}
-	}
-}
-
 func TestConstitutionTemplateRequiresAgentCompletionOutput(t *testing.T) {
 	for _, check := range []string{
 		"docs/references/rules/agent-completion-output.md",
@@ -102,7 +82,7 @@ func TestConstitutionTemplateRequiresAgentCompletionOutput(t *testing.T) {
 		"which requires no response format",
 		"never leave the reader wrong about a blocker, incomplete scope, a required action, or a failing or unobserved check",
 	} {
-		if !strings.Contains(Constitution, check) {
+		if !strings.Contains(LegacyConstitutionBaselineSection, check) {
 			t.Errorf("expected Constitution template to contain %q", check)
 		}
 	}

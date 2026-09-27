@@ -105,7 +105,6 @@ func TestFreshInitResolvesRepositoryBootstrapContract(t *testing.T) {
 	}
 	for _, path := range []string{
 		"docs/references/workflows/repository-bootstrap.md",
-		"docs/references/rules/coding-agent-context-usage.md",
 		"docs/references/rules/constitution-curation.md",
 		"docs/references/rules/kit-capabilities-usage.md",
 		"docs/references/rules/deletion-safety.md",

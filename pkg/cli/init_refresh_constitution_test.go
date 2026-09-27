@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
@@ -26,7 +27,7 @@ Correctness first.
 No hidden behavior.
 `
 
-	once, changed := upsertConstitutionBaseline(input)
+	once, changed := upsertConstitutionBaseline(input, templates.ConstitutionBaselineSection)
 	if !changed {
 		t.Fatal("first upsert changed = false, want true")
 	}
@@ -34,7 +35,7 @@ No hidden behavior.
 		t.Fatalf("first upsert removed custom constraint:\n%s", once)
 	}
 
-	twice, changed := upsertConstitutionBaseline(once)
+	twice, changed := upsertConstitutionBaseline(once, templates.ConstitutionBaselineSection)
 	if changed {
 		t.Fatalf("second upsert changed = true, want idempotent no-op:\nonce:\n%s\ntwice:\n%s", once, twice)
 	}
@@ -49,26 +50,33 @@ func TestRefreshKeepsFreshInitConstitutionBaseline(t *testing.T) {
 		t.Fatal("fresh Constitution does not embed the shared baseline section")
 	}
 
-	refreshed, changed := upsertConstitutionBaseline(fresh)
+	refreshed, changed := upsertConstitutionBaseline(fresh, templates.ConstitutionBaselineSection)
 	if changed || refreshed != strings.TrimRight(fresh, "\n")+"\n" {
 		t.Fatalf("refresh changed a freshly initialized Constitution:\n%s", refreshed)
 	}
 
-	// A project refreshed by an older Kit may lack baseline bullets; refresh
-	// must restore the complete fresh-init baseline rather than a subset.
+	// A v3 project still carrying the pre-contract baseline converges to the
+	// pointer baseline instead of keeping restated universal rules.
+	stale := strings.Replace(fresh, templates.ConstitutionBaselineSection, templates.LegacyConstitutionBaselineSection, 1)
+	restored, changed := upsertConstitutionBaseline(stale, templates.ConstitutionBaselineSectionFor(config.InstructionScaffoldVersionMemory))
+	if !changed || !strings.Contains(restored, templates.ConstitutionBaselineSection) || strings.Contains(restored, "300 physical lines") {
+		t.Fatalf("refresh did not converge to the v3 baseline:\n%s", restored)
+	}
+}
+
+func TestRefreshRestoresCompleteLegacyBaseline(t *testing.T) {
+	// Legacy scaffolds keep every baseline bullet; a refresh must restore the
+	// deletion-safety bullets that an older refresh stripped (GH-215).
+	legacy := strings.Replace(templates.Constitution, templates.ConstitutionBaselineSection, templates.LegacyConstitutionBaselineSection, 1)
 	var stale []string
-	for _, line := range strings.Split(fresh, "\n") {
-		if strings.Contains(line, "deletion") {
-			continue
+	for _, line := range strings.Split(legacy, "\n") {
+		if !strings.Contains(line, "deletion") {
+			stale = append(stale, line)
 		}
-		stale = append(stale, line)
 	}
-	restored, changed := upsertConstitutionBaseline(strings.Join(stale, "\n"))
-	if !changed {
-		t.Fatal("refresh left a stale baseline unchanged")
-	}
-	if !strings.Contains(restored, templates.ConstitutionBaselineSection) {
-		t.Fatalf("refresh did not restore the fresh-init baseline:\n%s", restored)
+	restored, changed := upsertConstitutionBaseline(strings.Join(stale, "\n"), templates.ConstitutionBaselineSectionFor(config.InstructionScaffoldVersionTOC))
+	if !changed || !strings.Contains(restored, templates.LegacyConstitutionBaselineSection) {
+		t.Fatalf("refresh did not restore the complete legacy baseline:\n%s", restored)
 	}
 }
 

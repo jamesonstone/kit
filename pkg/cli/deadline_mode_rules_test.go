@@ -57,11 +57,7 @@ func TestDeadlineModeRegistryRulesetIsValid(t *testing.T) {
 func TestDeadlineModeIsIntegratedWithRelatedRules(t *testing.T) {
 	checks := map[string][]string{
 		"docs/references/README.md": {
-			"Use `rules/deadline-mode.md`",
 			"| `deadline-mode` |",
-		},
-		"docs/agents/RLM.md": {
-			"Load `docs/references/rules/deadline-mode.md` only when the user explicitly signals a real time constraint or deadline in-thread; never infer or proactively suggest deadline mode",
 		},
 		"docs/references/rules/testing-and-environment-validation.md": {
 			"superseded only by an active, explicitly recorded",
@@ -92,20 +88,15 @@ func TestDeadlineModeIsIntegratedWithRelatedRules(t *testing.T) {
 	}
 }
 
-func TestDeadlineModeDoesNotAddHardGateOrConstitutionRoute(t *testing.T) {
-	for _, path := range []string{
-		"CLAUDE.md",
-		"AGENTS.md",
-		".github/copilot-instructions.md",
-		"docs/agents/GUARDRAILS.md",
-		"docs/CONSTITUTION.md",
-	} {
+func TestDeadlineModeStaysContextualInAgentEntryFiles(t *testing.T) {
+	for _, path := range []string{"CLAUDE.md", "AGENTS.md", ".github/copilot-instructions.md", "docs/CONSTITUTION.md"} {
 		content, err := os.ReadFile(filepath.Join("..", "..", filepath.FromSlash(path)))
 		if err != nil {
 			t.Fatalf("read %s: %v", path, err)
 		}
-		if strings.Contains(strings.ToLower(string(content)), "deadline-mode") {
-			t.Errorf("%s unexpectedly references deadline-mode; this ruleset must stay conditional and pointer-loaded only", path)
+		lower := strings.ToLower(string(content))
+		if strings.Contains(lower, "## deadline") || strings.Contains(lower, "deadline mode hard gate") {
+			t.Errorf("%s adds a deadline-mode gate; the rule must stay contextual", path)
 		}
 	}
 }

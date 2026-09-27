@@ -55,9 +55,6 @@ func TestInstructionTemplatesAssignHumanUserToGitHubDelivery(t *testing.T) {
 		"AGENTS.md":                       AgentsMD,
 		"CLAUDE.md":                       ClaudeMD,
 		".github/copilot-instructions.md": CopilotInstructionsMD,
-		"memory AGENTS.md":                MemoryAgentsMD,
-		"memory CLAUDE.md":                MemoryClaudeMD,
-		"memory Copilot instructions":     MemoryCopilotInstructionsMD,
 	} {
 		if !strings.Contains(strings.ToLower(content), assignCheck) {
 			t.Fatalf("expected %s to instruct assigning the human user to every issue and PR", name)
@@ -70,7 +67,6 @@ func TestInstructionTemplatesAssignHumanUserToGitHubDelivery(t *testing.T) {
 	for _, version := range []int{
 		config.InstructionScaffoldVersionVerbose,
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		guardrails := fileContentByPath(InstructionSupportFiles(version), "docs/agents/GUARDRAILS.md")
 		if guardrails == "" {
@@ -127,9 +123,6 @@ func TestInstructionTemplatesDefaultToNewWorkLaneBeforeMutation(t *testing.T) {
 		"V2 AGENTS.md":            AgentsMD,
 		"V2 CLAUDE.md":            ClaudeMD,
 		"V2 Copilot instructions": CopilotInstructionsMD,
-		"V3 AGENTS.md":            MemoryAgentsMD,
-		"V3 CLAUDE.md":            MemoryClaudeMD,
-		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
 	} {
 		normalizedContent := strings.Join(strings.Fields(content), " ")
 		for _, check := range checks {
@@ -153,9 +146,6 @@ func TestInstructionTemplatesDefaultToNewWorkLaneBeforeMutation(t *testing.T) {
 		"V2 AGENTS.md":            AgentsMD,
 		"V2 CLAUDE.md":            ClaudeMD,
 		"V2 Copilot instructions": CopilotInstructionsMD,
-		"V3 AGENTS.md":            MemoryAgentsMD,
-		"V3 CLAUDE.md":            MemoryClaudeMD,
-		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
 	} {
 		for _, forbidden := range []string{
 			"Before I make any repository changes, should I create a new GitHub issue",

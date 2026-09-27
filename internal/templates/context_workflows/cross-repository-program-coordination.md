@@ -5,25 +5,17 @@ description: Coordinate dependent multi-repository work from one reconciled prog
 dependencies:
   - implementation-delivery
 rules:
-  - slug: coding-agent-context-usage
-    required: true
   - slug: agent-completion-output
-    required: true
+    required: false
   - slug: deletion-safety
-    required: true
+    required: false
   - slug: cross-repository-program-coordination
     required: true
   - slug: agent-team-orchestration
-    required: true
+    required: false
   - slug: testing-and-environment-validation
-    required: true
+    required: false
 evidence:
-  - kind: routing
-    path: docs/agents/TOOLING.md
-    required: true
-  - kind: strategy
-    path: docs/agents/RLM.md
-    required: true
 ---
 # Workflow: Cross-Repository Program Coordination
 

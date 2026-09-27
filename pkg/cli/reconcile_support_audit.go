@@ -58,53 +58,39 @@ func auditV2SupportGuidance(projectRoot string) []reconcileFinding {
 
 func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
 	expectations := v3GuidanceExpectations()
+	forbidden := v3ForbiddenGuidance()
+	paths := make(map[string]bool, len(expectations)+len(forbidden))
+	for relativePath := range expectations {
+		paths[relativePath] = true
+	}
+	for relativePath := range forbidden {
+		paths[relativePath] = true
+	}
 
 	var findings []reconcileFinding
-	for relativePath, snippets := range expectations {
+	for relativePath := range paths {
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
 		content, err := os.ReadFile(absolutePath)
 		if err != nil {
 			continue
 		}
 		body := string(content)
-		for _, snippet := range snippets {
+		for _, snippet := range expectations[relativePath] {
 			if strings.Contains(body, snippet) {
 				continue
 			}
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
+			findings = append(findings, v3GuidanceFinding(projectRoot, absolutePath, relativePath,
 				fmt.Sprintf("V3 instruction support document is missing required guidance %q", snippet),
-				templateSource(projectRoot),
-				fmt.Sprintf(
-					"integrate the missing V3 guidance manually, or preview a targeted generated replacement with `kit reconcile --include-files --force --dry-run --diff --file %s` before overwriting customized content",
-					relativePath,
-				),
-				[]string{
-					fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", relativePath),
-					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
-				},
-			))
+				"integrate the missing V3 guidance manually", snippet))
 			break
 		}
-		for _, snippet := range v3ForbiddenGuidance()[relativePath] {
+		for _, snippet := range forbidden[relativePath] {
 			if !strings.Contains(body, snippet) {
 				continue
 			}
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
+			findings = append(findings, v3GuidanceFinding(projectRoot, absolutePath, relativePath,
 				fmt.Sprintf("V3 instruction support document still contains forbidden guidance %q", snippet),
-				templateSource(projectRoot),
-				fmt.Sprintf(
-					"remove the superseded completion guidance, or preview a targeted generated replacement with `kit reconcile --include-files --force --dry-run --diff --file %s` before overwriting customized content",
-					relativePath,
-				),
-				[]string{
-					fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", relativePath),
-					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
-				},
-			))
+				"remove the superseded guidance", snippet))
 			break
 		}
 		if containsVendorToolRequirement(body) {
@@ -121,80 +107,22 @@ func auditV3SupportGuidance(projectRoot string) []reconcileFinding {
 	return findings
 }
 
-func auditWorkLaneDefaultGuidance(projectRoot string) []reconcileFinding {
-	expectations := map[string][]string{
-		"AGENTS.md": {
-			"Default to a new worklane without asking",
-			"one human-assigned",
-			"exact `GH-<issue-number>` branch",
-			"canonical non-primary",
-			"ready pull-request plan",
-			"Continue an existing lane only when the user explicitly directs",
-			"Never offer or ask the user to choose between lanes",
-			"Treat exact existing-PR lifecycle work as continuation",
-			"Never create coordination or corrective pull requests for scope-preserving work",
+func v3GuidanceFinding(projectRoot, absolutePath, relativePath, issue, action, snippet string) reconcileFinding {
+	return newFinding(
+		reconcileSeverityWarning,
+		absolutePath,
+		issue,
+		templateSource(projectRoot),
+		fmt.Sprintf(
+			"%s, or preview a targeted generated replacement with `kit reconcile --include-files --force --dry-run --diff --file %s` before overwriting customized content",
+			action,
+			relativePath,
+		),
+		[]string{
+			fmt.Sprintf("kit reconcile --include-files --force --dry-run --diff --file %s", relativePath),
+			fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
 		},
-		"CLAUDE.md": {
-			"Default to a new worklane without asking",
-			"one human-assigned",
-			"exact `GH-<issue-number>` branch",
-			"canonical non-primary",
-			"ready pull-request plan",
-			"Continue an existing lane only when the user explicitly directs",
-			"Never offer or ask the user to choose between lanes",
-			"Treat exact existing-PR lifecycle work as continuation",
-			"Never create coordination or corrective pull requests for scope-preserving work",
-		},
-		".github/copilot-instructions.md": {
-			"Default to a new worklane without asking",
-			"one human-assigned",
-			"exact `GH-<issue-number>` branch",
-			"canonical non-primary",
-			"ready pull-request plan",
-			"Continue an existing lane only when the user explicitly directs",
-			"Never offer or ask the user to choose between lanes",
-			"Treat exact existing-PR lifecycle work as continuation",
-			"Never create coordination or corrective pull requests for scope-preserving work",
-		},
-		"docs/agents/GUARDRAILS.md": {
-			"Default to a new worklane without asking",
-			"one human-assigned",
-			"exact `GH-<issue-number>` branch",
-			"canonical non-primary",
-			"ready pull-request plan",
-			"Continue an existing lane only when the user explicitly directs",
-			"Never offer or ask the user to choose between lanes",
-			"Exact existing pull requests targeted for review repair, CI repair, base",
-			"create a coordination or corrective pull request for scope-preserving work",
-		},
-	}
-
-	var findings []reconcileFinding
-	for relativePath, snippets := range expectations {
-		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(relativePath))
-		content, err := os.ReadFile(absolutePath)
-		if err != nil {
-			continue
-		}
-		for _, snippet := range snippets {
-			if strings.Contains(string(content), snippet) {
-				continue
-			}
-			findings = append(findings, newFinding(
-				reconcileSeverityWarning,
-				absolutePath,
-				fmt.Sprintf("managed work-lane guidance is missing default routing semantics %q", snippet),
-				templateSource(projectRoot),
-				"integrate the missing default routing semantics manually while preserving project-specific guidance",
-				[]string{
-					fmt.Sprintf("kit reconcile --include-files --dry-run --diff --file %s", relativePath),
-					fmt.Sprintf("rg -n %q %s", snippet, absolutePath),
-				},
-			))
-			break
-		}
-	}
-	return findings
+	)
 }
 
 func auditInstructionPromptEntrypoints(projectRoot string, cfg *config.Config, version int) []reconcileFinding {

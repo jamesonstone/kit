@@ -11,10 +11,7 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
-const (
-	constitutionBaselineHeading = templates.ConstitutionBaselineHeading
-	constitutionBaselineSection = templates.ConstitutionBaselineSection
-)
+const constitutionBaselineHeading = templates.ConstitutionBaselineHeading
 
 type initRefreshOptions struct {
 	force                       bool
@@ -156,16 +153,18 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	if readmeChange != nil {
 		changes = append(changes, *readmeChange)
 	}
-	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets)
+	// Plan instruction artifacts first: a V2-to-V3 migration changes which
+	// Constitution baseline applies, and refresh must converge in one pass.
+	instructionChanges, instructionNotes, instructionMigrated, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
+	if err != nil {
+		return nil, err
+	}
+	constitutionChange, err := planRefreshInitConstitution(projectRoot, cfg, targets, instructionChanges)
 	if err != nil {
 		return nil, err
 	}
 	if constitutionChange != nil {
 		changes = append(changes, *constitutionChange)
-	}
-	instructionChanges, instructionNotes, instructionMigrated, err := planRefreshInitInstructionArtifacts(projectRoot, opts, cfg, targets)
-	if err != nil {
-		return nil, err
 	}
 	changes = append(changes, instructionChanges...)
 	notes = append(notes, instructionNotes...)

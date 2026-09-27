@@ -52,11 +52,11 @@ Kit retains exactly three default instruction targets: `AGENTS.md`,
 `CLAUDE.md`, and `.github/copilot-instructions.md`. It does not generate
 `WARP.md` or provider agent-definition directories.
 
-The canonical orchestration rule is provider-neutral. `TOOLING.md` supplies
-the host adapter and illustrative current model classes. `AGENTS.md` includes
-one conditional Codex binding; Claude and Copilot continue through their
-existing entrypoints, and Warp consumes `AGENTS.md` while ignoring the binding
-when the active host is not Codex.
+All three files render the same Kit-managed universal contract block from one
+canonical source, with no vendor-specific bindings. Specialized rules under
+`docs/references/rules/` load only when the contract's trigger for them applies.
+Instruction files that predate the managed block are left unchanged by refresh
+and reported by `kit reconcile` until you preview and apply a replacement.
 
 Apply reviewed managed updates only after the preview is understood:
 

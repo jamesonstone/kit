@@ -55,9 +55,7 @@ func tocInstructionDocument(title string) string {
 }
 
 func memoryInstructionDocument(title string) string {
-	return `# ` + title + `
-
-` + memoryRepositoryInstructions(title)
+	return renderUniversalContract(title)
 }
 
 // LegacyAgentPointer returns the comprehensive legacy instruction template for agent files.
@@ -98,7 +96,7 @@ var MemoryAgentsMD = memoryInstructionDocument("AGENTS")
 var MemoryClaudeMD = memoryInstructionDocument("CLAUDE")
 
 // MemoryCopilotInstructionsMD is the v3 repository-wide Copilot scaffold.
-var MemoryCopilotInstructionsMD = memoryCopilotInstructions
+var MemoryCopilotInstructionsMD = renderUniversalContract("GitHub Copilot Repository Instructions")
 
 // InstructionFile returns default scaffold content for supported instruction file paths.
 func InstructionFile(path string) string {

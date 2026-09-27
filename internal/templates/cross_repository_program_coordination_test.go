@@ -25,9 +25,6 @@ func TestInstructionTemplatesRequireCrossRepositoryProgramCoordination(t *testin
 		"V2 AGENTS.md":            AgentsMD,
 		"V2 CLAUDE.md":            ClaudeMD,
 		"V2 Copilot instructions": CopilotInstructionsMD,
-		"V3 AGENTS.md":            MemoryAgentsMD,
-		"V3 CLAUDE.md":            MemoryClaudeMD,
-		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
 	} {
 		for _, check := range required {
 			if !strings.Contains(content, check) {
@@ -40,7 +37,6 @@ func TestInstructionTemplatesRequireCrossRepositoryProgramCoordination(t *testin
 func TestInstructionSupportRoutesCrossRepositoryProgramCoordination(t *testing.T) {
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")

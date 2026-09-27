@@ -87,40 +87,6 @@ func TestInitRefreshInstallsStandingAuthorityGuidance(t *testing.T) {
 	assertManagedSafetyGuidance(t, projectRoot)
 }
 
-func TestAuditWorkLaneDefaultGuidanceFindsExistingSectionDrift(t *testing.T) {
-	for _, tt := range []struct {
-		path    string
-		snippet string
-	}{
-		{path: "AGENTS.md", snippet: "Default to a new worklane without asking"},
-		{path: "CLAUDE.md", snippet: "Default to a new worklane without asking"},
-		{path: ".github/copilot-instructions.md", snippet: "Default to a new worklane without asking"},
-		{path: "docs/agents/GUARDRAILS.md", snippet: "Default to a new worklane without asking"},
-		{path: "AGENTS.md", snippet: "Never offer or ask the user to choose between lanes"},
-		{path: "CLAUDE.md", snippet: "Never offer or ask the user to choose between lanes"},
-		{path: ".github/copilot-instructions.md", snippet: "Never offer or ask the user to choose between lanes"},
-		{path: "docs/agents/GUARDRAILS.md", snippet: "Never offer or ask the user to choose between lanes"},
-		{path: "AGENTS.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
-		{path: "CLAUDE.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
-		{path: ".github/copilot-instructions.md", snippet: "Treat exact existing-PR lifecycle work as continuation"},
-		{path: "docs/agents/GUARDRAILS.md", snippet: "Exact existing pull requests targeted for review repair, CI repair, base"},
-	} {
-		t.Run(tt.path, func(t *testing.T) {
-			projectRoot, _ := setupLifecycleTestProject(t)
-			removeGuidanceSnippet(t, projectRoot, tt.path, tt.snippet)
-
-			findings := auditWorkLaneDefaultGuidance(projectRoot)
-			absolutePath := filepath.Join(projectRoot, filepath.FromSlash(tt.path))
-			for _, finding := range findings {
-				if finding.FilePath == absolutePath && strings.Contains(finding.Issue, tt.snippet) {
-					return
-				}
-			}
-			t.Fatalf("no default routing drift finding for %s: %#v", tt.path, findings)
-		})
-	}
-}
-
 func setupManagedSafetyGuidanceProject(t *testing.T) string {
 	t.Helper()
 	projectRoot, _ := setupLifecycleTestProject(t)

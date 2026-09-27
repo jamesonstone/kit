@@ -14,7 +14,6 @@ func TestInstructionTemplatesRouteHumanAuthorshipRule(t *testing.T) {
 
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
@@ -27,7 +26,7 @@ func TestInstructionTemplatesRouteHumanAuthorshipRule(t *testing.T) {
 		}
 	}
 
-	if !strings.Contains(Constitution, constitutionRoute) {
+	if !strings.Contains(LegacyConstitutionBaselineSection, constitutionRoute) {
 		t.Fatal("Constitution template does not route human-authorship")
 	}
 }

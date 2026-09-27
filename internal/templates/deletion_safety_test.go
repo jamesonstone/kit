@@ -29,13 +29,6 @@ func TestInstructionTemplatesRequireDeletionSafety(t *testing.T) {
 		"V2 AGENTS.md":            AgentsMD,
 		"V2 CLAUDE.md":            ClaudeMD,
 		"V2 Copilot instructions": CopilotInstructionsMD,
-		"V3 AGENTS.md":            MemoryAgentsMD,
-		"V3 CLAUDE.md":            MemoryClaudeMD,
-		"V3 Copilot instructions": MemoryCopilotInstructionsMD,
-		"V3 GUARDRAILS.md": fileContentByPath(
-			InstructionSupportFiles(config.InstructionScaffoldVersionMemory),
-			"docs/agents/GUARDRAILS.md",
-		),
 	} {
 		for _, check := range required {
 			if !strings.Contains(content, check) {
@@ -48,7 +41,6 @@ func TestInstructionTemplatesRequireDeletionSafety(t *testing.T) {
 func TestInstructionSupportRoutesDeletionSafety(t *testing.T) {
 	for _, version := range []int{
 		config.InstructionScaffoldVersionTOC,
-		config.InstructionScaffoldVersionMemory,
 	} {
 		files := InstructionSupportFiles(version)
 		rlm := fileContentByPath(files, "docs/agents/RLM.md")
@@ -66,25 +58,13 @@ func TestInstructionSupportRoutesDeletionSafety(t *testing.T) {
 	}
 }
 
-func TestContextWorkflowsRequireDeletionSafety(t *testing.T) {
-	artifacts, err := ContextWorkflowArtifacts()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, artifact := range artifacts {
-		if !strings.Contains(artifact.Content, "  - slug: deletion-safety\n    required: true") {
-			t.Errorf("workflow %s does not require deletion-safety", artifact.Slug)
-		}
-	}
-}
-
 func TestConstitutionTemplateRequiresDeletionSafety(t *testing.T) {
 	for _, check := range []string{
 		"docs/references/rules/deletion-safety.md",
 		"Default unqualified deletion to a recoverable soft delete",
 		"post-outline specific manual confirmation",
 	} {
-		if !strings.Contains(Constitution, check) {
+		if !strings.Contains(LegacyConstitutionBaselineSection, check) {
 			t.Errorf("expected Constitution template to contain %q", check)
 		}
 	}

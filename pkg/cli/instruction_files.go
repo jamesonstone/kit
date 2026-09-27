@@ -41,6 +41,8 @@ type instructionFileWritePlan struct {
 	absolutePath string
 	content      string
 	result       instructionFileWriteResult
+	// legacyContract marks an entry file that predates the managed contract block.
+	legacyContract bool
 }
 
 func (s instructionFileSelection) any() bool {
@@ -166,6 +168,21 @@ func planInstructionArtifactWrite(
 		existingContent, err := readInstructionFile(absolutePath)
 		if err != nil {
 			return instructionFileWritePlan{}, fmt.Errorf("failed to read %s: %w", relativePath, err)
+		}
+
+		if block := mergeManagedContractBlock(existingContent, content); block.handled {
+			plan := instructionFileWritePlan{relativePath: relativePath, absolutePath: absolutePath}
+			switch {
+			case block.legacy:
+				plan.result = instructionFileSkipped
+				plan.legacyContract = true
+			case block.content == existingContent:
+				plan.result = instructionFileSkipped
+			default:
+				plan.content = block.content
+				plan.result = instructionFileUpdated
+			}
+			return plan, nil
 		}
 
 		mergedContent, changed, err := mergeInstructionFileContent(existingContent, content)

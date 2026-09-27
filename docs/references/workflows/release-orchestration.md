@@ -5,16 +5,14 @@ description: Build and execute an authority-aware release graph across scoped re
 dependencies:
   - implementation-delivery
 rules:
-  - slug: coding-agent-context-usage
-    required: true
   - slug: agent-completion-output
-    required: true
+    required: false
   - slug: deletion-safety
-    required: true
+    required: false
   - slug: github-pr-merge
     required: true
   - slug: testing-and-environment-validation
-    required: true
+    required: false
   - slug: infrastructure-change-approval
     required: false
   - slug: agent-team-orchestration
@@ -22,12 +20,6 @@ rules:
   - slug: cross-repository-program-coordination
     required: false
 evidence:
-  - kind: routing
-    path: docs/agents/TOOLING.md
-    required: true
-  - kind: guardrails
-    path: docs/agents/GUARDRAILS.md
-    required: true
   - kind: project-memory
     path: docs/CONSTITUTION.md
     required: true
