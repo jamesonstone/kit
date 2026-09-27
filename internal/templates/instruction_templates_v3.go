@@ -207,7 +207,6 @@ does not replace native planning, ingest transcripts, or launch an agent.
 
 func memoryGuardrails() string {
 	content := strings.ReplaceAll(agentsGuardrails, "For v2 feature work, populate all required `SPEC.md` sections and keep front matter `workflow_version`, `phase`, references, relationships, and skills current", "For V3 feature work, satisfy the phase-aware living-spec gates and keep front matter `workflow_version`, `phase`, references, relationships, and skills current; preserve version-specific requirements for legacy specs")
-	content = strings.ReplaceAll(content, "Link the invoking checkout's `.env`", "Link the primary checkout's `.env`")
 	return content + `
 
 ## Repository Memory Completion Gate

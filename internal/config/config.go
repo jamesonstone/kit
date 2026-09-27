@@ -19,7 +19,6 @@ type Config struct {
 	SpecsDir                   string                           `yaml:"specs_dir"`
 	SkillsDir                  string                           `yaml:"skills_dir"`
 	ConstitutionPath           string                           `yaml:"constitution_path"`
-	AllowOutOfOrder            bool                             `yaml:"allow_out_of_order"`
 	Loop                       LoopConfig                       `yaml:"loop,omitempty"`
 	Agents                     []string                         `yaml:"agents"`
 	InstructionScaffoldVersion int                              `yaml:"instruction_scaffold_version"`
@@ -170,7 +169,6 @@ func Default() *Config {
 		SpecsDir:                   "docs/specs",
 		SkillsDir:                  ".agents/skills",
 		ConstitutionPath:           "docs/CONSTITUTION.md",
-		AllowOutOfOrder:            false,
 		Agents:                     []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
 		InstructionScaffoldVersion: DefaultInstructionScaffoldVersion,
 		FeatureNaming: FeatureNaming{
