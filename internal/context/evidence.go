@@ -54,7 +54,7 @@ func (r *resolver) addPathHint(hint string) {
 	}
 	state := ""
 	switch {
-	case errors.Is(err, os.ErrNotExist):
+	case errors.Is(err, os.ErrNotExist) && !missingPathEscapes(r.root, hint):
 		state = "absent"
 	case err.Error() == errEvidenceDirectory:
 		state = "directory"
@@ -68,6 +68,29 @@ func (r *resolver) addPathHint(hint string) {
 	r.evidenceIndex[relativePath] = len(r.contract.Evidence)
 	r.contract.Evidence = append(r.contract.Evidence, EvidenceItem{Kind: "path", Path: relativePath, State: state, Reasons: []string{"explicit path hint"}})
 	r.addDiagnostic("info", "path-hint-"+state, relativePath, "path hint recorded as "+state+"; nothing to load")
+}
+
+// missingPathEscapes reports whether the nearest existing ancestor of a
+// missing hint resolves outside the project root, such as a planned file
+// beneath a symlink that points elsewhere.
+func missingPathEscapes(root, value string) bool {
+	path := strings.TrimSpace(value)
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(root, filepath.FromSlash(path))
+	}
+	for dir := filepath.Dir(filepath.Clean(path)); ; dir = filepath.Dir(dir) {
+		if _, err := os.Lstat(dir); err == nil {
+			resolved, err := filepath.EvalSymlinks(dir)
+			if err != nil {
+				return true
+			}
+			relative, err := filepath.Rel(root, resolved)
+			return err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator))
+		}
+		if parent := filepath.Dir(dir); parent == dir {
+			return true
+		}
+	}
 }
 
 const errEvidenceDirectory = "evidence path is a directory"

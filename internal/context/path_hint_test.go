@@ -1,6 +1,10 @@
 package context
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 func TestResolveRecordsFutureAndDirectoryPathHintsWithoutBlocking(t *testing.T) {
 	root := contextProject(t)
@@ -33,5 +37,18 @@ func TestResolveStillBlocksPathHintsOutsideProject(t *testing.T) {
 	result := Resolve(root, Request{Workflow: "main", Paths: []string{"../outside.go"}})
 	if !result.Blocked {
 		t.Fatalf("escaping path hint did not block: %#v", result.Evidence)
+	}
+}
+
+func TestResolveBlocksMissingPathHintBelowEscapingSymlink(t *testing.T) {
+	root := contextProject(t)
+	writeContextFile(t, root, "docs/references/workflows/main.md", workflowDocument("main", nil, nil, nil))
+	if err := os.Symlink(t.TempDir(), filepath.Join(root, "outside")); err != nil {
+		t.Fatalf("Symlink() error = %v", err)
+	}
+
+	result := Resolve(root, Request{Workflow: "main", Paths: []string{"outside/new_file.go"}})
+	if !result.Blocked {
+		t.Fatalf("missing hint below escaping symlink did not block: %#v", result.Evidence)
 	}
 }
