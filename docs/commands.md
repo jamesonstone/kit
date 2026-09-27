@@ -42,7 +42,7 @@ reported unless `--force` is used.
 | `kit usage report` / `status` / `refresh` / `clear` / `enable` / `disable` | Local, minimal command-usage evidence for deciding what Kit should keep. |
 
 Usage collection is local-only and records no arguments, output, paths,
-content, environment values, or secrets. Development builds, test binaries,
+content, environment values, or secrets. Unversioned development builds, test binaries,
 `--help` lookups, and processes with `KIT_USAGE_DISABLED=1` never record.
 
 ## Utilities

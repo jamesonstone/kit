@@ -7,7 +7,6 @@ registry_scope: downstream
 applies_to:
   - coding-agent
   - workflow
-  - dispatch
   - subagent
   - verification
 read_policy_default: conditional
@@ -25,7 +24,7 @@ Kit does not inspect agent rosters, choose models, launch agents, or supervise t
 
 ## Applies When
 
-- A coding agent delegates work to subagents or parallel workers, including through `kit dispatch` or `kit pr fix` prompts.
+- A coding agent delegates work to subagents or parallel workers.
 - A report claims parallel execution or independent verification.
 
 ## Rules

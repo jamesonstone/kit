@@ -92,7 +92,7 @@ func recordUsage(executed *cobra.Command, commandErr error, elapsed time.Duratio
 		projectRoot = ""
 	}
 	_ = usage.Record(usage.RecordInput{
-		Command: path, Version: Version, ExitCode: exitCode, Elapsed: elapsed,
+		Command: path, Version: currentVersion(), ExitCode: exitCode, Elapsed: elapsed,
 		ProjectRoot: projectRoot,
 		Interactive: term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd())),
 	})

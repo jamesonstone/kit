@@ -107,7 +107,7 @@ func syncRulesetRegistryContent(
 	switch {
 	case localHash == embeddedHash:
 		return rulesetRegistrySyncResult{content: localContent, state: registryArtifactStateManaged, hash: embeddedHash}, nil
-	case state.State != registryArtifactStateLocalCustom && strings.TrimSpace(state.InstalledHash) != "" && localHash == state.InstalledHash:
+	case kitWroteUnmodified(state, localHash):
 		return embedded()
 	default:
 		return rulesetRegistrySyncResult{
@@ -117,4 +117,15 @@ func syncRulesetRegistryContent(
 			conflicts: []string{fmt.Sprintf("%s has local custom content; use --force to accept Kit's version", rulesetTarget(item.Slug))},
 		}, nil
 	}
+}
+
+// kitWroteUnmodified reports whether the local file is exactly what Kit last
+// wrote. Legacy section-merged entries (state managed plus per-section hashes)
+// and legacy conflict entries recorded content that still held local edits,
+// so they never qualify.
+func kitWroteUnmodified(state config.RegistryArtifact, localHash string) bool {
+	if state.State != registryArtifactStateManaged || len(state.Sections) > 0 {
+		return false
+	}
+	return strings.TrimSpace(state.InstalledHash) != "" && localHash == state.InstalledHash
 }

@@ -146,5 +146,8 @@ func loadRulesetViewContent(ctx context.Context, projectRoot, slug string) (stri
 			return item.Content, rulesetRegistryRulesetURL(slug), nil
 		}
 	}
-	return "", "", fmt.Errorf("ruleset %q was not found locally or in the Kit registry", slug)
+	if replacement, ok := retiredRulesets[slug]; ok {
+		return "", "", fmt.Errorf("ruleset %q was retired; replaced by %s", slug, replacement)
+	}
+	return "", "", fmt.Errorf("ruleset %q was not found locally or among the rules shipped with Kit", slug)
 }

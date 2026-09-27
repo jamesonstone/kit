@@ -65,6 +65,9 @@ Single-lane execution: removals, rule changes, and test updates are tightly coup
 - `kit check --project` counted warnings as blocking, and the stale-reference and constraining-reference policies contradicted each other for a retired constraint. Stale references are now exempt from the constraining check.
 - Tests for the usage report recorded real events; test binaries now never record, so tests seed the store directly.
 - Kit's own `.kit.yaml` still listed retired rules after refresh because refresh does not retire rules; they were pruned by hand here, and retirement is final-migration work.
+- Independent pre-merge review (the PR exceeded CodeRabbit's file limit) found that earlier releases recorded section-merged rules as `managed` with the hash of content that still held local edits, and marked them with per-section `sections` state. The hash-based sync would have overwritten those edits, so `sections` stays decodable and such entries, like legacy `conflict` entries, are treated as local-custom.
+- The same review found `kit rules add <slug>` wrote a blank stub for shipped optional rules; it now installs the embedded rule as managed and names the replacement for a retired slug. Usage recording now uses the resolved build version, so `go install` binaries still record; only unversioned builds are isolated, and `make build` stamps a tag, so local builds do record unless `KIT_USAGE_DISABLED=1`.
+- Legacy generated support documents and their templates are gone from the source tree; the final migration recovers their known content from release tags rather than keeping templates alive.
 
 ## VALIDATION
 

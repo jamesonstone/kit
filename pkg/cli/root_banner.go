@@ -19,8 +19,8 @@ const (
 func rootLong(style humanOutputStyle) string {
 	return rootBanner(style) + `
 Kit is a repository-local contract and evidence harness for coding agents.
-It materializes durable rules, workflows, specifications, strategies, and
-implementation patterns, then resolves only the evidence needed for the work.
+It renders one universal agent contract, ships contextual rules with each
+release, and validates and converges Kit-managed project state.
 Kit does not choose a model, infer project truth, or launch an agent.
 
 ` + flowDiagram(style)

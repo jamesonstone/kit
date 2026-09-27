@@ -83,6 +83,16 @@ type RegistryArtifact struct {
 	Path          string `yaml:"path"`
 	InstalledHash string `yaml:"installed_hash,omitempty"`
 	State         string `yaml:"state,omitempty"`
+	// Sections is read only from files written by releases that merged local
+	// rule edits section by section; its presence marks a file that still
+	// carries those edits. Current Kit never writes it.
+	Sections []RegistryArtifactSection `yaml:"sections,omitempty"`
+}
+
+// RegistryArtifactSection is legacy per-section merge state (see Sections).
+type RegistryArtifactSection struct {
+	Key           string `yaml:"key"`
+	InstalledHash string `yaml:"installed_hash"`
 }
 
 // FeatureNaming defines how feature directories are named.

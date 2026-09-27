@@ -37,7 +37,7 @@ Creates:
   - ~/.config/kit/.kit.yaml global configuration file
   - docs/CONSTITUTION.md
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
-  - Registry-managed rulesets from the Kit GitHub registry
+  - The core rules shipped with this Kit binary
 
 If files already exist, Kit preserves them. Kit-managed markdown documents may
 be merged by adding missing required sections.

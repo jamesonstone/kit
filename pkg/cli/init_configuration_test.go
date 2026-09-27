@@ -267,7 +267,6 @@ func TestRunInitRefreshForceCopiesDocumentationPrompt(t *testing.T) {
 	for _, want := range []string{
 		"## Post Init Refresh Documentation Review",
 		"docs/CONSTITUTION.md",
-		"docs/agents",
 		"docs/references",
 		"kit check --project",
 		"Delivery of command-created files:",

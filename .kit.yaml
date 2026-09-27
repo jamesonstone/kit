@@ -16,7 +16,7 @@ registry:
         - kind: ruleset
           slug: agent-team-orchestration
           path: docs/references/rules/agent-team-orchestration.md
-          installed_hash: sha256:d071dc2b1172ddbae98142e87c0fa4ff0a47cb6239e893e795b368717931ef52
+          installed_hash: sha256:ca656a42911a5d938c0ddefbd8417346433ed048561b216858b895d2510286bd
           state: managed
         - kind: ruleset
           slug: aws-agent-toolkit-guidance

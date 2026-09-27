@@ -36,7 +36,7 @@ func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 		})
 
 		const constitutionPath = "docs/CONSTITUTION.md"
-		const agentsEntrypointGuidance = "Read docs/agents/README.md before inspecting repository evidence or modifying project memory"
+		const agentsEntrypointGuidance = "Follow the Kit-managed contract in AGENTS.md before inspecting repository evidence or modifying project memory"
 		if !strings.Contains(copied, "Treat the exact generated starter at "+filepath.Join(cwd, constitutionPath)+" as a valid bootstrap Constitution") {
 			t.Fatalf("expected copied prompt to target %s, got %q", filepath.Join(cwd, constitutionPath), copied)
 		}

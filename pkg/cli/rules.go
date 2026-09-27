@@ -58,10 +58,12 @@ var rulesAddCmd = &cobra.Command{
 	Long: `Import or create a durable repo-local ruleset.
 
 Without a slug, opens the registry selector so users can import available
-rulesets from the Kit GitHub registry or toggle existing registry rules active
+rules shipped with this Kit binary or toggle existing registry rules active
 and inactive.
 
-With a slug argument, creates a custom ruleset non-interactively for scripts.
+With a slug argument, installs the rule of that name shipped with this Kit
+binary (for example llms-txt), or creates a custom ruleset when Kit ships
+none.
 Use --custom without a slug for the interactive custom ruleset builder; it asks
 for the ruleset name, loading policy, applicability, and rule context, then
 opens $EDITOR for the context by default, falls back to a vim-compatible editor
@@ -163,6 +165,10 @@ func runRulesAdd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if installed, err := installShippedRuleset(cmd, projectRoot, slug); err != nil || installed {
+		return err
+	}
+
 	input := rulesetAddInput{
 		Name:              slug,
 		Slug:              slug,
@@ -240,4 +246,31 @@ func runRulesList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 	return printRulesetList(cmd.OutOrStdout(), projectRoot, cfg, rulesets)
+}
+
+// installShippedRuleset installs a rule embedded in this binary by slug and
+// records it as managed. It reports false when no shipped rule has the slug.
+func installShippedRuleset(cmd *cobra.Command, projectRoot, slug string) (bool, error) {
+	registry, err := rulesetRegistryFetcher(cmd.Context())
+	if err != nil {
+		return false, err
+	}
+	for _, item := range registry {
+		if item.Slug != slug {
+			continue
+		}
+		if document.Exists(rulesetPath(projectRoot, slug)) {
+			return true, fmt.Errorf("%s already exists; run `kit init --refresh` to update it", rulesetTarget(slug))
+		}
+		entry := registrySelectorEntry{Registry: item, DesiredActive: true}
+		if _, err := applyRegistryRulesetSelection(projectRoot, []registrySelectorEntry{entry}); err != nil {
+			return true, err
+		}
+		_, err := fmt.Fprintf(cmd.OutOrStdout(), "Installed Kit rule %s at %s\n", slug, rulesetTarget(slug))
+		return true, err
+	}
+	if replacement, ok := retiredRulesets[slug]; ok {
+		return true, fmt.Errorf("rule %s was retired; replaced by %s", slug, replacement)
+	}
+	return false, nil
 }

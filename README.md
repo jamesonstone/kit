@@ -63,7 +63,7 @@ guide](docs/migration-v3.md), and the [release notes](docs/releases/v3.0.0.md).
 Kit records minimal local command events by default so maintainers can identify
 unused surfaces using evidence rather than intuition. It never records command arguments, output, repository names, paths, file content, environment values, or secrets; project identity is local and pseudonymous. Data remains on the
 machine, is retained for at most 365 days, and is capped at 16 MiB total with
-2 MiB shards. Development builds, test binaries, and processes with
+2 MiB shards. Unversioned development builds, test binaries, and processes with
 `KIT_USAGE_DISABLED=1` never record.
 
 ```bash

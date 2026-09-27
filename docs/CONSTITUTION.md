@@ -61,7 +61,7 @@
 - Usage telemetry is local-only, best-effort, and enabled by default.
 - Events contain only schema version, timestamp, normalized command path, Kit version, exit outcome, elapsed time, anonymized project identity, and interactivity.
 - Never record arguments, command output, repository paths or names, file contents, environment values, secrets, or network identifiers.
-- Usage commands, `--help` lookups, development builds, test binaries, and processes with `KIT_USAGE_DISABLED=1` do not record.
+- Usage commands, `--help` lookups, unversioned development builds (no stamped version and no module version), test binaries, and processes with `KIT_USAGE_DISABLED=1` do not record.
 - A global disable is absolute. A project may opt out but cannot override a global disable.
 - Retain at most 365 days, 16 MiB total, and 2 MiB per JSONL shard. Maintenance prunes complete oldest shards rather than partially truncating one.
 - `kit usage refresh`, `clear`, `enable`, and `disable` are the only maintenance and control surfaces for usage data.
