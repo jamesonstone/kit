@@ -10,6 +10,7 @@ import (
 )
 
 func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
+	stubStdoutTerminal(t, true)
 	tempDir := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, tempDir)

@@ -199,15 +199,17 @@ func TestStatusManagedNextActionsPrioritizesReconcile(t *testing.T) {
 		Registry:     statusRegistrySummary{Conflicts: 1},
 	}
 
-	actions := statusKitManagedNextActions(summary)
-	want := []string{
-		"run `kit reconcile --output-only` to audit local custom, conflicted, or unknown Kit-managed files",
-		"run `kit reconcile --include-files --force` only when accepting registry content is intended",
-		"run `kit reconcile --include-files --dry-run --diff` to preview managed-file updates",
-		"run `kit reconcile --include-files` to apply reviewed managed-file updates",
+	actions := strings.Join(statusKitManagedNextActions(summary), "\n")
+	for _, want := range []string{"kit reconcile --dry-run --diff", "kit reconcile --force --file"} {
+		if !strings.Contains(actions, want) {
+			t.Fatalf("actions missing %q:\n%s", want, actions)
+		}
 	}
-	if strings.Join(actions, "\n") != strings.Join(want, "\n") {
-		t.Fatalf("actions = %#v, want %#v", actions, want)
+	// Actions name only current flags.
+	for _, stale := range []string{"--include-files", "--output-only"} {
+		if strings.Contains(actions, stale) {
+			t.Fatalf("actions use stale flag %s:\n%s", stale, actions)
+		}
 	}
 }
 

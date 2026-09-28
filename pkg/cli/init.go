@@ -61,6 +61,11 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if config.Exists(cwd) {
 		return fmt.Errorf("%s already exists, so this is a Kit project; run `kit reconcile` to bring it to the current structure", config.ConfigFileName)
 	}
+	// Kit commands resolve the nearest ancestor .kit.yaml, so a project nested
+	// inside another would silently change which project they act on.
+	if parent, err := config.FindProjectRoot(); err == nil {
+		return fmt.Errorf("this directory is inside the Kit project at %s; run Kit commands there (use `kit reconcile` to update it) instead of creating a nested project", parent)
+	}
 
 	deliveryCfg := defaultInitConfig()
 	deliveryBaseline, err := captureManagedFileDeliveryBaseline(

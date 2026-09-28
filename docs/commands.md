@@ -12,7 +12,7 @@ it writes only to a linked worktree), and `kit health` diagnoses.
 
 | Command | Why it exists |
 | --- | --- |
-| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. Refuses to run where `.kit.yaml` exists; use `kit reconcile`. |
+| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. Refuses to run where `.kit.yaml` exists or inside an existing Kit project; use `kit reconcile`. Copies its setup prompt to the clipboard only at a terminal and prints it otherwise. |
 | `kit spec <feature>` | Allocates a worktree-safe feature number and scaffolds or adopts `docs/specs/<id>-<feature>/SPEC.md`. |
 
 ## Rules

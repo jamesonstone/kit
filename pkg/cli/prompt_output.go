@@ -2,10 +2,19 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strings"
+
+	"golang.org/x/term"
 )
 
 var clipboardCopyFunc = copyToClipboard
+
+// stdoutIsTerminal decides the default prompt destination: people at a
+// terminal get the clipboard, while agents and scripts get stdout.
+var stdoutIsTerminal = func() bool {
+	return term.IsTerminal(int(os.Stdout.Fd()))
+}
 
 func formatAgentInstructionBlock(prompt string) string {
 	var sb strings.Builder
@@ -23,6 +32,9 @@ func outputPromptWithClipboardDefault(prompt string, outputOnly, copy bool) erro
 }
 
 func writePromptWithClipboardDefault(prompt string, outputOnly, copy bool) error {
+	if !outputOnly && !copy && !stdoutIsTerminal() {
+		outputOnly = true
+	}
 	shouldCopy := !outputOnly || copy
 	if shouldCopy {
 		if err := clipboardCopyFunc(prompt); err != nil {

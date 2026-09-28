@@ -69,6 +69,7 @@ func TestRunRulesAddRejectsInvalidAndDuplicateSlug(t *testing.T) {
 }
 
 func TestRunRulesAddInteractiveCreatesRulesetAndCopiesOptimizationPrompt(t *testing.T) {
+	stubStdoutTerminal(t, true)
 	projectRoot := setupRulesProject(t)
 	setWorkingDirectory(t, projectRoot)
 	resetRulesFlags(t)
