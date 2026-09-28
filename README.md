@@ -6,14 +6,15 @@
 ██║  ██╗██║   ██║
 ╚═╝  ╚═╝╚═╝   ╚═╝
 
-              coding-agent context from repository evidence
+              repository-local contract for coding agents
 ```
 
-Kit is a provider-neutral, repository-local evidence and contract harness for
-coding agents. It materializes durable rules and workflow contracts, preserves
-living specifications and project references, and deterministically resolves
-the smallest ordered evidence set an agent needs. Kit does not infer project
-truth, choose a model, or launch or supervise agents.
+Kit is a provider-neutral, repository-local contract for coding agents. It
+installs one universal agent contract and contextual rules, keeps project memory
+(Constitution, living specs, testing reference), validates it, and migrates any
+existing Kit project to the current structure without touching the primary
+checkout. Kit does not infer project truth, choose a model, or launch or
+supervise agents.
 
 <!-- BEGIN KIT-MANAGED README BADGES -->
 [![Last commit](https://img.shields.io/github/last-commit/jamesonstone/kit)](https://github.com/jamesonstone/kit/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/kit)](https://github.com/jamesonstone/kit/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/kit)](https://github.com/jamesonstone/kit/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/kit)](https://github.com/jamesonstone/kit/releases)
