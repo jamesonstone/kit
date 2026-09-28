@@ -97,7 +97,7 @@
 ### Feature Work
 
 - Use when product behavior, architecture, public interfaces, or material rationale changes.
-- Native plan, create or adopt the living spec, resolve context, implement, validate, curate memory, and deliver.
+- Native plan, inspect relevant code and repository memory, create or adopt the living spec, implement, validate, curate memory, and deliver.
 
 ### Ad Hoc Maintenance
 
