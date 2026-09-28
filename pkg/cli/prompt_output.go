@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"golang.org/x/term"
 )
@@ -14,17 +13,6 @@ var clipboardCopyFunc = copyToClipboard
 // terminal get the clipboard, while agents and scripts get stdout.
 var stdoutIsTerminal = func() bool {
 	return term.IsTerminal(int(os.Stdout.Fd()))
-}
-
-func formatAgentInstructionBlock(prompt string) string {
-	var sb strings.Builder
-	sb.WriteString("---\n")
-	sb.WriteString(prompt)
-	if !strings.HasSuffix(prompt, "\n") {
-		sb.WriteString("\n")
-	}
-	sb.WriteString("---\n")
-	return sb.String()
 }
 
 func outputPromptWithClipboardDefault(prompt string, outputOnly, copy bool) error {

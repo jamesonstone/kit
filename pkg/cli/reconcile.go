@@ -8,11 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var reconcileCopy bool
 var reconcileOutputOnly bool
 var reconcileAll bool
-var reconcileMigrateReferences bool
-var reconcileMigrateVerification bool
 var reconcileIncludeFiles bool
 var reconcileForce bool
 var reconcileDryRun bool
@@ -51,18 +48,15 @@ With a feature argument, audits only that feature's docs.`,
 }
 
 func init() {
-	reconcileCmd.Flags().BoolVar(&reconcileCopy, "copy", false, "copy prompt to clipboard even with --output-only")
-	reconcileCmd.Flags().BoolVar(&reconcileOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	reconcileCmd.Flags().BoolVar(&reconcileOutputOnly, "output-only", false, "accepted for compatibility; reconcile always prints to stdout")
+	_ = reconcileCmd.Flags().MarkHidden("output-only")
 	reconcileCmd.Flags().BoolVar(&reconcileAll, "all", false, "reconcile the whole project explicitly")
-	reconcileCmd.Flags().BoolVar(&reconcileMigrateReferences, "migrate-references", false, "include instructions for migrating deprecated front matter dependencies to references")
-	reconcileCmd.Flags().BoolVar(&reconcileMigrateVerification, "migrate-verification", false, "include advisory instructions for adding executable verification fields to active tasks")
 	reconcileCmd.Flags().BoolVar(&reconcileIncludeFiles, "include-files", false, "accepted for compatibility; whole-project reconcile always includes Kit-managed files")
 	_ = reconcileCmd.Flags().MarkHidden("include-files")
 	reconcileCmd.Flags().BoolVarP(&reconcileForce, "force", "f", false, "also replace edited Kit sections and edited shipped rules")
 	reconcileCmd.Flags().BoolVar(&reconcileDryRun, "dry-run", false, "preview Kit-managed file changes without writing files")
 	reconcileCmd.Flags().BoolVar(&reconcileDiff, "diff", false, "print planned file changes as a unified diff with --dry-run")
 	reconcileCmd.Flags().StringArrayVar(&reconcileRefreshFiles, "file", nil, "limit the file migration to one Kit-managed file; repeat for multiple files")
-	addPromptOnlyFlag(reconcileCmd)
 	rootCmd.AddCommand(reconcileCmd)
 }
 
@@ -94,8 +88,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	promptOnly := promptOnlyEnabled(cmd)
-	applyFiles := feat == nil && !promptOnly
+	applyFiles := feat == nil
 	var deliverySnapshot []managedFileDeliverySnapshot
 	if applyFiles {
 		opts := initRefreshOptions{force: reconcileForce, files: reconcileRefreshFiles}
@@ -137,8 +130,6 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	report.ReferenceMigration = reconcileMigrateReferences
-	report.VerificationMigration = reconcileMigrateVerification
 	report.DeliverySnapshot = deliverySnapshot
 	if active, err := feature.FindActiveFeatureWithState(cfg.SpecsPath(projectRoot), cfg); err != nil {
 		return fmt.Errorf("failed to resolve active feature: %w", err)
@@ -146,19 +137,9 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		report.Findings = append(report.Findings, auditActiveFrontendRulesetAdvisory(projectRoot, active)...)
 	}
 
-	if len(report.Findings) == 0 && !report.ReferenceMigration && !report.VerificationMigration {
+	if len(report.Findings) == 0 {
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), report.cleanResult())
 		return err
 	}
-
-	outputOnly, _ := cmd.Flags().GetBool("output-only")
-	if !outputOnly {
-		printReconcileSummary(report)
-		scopeInstruction := "keep changes limited to documentation reconciliation"
-		if reconcileAllowsCodeChanges(report.Findings) {
-			scopeInstruction = "limit source/test edits to listed behavior-preserving responsibility splits and directly required tests or canonical docs"
-		}
-		fmt.Printf("Next: run the generated prompt in the current coding agent session; %s.\n", scopeInstruction)
-	}
-	return outputPromptWithClipboardDefault(buildReconcilePrompt(report), outputOnly, reconcileCopy)
+	return writeReconcileFindings(cmd.OutOrStdout(), report)
 }

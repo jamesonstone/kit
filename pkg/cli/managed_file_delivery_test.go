@@ -49,62 +49,6 @@ func TestManagedFileDeliverySnapshotFromInitRefreshCapturesExactBoundary(t *test
 		got.ResultState != managedFileContentState("refreshed guidance\n") {
 		t.Fatalf("snapshot[0] = %#v, want exact AGENTS.md before/result states", got)
 	}
-
-	instructions := strings.Join(managedFileDeliveryInstructions(projectRoot, snapshot), "\n")
-	for _, expected := range []string{
-		"Treat only this exact snapshot as command-owned evidence",
-		"`AGENTS.md` (update; pre-command sha256:",
-		"never expand the command-owned boundary from post-command status",
-		"default to a new worklane without asking",
-		"explicitly directed continuation of an existing lane",
-		"exact existing-PR review repair, CI repair, base refresh, and ordered merge coordination",
-		"never create a coordinator or corrective pull request for scope-preserving work",
-		"Pull-Request Landing Plan",
-		"snapshot came from the primary checkout",
-		"do not adopt, transfer, stage, commit, push, restore, discard",
-		"already selected writable lane",
-		"contain exactly the captured command-owned change",
-	} {
-		if !strings.Contains(instructions, expected) {
-			t.Fatalf("expected delivery instructions to contain %q, got:\n%s", expected, instructions)
-		}
-	}
-	if strings.Contains(instructions, "`.env` (") {
-		t.Fatalf("delivery instructions included machine-local .env path:\n%s", instructions)
-	}
-}
-
-func TestManagedFileDeliveryInstructionsWithoutSnapshotRequiresFreshBoundary(t *testing.T) {
-	projectRoot := t.TempDir()
-	instructions := strings.Join(managedFileDeliveryInstructions(projectRoot), "\n")
-
-	for _, expected := range []string{
-		"No exact command-owned path snapshot is present",
-		"apply only the listed manual findings until a fresh snapshot exists",
-		"default to a new worklane without asking",
-		"explicitly directed continuation of an existing lane",
-		"exact existing-PR review repair, CI repair, base refresh, and ordered merge coordination",
-		"never create a coordinator or corrective pull request for scope-preserving work",
-		"complete Pull-Request Landing Plan",
-		"canonical non-primary writable worktree",
-		"rerun the write-capable Kit command",
-		"require the rerun to emit a new exact command-owned snapshot",
-		"if it cannot, do not adopt managed-file changes and report the blocker",
-		"explicitly stage only those paths",
-		"match the snapshot exactly",
-	} {
-		if !strings.Contains(instructions, expected) {
-			t.Fatalf("expected no-snapshot instructions to contain %q, got:\n%s", expected, instructions)
-		}
-	}
-	for _, forbidden := range []string{
-		"Only when the snapshot was produced",
-		"trigger the work-lane tripwire",
-	} {
-		if strings.Contains(instructions, forbidden) {
-			t.Fatalf("no-snapshot instructions require unavailable state %q:\n%s", forbidden, instructions)
-		}
-	}
 }
 
 func TestMergeManagedFileDeliverySnapshotsPreservesWholeCommandBaseline(t *testing.T) {
@@ -162,19 +106,6 @@ func TestManagedFileDeliveryRejectsPathsOutsideProject(t *testing.T) {
 		t.Fatal("escaping path was considered version-control eligible")
 	}
 
-	instructions := strings.Join(
-		managedFileDeliveryInstructions(projectRoot, []managedFileDeliverySnapshot{{
-			Path:            "../outside.md",
-			Action:          "update",
-			PreCommandState: managedFileContentState("before\n"),
-			ResultState:     managedFileContentState("after\n"),
-		}}),
-		"\n",
-	)
-	if strings.Contains(instructions, "`../outside.md`") {
-		t.Fatalf("delivery instructions included escaping path:\n%s", instructions)
-	}
-
 	if err := os.Mkdir(filepath.Join(projectRoot, ".git"), 0o755); err != nil {
 		t.Fatalf("os.Mkdir(.git) error = %v", err)
 	}
@@ -200,60 +131,6 @@ func TestManagedFileDeliveryExcludesIgnoredPathFromNestedProject(t *testing.T) {
 
 	if managedFileDeliveryPathEligible(projectRoot, "ignored.md") {
 		t.Fatal("ignored path in nested Kit project was considered version-control eligible")
-	}
-}
-
-func TestManagedFileDeliveryInstructionsRequirePostMergePrimaryClean(t *testing.T) {
-	projectRoot := t.TempDir()
-	if output, err := exec.Command("git", "-C", projectRoot, "init", "--quiet").CombinedOutput(); err != nil {
-		t.Fatalf("git init error = %v\n%s", err, output)
-	}
-	snapshot := []managedFileDeliverySnapshot{{
-		Path:            "AGENTS.md",
-		Action:          "create",
-		PreCommandState: managedFileAbsentState,
-		ResultState:     managedFileContentState("guidance\n"),
-	}}
-	cases := []struct {
-		name         string
-		instructions string
-	}{
-		{
-			name:         "with snapshot",
-			instructions: strings.Join(managedFileDeliveryInstructions(projectRoot, snapshot), "\n"),
-		},
-		{
-			name:         "without snapshot",
-			instructions: strings.Join(managedFileDeliveryInstructions(projectRoot), "\n"),
-		},
-	}
-	expected := []string{
-		"`git clean -fd`",
-		"Remain in this coding-agent session",
-		"Do not treat pull-request creation as session completion",
-		"address remaining pull-request review feedback",
-		"active standing authority covers its resolved exact current node",
-		"A later in-scope head does not require renewed authority",
-		"This leftover cleanup does not invent readiness",
-		"After remaining pull-request feedback is addressed",
-		"Confirm the merge first",
-		"enumerate or dry-run all untracked files",
-		"verify every candidate is command-owned",
-		"`git clean -fd` with only those verified paths",
-		"restore those exact paths in both the index and the worktree",
-		"only after revalidating",
-		"still match the captured command-owned snapshot",
-		"if any path mismatches or is ambiguous, stop",
-		"Do not run `git clean` before merge",
-		"Then pull the merged default branch",
-	}
-	for _, test := range cases {
-		for _, snippet := range expected {
-			if !strings.Contains(test.instructions, snippet) {
-				t.Fatalf("%s missing %q:\n%s", test.name, snippet, test.instructions)
-			}
-		}
-		assertScopedPostMergeCleanupOrder(t, test.instructions)
 	}
 }
 

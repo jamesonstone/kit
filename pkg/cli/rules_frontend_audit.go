@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -25,12 +24,7 @@ func auditActiveFrontendRulesetAdvisory(projectRoot string, feat *feature.Featur
 		reconcileSeverityWarning,
 		feat.Path,
 		"active frontend feature has no active frontend ruleset reference",
-		templateSource(projectRoot),
 		"reference the shipped `frontend-application-architecture` rule (restore it with `kit reconcile` if missing) from "+feat.Slug+" front matter if durable frontend rules apply",
-		[]string{
-			fmt.Sprintf("rg -n \"type: %s|%s|%s\" %s", rulesetReferenceType, rulesetDirRelPath, frontendProfileReferenceMarker, feat.Path),
-			fmt.Sprintf("find %s -maxdepth 1 -type f -name '*.md' -print", filepath.Join(projectRoot, filepath.FromSlash(rulesetDirRelPath))),
-		},
 	)}
 }
 

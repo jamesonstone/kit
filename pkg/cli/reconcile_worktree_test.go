@@ -123,7 +123,6 @@ func runManagedReconcileForWorktreeTest(t *testing.T) string {
 	var out bytes.Buffer
 	cmd := &cobra.Command{}
 	cmd.Flags().Bool("output-only", true, "")
-	addPromptOnlyFlag(cmd)
 	cmd.SetContext(context.Background())
 	cmd.SetOut(&out)
 	stdout := captureStdout(t, func() {
@@ -161,7 +160,6 @@ func runManagedReconcileForWorktreeTestKeepingFlags(t *testing.T) string {
 	var out bytes.Buffer
 	cmd := &cobra.Command{}
 	cmd.Flags().Bool("output-only", true, "")
-	addPromptOnlyFlag(cmd)
 	cmd.SetContext(context.Background())
 	cmd.SetOut(&out)
 	stdout := captureStdout(t, func() {

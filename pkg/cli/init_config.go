@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/promptdoc"
@@ -33,35 +35,45 @@ func buildProjectInitPrompt(
 	makefileFullPath := filepath.Join(projectRoot, makefilePath)
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Paragraph(fmt.Sprintf("Initialize project memory and verified command entrypoints for the repository at %s.", projectRoot))
-		doc.Paragraph("Constitution guidance:")
+		doc.Paragraph("Constitution:")
 		doc.BulletList(
-			"Follow the Kit-managed contract in AGENTS.md before inspecting repository evidence or modifying project memory",
-			fmt.Sprintf("Treat the exact generated starter at %s as a valid bootstrap Constitution", constitutionFullPath),
-			"Inspect implemented behavior, validated outcomes, current canonical documentation, and recurring repository conventions as evidence",
-			"Do not ask the user to explain the entire project, infer permanent rules from initial aspiration, or derive project truth from Kit-generated scaffolding",
-			"Update the Constitution only when repository evidence already demonstrates a durable project-wide principle, constraint, non-goal, definition, vocabulary term, or workflow boundary",
-			"When evidence is insufficient, leave the project-specific starter sections unchanged; normal post-validation curation will evolve them as the project matures",
-			"Follow docs/references/rules/constitution-curation.md when that registry ruleset is present",
+			fmt.Sprintf("The generated starter at %s is a valid bootstrap Constitution", constitutionFullPath),
+			"Record a principle, constraint, non-goal, definition, or workflow boundary only when implemented behavior, validated outcomes, or recurring conventions already demonstrate it; otherwise leave the starter sections unchanged",
+			"Product ideas and feature intent belong in the relevant SPEC.md, not the Constitution",
 		)
-		doc.Paragraph(fmt.Sprintf(
-			"Populate %s with a canonical project command interface only when it can be backed by this repository's real commands.",
-			makefileFullPath,
-		))
+		doc.Paragraph(fmt.Sprintf("Makefile (%s): add targets only when backed by this repository's real commands.", makefileFullPath))
 		doc.BulletList(
-			"Inspect package scripts, toolchain configuration, development documentation, and existing automation before choosing recipe commands",
-			"Leave the safe starter Makefile unchanged when the repository has no verified development, build, test, lint, formatting, or validation commands",
-			"Expose `make dev` when the repository has a verified local development or run workflow",
-			"Add only applicable canonical targets such as `build`, `test`, `check`, `lint`, `fmt`, and `clean`, plus useful project-specific targets",
-			"Keep recipes as thin wrappers around repository-native commands; let composite targets reuse atomic targets instead of duplicating their commands",
-			"Declare non-file targets with `.PHONY` and use overridable tool variables when they improve portability",
-			"Do not leave TODO recipes, echo-only placeholders, guessed commands, or duplicated build logic",
-			"Run `make help` and each added target that is safe to execute, and report any target that could not be validated",
+			"Leave the safe starter unchanged when the repository has no verified development, build, test, lint, formatting, or validation commands",
+			"Add only applicable canonical targets (`dev`, `build`, `test`, `check`, `lint`, `fmt`, `clean`) as thin wrappers around repository-native commands, declared `.PHONY`, with no placeholder or guessed recipes",
+			"Run `make help` and each added target that is safe to execute",
 		)
-		doc.Paragraph("Rules:")
-		doc.BulletList(
-			"Initial product ideas and feature intent belong in the accepted native plan and relevant SPEC.md, not in the Constitution until implementation demonstrates project-wide truth",
-		)
-		doc.Paragraph("Delivery of command-created files:")
-		doc.BulletList(managedFileDeliveryInstructions(projectRoot, snapshots...)...)
+		changed, removed := initDeliveredFiles(snapshots...)
+		if len(changed) > 0 {
+			doc.Paragraph("Files `kit init` created or changed (deliver them with this work): " + strings.Join(changed, ", "))
+		}
+		if len(removed) > 0 {
+			doc.Paragraph("Retired Kit files `kit init` removed (deliver the deletions with this work): " + strings.Join(removed, ", "))
+		}
 	})
+}
+
+// initDeliveredFiles splits the repository files kit init touched into those
+// present afterwards and those it removed. The snapshots already exclude
+// local-only, secret-like, and ignored paths.
+func initDeliveredFiles(snapshots ...[]managedFileDeliverySnapshot) ([]string, []string) {
+	if len(snapshots) == 0 {
+		return nil, nil
+	}
+	var changed, removed []string
+	for _, change := range snapshots[0] {
+		path := "`" + normalizeManagedFileDeliveryPath(change.Path) + "`"
+		if change.ResultState == managedFileAbsentState {
+			removed = append(removed, path)
+		} else {
+			changed = append(changed, path)
+		}
+	}
+	sort.Strings(changed)
+	sort.Strings(removed)
+	return changed, removed
 }

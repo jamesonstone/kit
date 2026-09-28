@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-
-	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 type sourceFileAuditSummary struct {
@@ -42,9 +40,7 @@ func inspectSourceFileSizes(projectRoot string, limit int) sourceFileAuditResult
 			reconcileSeverityError,
 			filepath.Join(projectRoot, ".git"),
 			fmt.Sprintf("source-file-size audit unavailable: %v", err),
-			sourceFileSizeRuleSource(projectRoot),
 			"restore version-control-eligible file enumeration, then rerun whole-project reconcile; do not claim a clean line audit until enumeration succeeds",
-			[]string{"git status --short --branch", "git ls-files --cached --others --exclude-standard"},
 		)}}
 	}
 
@@ -102,12 +98,7 @@ func auditSourceFileSize(projectRoot, relativePath string, limit int) (reconcile
 		reconcileSeverityWarning,
 		absPath,
 		fmt.Sprintf("version-control-eligible handwritten source/test file exceeds %d physical lines (%d)", limit, lineCount),
-		sourceFileSizeRuleSource(projectRoot),
 		fmt.Sprintf("split the file by semantic responsibility until every resulting handwritten source/test file is at most %d physical lines; preserve behavior, stable public entry points, and language-native test discovery, and use responsibility-based filenames", limit),
-		[]string{
-			fmt.Sprintf("awk 'END { print NR }' %s", shellQuoteArgument(absPath)),
-			fmt.Sprintf("git diff -- %s", shellQuoteArgument(relativePath)),
-		},
 	)
 	finding.AllowsCodeChanges = true
 	return finding, true, true
@@ -136,14 +127,8 @@ func sourceFileReadFinding(projectRoot, absPath string, err error) reconcileFind
 		reconcileSeverityError,
 		absPath,
 		fmt.Sprintf("source-file-size audit could not read candidate file: %v", err),
-		sourceFileSizeRuleSource(projectRoot),
 		"restore file readability and rerun whole-project reconcile before claiming a clean source-file-size audit",
-		[]string{fmt.Sprintf("ls -l %s", shellQuoteArgument(absPath))},
 	)
-}
-
-func sourceFileSizeRuleSource(projectRoot string) string {
-	return filepath.Join(projectRoot, config.ConfigFileName)
 }
 
 func sourceFileAuditCandidates(projectRoot string) ([]string, error) {

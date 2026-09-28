@@ -57,8 +57,6 @@ func TestBuildReconcileReportProjectScopeFindsMissingInitScaffoldArtifacts(t *te
 
 	issues := findingsIssues(report.Findings)
 	for _, check := range []string{
-		"missing Kit init scaffold artifact `.env`",
-		"missing Kit init scaffold artifact `.envrc`",
 		"missing Kit init scaffold artifact `.coderabbit.yaml`",
 		"missing Kit init scaffold artifact `.github/pull_request_template.md`",
 		"missing Kit init scaffold artifact `.github/workflows/auto-assign.yml`",
@@ -69,7 +67,7 @@ func TestBuildReconcileReportProjectScopeFindsMissingInitScaffoldArtifacts(t *te
 	}
 }
 
-func TestBuildReconcileReportAllowsMissingLocalEnvironmentFilesInLinkedCheckout(t *testing.T) {
+func TestBuildReconcileReportIgnoresMissingLocalEnvironmentFiles(t *testing.T) {
 	projectRoot := setupCoherentProjectForCheck(t)
 	cfg, err := config.Load(projectRoot)
 	if err != nil {
@@ -80,10 +78,6 @@ func TestBuildReconcileReportAllowsMissingLocalEnvironmentFilesInLinkedCheckout(
 			t.Fatalf("os.Remove(%s) error = %v", relativePath, err)
 		}
 	}
-	commonDir := filepath.Join(t.TempDir(), "common")
-	worktreeGitDir := filepath.Join(commonDir, "worktrees", "linked")
-	writeFile(t, filepath.Join(worktreeGitDir, "commondir"), "../..\n")
-	writeFile(t, filepath.Join(projectRoot, ".git"), "gitdir: "+worktreeGitDir+"\n")
 
 	report, err := buildReconcileReport(projectRoot, cfg, nil)
 	if err != nil {
@@ -101,19 +95,6 @@ func TestBuildReconcileReportAllowsMissingLocalEnvironmentFilesInLinkedCheckout(
 	}
 	if !strings.Contains(issues, "missing Kit init scaffold artifact `.coderabbit.yaml`") {
 		t.Fatalf("linked checkout must still require non-local scaffold artifacts, got %q", issues)
-	}
-}
-
-func TestUsesLinkedWorktreeCheckoutRejectsSubmoduleGitFile(t *testing.T) {
-	projectRoot := t.TempDir()
-	moduleGitDir := filepath.Join(t.TempDir(), "modules", "example")
-	if err := os.MkdirAll(moduleGitDir, 0o755); err != nil {
-		t.Fatalf("os.MkdirAll() error = %v", err)
-	}
-	writeFile(t, filepath.Join(projectRoot, ".git"), "gitdir: "+moduleGitDir+"\n")
-
-	if usesLinkedWorktreeCheckout(projectRoot) {
-		t.Fatal("submodule-style .git file must not be treated as linked-worktree metadata")
 	}
 }
 
@@ -158,52 +139,6 @@ func TestRunReconcileCleanFeaturePrintsSuccess(t *testing.T) {
 	}
 }
 
-func TestRenderReconcileSummaryShowsCompactTable(t *testing.T) {
-	projectRoot := t.TempDir()
-	report := &reconcileReport{
-		ProjectRoot: projectRoot,
-		SourceFileAudit: &sourceFileAuditSummary{
-			Limit:          300,
-			CandidateCount: 8,
-			EligibleCount:  3,
-			ViolationCount: 1,
-			Complete:       true,
-		},
-		Findings: []reconcileFinding{
-			{
-				Severity:          reconcileSeverityError,
-				FilePath:          filepath.Join(projectRoot, "docs", "specs", "0001-sample", "TASKS.md"),
-				Issue:             "task `T001` exists in `PROGRESS TABLE` but not in `TASK DETAILS`",
-				UpdateInstruction: "align task IDs",
-			},
-			{
-				Severity:          reconcileSeverityWarning,
-				FilePath:          filepath.Join(projectRoot, "docs", "PROJECT_PROGRESS_SUMMARY.md"),
-				Issue:             "progress summary is missing the feature summary heading for `0001-sample`",
-				UpdateInstruction: "refresh progress summary",
-			},
-		},
-	}
-
-	summary := renderReconcileSummary(report, humanOutputStyle{})
-	checks := []string{
-		"Reconcile Audit",
-		"Scope: whole project",
-		"Findings: 2 (1 errors, 1 warnings) across 2 files",
-		"source-file-size audit: complete (8 version-control-eligible candidates; 3 eligible handwritten source/test files checked; 1 above 300 physical lines)",
-		"Severity  Issues",
-		"E1",
-		"W1",
-		"raw prompt stays compact",
-	}
-
-	for _, check := range checks {
-		if !strings.Contains(summary, check) {
-			t.Fatalf("expected summary to contain %q, got %q", check, summary)
-		}
-	}
-}
-
 func TestReconcileProjectScopeWithCurrentInstructionFilesIsClean(t *testing.T) {
 	projectRoot := t.TempDir()
 	cfg := config.Default()
@@ -227,15 +162,21 @@ func TestReconcileProjectScopeWithCurrentInstructionFilesIsClean(t *testing.T) {
 	}
 }
 
-func TestMissingLocalEnvironmentFilesDoNotBlockCleanClones(t *testing.T) {
+// The local-only .env and .envrc need no action when absent, so they are not
+// findings at all; tracked scaffold files still are.
+func TestMissingLocalEnvironmentFilesAreNotFindings(t *testing.T) {
 	projectRoot := t.TempDir()
+	sawCodeRabbit := false
 	for _, finding := range auditInitScaffoldArtifacts(projectRoot) {
 		base := filepath.Base(finding.FilePath)
-		if (base == ".env" || base == ".envrc") && !finding.NonBlocking {
-			t.Fatalf("missing ignored %s blocks validation: %#v", base, finding)
+		if base == ".env" || base == ".envrc" {
+			t.Fatalf("missing local-only %s reported: %#v", base, finding)
 		}
-		if base == ".coderabbit.yaml" && finding.NonBlocking {
-			t.Fatal("missing tracked scaffold file must still block validation")
+		if base == ".coderabbit.yaml" {
+			sawCodeRabbit = !finding.NonBlocking && strings.Contains(finding.UpdateInstruction, "kit reconcile")
 		}
+	}
+	if !sawCodeRabbit {
+		t.Fatal("missing tracked scaffold file must still block and point to kit reconcile")
 	}
 }
