@@ -27,9 +27,14 @@ func managedFileDeliveryInstructionsForCommand(
 ) []string {
 	var snapshot []managedFileDeliverySnapshot
 	if len(snapshots) > 0 {
+		paths := make([]string, 0, len(snapshots[0]))
+		for _, change := range snapshots[0] {
+			paths = append(paths, change.Path)
+		}
+		eligible := managedFileDeliveryEligiblePaths(projectRoot, paths)
 		for _, change := range snapshots[0] {
 			change.Path = normalizeManagedFileDeliveryPath(change.Path)
-			if managedFileDeliveryPathEligible(projectRoot, change.Path) {
+			if eligible[change.Path] {
 				snapshot = append(snapshot, change)
 			}
 		}

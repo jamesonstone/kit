@@ -216,12 +216,16 @@ func reconcileHasNoChanges(projectRoot string, opts initRefreshOptions) (bool, e
 // and removals of repository-delivered paths. Local-only files, such as a
 // clean clone's missing .env and .envrc, are not drift.
 func actionableRefreshChanges(projectRoot string, changes []initRefreshFileChange) []initRefreshFileChange {
+	paths := make([]string, 0, len(changes))
+	for _, change := range changes {
+		if change.result != instructionFileSkipped {
+			paths = append(paths, change.relativePath)
+		}
+	}
+	eligible := managedFileDeliveryEligiblePaths(projectRoot, paths)
 	var actionable []initRefreshFileChange
 	for _, change := range changes {
-		if change.result == instructionFileSkipped {
-			continue
-		}
-		if managedFileDeliveryPathEligible(projectRoot, normalizeManagedFileDeliveryPath(change.relativePath)) {
+		if change.result != instructionFileSkipped && eligible[normalizeManagedFileDeliveryPath(change.relativePath)] {
 			actionable = append(actionable, change)
 		}
 	}
