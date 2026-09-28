@@ -228,3 +228,10 @@ func writeCurrentInstructionArtifacts(t *testing.T, projectRoot string) {
 		writeFile(t, filepath.Join(projectRoot, relativePath), instructionArtifactContent(relativePath))
 	}
 }
+
+func stubStdoutTerminal(t *testing.T, terminal bool) {
+	t.Helper()
+	previous := stdoutIsTerminal
+	stdoutIsTerminal = func() bool { return terminal }
+	t.Cleanup(func() { stdoutIsTerminal = previous })
+}

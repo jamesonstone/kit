@@ -6,6 +6,7 @@ import (
 )
 
 func TestWritePromptWithClipboardDefault_CopiesAndAcknowledges(t *testing.T) {
+	stubStdoutTerminal(t, true)
 	previous := clipboardCopyFunc
 	defer func() {
 		clipboardCopyFunc = previous

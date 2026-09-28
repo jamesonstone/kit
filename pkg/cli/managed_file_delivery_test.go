@@ -133,3 +133,22 @@ func TestManagedFileDeliveryExcludesIgnoredPathFromNestedProject(t *testing.T) {
 		t.Fatal("ignored path in nested Kit project was considered version-control eligible")
 	}
 }
+
+// One batched check must classify a mix of paths exactly as per-path checks
+// would: ignored and secret-like paths excluded, others included.
+func TestManagedFileDeliveryEligiblePathsBatchesMixedPaths(t *testing.T) {
+	root := t.TempDir()
+	runGitForSourceAuditTest(t, root, "init", "-q", "-b", "main")
+	writeFile(t, filepath.Join(root, ".gitignore"), "ignored.md\nbuild/\n")
+	paths := []string{"AGENTS.md", "ignored.md", "build/out.md", ".env", "docs/x.md", "../outside.md", "./docs/y.md"}
+	got := managedFileDeliveryEligiblePaths(root, paths)
+	want := map[string]bool{"AGENTS.md": true, "docs/x.md": true, "docs/y.md": true}
+	if len(got) != len(want) {
+		t.Fatalf("eligible = %v, want %v", got, want)
+	}
+	for path := range want {
+		if !got[path] || managedFileDeliveryPathEligible(root, path) != got[path] {
+			t.Fatalf("eligible = %v, want %v", got, want)
+		}
+	}
+}
