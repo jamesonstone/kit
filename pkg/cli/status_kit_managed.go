@@ -101,7 +101,8 @@ func planStatusManagedFileChanges(projectRoot string) (statusManagedFileChangePl
 		}
 		return statusManagedFileChangePlan{}, err
 	}
-	return statusManagedFileChangePlan{changes: plan.changes}, nil
+	// Report the same actionable drift as `kit health` and `kit reconcile`.
+	return statusManagedFileChangePlan{changes: actionableRefreshChanges(projectRoot, plan.changes)}, nil
 }
 
 func recordStatusManagedFileChanges(summary *statusKitManagedSummary, changes []initRefreshFileChange) {
@@ -196,12 +197,12 @@ func statusKitManagedNextActions(summary *statusKitManagedSummary) []string {
 		actions = append(actions, "managed-file freshness was not checked because the registry was unavailable; rerun `kit status` when registry access is restored")
 	}
 	if attentionNeeded {
-		actions = append(actions, "run `kit reconcile --output-only` to audit local custom, conflicted, or unknown Kit-managed files")
-		actions = append(actions, "run `kit reconcile --include-files --force` only when accepting registry content is intended")
+		actions = append(actions, "run `kit reconcile` to audit local custom, conflicted, or unknown Kit-managed files")
+		actions = append(actions, "run `kit reconcile --force --file <path>` only when replacing that file with Kit's version is intended")
 	}
 	if refreshAvailable {
-		actions = append(actions, "run `kit reconcile --include-files --dry-run --diff` to preview managed-file updates")
-		actions = append(actions, "run `kit reconcile --include-files` to apply reviewed managed-file updates")
+		actions = append(actions, "run `kit reconcile --dry-run --diff` to preview managed-file updates")
+		actions = append(actions, "run `kit reconcile` to apply them")
 	}
 	if len(actions) == 0 {
 		actions = append(actions, "no Kit-managed refresh action needed")
