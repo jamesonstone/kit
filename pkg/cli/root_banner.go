@@ -18,7 +18,7 @@ const (
 
 func rootLong(style humanOutputStyle) string {
 	return rootBanner(style) + `
-Kit is a repository-local contract and evidence harness for coding agents.
+Kit is a repository-local contract and validation tool for coding agents.
 It renders one universal agent contract, ships contextual rules with each
 release, and validates and converges Kit-managed project state.
 Kit does not choose a model, infer project truth, or launch an agent.
