@@ -1,0 +1,12 @@
+# actionlint configuration.
+paths:
+  # GitHub added `concurrency.queue` on 2026-05-07
+  # (https://github.blog/changelog/2026-05-07-github-actions-concurrency-groups-now-allow-larger-queues/);
+  # actionlint v1.7.12 predates it. Remove these entries once actionlint
+  # recognizes the key.
+  .github/workflows/release-tag-main.yml:
+    ignore:
+      - 'unexpected key "queue" for "concurrency" section'
+  .github/workflows/release-publish.yml:
+    ignore:
+      - 'unexpected key "queue" for "concurrency" section'
