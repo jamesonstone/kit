@@ -174,9 +174,7 @@ func auditRulesets(projectRoot string) []reconcileFinding {
 			reconcileSeverityError,
 			dir,
 			"failed to read ruleset directory",
-			templateSource(projectRoot),
 			"fix docs/references/rules/ permissions before validating rulesets",
-			[]string{fmt.Sprintf("ls -la %s", dir)},
 		)}
 	}
 
@@ -192,9 +190,7 @@ func auditRulesets(projectRoot string) []reconcileFinding {
 				reconcileSeverityError,
 				path,
 				"failed to read ruleset document",
-				templateSource(projectRoot),
 				"make the ruleset readable and retry validation",
-				[]string{fmt.Sprintf("sed -n '1,220p' %s", path)},
 			))
 			continue
 		}
@@ -204,9 +200,7 @@ func auditRulesets(projectRoot string) []reconcileFinding {
 				reconcileSeverityError,
 				path,
 				"ruleset document issue: "+issue,
-				templateSource(projectRoot),
 				"update the ruleset front matter and required sections to match the Kit ruleset contract",
-				[]string{fmt.Sprintf("sed -n '1,220p' %s", path)},
 			))
 		}
 	}
@@ -220,12 +214,7 @@ func auditRulesetReferences(projectRoot string, path string, doc *document.Docum
 			reconcileSeverityError,
 			path,
 			issue,
-			templateSource(projectRoot),
 			"create the referenced ruleset with `kit rules add <slug>` or update the feature reference target",
-			[]string{
-				fmt.Sprintf("sed -n '1,90p' %s", path),
-				fmt.Sprintf("ls %s", filepath.Join(projectRoot, filepath.FromSlash(rulesetDirRelPath))),
-			},
 		))
 	}
 	return findings

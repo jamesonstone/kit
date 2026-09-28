@@ -32,7 +32,7 @@ reported unless `--force` is used.
 | Command | Why it exists |
 | --- | --- |
 | `kit check [feature]` / `kit check --project` | Validates spec front matter and relationships, duplicate feature numbers, rule documents, the managed contract block, and, when `.kit.yaml` sets `source_file_line_limit`, handwritten source-file length. Exits non-zero on blocking findings. |
-| `kit reconcile` | Migrates a project created by any Kit release to the current structure, then audits project documents. Keeps project and edited content, removes only unmodified retired Kit files that Git can restore, and reports what it kept. From the primary checkout it writes to a `kit-reconcile` linked worktree. `--dry-run --diff` previews; `--force` also replaces edited Kit sections and edited shipped rules. |
+| `kit reconcile` | Migrates a project created by any Kit release to the current structure, then audits project documents. Keeps project and edited content, removes only unmodified retired Kit files that Git can restore, and reports what it kept. From the primary checkout it writes to a `kit-reconcile` linked worktree. `--dry-run --diff` previews; `--force` also replaces edited Kit sections and edited shipped rules. Prints any remaining findings as severity, file, issue, and fix. |
 | `kit health` | Read-only diagnosis for people and scheduled automation: reports what `kit reconcile` would change (`--diff` shows it), runs the project check, and exits non-zero only when that check fails. Never writes. |
 | `kit registry status` | Cheap read-only report of whether Kit-managed files and rules match this binary. |
 | `kit status` | Current feature and Kit-managed state. |
@@ -58,7 +58,7 @@ content, environment values, or secrets. Unversioned development builds, test bi
 These no longer exist: `kit context resolve` and the workflow manifests under
 `docs/references/workflows/`, `kit capabilities`, `kit dispatch`, `kit pr fix`,
 `kit pr orchestrate`, `kit improve run`, `kit instructions`, `kit rules link`,
-the `--profile` and `--single-agent` flags, and the generated
+the `--profile` and `--single-agent` flags, the reconcile agent prompt and its `--copy`, `--prompt-only`, `--migrate-references`, and `--migrate-verification` flags, and the generated
 `docs/PROJECT_PROGRESS_SUMMARY.md`. The universal contract and each rule's
 `Applies When` section replace workflow routing; hosts already expose their
 own tools, delegation, and command help.

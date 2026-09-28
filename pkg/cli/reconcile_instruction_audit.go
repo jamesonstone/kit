@@ -18,7 +18,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 	for _, relativePath := range instructionFiles(cfg) {
 		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, false)
 		if err != nil {
-			return append(findings, newFinding(reconcileSeverityWarning, filepath.Join(projectRoot, relativePath), err.Error(), templateSource(projectRoot), "inspect the file manually", nil))
+			return append(findings, newFinding(reconcileSeverityWarning, filepath.Join(projectRoot, relativePath), err.Error(), "inspect the file manually"))
 		}
 		issue := ""
 		switch {
@@ -37,9 +37,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 			reconcileSeverityWarning,
 			plan.absolutePath,
 			issue,
-			templateSource(projectRoot),
 			fmt.Sprintf("preview with `kit reconcile --dry-run --diff --file %s`, then run `kit reconcile`", relativePath),
-			[]string{fmt.Sprintf("kit reconcile --dry-run --diff --file %s", relativePath)},
 		))
 	}
 
@@ -50,17 +48,17 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 		return findings
 	}
 	for _, artifact := range artifacts {
-		issue := "retired Kit file; `kit reconcile` removes it"
+		issue := "retired Kit file"
+		fix := "run `kit reconcile` to remove it"
 		if !artifact.kitOwned {
 			issue = "retired Kit file kept because it is not exactly as Kit generated it (" + artifact.reason + ")"
+			fix = "move anything the project still needs elsewhere, then delete it"
 		}
 		finding := newFinding(
 			reconcileSeverityWarning,
 			filepath.Join(projectRoot, filepath.FromSlash(artifact.relativePath)),
 			issue,
-			templateSource(projectRoot),
-			"run `kit reconcile`; delete kept files yourself once they hold nothing the project needs",
-			[]string{"kit reconcile --dry-run"},
+			fix,
 		)
 		finding.NonBlocking = true
 		findings = append(findings, finding)
@@ -70,9 +68,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 			reconcileSeverityWarning,
 			filepath.Join(projectRoot, config.ConfigFileName),
 			legacyScaffoldIssue(cfg.InstructionScaffoldVersion),
-			templateSource(projectRoot),
 			"run `kit reconcile` to migrate to the current structure",
-			[]string{"kit reconcile --dry-run"},
 		)
 		finding.NonBlocking = true
 		findings = append(findings, finding)

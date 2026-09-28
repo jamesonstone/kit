@@ -33,9 +33,7 @@ func auditTaskAlignment(path, projectRoot string) []reconcileFinding {
 				reconcileSeverityError,
 				path,
 				fmt.Sprintf("task `%s` exists in `PROGRESS TABLE` but not in `TASK LIST`", id),
-				initProjectSource(projectRoot),
 				"align the task list so every progress-table task has a matching checkbox entry",
-				searchHintsForTaskAlignment(path),
 			))
 		}
 		if !detailSet[id] {
@@ -43,9 +41,7 @@ func auditTaskAlignment(path, projectRoot string) []reconcileFinding {
 				reconcileSeverityError,
 				path,
 				fmt.Sprintf("task `%s` exists in `PROGRESS TABLE` but not in `TASK DETAILS`", id),
-				initProjectSource(projectRoot),
 				"add or restore the missing task-details block so every progress-table task has a matching `###` section",
-				searchHintsForTaskAlignment(path),
 			))
 		}
 	}
@@ -56,9 +52,7 @@ func auditTaskAlignment(path, projectRoot string) []reconcileFinding {
 				reconcileSeverityError,
 				path,
 				fmt.Sprintf("task `%s` exists in `TASK LIST` but not in `PROGRESS TABLE`", id),
-				initProjectSource(projectRoot),
 				"align the progress table so every checkbox task has a matching row",
-				searchHintsForTaskAlignment(path),
 			))
 		}
 	}
@@ -107,12 +101,7 @@ func auditExecutableVerificationAdvisory(projectRoot string, feat *feature.Featu
 		reconcileSeverityWarning,
 		tasksPath,
 		fmt.Sprintf("active feature tasks do not declare executable verification fields: %s", strings.Join(missing, "; ")),
-		templateSource(projectRoot),
 		"add `VERIFY`, `EXPECTED FILES`, `RISK`, and `ROLLBACK` to active task details where commands are known; if acceptance criteria are prose-only, propose runnable checks separately from confirmed checks and leave uncertain commands as `not yet declared`",
-		[]string{
-			fmt.Sprintf("sed -n '1,260p' %s", tasksPath),
-			fmt.Sprintf("kit check %s", feat.Slug),
-		},
 	)}
 }
 

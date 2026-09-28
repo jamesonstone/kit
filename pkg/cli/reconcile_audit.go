@@ -25,19 +25,15 @@ type reconcileFinding struct {
 	AllowsCodeChanges bool
 	FilePath          string
 	Issue             string
-	ContractSource    string
 	UpdateInstruction string
-	SearchHints       []string
 }
 
 type reconcileReport struct {
-	ProjectRoot           string
-	Feature               *feature.Feature
-	Findings              []reconcileFinding
-	ReferenceMigration    bool
-	VerificationMigration bool
-	DeliverySnapshot      []managedFileDeliverySnapshot
-	SourceFileAudit       *sourceFileAuditSummary
+	ProjectRoot      string
+	Feature          *feature.Feature
+	Findings         []reconcileFinding
+	DeliverySnapshot []managedFileDeliverySnapshot
+	SourceFileAudit  *sourceFileAuditSummary
 }
 
 func (r *reconcileReport) cleanResult() string {
@@ -110,12 +106,7 @@ func auditConstitution(projectRoot string) []reconcileFinding {
 			reconcileSeverityError,
 			path,
 			"missing Kit-managed root document `CONSTITUTION.md`",
-			templateSource(projectRoot),
 			"create `docs/CONSTITUTION.md` and populate the current Kit sections before reconciling feature docs",
-			[]string{
-				fmt.Sprintf("sed -n '1,240p' %s", templateSource(projectRoot)),
-				fmt.Sprintf("sed -n '1,240p' %s", initProjectSource(projectRoot)),
-			},
 		)}
 	}
 	if content, err := os.ReadFile(path); err == nil && isBootstrapConstitution(string(content)) {
@@ -126,82 +117,29 @@ func auditConstitution(projectRoot string) []reconcileFinding {
 }
 
 func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
-	var findings []reconcileFinding
-	findings = append(findings, auditGitignoreScaffold(projectRoot)...)
-	linkedCheckout := usesLinkedWorktreeCheckout(projectRoot)
-
+	findings := auditGitignoreScaffold(projectRoot)
+	// The local-only .env and .envrc are per-checkout state that clean clones
+	// never have; their absence needs no action, so they are not audited.
 	for _, artifact := range []struct {
 		relativePath string
 		description  string
-		localOnly    bool
 	}{
-		{relativePath: envPath, description: "blank local environment file", localOnly: true},
-		{relativePath: envrcPath, description: "local direnv bootstrap file", localOnly: true},
 		{relativePath: codeRabbitConfigPath, description: "CodeRabbit review configuration"},
 		{relativePath: pullRequestTemplatePath, description: "GitHub pull request template"},
 		{relativePath: autoAssignWorkflowPath, description: "GitHub issue and pull request auto-assignment workflow"},
 	} {
-		if artifact.localOnly && linkedCheckout {
-			continue
-		}
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(artifact.relativePath))
 		if document.Exists(absolutePath) {
 			continue
 		}
-		update := fmt.Sprintf("run `kit init` to create the missing %s, then review the generated file before committing it", artifact.description)
-		if artifact.localOnly {
-			update = fmt.Sprintf("run `kit init` to create the missing %s and keep it covered by `.gitignore`", artifact.description)
-		}
-		finding := newFinding(
+		findings = append(findings, newFinding(
 			reconcileSeverityWarning,
 			absolutePath,
 			fmt.Sprintf("missing Kit init scaffold artifact `%s`", artifact.relativePath),
-			initProjectSource(projectRoot),
-			update,
-			[]string{
-				"kit init",
-				fmt.Sprintf("test -f %s", absolutePath),
-			},
-		)
-		// Ignored local environment files are per-checkout state, absent from
-		// clean clones such as CI; report them without failing validation.
-		finding.NonBlocking = artifact.localOnly
-		findings = append(findings, finding)
+			fmt.Sprintf("run `kit reconcile` to create the missing %s, then review it before committing", artifact.description),
+		))
 	}
-
 	return findings
-}
-
-func usesLinkedWorktreeCheckout(projectRoot string) bool {
-	data, err := os.ReadFile(filepath.Join(projectRoot, ".git"))
-	if err != nil {
-		return false
-	}
-	const gitDirPrefix = "gitdir:"
-	line := strings.TrimSpace(string(data))
-	if !strings.HasPrefix(line, gitDirPrefix) {
-		return false
-	}
-	gitDir := strings.TrimSpace(strings.TrimPrefix(line, gitDirPrefix))
-	if gitDir == "" {
-		return false
-	}
-	if !filepath.IsAbs(gitDir) {
-		gitDir = filepath.Join(projectRoot, gitDir)
-	}
-	commonData, err := os.ReadFile(filepath.Join(gitDir, "commondir"))
-	if err != nil {
-		return false
-	}
-	commonDir := strings.TrimSpace(string(commonData))
-	if commonDir == "" {
-		return false
-	}
-	if !filepath.IsAbs(commonDir) {
-		commonDir = filepath.Join(gitDir, commonDir)
-	}
-	info, err := os.Stat(filepath.Clean(commonDir))
-	return err == nil && info.IsDir()
 }
 
 func auditGitignoreScaffold(projectRoot string) []reconcileFinding {
@@ -211,12 +149,7 @@ func auditGitignoreScaffold(projectRoot string) []reconcileFinding {
 			reconcileSeverityWarning,
 			path,
 			"missing `.gitignore` for Kit-managed init scaffold entries",
-			initProjectSource(projectRoot),
-			"run `kit init` to create `.gitignore` with the current Kit-local environment, cache, and scratch artifact entries",
-			[]string{
-				"kit init",
-				fmt.Sprintf("sed -n '1,160p' %s", path),
-			},
+			"run `kit reconcile` to create `.gitignore` with the current Kit-local environment, cache, and scratch artifact entries",
 		)}
 	}
 
@@ -226,9 +159,7 @@ func auditGitignoreScaffold(projectRoot string) []reconcileFinding {
 			reconcileSeverityWarning,
 			path,
 			"failed to read `.gitignore` for Kit-managed init scaffold entries",
-			initProjectSource(projectRoot),
-			"fix `.gitignore` readability, then run `kit init` to append any missing Kit-managed entries",
-			[]string{fmt.Sprintf("sed -n '1,160p' %s", path)},
+			"fix `.gitignore` readability, then run `kit reconcile` to append any missing Kit-managed entries",
 		)}
 	}
 
@@ -241,12 +172,7 @@ func auditGitignoreScaffold(projectRoot string) []reconcileFinding {
 		reconcileSeverityWarning,
 		path,
 		fmt.Sprintf("missing Kit-managed `.gitignore` entries: %s", strings.Join(quotedGitignorePatterns(missing), ", ")),
-		initProjectSource(projectRoot),
-		"run `kit init` to append the missing ignore entries while preserving existing project-specific ignores",
-		[]string{
-			"kit init",
-			fmt.Sprintf("sed -n '1,160p' %s", path),
-		},
+		"run `kit reconcile` to append the missing ignore entries while preserving existing project-specific ignores",
 	)}
 }
 

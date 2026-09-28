@@ -166,43 +166,34 @@ func TestBuildReconcileReportIncludesWholeProjectSourceFileFindings(t *testing.T
 	}
 }
 
-func TestBuildReconcilePromptAuthorizesOnlyBoundedSourceSplits(t *testing.T) {
+// Reconcile reports an oversized file as a finding with its fix and the audit
+// evidence, with no generated prompt around it.
+func TestReconcileFindingsReportSourceSplit(t *testing.T) {
 	projectRoot := t.TempDir()
-	_, ok, _ := auditSourceFileSize(projectRoot, "main.go", 300)
-	if ok {
-		t.Fatal("missing fixture must not produce source finding")
-	}
 	writeLines(t, filepath.Join(projectRoot, "main.go"), 301, "package main")
 	finding, ok, _ := auditSourceFileSize(projectRoot, "main.go", 300)
 	if !ok {
 		t.Fatal("oversized source fixture produced no finding")
 	}
-
-	prompt := buildReconcilePrompt(&reconcileReport{
+	var out strings.Builder
+	err := writeReconcileFindings(&out, &reconcileReport{
 		ProjectRoot: projectRoot,
 		Findings:    []reconcileFinding{finding},
 		SourceFileAudit: &sourceFileAuditSummary{
-			Limit:          300,
-			CandidateCount: 1,
-			EligibleCount:  1,
-			ViolationCount: 1,
-			Complete:       true,
+			Limit: 300, CandidateCount: 1, EligibleCount: 1, ViolationCount: 1, Complete: true,
 		},
 	})
-	for _, want := range []string{
-		"Reconcile Kit-managed project state for the whole project.",
-		"source/test edits are authorized only for behavior-preserving semantic splits",
-		"split by responsibility",
-		"source file size",
-		"source-file-size audit: complete",
-		"No exact command-owned path snapshot is present",
-	} {
-		if !strings.Contains(prompt, want) {
-			t.Fatalf("prompt missing %q:\n%s", want, prompt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := out.String()
+	for _, want := range []string{"1 warning(s)", "main.go: ", "fix: ", "source-file-size audit: complete"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("findings output missing %q:\n%s", want, got)
 		}
 	}
-	if strings.Contains(prompt, "Only update Kit-managed docs and scaffold files") {
-		t.Fatalf("source finding retained documentation-only rule:\n%s", prompt)
+	if len(strings.Fields(got)) > 120 {
+		t.Fatalf("findings output is not concise (%d words):\n%s", len(strings.Fields(got)), got)
 	}
 }
 

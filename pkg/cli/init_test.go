@@ -36,38 +36,32 @@ func TestRunInit_DefaultCopiesBootstrapPromptAndShowsPasteStep(t *testing.T) {
 		})
 
 		const constitutionPath = "docs/CONSTITUTION.md"
-		const agentsEntrypointGuidance = "Follow the Kit-managed contract in AGENTS.md before inspecting repository evidence or modifying project memory"
-		if !strings.Contains(copied, "Treat the exact generated starter at "+filepath.Join(cwd, constitutionPath)+" as a valid bootstrap Constitution") {
-			t.Fatalf("expected copied prompt to target %s, got %q", filepath.Join(cwd, constitutionPath), copied)
+		if !strings.Contains(copied, filepath.Join(cwd, constitutionPath)) || !strings.Contains(copied, filepath.Join(cwd, makefilePath)) {
+			t.Fatalf("prompt does not name the Constitution and Makefile paths: %q", copied)
+		}
+		// Only Kit-specific bootstrap guidance and the created files; delivery
+		// policy lives in the contract and the delivery rule.
+		for _, retired := range []string{"Delivery of command-created files", "Pull-Request Landing Plan", "sha256:", "work-lane tripwire"} {
+			if strings.Contains(copied, retired) {
+				t.Fatalf("prompt restates delivery policy (%q): %q", retired, copied)
+			}
+		}
+		if words := len(strings.Fields(copied)); words > 300 {
+			t.Fatalf("init prompt is %d words", words)
 		}
 		for _, check := range []string{
-			agentsEntrypointGuidance,
-			"Do not ask the user to explain the entire project",
-			"When evidence is insufficient, leave the project-specific starter sections unchanged",
-			"Follow docs/references/rules/constitution-curation.md",
-			"Populate " + filepath.Join(cwd, makefilePath) + " with a canonical project command interface",
-			"Leave the safe starter Makefile unchanged when the repository has no verified",
-			"Expose `make dev` when the repository has a verified local development or run workflow",
-			"Do not leave TODO recipes, echo-only placeholders, guessed commands, or duplicated build logic",
+			"valid bootstrap Constitution",
+			"leave the starter sections unchanged",
+			"Leave the safe starter unchanged",
 			"Run `make help` and each added target that is safe to execute",
-			"Delivery of command-created files:",
-			"Treat only this exact snapshot as command-owned evidence",
-			"`AGENTS.md` (create; pre-command absent; expected sha256:",
-			"explicitly stage only the captured paths (including deleted paths)",
-			"create or update the ready pull request",
+			"`AGENTS.md`",
 		} {
 			if !strings.Contains(copied, check) {
 				t.Fatalf("expected copied prompt to contain %q, got %q", check, copied)
 			}
 		}
-		if strings.Contains(copied, "`.env` (") || strings.Contains(copied, "`.envrc` (") {
+		if strings.Contains(copied, "`.env`") || strings.Contains(copied, "`.envrc`") {
 			t.Fatalf("expected copied prompt to exclude machine-local environment files, got %q", copied)
-		}
-		entrypointIndex := strings.Index(copied, agentsEntrypointGuidance)
-		bootstrapIndex := strings.Index(copied, "Treat the exact generated starter")
-		evidenceIndex := strings.Index(copied, "Inspect implemented behavior")
-		if entrypointIndex < 0 || bootstrapIndex < 0 || evidenceIndex < 0 || entrypointIndex >= bootstrapIndex || entrypointIndex >= evidenceIndex {
-			t.Fatalf("expected repository entrypoint guidance before Constitution inspection, got %q", copied)
 		}
 		if strings.Contains(copied, "Copy this section to the Agent:") {
 			t.Fatalf("expected clipboard payload to contain only the prompt body, got %q", copied)

@@ -25,9 +25,7 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 			reconcileSeverityError,
 			path,
 			fmt.Sprintf("failed to parse `%s`", filepath.Base(path)),
-			templateSource(projectRoot),
 			"fix the markdown structure before reconciliation continues",
-			[]string{fmt.Sprintf("sed -n '1,260p' %s", path)},
 		)}
 	}
 
@@ -43,9 +41,7 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 				reconcileSeverityError,
 				path,
 				fmt.Sprintf("missing required section `## %s`", section),
-				contractSourceForSection(projectRoot, docType, section),
 				fmt.Sprintf("add `## %s` and populate it with current repository-backed content", section),
-				searchHintsForSection(projectRoot, path, section),
 			))
 			continue
 		}
@@ -54,9 +50,7 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 				reconcileSeverityError,
 				path,
 				fmt.Sprintf("required section `## %s` is empty or placeholder-only", section),
-				contractSourceForSection(projectRoot, docType, section),
 				fmt.Sprintf("replace placeholder-only content in `## %s` with current repo-backed content", section),
-				searchHintsForSection(projectRoot, path, section),
 			))
 		}
 	}
@@ -74,9 +68,7 @@ func auditStructuredDocument(path string, docType document.DocumentType, project
 				reconcileSeverityError,
 				path,
 				fmt.Sprintf("malformed `%s` table in `## %s`", filepath.Base(path), expectation.Section),
-				contractSourceForSection(projectRoot, docType, expectation.Section),
 				fmt.Sprintf("reshape `## %s` to match the current Kit table contract", expectation.Section),
-				searchHintsForTable(projectRoot, path, expectation.Section),
 			))
 		}
 	}
@@ -99,9 +91,7 @@ func auditMetadataDiagnostics(path string, doc *document.Document, projectRoot s
 			severity,
 			path,
 			fmt.Sprintf("front matter metadata issue: %s", diagnostic.Message),
-			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
 			diagnostic.Fix,
-			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
 		)
 		if doc.Type == document.TypeSpec && doc.Metadata != nil && doc.Metadata.WorkflowVersion == document.WorkflowVersionV2 && severity == reconcileSeverityWarning {
 			finding.NonBlocking = true
@@ -113,9 +103,7 @@ func auditMetadataDiagnostics(path string, doc *document.Document, projectRoot s
 			reconcileSeverityWarning,
 			path,
 			fmt.Sprintf("front matter/body metadata conflict: %s", conflict.Message),
-			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
 			"treat front matter as canonical and update or remove the stale body metadata",
-			[]string{fmt.Sprintf("sed -n '1,140p' %s", path)},
 		))
 	}
 	if doc.Metadata != nil {
@@ -139,9 +127,7 @@ func metadataIdentityFindings(path string, doc *document.Document, projectRoot s
 			reconcileSeverityError,
 			path,
 			fmt.Sprintf("front matter feature.id `%s` does not match containing feature directory id `%s`", doc.Metadata.Feature.ID, expected.ID),
-			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
 			"update front matter feature identity to match the canonical feature directory",
-			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
 		))
 	}
 	if doc.Metadata.Feature.Slug != "" && doc.Metadata.Feature.Slug != expected.Slug {
@@ -149,9 +135,7 @@ func metadataIdentityFindings(path string, doc *document.Document, projectRoot s
 			reconcileSeverityError,
 			path,
 			fmt.Sprintf("front matter feature.slug `%s` does not match containing feature directory slug `%s`", doc.Metadata.Feature.Slug, expected.Slug),
-			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
 			"update front matter feature identity to match the canonical feature directory",
-			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
 		))
 	}
 	if doc.Metadata.Feature.Dir != "" && doc.Metadata.Feature.Dir != expected.Dir {
@@ -159,9 +143,7 @@ func metadataIdentityFindings(path string, doc *document.Document, projectRoot s
 			reconcileSeverityError,
 			path,
 			fmt.Sprintf("front matter feature.dir `%s` does not match containing feature directory `%s`", doc.Metadata.Feature.Dir, expected.Dir),
-			contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
 			"update front matter feature identity to match the canonical feature directory",
-			[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
 		))
 	}
 	return findings
@@ -175,9 +157,7 @@ func auditMetadataMigrationState(path string, doc *document.Document, projectRoo
 		reconcileSeverityWarning,
 		path,
 		"feature artifact is missing canonical YAML front matter and is using legacy markdown metadata fallback",
-		contractSourceForSection(projectRoot, doc.Type, "FRONT MATTER"),
 		"add typed front matter for artifact identity, feature identity, relationships, references, and skills as applicable",
-		[]string{fmt.Sprintf("sed -n '1,80p' %s", path)},
 	)}
 }
 
@@ -219,9 +199,7 @@ func auditRelationships(path string, doc *document.Document, projectRoot string,
 				reconcileSeverityError,
 				path,
 				fmt.Sprintf("invalid `RELATIONSHIPS` content: %v", err),
-				constitutionSource(projectRoot),
 				"rewrite `## RELATIONSHIPS` to use `none` or explicit `- builds on:`, `- depends on:`, or `- related to:` bullets",
-				searchHintsForSection(projectRoot, path, "RELATIONSHIPS"),
 			)}
 		}
 		relationships = parsedRelationships
@@ -234,12 +212,7 @@ func auditRelationships(path string, doc *document.Document, projectRoot string,
 				reconcileSeverityWarning,
 				path,
 				fmt.Sprintf("relationship target `%s` does not exist in `docs/specs/`", relation.Target),
-				constitutionSource(projectRoot),
 				"remove or correct the stale relationship target after checking the current feature directory names",
-				[]string{
-					fmt.Sprintf("rg -n \"^## RELATIONSHIPS|%s\" %s", relation.Target, filepath.Join(projectRoot, "docs", "specs")),
-					fmt.Sprintf("ls %s", filepath.Join(projectRoot, "docs", "specs")),
-				},
 			))
 		}
 	}

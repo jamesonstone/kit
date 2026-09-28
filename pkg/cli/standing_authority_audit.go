@@ -20,9 +20,7 @@ func auditStandingAuthorityPolicy(projectRoot string) []reconcileFinding {
 				reconcileSeverityWarning,
 				absolutePath,
 				fmt.Sprintf("failed to read standing-authority policy document: %v", err),
-				templateSource(projectRoot),
 				"restore policy document readability before reconciling standing-authority guidance",
-				[]string{fmt.Sprintf("ls -l %s", absolutePath)},
 			))
 			continue
 		}
@@ -36,9 +34,7 @@ func auditStandingAuthorityPolicy(projectRoot string) []reconcileFinding {
 				reconcileSeverityWarning,
 				absolutePath,
 				fmt.Sprintf("policy document contains superseded standing-authority guidance %q", forbidden),
-				templateSource(projectRoot),
 				"remove generic accepted-task merge/deploy authority and additive-infrastructure autonomy; keep dynamic in-scope binding plus exact current readiness and separate risk approvals",
-				[]string{fmt.Sprintf("rg -n %q %s", forbidden, absolutePath)},
 			))
 			break
 		}
