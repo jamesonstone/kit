@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -58,4 +59,37 @@ func TestStatusAgreesWithHealthOnCleanClone(t *testing.T) {
 	if report.State != statusKitManagedStateCurrent || report.PlannedChanges != 0 || len(report.Items) != 0 {
 		t.Fatalf("registry status on a current clean clone = %#v", report)
 	}
+}
+
+func TestInitStopsWhenAnAncestorCannotBeInspected(t *testing.T) {
+	root := t.TempDir()
+	locked := filepath.Join(root, "locked")
+	child := filepath.Join(locked, "child")
+	writeFile(t, filepath.Join(child, "README.md"), "# child\n")
+	if err := os.Chmod(locked, 0o100); err != nil { // traversable, not listable
+		t.Fatal(err)
+	}
+	if err := os.Chmod(root, 0o000); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(root, 0o755); _ = os.Chmod(locked, 0o755) })
+	if _, err := os.Stat(filepath.Join(root, ".kit.yaml")); os.IsNotExist(err) || err == nil {
+		t.Skip("filesystem permissions not enforced (running as root?)")
+	}
+	if _, err := ancestorKitProject(child); err == nil {
+		t.Fatal("an ancestor that cannot be inspected was treated as no project")
+	}
+}
+
+func TestInitNextStepMatchesPromptDestination(t *testing.T) {
+	withInitFlags(t, func() {
+		stubStdoutTerminal(t, false)
+		if step := initPromptNextStep(); !strings.Contains(step, "prompt above") {
+			t.Fatalf("non-terminal next step = %q", step)
+		}
+		stubStdoutTerminal(t, true)
+		if step := initPromptNextStep(); !strings.Contains(step, "copied prompt") {
+			t.Fatalf("terminal next step = %q", step)
+		}
+	})
 }

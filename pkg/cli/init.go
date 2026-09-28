@@ -63,7 +63,11 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 	// Kit commands resolve the nearest ancestor .kit.yaml, so a project nested
 	// inside another would silently change which project they act on.
-	if parent, err := config.FindProjectRoot(); err == nil {
+	parent, err := ancestorKitProject(cwd)
+	if err != nil {
+		return err
+	}
+	if parent != "" {
 		return fmt.Errorf("this directory is inside the Kit project at %s; run Kit commands there (use `kit reconcile` to update it) instead of creating a nested project", parent)
 	}
 
@@ -210,11 +214,32 @@ func runInit(cmd *cobra.Command, args []string) error {
 
 	if !initOutputOnly {
 		printNumberedNextSteps([]string{
-			"Paste the copied prompt into your agent to review repository evidence and populate only verified Makefile targets",
+			initPromptNextStep(),
 			"Keep the starter Constitution unchanged until implemented evidence supports durable project-wide rules",
 			"Run `kit spec <feature-name>` to create your first feature",
 		})
 	}
 
 	return nil
+}
+
+// ancestorKitProject returns the nearest ancestor directory holding .kit.yaml.
+// An ancestor that cannot be inspected is an error, never "no project".
+func ancestorKitProject(dir string) (string, error) {
+	for parent := filepath.Dir(dir); parent != dir; dir, parent = parent, filepath.Dir(parent) {
+		path := filepath.Join(parent, config.ConfigFileName)
+		if _, err := os.Stat(path); err == nil {
+			return parent, nil
+		} else if !os.IsNotExist(err) {
+			return "", fmt.Errorf("cannot check %s for an existing Kit project: %w", path, err)
+		}
+	}
+	return "", nil
+}
+
+func initPromptNextStep() string {
+	if promptCopiedByDefault(initOutputOnly, initCopy) {
+		return "Paste the copied prompt into your agent to review repository evidence and populate only verified Makefile targets"
+	}
+	return "Give the prompt above to your agent to review repository evidence and populate only verified Makefile targets"
 }
