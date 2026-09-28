@@ -47,22 +47,33 @@ func buildProjectInitPrompt(
 			"Add only applicable canonical targets (`dev`, `build`, `test`, `check`, `lint`, `fmt`, `clean`) as thin wrappers around repository-native commands, declared `.PHONY`, with no placeholder or guessed recipes",
 			"Run `make help` and each added target that is safe to execute",
 		)
-		if files := initCreatedFiles(snapshots...); len(files) > 0 {
-			doc.Paragraph("Files `kit init` created or changed (deliver them with this work): " + strings.Join(files, ", "))
+		changed, removed := initDeliveredFiles(snapshots...)
+		if len(changed) > 0 {
+			doc.Paragraph("Files `kit init` created or changed (deliver them with this work): " + strings.Join(changed, ", "))
+		}
+		if len(removed) > 0 {
+			doc.Paragraph("Retired Kit files `kit init` removed (deliver the deletions with this work): " + strings.Join(removed, ", "))
 		}
 	})
 }
 
-// initCreatedFiles lists the repository files kit init wrote. The snapshots
-// already exclude local-only, secret-like, and ignored paths.
-func initCreatedFiles(snapshots ...[]managedFileDeliverySnapshot) []string {
+// initDeliveredFiles splits the repository files kit init touched into those
+// present afterwards and those it removed. The snapshots already exclude
+// local-only, secret-like, and ignored paths.
+func initDeliveredFiles(snapshots ...[]managedFileDeliverySnapshot) ([]string, []string) {
 	if len(snapshots) == 0 {
-		return nil
+		return nil, nil
 	}
-	files := make([]string, 0, len(snapshots[0]))
+	var changed, removed []string
 	for _, change := range snapshots[0] {
-		files = append(files, "`"+normalizeManagedFileDeliveryPath(change.Path)+"`")
+		path := "`" + normalizeManagedFileDeliveryPath(change.Path) + "`"
+		if change.ResultState == managedFileAbsentState {
+			removed = append(removed, path)
+		} else {
+			changed = append(changed, path)
+		}
 	}
-	sort.Strings(files)
-	return files
+	sort.Strings(changed)
+	sort.Strings(removed)
+	return changed, removed
 }

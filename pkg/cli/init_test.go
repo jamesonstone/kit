@@ -265,3 +265,18 @@ func TestRunInit_UsesProjectAutoAssignAssigneesBeforeGlobalFallback(t *testing.T
 		t.Fatalf("project assignees should take precedence over global fallback:\n%s", content)
 	}
 }
+
+func TestInitPromptSeparatesRemovedFiles(t *testing.T) {
+	prompt := buildProjectInitPrompt("/repo", "/repo/docs/CONSTITUTION.md", []managedFileDeliverySnapshot{
+		{Path: "AGENTS.md", Action: "update", PreCommandState: managedFileContentState("a"), ResultState: managedFileContentState("b")},
+		{Path: "docs/agents/README.md", Action: "remove", PreCommandState: managedFileContentState("c"), ResultState: managedFileAbsentState},
+	})
+	changed := prompt[strings.Index(prompt, "created or changed"):]
+	changed = changed[:strings.Index(changed, "\n")]
+	if strings.Contains(changed, "docs/agents/README.md") || !strings.Contains(changed, "`AGENTS.md`") {
+		t.Fatalf("changed list = %q", changed)
+	}
+	if !strings.Contains(prompt, "removed (deliver the deletions with this work): `docs/agents/README.md`") {
+		t.Fatalf("removed file not listed as a deletion:\n%s", prompt)
+	}
+}
