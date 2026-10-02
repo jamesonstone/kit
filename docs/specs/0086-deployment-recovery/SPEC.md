@@ -27,8 +27,8 @@ missing-trigger cause remains unknown. The shared rule must avoid project,
 cloud-provider, credential, and incident-specific prescriptions.
 
 Issue #239, branch GH-239, and the canonical linked worktree own delivery.
-The primary checkout and downstream projects remain untouched. Merge and
-release are outside this task.
+The primary checkout and downstream projects remain untouched. The human later authorized review repair and merge of all open Kit pull
+requests. Release and downstream rollout remain outside this repair task.
 
 ## REQUIREMENTS
 
@@ -73,6 +73,12 @@ registry enumeration is needed. Reconcile reports a pre-existing non-blocking
 advisory for project-owned `docs/references/README.md`; it stays preserved.
 
 ## VALIDATION
+
+Review repair adopts the current main branch, including the default ASD-STE100
+rule. Added explanatory test comments for the review warning and the missing
+core-rule entry in the references index. The underlying recovery rule and
+permissions are unchanged. All required local checks passed again on the integrated head. The same
+nonblocking references-index advisory remains.
 
 - PASS: `make test`, including fresh/current project installation, every
   released-generation migration fixture, idempotence, and preservation and

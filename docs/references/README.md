@@ -19,6 +19,7 @@
 | `cross-repository-program-coordination` | default | One ledger and live-evidence reconciliation for multi-repository programs. |
 | `deadline-mode` | default | Narrowed validation under an explicit user deadline without weakening safety. |
 | `deletion-safety` | default | Recoverable soft delete by default and exact-target confirmation before hard delete. |
+| `deployment-recovery` | default | Safe, bounded recovery of authorized releases and deployments through existing pipelines. |
 | `delivery` | default | Worktree lanes, human-owned pull requests, attribution, and commit conventions. |
 | `frontend-application-architecture` | default | Responsibility boundaries for frontend routes, state, data adapters, and UI. |
 | `github-pr-merge` | default | Explicit bounded merge authority and current `MERGE_READY` readiness. |

@@ -10,6 +10,7 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
+// TestDeploymentRecoveryInstallsAcrossGenerations verifies default routing and idempotent adoption.
 func TestDeploymentRecoveryInstallsAcrossGenerations(t *testing.T) {
 	setupMigrationEnvironment(t)
 	registry, err := embeddedRulesetRegistry(t.Context())
@@ -90,6 +91,7 @@ func TestDeploymentRecoveryInstallsAcrossGenerations(t *testing.T) {
 	}
 }
 
+// TestDeploymentRecoveryPreservesProjectOwnedRule verifies local guidance survives migration.
 func TestDeploymentRecoveryPreservesProjectOwnedRule(t *testing.T) {
 	setupMigrationEnvironment(t)
 	content := readFile(t, filepath.Join("..", "..", rulesetTarget("deployment-recovery"))) + "\nProject-specific recovery guidance.\n"
