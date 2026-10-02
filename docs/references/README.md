@@ -26,7 +26,10 @@
 | `infrastructure-change-approval` | default | One outline and one approval per infrastructure batch; deletion always confirmed. |
 | `slack-read-only` | default | Slack is read-only; every write needs explicit message-specific approval. |
 | `testing-and-environment-validation` | default | Code-level tests primary, honest results, safe browser and production validation. |
+| `context-evidence` | optional | Bounded context selection across all rules, source traceability, freshness, and recoverable handoffs. |
 | `llms-txt` | optional | `/llms.txt` contract for public web and API surfaces. |
 | `readme-header-tagline` | optional | Consistent top-level README identity and opening structure. |
 
 Optional rules install only through `kit rules add`.
+
+Use `kit rules add context-evidence` for the shared context-use discipline. It applies across rules and source investigations without changing the default contract or requiring a record for small tasks. Its inline outline and read-only source checks support handoffs; model-performance gains still require measurement.
