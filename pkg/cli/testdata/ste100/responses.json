@@ -3,12 +3,12 @@
     "id": "plan",
     "category": "coding task plan",
     "before": "Inspect `pkg/parser.go` and run `go test ./...` once the worktree is ready. If the test fails, alter only the parser. This may expose another defect.",
-    "after": "1. When the worktree is ready, inspect `pkg/parser.go`.\n2. Run `go test ./...`.\n3. If the test fails, change only the parser.\nThis may show another defect.",
+    "after": "1. When the worktree is ready, inspect `pkg/parser.go`.\n2. When the worktree is ready, run `go test ./...`.\n3. If the test fails, change only the parser.\nThis may show another defect.",
     "anchors": [
       "may",
       "only the parser"
     ],
-    "review": "The worktree condition controls the first action and thus the ordered plan. The test-failure condition, parser-only scope, and possible additional defect remain."
+    "review": "The worktree condition explicitly controls both inspection and the test action. The test-failure condition, parser-only scope, and possible additional defect remain."
   },
   {
     "id": "progress",

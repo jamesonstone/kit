@@ -86,11 +86,13 @@ Observed local checks on 2026-10-02:
 
 Fixtures: `pkg/cli/testdata/ste100/responses.json` contains eight before/after cases. Each includes an agent semantic-review note. The five required response types retain scope and uncertainty. Additional cases preserve fenced Go/JSON/YAML, exact error text, quotations, commands, identifiers, paths, and URLs. Spanish and conversational-style requests demonstrate explicit overrides. Tests assert protected content/counts, selected condition ordering, and evidence/uncertainty anchors. They evaluate curated examples and policy text, not live provider behavior or a rewriting engine.
 
+Review repair: the required local checks were rerun and passed after the plan-condition correction. The same nonblocking references-index advisory remains.
+
 Agent semantic review: COMPLETE for each fixture, with the limits above. Full dictionary/POS checking, human language review, and live cross-provider response tests: UNRUN. Performance/readability benefit: UNMEASURED hypothesis. No test establishes full ASD-STE100 compliance.
 
 ## OUTCOME
 
-Implementation and local validation complete. Issue #243; branch/worktree GH-243. Ready pull-request delivery follows validation. Merge and deployment are outside scope.
+Implementation and local validation complete. Issue #243; branch/worktree GH-243. Ready PR #244 delivers this change. Review feedback identified a narrowed condition in the plan fixture. Both inspection and the test action now explicitly require a ready worktree. The assertion checks both conditions. Test-function comments and PR evidence links address the remaining review advisories. The human authorized repair and merge of PR #244 after delivery. Current-head checks and reviews must pass before merge. Deployment remains outside scope.
 
 ## REPOSITORY MEMORY
 

@@ -14,7 +14,8 @@ type ste100Fixture struct {
 	Anchors, Expected                            []string
 }
 
-// These tests inspect curated fixtures. They do not run a writing engine, prove
+// TestSTE100ResponseFixtures checks structure and preservation in curated examples.
+// These tests do not run a writing engine, prove
 // semantic equivalence, or validate the full ASD dictionary or live host behavior.
 func TestSTE100ResponseFixtures(t *testing.T) {
 	data, err := os.ReadFile("testdata/ste100/responses.json")
@@ -60,7 +61,7 @@ func TestSTE100ResponseFixtures(t *testing.T) {
 			}
 			if fixture.ID == "plan" {
 				steps := strings.Split(fixture.After, "\n")
-				if len(steps) != 4 || !strings.HasPrefix(steps[0], "1. When the worktree is ready,") || !strings.HasPrefix(steps[2], "3. If the test fails,") {
+				if len(steps) != 4 || !strings.HasPrefix(steps[0], "1. When the worktree is ready,") || !strings.HasPrefix(steps[1], "2. When the worktree is ready, run `go test ./...`.") || !strings.HasPrefix(steps[2], "3. If the test fails,") {
 					t.Fatal("plan lost ordered single-action steps or controlling conditions")
 				}
 			}
@@ -76,6 +77,7 @@ func TestSTE100ResponseFixtures(t *testing.T) {
 	}
 }
 
+// tokenCounts records protected content occurrences without depending on prose order.
 func tokenCounts(tokens []string) map[string]int {
 	counts := make(map[string]int)
 	for _, token := range tokens {

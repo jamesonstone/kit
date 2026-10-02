@@ -10,6 +10,7 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
+// ste100RuleForTest returns the canonical embedded writing rule.
 func ste100RuleForTest(t *testing.T) registryRuleset {
 	t.Helper()
 	registry, err := embeddedRulesetRegistry(t.Context())
@@ -25,6 +26,7 @@ func ste100RuleForTest(t *testing.T) registryRuleset {
 	return registryRuleset{}
 }
 
+// TestSTE100DefaultDistribution verifies default installation and shared provider references.
 func TestSTE100DefaultDistribution(t *testing.T) {
 	rule := ste100RuleForTest(t)
 	if rule.Metadata.RegistryScope != rulesetRegistryScopeDownstream || rule.Metadata.ReadPolicyDefault != "must" || rule.Metadata.Status != "active" {
@@ -81,6 +83,7 @@ func TestSTE100DefaultDistribution(t *testing.T) {
 	}
 }
 
+// TestSTE100ReconcilePreservesLocalRule verifies that reconciliation retains project edits.
 func TestSTE100ReconcilePreservesLocalRule(t *testing.T) {
 	rule := ste100RuleForTest(t)
 	root := setupRulesProject(t)
@@ -99,6 +102,7 @@ func TestSTE100ReconcilePreservesLocalRule(t *testing.T) {
 	}
 }
 
+// TestSTE100ContractKeepsOverrideAndVerificationBoundaries checks explicit policy limits.
 func TestSTE100ContractKeepsOverrideAndVerificationBoundaries(t *testing.T) {
 	rule := ste100RuleForTest(t)
 	for _, marker := range []string{
