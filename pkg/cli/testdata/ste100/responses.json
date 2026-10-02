@@ -1,0 +1,107 @@
+[
+  {
+    "id": "plan",
+    "category": "coding task plan",
+    "before": "Inspect `pkg/parser.go` and run `go test ./...` once the worktree is ready. If the test fails, alter only the parser. This may expose another defect.",
+    "after": "1. When the worktree is ready, inspect `pkg/parser.go`.\n2. Run `go test ./...`.\n3. If the test fails, change only the parser.\nThis may show another defect.",
+    "anchors": [
+      "may",
+      "only the parser"
+    ],
+    "review": "The worktree condition controls the first action and thus the ordered plan. The test-failure condition, parser-only scope, and possible additional defect remain."
+  },
+  {
+    "id": "progress",
+    "category": "progress update",
+    "before": "The focused tests passed, but hosted CI is `PENDING` and integration tests were not run; the timeout may be due to `Client.Do`.",
+    "after": "The focused tests passed. Hosted CI is `PENDING`. Integration tests were not run. The timeout may be due to `Client.Do`.",
+    "anchors": [
+      "passed",
+      "not run",
+      "may be due"
+    ],
+    "review": "Passed focused tests, pending hosted CI, unrun integration tests, and tentative timeout cause remain separate."
+  },
+  {
+    "id": "review",
+    "category": "code-review finding",
+    "before": "At `pkg/server.go:42`, `HandleRequest` may panic if `req.User` is nil. This has not been reproduced. It is recommended that a guard be added before the access.",
+    "after": "If `req.User` is nil, `HandleRequest` may panic at `pkg/server.go:42`. This has not been reproduced. Recommendation: Add a guard before the access.",
+    "anchors": [
+      "may panic",
+      "not been reproduced",
+      "before the access"
+    ],
+    "review": "The nil condition, possible panic, location, lack of reproduction, and recommended guard remain. No actor or confirmed defect is invented."
+  },
+  {
+    "id": "blocked",
+    "category": "failure or blocked task",
+    "before": "The task is blocked because `git push` returned \"fatal: Authentication failed\". No files were changed. Before retrying, the user must restore authentication. The remote state is unknown.",
+    "after": "The task is blocked. `git push` returned \"fatal: Authentication failed\". No files were changed. Before another attempt, the user must restore authentication. The remote state is unknown.",
+    "anchors": [
+      "blocked",
+      "No files were changed",
+      "must restore authentication",
+      "unknown"
+    ],
+    "review": "The exact error, no-change statement, authentication prerequisite, and unknown remote state remain. No new approval requirement is added."
+  },
+  {
+    "id": "completion",
+    "category": "completion report",
+    "before": "Changed `ParseConfig` in `pkg/config.go`. `make test` passed; `make build` was not run and hosted CI is `PENDING`. Performance may improve, but it was not measured. Evidence: https://example.com/run/123.",
+    "after": "Changed `ParseConfig` in `pkg/config.go`. `make test` passed. `make build` was not run. Hosted CI is `PENDING`. Performance may improve. It was not measured. Evidence: https://example.com/run/123.",
+    "anchors": [
+      "passed",
+      "not run",
+      "may improve",
+      "not measured",
+      "https://example.com/run/123"
+    ],
+    "review": "Change identity, test pass, unrun build, pending CI, evidence URL, and unmeasured possible performance benefit remain."
+  },
+  {
+    "id": "protected",
+    "category": "protected formats",
+    "before": "Preserve the source quote \"Commence the operation\" and the exact output below. The API is `HTTPClient.Do`, and the command is `curl -H \"X-Mode: begin\" https://example.com/api`.\n```go\nresult := HTTPClient.Do(req)\n```\n```json\n{\"status\":\"PENDING\",\"verified\":false}\n```\n```yaml\nstatus: UNKNOWN\nverified: false\n```",
+    "after": "Keep the source quote \"Commence the operation\". Keep the exact output below. The API is `HTTPClient.Do`. The command is `curl -H \"X-Mode: begin\" https://example.com/api`.\n```go\nresult := HTTPClient.Do(req)\n```\n```json\n{\"status\":\"PENDING\",\"verified\":false}\n```\n```yaml\nstatus: UNKNOWN\nverified: false\n```",
+    "anchors": [
+      "exact output"
+    ],
+    "review": "The quotation, API, command, URL, Go code, JSON, and YAML remain byte-for-byte identical."
+  },
+  {
+    "id": "spanish",
+    "category": "language override",
+    "request": "Respond in Spanish.",
+    "before": "`make test` passed. The cause may be `Client.Do`. Production tests were not run.",
+    "after": "`make test` pasó. La causa podría ser `Client.Do`. Las pruebas de producción no se ejecutaron.",
+    "anchors": [],
+    "review": "Spanish overrides English writing. Passed tests, tentative cause, unrun production tests, and technical tokens remain.",
+    "expected": [
+      "pasó",
+      "podría",
+      "no se ejecutaron"
+    ]
+  },
+  {
+    "id": "tone",
+    "category": "style override",
+    "request": "Use a warm, conversational tone and retain the technical detail.",
+    "before": "`Cache.Get` may return stale data after a concurrent write. The race test was not run. Add version validation before returning the cached value.",
+    "after": "Here is the detail: `Cache.Get` may return stale data after a concurrent write. The race test was not run. My suggestion is to add version validation before returning the cached value.",
+    "anchors": [
+      "may return stale data",
+      "after a concurrent write",
+      "not run",
+      "version validation",
+      "before returning"
+    ],
+    "review": "Requested conversational tone retains concurrent-write condition, tentative stale data, unrun race test, and recommended validation.",
+    "expected": [
+      "Here is the detail",
+      "My suggestion"
+    ]
+  }
+]

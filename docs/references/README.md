@@ -11,6 +11,7 @@
 
 | Ruleset | Installed | Purpose |
 | --- | --- | --- |
+| `asd-ste100` | default | ASD-STE100 writing for agent explanations, with technical-content preservation and explicit style overrides. |
 | `agent-team-orchestration` | default | Safe, integrated, truthfully reported delegation using the host's native subagents. |
 | `aws-agent-toolkit-guidance` | default | Verified AWS identity, current AWS guidance and tools, and no secret exposure. |
 | `backend-service-architecture` | default | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |

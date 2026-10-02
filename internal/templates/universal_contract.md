@@ -57,4 +57,5 @@ Read the named file under `docs/references/rules/` when its trigger applies; ski
 - Plans spanning repositories with dependent deliverables or staged activation: `cross-repository-program-coordination.md`.
 - The user explicitly declares a real deadline: `deadline-mode.md`.
 - Curating the Constitution: `constitution-curation.md`.
+- Agent-authored responses, plans, progress updates, review findings, and completion reports: apply `asd-ste100.md` by default. Explicit user language, tone, or style requests override this writing default only.
 - Optional rules added with `kit rules add` declare their own triggers in their `Applies When` section.
