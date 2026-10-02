@@ -21,6 +21,7 @@ type contextEvidenceFixture struct {
 	Question      string `json:"question"`
 }
 
+// contextEvidenceFence extracts a published recipe for direct fixture execution.
 func contextEvidenceFence(t *testing.T, content, language string, index int) string {
 	t.Helper()
 	pattern := regexp.MustCompile("(?s)```" + language + "\n(.*?)\n```")
@@ -31,6 +32,7 @@ func contextEvidenceFence(t *testing.T, content, language string, index int) str
 	return matches[index][1]
 }
 
+// contextEvidenceRun runs a published POSIX recipe in an isolated repository.
 func contextEvidenceRun(t *testing.T, recipe string, source contextEvidenceFixture) (string, error) {
 	t.Helper()
 	if runtime.GOOS == "windows" {
@@ -43,6 +45,7 @@ func contextEvidenceRun(t *testing.T, recipe string, source contextEvidenceFixtu
 	return strings.TrimSpace(string(output)), err
 }
 
+// contextEvidenceSource creates a retained source revision with an uncaptured requirement.
 func contextEvidenceSource(t *testing.T, path, content string) contextEvidenceFixture {
 	t.Helper()
 	root := t.TempDir()
@@ -54,6 +57,7 @@ func contextEvidenceSource(t *testing.T, path, content string) contextEvidenceFi
 	}
 }
 
+// TestContextEvidenceSourceRecoveryAndFreshness verifies historical recovery and current content checks.
 func TestContextEvidenceSourceRecoveryAndFreshness(t *testing.T) {
 	content := contextEvidenceRule(t).Content
 	reopen := contextEvidenceFence(t, content, "sh", 0)
@@ -101,6 +105,7 @@ func TestContextEvidenceSourceRecoveryAndFreshness(t *testing.T) {
 	}
 }
 
+// TestContextEvidenceHistoricalDecisionVersusCurrentImplementation keeps historical and current decisions separate.
 func TestContextEvidenceHistoricalDecisionVersusCurrentImplementation(t *testing.T) {
 	rule := contextEvidenceRule(t).Content
 	source := contextEvidenceSource(t, "DECISIONS.md", "Decision: use task files for phase.\n")
@@ -119,6 +124,7 @@ func TestContextEvidenceHistoricalDecisionVersusCurrentImplementation(t *testing
 	}
 }
 
+// TestContextEvidenceFreshProcessHandoffAndUncapturedRequirement verifies recovery without inventing absent input.
 func TestContextEvidenceFreshProcessHandoffAndUncapturedRequirement(t *testing.T) {
 	rule := contextEvidenceRule(t).Content
 	source := contextEvidenceSource(t, "phase.go", "package example\n\nconst phaseSource = \"metadata\"\n")

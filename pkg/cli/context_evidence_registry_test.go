@@ -14,6 +14,7 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/document"
 )
 
+// contextEvidenceRule returns the optional embedded evidence rule.
 func contextEvidenceRule(t *testing.T) registryRuleset {
 	t.Helper()
 	registry, err := embeddedRulesetRegistry(context.Background())
@@ -29,6 +30,7 @@ func contextEvidenceRule(t *testing.T) registryRuleset {
 	return registryRuleset{}
 }
 
+// TestContextEvidenceIsOptionalAndPreservesLocalEdits verifies opt-in installation and retained project edits.
 func TestContextEvidenceIsOptionalAndPreservesLocalEdits(t *testing.T) {
 	rule := contextEvidenceRule(t)
 	if rule.Metadata.RegistryScope != rulesetRegistryScopeOptional || rule.Metadata.ReadPolicyDefault != document.ReferenceReadPolicyConditional {
@@ -73,6 +75,7 @@ func TestContextEvidenceIsOptionalAndPreservesLocalEdits(t *testing.T) {
 	}
 }
 
+// TestContextEvidenceCoversGeneralRuleUseAndMissingInputs checks source and missing-input safeguards.
 func TestContextEvidenceCoversGeneralRuleUseAndMissingInputs(t *testing.T) {
 	content := contextEvidenceRule(t).Content
 	for _, invariant := range []string{
@@ -96,6 +99,7 @@ func TestContextEvidenceCoversGeneralRuleUseAndMissingInputs(t *testing.T) {
 	}
 }
 
+// TestContextEvidenceFreshInitKeepsDefaultFootprint verifies no default installation or instruction overhead.
 func TestContextEvidenceFreshInitKeepsDefaultFootprint(t *testing.T) {
 	rule := contextEvidenceRule(t)
 	root := t.TempDir()

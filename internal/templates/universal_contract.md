@@ -34,7 +34,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - When `.kit.yaml` sets `source_file_line_limit`, keep handwritten source and test files within it and split by responsibility; `kit check --project` enforces it.
 - Preserve language-native tests and pull-request checks; end-to-end suites supplement them. Run the project's validation before calling work complete, and fix relevant failures.
 - Parallelize independent investigation when it helps. Delegated agents never mutate Git or GitHub and never write overlapping files concurrently; the primary agent owns integration, validation, and the final report.
-- Resolve in-scope problems autonomously until the goal is complete or a genuine blocker remains; diagnose before retrying.
+- Resolve in-scope problems autonomously until the goal is complete or a genuine blocker remains; use current evidence to choose safe, bounded recovery.
 
 ## Reporting
 
@@ -48,6 +48,7 @@ Read the named file under `docs/references/rules/` when its trigger applies; ski
 
 - Creating an issue, branch, worktree, commit, push, or pull request, or repairing a pull request: `delivery.md`.
 - Any merge or merge-queue action: `github-pr-merge.md`.
+- Following a release or deployment, including a missing or failed pipeline: `deployment-recovery.md`.
 - Adding tests, configuring CI, or end-to-end, browser, or production validation: `testing-and-environment-validation.md`.
 - Backend routes, services, repositories, or adapters: `backend-service-architecture.md`; frontend routes, state flows, or components: `frontend-application-architecture.md`.
 - Designing deletion or deleting persistent state: `deletion-safety.md`.
@@ -57,4 +58,5 @@ Read the named file under `docs/references/rules/` when its trigger applies; ski
 - Plans spanning repositories with dependent deliverables or staged activation: `cross-repository-program-coordination.md`.
 - The user explicitly declares a real deadline: `deadline-mode.md`.
 - Curating the Constitution: `constitution-curation.md`.
+- Agent-authored responses, plans, progress updates, review findings, and completion reports: apply `asd-ste100.md` by default. Explicit user language, tone, or style requests override this writing default only.
 - Optional rules added with `kit rules add` declare their own triggers in their `Applies When` section.

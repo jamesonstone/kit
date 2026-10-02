@@ -11,6 +11,7 @@
 
 | Ruleset | Installed | Purpose |
 | --- | --- | --- |
+| `asd-ste100` | default | ASD-STE100 writing for agent explanations, with technical-content preservation and explicit style overrides. |
 | `agent-team-orchestration` | default | Safe, integrated, truthfully reported delegation using the host's native subagents. |
 | `aws-agent-toolkit-guidance` | default | Verified AWS identity, current AWS guidance and tools, and no secret exposure. |
 | `backend-service-architecture` | default | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |
@@ -18,6 +19,7 @@
 | `cross-repository-program-coordination` | default | One ledger and live-evidence reconciliation for multi-repository programs. |
 | `deadline-mode` | default | Narrowed validation under an explicit user deadline without weakening safety. |
 | `deletion-safety` | default | Recoverable soft delete by default and exact-target confirmation before hard delete. |
+| `deployment-recovery` | default | Safe, bounded recovery of authorized releases and deployments through existing pipelines. |
 | `delivery` | default | Worktree lanes, human-owned pull requests, attribution, and commit conventions. |
 | `frontend-application-architecture` | default | Responsibility boundaries for frontend routes, state, data adapters, and UI. |
 | `github-pr-merge` | default | Explicit bounded merge authority and current `MERGE_READY` readiness. |

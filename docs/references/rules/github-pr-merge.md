@@ -49,3 +49,4 @@ read_policy_default: conditional
 
 - Standing authority may continue a named existing standard deployment of the merged artifact to already-provisioned resources. IAM, network, KMS, secrets, schema or data-loss changes, infrastructure creation, replacement, or deletion, and nonstandard deployments need their own approval (see `infrastructure-change-approval`). Unclassified effects make a pull request `UNKNOWN`.
 - A merge is not proof of deployment, runtime health, or production correctness. Report merge result, hosted workflows, deployment, and runtime state separately, with the merge commit and observed state.
+- Follow `deployment-recovery` for post-merge publication and deployment recovery.

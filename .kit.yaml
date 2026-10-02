@@ -19,6 +19,11 @@ registry:
           installed_hash: sha256:ca656a42911a5d938c0ddefbd8417346433ed048561b216858b895d2510286bd
           state: managed
         - kind: ruleset
+          slug: asd-ste100
+          path: docs/references/rules/asd-ste100.md
+          installed_hash: sha256:09a146f4c43bb815a521f9b2b8928c1fad9d5ed3acb6ef0953a4e9e1e3213e9b
+          state: managed
+        - kind: ruleset
           slug: aws-agent-toolkit-guidance
           path: docs/references/rules/aws-agent-toolkit-guidance.md
           installed_hash: sha256:7cfe3f9a783a92b61e421ffd7a98e402f87b500e1cfc7960de23a2bb9d3a8fda
@@ -54,6 +59,11 @@ registry:
           installed_hash: sha256:a58544639d2f5d602f4feb10efc954f49a3e6a67082c309217cbd8d132f7b9fa
           state: managed
         - kind: ruleset
+          slug: deployment-recovery
+          path: docs/references/rules/deployment-recovery.md
+          installed_hash: sha256:87732a2594a264be7509fa6924de8ae5a3997bb38f27ab6468c78aeb8c27e43e
+          state: managed
+        - kind: ruleset
           slug: frontend-application-architecture
           path: docs/references/rules/frontend-application-architecture.md
           installed_hash: sha256:31fafc0f1b1bf2690e88d6f713603f9eee178de14e4d1dffe880272523ee073c
@@ -61,7 +71,7 @@ registry:
         - kind: ruleset
           slug: github-pr-merge
           path: docs/references/rules/github-pr-merge.md
-          installed_hash: sha256:935b491dc132832af08c267f82f7b56074f674281aa948416d1e4b30fd69686b
+          installed_hash: sha256:d488e4f2158b7aa2eac40992c009c93476f73e2b3cfa4709a2d6c3719939d023
           state: managed
         - kind: ruleset
           slug: infrastructure-change-approval

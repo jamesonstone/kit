@@ -75,6 +75,8 @@ Supporting evidence and limits:
 
 ## VALIDATION
 
+Review repair on 2026-10-02: refreshed from main at `c03c35a0f7463cc8b508dea31006a3c0fefa16c3`, after PRs #244 and #240 merged. All required local checks passed again, including the source-recovery tests; the same nonblocking references-index advisory remains. Default provider instructions and registry state are unchanged relative to that current main. The review of the rule and test recipes found no functional defect. The earlier CodeRabbit draft result was SKIPPED, not a completed review; the PR will be marked ready after pushing the validated head.
+
 - PASS: `gofmt -l .` (no output), `git diff --check`, `make vet`, `make lint` (0 issues), `make build`, and `KIT_USAGE_DISABLED=1 ./bin/kit check --project`. The project check reports one non-blocking compatibility advisory for the project-owned references index.
 - PASS: `env -u KIT_USAGE_DISABLED make test` across all packages. Initial run with `KIT_USAGE_DISABLED=1` failed the usage store fixture because that flag intentionally suppresses recording; diagnosed from `internal/usage/isolation.go` and reran without it. Ordinary test binaries already suppress usage; the store suite intentionally records in temporary homes. No code workaround was needed.
 - PASS: six focused tests plus four source-freshness subcases. New handwritten Go test files are 124 and 156 lines, under the 300-line cap.
@@ -97,7 +99,7 @@ Implemented the generalized optional `context-evidence` rule and embedded inline
 
 The highest predicted score remains 4.15; fixtures establish source revisiting and fail-closed content checks without mandatory bookkeeping. They do not establish model performance gains. Local sources and Git objects must remain accessible; digest-only working evidence cannot recover original content; human/agent compliance is not enforced by Kit. POSIX recipes use native Git alternatives where no shell is available. Live cross-provider testing remains unrun.
 
-Delivery: issue #241, branch/worktree GH-241; human-author identity verified. PR publication authorized, merge/deployment withheld. Publish a draft PR for review after final checks; hosted checks are not yet observed.
+Delivery: issue #241, branch/worktree GH-241; human-author identity verified. PR #242 was published as a draft. The human later authorized review repair and merge of all open Kit pull requests. This review found no functional defect in the optional rule or source recipes. Test comments now describe each helper and case. The refresh and integrated local validation are complete; deliver the PR ready for merge after current-head hosted CI passes. Deployment remains outside scope.
 
 ## REPOSITORY MEMORY
 
