@@ -11,6 +11,7 @@ import (
 func withInitFlags(t *testing.T, run func()) {
 	t.Helper()
 
+	originalMint := initMint
 	originalCopy := initCopy
 	originalOutputOnly := initOutputOnly
 	originalRefresh := initRefresh
@@ -20,6 +21,7 @@ func withInitFlags(t *testing.T, run func()) {
 	originalRefreshFiles := initRefreshFiles
 
 	t.Cleanup(func() {
+		initMint = originalMint
 		initCopy = originalCopy
 		initOutputOnly = originalOutputOnly
 		initRefresh = originalRefresh
@@ -29,6 +31,7 @@ func withInitFlags(t *testing.T, run func()) {
 		initRefreshFiles = originalRefreshFiles
 	})
 
+	initMint = false
 	initCopy = false
 	initOutputOnly = false
 	initRefresh = false

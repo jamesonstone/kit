@@ -2,7 +2,7 @@ schema_version: 2
 mode: package
 repository: jamesonstone/kit
 default_branch: main
-human_login: jamesonstone
+authorization: repository-write
 build_workflow: .github/workflows/release-tag-main.yml
 # Kit publishes versioned CLI packages through its existing release workflow.
 environments:

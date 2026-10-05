@@ -46,6 +46,26 @@ kit reconcile --dry-run --diff   # preview
 kit reconcile                    # migrate to the current structure
 ```
 
+Mint deployment project with an existing team-first schema 2 `.mint.yaml` and
+reviewed build, promotion and observation adapters:
+
+```bash
+kit init --mint                         # new Kit project
+kit reconcile --mint --dry-run --diff    # existing Kit project: preview
+kit reconcile --mint                    # create a missing controller
+```
+
+Kit uses the embedded Mint v0.5.0 renderer to generate repository Actions for
+promotion, hotfix, rollback, resume, observation and reconciliation. It uses the
+policy's environment names and adapter workflow names. Existing controllers,
+policies and adapters stay project owned, even with `--force`. No registry,
+provider or production environment is assumed. Package and artifact projects
+retain their existing publication workflows. Scaffolding keeps the
+`MINT_RELEASE_ENABLED` gate; it does not activate deployments. Review source-build
+isolation, adapter manifests, runtime configuration identities and verified
+baselines before enabling that gate. New-project `kit init` without `--mint`
+continues to install lifecycle guidance without adopting Mint automatically.
+
 Diagnose without changing anything:
 
 ```bash

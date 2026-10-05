@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var reconcileMint bool
 var reconcileOutputOnly bool
 var reconcileAll bool
 var reconcileIncludeFiles bool
@@ -42,12 +43,18 @@ In the primary checkout, reconcile applies changes in a linked worktree on
 branch kit-reconcile (created or reused) and prints where to review them.
 Use --dry-run --diff to preview without writing anything.
 
+Use --mint to create a missing Mint v0.5.0 controller from an existing team-first
+schema 2 .mint.yaml and project-owned adapters. Existing controllers remain
+project owned, even with --force. This option supports --dry-run --diff and
+uses the same linked-worktree delivery path; it does not activate deployments.
+
 With a feature argument, audits only that feature's docs.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runReconcile,
 }
 
 func init() {
+	reconcileCmd.Flags().BoolVar(&reconcileMint, "mint", false, "scaffold missing Mint environment controls from .mint.yaml and adapters")
 	reconcileCmd.Flags().BoolVar(&reconcileOutputOnly, "output-only", false, "accepted for compatibility; reconcile always prints to stdout")
 	_ = reconcileCmd.Flags().MarkHidden("output-only")
 	reconcileCmd.Flags().BoolVar(&reconcileAll, "all", false, "reconcile the whole project explicitly")
@@ -61,6 +68,9 @@ func init() {
 }
 
 func runReconcile(cmd *cobra.Command, args []string) error {
+	if reconcileMint && (len(args) > 0 || len(reconcileRefreshFiles) > 0) {
+		return fmt.Errorf("--mint applies to whole-project reconcile; do not combine it with a feature or --file")
+	}
 	if reconcileAll && len(args) > 0 {
 		return fmt.Errorf("--all cannot be used with a feature argument")
 	}
@@ -91,7 +101,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	applyFiles := feat == nil
 	var deliverySnapshot []managedFileDeliverySnapshot
 	if applyFiles {
-		opts := initRefreshOptions{force: reconcileForce, files: reconcileRefreshFiles}
+		opts := initRefreshOptions{force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint}
 		upToDate, err := reconcileHasNoChanges(projectRoot, opts)
 		if err != nil {
 			return err
@@ -107,6 +117,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 			}
 		} else if deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
 			force:      reconcileForce,
+			mint:       reconcileMint,
 			dryRun:     reconcileDryRun,
 			diff:       reconcileDiff,
 			files:      reconcileRefreshFiles,
