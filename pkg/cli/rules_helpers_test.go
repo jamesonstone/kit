@@ -45,6 +45,7 @@ func registryRulesetWithContentForTest(slug, content, commit string) registryRul
 func resetReconcileFlags(t *testing.T) {
 	t.Helper()
 	previousOutputOnly := reconcileOutputOnly
+	previousMint := reconcileMint
 	previousAll := reconcileAll
 	previousIncludeFiles := reconcileIncludeFiles
 	previousForce := reconcileForce
@@ -53,6 +54,7 @@ func resetReconcileFlags(t *testing.T) {
 	previousRefreshFiles := reconcileRefreshFiles
 	t.Cleanup(func() {
 		reconcileOutputOnly = previousOutputOnly
+		reconcileMint = previousMint
 		reconcileAll = previousAll
 		reconcileIncludeFiles = previousIncludeFiles
 		reconcileForce = previousForce
@@ -61,6 +63,7 @@ func resetReconcileFlags(t *testing.T) {
 		reconcileRefreshFiles = previousRefreshFiles
 	})
 	reconcileOutputOnly = false
+	reconcileMint = false
 	reconcileAll = false
 	reconcileIncludeFiles = false
 	reconcileForce = false

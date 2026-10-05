@@ -59,6 +59,23 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
   observations are separate evidence; do not write apparent live versions into
   policy or treat an old observation as current runtime truth.
 
+### Kit workflow scaffolding
+
+- `kit init --mint` (new Kit project) or `kit reconcile --mint --dry-run --diff`
+  followed by `kit reconcile --mint` (existing project) can create a missing
+  controller from an existing schema 2 deployment `.mint.yaml` with
+  `authorization: repository-write` and reviewed build/deploy/observe adapters.
+  Kit embeds the published Mint v0.5.0 parser and renderer; generation works
+  offline and does not require installing or executing Mint in the project.
+- Existing controllers, adapters and policies remain project owned, even under
+  `--force`. Package/artifact policies retain their publication workflows.
+  Generation keeps the activation gate; complete adapter integration and verified
+  baselines before enabling it. Scaffolding does not prove activation or deployment.
+- Candidate producers must isolate selected source execution in credential-free
+  containers or an equivalent project-reviewed sandbox, without host mounts or
+  shared trusted caches. Transfer completed artifacts to a fresh trusted publisher;
+  do not rebuild or execute selected source after acquiring write/cloud credentials.
+
 ### Repository-native operator paths
 
 | Intent | Supported path |

@@ -15,6 +15,7 @@
 | Unit and integration | `make test` (`go test -v ./...`) | `CI / go` | yes | Hermetic; tests use temp dirs, git fixtures, and stubbed registry/GitHub access |
 | Build | `make build` | `CI / go`, local `.githooks/pre-commit` | yes | Hook enabled with `make install-git-hooks` |
 | Release workflow contract | `go test ./internal/releaseworkflow` | included in `make test` | yes | Guards release scripts, workflows, and the v3 module path |
+| Mint scaffolding | `go test ./pkg/cli -run "Test.*Mint" -count=1` | included in `make test` | yes | published renderer, opt-in init/reconcile, preservation, dry-run, links and arbitrary environments |
 | Project check | `kit check --project` (includes the 300-line source audit from `.kit.yaml`) | `CI / go` | yes | Also verifies the managed contract block and rule documents |
 
 ## High-Level Suites

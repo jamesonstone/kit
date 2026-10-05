@@ -14,6 +14,7 @@ import (
 const constitutionBaselineHeading = templates.ConstitutionBaselineHeading
 
 type initRefreshOptions struct {
+	mint       bool
 	force      bool
 	dryRun     bool
 	diff       bool
@@ -137,6 +138,13 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		return nil, err
 	}
 	changes = append(changes, scaffoldChanges...)
+	if opts.mint {
+		change, err := planMintWorkflow(projectRoot)
+		if err != nil {
+			return nil, err
+		}
+		changes = append(changes, *change)
+	}
 	readmeChange, err := planRefreshReadmeFile(projectRoot, cfg, targets)
 	if err != nil {
 		return nil, err

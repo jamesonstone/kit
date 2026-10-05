@@ -185,9 +185,9 @@ func TestReleaseWorkflowsParseAsYAML(t *testing.T) {
 
 func assertMintActionRefs(t *testing.T, workflow string, want int) {
 	t.Helper()
-	const exact = "uses: jamesonstone/mint@a435d0dd5bddeaec34f7523e344d093184fcabbf # v0.4.0"
+	const exact = "uses: jamesonstone/mint@b97969136d5a43d0982c46c6f185868db16d14bf # v0.5.0"
 	if got := strings.Count(workflow, exact); got != want {
-		t.Errorf("workflow uses exact Mint v0.4.0 ref %d times, want %d", got, want)
+		t.Errorf("workflow uses exact Mint v0.5.0 ref %d times, want %d", got, want)
 	}
 	for _, line := range strings.Split(workflow, "\n") {
 		line = strings.TrimSpace(line)

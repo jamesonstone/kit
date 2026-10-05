@@ -12,6 +12,7 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
+var initMint bool
 var initCopy bool
 var initOutputOnly bool
 
@@ -34,6 +35,10 @@ Creates:
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
   - The core rules shipped with this Kit binary
 
+Use --mint to scaffold a missing Mint v0.5.0 environment controller from an
+existing team-first schema 2 .mint.yaml and project-owned build/deploy/observe
+adapters. Existing workflows and activation gates are preserved.
+
 Init is for projects that are not yet Kit projects. Existing files are
 preserved. In a project that already has .kit.yaml, run ` + "`kit reconcile`" + `
 instead: it brings any existing Kit project to the current structure.
@@ -48,6 +53,7 @@ shows next steps; --output-only prints it instead.`,
 }
 
 func init() {
+	initCmd.Flags().BoolVar(&initMint, "mint", false, "scaffold Mint environment controls from an existing .mint.yaml and adapters")
 	initCmd.Flags().BoolVar(&initCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	initCmd.Flags().BoolVar(&initOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	rootCmd.AddCommand(initCmd)
@@ -71,10 +77,21 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this directory is inside the Kit project at %s; run Kit commands there (use `kit reconcile` to update it) instead of creating a nested project", parent)
 	}
 
+	var mintChange *initRefreshFileChange
+	if initMint {
+		mintChange, err = planMintWorkflow(cwd)
+		if err != nil {
+			return err
+		}
+	}
 	deliveryCfg := defaultInitConfig()
+	deliveryPaths := projectInitDeliveryPaths(deliveryCfg)
+	if mintChange != nil {
+		deliveryPaths = append(deliveryPaths, mintChange.relativePath)
+	}
 	deliveryBaseline, err := captureManagedFileDeliveryBaseline(
 		cwd,
-		projectInitDeliveryPaths(deliveryCfg),
+		deliveryPaths,
 	)
 	if err != nil {
 		return err
@@ -132,6 +149,12 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 	if err := scaffoldAutoAssignWorkflow(cwd, cfg, initOutputOnly); err != nil {
 		return err
+	}
+
+	if mintChange != nil {
+		if err := applyInitRefreshFileChangesAtomically([]initRefreshFileChange{*mintChange}); err != nil {
+			return err
+		}
 	}
 
 	// ensure docs directory exists
