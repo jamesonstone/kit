@@ -54,6 +54,7 @@ Read the named file under `docs/references/rules/` when its trigger applies; ski
 - Creating an issue, branch, worktree, commit, push, or pull request, or repairing a pull request: `delivery.md`.
 - Any merge or merge-queue action: `github-pr-merge.md`.
 - Following a release or deployment, including a missing or failed pipeline: `deployment-recovery.md`.
+- Mint adoption, releases, deployments, environment state, hotfix, roll-forward or rollback: `mint-deployment-lifecycle.md` when the project uses Mint.
 - Adding tests, configuring CI, or end-to-end, browser, or production validation: `testing-and-environment-validation.md`.
 - Backend routes, services, repositories, or adapters: `backend-service-architecture.md`; frontend routes, state flows, or components: `frontend-application-architecture.md`.
 - Designing deletion or deleting persistent state: `deletion-safety.md`.
