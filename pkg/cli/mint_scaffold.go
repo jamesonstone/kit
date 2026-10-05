@@ -57,6 +57,7 @@ func planMintWorkflow(root string) (*initRefreshFileChange, error) {
 	}
 	sort.Strings(ordered)
 	names := make([]string, 0, len(ordered))
+	seenNames := map[string]bool{}
 	for _, callback := range ordered {
 		data, err := readMintProjectFile(root, callback)
 		if err != nil {
@@ -71,6 +72,10 @@ func planMintWorkflow(root string) (*initRefreshFileChange, error) {
 		if workflow.Name == "" {
 			workflow.Name = callback
 		}
+		if workflow.Name == "Mint environment control" || seenNames[workflow.Name] {
+			return nil, fmt.Errorf("mint callback names must be unique and separate from the environment controller")
+		}
+		seenNames[workflow.Name] = true
 		names = append(names, workflow.Name)
 	}
 	content, err := promotion.RenderEnvironmentWorkflow(policy, mintActionRef, mintPolicyPath, names...)

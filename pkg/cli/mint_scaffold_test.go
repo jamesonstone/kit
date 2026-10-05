@@ -206,3 +206,15 @@ func TestInitMintAndReconcileDryRunAndConvergence(t *testing.T) {
 		t.Fatalf("second generation did not preserve the controller: %v", err)
 	}
 }
+
+func TestMintScaffoldRejectsAmbiguousAndSelfReferencingCallbacks(t *testing.T) {
+	for _, name := range []string{"Mint environment control", "Deploy [preview]", "Build ${{ github.token }}"} {
+		t.Run(name, func(t *testing.T) {
+			root := mintFixture(t)
+			writeFile(t, filepath.Join(root, ".github/workflows/build.yaml"), "name: '"+name+"'\non: workflow_dispatch\njobs: {}\n")
+			if _, err := planMintWorkflow(root); err == nil {
+				t.Fatal("ambiguous, self-triggering or expression-bearing callback accepted")
+			}
+		})
+	}
+}
