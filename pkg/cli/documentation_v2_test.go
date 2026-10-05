@@ -67,7 +67,7 @@ func TestReleaseWorkflowEstablishesV3ThenResumesPatchBumps(t *testing.T) {
 	for _, required := range []string{
 		"queue: max",
 		".github/scripts/release-next-tag.sh HEAD",
-		"uses: jamesonstone/mint@v0.2.1",
+		"uses: jamesonstone/mint@a435d0dd5bddeaec34f7523e344d093184fcabbf # v0.4.0",
 		"command: release-tag",
 		"command: github-release",
 		"release-push: \"true\"",

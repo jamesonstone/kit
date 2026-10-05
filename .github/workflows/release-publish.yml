@@ -65,7 +65,7 @@ jobs:
 
       - name: Verify immutable release tag with Mint
         id: mint_tag
-        uses: jamesonstone/mint@v0.2.1
+        uses: jamesonstone/mint@a435d0dd5bddeaec34f7523e344d093184fcabbf # v0.4.0
         with:
           command: release-tag
           release-tag: ${{ github.ref_name }}
@@ -100,7 +100,7 @@ jobs:
 
       - name: Create or reuse GitHub Release with Mint
         id: mint_release
-        uses: jamesonstone/mint@v0.2.1
+        uses: jamesonstone/mint@a435d0dd5bddeaec34f7523e344d093184fcabbf # v0.4.0
         with:
           command: github-release
           owner: ${{ github.repository_owner }}
