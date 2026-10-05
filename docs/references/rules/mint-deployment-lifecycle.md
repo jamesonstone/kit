@@ -50,6 +50,11 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 - Honor `mode`: `deployment` uses runtime adapters; `package` and `artifact`
   retain project publication workflows and reject runtime operations. Local scope
   does not provision a developer runtime or establish shared deployment evidence.
+- Team-owned policies use `authorization: repository-write`: Mint verifies current
+  effective GitHub repository write access, including team grants. Optional
+  `assignees` only route work and do not grant authority. Legacy `human_login`
+  policies retain their restrictions; changing authorization is a separate
+  reviewed policy migration, not a target-only deployment request.
 - Keep `.mint.yaml` as desired policy. Verified history and timestamped live
   observations are separate evidence; do not write apparent live versions into
   policy or treat an old observation as current runtime truth.
@@ -118,7 +123,7 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ## Reference
 
-The [Mint v0.4.0 lifecycle and adapter contract](https://github.com/jamesonstone/mint/blob/a435d0dd5bddeaec34f7523e344d093184fcabbf/docs/references/environment-lifecycle.md)
+The [Mint v0.5.0 lifecycle and adapter contract](https://github.com/jamesonstone/mint/blob/b97969136d5a43d0982c46c6f185868db16d14bf/docs/references/environment-lifecycle.md)
 provides schema, workflow and manifest details. The project's pinned implementation
 and reviewed runbook determine its supported actions. Kit embeds this rule locally;
 reading it does not require a network fetch or grant deployment authority.

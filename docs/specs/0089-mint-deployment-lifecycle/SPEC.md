@@ -45,3 +45,5 @@ Implemented a default embedded rule and conditional routing in every agent entry
 ## REPOSITORY MEMORY
 
 Created this spec and mint-deployment-lifecycle rule; updated the reference index and universal contract routing. The Constitution remains unchanged because the distribution architecture is unchanged.
+
+Team ownership update: the rule now documents repository-write authorization and separate optional assignment. Its adapter reference points to Mint team-authorization source b97969136d5a43d0982c46c6f185868db16d14bf; legacy consumers retain their existing restrictions until a reviewed migration.
