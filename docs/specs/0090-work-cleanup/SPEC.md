@@ -51,6 +51,8 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 - Superseded: the first head shipped the rule as optional. The human chose default with automatic execution. The contract carries the automatic trigger because contextual rules are read only when a trigger applies.
 - Rejected: a `kit clean` command (conflicts with the harness-subtraction direction and needs host-specific cache knowledge); `git clean -X` for idle lanes (it removes ignored env files).
 
+- Superseded (GH-253, after the first release candidate): the batched hard-delete confirmation, issue and pull-request closures, remote-branch deletion, `git branch -D`, full cache clears, and idle-lane dependency pruning. The human found approval prompts during cleanup concerning. Cleanup now never asks; it runs only `git worktree prune`, `git fetch --prune`, `git worktree remove`, `git branch -d`, the work's own process and scratch cleanup, and unused-entry cache prunes when disk space is low. Everything else is kept and reported in one line. The disk saving that was given up is small: the worktree directory is most of a lane's footprint, and branches cost almost nothing.
+
 ## DISCOVERIES
 
 - A `case` pattern without a leading `(` inside `$( )` fails in bash's POSIX mode. The recipe uses `(pattern)`.
@@ -71,6 +73,8 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 - Risk: cache command lists name common tools only. Projects can add local entries; reconcile preserves local edits.
 
 ## REPOSITORY MEMORY
+
+- GH-253: narrowed `work-cleanup.md`, the contract invariant in the template and the three instruction files, the references index, and the registry tests.
 
 - Added `docs/references/rules/work-cleanup.md`.
 - Updated `docs/references/README.md` index and usage note.

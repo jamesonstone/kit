@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: work-cleanup
-description: Aggressively prunes worktrees, branches, caches, processes, and artifacts as soon as a piece of work is done, stopped, abandoned, or superseded.
+description: Quietly removes completed, remote-restorable worktrees, merged branches, and the work's own scratch, and never asks the human to approve a cleanup.
 status: active
 registry_scope: downstream
 applies_to:
@@ -19,74 +19,51 @@ read_policy_default: conditional
 
 ## Purpose
 
-- Recover local disk space early and often. Leave nothing behind for a piece of work that has no value to resume.
-- Clean up automatically, without prompts, when clear evidence shows that a remote can restore everything you remove. Stop and confirm only when unique work would be lost.
+- Recover local disk space after work completes, without adding approvals, prompts, or alarming commands to the human's day.
+- Remove only what a remote can clearly restore. Keep everything else, and mention it once in the report.
 
 ## Applies When
 
 Read this rule and run a sweep, without being asked, when one of these triggers occurs:
 
-- A piece of work completes: a pull request merges or closes, an issue or ticket closes, a release ships, or an artifact is delivered.
-- The human says stop, drop, abandon, never mind, or start over, or newer work supersedes the current work.
+- A pull request merges or closes, an issue or ticket closes, or the human says stop, abandon, or superseded.
 - Before you create a new lane, and before you end a session.
 - Free space is below 25% or below 50 GiB, or a tool reports a full disk.
 
-"Piece of work" means any unit with local or remote residue: lane, branch, worktree, issue, ticket, pull request, scratch directory, download, report, screenshot, log, container, background process, or scheduled check. "Completed" means done, stopped, abandoned, superseded, or idle for 7 days with no open pull request.
-
 ## Rules
 
-### Boundaries
+### Never ask
 
-- This rule never weakens `deletion-safety`, `delivery`, or `infrastructure-change-approval`. It classifies each cleanup as recoverable, which proceeds now, or as a hard delete, which needs exact-target confirmation.
-- Kit ships this rule as the human's bounded standing grant for the automatic actions below. A human pause, hold, or project edit that removes this rule stops them.
-- Cleanup follows completion. Never delete a branch, stash, or worktree to unblock a new lane, and never use `--force` on any Git command.
-- Never touch the primary checkout, the current session's working directory, or a worktree that a running process uses.
+- Cleanup never asks the human to approve, confirm, or choose anything. If an action needs approval, or the evidence is not clear, do not do it: keep the item and list it in the report.
+- Use only the commands in this rule. Do not use Git `--force` or `-D`, `rm -rf`, `sudo`, or any purge, reset, or clean command for cleanup.
+- Hard deletes stay with `deletion-safety`, and only when the human asks for them. This rule never weakens `deletion-safety`, `delivery`, or `infrastructure-change-approval`.
+- Never touch the primary checkout, the current session's working directory, or a worktree that a running process uses. Never delete a branch, stash, or worktree to unblock a new lane.
+- Kit ships this rule as the human's bounded standing grant for the actions below. A human pause, hold, or project edit that removes this rule stops them.
 
-### Automatic cleanup
+### Clear evidence
 
-- Clear evidence has two parts, and you must observe both in the current session:
-  1. Completion: the remote shows the pull request as merged or closed, the issue or ticket as closed, or the upstream branch as gone; or the human said stop, abandon, or superseded; or the lane is idle for 7 days with no open pull request.
-  2. Restorability: the classifier below prints `RECOVERABLE` for a worktree or branch, or a remote copy of an artifact exists (release asset, package registry, object storage, artifact host, or the original download source) and you checked it by digest, size, or a successful fetch.
-- When both parts are true, act immediately. Do not ask, do not offer, and do not defer cleanup to the end of the session. Report what you removed afterwards.
-- When either part is missing, stale, or `UNAVAILABLE`, the evidence is not clear. Keep the item and report it. Never infer completion or restorability from names, dates alone, or memory of an earlier session.
+- Act only when you observe both parts in the current session:
+  1. Completion: the remote shows the pull request as merged or closed, or the issue as closed; or the human said stop, abandon, or superseded; or the lane is idle for 7 days with no open pull request.
+  2. Restorability: the classifier below prints `RECOVERABLE`.
+- Never infer completion or restorability from names, dates alone, or memory of an earlier session.
 
-### Sweep worktrees and branches
+### Automatic actions
 
-- Sweep every registered worktree of the repository (`git worktree list --porcelain`), including host-created worktrees. Run `git worktree prune` and `git fetch --prune` first.
-- Classify each candidate with the recipe below. Act on its state:
-  - `RECOVERABLE` and completed: run `git worktree remove <path>`. Then delete the local branch with `git branch -d`. Use `git branch -D` only when the state is `RECOVERABLE` and a merged or closed pull request holds the exact head commit (squash merges).
-  - `RECOVERABLE` and the remote branch belongs to a merged or closed pull request: delete the remote branch. The pull request page can restore it.
-  - `KEEP_IN_USE`: skip it, and report it.
-  - `KEEP_UNCOMMITTED`, `KEEP_LOCAL_SECRETS`, or `KEEP_UNPUSHED`: this is a hard delete. Put it in one confirmation list with the path, branch, head commit, and what would be lost.
-  - `UNAVAILABLE`: keep it, and report why.
-- Idle open work (7 days with no commits and an open pull request) is not completed. Remove only its regenerable dependency and build directories, such as `node_modules`, `.venv`, `target`, `dist`, `build`, and `.next`. Never run `git clean -X`, because it also removes ignored environment files.
-- Directories under the worktree root that no repository registers are orphans. Report them for confirmation. Do not delete them.
+- Run `git worktree prune` and `git fetch --prune`. Both only remove stale references.
+- For each completed worktree that is `RECOVERABLE`, run `git worktree remove <path>`. Then run `git branch -d <branch>`. If Git refuses, keep the branch; a branch uses almost no disk space.
+- Stop background processes, dev servers, watchers, and scheduled checks that the work started. Remove scratch files and directories that the work created in its own scratch location.
+- When free space is below the threshold, also run the unused-entry prune of each installed tool: `docker builder prune -f`, `docker image prune -f` (dangling images only), `pnpm store prune`, `uv cache prune`, and `brew cleanup`. Do not clear whole caches.
 
-### Close issues, tickets, and pull requests
+### Leave alone
 
-- When work is done, close a still-open lane issue as completed if the merged change satisfies it.
-- When work is abandoned or superseded, close the lane's pull request and issue as "not planned" with one line of reason and a link to the superseding work. Change external tracker tickets to their cancelled or done state.
-- Close only work that this lane created or that the human assigned and declared finished. Close, never delete. Never post to Slack.
-
-### Prune artifacts and processes
-
-- Stop background processes, dev servers, watchers, port forwards, monitors, and scheduled wakeups or cron jobs that the work started.
-- Remove scratch directories, temporary files, logs, screenshots, and local reports that the work created, after you deliver or record what matters from them.
-- Remove local copies of downloads, build outputs, and release files when a remote copy is verified as described in Automatic cleanup.
-- Remove containers, images, networks, and test-only volumes that the work created and labeled, if they hold no authoritative data.
-- Published artifacts, shared documents, cloud preview environments, and other remote resources: deleting them is a hard delete or an infrastructure change. List them for confirmation.
-
-### Prune shared caches
-
-- On every sweep, remove the entries that each tool marks as unused: `docker builder prune -f`, `docker image prune -f`, `pnpm store prune`, `uv cache prune`, and `brew cleanup`.
-- When free space is below the threshold, also clear caches that tools can fully regenerate: `go clean -cache -testcache`, `npm cache clean --force`, `pip cache purge`, `yarn cache clean`, Xcode `DerivedData`, and `xcrun simctl delete unavailable`. Clear `go clean -modcache` last.
-- Use each tool's own prune command. Do not use `rm -rf` on a cache that a running tool can use.
-- Never run `docker volume prune` or `docker system prune --volumes`, never prune unreachable Git objects or reflogs early, never empty the trash, and never delete transcripts, home-directory data, or other people's caches.
+- `KEEP_IN_USE`, `KEEP_UNCOMMITTED`, `KEEP_LOCAL_SECRETS`, `KEEP_UNPUSHED`, and `UNAVAILABLE` worktrees; orphan directories; stashes.
+- Issues, tickets, pull requests, and remote branches. Merged pull requests close their issues, and GitHub can delete merged branches.
+- Published artifacts, shared documents, containers, volumes, cloud resources, transcripts, the trash, and other people's files.
 
 ### Report
 
-- Measure free space before and after (`df -h`). Report the space you recovered.
-- For each removed item, report how to recover it: branch, full head commit, and pull request. Report each kept item and its state. Ask once for confirmation of the complete hard-delete list.
+- At the end of your normal response, add one short cleanup line: what you removed, the space recovered (`df -h` before and after), and the count of kept items with their states. Example: `Cleanup: removed 2 worktrees (GH-133, GH-140), freed 1.2 GiB; kept 1 (GH-202: KEEP_UNCOMMITTED).`
+- Do not turn kept items into a question. The human can ask for them by name.
 
 ## Worktree classifier
 
@@ -117,4 +94,4 @@ else
 fi
 ```
 
-`RECOVERABLE` means that a remote branch or pull request holds the head commit, and the only local residue is ignored, regenerable content. It does not mean the work is completed. Check completion separately. Stashes are shared by all worktrees and are not removed by this recipe.
+`RECOVERABLE` means that a remote branch or pull request holds the head commit, and the only local residue is ignored, regenerable content. It does not mean the work is completed. Check completion separately.

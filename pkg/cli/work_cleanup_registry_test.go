@@ -118,41 +118,48 @@ func TestWorkCleanupPreservesProjectOwnedRule(t *testing.T) {
 	}
 }
 
-// TestWorkCleanupContractRunsAutomatically checks the always-loaded contract makes cleanup automatic.
-func TestWorkCleanupContractRunsAutomatically(t *testing.T) {
+// TestWorkCleanupContractRunsQuietly checks the always-loaded contract makes cleanup automatic and prompt-free.
+func TestWorkCleanupContractRunsQuietly(t *testing.T) {
 	block := templates.UniversalContractBlock()
 	for _, want := range []string{
-		"apply `work-cleanup` immediately without asking",
-		"clear evidence shows a remote can restore",
-		"batch anything else into one hard-delete confirmation",
+		"apply `work-cleanup` quietly",
+		"remove only what clear evidence shows a remote can restore",
+		"never ask the human to approve a cleanup",
 		workCleanupRoute,
 	} {
 		if !strings.Contains(block, want) {
 			t.Errorf("universal contract lacks %q", want)
 		}
 	}
+	if strings.Contains(block, "hard-delete confirmation") {
+		t.Error("universal contract still asks for cleanup confirmation")
+	}
 }
 
-// TestWorkCleanupKeepsSafetyBoundaries checks that automatic pruning never bypasses hard-delete rules.
-func TestWorkCleanupKeepsSafetyBoundaries(t *testing.T) {
+// TestWorkCleanupNeverAsksAndStaysNarrow checks the rule never prompts and only runs low-risk commands.
+func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 	content := workCleanupRule(t).Content
 	for _, invariant := range []string{
+		"Cleanup never asks the human to approve, confirm, or choose anything",
+		"Do not use Git `--force` or `-D`, `rm -rf`, `sudo`, or any purge, reset, or clean command for cleanup",
+		"Hard deletes stay with `deletion-safety`, and only when the human asks for them",
 		"never weakens `deletion-safety`, `delivery`, or `infrastructure-change-approval`",
-		"you must observe both in the current session",
-		"Do not ask, do not offer, and do not defer cleanup",
+		"Act only when you observe both parts in the current session",
 		"Never infer completion or restorability from names, dates alone, or memory of an earlier session",
-		"checked it by digest, size, or a successful fetch",
-		"Never delete a branch, stash, or worktree to unblock a new lane",
-		"never use `--force` on any Git command",
+		"If Git refuses, keep the branch",
+		"Do not clear whole caches",
+		"Issues, tickets, pull requests, and remote branches",
+		"Do not turn kept items into a question",
 		"Never touch the primary checkout",
-		"Never run `git clean -X`",
-		"Close, never delete. Never post to Slack.",
-		"Never run `docker volume prune`",
-		"Ask once for confirmation of the complete hard-delete list",
 		"It does not mean the work is completed",
 	} {
 		if !strings.Contains(content, invariant) {
 			t.Errorf("lost cleanup invariant: %s", invariant)
+		}
+	}
+	for _, removed := range []string{"git branch -D", "go clean -modcache", "npm cache clean", "confirmation list", "Ask once for confirmation", "close the lane's pull request"} {
+		if strings.Contains(content, removed) {
+			t.Errorf("rule still includes alarming or prompting action %q", removed)
 		}
 	}
 	for _, state := range workCleanupStates {
@@ -160,7 +167,7 @@ func TestWorkCleanupKeepsSafetyBoundaries(t *testing.T) {
 			t.Errorf("rule does not explain classifier state %s", state)
 		}
 	}
-	if words := len(strings.Fields(content)); words > 1500 {
-		t.Fatalf("work-cleanup grew to %d words; keep its context cost bounded", words)
+	if words := len(strings.Fields(content)); words > 1000 {
+		t.Fatalf("work-cleanup grew to %d words; keep it short", words)
 	}
 }
