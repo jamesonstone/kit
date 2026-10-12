@@ -148,7 +148,10 @@ func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 		"Never infer completion or restorability from names, dates alone, or memory of an earlier session",
 		"If Git refuses, keep the branch",
 		"Do not clear whole caches",
-		"Issues, tickets, pull requests, and remote branches",
+		"Close, never delete; the GitHub UI can reopen them",
+		"Close only issues and pull requests that this lane created or that the human assigned and declared finished",
+		"Never post to Slack",
+		"Remote branches and external tracker tickets",
 		"Do not turn kept items into a question",
 		"Never touch the primary checkout",
 		"It does not mean the work is completed",
@@ -157,7 +160,7 @@ func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 			t.Errorf("lost cleanup invariant: %s", invariant)
 		}
 	}
-	for _, removed := range []string{"git branch -D", "go clean -modcache", "npm cache clean", "confirmation list", "Ask once for confirmation", "close the lane's pull request"} {
+	for _, removed := range []string{"git branch -D", "go clean -modcache", "npm cache clean", "confirmation list", "Ask once for confirmation"} {
 		if strings.Contains(content, removed) {
 			t.Errorf("rule still includes alarming or prompting action %q", removed)
 		}
