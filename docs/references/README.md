@@ -27,13 +27,13 @@
 | `mint-deployment-lifecycle` | default | Repository-native Mint releases, environment policy, immutable promotion and recovery evidence. |
 | `slack-read-only` | default | Slack is read-only; every write needs explicit message-specific approval. |
 | `testing-and-environment-validation` | default | Code-level tests primary, honest results, safe browser and production validation. |
+| `work-cleanup` | default | Automatic pruning of remote-restorable worktrees, branches, artifacts, and caches when work completes; one confirmation for anything else. |
 | `context-evidence` | optional | Bounded context selection across all rules, source traceability, freshness, and recoverable handoffs. |
 | `llms-txt` | optional | `/llms.txt` contract for public web and API surfaces. |
 | `readme-header-tagline` | optional | Consistent top-level README identity and opening structure. |
-| `work-cleanup` | optional | Aggressive, recoverability-classified pruning of worktrees, branches, caches, processes, and artifacts after work completes. |
 
 Optional rules install only through `kit rules add`.
 
 Use `kit rules add context-evidence` for the shared context-use discipline. It applies across rules and source investigations without changing the default contract or requiring a record for small tasks. Its inline outline and read-only source checks support handoffs; model-performance gains still require measurement.
 
-Use `kit rules add work-cleanup` when local disk space matters more than warm caches. It prunes recoverable residue without prompts at every completion, stop, new lane, and session end, and it batches anything that would lose unique work into one `deletion-safety` confirmation.
+`work-cleanup` runs automatically once clear evidence shows that work is complete and a remote can restore what it removes. It batches anything that would lose unique work into one `deletion-safety` confirmation.

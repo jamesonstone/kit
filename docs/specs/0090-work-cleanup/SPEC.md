@@ -30,13 +30,15 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 - "Piece of work" covers lanes, branches, worktrees, issues, tickets, pull requests, and any artifact. "Completed" covers done, stopped, abandoned, superseded, and idle with no open pull request.
 - Aggressive by default: prune at every completion, stop, new lane, session end, and low-disk event, with no prompts when the result can be recovered or regenerated.
 - Unique work (uncommitted, unpushed, real ignored env files, orphans, remote published resources) goes into one batched hard-delete confirmation.
-- No new command, no default installation, no change to the universal contract.
+- Default rule (revised by the human after the first PR head): every Kit project gets it, and it runs automatically when clear evidence shows that the work is complete and a remote can restore what it removes.
+- No new command.
 
 ## ACCEPTED PLAN
 
-1. Ship `work-cleanup` as an optional, conditional embedded rule with a read-only worktree classifier recipe.
-2. List it in the references index.
-3. Test opt-in installation, safety invariants, default footprint, and every classifier state in disposable repositories.
+1. Ship `work-cleanup` as a default (`downstream`), conditional embedded rule with a read-only worktree classifier recipe.
+2. Add an always-loaded contract invariant that applies it without asking, plus a contextual routing line. Hook it from `delivery` (merged or closed PR) and `github-pr-merge` (after each merge).
+3. List it in the references index.
+4. Test default installation across fixture generations, project-owned edits, contract wording, safety invariants, and every classifier state in disposable repositories.
 
 ## DECISIONS
 
@@ -44,8 +46,9 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 - Squash merges: accept `refs/pull/*/head` as proof of retention, so `git branch -D` is allowed only in that verified case.
 - Ignored real `.env*` files block removal (`KEEP_LOCAL_SECRETS`), but symlinked ones do not, because `delivery` links them from the primary checkout.
 - Shared caches use a two-tier policy. Tool-marked unused entries are pruned on every sweep. Full regenerable caches are cleared only below 25% or 50 GiB free, so builds stay warm when space is not short. Docker volumes, early Git object pruning, trash, and transcripts are never pruned.
-- Installing the rule is a bounded standing grant for reversible closes of lane-owned issues and pull requests. Slack stays read-only.
-- Optional, not default: the aggressive cache policy is a workstation preference, not a project invariant.
+- "Clear evidence" needs two observations in the current session: remote-confirmed completion (or a human stop) and restorability (`RECOVERABLE`, or a verified remote copy of an artifact). With both, cleanup runs at once with no prompt or offer. With either missing or `UNAVAILABLE`, the item is kept and reported. This makes the automatic behavior depend on evidence, not on guesses from names or dates.
+- The shipped rule is a bounded standing grant for reversible closes of lane-owned issues and pull requests. A project can narrow or remove it; reconcile keeps local edits. Slack stays read-only.
+- Superseded: the first head shipped the rule as optional. The human chose default with automatic execution. The contract carries the automatic trigger because contextual rules are read only when a trigger applies.
 - Rejected: a `kit clean` command (conflicts with the harness-subtraction direction and needs host-specific cache knowledge); `git clean -X` for idle lanes (it removes ignored env files).
 
 ## DISCOVERIES
@@ -62,7 +65,8 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 
 ## OUTCOME
 
-- Shipped `docs/references/rules/work-cleanup.md` and tests in `pkg/cli/work_cleanup_*_test.go`.
+- Shipped `docs/references/rules/work-cleanup.md` as a default rule, the contract trigger, and tests in `pkg/cli/work_cleanup_*_test.go`.
+- Existing projects receive the rule and contract lines at their next `kit reconcile`.
 - Risk: lsof-based in-use detection sees only processes visible to the user. Without lsof, the agent must check in-use state itself.
 - Risk: cache command lists name common tools only. Projects can add local entries; reconcile preserves local edits.
 
@@ -70,4 +74,6 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 
 - Added `docs/references/rules/work-cleanup.md`.
 - Updated `docs/references/README.md` index and usage note.
-- Unchanged: universal contract, `deletion-safety`, `delivery`; the new rule defers to them.
+- Updated `internal/templates/universal_contract.md` and this repository's `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` with the invariant and routing line.
+- Updated `delivery.md` and `github-pr-merge.md` with completion hooks.
+- Unchanged: `deletion-safety`; the new rule defers to it.

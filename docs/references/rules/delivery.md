@@ -60,6 +60,7 @@ read_policy_default: conditional
 - Open pull requests ready for review, against the protected default branch, using the repository's pull-request template, and close the issue from the body.
 - Never commit to the default or a protected branch, force-push, or rewrite pushed history.
 - After pushing, confirm the remote head matches the local commit and report the issue, branch, and pull request.
+- When the pull request merges or closes, or the human stops the work, run `work-cleanup` for the lane. Cleanup after completion is not deleting a branch to clear a lane.
 
 ### Recovery
 

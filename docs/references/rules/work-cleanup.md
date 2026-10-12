@@ -3,7 +3,7 @@ kind: ruleset
 slug: work-cleanup
 description: Aggressively prunes worktrees, branches, caches, processes, and artifacts as soon as a piece of work is done, stopped, abandoned, or superseded.
 status: active
-registry_scope: optional
+registry_scope: downstream
 applies_to:
   - worktree
   - git
@@ -20,11 +20,11 @@ read_policy_default: conditional
 ## Purpose
 
 - Recover local disk space early and often. Leave nothing behind for a piece of work that has no value to resume.
-- Prune without prompts when nothing unrecoverable is lost. Stop and confirm only when unique work would be lost.
+- Clean up automatically, without prompts, when clear evidence shows that a remote can restore everything you remove. Stop and confirm only when unique work would be lost.
 
 ## Applies When
 
-Install with `kit rules add work-cleanup`. Once it is installed, read this rule when one of these sweep triggers occurs:
+Read this rule and run a sweep, without being asked, when one of these triggers occurs:
 
 - A piece of work completes: a pull request merges or closes, an issue or ticket closes, a release ships, or an artifact is delivered.
 - The human says stop, drop, abandon, never mind, or start over, or newer work supersedes the current work.
@@ -38,9 +38,17 @@ Install with `kit rules add work-cleanup`. Once it is installed, read this rule 
 ### Boundaries
 
 - This rule never weakens `deletion-safety`, `delivery`, or `infrastructure-change-approval`. It classifies each cleanup as recoverable, which proceeds now, or as a hard delete, which needs exact-target confirmation.
-- Installing this rule is the human's bounded standing grant for the recoverable actions below. A human pause or hold stops them.
+- Kit ships this rule as the human's bounded standing grant for the automatic actions below. A human pause, hold, or project edit that removes this rule stops them.
 - Cleanup follows completion. Never delete a branch, stash, or worktree to unblock a new lane, and never use `--force` on any Git command.
 - Never touch the primary checkout, the current session's working directory, or a worktree that a running process uses.
+
+### Automatic cleanup
+
+- Clear evidence has two parts, and you must observe both in the current session:
+  1. Completion: the remote shows the pull request as merged or closed, the issue or ticket as closed, or the upstream branch as gone; or the human said stop, abandon, or superseded; or the lane is idle for 7 days with no open pull request.
+  2. Restorability: the classifier below prints `RECOVERABLE` for a worktree or branch, or a remote copy of an artifact exists (release asset, package registry, object storage, artifact host, or the original download source) and you checked it by digest, size, or a successful fetch.
+- When both parts are true, act immediately. Do not ask, do not offer, and do not defer cleanup to the end of the session. Report what you removed afterwards.
+- When either part is missing, stale, or `UNAVAILABLE`, the evidence is not clear. Keep the item and report it. Never infer completion or restorability from names, dates alone, or memory of an earlier session.
 
 ### Sweep worktrees and branches
 
@@ -63,7 +71,8 @@ Install with `kit rules add work-cleanup`. Once it is installed, read this rule 
 ### Prune artifacts and processes
 
 - Stop background processes, dev servers, watchers, port forwards, monitors, and scheduled wakeups or cron jobs that the work started.
-- Remove scratch directories, temporary files, downloads, logs, screenshots, and local reports that the work created, after you deliver or record what matters from them.
+- Remove scratch directories, temporary files, logs, screenshots, and local reports that the work created, after you deliver or record what matters from them.
+- Remove local copies of downloads, build outputs, and release files when a remote copy is verified as described in Automatic cleanup.
 - Remove containers, images, networks, and test-only volumes that the work created and labeled, if they hold no authoritative data.
 - Published artifacts, shared documents, cloud preview environments, and other remote resources: deleting them is a hard delete or an infrastructure change. List them for confirmation.
 

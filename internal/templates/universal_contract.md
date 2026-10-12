@@ -15,6 +15,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - If the primary checkout holds changes you did not make through a gated lane, preserve them: do not stage, commit, push, stash, reset, clean, discard, or transfer them. The only exception is command-owned leftovers after their matching worktree pull request has merged, handled by `delivery`.
 - Never commit directly to the default or a protected branch, force-push, rewrite pushed history, delete branches to clear a lane, or bypass branch protection, reviews, required checks, or merge queues.
 - Never stage secrets or `.env` files, and never print secret values.
+- When work completes, stops, or is superseded, apply `work-cleanup` immediately without asking: remove worktrees, branches, artifacts, and caches that clear evidence shows a remote can restore, and batch anything else into one hard-delete confirmation.
 
 ## Authorship
 
@@ -52,6 +53,7 @@ Read the named file under `docs/references/rules/` when its trigger applies; ski
 - Mint adoption, releases, deployments, environment state, hotfix, roll-forward or rollback: `mint-deployment-lifecycle.md` when the project uses Mint.
 - Adding tests, configuring CI, or end-to-end, browser, or production validation: `testing-and-environment-validation.md`.
 - Backend routes, services, repositories, or adapters: `backend-service-architecture.md`; frontend routes, state flows, or components: `frontend-application-architecture.md`.
+- Work completes, stops, or is superseded; before a new lane or session end; or free disk space is low: `work-cleanup.md`.
 - Designing deletion or deleting persistent state: `deletion-safety.md`.
 - Infrastructure mutations or deployments: `infrastructure-change-approval.md`; AWS work: `aws-agent-toolkit-guidance.md`.
 - Any Slack write, or investigating a Slack link: `slack-read-only.md`.
