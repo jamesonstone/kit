@@ -33,6 +33,7 @@ func planRefreshAutoAssignWorkflowFile(
 			return initRefreshFileChange{}, fmt.Errorf("failed to read %s: %w", autoAssignWorkflowPath, err)
 		}
 		before = string(data)
+		content = preserveNewerWorkflowActionPins(before, content)
 	}
 	if !exists {
 		return *newInitRefreshFileChange(projectRoot, autoAssignWorkflowPath, before, content, instructionFileCreated), nil

@@ -47,6 +47,19 @@ func readmeGitHubVisibility(projectRoot, repository string) string {
 	return strings.ToUpper(strings.TrimSpace(string(output)))
 }
 
+// readmeGitHubOwnerType returns the GitHub account type ("User" or
+// "Organization") for owner, or "" when it cannot be resolved.
+func readmeGitHubOwnerType(projectRoot, owner string) string {
+	if strings.TrimSpace(owner) == "" {
+		return ""
+	}
+	output, err := readmeCommandRunner.Output(projectRoot, "gh", "api", "users/"+owner, "--jq", ".type")
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(output))
+}
+
 func normalizeGitHubRepository(raw string) (string, bool) {
 	parts := strings.Split(strings.Trim(strings.TrimSpace(raw), "/"), "/")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {

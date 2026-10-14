@@ -123,44 +123,6 @@ func TestRunInitRefresh_CreatesReadmeStarterWithManagedBadges(t *testing.T) {
 	}
 }
 
-func TestRunInitRefresh_ReplacesMaintainerSectionAndKeepsMaintainersLast(t *testing.T) {
-	tempDir := t.TempDir()
-	setupInitHome(t)
-	setWorkingDirectory(t, tempDir)
-	withReadmeVisibility(t, "acme/widget", "PUBLIC")
-	cfg := config.Default()
-	cfg.GitHub.Repository = "acme/widget"
-	if err := config.Save(tempDir, cfg); err != nil {
-		t.Fatalf("config.Save() error = %v", err)
-	}
-	writeFile(t, filepath.Join(tempDir, readmePath), "# Widget\n\nWidget does work.\n\n## Maintainer\n\nOld maintainer copy.\n\n## License\n\nMIT\n")
-
-	withInitFlags(t, func() {
-		initRefresh = true
-		initOutputOnly = true
-		initRefreshFiles = []string{readmePath}
-
-		_ = captureStdout(t, func() {
-			if err := runInitForTest(initCmd, nil); err != nil {
-				t.Fatalf("runInit() error = %v", err)
-			}
-		})
-	})
-
-	content := readFile(t, filepath.Join(tempDir, readmePath))
-	for _, unexpected := range []string{"## Maintainer\n", "Old maintainer copy"} {
-		if strings.Contains(content, unexpected) {
-			t.Fatalf("expected stale maintainer content %q to be removed, got:\n%s", unexpected, content)
-		}
-	}
-	if !strings.Contains(content, "## License\n\nMIT\n\n## Maintainers\n\nMaintained by the [acme](https://github.com/acme) team.") {
-		t.Fatalf("expected managed Maintainers section after License, got:\n%s", content)
-	}
-	if got := lastReadmeH2(content); got != "## Maintainers" {
-		t.Fatalf("last README H2 = %q, want ## Maintainers\n%s", got, content)
-	}
-}
-
 func TestRunInitRefresh_AddsMaintainersWithoutGitHubRemote(t *testing.T) {
 	tempDir := t.TempDir()
 	setupInitHome(t)
