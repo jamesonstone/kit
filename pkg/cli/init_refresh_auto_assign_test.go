@@ -160,6 +160,7 @@ func TestPreserveNewerWorkflowActionPins(t *testing.T) {
 		{"older major upgraded", "uses: actions/github-script@v7\nuses: actions/checkout@v4\n", template},
 		{"same major unchanged", "uses: actions/github-script@v9.2.0\n", template},
 		{"other action ignored", "uses: actions/setup-go@v99\n", template},
+		{"commented pin ignored", "      # uses: actions/github-script@v99\n", template},
 		{"sha pin ignored", "uses: actions/github-script@0123456789abcdef0123456789abcdef01234567 # v10\n", template},
 	}
 	for _, tc := range cases {

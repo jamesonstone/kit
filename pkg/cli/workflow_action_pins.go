@@ -5,9 +5,10 @@ import (
 	"strconv"
 )
 
-// workflowActionPinPattern matches a GitHub Actions `uses:` reference pinned
-// to a semantic major tag such as `actions/github-script@v9` or `@v9.1.0`.
-var workflowActionPinPattern = regexp.MustCompile(`(uses:[ \t]*)([A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+)@(v(\d+)(?:\.[0-9]+)*)\b`)
+// workflowActionPinPattern matches a GitHub Actions `uses:` YAML key, not
+// commented text, pinned to a semantic major tag such as
+// `actions/github-script@v9` or `@v9.1.0`.
+var workflowActionPinPattern = regexp.MustCompile(`(?m)^([ \t]*(?:-[ \t]+)?uses:[ \t]*)([A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+)@(v(\d+)(?:\.[0-9]+)*)\b`)
 
 type workflowActionPin struct {
 	ref   string
