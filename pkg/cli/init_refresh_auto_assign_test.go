@@ -156,12 +156,15 @@ func TestPreserveNewerWorkflowActionPins(t *testing.T) {
 		existing string
 		want     string
 	}{
-		{"newer major kept", "uses: actions/github-script@v10.1.0\n", "      - uses: actions/github-script@v10.1.0\n      - uses: actions/checkout@v5\n"},
-		{"older major upgraded", "uses: actions/github-script@v7\nuses: actions/checkout@v4\n", template},
-		{"same major unchanged", "uses: actions/github-script@v9.2.0\n", template},
-		{"other action ignored", "uses: actions/setup-go@v99\n", template},
-		{"commented pin ignored", "      # uses: actions/github-script@v99\n", template},
-		{"sha pin ignored", "uses: actions/github-script@0123456789abcdef0123456789abcdef01234567 # v10\n", template},
+		{"newer major kept", "steps:\n  - uses: actions/github-script@v10.1.0\n", "      - uses: actions/github-script@v10.1.0\n      - uses: actions/checkout@v5\n"},
+		{"named step newer major kept", "steps:\n  - name: Task\n    uses: actions/github-script@v12\n", "      - uses: actions/github-script@v12\n      - uses: actions/checkout@v5\n"},
+		{"older major upgraded", "steps:\n  - uses: actions/github-script@v7\n  - uses: actions/checkout@v4\n", template},
+		{"same major unchanged", "steps:\n  - uses: actions/github-script@v9.2.0\n", template},
+		{"other action ignored", "steps:\n  - uses: actions/setup-go@v99\n", template},
+		{"commented pin ignored", "steps:\n  # - uses: actions/github-script@v99\n  - uses: actions/github-script@v9\n", template},
+		{"run scalar ignored", "steps:\n  - run: |\n      echo uses: actions/github-script@v99\n      uses: actions/github-script@v98\n", template},
+		{"sha pin ignored", "steps:\n  - uses: actions/github-script@0123456789abcdef0123456789abcdef01234567 # v10\n", template},
+		{"invalid yaml ignored", "steps: [\n  uses: actions/github-script@v99\n", template},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
