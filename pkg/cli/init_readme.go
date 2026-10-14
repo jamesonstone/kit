@@ -39,15 +39,16 @@ func planRefreshReadmeFile(
 	}
 
 	after := before
-	owner := ""
+	owner, ownerType := "", ""
 	if repo, err := readmeGitHubRepository(projectRoot, cfg); err == nil {
 		badgeBlock := managedReadmeBadgeBlock(repo.Repository, readmeCIWorkflow(projectRoot), repo.Visibility)
 		after = upsertReadmeBadgeBlock(after, repo.Repository, badgeBlock)
 		owner = readmeRepositoryOwner(repo.Repository)
+		ownerType = readmeGitHubOwnerType(projectRoot, owner)
 	} else if !exists {
 		after = newReadmeStarterForName(filepath.Base(projectRoot), "")
 	}
-	after = upsertReadmeMaintainersSection(after, owner)
+	after = upsertReadmeMaintainersSection(after, owner, ownerType)
 	if !exists {
 		return newInitRefreshFileChange(projectRoot, readmePath, before, after, instructionFileCreated), nil
 	}

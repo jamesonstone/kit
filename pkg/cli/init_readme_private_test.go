@@ -113,11 +113,18 @@ func withReadmeCommandRunner(t *testing.T, runner ciCommandRunner) {
 
 func withReadmeVisibility(t *testing.T, repository string, visibility string) {
 	t.Helper()
-	withReadmeCommandRunner(t, fakeReadmeRunner{
-		outputs: map[string][]byte{
-			"gh repo view " + repository + " --json visibility -q .visibility": []byte(visibility + "\n"),
-		},
-	})
+	withReadmeGitHub(t, repository, visibility, readmeOwnerTypeOrganization)
+}
+
+func withReadmeGitHub(t *testing.T, repository, visibility, ownerType string) {
+	t.Helper()
+	outputs := map[string][]byte{
+		"gh repo view " + repository + " --json visibility -q .visibility": []byte(visibility + "\n"),
+	}
+	if ownerType != "" {
+		outputs["gh api users/"+readmeRepositoryOwner(repository)+" --jq .type"] = []byte(ownerType + "\n")
+	}
+	withReadmeCommandRunner(t, fakeReadmeRunner{outputs: outputs})
 }
 
 type fakeReadmeRunner struct {

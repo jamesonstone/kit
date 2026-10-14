@@ -116,3 +116,57 @@ func TestRunInitRefresh_RejectsUnsupportedFileTarget(t *testing.T) {
 		}
 	})
 }
+
+func TestRunInitRefresh_KeepsNewerPinnedAutoAssignActionMajor(t *testing.T) {
+	tempDir := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, tempDir)
+	assignees := []string{"jamesonstone"}
+	cfg := config.Default()
+	cfg.GitHub.DefaultAssignees = &assignees
+	if err := config.Save(tempDir, cfg); err != nil {
+		t.Fatalf("config.Save() error = %v", err)
+	}
+	template := templates.BuildAutoAssignWorkflow(assignees)
+	if !strings.Contains(template, "actions/github-script@v9\n") {
+		t.Fatalf("expected template to pin actions/github-script@v9, got:\n%s", template)
+	}
+	bumped := strings.Replace(template, "actions/github-script@v9", "actions/github-script@v12", 1)
+	writeFile(t, filepath.Join(tempDir, autoAssignWorkflowPath), bumped)
+
+	withInitFlags(t, func() {
+		initRefresh = true
+		initOutputOnly = true
+		_ = captureStdout(t, func() {
+			if err := runInitForTest(initCmd, nil); err != nil {
+				t.Fatalf("runInit() error = %v", err)
+			}
+		})
+	})
+
+	if content := readFile(t, filepath.Join(tempDir, autoAssignWorkflowPath)); content != bumped {
+		t.Fatalf("reconcile downgraded the newer pinned action major; got:\n%s", content)
+	}
+}
+
+func TestPreserveNewerWorkflowActionPins(t *testing.T) {
+	template := "      - uses: actions/github-script@v9\n      - uses: actions/checkout@v5\n"
+	cases := []struct {
+		name     string
+		existing string
+		want     string
+	}{
+		{"newer major kept", "uses: actions/github-script@v10.1.0\n", "      - uses: actions/github-script@v10.1.0\n      - uses: actions/checkout@v5\n"},
+		{"older major upgraded", "uses: actions/github-script@v7\nuses: actions/checkout@v4\n", template},
+		{"same major unchanged", "uses: actions/github-script@v9.2.0\n", template},
+		{"other action ignored", "uses: actions/setup-go@v99\n", template},
+		{"sha pin ignored", "uses: actions/github-script@0123456789abcdef0123456789abcdef01234567 # v10\n", template},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := preserveNewerWorkflowActionPins(tc.existing, template); got != tc.want {
+				t.Fatalf("got:\n%s\nwant:\n%s", got, tc.want)
+			}
+		})
+	}
+}

@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Assign issue or pull request
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         continue-on-error: true
         with:
           script: |

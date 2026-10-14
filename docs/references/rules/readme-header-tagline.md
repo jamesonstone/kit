@@ -73,7 +73,7 @@ visual identity.
 - When Kit-managed refresh updates badges, preserve the Kit marker comments around the badge block and update only the block between those markers.
 - Keep installation details, long architecture notes, changelogs, and contribution guidance after the header, tagline, and opening paragraph.
 - Default a top-level `README.md` to end with a `## Maintainers` section as the last H2 header.
-- Derive the maintainer credit from the project's own GitHub owner. The default Kit-managed shape is:
+- Derive the maintainer credit from the project's own GitHub owner. The default Kit-managed shape for an organization owner is:
 
 ```markdown
 ## Maintainers
@@ -81,11 +81,19 @@ visual identity.
 Maintained by the [<owner>](https://github.com/<owner>) team.
 ```
 
+- For a personal user account, or when the owner type is unknown, do not say "team". The default Kit-managed shape is:
+
+```markdown
+## Maintainers
+
+Maintained by [<owner>](https://github.com/<owner>).
+```
+
 - Never name Kit's own author or repository as the maintainer of a downstream project. This template exists so every project gets a maintainers line; the identity in it must always be the project's own, not Kit's.
 - When no GitHub owner is known, use a neutral fallback such as "Maintained by this project's maintainers." rather than inventing a name.
 - Use `## Maintainers`, not `## Maintainer`, even when there is currently only one maintainer.
 - Preserve existing stronger brand guidance when a repository already has an intentional, current README identity.
-- Preserve an existing, deliberately authored maintainers list or contribution-credit convention; only apply the default template when the project has none.
+- Preserve an existing, deliberately authored maintainers list or contribution-credit convention; only apply the default template when the project has none. Kit refresh replaces only Kit-generated default lines; it keeps any other `## Maintainers` content and moves it to the last H2.
 - Do not invent product claims, operational capabilities, compliance posture, customer names, or integrations that are not supported by repository evidence.
 
 ## Anti-Patterns
