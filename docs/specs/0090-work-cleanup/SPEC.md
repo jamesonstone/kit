@@ -53,6 +53,9 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 
 - Superseded (GH-253, after the first release candidate): the batched hard-delete confirmation, remote-branch deletion, `git branch -D`, full cache clears, and idle-lane dependency pruning. The human found approval prompts during cleanup concerning. Cleanup now never asks; it runs only `git worktree prune`, `git fetch --prune`, `git worktree remove`, `git branch -d`, the work's own process and scratch cleanup, and unused-entry cache prunes when disk space is low. It also closes (never deletes) lane-owned GitHub issues and pull requests with observed completion, because the GitHub UI can reopen them without a prompt to the human. Everything else is kept and reported in one line. The disk saving that was given up is small: the worktree directory is most of a lane's footprint, and branches cost almost nothing.
 
+- GH-257: cleanup also fast-forwards the primary checkout's local default branch. Agents create lanes from `origin/<base>`, so nothing else updated the human's local default branch after a merge. This is the only write that the contract allows in the primary checkout. The sync recipe uses only `git merge --ff-only` (on the default branch with no tracked changes) or `git fetch <remote> <base>:<base>` (on another branch). Git refuses both when work would be lost. Any other state is kept and reported as a literal state. The recipe does not check for running processes in the primary checkout: the human's shell and editor are usually there, a fast-forward on a clean tree does not lose work, and Git's own lock stops a concurrent Git operation.
+- Rejected (GH-257): `git pull` (it can merge or rebase, depending on configuration); `git branch -f` or `git reset` (they can drop local commits); syncing the primary checkout from `delivery` (the lane does not need it, and cleanup already runs at every merge).
+
 ## DISCOVERIES
 
 - A `case` pattern without a leading `(` inside `$( )` fails in bash's POSIX mode. The recipe uses `(pattern)`.
@@ -73,6 +76,8 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 - Risk: cache command lists name common tools only. Projects can add local entries; reconcile preserves local edits.
 
 ## REPOSITORY MEMORY
+
+- GH-257: added the primary checkout sync recipe and states to `work-cleanup.md`; narrowed the primary-checkout read-only invariant in the contract template, the three instruction files, and `delivery.md`; updated the references index; added `pkg/cli/work_cleanup_primary_sync_test.go`.
 
 - GH-253: narrowed `work-cleanup.md`, the contract invariant in the template and the three instruction files, the references index, and the registry tests.
 

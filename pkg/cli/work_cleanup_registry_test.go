@@ -125,6 +125,7 @@ func TestWorkCleanupContractRunsQuietly(t *testing.T) {
 		"apply `work-cleanup` quietly",
 		"remove only what clear evidence shows a remote can restore",
 		"never ask the human to approve a cleanup",
+		"The only exception is the fast-forward-only update of its default branch in `work-cleanup`",
 		workCleanupRoute,
 	} {
 		if !strings.Contains(block, want) {
@@ -170,7 +171,8 @@ func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 			t.Errorf("rule does not explain classifier state %s", state)
 		}
 	}
-	if words := len(strings.Fields(content)); words > 1000 {
+	// The budget includes both published shell recipes.
+	if words := len(strings.Fields(content)); words > 1400 {
 		t.Fatalf("work-cleanup grew to %d words; keep it short", words)
 	}
 }
