@@ -44,7 +44,7 @@ read_policy_default: conditional
 
 ### Primary Checkout
 
-- The primary checkout is read-only for agent work. If it holds changes you did not make through a lane, preserve and report them.
+- The primary checkout is read-only for agent work, except the fast-forward-only default-branch update in `work-cleanup`. If it holds changes you did not make through a lane, preserve and report them.
 - Exception: files a Kit command wrote to the primary checkout and that were delivered through a merged worktree pull request may be removed so the checkout can pull. Enumerate untracked candidates first, remove only verified command-owned paths, restore only tracked paths whose content still matches what the command wrote, and stop on any mismatch.
 
 ### Identity And Attribution
