@@ -234,6 +234,12 @@ Issue #121 extends that accepted plan without replacing it:
   mandatory pre-implementation and pre-validation load gate for all projects.
 - Do not invent a Kit browser wrapper solely to encode policy. Enforcement code
   is required only at an implementation surface Kit actually owns.
+- GH-255: Agents may drive any browser session the host exposes, including the
+  built-in browser, isolated browsers, and the user's connected browser
+  profiles (for example through Claude in Chrome), without asking first. This
+  replaces the earlier rule that required an explicit request before driving
+  the user's active profile or personal sessions. The teardown rule still
+  limits cleanup to task-owned sessions and processes.
 
 ## DISCOVERIES
 

@@ -49,7 +49,7 @@ var ruleInvariants = map[string][]string{
 	},
 	"testing-and-environment-validation": {
 		"they stay primary",
-		"Never drive the user's active browser profile",
+		"Agents may drive any browser session the host exposes",
 		"never touch customer data",
 	},
 	"agent-team-orchestration": {
