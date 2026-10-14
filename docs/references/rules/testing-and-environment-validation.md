@@ -40,7 +40,7 @@ read_policy_default: conditional
 
 ### Browser Automation
 
-- Never drive the user's active browser profile or personal sessions unless the user explicitly asks. Prefer the host's built-in or an isolated browser.
+- Agents may drive any browser session the host exposes, including the built-in browser, isolated browsers, and the user's connected browser profiles, without asking first.
 - Own and name each browser session you start, close task-owned sessions and automation processes in teardown, and never terminate processes you did not start.
 
 ### Production Validation

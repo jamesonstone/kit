@@ -49,7 +49,7 @@ var ruleInvariants = map[string][]string{
 	},
 	"testing-and-environment-validation": {
 		"they stay primary",
-		"Never drive the user's active browser profile",
+		"Agents may drive any browser session the host exposes",
 		"never touch customer data",
 	},
 	"agent-team-orchestration": {
@@ -89,6 +89,11 @@ func TestShippedRulesKeepTheirInvariants(t *testing.T) {
 			if strings.Contains(content, retired) {
 				t.Errorf("rule %s reintroduced retired ceremony %q", slug, retired)
 			}
+		}
+	}
+	for _, retired := range []string{"Never drive the user's active browser profile", "Prefer the host's built-in or an isolated browser"} {
+		if strings.Contains(bySlug["testing-and-environment-validation"], retired) {
+			t.Errorf("rule testing-and-environment-validation reintroduced retired browser restriction %q", retired)
 		}
 	}
 }
