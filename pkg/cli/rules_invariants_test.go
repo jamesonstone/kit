@@ -91,4 +91,9 @@ func TestShippedRulesKeepTheirInvariants(t *testing.T) {
 			}
 		}
 	}
+	for _, retired := range []string{"Never drive the user's active browser profile", "Prefer the host's built-in or an isolated browser"} {
+		if strings.Contains(bySlug["testing-and-environment-validation"], retired) {
+			t.Errorf("rule testing-and-environment-validation reintroduced retired browser restriction %q", retired)
+		}
+	}
 }
