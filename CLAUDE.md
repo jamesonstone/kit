@@ -20,7 +20,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - If the primary checkout holds changes you did not make through a gated lane, preserve them: do not stage, commit, push, stash, reset, clean, discard, or transfer them. The only exception is command-owned leftovers after their matching worktree pull request has merged, handled by `delivery`.
 - Never commit directly to the default or a protected branch, force-push, rewrite pushed history, delete branches to clear a lane, or bypass branch protection, reviews, required checks, or merge queues.
 - Never stage secrets or `.env` files, and never print secret values.
-- When work completes, stops, or is superseded, apply `work-cleanup` quietly: automatically remove task-owned cruft only after verifying completion, recovery and no active use under that rule; retain unique or unknown state without routine approval prompts.
+- When work completes, stops, or is superseded, apply `work-cleanup` quietly: remove only what clear evidence shows a remote can restore, keep everything else, and never ask the human to approve a cleanup.
 
 ## Authorship
 
@@ -41,6 +41,11 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - Preserve language-native tests and pull-request checks; end-to-end suites supplement them. Run the project's validation before calling work complete, and fix relevant failures.
 - Parallelize independent investigation when it helps. Delegated agents never mutate Git or GitHub and never write overlapping files concurrently; the primary agent owns integration, validation, and the final report.
 - Resolve in-scope problems autonomously until the goal is complete or a genuine blocker remains; use current evidence to choose safe, bounded recovery.
+
+## Code Review Rules
+
+- In downstream projects that use Kit, treat Kit-managed instruction blocks and unmodified Kit-supplied rules as upstream policy. Skip findings against that policy, including regeneration and upgrade diffs; do not propose downstream policy rewrites.
+- Review project code, project-owned guidance, local rule overrides, and their use of Kit normally. Changes to Kit itself remain in review scope.
 
 ## Reporting
 

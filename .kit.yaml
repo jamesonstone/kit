@@ -98,10 +98,5 @@ registry:
           path: docs/references/rules/testing-and-environment-validation.md
           installed_hash: sha256:22e5f3647dbe7d5e940441b1fabaa17691a9f488200ee4e7a8ff94c56c78f09c
           state: managed
-        - kind: ruleset
-          slug: work-cleanup
-          path: docs/references/rules/work-cleanup.md
-          installed_hash: sha256:3e8bd87b796b25bc7559031715ae7ebbc6c7a0ceab021144a3c9b3a655f3fe1d
-          state: managed
 aws:
     enabled: false

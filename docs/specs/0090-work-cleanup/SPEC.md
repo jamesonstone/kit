@@ -27,24 +27,20 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 
 ## REQUIREMENTS
 
-- Keep automatic post-merge recovery of verifiably recoverable task-owned cruft and safe primary default-branch synchronization. Keep unique or unknown state without routine prompts.
-- Require current completion, task ownership, successful process inspection, local-state inventory and live selected-remote recovery evidence. A source commit does not restore ignored files, hidden changes, local Git state or custom filesystem metadata.
-- Recheck immediately before normal bounded Git/filesystem actions; no reusable classifier result, blanket prune, force/reset/clean fallback or receipt/lease protocol.
-- Ship this as an agent rule with aligned generated contracts and focused regressions. No new command or cleanup subsystem. Preserve project customizations during reconciliation.
-- Browser profiles, Mint titles, release and downstream rollout are outside scope.
+- "Piece of work" covers lanes, branches, worktrees, issues, tickets, pull requests, and any artifact. "Completed" covers done, stopped, abandoned, superseded, and idle with no open pull request.
+- Aggressive by default: prune at every completion, stop, new lane, session end, and low-disk event, with no prompts when the result can be recovered or regenerated.
+- Unique work (uncommitted, unpushed, real ignored env files, orphans, remote published resources) goes into one batched hard-delete confirmation.
+- Default rule (revised by the human after the first PR head): every Kit project gets it, and it runs automatically when clear evidence shows that the work is complete and a remote can restore what it removes.
+- No new command.
 
 ## ACCEPTED PLAN
 
-1. Strengthen the canonical rule's recovery gates while keeping automatic eligible cleanup.
-2. Align the universal contract and rendered entrypoints; existing delivery/merge routing stays in place; preserve project-owned overrides.
-3. Verify the concrete Git hazards, positive remove/restore and primary sync, and init/upgrade/reconcile convergence in disposable fixtures.
+1. Ship `work-cleanup` as a default (`downstream`), conditional embedded rule with a read-only worktree classifier recipe.
+2. Add an always-loaded contract invariant that applies it without asking, plus a contextual routing line. Hook it from `delivery` (merged or closed PR) and `github-pr-merge` (after each merge).
+3. List it in the references index.
+4. Test default installation across fixture generations, project-owned edits, contract wording, safety invariants, and every classifier state in disposable repositories.
 
 ## DECISIONS
-
-- GH-262: fix the rule rather than introduce a cleanup platform. The rejected implementation added a CLI, ownership receipts, leases and platform-specific inspection. Those mechanisms are removed. Current task evidence identifies bounded targets; ambiguous artifacts stay in place.
-- Ignored files, failed process checks, stale refs and primary overwrite collisions are real defects. Explicit fail-closed gates and focused Git/distribution tests address them without a new runtime surface.
-- Earlier decisions below are historical where they conflict with these current requirements.
-
 
 - Classify by recoverability, not by action type. A worktree whose head a remote branch or pull-request ref holds, and whose only local residue is ignored content, can be removed without prompts because `deletion-safety` treats it as recoverable. This makes the aggressive behavior consistent with existing rules and avoids an exception to them.
 - Squash merges: accept `refs/pull/*/head` as proof of retention, so `git branch -D` is allowed only in that verified case.
@@ -67,17 +63,12 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 
 ## VALIDATION
 
-- GH-262 rule-only refactor: full Go tests, focused Git/action and install/upgrade/custom/convergence regressions, vet, lint (0 issues), build, formatting and project check PASS. Scoped real reconciliation converges with zero planned changes. Native cleanup checks from rejected PR heads are not evidence for this revision.
-- Earlier validation below records the released shell recipes.
-
 - `go test ./pkg/cli -run TestWorkCleanup -count=1`: pass, with `sh` as macOS bash and as `dash`.
 - `gofmt -l .` (empty), `make vet`, `make lint` (0 issues), `make test` (all packages ok), `make build`: pass.
 - `kit check --project`: pass with one advisory warning about `docs/references/README.md` that also appears on unchanged `main`.
 - The recipe also parses with `dash -n`.
 
 ## OUTCOME
-
-- GH-262: the final PR changes only the rule, its contract/distribution, current spec and focused tests/fixtures. There is no new command, production Go change, receipt/lease protocol or platform inspection subsystem. Automatic eligible cleanup and primary sync remain. No merge, release, downstream rollout or cleanup of user directories is authorized.
 
 - Shipped `docs/references/rules/work-cleanup.md` as a default rule, the contract trigger, and tests in `pkg/cli/work_cleanup_*_test.go`.
 - Existing projects receive the rule and contract lines at their next `kit reconcile`.

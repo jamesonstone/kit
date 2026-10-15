@@ -33,6 +33,9 @@ var criticalInvariants = map[string]string{
 	"delegation safety":         "Delegated agents never mutate Git or GitHub",
 	"truthful checks":           "Never present a pending, skipped, unavailable, or unrun check as passing",
 	"recoverable change report": "needed to find or undo every change",
+	"downstream review scope":   "Skip findings against that policy, including regeneration and upgrade diffs",
+	"project changes reviewed":  "Review project code, project-owned guidance, local rule overrides",
+	"upstream Kit reviewed":     "Changes to Kit itself remain in review scope",
 }
 
 func TestUniversalContractCarriesCriticalInvariants(t *testing.T) {
