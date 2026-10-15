@@ -6,7 +6,6 @@ import (
 )
 
 var protectedPaths = []string{
-	"cleanup",
 	"init",
 	"spec",
 	"usage",
@@ -32,7 +31,6 @@ var protectedPaths = []string{
 }
 
 var telemetryPaths = []string{
-	"cleanup",
 	"init",
 	"spec",
 	"status",

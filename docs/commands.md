@@ -31,7 +31,6 @@ reported unless `--force` is used.
 
 | Command | Why it exists |
 | --- | --- |
-| `kit cleanup` | Records task creation provenance and proves completion, source/local recovery and exclusive handoff immediately before automatic bounded cleanup. Preview is read-only; `--apply` repeats all checks under a cleanup lease. See `docs/references/rules/work-cleanup.md` for category support and limitations. |
 | `kit check [feature]` / `kit check --project` | Validates spec front matter and relationships, duplicate feature numbers, rule documents, the managed contract block, and, when `.kit.yaml` sets `source_file_line_limit`, handwritten source-file length. Exits non-zero on blocking findings. |
 | `kit reconcile` | Migrates a project created by any Kit release to the current structure, then audits project documents. Keeps project and edited content, removes only unmodified retired Kit files that Git can restore, and reports what it kept. From the primary checkout it writes to a `kit-reconcile` linked worktree. `--dry-run --diff` previews; `--force` also replaces edited Kit sections and edited shipped rules. Prints any remaining findings as severity, file, issue, and fix. |
 | `kit health` | Read-only diagnosis for people and scheduled automation: reports what `kit reconcile` would change (`--diff` shows it), runs the project check, and exits non-zero only when that check fails. Never writes. |

@@ -56,7 +56,7 @@ registry:
         - kind: ruleset
           slug: delivery
           path: docs/references/rules/delivery.md
-          installed_hash: sha256:57dec36b2617276a382601f77c68f751f84c1befea24c312d0226ce8bcb67dae
+          installed_hash: sha256:a58544639d2f5d602f4feb10efc954f49a3e6a67082c309217cbd8d132f7b9fa
           state: managed
         - kind: ruleset
           slug: deployment-recovery
@@ -71,7 +71,7 @@ registry:
         - kind: ruleset
           slug: github-pr-merge
           path: docs/references/rules/github-pr-merge.md
-          installed_hash: sha256:9931a51b1a4b646b2c2de80f803e9d73a32e2ea317bc0922bbd0db3235a806a0
+          installed_hash: sha256:d488e4f2158b7aa2eac40992c009c93476f73e2b3cfa4709a2d6c3719939d023
           state: managed
         - kind: ruleset
           slug: infrastructure-change-approval
@@ -101,7 +101,7 @@ registry:
         - kind: ruleset
           slug: work-cleanup
           path: docs/references/rules/work-cleanup.md
-          installed_hash: sha256:3eabd82f6d01f44fc6cecf473eb708709d8b812418d9b98be45270c2aa364773
+          installed_hash: sha256:3e8bd87b796b25bc7559031715ae7ebbc6c7a0ceab021144a3c9b3a655f3fe1d
           state: managed
 aws:
     enabled: false

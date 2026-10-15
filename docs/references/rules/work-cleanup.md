@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: work-cleanup
-description: Automatically reclaims completed, proven-recoverable task artifacts with native ownership, local-state and concurrency checks.
+description: Automatically removes completed task-owned work that is verifiably recoverable, keeps unknown local state, and safely fast-forwards the primary default branch.
 status: active
 registry_scope: downstream
 applies_to:
@@ -20,95 +20,110 @@ read_policy_default: conditional
 ## Purpose
 
 Recover disk space automatically after completed work without losing unique work.
-A remote commit proves source recovery, not recovery of every local file or Git state.
-Use the native `kit cleanup` proof-and-action command; never use a classifier result
-as permission for a later shell deletion.
+A remote source commit does not back up ignored files or local Git state.
 
 ## Applies When
 
-- Before creating a lane; after its pull request merges or closes or the human stops it.
-- Before session end or a new lane, and when free space is below 25% or 50 GiB.
+- After a pull request merges or closes, or the human stops or supersedes the work.
+- Before a new lane or session end, or when free space is below 25% or 50 GiB.
 
 ## Rules
 
-### Ownership and handoff
+### Standing authority
 
-- Record exact task-owned artifacts when the task creates them. Never infer ownership
-  from a branch name, age, clean status or directory location. Do not adopt other tasks'
-  or legacy/shared artifacts merely to make them eligible.
-- Save receipts outside their targets. They bind task owner, physical directory and
-  Git metadata identities. Record scratch/cache output immediately after its task-owned
-  producer finishes, before any later edits; `--disposable` explicitly declares that
-  the task produced it and it never became authoritative input, evidence or user work.
-- At completion, the same owner must hand off exclusive control after all writers stop.
-  Supply the exact completed source head and current merged/closed PR, or the reference
-  to a current human stop instruction. Do not fabricate a stop instruction.
-- `--writers-stopped` is this owner handoff, not a claim that process inspection alone
-  proves exclusivity. If ownership, process visibility, external writers or recovery is
-  unknown, retain the target. Running a command from another directory is not a handoff.
-- Run cleanup from outside the target and its Git metadata. Cooperating agents must not
-  write while `<git-common-dir>/kit-cleanup.lock` exists. Never remove another owner's
-  lease or infer that it is stale from its age. The lease is not an OS sandbox for
-  arbitrary external writers.
+- Cleanup never asks for routine approval. Automatically remove verifiably recoverable
+  task-owned cruft; keep unique or unknown state and report it once.
+- Use current task evidence to identify exact targets. Never infer ownership or completion
+  from a name, directory, age, clean status, or an idle-time threshold. Leave unrelated work alone.
+- Observe the task's exact source head and merged/closed pull request in the selected remote,
+  or the current human stop instruction. A closed issue alone does not prove completion.
+- Work from outside the target. Stop only task-owned idle watchers/checks with no outstanding
+  work; establish that other writers have stopped. Unknown ownership or concurrent use means keep.
+- This grant covers only the recoverable actions below. Never force, reset, clean, purge,
+  remove stashes, or delete a branch to unblock a lane. Hard deletes remain under `deletion-safety`.
 
-### Automatic categories
+### Completed worktrees
 
-| Category | Automatic action and proof |
-| --- | --- |
-| Linked worktree | Remove only the exact recorded registration after fresh completion, live selected-remote exact-head recovery, physical tracked-byte/mode comparison, ordinary index state and reconstructible Git metadata. Ignored/untracked data, nested repos/submodules, hidden edits, special index flags, local-only reflog commits, local configuration and active operations retain it. |
-| Local branch | Protect the live remote default. When checked out nowhere, verify source and reflog commit recovery, then delete the exact ref with an expected-old-value update. Keep branch configuration rather than discarding it; custom configuration blocks eligibility. Never force or delete to unblock a lane. |
-| Stale references | Prune only an exact recorded selected-remote tracking ref that is absent remotely and whose ref/reflog commits remain reachable through retained local branches or tags. No blanket `fetch --prune`. Remove a missing task worktree's registration only after the same metadata/recovery proofs; no blanket `worktree prune`. |
-| Task scratch | Remove unchanged, recorded, never-authoritative task output after its producer and consumers stop. A scratch-looking filename is insufficient. Changed data, nested Git state or overlaps with primary/tracked state retain it. |
-| Unused caches | Reclaim unchanged recorded task-produced disposable cache entries, including untracked output inside its linked lane. Clean those proven entries before re-assessing their containing worktree. Shared-tool pruning needs an exact supported recovery/disposability adapter; no unbounded Docker, Brew, pnpm or uv prune commands are authorized by their names alone. Report unsupported shared selections as `KEEP_UNSUPPORTED`; do not disable eligible task-cache recovery. |
-| Primary sync | Keep the live remote default branch current under a bounded sync receipt and exclusive handoff. Reject arbitrary bases, divergence, unknown state, active Git operations/users and defaults checked out elsewhere. On the default branch, compare physical state and effective incoming checkout filters, then use `--ff-only --no-overwrite-ignore`. On another branch, use an ancestor-checked expected-old-value ref update without touching working files. |
+Before removing a linked worktree, verify all of the following in the current session:
 
-- Physical recovery proof rejects nonstandard permissions, foreign ownership, hardlinks,
-  user xattrs, ACLs and file flags. On macOS, OS-generated `com.apple.provenance` is an
-  explicit exception; its bytes are fingerprinted for changes, and file restoration
-  regenerates OS provenance rather than preserving that token. Other attributes remain protected.
-- Creation-recorded `.env`/`.envrc` symlinks may be removed with their worktree only
-  when their exact primary-checkout sources remain regular files. Never copy secret bytes.
-- `lsof`, Git or remote failures, malformed evidence and unsupported filesystem inspection
-  return `UNAVAILABLE` and retain the target. A cached remote-tracking ref never proves recovery.
-- A native operation error returns `REFUSED_OR_PARTIAL`; inspect actual state and retained
-  recovery evidence. Do not claim that a failed removal left every entry in place.
-- The command repeats all proofs immediately before mutation under its cleanup lease.
-  Changed identity, contents, refs, completion or recovery evidence stops that action.
-- Stop only task-owned idle watchers/checks with no outstanding work. Close this lane's
-  satisfied issue after observing its merged result. Leave unrelated work and Slack alone.
-- Cleanup never asks for routine approval. Clear evidence under this standing grant
-  permits automatic action; missing evidence means keep and report. Hard deletes stay
-  under `deletion-safety`; never force removal, reset, clean, purge or bypass its confirmation.
+1. It is the exact completed task's registered linked worktree, never the primary checkout
+   or current working directory. Its current head matches the completed source head.
+2. Process inspection succeeds and shows no open files or working directories in the lane
+   or its Git metadata. A missing, failed, partial or inconclusive `lsof` check is `UNAVAILABLE`,
+   not evidence that the lane is idle.
+3. Inventory tracked, untracked and ignored paths, including hidden files. Use
+   `git status --porcelain=v1 --untracked-files=all --ignored=matching` and check each command's
+   exit status. Ignored/untracked data is local state, not automatically regenerable content.
+   First remove only task-created scratch/cache output you know never became authoritative.
+   Keep any remaining local data. Exact task-created `.env`/`.envrc` symlinks may be unlinked
+   only when their original primary-checkout regular-file sources still exist; never read,
+   copy or remove the source bytes.
+4. Check the physical tracked contents and modes against the commit, not just cached status.
+   Special index flags from `git ls-files -v -f`, checkout/clean filters or other state that
+   hides changes require separate verification; otherwise keep. Preserve custom filesystem
+   modes/attributes, hard links, local configuration (`config.worktree` included), unfinished
+   Git operations and commit drafts. Ordinary Git-generated bookkeeping is not user data.
+5. Verify recovery against live refs with `git ls-remote` on the selected remote, including
+   `refs/pull/*/head` for squash merges. A live ref must retain the exact source head;
+   cached tracking refs and a prior fetch are insufficient. Check the lane's HEAD/branch
+   reflogs and ORIG_HEAD for local-only commits too; unrelated primary HEAD history is not
+   part of the lane's recovery proof. Disable replacement history with `GIT_NO_REPLACE_OBJECTS=1`;
+   local grafts or unsupported history/ref inspection make recovery unknown.
 
-## Use
+If any proof fails, keep the lane as `KEEP_LOCAL_STATE`, `KEEP_IN_USE`, `KEEP_RECOVERY`
+or `UNAVAILABLE`. These states do not disable cleanup of other eligible targets.
+Immediately before acting, recheck the target, head, local state, process use and live
+recovery evidence. Do not save a reusable `RECOVERABLE` classification for a later deletion.
 
-Record a new task lane after creation and environment linking:
+When the checks pass, run the normal removal; if Git refuses, keep and report, without a fallback:
 
 ```sh
-kit cleanup --record --kind worktree --path "$lane" --repository "$primary" --owner "$task_id" > "$receipt"
+git -C "$primary" -c core.hooksPath=/dev/null -c core.fsmonitor=false worktree remove -- "$lane"
 ```
 
-After current-owner handoff, run from outside that lane:
+After removal, an exact task branch may also be deleted if checked out nowhere, is not
+any remote's default branch, and its head and branch-reflog commits have verified recovery.
+Use `git -C "$primary" update-ref -d "refs/heads/$branch" "$verified_head"` to refuse a changed head
+and leave branch configuration in place. Never force branch deletion.
+
+### Other cruft
+
+- Remove exact task-created, never-authoritative scratch and reproducible cache output
+  after producers and consumers stop. A scratch/cache name or ignored status is not proof.
+- Prune an exact stale task tracking ref only after verifying its remote branch is absent
+  and its ref/reflog commits remain reachable through retained local branches or tags.
+  Remove a missing task worktree registration only after verifying its remaining Git state.
+  No blanket `fetch --prune` or `worktree prune`: stale-looking refs can be the only recovery copy.
+- Shared-tool unused-cache cleanup needs proof for the tool's actual selected entries:
+  reproducibility, no unique data and no active users. Tool names or an unused label alone
+  do not authorize broad Docker, Brew, pnpm or uv pruning. Keep unverified selections.
+- Close a lane issue only when its merged change satisfies it. Leave other people's work,
+  shared documents, containers, volumes, cloud state, transcripts, trash and Slack alone.
+
+### Primary default-branch sync
+
+- Discover the live selected remote's default branch; do not accept an arbitrary base.
+  Fetch its objects without pruning, updating tracking refs, tags, recursive submodules or
+  automatic maintenance (`--no-prune --no-prune-tags --refmap= --no-tags
+  --no-write-fetch-head --recurse-submodules=no --no-auto-maintenance`).
+- Require stopped writers, available process inspection, no active Git operation, and no
+  unique state in the ref/control files being updated. Verify the local default is an
+  ancestor of the live remote head. Disable replacement history and reject local grafts; unknown evidence means keep.
+- If the primary is on the default branch, require ordinary index state, verified tracked
+  bytes/modes, no effective checkout filters and no ignored/untracked collision. Then run:
 
 ```sh
-kit cleanup --receipt "$receipt" --owner "$task_id" --head "$completed_head" --pr "$pr" --writers-stopped --apply
+git -C "$primary" -c core.hooksPath=/dev/null -c core.fsmonitor=false merge --ff-only --no-overwrite-ignore "$remote_head"
 ```
 
-For never-authoritative generated scratch/cache, use `--record --kind scratch|cache
---disposable` after the producer finishes. For branch/ref receipts use the repository
-as `--path` and an exact `--ref refs/heads/...` or `refs/remotes/origin/...`.
-Use `--kind primary` to record the bounded default-sync target; an optional `--ref`
-must match the live remote default. A current human stop can replace `--pr` with
-`--stop-evidence "<current instruction reference>"`.
-
-Omit `--apply` for a read-only preview. `ELIGIBLE` is not reusable removal authority.
-`REMOVED`, `PRUNED`, `UPDATED` and `CURRENT` describe actual outcomes.
-`KEEP_LOCAL_STATE`, other `KEEP_*` states and `UNAVAILABLE` retain the target and explain
-the missing evidence. Unsupported legacy ownership or shared-cache adapters are
-specific limitations, not a reason to retain every artifact.
+- If it is on another branch, leave working files untouched. Verify the default is checked
+  out nowhere else, then use `git -C "$primary" update-ref "refs/heads/$base" "$remote_head" "$local_head"`.
+- Recheck immediately before the action. Never switch branches, reset, stash, clean, rebase
+  or create a merge commit. A refusal means keep, not permission to repair the checkout.
 
 ## Report
 
-Add one short line: actual removals/prunes, logical file bytes removed (not an invented
-disk-space saving), primary sync result and kept states. Retention does not imply a
-backup. Never turn kept items into a routine permission question.
+Add one short cleanup line: actual removals, primary sync (`UPDATED`, `CURRENT` or a kept
+state), and kept targets with reasons. Report measured disk savings only when measured.
+A failed operation can be partial; inspect actual state before claiming anything was kept.
+Never turn retained items into a routine permission question.
