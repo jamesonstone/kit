@@ -44,8 +44,9 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 ## Code Review Rules
 
-- In downstream projects that use Kit, treat Kit-managed instruction blocks and unmodified Kit-supplied rules as upstream policy. Skip findings against that policy, including regeneration and upgrade diffs; do not propose downstream policy rewrites.
-- Review project code, project-owned guidance, local rule overrides, and their use of Kit normally. Changes to Kit itself remain in review scope.
+- In downstream projects, Kit is the canonical owner of its workflows and rules. Do not reopen those design decisions or rewrite downstream copies based on reviewer preferences, including during regeneration or upgrades.
+- Review project code, project-owned guidance, local rule overrides, and their use of Kit normally. Changes to canonical Kit source remain in review scope.
+- When a Kit rule causes concrete operator friction or a demonstrated correctness or safety problem, report evidence and route the proposed correction upstream to Kit. Do not suppress unexpected drift or provenance and tampering concerns.
 
 ## Reporting
 

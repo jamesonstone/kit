@@ -33,9 +33,14 @@ var criticalInvariants = map[string]string{
 	"delegation safety":         "Delegated agents never mutate Git or GitHub",
 	"truthful checks":           "Never present a pending, skipped, unavailable, or unrun check as passing",
 	"recoverable change report": "needed to find or undo every change",
-	"downstream review scope":   "Skip findings against that policy, including regeneration and upgrade diffs",
+	"Kit canonical ownership":   "Kit is the canonical owner of its workflows and rules",
+	"downstream review scope":   "Do not reopen those design decisions or rewrite downstream copies based on reviewer preferences",
 	"project changes reviewed":  "Review project code, project-owned guidance, local rule overrides",
-	"upstream Kit reviewed":     "Changes to Kit itself remain in review scope",
+	"Kit usage reviewed":        "their use of Kit normally",
+	"upstream Kit reviewed":     "Changes to canonical Kit source remain in review scope",
+	"evidence-based correction": "concrete operator friction or a demonstrated correctness or safety problem, report evidence",
+	"upstream correction":       "route the proposed correction upstream to Kit",
+	"provenance reviewed":       "Do not suppress unexpected drift or provenance and tampering concerns",
 }
 
 func TestUniversalContractCarriesCriticalInvariants(t *testing.T) {
