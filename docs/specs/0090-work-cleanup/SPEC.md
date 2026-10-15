@@ -16,7 +16,9 @@ relationships:
 
 ## PURPOSE
 
-Give agents one rule that removes local and remote residue as soon as a piece of work has no value to resume (GH-251). The human's SSD fills quickly. The rule must prune early and often, but it must not lose unique work.
+Preserve complete local work at automatic task completion (GH-262). Inventory
+lanes without deleting persistent local state or updating primary checkouts.
+A remote commit is evidence about committed source, not a backup of local state.
 
 ## CONTEXT
 
@@ -27,20 +29,30 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 
 ## REQUIREMENTS
 
-- "Piece of work" covers lanes, branches, worktrees, issues, tickets, pull requests, and any artifact. "Completed" covers done, stopped, abandoned, superseded, and idle with no open pull request.
-- Aggressive by default: prune at every completion, stop, new lane, session end, and low-disk event, with no prompts when the result can be recovered or regenerated.
-- Unique work (uncommitted, unpushed, real ignored env files, orphans, remote published resources) goes into one batched hard-delete confirmation.
-- Default rule (revised by the human after the first PR head): every Kit project gets it, and it runs automatically when clear evidence shows that the work is complete and a remote can restore what it removes.
-- No new command.
+- Apply inventory at completion, stop, new lane, session end and low-disk events.
+- Retain worktrees and branches as KEEP_LOCAL_STATE. Unknown path or Git evidence returns UNAVAILABLE and still retains the target.
+- Do not automatically remove local files, prune refs or caches, or update primary checkouts.
+- Removal requires a separate human request naming targets and complete recovery evidence under deletion-safety and delivery.
+- Do not prompt for routine cleanup. Report retained state without implying it is backed up.
+- Stop only task-owned idle watchers/checks with no outstanding work; do not copy evidence during cleanup.
+- Preserve project-owned rules and guidance. Install the same consistent policy through init and reconcile.
+- No new command. Browser-profile policy and Mint title changes are outside GH-262.
 
 ## ACCEPTED PLAN
 
-1. Ship `work-cleanup` as a default (`downstream`), conditional embedded rule with a read-only worktree classifier recipe.
-2. Add an always-loaded contract invariant that applies it without asking, plus a contextual routing line. Hook it from `delivery` (merged or closed PR) and `github-pr-merge` (after each merge).
-3. List it in the references index.
-4. Test default installation across fixture generations, project-owned edits, contract wording, safety invariants, and every classifier state in disposable repositories.
+1. Replace the embedded cleanup rule with inventory-only retention.
+2. Remove automatic primary-sync and leftover-removal authority from the canonical universal contract and delivery; render all three instruction copies and update completion references and registry hashes.
+3. Exercise the published recipe in isolated repositories and compare primary/lane file bytes, modes, symlinks and Git metadata.
+4. Verify fresh init, historical migrations, a managed v3.0.44 upgrade, local-custom preservation and repeated reconciliation convergence.
+5. Deliver through a pull request. Do not merge, release or modify downstream repositories under this task.
 
 ## DECISIONS
+
+- GH-262 supersedes automatic removal and primary sync from GH-251, GH-253 and GH-257. Downstream reviews in lsmc-bio/labcore#1264 and lsmc-bio/labcore-ui#896 showed that a remote head cannot restore ignored data, hidden tracked edits, reflog-only commits, worktree configuration, filesystem modes or active Git operations. Git status and a fast-forward-only merge do not prove preservation of this state.
+- Automatic completion now inventories and retains every lane as KEEP_LOCAL_STATE. It does not remove local data, prune refs or caches, or update primary checkouts. Removal requires a separate named human request and complete recovery evidence under deletion-safety and delivery. Unknown evidence means retain without a routine approval prompt.
+- The canonical universal contract and delivery rule remove both the primary-sync and command-owned-leftover exceptions. Fixing only the contextual rule leaves contradictory authority in every generated contract. Project-owned overrides remain preserved; Kit's managed blocks carry the consistent default.
+- Tests execute the published retention recipe only in disposable fixtures and compare bytes, modes, symlinks and Git metadata before and after. Fresh init and migration must install the policy; repeated reconcile must converge and preserve local customizations.
+- The earlier decisions below are historical evidence, superseded where they authorize automatic local-state removal or primary sync.
 
 - Classify by recoverability, not by action type. A worktree whose head a remote branch or pull-request ref holds, and whose only local residue is ignored content, can be removed without prompts because `deletion-safety` treats it as recoverable. This makes the aggressive behavior consistent with existing rules and avoids an exception to them.
 - Squash merges: accept `refs/pull/*/head` as proof of retention, so `git branch -D` is allowed only in that verified case.
@@ -63,6 +75,11 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 
 ## VALIDATION
 
+- GH-262: targeted cleanup, contract, rendered-output and rule-invariant tests PASS.
+- GH-262: gofmt (no output), make vet, make lint (0 issues), go test ./... (all packages PASS), make build and the built binary's check --project PASS. The references-index compatibility warning remains non-blocking.
+- GH-262: real scoped reconciliation updates the registry; a subsequent dry-run --diff reports zero planned changes. Integration fixtures cover repeated convergence for fresh/historical/managed-v3.0.44/custom installations.
+- Earlier validation below records the superseded policy, not proof of current cleanup safety.
+
 - `go test ./pkg/cli -run TestWorkCleanup -count=1`: pass, with `sh` as macOS bash and as `dash`.
 - `gofmt -l .` (empty), `make vet`, `make lint` (0 issues), `make test` (all packages ok), `make build`: pass.
 - `kit check --project`: pass with one advisory warning about `docs/references/README.md` that also appears on unchanged `main`.
@@ -70,12 +87,19 @@ Give agents one rule that removes local and remote residue as soon as a piece of
 
 ## OUTCOME
 
+- GH-262: canonical inventory-only policy, consistent generated contracts, delivery/merge completion references and registry state are implemented. Disposable fixtures assert preservation of ignored data, hidden edits, symlinks, executable modes, reflogs, worktree config, paused Git state and primary ignored-file collisions. Missing/failed lsof cannot grant removal; failed Git evidence returns UNAVAILABLE.
+- GH-262: local validation complete; pull-request CI pending. Release and downstream rollout are outside this task.
+- Historical release outcomes follow; their automatic removal/sync behavior is superseded.
+
+
 - Shipped `docs/references/rules/work-cleanup.md` as a default rule, the contract trigger, and tests in `pkg/cli/work_cleanup_*_test.go`.
 - Existing projects receive the rule and contract lines at their next `kit reconcile`.
 - Risk: lsof-based in-use detection sees only processes visible to the user. Without lsof, the agent must check in-use state itself.
 - Risk: cache command lists name common tools only. Projects can add local entries; reconcile preserves local edits.
 
 ## REPOSITORY MEMORY
+
+- GH-262: corrected the recovery model in this spec and current canonical policy, rendered instructions, delivery/merge hooks, references index and regression fixtures. Prior policy decisions remain historical evidence.
 
 - GH-257: added the primary checkout sync recipe and states to `work-cleanup.md`; narrowed the primary-checkout read-only invariant in the contract template, the three instruction files, and `delivery.md`; updated the references index; added `pkg/cli/work_cleanup_primary_sync_test.go`.
 

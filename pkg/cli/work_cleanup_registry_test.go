@@ -46,6 +46,11 @@ func assertWorkCleanupInstalled(t *testing.T, root string, rule registryRuleset)
 	}
 	for _, path := range instructionFiles(cfg) {
 		content := readFile(t, filepath.Join(root, path))
+		for _, obsolete := range []string{"fast-forward-only update", "command-owned leftovers", "remove only what clear evidence"} {
+			if strings.Contains(content, obsolete) {
+				t.Errorf("%s restores obsolete cleanup authority %q", path, obsolete)
+			}
+		}
 		if !strings.Contains(content, templates.UniversalContractBlock()) || !strings.Contains(content, workCleanupRoute) {
 			t.Errorf("%s lacks current work-cleanup routing", path)
 		}
@@ -116,6 +121,13 @@ func TestWorkCleanupPreservesProjectOwnedRule(t *testing.T) {
 	if !ok || artifact.State != registryArtifactStateLocalCustom {
 		t.Fatalf("project-owned work-cleanup registry state = %#v", artifact)
 	}
+	migrateProject(t, root, false)
+	if got := readFile(t, filepath.Join(root, rulesetTarget("work-cleanup"))); got != content {
+		t.Fatal("second reconcile overwrote custom cleanup")
+	}
+	if changes := plannedChanges(t, root); len(changes) != 0 {
+		t.Fatalf("custom cleanup does not converge: %v", changes)
+	}
 }
 
 // TestWorkCleanupContractRunsQuietly checks the always-loaded contract makes cleanup automatic and prompt-free.
@@ -123,9 +135,9 @@ func TestWorkCleanupContractRunsQuietly(t *testing.T) {
 	block := templates.UniversalContractBlock()
 	for _, want := range []string{
 		"apply `work-cleanup` quietly",
-		"remove only what clear evidence shows a remote can restore",
-		"never ask the human to approve a cleanup",
-		"The only exception is the fast-forward-only update of its default branch in `work-cleanup`",
+		"inventory and retain persistent local state as `KEEP_LOCAL_STATE`",
+		"never ask for routine cleanup approval",
+		"Removal requires a separate human request naming the targets and complete recovery evidence",
 		workCleanupRoute,
 	} {
 		if !strings.Contains(block, want) {
@@ -141,21 +153,17 @@ func TestWorkCleanupContractRunsQuietly(t *testing.T) {
 func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 	content := workCleanupRule(t).Content
 	for _, invariant := range []string{
-		"Cleanup never asks the human to approve, confirm, or choose anything",
-		"Do not use Git `--force` or `-D`, `rm -rf`, `sudo`, or any purge, reset, or clean command for cleanup",
-		"Hard deletes stay with `deletion-safety`, and only when the human asks for them",
-		"never weakens `deletion-safety`, `delivery`, or `infrastructure-change-approval`",
-		"Act only when you observe both parts in the current session",
-		"Never infer completion or restorability from names, dates alone, or memory of an earlier session",
-		"If Git refuses, keep the branch",
-		"Do not clear whole caches",
-		"Close, never delete; the GitHub UI can reopen them",
-		"Close only issues and pull requests that this lane created or that the human assigned and declared finished",
-		"Never post to Slack",
-		"Remote branches and external tracker tickets",
-		"Do not turn kept items into a question",
-		"Never touch the primary checkout",
-		"It does not mean the work is completed",
+		"Keep every", "worktree and branch as `KEEP_LOCAL_STATE`",
+		"Do not automatically remove worktrees, delete branches, prune refs or caches",
+		"remove scratch data, or update the primary checkout",
+		"do not move or copy local files as cleanup",
+		"no outstanding work", "Do not close unrelated issues or tasks",
+		"A separate human request must identify",
+		"recovery of the complete relevant local state",
+		"A remote SHA is not a substitute for that proof",
+		"If any state or recovery evidence is unknown, retain the target",
+		"Never force removal, reset or clean a checkout",
+		"This rule grants no destructive authority",
 	} {
 		if !strings.Contains(content, invariant) {
 			t.Errorf("lost cleanup invariant: %s", invariant)
@@ -171,8 +179,50 @@ func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 			t.Errorf("rule does not explain classifier state %s", state)
 		}
 	}
-	// The budget includes both published shell recipes.
+	// Keep the inventory policy short.
 	if words := len(strings.Fields(content)); words > 1400 {
 		t.Fatalf("work-cleanup grew to %d words; keep it short", words)
+	}
+}
+
+// TestWorkCleanupUpgradesReleasedPolicy replaces a managed v3.0.44 install and stale contract edits.
+func TestWorkCleanupUpgradesReleasedPolicy(t *testing.T) {
+	setupMigrationEnvironment(t)
+	old := readFile(t, filepath.Join("testdata", "work-cleanup", "v3.0.44.md"))
+	root := freshInitProject(t)
+	rule := workCleanupRule(t)
+	writeFile(t, filepath.Join(root, rulesetTarget(rule.Slug)), old)
+	hash, err := normalizedRulesetContentHash(old, rule.Metadata.Status)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := loadMigratedConfig(t, root)
+	recordRulesetRegistryState(cfg, rule, registryArtifactStateManaged, hash)
+	if err := config.Save(root, cfg); err != nil {
+		t.Fatal(err)
+	}
+	project := "\n## Project retention\n\nKeep local results for the human.\n"
+	for _, path := range instructionFiles(cfg) {
+		content := readFile(t, filepath.Join(root, path))
+		content = strings.Replace(content, "inventory and retain persistent local state", "remove only what clear evidence shows a remote can restore", 1)
+		writeFile(t, filepath.Join(root, path), content+project)
+	}
+	constitution := readFile(t, filepath.Join(root, "docs", "CONSTITUTION.md"))
+	writeFile(t, filepath.Join(root, "docs", "CONSTITUTION.md"), constitution+project)
+	commitMigrationFixture(t, root)
+	migrateProject(t, root, false)
+	assertWorkCleanupInstalled(t, root, rule)
+	for _, path := range instructionFiles(cfg) {
+		if !strings.HasSuffix(readFile(t, filepath.Join(root, path)), project) {
+			t.Errorf("%s lost project retention guidance", path)
+		}
+	}
+	if !strings.HasSuffix(readFile(t, filepath.Join(root, "docs", "CONSTITUTION.md")), project) {
+		t.Fatal("reconcile lost constitutional retention guidance")
+	}
+	migrateProject(t, root, false)
+	assertWorkCleanupInstalled(t, root, rule)
+	if changes := plannedChanges(t, root); len(changes) != 0 {
+		t.Fatalf("released cleanup upgrade does not converge: %v", changes)
 	}
 }

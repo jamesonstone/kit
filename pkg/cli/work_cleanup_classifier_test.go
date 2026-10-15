@@ -7,11 +7,10 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"time"
 )
 
 // workCleanupStates lists every state the published classifier can print.
-var workCleanupStates = []string{"RECOVERABLE", "KEEP_IN_USE", "KEEP_UNCOMMITTED", "KEEP_LOCAL_SECRETS", "KEEP_UNPUSHED", "UNAVAILABLE"}
+var workCleanupStates = []string{"KEEP_LOCAL_STATE", "UNAVAILABLE"}
 
 // workCleanupGit runs git in dir and fails the test on error.
 func workCleanupGit(t *testing.T, dir string, args ...string) string {
@@ -50,7 +49,7 @@ func workCleanupLane(t *testing.T) (primary, lane string) {
 }
 
 // workCleanupClassify runs the published classifier recipe against one worktree.
-func workCleanupClassify(t *testing.T, worktreePath string) string {
+func workCleanupClassify(t *testing.T, worktreePath string, env ...string) string {
 	t.Helper()
 	if runtime.GOOS == "windows" {
 		t.Skip("POSIX recipe needs a shell")
@@ -58,7 +57,7 @@ func workCleanupClassify(t *testing.T, worktreePath string) string {
 	recipe := contextEvidenceFence(t, workCleanupRule(t).Content, "sh", 0)
 	cmd := exec.Command("sh", "-c", recipe)
 	cmd.Dir = t.TempDir()
-	cmd.Env = append(os.Environ(), "worktree_path="+worktreePath, "GIT_CONFIG_GLOBAL=/dev/null", "GIT_CONFIG_NOSYSTEM=1")
+	cmd.Env = append(append(os.Environ(), "worktree_path="+worktreePath, "GIT_CONFIG_GLOBAL=/dev/null", "GIT_CONFIG_NOSYSTEM=1"), env...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("classifier failed: %v\n%s", err, output)
@@ -73,8 +72,8 @@ func TestWorkCleanupClassifierStates(t *testing.T) {
 		prepare func(t *testing.T, primary, lane string) string
 		want    string
 	}{
-		{name: "clean pushed lane", want: "RECOVERABLE"},
-		{name: "regenerable ignored content and env symlinks", want: "RECOVERABLE", prepare: func(t *testing.T, primary, lane string) string {
+		{name: "clean pushed lane", want: "KEEP_LOCAL_STATE"},
+		{name: "regenerable ignored content and env symlinks", want: "KEEP_LOCAL_STATE", prepare: func(t *testing.T, primary, lane string) string {
 			writeFile(t, filepath.Join(lane, "node_modules", "dep", "index.js"), "module.exports = 1\n")
 			writeFile(t, filepath.Join(primary, ".env"), "TOKEN=fixture\n")
 			if err := os.Symlink(filepath.Join(primary, ".env"), filepath.Join(lane, ".env")); err != nil {
@@ -82,7 +81,7 @@ func TestWorkCleanupClassifierStates(t *testing.T) {
 			}
 			return lane
 		}},
-		{name: "squash merged with deleted remote branch", want: "RECOVERABLE", prepare: func(t *testing.T, primary, lane string) string {
+		{name: "squash merged with deleted remote branch", want: "KEEP_LOCAL_STATE", prepare: func(t *testing.T, primary, lane string) string {
 			remote := workCleanupGit(t, primary, "remote", "get-url", "origin")
 			head := workCleanupGit(t, lane, "rev-parse", "HEAD")
 			workCleanupGit(t, remote, "update-ref", "refs/pull/1/head", head)
@@ -90,19 +89,19 @@ func TestWorkCleanupClassifierStates(t *testing.T) {
 			workCleanupGit(t, primary, "fetch", "-q", "--prune", "origin")
 			return lane
 		}},
-		{name: "modified tracked file", want: "KEEP_UNCOMMITTED", prepare: func(t *testing.T, _, lane string) string {
+		{name: "modified tracked file", want: "KEEP_LOCAL_STATE", prepare: func(t *testing.T, _, lane string) string {
 			writeFile(t, filepath.Join(lane, "feature.go"), "package main\n\nfunc f() {}\n")
 			return lane
 		}},
-		{name: "untracked file", want: "KEEP_UNCOMMITTED", prepare: func(t *testing.T, _, lane string) string {
+		{name: "untracked file", want: "KEEP_LOCAL_STATE", prepare: func(t *testing.T, _, lane string) string {
 			writeFile(t, filepath.Join(lane, "notes.txt"), "draft\n")
 			return lane
 		}},
-		{name: "ignored real env file", want: "KEEP_LOCAL_SECRETS", prepare: func(t *testing.T, _, lane string) string {
+		{name: "ignored real env file", want: "KEEP_LOCAL_STATE", prepare: func(t *testing.T, _, lane string) string {
 			writeFile(t, filepath.Join(lane, ".env"), "TOKEN=fixture\n")
 			return lane
 		}},
-		{name: "unpushed commit", want: "KEEP_UNPUSHED", prepare: func(t *testing.T, _, lane string) string {
+		{name: "unpushed commit", want: "KEEP_LOCAL_STATE", prepare: func(t *testing.T, _, lane string) string {
 			writeFile(t, filepath.Join(lane, "local.go"), "package main\n")
 			workCleanupGit(t, lane, "add", "local.go")
 			workCleanupGit(t, lane, "commit", "-q", "-m", "local only")
@@ -111,7 +110,7 @@ func TestWorkCleanupClassifierStates(t *testing.T) {
 		{name: "missing worktree", want: "UNAVAILABLE", prepare: func(t *testing.T, _, lane string) string {
 			return lane + "-missing"
 		}},
-		{name: "unreachable remote", want: "UNAVAILABLE", prepare: func(t *testing.T, primary, lane string) string {
+		{name: "unreachable remote", want: "KEEP_LOCAL_STATE", prepare: func(t *testing.T, primary, lane string) string {
 			workCleanupGit(t, primary, "remote", "set-url", "origin", filepath.Join(t.TempDir(), "gone.git"))
 			return lane
 		}},
@@ -123,42 +122,11 @@ func TestWorkCleanupClassifierStates(t *testing.T) {
 			if tt.prepare != nil {
 				target = tt.prepare(t, primary, lane)
 			}
+			before := workCleanupSnapshot(t, filepath.Dir(primary))
 			if got := workCleanupClassify(t, target); got != tt.want {
 				t.Fatalf("classifier = %q, want %q", got, tt.want)
 			}
+			assertWorkCleanupUnchanged(t, filepath.Dir(primary), before)
 		})
-	}
-}
-
-// TestWorkCleanupClassifierSkipsWorktreeInUse verifies a running process blocks removal.
-func TestWorkCleanupClassifierSkipsWorktreeInUse(t *testing.T) {
-	if _, err := exec.LookPath("lsof"); err != nil {
-		t.Skip("lsof is unavailable; the recipe then relies on the agent's own in-use check")
-	}
-	_, lane := workCleanupLane(t)
-	sibling := lane + "1"
-	if err := os.MkdirAll(sibling, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	// A process in a sibling path with the same prefix must not match.
-	holder := exec.Command("sleep", "30")
-	holder.Dir = sibling
-	if err := holder.Start(); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = holder.Process.Kill(); _ = holder.Wait() })
-	time.Sleep(100 * time.Millisecond)
-	if got := workCleanupClassify(t, lane); got != "RECOVERABLE" {
-		t.Fatalf("sibling process blocked cleanup: %q", got)
-	}
-	inUse := exec.Command("sleep", "30")
-	inUse.Dir = filepath.Join(lane)
-	if err := inUse.Start(); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = inUse.Process.Kill(); _ = inUse.Wait() })
-	time.Sleep(100 * time.Millisecond)
-	if got := workCleanupClassify(t, lane); got != "KEEP_IN_USE" {
-		t.Fatalf("classifier = %q, want KEEP_IN_USE", got)
 	}
 }

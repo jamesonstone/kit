@@ -44,8 +44,7 @@ read_policy_default: conditional
 
 ### Primary Checkout
 
-- The primary checkout is read-only for agent work, except the fast-forward-only default-branch update in `work-cleanup`. If it holds changes you did not make through a lane, preserve and report them.
-- Exception: files a Kit command wrote to the primary checkout and that were delivered through a merged worktree pull request may be removed so the checkout can pull. Enumerate untracked candidates first, remove only verified command-owned paths, restore only tracked paths whose content still matches what the command wrote, and stop on any mismatch.
+- The primary checkout is read-only for agent work. If it holds changes you did not make through a lane, preserve and report them.
 
 ### Identity And Attribution
 
@@ -60,7 +59,7 @@ read_policy_default: conditional
 - Open pull requests ready for review, against the protected default branch, using the repository's pull-request template, and close the issue from the body.
 - Never commit to the default or a protected branch, force-push, or rewrite pushed history.
 - After pushing, confirm the remote head matches the local commit and report the issue, branch, and pull request.
-- When the pull request merges or closes, or the human stops the work, run `work-cleanup` for the lane. Cleanup after completion is not deleting a branch to clear a lane.
+- When the pull request merges or closes, or the human stops the work, run `work-cleanup` for the lane. Inventory and retain persistent local state; completion grants no removal or primary-sync authority.
 
 ### Recovery
 
