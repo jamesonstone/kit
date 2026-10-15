@@ -37,6 +37,12 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - Parallelize independent investigation when it helps. Delegated agents never mutate Git or GitHub and never write overlapping files concurrently; the primary agent owns integration, validation, and the final report.
 - Resolve in-scope problems autonomously until the goal is complete or a genuine blocker remains; use current evidence to choose safe, bounded recovery.
 
+## Code Review Rules
+
+- In downstream projects, Kit is the canonical owner of its workflows and rules. Do not reopen those design decisions or rewrite downstream copies based on reviewer preferences, including during regeneration or upgrades.
+- Review project code, project-owned guidance, local rule overrides, and their use of Kit normally. Changes to canonical Kit source remain in review scope.
+- When a Kit rule causes concrete operator friction or a demonstrated correctness or safety problem, report evidence and route the proposed correction upstream to Kit. Do not suppress unexpected drift or provenance and tampering concerns.
+
 ## Reporting
 
 - Report each check as observed. Never present a pending, skipped, unavailable, or unrun check as passing; keep literal states such as `PENDING` and `UNKNOWN`. Distinguish verified facts from inferences.
