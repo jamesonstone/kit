@@ -217,11 +217,12 @@ func (s *Service) completed(ctx context.Context, r Receipt, o Options) error {
 }
 
 func (s *Service) idle(ctx context.Context, r Receipt) error {
-	out, err := s.run(ctx, os.TempDir(), "lsof", "-nP", "-Fpn")
+	out, err := s.run(ctx, os.TempDir(), "lsof", "-nP", "-Fpftn")
 	if err != nil || len(out) == 0 {
 		return keep("UNAVAILABLE", "complete process visibility is unavailable")
 	}
 	seenProcess := false
+	descriptorType := ""
 	for _, line := range strings.Split(string(out), "\n") {
 		if line == "" {
 			continue
@@ -231,8 +232,17 @@ func (s *Service) idle(ctx context.Context, r Receipt) error {
 				return keep("UNAVAILABLE", "malformed process inventory")
 			}
 			seenProcess = true
-		} else if (line[0] != 'n' && line[0] != 'f') || len(line) == 1 || !seenProcess {
+		} else if (line[0] != 'n' && line[0] != 'f' && line[0] != 't') || !seenProcess {
 			return keep("UNAVAILABLE", "malformed process inventory")
+		}
+		if line[0] == 'f' {
+			descriptorType = ""
+		}
+		if line[0] == 't' {
+			descriptorType = line[1:]
+		}
+		if len(line) == 1 && (line[0] != 'n' || (descriptorType != "PIPE" && descriptorType != "NPOLICY" && descriptorType != "NEXUS")) {
+			return keep("UNAVAILABLE", "unnamed filesystem descriptor or malformed inventory")
 		}
 		if strings.HasPrefix(line, "n") {
 			path := strings.TrimSuffix(strings.TrimPrefix(line, "n"), " (deleted)")

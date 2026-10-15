@@ -77,7 +77,7 @@ Recover disk space automatically after completed work, without losing unique wor
 ## VALIDATION
 
 - GH-262 native revision: full `go test ./...`, `go vet ./...`, `golangci-lint run ./...` (0 issues), formatting, `go test -race ./internal/cleanup`, and Linux/Windows cleanup cross-compilation PASS. Native cleanup positives cover worktree removal/remote restoration, branch CAS deletion, stale refs/registrations, scratch/cache bytes, nested task caches, recorded environment links and both primary sync states. Negatives cover hidden/index state, ignored/untracked work, reflogs/config/operations, filesystem metadata, ownership/identity, failed/malformed process evidence, concurrent writes, live defaults, checkout filters and configured fetch pruning.
-- Strict CLI fixtures reject target overrides, malformed/duplicate/trailing/oversized receipts and missing disposable declarations. Real process visibility retains an active target. Streaming tests verify a 64 MiB sparse file with bounded allocation and final-byte mutation detection.
+- Strict CLI fixtures reject target overrides, malformed/duplicate/trailing/oversized receipts and missing disposable declarations. Real host process visibility retains an active target and automatically reclaims idle task output; unnamed kernel pipes/network-policy descriptors do not disable the category. Streaming tests verify a 64 MiB sparse file with bounded allocation and final-byte mutation detection.
 - Scoped reconciliation of the cleanup rule, delivery/merge hooks and all rendered entrypoints converges with zero planned changes. Earlier validation entries describe the superseded retention-only head.
 
 - GH-262: targeted cleanup, contract, rendered-output and rule-invariant tests PASS.

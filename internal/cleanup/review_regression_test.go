@@ -1,6 +1,7 @@
 package cleanup
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -116,4 +117,25 @@ func TestTaskCacheBeforeContainingWorktree(t *testing.T) {
 	assertCleanupState(t, f.execute(), "REMOVED")
 	f.receipt = lane
 	assertCleanupState(t, f.execute(), "REMOVED")
+}
+
+func TestProcessInventoryDistinguishesUnnamedKernelDescriptors(t *testing.T) {
+	for _, kind := range []string{"PIPE", "NPOLICY", "NEXUS", "REG", ""} {
+		t.Run(kind, func(t *testing.T) {
+			f := newCleanupFixture(t)
+			original := f.s.run
+			f.s.run = func(ctx context.Context, cwd, name string, args ...string) ([]byte, error) {
+				if name == "lsof" {
+					return []byte("p99999\nf4\nt" + kind + "\nn\n"), nil
+				}
+				return original(ctx, cwd, name, args...)
+			}
+			if kind == "REG" || kind == "" {
+				assertCleanupState(t, f.execute(), "UNAVAILABLE")
+				assertExists(t, f.lane)
+			} else {
+				assertCleanupState(t, f.execute(), "REMOVED")
+			}
+		})
+	}
 }
