@@ -173,3 +173,17 @@ func TestCleanupCLIRealVisibilityReclaimsIdleTaskOutput(t *testing.T) {
 	}
 	t.Log("real process inventory permitted bounded automatic recovery")
 }
+
+func TestCleanupCLIRelativeReceiptOutsideTarget(t *testing.T) {
+	base, repo, target := cleanupCLIDirs(t)
+	receipt := cleanupCLIReceipt(t, base, repo, target)
+	t.Chdir(base)
+	out, err := cleanupCLI(t, "--receipt", filepath.Base(receipt), "--owner", "different-owner")
+	if err != nil {
+		t.Fatalf("relative outside receipt rejected: %v", err)
+	}
+	var result cleanup.Result
+	if err = json.Unmarshal([]byte(out), &result); err != nil || result.State != "KEEP_OWNERSHIP" {
+		t.Fatalf("receipt did not reach ownership proof: %s %v", out, err)
+	}
+}

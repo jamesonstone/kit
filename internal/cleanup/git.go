@@ -197,9 +197,9 @@ func (s *Service) metadata(ctx context.Context, r Receipt, head, branch string) 
 			return "", e
 		}
 	}
-	if r.GitDir == common {
+	if r.GitDir == common && r.Kind != "branch" && r.Kind != "ref" {
 		for _, name := range []string{"HEAD", "index", "ORIG_HEAD", "logs/HEAD", "logs/" + branch, branch, "packed-refs"} {
-			if _, e := controlFingerprint(filepath.Join(common, name)); e != nil {
+			if _, e := controlFingerprint(ctx, filepath.Join(common, name)); e != nil {
 				return "", e
 			}
 		}
@@ -212,7 +212,10 @@ func (s *Service) metadata(ctx context.Context, r Receipt, head, branch string) 
 		}
 	}
 	var logs []string
-	paths := []string{filepath.Join(r.GitDir, "logs", "HEAD")}
+	var paths []string
+	if r.Kind != "branch" && r.Kind != "ref" {
+		paths = append(paths, filepath.Join(r.GitDir, "logs", "HEAD"))
+	}
 	if branch != "" {
 		paths = append(paths, filepath.Join(common, "logs", filepath.FromSlash(branch)))
 	}
@@ -247,15 +250,18 @@ func (s *Service) metadata(ctx context.Context, r Receipt, head, branch string) 
 		}
 	}
 	if r.GitDir != common {
-		snap, e := snapshotTree(r.GitDir)
+		snap, e := snapshotTree(r.GitDir, ctx)
 		if e != nil {
 			return "", e
 		}
 		return fingerprint(snap.Digest, string(config), strings.Join(logs, ",")), nil
 	}
+	if r.Kind == "branch" || r.Kind == "ref" {
+		return fingerprint(string(config), strings.Join(logs, ",")), nil
+	}
 	// Primary index/config/HEAD are sufficient alongside tracked-tree and operation checks.
 	values := []string{string(config), strings.Join(logs, ",")}
-	state, e := controlStates(common, "HEAD", "index", "config", "ORIG_HEAD", "logs/HEAD", "logs/"+branch, branch, "packed-refs")
+	state, e := controlStates(ctx, common, "HEAD", "index", "config", "ORIG_HEAD", "logs/HEAD", "logs/"+branch, branch, "packed-refs")
 	if e != nil {
 		return "", e
 	}

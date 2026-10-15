@@ -53,7 +53,11 @@ func newCleanupCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			absolute, err := filepath.EvalSymlinks(receiptPath)
+			absolute, err := filepath.Abs(receiptPath)
+			if err != nil {
+				return err
+			}
+			absolute, err = filepath.EvalSymlinks(absolute)
 			if err != nil {
 				return err
 			}

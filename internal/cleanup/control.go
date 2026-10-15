@@ -1,13 +1,14 @@
 package cleanup
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
 // controlFingerprint proves canonical machine-generated control state before its removal/update.
-func controlFingerprint(path string) (string, error) {
+func controlFingerprint(ctx context.Context, path string) (string, error) {
 	info, err := os.Lstat(path)
 	if os.IsNotExist(err) {
 		return "", nil
@@ -18,11 +19,11 @@ func controlFingerprint(path string) (string, error) {
 	if info.Mode() != 0644 {
 		return "", keep("KEEP_LOCAL_STATE", "noncanonical Git control file permissions or link")
 	}
-	metadata, err := treeMetadata(path, info)
+	metadata, err := treeMetadata(path, info, ctx)
 	if err != nil {
 		return "", keep("KEEP_LOCAL_STATE", "Git control attributes require preservation")
 	}
-	digest, err := physicalContentDigest(path, info)
+	digest, err := physicalContentDigest(path, info, ctx)
 	if err != nil {
 		return "", err
 	}
@@ -41,10 +42,10 @@ func requireCanonicalOID(data string) error {
 	return nil
 }
 
-func controlStates(root string, names ...string) (string, error) {
+func controlStates(ctx context.Context, root string, names ...string) (string, error) {
 	var values []string
 	for _, name := range names {
-		state, err := controlFingerprint(filepath.Join(root, filepath.FromSlash(name)))
+		state, err := controlFingerprint(ctx, filepath.Join(root, filepath.FromSlash(name)))
 		if err != nil {
 			return "", err
 		}

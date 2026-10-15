@@ -27,16 +27,10 @@ func (s *Service) checkoutFilters(ctx context.Context, repo, head string) error 
 	if err != nil {
 		return err
 	}
-	args := []string{"check-attr", "--source=" + head, "-z", "filter", "--"}
-	for _, path := range strings.Split(string(paths), "\x00") {
-		if path != "" {
-			args = append(args, path)
-		}
-	}
-	if len(args) == 5 {
+	if len(paths) == 0 {
 		return nil
 	}
-	output, err := s.git(ctx, repo, args...)
+	output, err := s.gitInput(ctx, repo, paths, "check-attr", "--source="+head, "--stdin", "-z", "filter")
 	if err != nil {
 		return err
 	}

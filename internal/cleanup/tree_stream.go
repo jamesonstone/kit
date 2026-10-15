@@ -2,6 +2,7 @@ package cleanup
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
@@ -15,8 +16,13 @@ const maxGitControlBytes = 64 << 10
 
 // streamPhysicalFile retains fixed-size hashes, not file contents. Generated
 // caches and unique ignored databases may be larger than available memory.
-func streamPhysicalFile(path string, before fs.FileInfo, control bool) (treeEntry, error) {
+func streamPhysicalFile(path string, before fs.FileInfo, control bool, contexts ...context.Context) (treeEntry, error) {
+	ctx, cancel := treeInspectionContext(contexts)
+	defer cancel()
 	entry := treeEntry{info: before}
+	if err := ctx.Err(); err != nil {
+		return entry, err
+	}
 	if control && before.Size() > maxGitControlBytes {
 		return entry, fmt.Errorf("oversized Git control file")
 	}
@@ -35,9 +41,9 @@ func streamPhysicalFile(path string, before fs.FileInfo, control bool) (treeEntr
 	}
 	// LimitReader also bounds a growing control file even if its initial stat was
 	// small; one extra byte distinguishes a changed file from a complete read.
-	var reader io.Reader = file
+	var reader io.Reader = treeContextReader{ctx: ctx, reader: file}
 	if control {
-		reader = io.LimitReader(file, maxGitControlBytes+1)
+		reader = io.LimitReader(reader, maxGitControlBytes+1)
 	}
 	count, err := io.CopyBuffer(io.MultiWriter(writers...), reader, make([]byte, 32<<10))
 	if err != nil {
@@ -67,12 +73,14 @@ func treeByteDigests(data []byte) (content, blob1, blob256 string) {
 
 // physicalContentDigest binds streamed content to the same physical entry and
 // recovery metadata before and after the read; it retains no file bytes.
-func physicalContentDigest(path string, info fs.FileInfo) (string, error) {
-	before, err := treeMetadata(path, info)
+func physicalContentDigest(path string, info fs.FileInfo, contexts ...context.Context) (string, error) {
+	ctx, cancel := treeInspectionContext(contexts)
+	defer cancel()
+	before, err := treeMetadata(path, info, ctx)
 	if err != nil {
 		return "", err
 	}
-	entry, err := streamPhysicalFile(path, info, false)
+	entry, err := streamPhysicalFile(path, info, false, ctx)
 	if err != nil {
 		return "", err
 	}
@@ -80,7 +88,7 @@ func physicalContentDigest(path string, info fs.FileInfo) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	metadata, err := treeMetadata(path, after)
+	metadata, err := treeMetadata(path, after, ctx)
 	if err != nil {
 		return "", err
 	}
@@ -88,4 +96,26 @@ func physicalContentDigest(path string, info fs.FileInfo) (string, error) {
 		return "", fmt.Errorf("file changed during content proof")
 	}
 	return entry.contentDigest, nil
+}
+
+// A shared deadline bounds the entire traversal rather than restarting the
+// budget for each file. Optional contexts preserve existing internal callers.
+func treeInspectionContext(contexts []context.Context) (context.Context, context.CancelFunc) {
+	parent := context.Background()
+	if len(contexts) == 1 && contexts[0] != nil {
+		parent = contexts[0]
+	}
+	return context.WithTimeout(parent, DefaultTimeout)
+}
+
+type treeContextReader struct {
+	ctx    context.Context
+	reader io.Reader
+}
+
+func (r treeContextReader) Read(buffer []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.reader.Read(buffer)
 }

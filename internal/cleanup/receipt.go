@@ -109,7 +109,7 @@ func (s *Service) Record(ctx context.Context, kind, path, repository, owner, ref
 		}
 
 		var snapshot treeSnapshot
-		snapshot, err = snapshotTree(receipt.Path)
+		snapshot, err = snapshotTree(receipt.Path, ctx)
 		receipt.GeneratedDigest = snapshot.Digest
 	default:
 		err = fmt.Errorf("unsupported cleanup category")

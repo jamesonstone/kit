@@ -28,13 +28,26 @@ type treeEntry struct {
 // readTree never follows symlinks. Metadata and identity are sampled around each
 // read, so a changed entry invalidates this observation. Callers must separately
 // exclude concurrent writers for the entire proof/action interval.
-func readTree(root string, skipGitDirectory bool) (map[string]treeEntry, treeSnapshot, error) {
+func readTree(ctx context.Context, root string, skipGitDirectory bool, accepted map[string]bool) (map[string]treeEntry, treeSnapshot, error) {
 	entries := make(map[string]treeEntry)
 	digest := sha256.New()
 	var snapshot treeSnapshot
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, walkErr error) error {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if walkErr != nil {
 			return walkErr
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+		// Reject unknown entries before metadata subprocesses, file reads, or descent
+		// into an ignored database/cache directory of unbounded size.
+		if accepted != nil && !accepted[rel] {
+			return fmt.Errorf("extra local entry %q", rel)
 		}
 		before, err := os.Lstat(path)
 		if err != nil {
@@ -43,19 +56,14 @@ func readTree(root string, skipGitDirectory bool) (map[string]treeEntry, treeSna
 		if path == root && !before.IsDir() {
 			return fmt.Errorf("tree root is not a physical directory")
 		}
-		metadata, err := treeMetadata(path, before)
+		metadata, err := treeMetadata(path, before, ctx)
 		if err != nil {
 			return fmt.Errorf("metadata %q: %w", path, err)
 		}
-		rel, err := filepath.Rel(root, path)
-		if err != nil {
-			return err
-		}
-		rel = filepath.ToSlash(rel)
 		entry := treeEntry{info: before, metadata: metadata}
 		switch {
 		case before.Mode().IsRegular():
-			entry, err = streamPhysicalFile(path, before, rel == ".git")
+			entry, err = streamPhysicalFile(path, before, rel == ".git", ctx)
 			entry.metadata = metadata
 		case before.Mode()&os.ModeSymlink != 0:
 			var target string
@@ -73,7 +81,7 @@ func readTree(root string, skipGitDirectory bool) (map[string]treeEntry, treeSna
 		if err != nil {
 			return err
 		}
-		afterMetadata, err := treeMetadata(path, after)
+		afterMetadata, err := treeMetadata(path, after, ctx)
 		if err != nil {
 			return err
 		}
@@ -96,12 +104,15 @@ func readTree(root string, skipGitDirectory bool) (map[string]treeEntry, treeSna
 	// Revalidate directories after enumeration as well as files: a new or removed
 	// child after its parent callback must invalidate the observation.
 	for name, entry := range entries {
+		if err := ctx.Err(); err != nil {
+			return nil, treeSnapshot{}, err
+		}
 		path := filepath.Join(root, filepath.FromSlash(name))
 		current, err := os.Lstat(path)
 		if err != nil {
 			return nil, treeSnapshot{}, err
 		}
-		metadata, err := treeMetadata(path, current)
+		metadata, err := treeMetadata(path, current, ctx)
 		if err != nil {
 			return nil, treeSnapshot{}, err
 		}
@@ -113,14 +124,21 @@ func readTree(root string, skipGitDirectory bool) (map[string]treeEntry, treeSna
 	return entries, snapshot, nil
 }
 
-func snapshotTree(root string) (treeSnapshot, error) {
-	_, snapshot, err := readTree(root, false)
+func snapshotTree(root string, contexts ...context.Context) (treeSnapshot, error) {
+	ctx, cancel := treeInspectionContext(contexts)
+	defer cancel()
+	_, snapshot, err := readTree(ctx, root, false, nil)
 	return snapshot, err
 }
 
 // verifyTrackedTree compares physical bytes with committed blobs, independently
 // of the index (including assume-unchanged, skip-worktree, filters and stat cache).
 func verifyTrackedTree(ctx context.Context, run commandFunc, root, head string, allowedLinks ...map[string]string) (treeSnapshot, error) {
+	ctx, cancel := treeInspectionContext([]context.Context{ctx})
+	defer cancel()
+	if err := ctx.Err(); err != nil {
+		return treeSnapshot{}, err
+	}
 	output, err := run(ctx, root, "git", "ls-tree", "-rz", "--full-tree", head)
 	if err != nil {
 		return treeSnapshot{}, err
@@ -159,7 +177,16 @@ func verifyTrackedTree(ctx context.Context, run commandFunc, root, head string, 
 			expected[parent] = "040000"
 		}
 	}
-	entries, snapshot, err := readTree(root, true)
+	accepted := map[string]bool{".git": true}
+	for name := range expected {
+		accepted[name] = true
+	}
+	if len(allowedLinks) == 1 {
+		for name := range allowedLinks[0] {
+			accepted[name] = true
+		}
+	}
+	entries, snapshot, err := readTree(ctx, root, true, accepted)
 	if err != nil {
 		return treeSnapshot{}, err
 	}

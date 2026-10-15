@@ -3,6 +3,7 @@
 package cleanup
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -13,7 +14,12 @@ import (
 
 const trackedSymlinkPermissions fs.FileMode = 0777
 
-func treeMetadata(path string, info fs.FileInfo) (string, error) {
+func treeMetadata(path string, info fs.FileInfo, contexts ...context.Context) (string, error) {
+	ctx, cancel := treeInspectionContext(contexts)
+	defer cancel()
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
 	stat, ok := info.Sys().(*syscall.Stat_t)
 	if !ok {
 		return "", fmt.Errorf("missing inode metadata")

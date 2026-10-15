@@ -3,6 +3,7 @@
 package cleanup
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -10,7 +11,7 @@ import (
 
 const trackedSymlinkPermissions fs.FileMode = 0777
 
-func treeMetadata(_ string, _ fs.FileInfo) (string, error) {
+func treeMetadata(_ string, _ fs.FileInfo, _ ...context.Context) (string, error) {
 	return "", fmt.Errorf("filesystem recovery metadata inspection unsupported on this platform")
 }
 

@@ -92,7 +92,7 @@ func (s *Service) reference(ctx context.Context, r Receipt, o Options) (action, 
 	}
 	// Retain configuration in place; CAS deletion never discards branch-specific config.
 	logPath := filepath.Join(common, "logs", filepath.FromSlash(r.Ref))
-	logState, err := controlStates(common, r.Ref, "logs/"+r.Ref, "packed-refs")
+	logState, err := controlStates(ctx, common, r.Ref, "logs/"+r.Ref, "packed-refs")
 	if err != nil {
 		return action{}, err
 	}
@@ -124,7 +124,7 @@ func (s *Service) generated(ctx context.Context, r Receipt) (action, error) {
 	if err != nil {
 		return action{}, err
 	}
-	tree, err := snapshotTree(r.Path)
+	tree, err := snapshotTree(r.Path, ctx)
 	if err != nil {
 		return action{}, err
 	}
@@ -161,6 +161,9 @@ func (s *Service) primary(ctx context.Context, r Receipt, o Options) (action, er
 		if _, err = s.git(ctx, r.Repository, "fetch", "--quiet", "--no-prune", "--no-prune-tags", "--recurse-submodules=no", "--no-auto-maintenance", "--refmap=", "--no-tags", "--no-write-fetch-head", o.Remote, remoteHead); err != nil {
 			return action{}, err
 		}
+	}
+	if _, err = s.git(ctx, r.Repository, "cat-file", "-e", remoteHead+"^{commit}"); err != nil {
+		return action{}, keep("KEEP_NEEDS_FETCH", "live default commit is not available locally; apply acquires objects before proving ancestry")
 	}
 	if err = s.ancestors(ctx, r.Repository, []string{head}, []string{remoteHead}); err != nil {
 		return action{}, keep("KEEP_DIVERGED", "local default has commits outside the live remote default")

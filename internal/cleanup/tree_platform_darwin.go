@@ -4,6 +4,7 @@ package cleanup
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"fmt"
 	"io/fs"
@@ -17,7 +18,12 @@ import (
 
 const trackedSymlinkPermissions fs.FileMode = 0755
 
-func treeMetadata(path string, info fs.FileInfo) (string, error) {
+func treeMetadata(path string, info fs.FileInfo, contexts ...context.Context) (string, error) {
+	ctx, cancel := treeInspectionContext(contexts)
+	defer cancel()
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
 	stat, ok := info.Sys().(*syscall.Stat_t)
 	if !ok {
 		return "", fmt.Errorf("missing inode metadata")
@@ -38,8 +44,11 @@ func treeMetadata(path string, info fs.FileInfo) (string, error) {
 	// Darwin ACLs are separate from listxattr. The system ls reports extended ACLs
 	// with '+' in the mode suffix; -d and default physical handling avoid following
 	// symlinks. Only the fixed mode prefix is parsed, never a filename or ACL text.
-	output, err := exec.Command("/bin/ls", "-lde", path).Output()
+	output, err := exec.CommandContext(ctx, "/bin/ls", "-lde", path).Output()
 	if err != nil {
+		if ctx.Err() != nil {
+			return "", ctx.Err()
+		}
 		return "", fmt.Errorf("ACL inspection failed: %w", err)
 	}
 	line := strings.SplitN(string(output), "\n", 2)[0]
