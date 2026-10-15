@@ -42,9 +42,11 @@ read_policy_default: conditional
 - Link the primary checkout's `.env` and `.envrc` into a writable worktree as symlinks when they exist; never copy or overwrite environment files.
 - Never stash, reset, clean, force-remove, or delete branches to make a worktree operation succeed. Refs, remotes, configuration, and stash are shared across worktrees.
 
+- Before task writes, respect the repository cleanup lease. Read `work-cleanup` and record the new lane ownership after creation/environment linking; capture never-authoritative generated outputs after their producer finishes. A later cleanup must use the current owner handoff, not a guessed lane name.
+
 ### Primary Checkout
 
-- The primary checkout is read-only for agent work. If it holds changes you did not make through a lane, preserve and report them.
+- The primary checkout is read-only for agent work, except a proven-safe primary default-branch sync through `kit cleanup` under `work-cleanup`. If it holds changes you did not make through a lane, preserve and report them.
 
 ### Identity And Attribution
 
@@ -59,7 +61,7 @@ read_policy_default: conditional
 - Open pull requests ready for review, against the protected default branch, using the repository's pull-request template, and close the issue from the body.
 - Never commit to the default or a protected branch, force-push, or rewrite pushed history.
 - After pushing, confirm the remote head matches the local commit and report the issue, branch, and pull request.
-- When the pull request merges or closes, or the human stops the work, run `work-cleanup` for the lane. Inventory and retain persistent local state; completion grants no removal or primary-sync authority.
+- When the pull request merges or closes, or the human stops the work, run `work-cleanup` for the lane. Automatically reclaim only artifacts with the native ownership, completion, recovery and concurrency proofs; retain unique or unknown state.
 
 ### Recovery
 

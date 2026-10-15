@@ -15,12 +15,12 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 ## Changes And Delivery
 
-- Treat the clone's primary checkout as read-only for agent work, whatever its branch or cleanliness. Make every repository change (code, tests, docs, specs, generated files, configuration) in a linked worktree at `~/worktrees/<owner>/<repository>/GH-<issue>` on branch `GH-<issue>`, created from the freshly fetched default branch, and deliver it through a ready pull request.
+- Treat the clone's primary checkout as read-only for agent work, whatever its branch or cleanliness, except a proven-safe primary default-branch sync through `kit cleanup` under `work-cleanup`. Make every repository change (code, tests, docs, specs, generated files, configuration) in a linked worktree at `~/worktrees/<owner>/<repository>/GH-<issue>` on branch `GH-<issue>`, created from the freshly fetched default branch, and deliver it through a ready pull request.
 - Default to a new human-assigned issue, branch, worktree, and ready pull request without asking. Continue an existing lane only when the user explicitly directs it for the same work. Repair of an exact existing pull request (review, CI, base refresh, conflicts, ordered merges) reuses that pull request's head branch and never opens a coordinating or corrective pull request. Never ask the user to choose between lanes; ask only when implementation intent or a named target is materially ambiguous.
 - If the primary checkout holds changes you did not make through a gated lane, preserve them: do not stage, commit, push, stash, reset, clean, discard, or transfer them.
 - Never commit directly to the default or a protected branch, force-push, rewrite pushed history, delete branches to clear a lane, or bypass branch protection, reviews, required checks, or merge queues.
 - Never stage secrets or `.env` files, and never print secret values.
-- When work completes, stops, or is superseded, apply `work-cleanup` quietly: inventory and retain persistent local state as `KEEP_LOCAL_STATE`, preserve primary checkouts, and never ask for routine cleanup approval. Removal requires a separate human request naming the targets and complete recovery evidence.
+- When work completes, stops, or is superseded, apply `work-cleanup` quietly: automatically reclaim task-owned artifacts whose completion, recovery and exclusive handoff `kit cleanup` proves; retain unique or unknown state without routine approval prompts. Record creation ownership before work, and do not write while the repository cleanup lease is active.
 
 ## Authorship
 

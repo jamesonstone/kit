@@ -27,7 +27,7 @@
 | `mint-deployment-lifecycle` | default | Repository-native Mint releases, environment policy, immutable promotion and recovery evidence. |
 | `slack-read-only` | default | Slack is read-only; every write needs explicit message-specific approval. |
 | `testing-and-environment-validation` | default | Code-level tests primary, honest results, safe browser and production validation. |
-| `work-cleanup` | default | Read-only inventory and retention of local work; removal needs a separate named request and complete recovery evidence. |
+| `work-cleanup` | default | Automatic disk recovery with native task ownership, completion, local-state and concurrency proofs; retains unknown or unique state. |
 | `context-evidence` | optional | Bounded context selection across all rules, source traceability, freshness, and recoverable handoffs. |
 | `llms-txt` | optional | `/llms.txt` contract for public web and API surfaces. |
 | `readme-header-tagline` | optional | Consistent top-level README identity and opening structure. |
@@ -36,4 +36,4 @@ Optional rules install only through `kit rules add`.
 
 Use `kit rules add context-evidence` for the shared context-use discipline. It applies across rules and source investigations without changing the default contract or requiring a record for small tasks. Its inline outline and read-only source checks support handoffs; model-performance gains still require measurement.
 
-`work-cleanup` automatically inventories and retains persistent local state as `KEEP_LOCAL_STATE`. It preserves primary checkouts and reports retention without routine approval questions. A separate named request and complete recovery evidence are required before removal.
+`work-cleanup` uses `kit cleanup` to reclaim proven-recoverable task artifacts automatically and safely update the primary default branch. Missing ownership, recovery or concurrency evidence means keep and report without routine approval questions.

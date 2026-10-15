@@ -135,9 +135,9 @@ func TestWorkCleanupContractRunsQuietly(t *testing.T) {
 	block := templates.UniversalContractBlock()
 	for _, want := range []string{
 		"apply `work-cleanup` quietly",
-		"inventory and retain persistent local state as `KEEP_LOCAL_STATE`",
-		"never ask for routine cleanup approval",
-		"Removal requires a separate human request naming the targets and complete recovery evidence",
+		"automatically reclaim task-owned artifacts",
+		"without routine approval prompts",
+		"except a proven-safe primary default-branch sync through `kit cleanup`",
 		workCleanupRoute,
 	} {
 		if !strings.Contains(block, want) {
@@ -153,17 +153,17 @@ func TestWorkCleanupContractRunsQuietly(t *testing.T) {
 func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 	content := workCleanupRule(t).Content
 	for _, invariant := range []string{
-		"Keep every", "worktree and branch as `KEEP_LOCAL_STATE`",
-		"Do not automatically remove worktrees, delete branches, prune refs or caches",
-		"remove scratch data, or update the primary checkout",
-		"do not move or copy local files as cleanup",
-		"no outstanding work", "Do not close unrelated issues or tasks",
-		"A separate human request must identify",
-		"recovery of the complete relevant local state",
-		"A remote SHA is not a substitute for that proof",
-		"If any state or recovery evidence is unknown, retain the target",
-		"Never force removal, reset or clean a checkout",
-		"This rule grants no destructive authority",
+		"Recover disk space automatically",
+		"Record exact task-owned artifacts",
+		"same owner must hand off exclusive control",
+		"live selected-remote exact-head recovery",
+		"Ignored/untracked data",
+		"local-only reflog commits",
+		"expected-old-value",
+		"Shared-tool pruning needs an exact supported recovery/disposability adapter",
+		"repeats all proofs immediately before mutation",
+		"Cleanup never asks for routine approval",
+		"Hard deletes stay",
 	} {
 		if !strings.Contains(content, invariant) {
 			t.Errorf("lost cleanup invariant: %s", invariant)
@@ -174,13 +174,13 @@ func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 			t.Errorf("rule still includes alarming or prompting action %q", removed)
 		}
 	}
-	for _, state := range workCleanupStates {
+	for _, state := range []string{"ELIGIBLE", "KEEP_LOCAL_STATE", "UNAVAILABLE"} {
 		if !strings.Contains(content, "`"+state+"`") {
 			t.Errorf("rule does not explain classifier state %s", state)
 		}
 	}
 	// Keep the inventory policy short.
-	if words := len(strings.Fields(content)); words > 1400 {
+	if words := len(strings.Fields(content)); words > 1800 {
 		t.Fatalf("work-cleanup grew to %d words; keep it short", words)
 	}
 }
@@ -204,7 +204,7 @@ func TestWorkCleanupUpgradesReleasedPolicy(t *testing.T) {
 	project := "\n## Project retention\n\nKeep local results for the human.\n"
 	for _, path := range instructionFiles(cfg) {
 		content := readFile(t, filepath.Join(root, path))
-		content = strings.Replace(content, "inventory and retain persistent local state", "remove only what clear evidence shows a remote can restore", 1)
+		content = strings.Replace(content, "automatically reclaim task-owned artifacts", "remove only what clear evidence shows a remote can restore", 1)
 		writeFile(t, filepath.Join(root, path), content+project)
 	}
 	constitution := readFile(t, filepath.Join(root, "docs", "CONSTITUTION.md"))

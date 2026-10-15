@@ -50,4 +50,4 @@ read_policy_default: conditional
 - Standing authority may continue a named existing standard deployment of the merged artifact to already-provisioned resources. IAM, network, KMS, secrets, schema or data-loss changes, infrastructure creation, replacement, or deletion, and nonstandard deployments need their own approval (see `infrastructure-change-approval`). Unclassified effects make a pull request `UNKNOWN`.
 - A merge is not proof of deployment, runtime health, or production correctness. Report merge result, hosted workflows, deployment, and runtime state separately, with the merge commit and observed state.
 - Follow `deployment-recovery` for post-merge publication and deployment recovery.
-- After each confirmed merge, run `work-cleanup` inventory for the merged lane without asking; retain persistent local state and preserve the primary checkout.
+- After each confirmed merge, run `work-cleanup` for the merged lane without routine prompts; automatically reclaim eligible artifacts and sync the primary default only through the native proofs.

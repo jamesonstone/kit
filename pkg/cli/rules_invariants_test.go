@@ -14,7 +14,7 @@ var ruleInvariants = map[string][]string{
 		"reuses that pull request's head branch",
 		"Never ask the user to choose between lanes",
 		"The primary checkout is read-only for agent work",
-		"completion grants no removal or primary-sync authority",
+		"Automatically reclaim only artifacts with the native ownership",
 		"Never add co-author trailers",
 		"Assign every created or reused issue and pull request to the human",
 		"Never commit to the default or a protected branch, force-push, or rewrite pushed history",
