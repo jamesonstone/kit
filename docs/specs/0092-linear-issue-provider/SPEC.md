@@ -45,3 +45,13 @@ Implemented for review; no merge or release authorized. Merge Mint first, then K
 ## REPOSITORY MEMORY
 
 Feature spec and public configuration/changelog documentation. Historical specs remain unchanged.
+
+## DELIVERY EVIDENCE
+
+Issue: [GH-264](https://github.com/jamesonstone/kit/issues/264). Branch: `GH-264`.
+Ready PR: [Kit #265](https://github.com/jamesonstone/kit/pull/265).
+Companion: [Mint #33](https://github.com/jamesonstone/mint/pull/33).
+Local full tests, vet, build, formatting, lint and project checks passed.
+Independent review finding resolved and re-reviewed. Hosted checks and review
+were pending when this record was written; the live PR is authoritative.
+No merge, release, credential configuration or Linear writes performed.
