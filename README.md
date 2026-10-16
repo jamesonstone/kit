@@ -187,3 +187,12 @@ retain their behavior. Use the coordinated Mint Linear changelog support before
 adopting Linear if release notes must retain its links. Mint parses explicit
 links offline; identifiers, URLs and commit text can be public, but private ticket
 content is never fetched for enrichment. Review commit text for public visibility.
+
+Kit does not contain a native GitHub or Linear ticket-creation API. Ticket
+creation/population and state changes are agent actions through the host's
+capabilities; init/reconcile only persist configuration and ship the instructions.
+The Linear path matches that existing GitHub mechanism. It does not provision
+Linear integrations, map workflow states automatically, install credentials, or
+configure server-side closure on merge. An authorized agent must verify and apply
+the team's state transitions after observing completion. Contract tests prove
+which instructions ship, not that a host executed provider actions successfully.

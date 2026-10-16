@@ -55,3 +55,27 @@ Local full tests, vet, build, formatting, lint and project checks passed.
 Independent review finding resolved and re-reviewed. Hosted checks and review
 were pending when this record was written; the live PR is authoritative.
 No merge, release, credential configuration or Linear writes performed.
+
+## PROVIDER PARITY AUDIT
+
+At base 7472eda, delivery.md instructs native agents to find/create human-assigned
+GitHub issues and populate original ask, scope, acceptance criteria and verification;
+work-cleanup.md instructs agent closure after observed completion. No ticket creation
+API or kit issue command exists in cmd/internal/pkg. rules.go embeds the canonical
+corpus, rules_registry_embedded.go loads it, and init/reconcile install the rules.
+Linear uses this same complete mechanism, with repository target configuration and
+provider-specific instructions for Markdown description, human assignment, duplicate
+search/readback, failures, branch/reference/commit formatting and verified states.
+
+Configuration and template behavior have executable Go tests. Ticket creation,
+population, auth/error recovery, duplicate prevention and lifecycle writes depend
+on the host's authorized capability and the agent following shipped instructions.
+Their tests are contract fixtures, not API execution tests. Kit does not install
+credentials, create server-side integrations or automatically map workflow states.
+No background ticket transition service or automatic closure-on-merge was added.
+The README now makes these operational limits explicit. No live Linear mutation
+was attempted; such an execution test needs an authorized precise destination.
+
+Independent continuation review confirmed these mechanism and scope claims without
+new defects. CodeRabbit completed successfully on `1b54c0f` at 2026-10-16
+22:01 UTC, reporting no actionable comments. CI passed on that source head.
