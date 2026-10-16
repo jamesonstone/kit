@@ -64,7 +64,7 @@ Read this rule and run a sweep, without being asked, when one of these triggers 
 ### Leave alone
 
 - `KEEP_IN_USE`, `KEEP_UNCOMMITTED`, `KEEP_LOCAL_SECRETS`, `KEEP_UNPUSHED`, and `UNAVAILABLE` worktrees; orphan directories; stashes.
-- Remote branches and external tracker tickets. GitHub can delete merged branches.
+- Remote branches and external tracker tickets outside this lane. GitHub can delete merged branches.
 - Published artifacts, shared documents, containers, volumes, cloud resources, transcripts, the trash, and other people's files.
 
 ### Report
