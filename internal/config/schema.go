@@ -85,6 +85,9 @@ func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
 		return nil, Inspection{}, fmt.Errorf("failed to parse %s: %w", ConfigFileName, err)
 	}
 	inspection.Findings = append(inspection.Findings, semanticFindings(cfg)...)
+	if err := cfg.Issues.Validate(); err != nil {
+		inspection.Findings = append(inspection.Findings, Finding{Field: "issues", Severity: FindingError, Message: err.Error()})
+	}
 	if cfg.AWS != nil && cfg.AWS.IsEnabled() && awsAccountIDPattern.MatchString(strings.TrimSpace(cfg.AWS.AccountID)) {
 		if raw.AWS != nil && !isQuotedYAMLString(&raw.AWS.AccountID) {
 			inspection.Findings = append(inspection.Findings, Finding{

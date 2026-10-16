@@ -136,3 +136,54 @@ MIT
 ## Maintainers
 
 Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+
+### Issue provider
+
+GitHub Issues remains the default, including noninteractive `kit init`.
+Interactive init offers GitHub Issues or Linear. For scripts, use verified
+non-secret Linear target identities:
+
+```bash
+kit init --issue-provider linear --linear-workspace acme \
+  --linear-team-id 11111111-1111-4111-8111-111111111111
+```
+
+The UUID above is a placeholder. Obtain the real team UUID through your authorized
+Linear capability. Add `--linear-project-id <project-uuid>` for a verified project;
+omitting it means team-only work. Init does not authenticate or create tickets.
+Do not store API keys or tokens in `.kit.yaml`.
+
+To switch an existing repository, edit its tracked `.kit.yaml` and run
+`kit reconcile` in its isolated delivery checkout (or preview with
+`kit reconcile --dry-run --diff`):
+
+```yaml
+issues:
+  provider: linear
+  linear:
+    workspace: acme
+    team_id: 11111111-1111-4111-8111-111111111111
+    # project_id: <verified-project-uuid>  # optional
+```
+
+Set `issues.provider: github` to switch back. Omission also means GitHub.
+Use a Kit version containing issue-provider support on every agent host before
+selecting Linear; older binaries cannot enforce this selection.
+Targets are repository-local and survive reconcile, including a forced config
+refresh. Existing lanes retain their original ticket; switching affects new work.
+Reconcile switches exact Kit-generated PR templates; custom templates stay intact.
+Update a custom Ticket section to the selected provider before new delivery.
+Canonical delivery rules verify target membership, human assignment, ticket
+payload parity, duplicate searches, provider errors and completion states. A host
+with no authorized Linear capability reports that blocker; it never creates a
+GitHub issue in place of the selected Linear ticket. Connect Linear separately
+through your normal secure setup when needed; Kit does not install credentials.
+
+Linear uses `ENG-123` for branches and conventional commit scope, for example
+`feat(ENG-123): :sparkles: add invitations`, with the full canonical URL in a final
+`Refs: https://linear.app/acme/issue/ENG-123` footer. Preserve the footer when
+squashing. GitHub issues, PR hosting, checks and historical `GH-123` references
+retain their behavior. Use the coordinated Mint Linear changelog support before
+adopting Linear if release notes must retain its links. Mint parses explicit
+links offline; identifiers, URLs and commit text can be public, but private ticket
+content is never fetched for enrichment. Review commit text for public visibility.

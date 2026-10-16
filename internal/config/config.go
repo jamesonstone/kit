@@ -29,6 +29,7 @@ type Config struct {
 	Registry                   RegistryConfig `yaml:"registry,omitempty"`
 	Health                     *HealthConfig  `yaml:"health,omitempty"`
 	Usage                      *UsageConfig   `yaml:"usage,omitempty"`
+	Issues                     IssueConfig    `yaml:"issues,omitempty"`
 	GitHub                     GitHubConfig   `yaml:"github,omitempty"`
 	AWS                        *AWSConfig     `yaml:"aws,omitempty"`
 }

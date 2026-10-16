@@ -56,6 +56,7 @@ func init() {
 	initCmd.Flags().BoolVar(&initMint, "mint", false, "scaffold Mint environment controls from an existing .mint.yaml and adapters")
 	initCmd.Flags().BoolVar(&initCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	initCmd.Flags().BoolVar(&initOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	bindIssueProviderFlags(initCmd)
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -85,6 +86,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 		}
 	}
 	deliveryCfg := defaultInitConfig()
+	if err := selectInitIssueProvider(cmd, deliveryCfg); err != nil {
+		return err
+	}
 	deliveryPaths := projectInitDeliveryPaths(deliveryCfg)
 	if mintChange != nil {
 		deliveryPaths = append(deliveryPaths, mintChange.relativePath)
@@ -101,7 +105,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 		fmt.Println("🎒 Initializing Kit project...")
 	}
 
-	cfg := defaultInitConfig()
+	cfg := deliveryCfg
 	if err := config.Save(cwd, cfg); err != nil {
 		return fmt.Errorf("failed to create .kit.yaml: %w", err)
 	}
@@ -144,7 +148,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if err := scaffoldCodeRabbitConfig(cwd, initOutputOnly); err != nil {
 		return err
 	}
-	if err := scaffoldPullRequestTemplate(cwd, initOutputOnly); err != nil {
+	if err := scaffoldPullRequestTemplate(cwd, initOutputOnly, cfg); err != nil {
 		return err
 	}
 	if err := scaffoldAutoAssignWorkflow(cwd, cfg, initOutputOnly); err != nil {

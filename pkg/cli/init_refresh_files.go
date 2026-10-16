@@ -28,7 +28,7 @@ func planRefreshInitScaffoldFiles(
 		{relativePath: envrcPath, content: templates.Envrc},
 		{relativePath: makefilePath, content: templates.Makefile, preserveExisting: true},
 		{relativePath: codeRabbitConfigPath, content: templates.CodeRabbitConfig},
-		{relativePath: pullRequestTemplatePath, content: templates.PullRequestTemplate},
+		{relativePath: pullRequestTemplatePath, content: templates.BuildPullRequestTemplate(cfg.Issues.EffectiveProvider())},
 	}
 
 	var changes []initRefreshFileChange
@@ -103,6 +103,12 @@ func planRefreshInitScaffoldFile(
 			appendGitignorePatterns(before, missing),
 			instructionFileMerged,
 		), nil
+	}
+	// Only exact shipped PR templates prove Kit ownership. Switching providers
+	// must converge those without forcing replacement of project-owned content.
+	if exists && relativePath == pullRequestTemplatePath && before != content &&
+		(before == templates.PullRequestTemplate || before == templates.BuildPullRequestTemplate("linear")) {
+		return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileUpdated), nil
 	}
 	if exists {
 		return *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped), nil

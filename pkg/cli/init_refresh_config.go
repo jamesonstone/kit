@@ -45,6 +45,7 @@ func initRefreshConfig(
 	// --force resets .kit.yaml only when it is named explicitly; a whole-project
 	// forced reconcile must never discard project configuration.
 	if configSelected && opts.force && len(targets) > 0 {
+		issues := cfg.Issues
 		aws := cfg.AWS
 		instructionVersion := cfg.InstructionScaffoldVersion
 		registry := cfg.Registry
@@ -53,6 +54,7 @@ func initRefreshConfig(
 		if exists && config.IsKnownInstructionScaffoldVersion(instructionVersion) {
 			cfg.InstructionScaffoldVersion = instructionVersion
 		}
+		cfg.Issues = issues
 		cfg.AWS = aws
 		cfg.Registry = registry
 		after, err := marshalInitRefreshConfig(cfg)
