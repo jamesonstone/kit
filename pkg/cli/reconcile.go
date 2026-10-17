@@ -43,6 +43,11 @@ In the primary checkout, reconcile applies changes in a linked worktree on
 branch kit-reconcile (created or reused) and prints where to review them.
 Use --dry-run --diff to preview without writing anything.
 
+Installed local Mint is checked and supported outdated Go-bin installs update
+automatically, including noninteractive runs. --dry-run previews without installing.
+Missing Mint is skipped; unsupported installs require their owning installer.
+Repository dependencies and CI pins are unchanged by local maintenance.
+
 Use --mint-workflows to plan Mint Actions integration. Existing jobs need explicit
 --mint-workflow, --mint-job, --mint-before-step and --mint-release-owner selection.
 Existing Mint workflows remain project owned. Preview with --dry-run --diff.
@@ -106,6 +111,10 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to resolve feature: %w", err)
 		}
+	}
+
+	if err := runMintLifecycle(cmd, reconcileDryRun); err != nil {
+		return err
 	}
 
 	applyFiles := feat == nil

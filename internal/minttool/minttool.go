@@ -1,4 +1,4 @@
-// Package minttool checks and explicitly updates the locally resolved Mint tool.
+// Package minttool checks and safely updates the locally resolved Mint tool.
 package minttool
 
 import (
@@ -135,6 +135,10 @@ func updatePlan(ctx context.Context, opts Options, b backend, preview bool) (Rep
 	if err != nil {
 		return r, err
 	}
+	return applyUpdatePlan(ctx, opts, b, preview, r)
+}
+
+func applyUpdatePlan(ctx context.Context, opts Options, b backend, preview bool, r Report) (Report, error) {
 	if opts.RequireLinear && LinearMinimumVersion == "" {
 		r.Compatibility = "unknown_unreleased"
 		return r, errors.New("linear compatibility has no verified published Mint minimum version")
@@ -171,7 +175,7 @@ func updatePlan(ctx context.Context, opts Options, b backend, preview bool) (Rep
 			return r, nil
 		}
 	}
-	if err = b.validate(ctx, r.Installed); err != nil {
+	if err := b.validate(ctx, r.Installed); err != nil {
 		return r, err
 	}
 	if preview {

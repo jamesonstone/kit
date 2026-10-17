@@ -8,7 +8,7 @@ import (
 )
 
 func TestMintPushTriggerFormsAndDefaultBranch(t *testing.T) {
-	root := mintPreparationRepository(t)
+	root, _ := mintRemoteFixture(t)
 	mintPreparationGit(t, root, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/trunk")
 	for _, tc := range []struct {
 		name, on string
@@ -43,7 +43,7 @@ func TestMintPushTriggerFormsAndDefaultBranch(t *testing.T) {
 		if err := yaml.Unmarshal([]byte("on:\n  push:\n    branches: [main]\n"), &doc); err != nil {
 			t.Fatal(err)
 		}
-		if err := validateMintPushTrigger(t.TempDir(), &doc); err == nil || !strings.Contains(err.Error(), "origin/HEAD") {
+		if err := validateMintPushTrigger(t.TempDir(), &doc); err == nil || !strings.Contains(err.Error(), "INCOMPLETE") {
 			t.Fatalf("unknown metadata accepted: %v", err)
 		}
 	})

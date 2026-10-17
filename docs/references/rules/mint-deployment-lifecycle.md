@@ -59,6 +59,20 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
   observations are separate evidence; do not write apparent live versions into
   policy or treat an old observation as current runtime truth.
 
+### Local Mint tooling
+
+- `kit install` and valid `kit reconcile` runs check installed local Mint and
+  automatically maintain supported stable user-owned Go-bin installs through the
+  shared verified updater, including noninteractive runs. Require at least the
+  verified v0.9.0 release; preserve current/newer versions without downgrading.
+- Missing Mint is skipped without network/install; initial installation requires
+  explicit `kit mint update`. Unsupported, development, package-manager, symlink
+  and unsafe installations stay untouched and need their owning installer.
+- `--dry-run` validates without building/replacing Mint. Diagnostics use stderr;
+  maintenance failure stops reconcile before managed refresh. Local executable,
+  repository Go dependency and action pins are independent surfaces. Local
+  maintenance never upgrades consumer pins or activates a deployment.
+
 ### Kit workflow scaffolding
 
 - `kit init` plans immutable Mint v0.9.0 Actions. Empty workflow sets receive
@@ -71,7 +85,8 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
   publisher and requires a reviewed version/changelog handoff. Mint ownership
   publishes after original steps only with existing write credentials and fixed,
   non-cancelling serialization; known duplicate publishers are rejected. Filtered
-  pushes need verified `origin/HEAD` and exact default-branch inclusion. Negative,
+  pushes need a fresh noninteractive remote HEAD read and exact default-branch
+  inclusion; unavailable remote metadata reports INCOMPLETE without local fallback. Negative,
   wildcard-only and ignore filters require reviewed adapters.
 - Report **INCOMPLETE** when selection or handoff is missing. A separate `mint version`
   workflow is a tooling diagnostic, never completed adoption. Preserve triggers,

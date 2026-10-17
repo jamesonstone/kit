@@ -32,9 +32,9 @@ func validateMintPushTrigger(root string, workflow *yaml.Node) error {
 	if branches == nil {
 		return nil
 	}
-	branch, known := mintKnownDefaultBranch(root)
-	if !known {
-		return fmt.Errorf("mint publication incomplete: verify origin/HEAD default-branch metadata before adopting a filtered push trigger")
+	branch, err := mintRemoteDefaultBranch(root)
+	if err != nil {
+		return err
 	}
 	included := false
 	if branches.Kind == yaml.SequenceNode {

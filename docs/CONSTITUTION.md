@@ -42,7 +42,7 @@
 
 ### Supported Command Surface
 
-- User-facing paths: `kit init`, `kit spec`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check|set`, `kit mint check|update`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
+- User-facing paths: `kit init`, `kit spec`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check|set`, `kit mint check|update`, `kit install`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
 - A command exists only when it does deterministic work an agent cannot reproduce as safely or cheaply: bootstrap and managed-file convergence, validation, spec allocation, AWS identity verification, or usage evidence. Kit adds no prompt wrappers, context routers, capability catalogs, or orchestration commands.
 - Removed command groups are absent, not hidden compatibility aliases.
 
@@ -56,6 +56,7 @@
 - Ownership of legacy files is decided by evidence, not filenames: installed registry state and `internal/legacy` fingerprints of every released Kit's generated output and rule history. Unedited Kit output is replaced or removed; edited, project, and ambiguous content is kept and reported.
 - Migration removes a file only when it is exactly Kit-generated and tracked and unmodified in Git, so every removal is restorable; outside Git nothing is removed.
 - `kit reconcile` applies migration by default. From the primary checkout it writes only to a linked `kit-reconcile` worktree; `--dry-run --diff` previews anywhere without writing.
+- `kit install` maintains supported already-installed local optional tools; it does not install missing Mint, initialize projects or upgrade Kit. Valid `kit reconcile` runs the same installed-only maintenance, with `--dry-run` nonmutating. Repository dependencies/CI pins remain separately reviewed.
 - Command responsibilities do not overlap: `kit init` creates a project and refuses where `.kit.yaml` exists; `kit reconcile` is the only command that migrates or repairs an existing project; `kit health` is read-only diagnosis (pending reconcile changes plus the project check). `kit init --refresh` was removed because it duplicated reconcile without its primary-checkout safety.
 - `.kit.yaml` `source_file_line_limit` makes a line limit a deterministic project invariant; Kit sets 300 for itself.
 

@@ -282,3 +282,48 @@ with an adapter/incomplete diagnostic. The main fallback remains only for new
 starters. Focused tests cover valid forms, substring rejection, excluding filters,
 unknown metadata and earlier authority/publisher guards without false-positive
 failures from the new trigger validation. No existing triggers are rewritten.
+
+## AUTHORIZED LOCAL MINT LIFECYCLE MAINTENANCE
+
+Jameson requested installed Mint checks and appropriate updates from both
+`kit install` and `kit reconcile`. Current Kit has no install subcommand: users
+install Kit with Go, initialize repositories with init, and upgrade Kit with
+upgrade. Add a small local-tool maintenance install entry point without changing
+those responsibilities. Both it and every valid reconcile invocation reuse one
+installed-only maintenance policy in internal/minttool and its verified updater.
+
+Missing Mint is reported with an explicit installation action and is not installed.
+Supported stable older Go-bin installations update to an official stable release
+meeting the v0.9.0 minimum; current/newer installations remain unchanged. Unknown,
+package-manager, symlink, development and unsafe installations retain ownership
+and fail with actionable guidance. Failure stops reconcile before repository writes.
+Check/update is automatic in interactive and noninteractive runs, without prompts;
+--dry-run previews through read-only validation. Lifecycle diagnostics use stderr
+so prompt/output-only stdout contracts remain intact. Consumer action pins and
+repository dependencies remain separate and unchanged. Tests use fakes and isolated
+files only; do not execute a lifecycle update against the user's global tools.
+
+## CURRENT REMOTE HEAD AND LIFECYCLE VALIDATION
+
+The next completed automatic review correctly identified stale local origin/HEAD
+as insufficient evidence for a filtered publisher. Filtered adoption now reads
+origin's current symbolic HEAD through a bounded noninteractive ls-remote; failure
+or missing/ambiguous metadata remains INCOMPLETE. It never fetches, writes refs or
+Git configuration, configures credentials, or falls back to local origin/HEAD.
+Unfiltered push forms remain offline and retain the runtime default-branch guard.
+Local bare-remotes reproduce stale local metadata and changed current defaults.
+
+Installed-only lifecycle maintenance reuses the existing staged updater. Focused
+policy and both command-entry tests pass for old/current/newer/missing/unsupported,
+preview/failure, repeated execution and removal before installation. Full Go tests,
+vet, build and project checks passed after lifecycle integration. A test-only lint
+suggestion was corrected and lint then passed. Independent review found and fixed
+a nil Cobra-context compatibility issue; tests globally stub maintenance to prevent
+any real user-tool update. Remote transport review also found a promoted io.Copy
+method could bypass output bounds; the bounded writer regression covers that path.
+
+Final combined validation observed full Go tests, vet, build, project checks and
+lint (zero issues) passing, with only the existing nonblocking retired README
+advisory. Independent follow-up reviews found no remaining lifecycle or remote
+validation issues. No real installed tool, external test ticket, consumer pipeline
+or production system was changed. Hosted evidence belongs to the pushed head.

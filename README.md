@@ -88,9 +88,10 @@ v0.9.0, pinned to `eac91490f772adbd2ab030cb6eba3910c1bca93c`:
   handle that case. Inspect custom scripts and publication semantics during review.
 - `mint` explicitly transfers publication to Mint after existing job steps succeed.
   Kit requires existing explicit `contents: write`, Git push credentials, branch
-  pushes and fixed non-cancelling serialization. Filtered pushes require verified
-  `origin/HEAD` metadata and an exact default-branch entry; negative, wildcard-only
-  and ignore filters need a project adapter. Known competing publishers in any
+  pushes and fixed non-cancelling serialization. Filtered pushes require a fresh, bounded, noninteractive
+  remote HEAD lookup and an exact default-branch entry; negative, wildcard-only
+  and ignore filters need a project adapter. Unavailable remote metadata reports
+  INCOMPLETE; stale local `origin/HEAD` is never used for filtered adoption. Known competing publishers in any
   workflow are rejected; opaque custom scripts still require human review.
   Custom checkout tokens/SSH keys and dynamic credential retention need adapters
   because their Git push authority cannot be inferred from job permissions.
@@ -281,6 +282,34 @@ reconcile target resolver protects primary checkouts by preparing/reusing its
 `kit-reconcile` worktree. Dry runs never prepare a worktree: their config preview
 uses the invoking checkout; a later primary-checkout write uses the canonical
 base/worktree and never copies unrelated working changes into it.
+
+### Installed Mint maintenance at lifecycle commands
+
+`kit install` is the local-tool maintenance entry point. Kit itself is installed
+with Go, upgraded with `kit upgrade`, and projects are created with `kit init`.
+Both `kit install` and valid `kit reconcile` invocations (including feature-only,
+no-op and output-only runs) check installed local Mint and automatically update
+supported outdated installations to the latest official stable release, requiring
+at least v0.9.0. Interactive and noninteractive runs use the same policy with no
+confirmation prompt. Reconcile performs maintenance before managed-refresh writes;
+release lookup or update failure exits nonzero with actionable diagnostics.
+
+```bash
+kit install --dry-run          # read-only local maintenance preview
+kit install                    # maintain an already-installed optional Mint
+kit reconcile --dry-run --diff # preview local maintenance and repository changes
+```
+
+Missing Mint is skipped without a release lookup or installation. Install it only
+by explicitly running `kit mint update` when desired. Current or newer stable
+versions remain unchanged; there are no downgrades. Package-manager, unknown,
+symlink, development and unsafe installations remain untouched and need their
+owning installer or an explicitly selected supported Go-bin installation. Dry-run
+validates the plan without building/replacing the executable. Repeated runs are
+idempotent after a successful update. Diagnostics use stderr to preserve prompt
+stdout. Local executable maintenance never changes repository Go dependencies,
+action SHA pins, environment policy, activation gates or deployments. Tests use
+isolated fake installs; no global Mint installation is modified during validation.
 
 ### Mint version checks and explicit local updates
 
