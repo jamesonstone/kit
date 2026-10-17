@@ -10,11 +10,12 @@ import (
 )
 
 type initRefreshFileChange struct {
-	relativePath string
-	absolutePath string
-	before       string
-	after        string
-	result       instructionFileWriteResult
+	strictMintWorkflow bool
+	relativePath       string
+	absolutePath       string
+	before             string
+	after              string
+	result             instructionFileWriteResult
 }
 
 func applyInitRefreshFileChangesAtomically(changes []initRefreshFileChange) error {
@@ -25,9 +26,16 @@ func applyInitRefreshFileChangesAtomicallyWithRollback(
 	changes []initRefreshFileChange,
 	rollback func(initRefreshFileChange) error,
 ) error {
+	return applyInitRefreshFileChangesWithWriter(changes, rollback, applyInitRefreshFileChange)
+}
+
+func applyInitRefreshFileChangesWithWriter(changes []initRefreshFileChange, rollback func(initRefreshFileChange) error, write func(initRefreshFileChange) error) error {
+	if err := validateMintWorkflowChanges(changes); err != nil {
+		return err
+	}
 	applied := make([]initRefreshFileChange, 0, len(changes))
 	for _, change := range changes {
-		if err := applyInitRefreshFileChange(change); err != nil {
+		if err := write(change); err != nil {
 			var rollbackErrors []string
 			for i := len(applied) - 1; i >= 0; i-- {
 				if rollbackErr := rollback(applied[i]); rollbackErr != nil {
@@ -47,6 +55,9 @@ func applyInitRefreshFileChangesAtomicallyWithRollback(
 }
 
 func rollbackInitRefreshFileChange(change initRefreshFileChange) error {
+	if change.strictMintWorkflow {
+		return rollbackMintWorkflowChange(change)
+	}
 	if change.result == instructionFileRemoved {
 		return document.Write(change.absolutePath, change.before)
 	}
@@ -74,6 +85,9 @@ func newInitRefreshFileChange(
 }
 
 func applyInitRefreshFileChange(change initRefreshFileChange) error {
+	if change.strictMintWorkflow {
+		return applyMintWorkflowChange(change)
+	}
 	if change.result == instructionFileSkipped {
 		return nil
 	}

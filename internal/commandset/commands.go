@@ -7,6 +7,7 @@ import (
 
 var protectedPaths = []string{
 	"init",
+	"install",
 	"spec",
 	"usage",
 	"usage report",
@@ -19,6 +20,9 @@ var protectedPaths = []string{
 	"registry status",
 	"health",
 	"config check",
+	"config set",
+	"mint check",
+	"mint update",
 	"aws verify",
 	"check",
 	"rules add",
@@ -32,11 +36,15 @@ var protectedPaths = []string{
 
 var telemetryPaths = []string{
 	"init",
+	"install",
 	"spec",
 	"status",
 	"registry status",
 	"health",
 	"config check",
+	"config set",
+	"mint check",
+	"mint update",
 	"aws verify",
 	"check",
 	"rules add",

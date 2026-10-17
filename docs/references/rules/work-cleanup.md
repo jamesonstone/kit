@@ -54,6 +54,7 @@ Read this rule and run a sweep, without being asked, when one of these triggers 
 - Run the primary checkout sync recipe below. It only fast-forwards the local default branch. It never resets, stashes, rebases, or makes a merge commit. For a `KEEP_` state or `UNAVAILABLE`, keep the checkout as it is.
 - For each completed worktree that is `RECOVERABLE`, run `git worktree remove <path>`. Then run `git branch -d <branch>`. If Git refuses, keep the branch; a branch uses almost no disk space.
 - Stop background processes, dev servers, watchers, and scheduled checks that the work started. Remove scratch files and directories that the work created in its own scratch location.
+- For Linear lanes, use `delivery` to verify targets and transition states, including after a provider switch. Never pass Linear IDs to `gh issue`. Report provider failures; stop that ticket action.
 - Close GitHub issues and pull requests whose completion you observed. Close, never delete; the GitHub UI can reopen them.
   - Done: close a still-open lane issue as completed when the merged change satisfies it (`gh issue close <n> --reason completed`).
   - Abandoned or superseded: close the lane's open pull request and issue with one line of reason and a link to the superseding work, if any (`gh pr close <n> --comment "<reason>"` and `gh issue close <n> --reason "not planned" --comment "<reason>"`).
@@ -63,7 +64,7 @@ Read this rule and run a sweep, without being asked, when one of these triggers 
 ### Leave alone
 
 - `KEEP_IN_USE`, `KEEP_UNCOMMITTED`, `KEEP_LOCAL_SECRETS`, `KEEP_UNPUSHED`, and `UNAVAILABLE` worktrees; orphan directories; stashes.
-- Remote branches and external tracker tickets. GitHub can delete merged branches.
+- Remote branches and external tracker tickets outside this lane. GitHub can delete merged branches.
 - Published artifacts, shared documents, containers, volumes, cloud resources, transcripts, the trash, and other people's files.
 
 ### Report
