@@ -90,6 +90,8 @@ v0.9.0, pinned to `eac91490f772adbd2ab030cb6eba3910c1bca93c`:
   Kit requires existing explicit `contents: write`, Git push credentials, branch
   pushes and fixed non-cancelling serialization. Known competing publishers in any
   workflow are rejected; opaque custom scripts still require human review.
+  Custom checkout tokens/SSH keys and dynamic credential retention need adapters
+  because their Git push authority cannot be inferred from job permissions.
   Matrix, reusable, container and dynamic runner jobs need project-owned adapters.
   Kit never expands permissions, bypasses environments or changes deployment steps.
 - Existing Mint preparation is preserved and its ownership/handoff reported for

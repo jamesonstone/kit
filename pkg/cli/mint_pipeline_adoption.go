@@ -126,8 +126,15 @@ func validateMintPublisher(root string, workflow mintWorkflow, job, steps *yaml.
 	}
 	for _, step := range steps.Content {
 		if uses := mintField(step, "uses"); uses != nil && strings.HasPrefix(uses.Value, "actions/checkout@") {
-			if persist := mintField(mintField(step, "with"), "persist-credentials"); persist != nil && persist.Value == "false" {
-				return fmt.Errorf("mint publication incomplete: existing checkout disables Git push credentials")
+			with := mintField(step, "with")
+			if persist := mintField(with, "persist-credentials"); persist != nil && persist.Value != "true" {
+				return fmt.Errorf("mint publication incomplete: checkout must already persist Git push credentials")
+			}
+			if mintField(with, "ssh-key") != nil {
+				return fmt.Errorf("mint publication incomplete: custom SSH credential authority needs a project adapter")
+			}
+			if token := mintField(with, "token"); token != nil && token.Value != "${{ github.token }}" && token.Value != "${{ secrets.GITHUB_TOKEN }}" {
+				return fmt.Errorf("mint publication incomplete: custom checkout token authority needs a project adapter")
 			}
 		}
 	}

@@ -41,16 +41,19 @@ func TestMintPublicationRequiresExistingAuthority(t *testing.T) {
 	base := strings.Replace(pipelineDeploy, "contents: read", "contents: write", 1)
 	base = strings.Replace(base, "jobs:", "concurrency:\n  group: release\n  cancel-in-progress: false\njobs:", 1)
 	cases := map[string]string{
-		"read permissions":      strings.Replace(base, "contents: write", "contents: read", 1),
-		"cancellation":          strings.Replace(base, "cancel-in-progress: false", "cancel-in-progress: true", 1),
-		"dynamic serialization": strings.Replace(base, "group: release", "group: release-${{ github.ref }}", 1),
-		"tag trigger":           strings.Replace(base, "branches: [trunk]", "tags: ['v*']", 1),
-		"no credentials":        strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          persist-credentials: false", 1),
-		"matrix":                strings.Replace(base, "    needs: []", "    strategy:\n      matrix:\n        os: [ubuntu-latest]\n    needs: []", 1),
-		"shallow":               strings.Replace(base, "fetch-depth: 0", "fetch-depth: 1", 1),
-		"custom checkout":       strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          ref: release", 1),
-		"ncipollo publisher":    strings.Replace(base, "run: echo original", "uses: ncipollo/release-action@v1", 1),
-		"existing publisher":    strings.Replace(base, "echo original", "gh release create v1.0.0", 1),
+		"unknown token":                strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          token: ${{ secrets.CUSTOM_TOKEN }}", 1),
+		"unknown SSH key":              strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          ssh-key: ${{ secrets.CUSTOM_SSH }}", 1),
+		"dynamic credential retention": strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          persist-credentials: ${{ inputs.persist }}", 1),
+		"read permissions":             strings.Replace(base, "contents: write", "contents: read", 1),
+		"cancellation":                 strings.Replace(base, "cancel-in-progress: false", "cancel-in-progress: true", 1),
+		"dynamic serialization":        strings.Replace(base, "group: release", "group: release-${{ github.ref }}", 1),
+		"tag trigger":                  strings.Replace(base, "branches: [trunk]", "tags: ['v*']", 1),
+		"no credentials":               strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          persist-credentials: false", 1),
+		"matrix":                       strings.Replace(base, "    needs: []", "    strategy:\n      matrix:\n        os: [ubuntu-latest]\n    needs: []", 1),
+		"shallow":                      strings.Replace(base, "fetch-depth: 0", "fetch-depth: 1", 1),
+		"custom checkout":              strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          ref: release", 1),
+		"ncipollo publisher":           strings.Replace(base, "run: echo original", "uses: ncipollo/release-action@v1", 1),
+		"existing publisher":           strings.Replace(base, "echo original", "gh release create v1.0.0", 1),
 	}
 	for name, source := range cases {
 		t.Run(name, func(t *testing.T) {

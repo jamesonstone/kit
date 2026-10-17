@@ -265,3 +265,8 @@ Independent correctness review found an unrecognized ncipollo/release-action
 publisher; detection and same/other-workflow regressions fixed it. Follow-up review
 found no further issues. Generated workflows remain unexecuted in consumers;
 Kit remains unmerged and no consumer activation is authorized.
+
+Publication credential review also rejects custom checkout tokens, SSH keys and
+dynamic credential retention: job permissions alone do not establish their push
+authority. Default GitHub-token checkout credentials remain supported. Three
+negative fixtures pass and independent follow-up review found no further issues.
