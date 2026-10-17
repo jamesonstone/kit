@@ -94,7 +94,7 @@ func TestMintToolsInventoryFailureStillEmitsJSON(t *testing.T) {
 		t.Fatal("bad inventory accepted")
 	}
 	var report mintToolsReport
-	if err := json.Unmarshal(out.Bytes(), &report); err != nil || report.Error == "" {
+	if err := json.Unmarshal(out.Bytes(), &report); err != nil || report.Error == "" || report.RepositoryPins == nil {
 		t.Fatalf("missing failure JSON: %s %v", out.String(), err)
 	}
 }
@@ -134,5 +134,26 @@ func TestMintPinHintsDoNotCopyUnrelatedCommentText(t *testing.T) {
 		if got := mintPinVersionHint(tc.comment); got != tc.want {
 			t.Fatalf("hint %q, want %q", got, tc.want)
 		}
+	}
+}
+
+func TestMintToolsOutsideProjectPinsAreAnArray(t *testing.T) {
+	setWorkingDirectory(t, t.TempDir())
+	previous := checkMintTool
+	t.Cleanup(func() { checkMintTool = previous })
+	checkMintTool = func(context.Context, minttool.Options) (minttool.Report, error) {
+		return minttool.Report{Installed: minttool.Installation{Status: "missing"}}, nil
+	}
+	cmd := newMintToolsCommand(false)
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+	cmd.SetErr(io.Discard)
+	cmd.SetArgs([]string{"--json"})
+	if err := cmd.Execute(); err == nil {
+		t.Fatal("missing executable must exit nonzero")
+	}
+	var report mintToolsReport
+	if err := json.Unmarshal(out.Bytes(), &report); err != nil || report.RepositoryPins == nil || len(report.RepositoryPins) != 0 {
+		t.Fatalf("%s %v", out.String(), err)
 	}
 }

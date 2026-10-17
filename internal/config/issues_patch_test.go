@@ -100,3 +100,18 @@ func TestIssuePatchRejectsAliasedAndAnchoredTargets(t *testing.T) {
 		t.Fatalf("unrelated alias: %s %v", got, err)
 	}
 }
+
+func TestIssuePatchKeepsInputIndentationWidth(t *testing.T) {
+	for _, width := range []int{2, 4} {
+		indent := strings.Repeat(" ", width)
+		before := []byte("schema_version: 2\ncustom:\n" + indent + "nested:\n" + indent + indent + "keep: yes\nissues:\n" + indent + "provider: github\n")
+		desired := IssueConfig{Provider: "linear", Linear: LinearConfig{Workspace: "acme", TeamID: "11111111-1111-4111-8111-111111111111"}}
+		after, err := PlanIssueConfig(before, desired)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(after), "custom:\n"+indent+"nested:\n"+indent+indent+"keep: yes\n") || !strings.Contains(string(after), "issues:\n"+indent+"provider: linear\n") {
+			t.Fatalf("indentation %d changed: %s", width, after)
+		}
+	}
+}

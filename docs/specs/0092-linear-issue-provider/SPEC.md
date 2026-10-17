@@ -133,3 +133,10 @@ YAML alias/root-merge preservation, early-error JSON output and concurrent updat
 no-downgrade guarantees. Final review confirmed the remaining findings resolved.
 Hosted checks/review on the extension are recorded on PR #265 and remain the
 source of current evidence. Both PRs must remain open and unmerged for review.
+
+Automatic review on 5e6a422 identified two minor contract gaps: encoding changed
+input indentation, and absent/error pin inventory serialized as null. The patcher
+now infers block indentation from YAML source positions (four-space fallback),
+with two/four-space regression tests. Report serialization normalizes missing pins
+to an empty array for non-project and error paths. Focused tests and lint passed;
+final hosted check/review evidence remains on the live PR.

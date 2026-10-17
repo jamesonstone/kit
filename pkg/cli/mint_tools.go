@@ -102,6 +102,9 @@ func runMintTools(cmd *cobra.Command, update bool) error {
 }
 
 func writeMintToolsReport(cmd *cobra.Command, report mintToolsReport, operationErr error) error {
+	if report.RepositoryPins == nil {
+		report.RepositoryPins = []mintRepositoryPin{}
+	}
 	result, pins := report.Local, report.RepositoryPins
 	if operationErr != nil {
 		report.Error = operationErr.Error()
