@@ -52,10 +52,15 @@ func TestMintReleasePipelineTrustAndPermissions(t *testing.T) {
 	if w.Concurrency.Group != "mint-release-${{ github.repository }}" || w.Concurrency.Cancel {
 		t.Fatal("release publisher concurrency is unsafe")
 	}
-	if len(j.Steps) != 2 || j.Steps[0].Uses != "actions/checkout@"+mintPipelineCheckoutRef || j.Steps[0].With["fetch-depth"] != 0 || j.Steps[0].With["ref"] != "${{ github.sha }}" {
+	if len(j.Steps) != 5 || j.Steps[0].Uses != "actions/checkout@"+mintPipelineCheckoutRef || j.Steps[0].With["fetch-depth"] != 0 || j.Steps[0].With["ref"] != "${{ github.sha }}" {
 		t.Fatalf("checkout: %+v", j.Steps)
 	}
-	m := j.Steps[1]
+	for i, want := range []string{"release-resolve", "changelog", "", "release-publish"} {
+		if got := j.Steps[i+1].With["command"]; (want != "" && got != want) || got == "version" {
+			t.Fatalf("step %d command=%v", i+1, got)
+		}
+	}
+	m := j.Steps[4]
 	if m.Uses != "jamesonstone/mint@"+mintPipelineActionRef {
 		t.Fatalf("unpinned Mint: %s", m.Uses)
 	}

@@ -32,7 +32,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: []
     steps:
-      - name: Existing deploy
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: deploy
+        name: Existing deploy
         env:
           LABEL: original
         run: echo original
@@ -59,9 +63,13 @@ func TestMintPipelineExistingDeployPreserved(t *testing.T) {
 	root := t.TempDir()
 	path := ".github/workflows/deploy.yaml"
 	writePipelineFixture(t, root, path, pipelineDeploy)
-	changes, _, err := planMintPipeline(root, mintPipelineSelection{})
-	if err != nil || len(changes) != 1 || changes[0].relativePath != path {
-		t.Fatalf("%+v %v", changes, err)
+	diagnostic, notes, err := planMintPipeline(root, mintPipelineSelection{})
+	if err != nil || len(diagnostic) != 1 || diagnostic[0].relativePath == path || !strings.Contains(strings.Join(notes, " "), "INCOMPLETE") {
+		t.Fatalf("%+v %v %v", diagnostic, notes, err)
+	}
+	changes, notes, err := planMintPipeline(root, mintPipelineSelection{workflow: path, job: "deploy", beforeStep: "deploy", releaseOwner: "existing"})
+	if err != nil || len(changes) != 1 || !strings.Contains(strings.Join(notes, " "), "INCOMPLETE publication handoff") {
+		t.Fatalf("%+v %v %v", changes, notes, err)
 	}
 	before := map[string]any{}
 	after := map[string]any{}
@@ -71,18 +79,17 @@ func TestMintPipelineExistingDeployPreserved(t *testing.T) {
 	if err := yaml.Unmarshal([]byte(changes[0].after), &after); err != nil {
 		t.Fatal(err)
 	}
-	jobs := after["jobs"].(map[string]any)
-	job := jobs["deploy"].(map[string]any)
+	job := after["jobs"].(map[string]any)["deploy"].(map[string]any)
 	steps := job["steps"].([]any)
-	if len(steps) != 2 || !strings.Contains(changes[0].after, "command: version") || strings.Contains(changes[0].after, "release-publish") {
+	if len(steps) != 5 || strings.Contains(changes[0].after, "release-publish") {
 		t.Fatal(changes[0].after)
 	}
-	job["steps"] = steps[:1]
+	job["steps"] = []any{steps[0], steps[4]}
 	if !reflectpkg.DeepEqual(before, after) {
 		t.Fatalf("original semantics changed: %#v", after)
 	}
-	if !strings.HasPrefix(changes[0].after, pipelineDeploy) {
-		t.Fatal("original bytes changed")
+	if !strings.Contains(changes[0].after, "        name: Existing deploy\n        env:\n          LABEL: original\n        run: echo original") {
+		t.Fatal("original step bytes changed")
 	}
 	if err := applyInitRefreshFileChangesAtomically(changes); err != nil {
 		t.Fatal(err)
@@ -131,11 +138,11 @@ func TestMintPipelineSelectionAndErrors(t *testing.T) {
 	root := t.TempDir()
 	path := ".github/workflows/ci.yaml"
 	writePipelineFixture(t, root, path, strings.Replace(pipelineDeploy, "name: Deploy", "name: CI", 1))
-	changes, _, err := planMintPipeline(root, mintPipelineSelection{path, "deploy"})
+	changes, _, err := planMintPipeline(root, mintPipelineSelection{workflow: path, job: "deploy", beforeStep: "deploy", releaseOwner: "existing"})
 	if err != nil || len(changes) != 1 || changes[0].relativePath != path {
 		t.Fatalf("%+v %v", changes, err)
 	}
-	for _, selection := range []mintPipelineSelection{{"", "deploy"}, {path, "missing"}, {".github/workflows/missing.yaml", ""}} {
+	for _, selection := range []mintPipelineSelection{{job: "deploy"}, {workflow: path, job: "missing", beforeStep: "deploy", releaseOwner: "existing"}, {workflow: ".github/workflows/missing.yaml"}} {
 		if _, _, err := planMintPipeline(root, selection); err == nil {
 			t.Fatal(selection)
 		}
@@ -160,7 +167,7 @@ func TestMintPipelineRefusesChangedWorkflowBeforeBatchWrites(t *testing.T) {
 	root := t.TempDir()
 	path := ".github/workflows/deploy.yaml"
 	writePipelineFixture(t, root, path, pipelineDeploy)
-	changes, _, err := planMintPipeline(root, mintPipelineSelection{})
+	changes, _, err := planMintPipeline(root, mintPipelineSelection{workflow: path, job: "deploy", beforeStep: "deploy", releaseOwner: "existing"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,7 +189,7 @@ func TestMintPipelineExplicitJobPreservesFollowingJob(t *testing.T) {
 	path := ".github/workflows/deploy.yaml"
 	source := pipelineDeploy + "  observe:\n    needs: deploy\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo observe\n"
 	writePipelineFixture(t, root, path, source)
-	changes, _, err := planMintPipeline(root, mintPipelineSelection{path, "deploy"})
+	changes, _, err := planMintPipeline(root, mintPipelineSelection{workflow: path, job: "deploy", beforeStep: "deploy", releaseOwner: "existing"})
 	if err != nil || len(changes) != 1 {
 		t.Fatalf("%+v %v", changes, err)
 	}
@@ -191,7 +198,7 @@ func TestMintPipelineExplicitJobPreservesFollowingJob(t *testing.T) {
 		t.Fatal(err)
 	}
 	jobs := mintField(&doc, "jobs")
-	if len(mintField(mintField(jobs, "deploy"), "steps").Content) != 2 || len(mintField(mintField(jobs, "observe"), "steps").Content) != 1 {
+	if len(mintField(mintField(jobs, "deploy"), "steps").Content) != 5 || len(mintField(mintField(jobs, "observe"), "steps").Content) != 1 {
 		t.Fatal(changes[0].after)
 	}
 }
@@ -215,7 +222,7 @@ func TestMintPipelinePrivilegedJobsRequireExplicitSelection(t *testing.T) {
 		if err != nil || len(changes) != 1 || changes[0].relativePath != ".github/workflows/mint-check.yaml" {
 			t.Fatalf("automatic: %+v %v", changes, err)
 		}
-		changes, _, err = planMintPipeline(root, mintPipelineSelection{path, "deploy"})
+		changes, _, err = planMintPipeline(root, mintPipelineSelection{workflow: path, job: "deploy", beforeStep: "deploy", releaseOwner: "existing"})
 		if err != nil || len(changes) != 1 || changes[0].relativePath != path {
 			t.Fatalf("explicit: %+v %v", changes, err)
 		}

@@ -55,7 +55,7 @@ kit reconcile --mint --dry-run --diff    # existing Kit project: preview
 kit reconcile --mint                    # create a missing controller
 ```
 
-Kit uses the embedded Mint v0.5.0 renderer to generate repository Actions for
+Kit uses the embedded Mint v0.9.0 renderer to generate repository Actions for
 promotion, hotfix, rollback, resume, observation and reconciliation. It uses the
 policy's environment names and adapter workflow names. Existing controllers,
 policies and adapters stay project owned, even with `--force`. No registry,
@@ -68,31 +68,48 @@ baselines before enabling that gate.
 `kit init` automatically plans GitHub Actions integration using published Mint
 v0.9.0, pinned to `eac91490f772adbd2ab030cb6eba3910c1bca93c`:
 
-- No workflows: create one canonical release-state pipeline for default-branch
-  pushes. It publishes tags/GitHub Releases; it does not invent application build,
-  registry, cloud or deployment adapters. Review before merging the scaffold.
-- One release/deploy workflow with one ordinary `ubuntu-latest` steps job and
-  explicit read-only permissions, without environment/ambient credentials or credential-export steps: append
-  Mint installation/version verification after existing steps. Triggers, jobs,
-  dependencies, permissions, secrets, environments and deployment steps stay intact.
-  Existing release publishers continue to own publication.
-- CI-only, ambiguous, privileged, dynamic or reusable jobs: add a separate read-only tooling
-  check. No publisher/deployment is inferred. Select a reviewed steps job with
-  `--mint-workflow .github/workflows/deploy.yaml --mint-job deploy`. Privileged
-  selections explicitly opt into Mint sharing that job's ambient credentials.
-- Existing Mint action integration: preserve its pin and behavior. Repeated runs
-  add no duplicate Mint steps or publishers. Custom files are not overwritten.
+- No workflows: resolve release metadata, generate an enriched GitHub/Linear
+  changelog, retain it as a workflow artifact, then publish tags/GitHub Releases
+  on default-branch pushes. Release notes retain Mint's subject-based format.
+  No application build, registry, cloud or deployment adapter is inferred.
+- Existing workflows: preserve them and report **INCOMPLETE** until publication
+  ownership and insertion order are explicitly selected. A separate read-only
+  `mint version` check is diagnostic only; it does not complete adoption.
+- Preview a selected job with `kit reconcile --mint-workflow
+  .github/workflows/deploy.yaml --mint-job deploy --mint-before-step publish
+  --mint-release-owner existing --dry-run --diff`. All four selectors are required.
+  The anchor must be an existing step id after an unconditional, same-repository,
+  full-history checkout. Kit inserts resolution, changelog generation and artifact
+  retention before that step, preserving existing bytes and job configuration.
+- `existing` preserves the current publisher. Bind its version and changelog
+  inputs to `steps.kit_mint_release.outputs.version_tag` and
+  `${{ runner.temp }}/kit-mint-CHANGELOG.md`; an unbound handoff remains INCOMPLETE.
+  Changelog generation is skipped when no new tag/commits exist; consumers must
+  handle that case. Inspect custom scripts and publication semantics during review.
+- `mint` explicitly transfers publication to Mint after existing job steps succeed.
+  Kit requires existing explicit `contents: write`, Git push credentials, branch
+  pushes and fixed non-cancelling serialization. Known competing publishers in any
+  workflow are rejected; opaque custom scripts still require human review.
+  Matrix, reusable, container and dynamic runner jobs need project-owned adapters.
+  Kit never expands permissions, bypasses environments or changes deployment steps.
+- Existing Mint preparation is preserved and its ownership/handoff reported for
+  review; a version-only step never counts as complete integration. Custom workflow
+  pins remain project owned. `--force` does not overwrite workflows.
+- An existing `.mint.yaml` selects the environment-policy path: review adapters and
+  use `--mint`. That mode creates only a missing environment controller and cannot
+  combine with independent pipeline selectors or `--mint-workflows`.
 
-Existing projects can preview the same planner with
+Existing projects can preview the planner with
 `kit reconcile --mint-workflows --dry-run --diff`; apply with
-`kit reconcile --mint-workflows`. The selectors also work with reconcile, whose
-usual delivery isolation remains in force. `--force` does not replace workflows.
-Init plans against the original workflow inventory before creating auto-assignment.
-Remote default-branch metadata is used where available; a new repository without
-that metadata gets a `main` starter and a runtime actual-default-branch guard.
-Inspect the branch filter before adoption in repositories using another branch.
-Local `kit mint update`, these action pins, and the older embedded environment
-controller renderer are separate version surfaces.
+`kit reconcile --mint-workflows`. Reconcile's delivery isolation remains in force.
+Init inventories workflows before creating auto-assignment. Remote default-branch
+metadata is used where available; a new repository without metadata gets a `main`
+starter and an actual-default-branch guard. Review other branch filters before adoption.
+Local Mint installation, Kit's embedded v0.9.0 renderer and consumer action pins are
+separate version surfaces. Existing controllers are preserved, including older pins.
+The enriched changelog artifact contains only committed issue references; it does
+not fetch private Linear details. Review artifact visibility and retention before use.
+Missing GitHub issue enrichment leaves useful committed references intact.
 
 Kit serializes cooperating Mint workflow writes and rollbacks with per-file
 `.kit-mint.lock` files and checks snapshots at write boundaries. Existing locks

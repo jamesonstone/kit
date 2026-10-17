@@ -35,12 +35,14 @@ Creates:
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
   - The core rules shipped with this Kit binary
 
-Mint Actions integration is planned automatically. Use --mint-workflow and
---mint-job to select an existing steps job when needed; existing Mint is preserved.
+Mint Actions integration is planned automatically. Existing jobs need explicit
+--mint-workflow, --mint-job, --mint-before-step and --mint-release-owner selection.
 
-Use --mint to scaffold a missing Mint v0.5.0 environment controller from an
+Use --mint to scaffold a missing Mint v0.9.0 environment controller from an
 existing team-first schema 2 .mint.yaml and project-owned build/deploy/observe
 adapters. Existing workflows and activation gates are preserved.
+This controller option excludes standalone publication planning and cannot be
+combined with Mint workflow selection flags.
 
 Init is for projects that are not yet Kit projects. Existing files are
 preserved. In a project that already has .kit.yaml, run ` + "`kit reconcile`" + `
@@ -82,16 +84,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this directory is inside the Kit project at %s; run Kit commands there (use `kit reconcile` to update it) instead of creating a nested project", parent)
 	}
 
-	mintChanges, mintNotes, err := planMintPipeline(cwd, initMintSelection)
+	mintChanges, mintNotes, err := planInitMintIntegration(cwd, initMint, initMintSelection)
 	if err != nil {
 		return err
-	}
-	var mintChange *initRefreshFileChange
-	if initMint {
-		mintChange, err = planMintWorkflow(cwd)
-		if err != nil {
-			return err
-		}
 	}
 	deliveryCfg := defaultInitConfig()
 	if err := selectInitIssueProvider(cmd, deliveryCfg); err != nil {
@@ -100,9 +95,6 @@ func runInit(cmd *cobra.Command, args []string) error {
 	deliveryPaths := projectInitDeliveryPaths(deliveryCfg)
 	for _, change := range mintChanges {
 		deliveryPaths = append(deliveryPaths, change.relativePath)
-	}
-	if mintChange != nil {
-		deliveryPaths = append(deliveryPaths, mintChange.relativePath)
 	}
 	deliveryBaseline, err := captureManagedFileDeliveryBaseline(
 		cwd,
@@ -166,9 +158,6 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if mintChange != nil {
-		mintChanges = append(mintChanges, *mintChange)
-	}
 	if len(mintChanges) > 0 {
 		if err := applyInitRefreshFileChangesAtomically(mintChanges); err != nil {
 			return err
@@ -256,6 +245,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	constitutionRelPath := cfg.ConstitutionPath
 	constitutionFullPath := filepath.Join(cwd, constitutionRelPath)
 	prompt := buildProjectInitPrompt(cwd, constitutionFullPath, deliverySnapshot)
+	prompt = appendMintIncompletePrompt(prompt, mintNotes)
 
 	if err := outputPromptWithClipboardDefault(prompt, initOutputOnly, initCopy); err != nil {
 		return err

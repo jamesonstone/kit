@@ -40,7 +40,7 @@ Focused init/default selection, persisted configuration, invalid target/provider
 
 ## OUTCOME
 
-Implemented for review; no merge or release authorized. Merge Mint first, then Kit; adopt a Mint version containing Linear-link parsing in consumer workflows before activating Linear. There is no Go API dependency or required dependency version bump between these PRs.
+Implemented for review; no merge or release authorized. Merge Mint first, then Kit; adopt a Mint version containing Linear-link parsing in consumer workflows before activating Linear. Kit now embeds released Mint v0.9.0 for coherent controller generation; consumer workflow pins remain separate.
 
 ## REPOSITORY MEMORY
 
@@ -143,16 +143,10 @@ final hosted check/review evidence remains on the live PR.
 
 ## AUTHORIZED AUTOMATIC WORKFLOW INTEGRATION
 
-Init plans Mint integration before writing any scaffolds. Empty workflow sets get
-a complete release-state publisher pinned to an official published Mint commit;
-no runtime, registry, cloud or deployment adapters are invented. Existing Mint
-workflows retain their pins and publisher ownership. One clear release/deploy
-workflow with one ordinary steps job gets a version/install step only; existing
-release commands, permissions, triggers and deployment behavior stay byte-for-byte.
-CI-only, multiple candidate or reusable workflows get a separate read-only Mint
-validation workflow and a selection note. Explicit workflow/job selectors support
-a reviewed target without guessing production. Reconcile uses the same planner
-with --mint-workflows and its existing --dry-run --diff delivery boundary.
+The original version-only integration was insufficient and is superseded by
+REQUIREMENT CORRECTION below. Empty repositories receive actual release resolution,
+enriched changelog retention and publication. Existing pipelines require explicit
+publication ownership and insertion selection; diagnostic checks remain INCOMPLETE.
 
 Mint #33 merged with human authorization as eac91490f772adbd2ab030cb6eba3910c1bca93c.
 The normal release workflow published v0.9.0; its fetched annotated tag peels to
@@ -226,3 +220,48 @@ The existing optional controller scaffold now marks newly created controllers fo
 the same strict writer/lock protocol. Existing controllers still return skipped
 changes and retain their original bytes and pins. This closes the review's scope
 caveat without changing rendering or controller behavior.
+
+## REQUIREMENT CORRECTION: FUNCTIONAL PIPELINE INTEGRATION
+
+Human review found that appending `mint version` did not configure a functional
+release pipeline. That path is superseded. A diagnostic version check is never
+reported as completed Mint adoption.
+
+New standalone publication resolves SemVer, generates and retains an enriched
+CHANGELOG artifact using the resolved base/tag/SHA, then publishes release state.
+Existing workflows require explicit workflow/job/before-step and publication-owner
+selection. Preparation runs after a verified full-history checkout and before the
+selected consumer; resolved version outputs feed changelog generation. An existing
+publisher stays intact; missing version/changelog consumption is reported as
+incomplete rather than implied. Mint-owned publication is appended only by explicit
+ownership selection, with existing contents-write permission, trusted push guard,
+serialization and no detected competing publisher. Triggers, job dependencies,
+environment gates, existing build/deploy steps and permissions are preserved.
+Ambiguous/unsupported selections remain incomplete with an actionable plan.
+
+Use released Mint v0.9.0 consistently for new pipeline and environment-controller
+scaffolds: update the embedded dependency and immutable action pin together. When
+controller adoption is requested, do not independently create another publisher.
+Existing project-owned Mint configurations are inventoried/preserved; their
+presence alone is not proof of configured version/changelog/publication stages.
+
+## FUNCTIONAL INTEGRATION VALIDATION
+
+The corrected pipeline resolves actual release outputs, generates and retains
+an enriched changelog before canonical publication. Existing jobs require all
+four selection flags. Mint-owned publication retains original steps and requires
+existing write permission, Git credentials and fixed non-cancelling concurrency;
+known publishers across workflows prevent duplicate publication. Existing-owned
+publication with unbound version/changelog inputs remains INCOMPLETE. Opaque
+scripts/actions and existing project-owned preparation require human handoff review.
+Controller mode uses the v0.9.0 library/action and excludes independent publishers.
+
+Observed validation: complete Go tests, vet, build, gofmt, lint (zero issues),
+project contract validation (existing nonblocking retired README advisory), and
+actionlint on the rendered release pipeline passed. The real Mint API fixture
+covers resolve outputs, unreleased-tag changelog range, mixed Linear/GitHub and
+commit links, retained artifact and already-tagged retry without publication.
+Independent correctness review found an unrecognized ncipollo/release-action
+publisher; detection and same/other-workflow regressions fixed it. Follow-up review
+found no further issues. Generated workflows remain unexecuted in consumers;
+Kit remains unmerged and no consumer activation is authorized.

@@ -61,24 +61,31 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ### Kit workflow scaffolding
 
-- `kit init` plans published, immutable Mint Actions integration automatically.
-  Empty workflow sets receive a release-state publisher only; runtime adapters,
-  registries and cloud destinations are never inferred. One clear release/deploy
-  steps job with explicit read-only permissions and no ambient environment
-  credentials receives installation/version verification after existing steps.
-  Existing triggers, permissions, secrets, jobs and deploy behavior stay intact.
-- CI-only, ambiguous, privileged, dynamic and reusable workflows receive a separate read-only
-  tooling check. Select a reviewed ordinary job with `--mint-workflow` and
-  `--mint-job`; preview existing-project changes with
-  `kit reconcile --mint-workflows --dry-run --diff`. Existing Mint action pins
-  and publishers stay project owned. Repeated runs add no duplicate integration.
-  Review scaffolds before merging; creation is not release/deployment evidence.
+- `kit init` plans immutable Mint v0.9.0 Actions. Empty workflow sets receive
+  resolution, enriched changelog generation/artifact retention and canonical
+  release publication. Runtime adapters and cloud destinations are never inferred.
+- Existing workflows require all four selectors: `--mint-workflow`, `--mint-job`,
+  `--mint-before-step` (existing step id after full-history checkout), and
+  `--mint-release-owner existing|mint`. Preview with `--dry-run --diff` on reconcile.
+  Preparation runs before the selected step. Existing ownership preserves the
+  publisher and requires a reviewed version/changelog handoff. Mint ownership
+  publishes after original steps only with existing write credentials and fixed,
+  non-cancelling serialization; known duplicate publishers are rejected.
+- Report **INCOMPLETE** when selection or handoff is missing. A separate `mint version`
+  workflow is a tooling diagnostic, never completed adoption. Preserve triggers,
+  permissions, secrets, environments and deployment steps; opaque scripts, matrix,
+  reusable, container and dynamic jobs require project-owned review/adapters.
+- Existing `.mint.yaml` owns environment versioning; use the controller path without
+  an independent publisher. Existing Mint preparation/pins stay project owned and
+  require handoff review. Review scaffolds before merging; creation is not runtime
+  release/deployment evidence. Enriched changelogs remain artifacts; canonical
+  GitHub Release notes keep their subject-based format. Review artifact visibility.
 
 - `kit init --mint` (new Kit project) or `kit reconcile --mint --dry-run --diff`
   followed by `kit reconcile --mint` (existing project) can create a missing
   controller from an existing schema 2 deployment `.mint.yaml` with
   `authorization: repository-write` and reviewed build/deploy/observe adapters.
-  Kit embeds the published Mint v0.5.0 parser and renderer; generation works
+  Kit embeds the published Mint v0.9.0 parser and renderer; generation works
   offline and does not require installing or executing Mint in the project.
 - Existing controllers, adapters and policies remain project owned, even under
   `--force`. Package/artifact policies retain their publication workflows.
@@ -153,7 +160,7 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ## Reference
 
-The [Mint v0.5.0 lifecycle and adapter contract](https://github.com/jamesonstone/mint/blob/b97969136d5a43d0982c46c6f185868db16d14bf/docs/references/environment-lifecycle.md)
+The [Mint v0.9.0 lifecycle and adapter contract](https://github.com/jamesonstone/mint/blob/eac91490f772adbd2ab030cb6eba3910c1bca93c/docs/references/environment-lifecycle.md)
 provides schema, workflow and manifest details. The project's pinned implementation
 and reviewed runbook determine its supported actions. Kit embeds this rule locally;
 reading it does not require a network fetch or grant deployment authority.

@@ -16,6 +16,9 @@ func renderMintReleasePipeline(defaultBranch string) []byte {
 	if !safeMintPipelineBranch(defaultBranch) {
 		return nil
 	}
+	steps := []any{map[string]any{"name": "Check out the triggering commit", "uses": "actions/checkout@" + mintPipelineCheckoutRef, "with": map[string]any{"fetch-depth": 0, "ref": "${{ github.sha }}"}}}
+	steps = append(steps, mintReleasePreparationSteps()...)
+	steps = append(steps, mintReleasePublisherStep())
 	workflow := map[string]any{
 		"name":        "Mint release",
 		"on":          map[string]any{"push": map[string]any{"branches": []string{defaultBranch}}},
@@ -26,12 +29,7 @@ func renderMintReleasePipeline(defaultBranch string) []byte {
 				"if":          "${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event.deleted == false }}",
 				"runs-on":     "ubuntu-latest",
 				"permissions": map[string]string{"contents": "write"},
-				"steps": []any{
-					map[string]any{"name": "Check out the triggering commit", "uses": "actions/checkout@" + mintPipelineCheckoutRef, "with": map[string]any{"fetch-depth": 0, "ref": "${{ github.sha }}"}},
-					map[string]any{"name": "Publish immutable release state", "uses": "jamesonstone/mint@" + mintPipelineActionRef, "with": map[string]any{
-						"command": "release-publish", "commitish": "${{ github.sha }}", "owner": "${{ github.repository_owner }}", "repo": "${{ github.event.repository.name }}", "github-token": "${{ github.token }}",
-					}},
-				},
+				"steps":       steps,
 			},
 		},
 	}
@@ -42,7 +40,7 @@ func renderMintReleasePipeline(defaultBranch string) []byte {
 	header := "# Scaffolded by Kit with Mint v0.9.0. This workflow is project owned.\n" +
 		"# Publishes tags and GitHub Releases only; it does not build or deploy the application.\n" +
 		"# Versioned runtime adapters need explicit project policy before adoption.\n" +
-		"# A published action pin alone does not prove Linear enrichment in release notes.\n"
+		"# Enriched Linear/GitHub changelog is retained as an artifact; published release notes stay subject based.\n"
 	return append([]byte(header), data...)
 }
 

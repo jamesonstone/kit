@@ -94,12 +94,15 @@ func runInitRefreshWithSnapshot(
 			plan.stats.removed,
 			plan.stats.skipped,
 		)
-		printInitRefreshNotes(plan.notes, opts)
 	}
+	printInitRefreshNotes(plan.notes, opts)
 	return deliverySnapshot, nil
 }
 
 func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefreshOptions) (*initRefreshPlan, error) {
+	if err := validateMintControllerOptions(opts.mint, opts.mintWorkflows, opts.mintSelection); err != nil {
+		return nil, err
+	}
 	targets, err := normalizeInitRefreshTargets(opts.files)
 	if err != nil {
 		return nil, err
@@ -139,7 +142,7 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		return nil, err
 	}
 	changes = append(changes, scaffoldChanges...)
-	if opts.mintWorkflows {
+	if opts.mintWorkflows || mintSelectionRequested(opts.mintSelection) {
 		if err := appendMintPipelinePlan(projectRoot, opts.mintSelection, &changes, &notes); err != nil {
 			return nil, err
 		}
@@ -286,15 +289,4 @@ func validateInitRefreshTargets(targets, known map[string]bool) error {
 	}
 	sort.Strings(unknown)
 	return fmt.Errorf("%s is not a Kit-managed refresh target", strings.Join(unknown, ", "))
-}
-
-func printInitRefreshNotes(notes []string, opts initRefreshOptions) {
-	if opts.outputOnly || len(notes) == 0 {
-		return
-	}
-	fmt.Println()
-	fmt.Println("Notes:")
-	for _, note := range notes {
-		fmt.Printf("   - %s\n", note)
-	}
 }
