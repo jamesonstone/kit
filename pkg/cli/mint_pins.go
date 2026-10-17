@@ -88,7 +88,7 @@ func inspectMintRepositoryPins(root string) ([]mintRepositoryPin, error) {
 				for i := 0; i+1 < len(node.Content); i += 2 {
 					value := node.Content[i+1]
 					if node.Content[i].Value == "uses" && value.Kind == yaml.ScalarNode && strings.HasPrefix(value.Value, "jamesonstone/mint@") {
-						pins = append(pins, mintRepositoryPin{Kind: "github-action", File: file, Ref: strings.TrimPrefix(value.Value, "jamesonstone/mint@"), VersionHint: strings.TrimSpace(strings.TrimPrefix(value.LineComment, "#")), Compatibility: "not_verified"})
+						pins = append(pins, mintRepositoryPin{Kind: "github-action", File: file, Ref: strings.TrimPrefix(value.Value, "jamesonstone/mint@"), VersionHint: mintPinVersionHint(value.LineComment), Compatibility: "not_verified"})
 					}
 				}
 			}
@@ -104,4 +104,14 @@ func inspectMintRepositoryPins(root string) ([]mintRepositoryPin, error) {
 // Reuse Mint scaffolding's repository path and symlink boundary for reads.
 func readMintPinFile(root, relative string) ([]byte, error) {
 	return readMintProjectFile(root, relative)
+}
+
+var mintPinVersionPattern = regexp.MustCompile(`^\s*#?\s*(v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))(?:\s|$)`)
+
+// A version hint is only a strict tag, never an arbitrary workflow comment.
+func mintPinVersionHint(comment string) string {
+	if match := mintPinVersionPattern.FindStringSubmatch(comment); match != nil {
+		return match[1]
+	}
+	return ""
 }

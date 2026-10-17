@@ -126,3 +126,13 @@ func TestMintModuleInventoryBothRequireFormsAndReplacement(t *testing.T) {
 		t.Fatalf("%#v %v", pins, err)
 	}
 }
+
+func TestMintPinHintsDoNotCopyUnrelatedCommentText(t *testing.T) {
+	for _, tc := range []struct{ comment, want string }{
+		{"# v0.5.0 explanation", "v0.5.0"}, {"# unrelated private annotation", ""}, {"# v0.5.0-rc.1", ""},
+	} {
+		if got := mintPinVersionHint(tc.comment); got != tc.want {
+			t.Fatalf("hint %q, want %q", got, tc.want)
+		}
+	}
+}
