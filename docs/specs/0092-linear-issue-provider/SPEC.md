@@ -270,3 +270,15 @@ Publication credential review also rejects custom checkout tokens, SSH keys and
 dynamic credential retention: job permissions alone do not establish their push
 authority. Default GitHub-token checkout credentials remain supported. Three
 negative fixtures pass and independent follow-up review found no further issues.
+
+## FINAL AUTOMATIC REVIEW CORRECTION
+
+CodeRabbit's completed review of e473338 found scalar/sequence push forms were
+rejected while branch filters excluding the default could falsely report adopted
+publication. Trigger validation now accepts exact push events in scalar, sequence
+and mapping forms. Filtered triggers require verified origin/HEAD metadata and an
+exact default-branch entry; negative, wildcard-only, tag and ignore filters fail
+with an adapter/incomplete diagnostic. The main fallback remains only for new
+starters. Focused tests cover valid forms, substring rejection, excluding filters,
+unknown metadata and earlier authority/publisher guards without false-positive
+failures from the new trigger validation. No existing triggers are rewritten.

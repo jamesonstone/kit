@@ -70,7 +70,9 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
   Preparation runs before the selected step. Existing ownership preserves the
   publisher and requires a reviewed version/changelog handoff. Mint ownership
   publishes after original steps only with existing write credentials and fixed,
-  non-cancelling serialization; known duplicate publishers are rejected.
+  non-cancelling serialization; known duplicate publishers are rejected. Filtered
+  pushes need verified `origin/HEAD` and exact default-branch inclusion. Negative,
+  wildcard-only and ignore filters require reviewed adapters.
 - Report **INCOMPLETE** when selection or handoff is missing. A separate `mint version`
   workflow is a tooling diagnostic, never completed adoption. Preserve triggers,
   permissions, secrets, environments and deployment steps; opaque scripts, matrix,

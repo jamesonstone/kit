@@ -11,6 +11,7 @@ func TestMintPublicationExplicitOwnershipAndOrder(t *testing.T) {
 	root := t.TempDir()
 	path := ".github/workflows/deploy.yaml"
 	source := strings.Replace(pipelineDeploy, "contents: read", "contents: write", 1)
+	source = strings.Replace(source, "push:\n    branches: [trunk]", "push:", 1)
 	source = strings.Replace(source, "jobs:", "concurrency:\n  group: production-release\n  cancel-in-progress: false\njobs:", 1)
 	writePipelineFixture(t, root, path, source)
 	changes, notes, err := planMintPipeline(root, mintPipelineSelection{workflow: path, job: "deploy", beforeStep: "deploy", releaseOwner: "mint"})
@@ -39,6 +40,7 @@ func TestMintPublicationExplicitOwnershipAndOrder(t *testing.T) {
 }
 func TestMintPublicationRequiresExistingAuthority(t *testing.T) {
 	base := strings.Replace(pipelineDeploy, "contents: read", "contents: write", 1)
+	base = strings.Replace(base, "push:\n    branches: [trunk]", "push:", 1)
 	base = strings.Replace(base, "jobs:", "concurrency:\n  group: release\n  cancel-in-progress: false\njobs:", 1)
 	cases := map[string]string{
 		"unknown token":                strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          token: ${{ secrets.CUSTOM_TOKEN }}", 1),
@@ -47,7 +49,7 @@ func TestMintPublicationRequiresExistingAuthority(t *testing.T) {
 		"read permissions":             strings.Replace(base, "contents: write", "contents: read", 1),
 		"cancellation":                 strings.Replace(base, "cancel-in-progress: false", "cancel-in-progress: true", 1),
 		"dynamic serialization":        strings.Replace(base, "group: release", "group: release-${{ github.ref }}", 1),
-		"tag trigger":                  strings.Replace(base, "branches: [trunk]", "tags: ['v*']", 1),
+		"tag trigger":                  strings.Replace(base, "push:", "push:\n    tags: ['v*']", 1),
 		"no credentials":               strings.Replace(base, "fetch-depth: 0", "fetch-depth: 0\n          persist-credentials: false", 1),
 		"matrix":                       strings.Replace(base, "    needs: []", "    strategy:\n      matrix:\n        os: [ubuntu-latest]\n    needs: []", 1),
 		"shallow":                      strings.Replace(base, "fetch-depth: 0", "fetch-depth: 1", 1),

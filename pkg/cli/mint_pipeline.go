@@ -163,13 +163,19 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 	return []initRefreshFileChange{*change}, []string{diagnostic + " Added read-only tooling diagnostic; existing publishers/deploys unchanged."}, nil
 }
 
-func mintDefaultBranch(root string) string {
+func mintKnownDefaultBranch(root string) (string, bool) {
 	cmd := exec.Command("git", "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD")
 	cmd.Dir = root
 	if out, err := cmd.Output(); err == nil {
 		if branch := strings.TrimPrefix(strings.TrimSpace(string(out)), "origin/"); branch != "" {
-			return branch
+			return branch, true
 		}
+	}
+	return "", false
+}
+func mintDefaultBranch(root string) string {
+	if branch, known := mintKnownDefaultBranch(root); known {
+		return branch
 	}
 	// A new repository without remote metadata uses GitHub's conventional starter.
 	return "main"

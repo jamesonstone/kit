@@ -88,7 +88,9 @@ v0.9.0, pinned to `eac91490f772adbd2ab030cb6eba3910c1bca93c`:
   handle that case. Inspect custom scripts and publication semantics during review.
 - `mint` explicitly transfers publication to Mint after existing job steps succeed.
   Kit requires existing explicit `contents: write`, Git push credentials, branch
-  pushes and fixed non-cancelling serialization. Known competing publishers in any
+  pushes and fixed non-cancelling serialization. Filtered pushes require verified
+  `origin/HEAD` metadata and an exact default-branch entry; negative, wildcard-only
+  and ignore filters need a project adapter. Known competing publishers in any
   workflow are rejected; opaque custom scripts still require human review.
   Custom checkout tokens/SSH keys and dynamic credential retention need adapters
   because their Git push authority cannot be inferred from job permissions.

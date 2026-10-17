@@ -120,9 +120,8 @@ func validateMintPublisher(root string, workflow mintWorkflow, job, steps *yaml.
 	if group == nil || group.Kind != yaml.ScalarNode || strings.Contains(group.Value, "${{") || group.Value == "" || cancel == nil || cancel.Value != "false" {
 		return fmt.Errorf("mint publication incomplete: existing concurrency must use a fixed group and cancel-in-progress: false")
 	}
-	trigger := mintField(mintField(&workflow.node, "on"), "push")
-	if trigger == nil || mintField(trigger, "tags") != nil {
-		return fmt.Errorf("mint publication requires an existing branch-push trigger; tag-only/reusable triggers need a project adapter")
+	if err := validateMintPushTrigger(root, &workflow.node); err != nil {
+		return err
 	}
 	for _, step := range steps.Content {
 		if uses := mintField(step, "uses"); uses != nil && strings.HasPrefix(uses.Value, "actions/checkout@") {
