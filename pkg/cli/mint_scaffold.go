@@ -83,7 +83,7 @@ func planMintWorkflow(root string) (*initRefreshFileChange, error) {
 		return nil, err
 	}
 	content = "# Scaffolded by Kit with Mint v0.5.0. This workflow is project owned.\n" + content
-	return newInitRefreshFileChange(root, path, "", content, instructionFileCreated), nil
+	return newMintPipelineFileChange(root, path, "", content, instructionFileCreated), nil
 }
 
 // Reject links before reads and writes, including linked parent directories.

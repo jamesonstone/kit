@@ -209,3 +209,20 @@ Rollback also checks the expected just-written snapshot before touching a Mint
 workflow. Deterministic tests inject edits/appearances during earlier batch writes,
 write/close failures, a target appearing during staging, and edits before rollback.
 The tests preserve human edits, roll back earlier files and retain file modes.
+
+The next review correctly distinguished snapshot checks from a filesystem CAS.
+All Kit Mint writes and rollbacks now share a per-target exclusive-create lock
+held across validation, staging and replacement; existing locks fail closed and
+are not reclaimed. Portable path replacement cannot conditionally compare bytes
+against an arbitrary editor. These locks coordinate cooperating Kit operations;
+external edits are checked at validation boundaries, with a residual final
+check-to-replace window. This limit is documented rather than claiming absolute
+CAS. Newly created Mint workflows are always retained and reported on rollback
+instead of using unsafe check-then-unlink. Rollback is therefore best effort.
+Tests cover lock contention for writes/rollback, release, existing-lock retention
+and retained complete workflows with other batch files rolled back.
+
+The existing optional controller scaffold now marks newly created controllers for
+the same strict writer/lock protocol. Existing controllers still return skipped
+changes and retain their original bytes and pins. This closes the review's scope
+caveat without changing rendering or controller behavior.

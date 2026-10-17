@@ -94,6 +94,15 @@ Inspect the branch filter before adoption in repositories using another branch.
 Local `kit mint update`, these action pins, and the older embedded environment
 controller renderer are separate version surfaces.
 
+Kit serializes cooperating Mint workflow writes and rollbacks with per-file
+`.kit-mint.lock` files and checks snapshots at write boundaries. Existing locks
+fail closed and are never reclaimed automatically; inspect their PID/path before
+retrying. External editors do not honor this protocol, so their final
+check-to-replacement window cannot be eliminated by these locks. Avoid concurrent
+external editing during apply. Batch failure uses best-effort rollback: a complete
+newly created Mint workflow is retained and its exact path reported rather than
+risk deleting an intervening edit.
+
 Diagnose without changing anything:
 
 ```bash

@@ -15,6 +15,13 @@ func applyMintWorkflowChange(change initRefreshFileChange) error {
 	if change.result == instructionFileSkipped {
 		return nil
 	}
+	return withMintWorkflowLock(change.absolutePath, func() error { return applyMintWorkflowChangeLocked(change) })
+}
+
+func applyMintWorkflowChangeLocked(change initRefreshFileChange) error {
+	if change.result == instructionFileSkipped {
+		return nil
+	}
 	if err := validateMintWorkflowChanges([]initRefreshFileChange{change}); err != nil {
 		return err
 	}
@@ -34,14 +41,11 @@ func applyMintWorkflowChange(change initRefreshFileChange) error {
 // Never overwrite a human edit during rollback of an earlier workflow either.
 func rollbackMintWorkflowChange(change initRefreshFileChange) error {
 	if change.result == instructionFileCreated {
-		expected := change
-		expected.result = instructionFileUpdated
-		expected.before = change.after
-		if err := validateMintWorkflowChanges([]initRefreshFileChange{expected}); err != nil {
-			return err
-		}
-		return os.Remove(change.absolutePath)
+		return withMintWorkflowLock(change.absolutePath, func() error {
+			return fmt.Errorf("retained created Mint workflow for review after batch failure: %s", change.absolutePath)
+		})
 	}
+
 	reversed := change
 	reversed.before, reversed.after = change.after, change.before
 	return applyMintWorkflowChange(reversed)
