@@ -43,6 +43,10 @@ In the primary checkout, reconcile applies changes in a linked worktree on
 branch kit-reconcile (created or reused) and prints where to review them.
 Use --dry-run --diff to preview without writing anything.
 
+Use --mint-workflows to plan automatic Mint Actions integration. Existing Mint
+workflows remain project owned; --mint-workflow and --mint-job select an existing
+steps job. Preview with --dry-run --diff before applying.
+
 Use --mint to create a missing Mint v0.5.0 controller from an existing team-first
 schema 2 .mint.yaml and project-owned adapters. Existing controllers remain
 project owned, even with --force. This option supports --dry-run --diff and
@@ -64,12 +68,14 @@ func init() {
 	reconcileCmd.Flags().BoolVar(&reconcileDryRun, "dry-run", false, "preview Kit-managed file changes without writing files")
 	reconcileCmd.Flags().BoolVar(&reconcileDiff, "diff", false, "print planned file changes as a unified diff with --dry-run")
 	reconcileCmd.Flags().StringArrayVar(&reconcileRefreshFiles, "file", nil, "limit the file migration to one Kit-managed file; repeat for multiple files")
+	reconcileCmd.Flags().BoolVar(&reconcileMintWorkflows, "mint-workflows", false, "plan Mint installation in existing workflows or a safe release-state starter")
+	bindMintPipelineSelection(reconcileCmd, &reconcileMintSelection)
 	rootCmd.AddCommand(reconcileCmd)
 }
 
 func runReconcile(cmd *cobra.Command, args []string) error {
-	if reconcileMint && (len(args) > 0 || len(reconcileRefreshFiles) > 0) {
-		return fmt.Errorf("--mint applies to whole-project reconcile; do not combine it with a feature or --file")
+	if (reconcileMint || reconcileMintWorkflows || reconcileMintSelection.workflow != "" || reconcileMintSelection.job != "") && (len(args) > 0 || len(reconcileRefreshFiles) > 0) {
+		return fmt.Errorf("mint integration applies to whole-project reconcile; do not combine it with a feature or --file")
 	}
 	if reconcileAll && len(args) > 0 {
 		return fmt.Errorf("--all cannot be used with a feature argument")
@@ -101,7 +107,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 	applyFiles := feat == nil
 	var deliverySnapshot []managedFileDeliverySnapshot
 	if applyFiles {
-		opts := initRefreshOptions{force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint}
+		opts := initRefreshOptions{mintWorkflows: reconcileMintWorkflows || reconcileMintSelection.workflow != "" || reconcileMintSelection.job != "", mintSelection: reconcileMintSelection, force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint}
 		upToDate, err := reconcileHasNoChanges(projectRoot, opts)
 		if err != nil {
 			return err
@@ -116,12 +122,14 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 				return err
 			}
 		} else if deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
-			force:      reconcileForce,
-			mint:       reconcileMint,
-			dryRun:     reconcileDryRun,
-			diff:       reconcileDiff,
-			files:      reconcileRefreshFiles,
-			outputOnly: reconcileOutputOnly,
+			force:         reconcileForce,
+			mint:          reconcileMint,
+			mintWorkflows: reconcileMintWorkflows || reconcileMintSelection.workflow != "" || reconcileMintSelection.job != "",
+			mintSelection: reconcileMintSelection,
+			dryRun:        reconcileDryRun,
+			diff:          reconcileDiff,
+			files:         reconcileRefreshFiles,
+			outputOnly:    reconcileOutputOnly,
 		}); err != nil {
 			return err
 		}

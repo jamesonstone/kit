@@ -13,8 +13,8 @@ import (
 const Module = "github.com/jamesonstone/mint"
 const Command = Module + "/cmd/mint"
 
-// LinearMinimumVersion must stay empty until Linear support has a published release.
-const LinearMinimumVersion = ""
+// LinearMinimumVersion is verified by v0.9.0, tag commit eac91490f772adbd2ab030cb6eba3910c1bca93c.
+const LinearMinimumVersion = "v0.9.0"
 
 type Options struct {
 	TargetVersion  string

@@ -63,8 +63,34 @@ provider or production environment is assumed. Package and artifact projects
 retain their existing publication workflows. Scaffolding keeps the
 `MINT_RELEASE_ENABLED` gate; it does not activate deployments. Review source-build
 isolation, adapter manifests, runtime configuration identities and verified
-baselines before enabling that gate. New-project `kit init` without `--mint`
-continues to install lifecycle guidance without adopting Mint automatically.
+baselines before enabling that gate.
+
+`kit init` automatically plans GitHub Actions integration using published Mint
+v0.9.0, pinned to `eac91490f772adbd2ab030cb6eba3910c1bca93c`:
+
+- No workflows: create one canonical release-state pipeline for default-branch
+  pushes. It publishes tags/GitHub Releases; it does not invent application build,
+  registry, cloud or deployment adapters. Review before merging the scaffold.
+- One release/deploy workflow with one ordinary `ubuntu-latest` steps job: append
+  Mint installation/version verification after existing steps. Triggers, jobs,
+  dependencies, permissions, secrets, environments and deployment steps stay intact.
+  Existing release publishers continue to own publication.
+- CI-only, ambiguous, dynamic or reusable jobs: add a separate read-only tooling
+  check. No publisher/deployment is inferred. Select a reviewed steps job with
+  `--mint-workflow .github/workflows/deploy.yaml --mint-job deploy`.
+- Existing Mint action integration: preserve its pin and behavior. Repeated runs
+  add no duplicate Mint steps or publishers. Custom files are not overwritten.
+
+Existing projects can preview the same planner with
+`kit reconcile --mint-workflows --dry-run --diff`; apply with
+`kit reconcile --mint-workflows`. The selectors also work with reconcile, whose
+usual delivery isolation remains in force. `--force` does not replace workflows.
+Init plans against the original workflow inventory before creating auto-assignment.
+Remote default-branch metadata is used where available; a new repository without
+that metadata gets a `main` starter and a runtime actual-default-branch guard.
+Inspect the branch filter before adoption in repositories using another branch.
+Local `kit mint update`, these action pins, and the older embedded environment
+controller renderer are separate version surfaces.
 
 Diagnose without changing anything:
 
@@ -264,9 +290,10 @@ A failed build/verification leaves the previous Mint executable unchanged.
 `update --dry-run` validates the proposed update without building or installing.
 Omitting `--version` chooses the latest published stable release without downgrading.
 
-Linear CHANGELOG support is still in unmerged Mint PR #33. There is **no verified
-released minimum** yet, so `--require-linear` returns `unknown_unreleased` and
-nonzero, including on update. Do not equate latest/version ordering with this
-feature. After a published stable Mint tag is verified to contain PR #33, Kit's
-`internal/minttool.LinearMinimumVersion` and its tests/docs must be updated through
-review. Consumer CI SHA pins still need separate verified release mapping.
+Linear CHANGELOG link support was released in Mint v0.9.0 from merged PR #33.
+The annotated tag resolves to `eac91490f772adbd2ab030cb6eba3910c1bca93c`, which
+contains the offline Linear footer parser. `--require-linear` now checks v0.9.0
+or newer for the local executable/update target. Existing consumer CI SHA pins
+remain separate and need their own verified release mapping. This capability
+covers explicit Linear links in `mint changelog`; release-state lightweight notes
+retain their existing subject-based format and do not fetch private ticket data.

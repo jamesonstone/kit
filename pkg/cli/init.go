@@ -35,6 +35,9 @@ Creates:
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
   - The core rules shipped with this Kit binary
 
+Mint Actions integration is planned automatically. Use --mint-workflow and
+--mint-job to select an existing steps job when needed; existing Mint is preserved.
+
 Use --mint to scaffold a missing Mint v0.5.0 environment controller from an
 existing team-first schema 2 .mint.yaml and project-owned build/deploy/observe
 adapters. Existing workflows and activation gates are preserved.
@@ -57,6 +60,7 @@ func init() {
 	initCmd.Flags().BoolVar(&initCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	initCmd.Flags().BoolVar(&initOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	bindIssueProviderFlags(initCmd)
+	bindMintPipelineSelection(initCmd, &initMintSelection)
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -78,6 +82,10 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this directory is inside the Kit project at %s; run Kit commands there (use `kit reconcile` to update it) instead of creating a nested project", parent)
 	}
 
+	mintChanges, mintNotes, err := planMintPipeline(cwd, initMintSelection)
+	if err != nil {
+		return err
+	}
 	var mintChange *initRefreshFileChange
 	if initMint {
 		mintChange, err = planMintWorkflow(cwd)
@@ -90,6 +98,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	deliveryPaths := projectInitDeliveryPaths(deliveryCfg)
+	for _, change := range mintChanges {
+		deliveryPaths = append(deliveryPaths, change.relativePath)
+	}
 	if mintChange != nil {
 		deliveryPaths = append(deliveryPaths, mintChange.relativePath)
 	}
@@ -156,8 +167,19 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	if mintChange != nil {
-		if err := applyInitRefreshFileChangesAtomically([]initRefreshFileChange{*mintChange}); err != nil {
+		mintChanges = append(mintChanges, *mintChange)
+	}
+	if len(mintChanges) > 0 {
+		if err := applyInitRefreshFileChangesAtomically(mintChanges); err != nil {
 			return err
+		}
+	}
+
+	if !initOutputOnly {
+		for _, note := range mintNotes {
+			if _, err := fmt.Fprintln(cmd.OutOrStdout(), note); err != nil {
+				return err
+			}
 		}
 	}
 

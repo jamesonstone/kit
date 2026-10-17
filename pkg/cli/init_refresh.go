@@ -14,12 +14,14 @@ import (
 const constitutionBaselineHeading = templates.ConstitutionBaselineHeading
 
 type initRefreshOptions struct {
-	mint       bool
-	force      bool
-	dryRun     bool
-	diff       bool
-	files      []string
-	outputOnly bool
+	mint          bool
+	mintWorkflows bool
+	mintSelection mintPipelineSelection
+	force         bool
+	dryRun        bool
+	diff          bool
+	files         []string
+	outputOnly    bool
 }
 
 type initRefreshStats struct {
@@ -131,13 +133,17 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 
 	var changes []initRefreshFileChange
 	var notes []string
-
 	var stats initRefreshStats
 	scaffoldChanges, err := planRefreshInitScaffoldFiles(projectRoot, opts, cfg, targets)
 	if err != nil {
 		return nil, err
 	}
 	changes = append(changes, scaffoldChanges...)
+	if opts.mintWorkflows {
+		if err := appendMintPipelinePlan(projectRoot, opts.mintSelection, &changes, &notes); err != nil {
+			return nil, err
+		}
+	}
 	if opts.mint {
 		change, err := planMintWorkflow(projectRoot)
 		if err != nil {

@@ -25,6 +25,9 @@ func applyInitRefreshFileChangesAtomicallyWithRollback(
 	changes []initRefreshFileChange,
 	rollback func(initRefreshFileChange) error,
 ) error {
+	if err := validateMintWorkflowChanges(changes); err != nil {
+		return err
+	}
 	applied := make([]initRefreshFileChange, 0, len(changes))
 	for _, change := range changes {
 		if err := applyInitRefreshFileChange(change); err != nil {

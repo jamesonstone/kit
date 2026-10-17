@@ -140,3 +140,40 @@ now infers block indentation from YAML source positions (four-space fallback),
 with two/four-space regression tests. Report serialization normalizes missing pins
 to an empty array for non-project and error paths. Focused tests and lint passed;
 final hosted check/review evidence remains on the live PR.
+
+## AUTHORIZED AUTOMATIC WORKFLOW INTEGRATION
+
+Init plans Mint integration before writing any scaffolds. Empty workflow sets get
+a complete release-state publisher pinned to an official published Mint commit;
+no runtime, registry, cloud or deployment adapters are invented. Existing Mint
+workflows retain their pins and publisher ownership. One clear release/deploy
+workflow with one ordinary steps job gets a version/install step only; existing
+release commands, permissions, triggers and deployment behavior stay byte-for-byte.
+CI-only, multiple candidate or reusable workflows get a separate read-only Mint
+validation workflow and a selection note. Explicit workflow/job selectors support
+a reviewed target without guessing production. Reconcile uses the same planner
+with --mint-workflows and its existing --dry-run --diff delivery boundary.
+
+Mint #33 merged with human authorization as eac91490f772adbd2ab030cb6eba3910c1bca93c.
+The normal release workflow published v0.9.0; its fetched annotated tag peels to
+that commit and contains pkg/changelog/linear.go. Thus v0.9.0 is now the verified
+Linear minimum, independent of local installation or existing repository pins.
+
+## AUTOMATIC WORKFLOW VALIDATION
+
+Added planning and YAML-preservation tests for empty repositories, init delivery
+inventory, explicit workflow/job selection, single existing deployment, CI-only,
+multiple candidates/jobs, reusable/dynamic workflows, existing Mint, repeat and
+force reconciliation, dry-run/no writes, symlinks, malformed workflow and remote
+default-branch selection. Workflow batches recheck snapshots before any writes,
+so a concurrent edit fails without overwriting it or partially writing the batch.
+Published capability tests cover local Linear minimum success and upgrade to
+v0.9.0, and rejection below that verified release.
+
+Independent read-only review found no actionable issues. The generated workflow
+has not been executed in a consumer repository. Without remote default-branch
+metadata its main starter may need a reviewed branch-filter adjustment; the
+runtime default-branch guard prevents publication from the wrong branch. Existing
+CI-only or ambiguous repositories gain read-only tooling, not inferred deployment.
+Mint's normal post-merge Release and Documentation runs both succeeded for
+merge eac91490f772adbd2ab030cb6eba3910c1bca93c; no manual release was started.

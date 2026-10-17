@@ -61,6 +61,18 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ### Kit workflow scaffolding
 
+- `kit init` plans published, immutable Mint Actions integration automatically.
+  Empty workflow sets receive a release-state publisher only; runtime adapters,
+  registries and cloud destinations are never inferred. One clear release/deploy
+  steps job receives installation/version verification after existing steps.
+  Existing triggers, permissions, secrets, jobs and deploy behavior stay intact.
+- CI-only, ambiguous, dynamic and reusable workflows receive a separate read-only
+  tooling check. Select a reviewed ordinary job with `--mint-workflow` and
+  `--mint-job`; preview existing-project changes with
+  `kit reconcile --mint-workflows --dry-run --diff`. Existing Mint action pins
+  and publishers stay project owned. Repeated runs add no duplicate integration.
+  Review scaffolds before merging; creation is not release/deployment evidence.
+
 - `kit init --mint` (new Kit project) or `kit reconcile --mint --dry-run --diff`
   followed by `kit reconcile --mint` (existing project) can create a missing
   controller from an existing schema 2 deployment `.mint.yaml` with

@@ -47,7 +47,9 @@ func TestCheckAndUpdate(t *testing.T) {
 		{"target", "v0.7.0", "go-install", "installed", "v0.9.0", Options{TargetVersion: "v0.8.0"}, false, 1},
 		{"unstable", "v0.7.0", "go-install", "installed", "v0.8.0", Options{TargetVersion: "v0.9.0-rc.1"}, true, 0},
 		{"required", "v0.7.0", "go-install", "installed", "v0.8.0", Options{RequireVersion: "v0.9.0"}, true, 0},
-		{"unreleased", "v0.8.0", "go-install", "installed", "v0.8.0", Options{RequireLinear: true}, true, 0},
+		{"linear current", "v0.9.0", "go-install", "installed", "v0.9.0", Options{RequireLinear: true}, false, 0},
+		{"linear update", "v0.8.0", "go-install", "installed", "v0.9.0", Options{RequireLinear: true}, false, 1},
+		{"linear below minimum", "v0.8.0", "go-install", "installed", "v0.8.0", Options{RequireLinear: true}, true, 0},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			b := &fakeBackend{installed: Installation{Version: tt.version, Method: tt.method, Status: tt.status}, latest: tt.latest}
