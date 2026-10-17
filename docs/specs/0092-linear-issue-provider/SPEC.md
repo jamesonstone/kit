@@ -198,3 +198,14 @@ leave ambient credentials for the appended step. Automatic adoption additionally
 rejects secret-context references, GITHUB_ENV exports and authentication/credential
 actions in existing steps; these require explicit selection. Tests cover AWS
 credential setup, bracket-form secret references and environment exports.
+
+The follow-up automated review identified a validation-to-write interval inside
+multi-file batches. Mint workflow writes now receive the original snapshot at
+the individual write boundary; existing files reuse the repository's staged
+conditional config replacement with byte and file-identity rechecks. New files
+stage completely and publish via an exclusive hard link, so an appearing target
+is never overwritten and failed writes/closes leave no partial destination.
+Rollback also checks the expected just-written snapshot before touching a Mint
+workflow. Deterministic tests inject edits/appearances during earlier batch writes,
+write/close failures, a target appearing during staging, and edits before rollback.
+The tests preserve human edits, roll back earlier files and retain file modes.
