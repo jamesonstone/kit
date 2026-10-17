@@ -177,3 +177,24 @@ runtime default-branch guard prevents publication from the wrong branch. Existin
 CI-only or ambiguous repositories gain read-only tooling, not inferred deployment.
 Mint's normal post-merge Release and Documentation runs both succeeded for
 merge eac91490f772adbd2ab030cb6eba3910c1bca93c; no manual release was started.
+
+## AUTOMATIC REVIEW CORRECTIONS
+
+CodeRabbit found that appending trusted Mint code to a deployment job would share
+its ambient OIDC, environment and write credentials. Automatic selection now
+requires explicit read-only permissions and no environment or ambient job/workflow
+env; unknown inherited defaults and privileged jobs use the standalone read-only
+check. Both workflow/job selectors provide the explicit opt-in for shared ambient
+credentials. Regression cases cover writes, OIDC, production environments, ambient
+secrets, unknown defaults and write-all.
+
+The workflow snapshot check had also changed generic managed symlink handling.
+Strict snapshot/path verification is now marked only on Mint-planned changes;
+generic managed workflow behavior remains unchanged, with a regression test that
+updates its linked target while strict Mint plans still reject that same link.
+
+Independent follow-up review found prior credential-export steps could still
+leave ambient credentials for the appended step. Automatic adoption additionally
+rejects secret-context references, GITHUB_ENV exports and authentication/credential
+actions in existing steps; these require explicit selection. Tests cover AWS
+credential setup, bracket-form secret references and environment exports.

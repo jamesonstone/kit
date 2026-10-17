@@ -71,13 +71,15 @@ v0.9.0, pinned to `eac91490f772adbd2ab030cb6eba3910c1bca93c`:
 - No workflows: create one canonical release-state pipeline for default-branch
   pushes. It publishes tags/GitHub Releases; it does not invent application build,
   registry, cloud or deployment adapters. Review before merging the scaffold.
-- One release/deploy workflow with one ordinary `ubuntu-latest` steps job: append
+- One release/deploy workflow with one ordinary `ubuntu-latest` steps job and
+  explicit read-only permissions, without environment/ambient credentials or credential-export steps: append
   Mint installation/version verification after existing steps. Triggers, jobs,
   dependencies, permissions, secrets, environments and deployment steps stay intact.
   Existing release publishers continue to own publication.
-- CI-only, ambiguous, dynamic or reusable jobs: add a separate read-only tooling
+- CI-only, ambiguous, privileged, dynamic or reusable jobs: add a separate read-only tooling
   check. No publisher/deployment is inferred. Select a reviewed steps job with
-  `--mint-workflow .github/workflows/deploy.yaml --mint-job deploy`.
+  `--mint-workflow .github/workflows/deploy.yaml --mint-job deploy`. Privileged
+  selections explicitly opt into Mint sharing that job's ambient credentials.
 - Existing Mint action integration: preserve its pin and behavior. Repeated runs
   add no duplicate Mint steps or publishers. Custom files are not overwritten.
 

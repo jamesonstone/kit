@@ -125,7 +125,7 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 		if len(content) == 0 {
 			return nil, nil, fmt.Errorf("cannot render Mint pipeline for the remote default branch")
 		}
-		change := newInitRefreshFileChange(root, ".github/workflows/mint-release.yaml", "", string(content), instructionFileCreated)
+		change := newMintPipelineFileChange(root, ".github/workflows/mint-release.yaml", "", string(content), instructionFileCreated)
 		return []initRefreshFileChange{*change}, []string{"Mint release-state pipeline added. Runtime deployment requires reviewed project adapters; no deployment is inferred."}, nil
 	}
 	var candidates []mintWorkflow
@@ -151,7 +151,7 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 			return nil, []string{"Mint target is ambiguous; existing mint-check.yaml preserved. Select --mint-workflow and --mint-job with --dry-run --diff."}, nil
 		}
 	}
-	change := newInitRefreshFileChange(root, path, "", string(renderMintValidationPipeline(mintDefaultBranch(root))), instructionFileCreated)
+	change := newMintPipelineFileChange(root, path, "", string(renderMintValidationPipeline(mintDefaultBranch(root))), instructionFileCreated)
 	return []initRefreshFileChange{*change}, []string{"No single safe release/deploy job selected. Added read-only Mint validation; preview an explicit target with --mint-workflows --mint-workflow <path> --mint-job <id> --dry-run --diff. Existing publishers and deploys are unchanged."}, nil
 }
 
@@ -189,6 +189,9 @@ func validateMintWorkflowChanges(changes []initRefreshFileChange) error {
 			return fmt.Errorf("conflicting workflow plans for %s", change.relativePath)
 		}
 		seen[change.absolutePath] = true
+		if !change.strictMintWorkflow {
+			continue
+		}
 		root := strings.TrimSuffix(change.absolutePath, filepath.FromSlash(change.relativePath))
 		data, err := readMintProjectFile(root, change.relativePath)
 		if change.result == instructionFileCreated && os.IsNotExist(err) {
@@ -221,4 +224,10 @@ func mintReusableWorkflow(node *yaml.Node) bool {
 		}
 	}
 	return false
+}
+
+func newMintPipelineFileChange(root, path, before, after string, result instructionFileWriteResult) *initRefreshFileChange {
+	change := newInitRefreshFileChange(root, path, before, after, result)
+	change.strictMintWorkflow = true
+	return change
 }

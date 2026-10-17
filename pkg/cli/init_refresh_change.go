@@ -10,11 +10,12 @@ import (
 )
 
 type initRefreshFileChange struct {
-	relativePath string
-	absolutePath string
-	before       string
-	after        string
-	result       instructionFileWriteResult
+	strictMintWorkflow bool
+	relativePath       string
+	absolutePath       string
+	before             string
+	after              string
+	result             instructionFileWriteResult
 }
 
 func applyInitRefreshFileChangesAtomically(changes []initRefreshFileChange) error {

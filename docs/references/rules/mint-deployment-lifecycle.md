@@ -64,9 +64,10 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 - `kit init` plans published, immutable Mint Actions integration automatically.
   Empty workflow sets receive a release-state publisher only; runtime adapters,
   registries and cloud destinations are never inferred. One clear release/deploy
-  steps job receives installation/version verification after existing steps.
+  steps job with explicit read-only permissions and no ambient environment
+  credentials receives installation/version verification after existing steps.
   Existing triggers, permissions, secrets, jobs and deploy behavior stay intact.
-- CI-only, ambiguous, dynamic and reusable workflows receive a separate read-only
+- CI-only, ambiguous, privileged, dynamic and reusable workflows receive a separate read-only
   tooling check. Select a reviewed ordinary job with `--mint-workflow` and
   `--mint-job`; preview existing-project changes with
   `kit reconcile --mint-workflows --dry-run --diff`. Existing Mint action pins

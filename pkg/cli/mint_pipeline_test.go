@@ -27,16 +27,14 @@ on:
     branches: [trunk]
 permissions:
   contents: read
-  id-token: write
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
     needs: []
     steps:
       - name: Existing deploy
         env:
-          TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          LABEL: original
         run: echo original
 `
 
@@ -195,5 +193,54 @@ func TestMintPipelineExplicitJobPreservesFollowingJob(t *testing.T) {
 	jobs := mintField(&doc, "jobs")
 	if len(mintField(mintField(jobs, "deploy"), "steps").Content) != 2 || len(mintField(mintField(jobs, "observe"), "steps").Content) != 1 {
 		t.Fatal(changes[0].after)
+	}
+}
+
+func TestMintPipelinePrivilegedJobsRequireExplicitSelection(t *testing.T) {
+	for _, source := range []string{
+		strings.Replace(pipelineDeploy, "run: echo original", "uses: aws-actions/configure-aws-credentials@v4\n        with:\n          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}", 1),
+		strings.Replace(pipelineDeploy, "run: echo original", "run: echo TOKEN=value >> $GITHUB_ENV", 1),
+		strings.Replace(pipelineDeploy, "run: echo original", "uses: acme/action@v1\n        with:\n          token: ${{ secrets['TOKEN'] }}", 1),
+		strings.Replace(pipelineDeploy, "  contents: read", "  contents: write", 1),
+		strings.Replace(pipelineDeploy, "  contents: read", "  contents: read\n  id-token: write", 1),
+		strings.Replace(pipelineDeploy, "    needs: []", "    needs: []\n    environment: production", 1),
+		strings.Replace(pipelineDeploy, "    needs: []", "    needs: []\n    env:\n      TOKEN: ${{ secrets.TOKEN }}", 1),
+		strings.Replace(pipelineDeploy, "permissions:\n  contents: read\n", "", 1),
+		strings.Replace(pipelineDeploy, "permissions:\n  contents: read", "permissions: write-all", 1),
+	} {
+		root := t.TempDir()
+		path := ".github/workflows/deploy.yaml"
+		writePipelineFixture(t, root, path, source)
+		changes, _, err := planMintPipeline(root, mintPipelineSelection{})
+		if err != nil || len(changes) != 1 || changes[0].relativePath != ".github/workflows/mint-check.yaml" {
+			t.Fatalf("automatic: %+v %v", changes, err)
+		}
+		changes, _, err = planMintPipeline(root, mintPipelineSelection{path, "deploy"})
+		if err != nil || len(changes) != 1 || changes[0].relativePath != path {
+			t.Fatalf("explicit: %+v %v", changes, err)
+		}
+	}
+}
+func TestMintSnapshotValidationPreservesGenericSymlinkHandling(t *testing.T) {
+	root := t.TempDir()
+	target := filepath.Join(root, "owned.yaml")
+	writePipelineFixture(t, root, "owned.yaml", "before")
+	path := ".github/workflows/auto-assign.yml"
+	if err := os.MkdirAll(filepath.Dir(filepath.Join(root, path)), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, filepath.Join(root, path)); err != nil {
+		t.Fatal(err)
+	}
+	change := newInitRefreshFileChange(root, path, "before", "after", instructionFileUpdated)
+	if err := applyInitRefreshFileChangesAtomically([]initRefreshFileChange{*change}); err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, target); got != "after" {
+		t.Fatal(got)
+	}
+	strict := newMintPipelineFileChange(root, path, "after", "forbidden", instructionFileUpdated)
+	if err := applyInitRefreshFileChangesAtomically([]initRefreshFileChange{*strict}); err == nil {
+		t.Fatal("Mint symlink accepted")
 	}
 }

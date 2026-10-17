@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -27,6 +28,9 @@ func integrateMintJob(root string, workflow mintWorkflow, selected string) ([]in
 	if job == nil {
 		return nil, nil, fmt.Errorf("mint workflow %s needs an explicit --mint-job selection", workflow.path)
 	}
+	if selected == "" && mintPrivilegedJob(&workflow.node, job) {
+		return nil, nil, fmt.Errorf("mint workflow %s has privileged or unknown ambient access; select --mint-workflow and --mint-job explicitly", workflow.path)
+	}
 	steps := mintField(job, "steps")
 	runner := mintField(job, "runs-on")
 	if steps == nil || steps.Kind != yaml.SequenceNode || len(steps.Content) == 0 || mintField(job, "uses") != nil || mintField(job, "container") != nil || runner == nil || runner.Kind != yaml.ScalarNode || runner.Value != "ubuntu-latest" {
@@ -34,7 +38,8 @@ func integrateMintJob(root string, workflow mintWorkflow, selected string) ([]in
 	}
 	// Append after the last original step, without re-encoding any existing YAML.
 	// Mint's action sets up Go and PATH, so placing it last avoids changing earlier
-	// build/deploy tool selection. It does not acquire a token or publish releases.
+	// build/deploy tool selection. No auth inputs or publishing are requested.
+	// Explicit privileged selections retain their job ambient credentials.
 	lines := strings.Split(string(workflow.data), "\n")
 	start := steps.Content[0].Line - 1
 	if start < 0 || start >= len(lines) {
@@ -64,7 +69,7 @@ func integrateMintJob(root string, workflow mintWorkflow, selected string) ([]in
 	if err := yaml.Unmarshal([]byte(content), &check); err != nil {
 		return nil, nil, fmt.Errorf("validate Mint workflow insertion: %w", err)
 	}
-	change := newInitRefreshFileChange(root, workflow.path, string(workflow.data), content, instructionFileUpdated)
+	change := newMintPipelineFileChange(root, workflow.path, string(workflow.data), content, instructionFileUpdated)
 	return []initRefreshFileChange{*change}, []string{"Mint install/version step added after existing steps in " + workflow.path + ". Existing publishers, deploys, triggers and permissions preserved."}, nil
 }
 func mintComplexYAML(node *yaml.Node) bool {
@@ -95,4 +100,61 @@ jobs:
         with:
           command: version
 `)
+}
+
+// Conservatively require opt-in for ambient deployment access signals.
+// Missing permissions inherit an unknown repository default, so require opt-in.
+func mintPrivilegedJob(workflow, job *yaml.Node) bool {
+	if mintStepCredentials(mintField(job, "steps")) {
+		return true
+	}
+	if mintField(job, "environment") != nil || mintField(job, "env") != nil || mintField(workflow, "env") != nil {
+		return true
+	}
+	scopes := []*yaml.Node{mintField(workflow, "permissions"), mintField(job, "permissions")}
+	if scopes[0] == nil && scopes[1] == nil {
+		return true
+	}
+	for _, scope := range scopes {
+		if scope == nil {
+			continue
+		}
+		if scope.Kind == yaml.ScalarNode && scope.Value != "read-all" {
+			return true
+		}
+		if scope.Kind != yaml.ScalarNode && scope.Kind != yaml.MappingNode {
+			return true
+		}
+		for i := 1; scope.Kind == yaml.MappingNode && i < len(scope.Content); i += 2 {
+			if scope.Content[i].Value != "read" && scope.Content[i].Value != "none" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+var mintCredentialExport = regexp.MustCompile(`(?i)\bsecrets\s*[.\[]|github_env`)
+
+func mintStepCredentials(node *yaml.Node) bool {
+	if node == nil {
+		return false
+	}
+	if node.Kind == yaml.ScalarNode && mintCredentialExport.MatchString(node.Value) {
+		return true
+	}
+	if uses := mintField(node, "uses"); uses != nil {
+		name := strings.ToLower(uses.Value)
+		for _, marker := range []string{"credentials", "/auth", "/login", "ssh-agent"} {
+			if strings.Contains(name, marker) {
+				return true
+			}
+		}
+	}
+	for _, child := range node.Content {
+		if mintStepCredentials(child) {
+			return true
+		}
+	}
+	return false
 }
