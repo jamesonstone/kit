@@ -79,3 +79,57 @@ was attempted; such an execution test needs an authorized precise destination.
 Independent continuation review confirmed these mechanism and scope claims without
 new defects. CodeRabbit completed successfully on `1b54c0f` at 2026-10-16
 22:01 UTC, reporting no actionable comments. CI passed on that source head.
+
+## AUTHORIZED CLI EXTENSION PLAN
+
+Add `kit config set --issue-provider github|linear` with the init target flags,
+noninteractive validation, `--dry-run` and JSON output. Patch only issue fields
+in the YAML node document, preserving unrelated values/comments. Use the canonical
+reconcile target resolver to protect primary checkouts; report the target and
+explicit `kit reconcile --dry-run --diff`/`kit reconcile` next actions rather than
+reimplement migration or silently applying unrelated repairs. Validate before
+writes and use atomic replacement. A no-op stays a no-op.
+
+Add `kit mint check` and explicit `kit mint update` using Mint's published official
+Go module install mechanism (latest release inspected: v0.8.0, no binary assets).
+Report locally resolved executable, repository action pins and Go dependency
+separately; never imply updating one updates others. Updates are constrained to
+verified user-owned Go-bin installations and staged/verified before replacement.
+No production/labcore configuration or globally installed tools will be changed
+in implementation tests. Linear support remains unreleased until a published tag
+containing the companion change is verified; no invented minimum version.
+
+## CLI EXTENSION OUTCOME AND VALIDATION
+
+Implemented `kit config set --issue-provider github|linear`, `--dry-run`, `--json`
+and shared init target flags. Settings are patched atomically with unrelated YAML
+preserved; aliases/anchors/root merges that could alter unrelated semantics fail
+before writes. The command reuses reconcile target safety and reports explicit
+mandatory next_actions for canonical migration rather than duplicating it.
+
+Implemented `kit mint check|update`, published `--version`, numeric local
+`--require-version`, explicit `--require-linear`, JSON reports on operational
+errors, and update dry-run using the same plan validation without installation.
+Official published tags and Go proxy/checksum verification constrain staged Go
+installs; only supported user-owned Go-bin targets update. Local executable and
+repo module/action pins are separate; pins remain inventory/not_verified.
+The verified Linear minimum stays unset until a real release proves support.
+No Mint source/PR extension was needed for these Kit-owned commands.
+
+Observed: complete Go suite, vet, build, formatting, lint (0 issues), project
+check and targeted race tests passed. Project check retains its existing edited
+retired README compatibility advisory. New tests cover provider transitions,
+repeatability, optional-project clearing, config preservation, invalid/no partial
+writes, YAML alias/merge rejection, canonical delivery target, JSON failures,
+module/action inventory, missing/current/old/development/unreleased Mint versions,
+unsupported installs, downgrade refusal, staging/build failures and stale-version
+concurrency. A live read-only check reported Mint missing on this session's PATH,
+latest v0.8.0 and five repository pins; updated=false and no pins changed.
+No live installation/update, credentials changes, ticket writes or production
+operations were performed; updater tests use isolated fixtures.
+
+Independent review found and verified fixes for single-line Go dependencies,
+YAML alias/root-merge preservation, early-error JSON output and concurrent update
+no-downgrade guarantees. Final review confirmed the remaining findings resolved.
+Hosted checks/review on the extension are recorded on PR #265 and remain the
+source of current evidence. Both PRs must remain open and unmerged for review.

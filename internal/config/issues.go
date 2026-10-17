@@ -8,16 +8,16 @@ import (
 // IssueConfig selects the repository's development tracker. Credentials never
 // belong here. An omitted provider means GitHub Issues for existing projects.
 type IssueConfig struct {
-	Provider string       `yaml:"provider,omitempty"`
-	Linear   LinearConfig `yaml:"linear,omitempty"`
+	Provider string       `yaml:"provider,omitempty" json:"provider"`
+	Linear   LinearConfig `yaml:"linear,omitempty" json:"linear,omitempty"`
 }
 
 // LinearConfig stores verified, non-secret target identities. IDs avoid
 // ambiguous team/project display names; an empty project means team-only work.
 type LinearConfig struct {
-	Workspace string `yaml:"workspace,omitempty"`
-	TeamID    string `yaml:"team_id,omitempty"`
-	ProjectID string `yaml:"project_id,omitempty"`
+	Workspace string `yaml:"workspace,omitempty" json:"workspace,omitempty"`
+	TeamID    string `yaml:"team_id,omitempty" json:"team_id,omitempty"`
+	ProjectID string `yaml:"project_id,omitempty" json:"project_id,omitempty"`
 }
 
 func (c IssueConfig) EffectiveProvider() string {

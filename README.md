@@ -196,3 +196,77 @@ Linear integrations, map workflow states automatically, install credentials, or
 configure server-side closure on merge. An authorized agent must verify and apply
 the team's state transitions after observing completion. Contract tests prove
 which instructions ship, not that a host executed provider actions successfully.
+
+### Agent-friendly provider changes
+
+Use the same verified non-secret target IDs as init:
+
+```bash
+kit config set --issue-provider linear --linear-workspace acme \
+  --linear-team-id 11111111-1111-4111-8111-111111111111 --dry-run --json
+# Remove --dry-run to apply configuration, then execute the returned next_actions.
+```
+
+The UUID is a placeholder. Add `--linear-project-id <verified-uuid>` for a project,
+or `--linear-project-id ''` to clear it. Existing target values are retained unless
+explicitly supplied. Switch back with `kit config set --issue-provider github`.
+Repeat applications are no-ops. Unknown providers, invalid/missing required targets,
+newer schemas and unsafe files fail before config writes. Only issue fields change;
+unrelated YAML values and comments remain. Root YAML merges and aliased or anchored issue settings fail
+without writes and need manual review to avoid changing other alias users.
+
+`--json` emits the non-secret issue settings, target, changed/dry-run state and
+`reconciliation_required: true` with explicit next actions. The setter does not
+silently migrate other files. Run the reported `kit reconcile --dry-run --diff`,
+then `kit reconcile`, in that target and review/deliver the changes. The existing
+reconcile target resolver protects primary checkouts by preparing/reusing its
+`kit-reconcile` worktree. Dry runs never prepare a worktree: their config preview
+uses the invoking checkout; a later primary-checkout write uses the canonical
+base/worktree and never copies unrelated working changes into it.
+
+### Mint version checks and explicit local updates
+
+```bash
+kit mint check --json
+kit mint check --require-version v0.8.0 --json
+kit mint check --require-linear --json
+kit mint update --version v0.8.0 --dry-run --json
+kit mint update --version v0.8.0 --json
+```
+
+The first command only inspects the resolved `mint` executable's Go metadata and
+reads official published stable release metadata. It never installs or executes
+Mint. An outdated stable install is reported with `update_available`; missing or
+unsupported local installations and failed requirements exit nonzero. Network or
+rate-limit failures are errors, not evidence of compatibility. `--json` includes a
+report and error on operational failures. `--require-version` is a numeric local
+minimum, not proof of feature support; `--version` selects a published target.
+
+Local executable, repository `go.mod` dependency (including replacements), and
+`.github/workflows` Mint action refs are separate report fields. Pin comments are
+unverified version hints. SHA pins and repository compatibility are reported as
+`not_verified`; this command does not resolve their release ancestry or rewrite
+any dependency/workflow. Updating local Mint never updates Kit's embedded Mint
+renderer dependency or consumer CI pins. Review those separately in repository PRs.
+Symlinked pin files/directories fail rather than being read outside the repository.
+
+Mint currently publishes no binary assets. Explicit update uses its documented
+`go install github.com/jamesonstone/mint/cmd/mint@<published-tag>` source mechanism,
+with the official Go proxy and checksum database required. It stages under the
+verified Go bin, verifies module path/version/host platform, preserves ownership,
+group and mode, and replaces atomically only after a successful build. Existing
+installations must be verified user-owned Go-bin builds. Development/pseudo versions,
+downgrades, package-manager/custom/symlink paths, ambiguous ownership, unsafe
+permissions and unsupported systems fail clearly; no sudo, arbitrary installer or
+PATH changes occur. Initial install requires an existing safe Go bin already on
+PATH. The installed Go toolchain must support the target; no automatic Go upgrade.
+A failed build/verification leaves the previous Mint executable unchanged.
+`update --dry-run` validates the proposed update without building or installing.
+Omitting `--version` chooses the latest published stable release without downgrading.
+
+Linear CHANGELOG support is still in unmerged Mint PR #33. There is **no verified
+released minimum** yet, so `--require-linear` returns `unknown_unreleased` and
+nonzero, including on update. Do not equate latest/version ordering with this
+feature. After a published stable Mint tag is verified to contain PR #33, Kit's
+`internal/minttool.LinearMinimumVersion` and its tests/docs must be updated through
+review. Consumer CI SHA pins still need separate verified release mapping.

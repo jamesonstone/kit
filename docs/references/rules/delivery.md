@@ -31,6 +31,7 @@ read_policy_default: conditional
 
 ### Issue provider and ticket parity
 
+- Configure with `kit config set --issue-provider github|linear` (Linear target flags match init), preview with `--dry-run --json`, and execute the reported canonical reconcile steps in the reported target. The setter changes only issue configuration; it does not migrate managed files or authenticate.
 - Read repository-local `.kit.yaml` `issues.provider`: omitted or `github` uses the existing GitHub Issues flow; `linear` uses Linear only. Provider selection does not change GitHub pull requests, reviews, protection, or release hosting. Never inherit an issue target from global configuration.
 - For GitHub, use the repository's existing `gh` or connected GitHub tools and human assignment. For Linear, use the host's already-authorized Linear connector or API capability. If unavailable, stop ticket writes and report the missing Linear capability; do not install a connector, configure credentials, broaden access, or fall back to GitHub.
 - Before a Linear write, verify the authenticated human, workspace URL slug (`issues.linear.workspace`), team UUID (`team_id`), and optional project UUID (`project_id`). Read the team and project to confirm workspace membership and that the project supports that team. Resolve the human's Linear assignee ID; GitHub logins are not Linear assignee IDs. Missing configuration, permission errors, target mismatch, or ambiguous lookup is a blocker. Never choose the first name match. An omitted project means explicitly team-only work.

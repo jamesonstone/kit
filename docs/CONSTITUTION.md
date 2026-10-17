@@ -42,7 +42,7 @@
 
 ### Supported Command Surface
 
-- User-facing paths: `kit init`, `kit spec`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
+- User-facing paths: `kit init`, `kit spec`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check|set`, `kit mint check|update`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
 - A command exists only when it does deterministic work an agent cannot reproduce as safely or cheaply: bootstrap and managed-file convergence, validation, spec allocation, AWS identity verification, or usage evidence. Kit adds no prompt wrappers, context routers, capability catalogs, or orchestration commands.
 - Removed command groups are absent, not hidden compatibility aliases.
 
