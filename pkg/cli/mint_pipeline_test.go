@@ -95,7 +95,7 @@ func TestMintPipelineExistingDeployPreserved(t *testing.T) {
 	}
 }
 func TestMintPipelineAmbiguousSafeAdditive(t *testing.T) {
-	for _, kind := range []string{"ci", "ambiguous", "reusable", "dynamic", "multi-job"} {
+	for _, kind := range []string{"ci", "ambiguous", "reusable", "reusable callee", "dynamic", "multi-job"} {
 		t.Run(kind, func(t *testing.T) {
 			root := t.TempDir()
 			source := pipelineDeploy
@@ -106,6 +106,8 @@ func TestMintPipelineAmbiguousSafeAdditive(t *testing.T) {
 				writePipelineFixture(t, root, ".github/workflows/release.yaml", pipelineDeploy)
 			case "reusable":
 				source = "name: Deploy\non: push\njobs:\n  deploy:\n    uses: acme/actions/.github/workflows/deploy.yaml@main\n    secrets: inherit\n"
+			case "reusable callee":
+				source = strings.Replace(source, "push:\n    branches: [trunk]", "workflow_call:", 1)
 			case "dynamic":
 				source = strings.Replace(source, "ubuntu-latest", "${{ matrix.runner }}", 1)
 			case "multi-job":

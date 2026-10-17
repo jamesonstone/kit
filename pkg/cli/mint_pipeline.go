@@ -139,7 +139,7 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 			candidates = append(candidates, workflow)
 		}
 	}
-	if len(candidates) == 1 {
+	if len(candidates) == 1 && !mintReusableWorkflow(&candidates[0].node) {
 		changes, notes, err := integrateMintJob(root, candidates[0], "")
 		if err == nil {
 			return changes, notes, nil
@@ -202,4 +202,23 @@ func validateMintWorkflowChanges(changes []initRefreshFileChange) error {
 		}
 	}
 	return nil
+}
+
+func mintReusableWorkflow(node *yaml.Node) bool {
+	trigger := mintField(node, "on")
+	if trigger == nil {
+		return false
+	}
+	if trigger.Kind == yaml.ScalarNode {
+		return trigger.Value == "workflow_call"
+	}
+	if trigger.Kind == yaml.MappingNode {
+		return mintField(trigger, "workflow_call") != nil
+	}
+	for _, event := range trigger.Content {
+		if event.Value == "workflow_call" {
+			return true
+		}
+	}
+	return false
 }
