@@ -70,6 +70,9 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 		start, end int
 		value      string
 	}
+	if mintComplexYAML(&doc) {
+		return source, []string{"shared YAML anchors/aliases/merges preserved; inspect Mint refs manually, currentness is unknown"}, nil
+	}
 	var edits []edit
 	var notes []string
 	lines := strings.SplitAfter(source, "\n")
@@ -77,10 +80,6 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 		if node.Kind == yaml.MappingNode {
 			for i := 0; i+1 < len(node.Content); i += 2 {
 				key, value := node.Content[i], node.Content[i+1]
-				if key.Value == "uses" && value.Kind == yaml.AliasNode && value.Alias != nil && strings.HasPrefix(strings.ToLower(value.Alias.Value), "jamesonstone/mint@") {
-					notes = append(notes, "aliased Mint reference preserved; currentness is unknown")
-					continue
-				}
 				if key.Value != "uses" || value.Kind != yaml.ScalarNode || !strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@") {
 					continue
 				}
@@ -94,7 +93,7 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 					notes = append(notes, "custom reference "+ref+" preserved; currentness is unknown")
 					continue
 				}
-				if value.Anchor != "" || (value.Style != 0 && value.Style != yaml.SingleQuotedStyle && value.Style != yaml.DoubleQuotedStyle) {
+				if value.Style != 0 && value.Style != yaml.SingleQuotedStyle && value.Style != yaml.DoubleQuotedStyle {
 					notes = append(notes, "nonstandard uses scalar preserved")
 					continue
 				}

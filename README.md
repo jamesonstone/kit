@@ -84,7 +84,8 @@ Mint and the project own release policy and the use of generated outputs.
 During init and reconcile, Kit refreshes supported `jamesonstone/mint` Action
 references to the latest verified published stable release. Stable version tags
 remain tags; full commit SHA pins become the verified release commit SHA. Custom
-refs are preserved with a diagnostic. A failed release lookup reports an error
+refs and workflows with shared YAML anchors/aliases are preserved with a diagnostic.
+A failed release lookup reports an error
 rather than guessing a reference. Preview with `kit reconcile --dry-run --diff`;
 dry runs do not write files. Kit does not manage the local Mint executable.
 

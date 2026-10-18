@@ -106,10 +106,14 @@ func TestInitScaffoldUsesDiscoveredMintRelease(t *testing.T) {
 }
 
 func TestAliasedMintRefIsPreservedAndReported(t *testing.T) {
-	source := "env: {MINT_REF: &mint_ref jamesonstone/mint@v0.8.0}\njobs:\n  check:\n    steps:\n      - uses: *mint_ref\n"
-	got, notes, err := refreshMintActionRefs(source, mintActionRelease{Version: "v1.0.0", SHA: strings.Repeat("a", 40)})
-	if err != nil || got != source || len(notes) != 1 || !strings.Contains(notes[0], "unknown") {
-		t.Fatalf("%s %v %v", got, notes, err)
+	for _, source := range []string{
+		"env: {MINT_REF: &mint_ref jamesonstone/mint@v0.8.0}\njobs:\n  check:\n    steps:\n      - uses: *mint_ref\n",
+		"x-steps: &mint_steps [{uses: jamesonstone/mint@v0.8.0}]\njobs: {check: {steps: *mint_steps}}\n",
+	} {
+		got, notes, err := refreshMintActionRefs(source, mintActionRelease{Version: "v1.0.0", SHA: strings.Repeat("a", 40)})
+		if err != nil || got != source || len(notes) != 1 || !strings.Contains(notes[0], "unknown") {
+			t.Fatalf("%s %v %v", got, notes, err)
+		}
 	}
 }
 
