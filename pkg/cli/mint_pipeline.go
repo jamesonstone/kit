@@ -11,16 +11,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type mintPipelineSelection struct{ workflow, job, beforeStep, releaseOwner string }
+type mintPipelineSelection struct{ workflow, job, beforeStep string }
 
 var initMintSelection, reconcileMintSelection mintPipelineSelection
 var reconcileMintWorkflows bool
 
 func bindMintPipelineSelection(cmd *cobra.Command, selection *mintPipelineSelection) {
-	cmd.Flags().StringVar(&selection.workflow, "mint-workflow", "", "existing workflow path for real Mint release preparation")
+	cmd.Flags().StringVar(&selection.workflow, "mint-workflow", "", "existing workflow path for Mint preparation steps")
 	cmd.Flags().StringVar(&selection.job, "mint-job", "", "steps job in --mint-workflow (required when multiple jobs exist)")
 	cmd.Flags().StringVar(&selection.beforeStep, "mint-before-step", "", "existing step id before which to resolve version and generate changelog")
-	cmd.Flags().StringVar(&selection.releaseOwner, "mint-release-owner", "", "publication owner: existing (handoff) or mint (publish after job steps)")
 }
 
 type mintWorkflow struct {
@@ -109,6 +108,11 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 	if err := validateMintSelection(selection); err != nil {
 		return nil, nil, err
 	}
+	for _, workflow := range workflows {
+		if mintUses(&workflow.node) {
+			return nil, []string{"Existing Mint Actions integration preserved."}, nil
+		}
+	}
 	if selection.workflow != "" {
 		for _, workflow := range workflows {
 			if workflow.path == selection.workflow {
@@ -117,16 +121,6 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 		}
 		return nil, nil, fmt.Errorf("selected Mint workflow %q is not an existing workflow", selection.workflow)
 	}
-	if _, err := readMintProjectFile(root, mintPolicyPath); err == nil {
-		return nil, []string{"INCOMPLETE Mint integration: existing .mint.yaml owns deployment/versioning. Use --mint with reviewed policy/adapters; no independent publisher was added."}, nil
-	} else if !os.IsNotExist(err) {
-		return nil, nil, err
-	}
-	for _, workflow := range workflows {
-		if mintUses(&workflow.node) && mintFunctionalStages(&workflow.node) {
-			return nil, []string{"Existing Mint release/changelog stages preserved. INCOMPLETE adoption review: verify project-owned pins, publication ownership and handoff manually."}, nil
-		}
-	}
 
 	if len(workflows) == 0 {
 		content := renderMintReleasePipeline(mintDefaultBranch(root))
@@ -134,19 +128,9 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 			return nil, nil, fmt.Errorf("cannot render Mint pipeline for the remote default branch")
 		}
 		change := newMintPipelineFileChange(root, ".github/workflows/mint-release.yaml", "", string(content), instructionFileCreated)
-		return []initRefreshFileChange{*change}, []string{"Mint release-state pipeline added. Runtime deployment requires reviewed project adapters; no deployment is inferred."}, nil
+		return []initRefreshFileChange{*change}, []string{"Mint starter workflow added; review it for your project."}, nil
 	}
-	diagnostic := "INCOMPLETE Mint pipeline configuration: publication ownership and insertion order require explicit selection."
-	diagnostic += " Preview --mint-workflow <path> --mint-job <id> --mint-before-step <id> --mint-release-owner existing|mint --dry-run --diff. Version checks are diagnostics only."
-
-	path := ".github/workflows/mint-check.yaml"
-	for _, workflow := range workflows {
-		if workflow.path == path {
-			return nil, []string{diagnostic + " Existing mint-check.yaml preserved."}, nil
-		}
-	}
-	change := newMintPipelineFileChange(root, path, "", string(renderMintValidationPipeline()), instructionFileCreated)
-	return []initRefreshFileChange{*change}, []string{diagnostic + " Added read-only tooling diagnostic; existing publishers/deploys unchanged."}, nil
+	return nil, []string{"INCOMPLETE Mint placement: existing workflows were preserved. Select --mint-workflow <path> --mint-job <id> --mint-before-step <id>, then preview with --dry-run --diff."}, nil
 }
 
 func mintKnownDefaultBranch(root string) (string, bool) {

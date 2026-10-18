@@ -16,7 +16,7 @@ const mintPolicyPath = ".mint.yaml"
 
 func validateMintControllerOptions(controller, workflows bool, selection mintPipelineSelection) error {
 	if controller && (workflows || mintSelectionRequested(selection)) {
-		return fmt.Errorf("--mint cannot be combined with --mint-workflows or Mint workflow selection flags; the environment controller owns its release lifecycle")
+		return fmt.Errorf("--mint cannot be combined with --mint-workflows or Mint workflow selection flags; select one scaffold at a time")
 	}
 	return nil
 }

@@ -57,6 +57,7 @@
 - Migration removes a file only when it is exactly Kit-generated and tracked and unmodified in Git, so every removal is restorable; outside Git nothing is removed.
 - `kit reconcile` applies migration by default. From the primary checkout it writes only to a linked `kit-reconcile` worktree; `--dry-run --diff` previews anywhere without writing.
 - `kit mint check|update` provides explicit local Mint inspection and installation/update. Valid `kit reconcile` runs automatic installed-only Mint maintenance, skipping missing Mint and keeping `--dry-run` nonmutating. Repository dependencies/CI pins remain separately reviewed.
+- Kit scaffolds Mint files and additive workflow preparation with explicit placement in existing jobs. Existing Mint integrations are preserved; Mint and the project own trigger, permission, publication and runtime policy.
 - Command responsibilities do not overlap: `kit init` creates a project and refuses where `.kit.yaml` exists; `kit reconcile` is the only command that migrates or repairs an existing project; `kit health` is read-only diagnosis (pending reconcile changes plus the project check). `kit init --refresh` was removed because it duplicated reconcile without its primary-checkout safety.
 - `.kit.yaml` `source_file_line_limit` makes a line limit a deterministic project invariant; Kit sets 300 for itself.
 

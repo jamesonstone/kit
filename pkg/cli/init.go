@@ -36,12 +36,12 @@ Creates:
   - The core rules shipped with this Kit binary
 
 Mint Actions integration is planned automatically. Existing jobs need explicit
---mint-workflow, --mint-job, --mint-before-step and --mint-release-owner selection.
+--mint-workflow, --mint-job and --mint-before-step placement.
 
 Use --mint to scaffold a missing Mint v0.9.0 environment controller from an
 existing team-first schema 2 .mint.yaml and project-owned build/deploy/observe
 adapters. Existing workflows and activation gates are preserved.
-This controller option excludes standalone publication planning and cannot be
+This controller scaffold cannot be
 combined with Mint workflow selection flags.
 
 Init is for projects that are not yet Kit projects. Existing files are

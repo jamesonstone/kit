@@ -9,7 +9,7 @@ import (
 
 // Keep every existing byte, including comments and custom expressions. Only
 // insert ordinary block steps at the reviewed anchor and sequence boundary.
-func insertMintStages(data []byte, steps *yaml.Node, index int, publish bool) (string, error) {
+func insertMintStages(data []byte, steps *yaml.Node, index int) (string, error) {
 	lines := strings.Split(string(data), "\n")
 	first := steps.Content[0].Line - 1
 	start := steps.Content[index].Line - 1
@@ -32,15 +32,6 @@ func insertMintStages(data []byte, steps *yaml.Node, index int, publish bool) (s
 	if err != nil {
 		return "", err
 	}
-	tail := ""
-	if publish {
-		step := mintReleasePublisherStep()
-		step["if"] = mintPublishGuard
-		tail, err = mintIndentedSteps([]any{step}, prefix)
-		if err != nil {
-			return "", err
-		}
-	}
 	join := func(part []string) string {
 		s := strings.Join(part, "\n")
 		if len(part) > 0 && !strings.HasSuffix(s, "\n") {
@@ -48,7 +39,7 @@ func insertMintStages(data []byte, steps *yaml.Node, index int, publish bool) (s
 		}
 		return s
 	}
-	content := join(lines[:start]) + prep + join(lines[start:end]) + tail + strings.Join(lines[end:], "\n")
+	content := join(lines[:start]) + prep + join(lines[start:end]) + strings.Join(lines[end:], "\n")
 	var check yaml.Node
 	if err := yaml.Unmarshal([]byte(content), &check); err != nil {
 		return "", fmt.Errorf("validate Mint workflow insertion: %w", err)

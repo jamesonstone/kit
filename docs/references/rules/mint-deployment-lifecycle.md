@@ -61,42 +61,23 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ### Local Mint tooling
 
-- Valid `kit reconcile` runs check installed local Mint and
-  automatically maintain supported stable user-owned Go-bin installs through the
-  shared verified updater, including noninteractive runs. Require at least the
-  verified v0.9.0 release; preserve current/newer versions without downgrading.
-- Missing Mint is skipped without network/install; initial installation requires
-  explicit `kit mint update`. Unsupported, development, package-manager, symlink
-  and unsafe installations stay untouched and need their owning installer.
-- `--dry-run` validates without building/replacing Mint. Diagnostics use stderr;
-  maintenance failure stops reconcile before managed refresh. Local executable,
-  repository Go dependency and action pins are independent surfaces. Local
-  maintenance never upgrades consumer pins or activates a deployment.
+- `kit mint check` inspects local Mint; `kit mint update` explicitly installs or
+  updates a supported user-owned Go-bin installation from published releases.
+- Valid `kit reconcile` runs maintain supported installed Mint, requiring at
+  least v0.9.0. Missing Mint is skipped; newer versions are never downgraded.
+  `--dry-run` previews without installing. Local updates do not change repository
+  dependencies, action pins or deployment state.
 
 ### Kit workflow scaffolding
 
-- `kit init` plans immutable Mint v0.9.0 Actions. Empty workflow sets receive
-  resolution, enriched changelog generation/artifact retention and canonical
-  release publication. Runtime adapters and cloud destinations are never inferred.
-- Existing workflows require all four selectors: `--mint-workflow`, `--mint-job`,
-  `--mint-before-step` (existing step id after full-history checkout), and
-  `--mint-release-owner existing|mint`. Preview with `--dry-run --diff` on reconcile.
-  Preparation runs before the selected step. Existing ownership preserves the
-  publisher and requires a reviewed version/changelog handoff. Mint ownership
-  publishes after original steps only with existing write credentials and fixed,
-  non-cancelling serialization; known duplicate publishers are rejected. Filtered
-  pushes need a fresh noninteractive remote HEAD read and exact default-branch
-  inclusion; unavailable remote metadata reports INCOMPLETE without local fallback. Negative,
-  wildcard-only and ignore filters require reviewed adapters.
-- Report **INCOMPLETE** when selection or handoff is missing. A separate `mint version`
-  workflow is a tooling diagnostic, never completed adoption. Preserve triggers,
-  permissions, secrets, environments and deployment steps; opaque scripts, matrix,
-  reusable, container and dynamic jobs require project-owned review/adapters.
-- Existing `.mint.yaml` owns environment versioning; use the controller path without
-  an independent publisher. Existing Mint preparation/pins stay project owned and
-  require handoff review. Review scaffolds before merging; creation is not runtime
-  release/deployment evidence. Enriched changelogs remain artifacts; canonical
-  GitHub Release notes keep their subject-based format. Review artifact visibility.
+- `kit init` adds the pinned Mint starter when no workflows exist. Existing
+  workflows and existing Mint integrations are preserved.
+- For additive release preparation in an existing job, provide `--mint-workflow`,
+  `--mint-job` and `--mint-before-step`. Without placement, Kit reports the needed
+  selection without creating a diagnostic workflow. Preview with `--dry-run --diff`.
+- Kit scaffolds files and preparation steps. Mint and the project own trigger,
+  permission, publication and runtime policy. Review how the project consumes the
+  generated release metadata and enriched changelog artifact before adoption.
 
 - `kit init --mint` (new Kit project) or `kit reconcile --mint --dry-run --diff`
   followed by `kit reconcile --mint` (existing project) can create a missing

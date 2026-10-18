@@ -29,7 +29,7 @@ func TestMintControllerSkipsAutomaticPublication(t *testing.T) {
 
 func TestMintControllerRejectsAllWorkflowSelections(t *testing.T) {
 	for _, selection := range []mintPipelineSelection{
-		{workflow: ".github/workflows/deploy.yml"}, {job: "deploy"}, {beforeStep: "build"}, {releaseOwner: "existing"},
+		{workflow: ".github/workflows/deploy.yml"}, {job: "deploy"}, {beforeStep: "build"},
 	} {
 		root := t.TempDir()
 		if _, _, err := planInitMintIntegration(root, true, selection); err == nil {
@@ -65,7 +65,7 @@ func TestMintEverySelectionFieldActivatesRefreshPlanning(t *testing.T) {
 	if err := config.Save(root, defaultInitConfig()); err != nil {
 		t.Fatal(err)
 	}
-	for _, selection := range []mintPipelineSelection{{workflow: ".github/workflows/deploy.yml"}, {job: "deploy"}, {beforeStep: "publish"}, {releaseOwner: "existing"}} {
+	for _, selection := range []mintPipelineSelection{{workflow: ".github/workflows/deploy.yml"}, {job: "deploy"}, {beforeStep: "publish"}} {
 		_, err := buildInitRefreshPlan(context.Background(), root, initRefreshOptions{mintSelection: selection})
 		if err == nil || !strings.Contains(err.Error(), "incomplete Mint selection") {
 			t.Fatalf("selection %+v ignored: %v", selection, err)

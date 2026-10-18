@@ -49,7 +49,7 @@ Missing Mint is skipped; unsupported installs require their owning installer.
 Repository dependencies and CI pins are unchanged by local maintenance.
 
 Use --mint-workflows to plan Mint Actions integration. Existing jobs need explicit
---mint-workflow, --mint-job, --mint-before-step and --mint-release-owner selection.
+--mint-workflow, --mint-job and --mint-before-step placement.
 Existing Mint workflows remain project owned. Preview with --dry-run --diff.
 
 Use --mint to create a missing Mint v0.9.0 controller from an existing team-first

@@ -65,67 +65,38 @@ retain their existing publication workflows. Scaffolding keeps the
 isolation, adapter manifests, runtime configuration identities and verified
 baselines before enabling that gate.
 
-`kit init` automatically plans GitHub Actions integration using published Mint
-v0.9.0, pinned to `eac91490f772adbd2ab030cb6eba3910c1bca93c`:
+`kit init` adds a pinned Mint release starter when no workflows exist. Existing
+workflows stay intact, including any existing Mint integration. To add release
+metadata, an enriched changelog and artifact retention to an existing job, select
+its placement explicitly:
 
-- No workflows: resolve release metadata, generate an enriched GitHub/Linear
-  changelog, retain it as a workflow artifact, then publish tags/GitHub Releases
-  on default-branch pushes. Release notes retain Mint's subject-based format.
-  No application build, registry, cloud or deployment adapter is inferred.
-- Existing workflows: preserve them and report **INCOMPLETE** until publication
-  ownership and insertion order are explicitly selected. A separate read-only
-  `mint version` check is diagnostic only; it does not complete adoption.
-- Preview a selected job with `kit reconcile --mint-workflow
-  .github/workflows/deploy.yaml --mint-job deploy --mint-before-step publish
-  --mint-release-owner existing --dry-run --diff`. All four selectors are required.
-  The anchor must be an existing step id after an unconditional, same-repository,
-  full-history checkout. Kit inserts resolution, changelog generation and artifact
-  retention before that step, preserving existing bytes and job configuration.
-- `existing` preserves the current publisher. Bind its version and changelog
-  inputs to `steps.kit_mint_release.outputs.version_tag` and
-  `${{ runner.temp }}/kit-mint-CHANGELOG.md`; Kit reports the handoff as INCOMPLETE
-  and requires explicit review. Matching reference strings alone do not prove
-  consumption.
-  Changelog generation is skipped when no new tag/commits exist; consumers must
-  handle that case. Inspect custom scripts and publication semantics during review.
-- `mint` explicitly transfers publication to Mint after existing job steps succeed.
-  Kit requires existing explicit `contents: write`, Git push credentials, branch
-  pushes and fixed non-cancelling serialization. Filtered pushes require a fresh, bounded, noninteractive
-  remote HEAD lookup and an exact default-branch entry; negative, wildcard-only
-  and ignore filters need a project adapter. Unavailable remote metadata reports
-  INCOMPLETE; stale local `origin/HEAD` is never used for filtered adoption. Known competing publishers in any
-  workflow are rejected; opaque custom scripts still require human review.
-  Custom checkout tokens/SSH keys and dynamic credential retention need adapters
-  because their Git push authority cannot be inferred from job permissions.
-  Matrix, reusable, container and dynamic runner jobs need project-owned adapters.
-  Kit never expands permissions, bypasses environments or changes deployment steps.
-- Existing Mint preparation is preserved and its ownership/handoff reported for
-  review; a version-only step never counts as complete integration. Custom workflow
-  pins remain project owned. `--force` does not overwrite workflows.
-- An existing `.mint.yaml` selects the environment-policy path: review adapters and
-  use `--mint`. That mode creates only a missing environment controller and cannot
-  combine with independent pipeline selectors or `--mint-workflows`.
+```bash
+kit reconcile --mint-workflow .github/workflows/deploy.yaml \
+  --mint-job deploy --mint-before-step publish --dry-run --diff
+# Remove --dry-run --diff to apply after reviewing the preview.
+```
 
-Existing projects can preview the planner with
-`kit reconcile --mint-workflows --dry-run --diff`; apply with
-`kit reconcile --mint-workflows`. Reconcile's delivery isolation remains in force.
-Init inventories workflows before creating auto-assignment. Remote default-branch
-metadata is used where available; a new repository without metadata gets a `main`
-starter and an actual-default-branch guard. Review other branch filters before adoption.
-Local Mint installation, Kit's embedded v0.9.0 renderer and consumer action pins are
-separate version surfaces. Existing controllers are preserved, including older pins.
-The enriched changelog artifact contains only committed issue references; it does
-not fetch private Linear details. Review artifact visibility and retention before use.
-Missing GitHub issue enrichment leaves useful committed references intact.
+Without placement, Kit reports what to select; it does not add a diagnostic
+workflow. Use `kit reconcile --mint-workflows --dry-run --diff` to preview the
+scaffold plan for an existing project. Kit adds files and preparation steps;
+Mint and the project own release policy and the use of generated outputs.
 
-Kit serializes cooperating Mint workflow writes and rollbacks with per-file
-`.kit-mint.lock` files and checks snapshots at write boundaries. Existing locks
-fail closed and are never reclaimed automatically; inspect their PID/path before
-retrying. External editors do not honor this protocol, so their final
-check-to-replacement window cannot be eliminated by these locks. Avoid concurrent
-external editing during apply. Batch failure uses best-effort rollback: a complete
-newly created Mint workflow is retained and its exact path reported rather than
-risk deleting an intervening edit.
+For local tooling:
+
+```bash
+kit mint check --json
+kit mint check --require-linear --json
+kit mint update --dry-run
+kit mint update
+```
+
+Check is read-only. Explicit updates use published releases and a verified
+user-owned Go-bin installation. Reconcile also updates supported installed Mint;
+missing Mint is skipped. Dry runs preview without installing, and newer versions
+are never downgraded. Local updates leave repository dependencies and CI pins
+unchanged. Mint v0.9.0 supports explicit Linear links in generated changelogs;
+private ticket details are not fetched and published release notes keep their
+subject-based format.
 
 Diagnose without changing anything:
 
@@ -140,13 +111,57 @@ summary, retired rules) only when they are exactly as a Kit release generated
 them and committed to Git, and reports every file it keeps. From the primary
 checkout it writes to a `kit-reconcile` linked worktree for review.
 
+## Issue Providers
+
+GitHub Issues is the default, including noninteractive init. Interactive init also
+offers Linear. Use verified non-secret workspace/team identities for scripts:
+
+```bash
+kit init --issue-provider linear --linear-workspace acme \
+  --linear-team-id <verified-team-uuid>
+kit config set --issue-provider linear --linear-workspace acme \
+  --linear-team-id <verified-team-uuid> --dry-run --json
+```
+
+Remove `--dry-run` to apply configuration, then run the returned reconciliation
+commands. Add `--linear-project-id <verified-project-uuid>` for a project or
+`--linear-project-id ''` to clear it. Switch back with
+`kit config set --issue-provider github`. Configuration is repository-local:
+
+```yaml
+issues:
+  provider: linear
+  linear:
+    workspace: acme
+    team_id: <verified-team-uuid>
+    # project_id: <verified-project-uuid>
+```
+
+The setter preserves unrelated configuration. Credentials belong in the agent
+host's authorized capability, never `.kit.yaml`. Ticket creation and lifecycle
+updates follow Kit's agent instructions through that capability. Missing Linear
+access stops ticket operations; it never falls back to GitHub.
+
+Use `ENG-123` as the branch and conventional commit scope, with a full URL footer:
+
+```text
+feat(ENG-123): :sparkles: add invitations
+
+Refs: https://linear.app/acme/issue/ENG-123
+```
+
+Keep the footer when squashing. Existing GitHub references remain supported.
+Mint reads explicit links offline; bare Linear identifiers cannot resolve a URL.
+Review committed text and link visibility before publication.
+
 ## Command Surface
 
 | Area | Commands |
 | --- | --- |
 | Bootstrap and memory | `kit init`, `kit spec` |
 | Rules | `kit rules add\|list\|view` |
-| Validation and maintenance | `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check`, `kit aws verify` |
+| Validation and maintenance | `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check\|set`, `kit aws verify` |
+| Mint tooling | `kit mint check\|update` |
 | Local usage | `kit usage [report\|status\|refresh\|clear\|enable\|disable]` |
 | Utilities | `kit upgrade`, `kit version`, `kit completion` |
 
@@ -197,167 +212,3 @@ MIT
 ## Maintainers
 
 Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
-
-### Issue provider
-
-GitHub Issues remains the default, including noninteractive `kit init`.
-Interactive init offers GitHub Issues or Linear. For scripts, use verified
-non-secret Linear target identities:
-
-```bash
-kit init --issue-provider linear --linear-workspace acme \
-  --linear-team-id 11111111-1111-4111-8111-111111111111
-```
-
-The UUID above is a placeholder. Obtain the real team UUID through your authorized
-Linear capability. Add `--linear-project-id <project-uuid>` for a verified project;
-omitting it means team-only work. Init does not authenticate or create tickets.
-Do not store API keys or tokens in `.kit.yaml`.
-
-To switch an existing repository, edit its tracked `.kit.yaml` and run
-`kit reconcile` in its isolated delivery checkout (or preview with
-`kit reconcile --dry-run --diff`):
-
-```yaml
-issues:
-  provider: linear
-  linear:
-    workspace: acme
-    team_id: 11111111-1111-4111-8111-111111111111
-    # project_id: <verified-project-uuid>  # optional
-```
-
-Set `issues.provider: github` to switch back. Omission also means GitHub.
-Use a Kit version containing issue-provider support on every agent host before
-selecting Linear; older binaries cannot enforce this selection.
-Targets are repository-local and survive reconcile, including a forced config
-refresh. Existing lanes retain their original ticket; switching affects new work.
-Reconcile switches exact Kit-generated PR templates; custom templates stay intact.
-Update a custom Ticket section to the selected provider before new delivery.
-Canonical delivery rules verify target membership, human assignment, ticket
-payload parity, duplicate searches, provider errors and completion states. A host
-with no authorized Linear capability reports that blocker; it never creates a
-GitHub issue in place of the selected Linear ticket. Connect Linear separately
-through your normal secure setup when needed; Kit does not install credentials.
-
-Linear uses `ENG-123` for branches and conventional commit scope, for example
-`feat(ENG-123): :sparkles: add invitations`, with the full canonical URL in a final
-`Refs: https://linear.app/acme/issue/ENG-123` footer. Preserve the footer when
-squashing. GitHub issues, PR hosting, checks and historical `GH-123` references
-retain their behavior. Use the coordinated Mint Linear changelog support before
-adopting Linear if release notes must retain its links. Mint parses explicit
-links offline; identifiers, URLs and commit text can be public, but private ticket
-content is never fetched for enrichment. Review commit text for public visibility.
-
-Kit does not contain a native GitHub or Linear ticket-creation API. Ticket
-creation/population and state changes are agent actions through the host's
-capabilities; init/reconcile only persist configuration and ship the instructions.
-The Linear path matches that existing GitHub mechanism. It does not provision
-Linear integrations, map workflow states automatically, install credentials, or
-configure server-side closure on merge. An authorized agent must verify and apply
-the team's state transitions after observing completion. Contract tests prove
-which instructions ship, not that a host executed provider actions successfully.
-
-### Agent-friendly provider changes
-
-Use the same verified non-secret target IDs as init:
-
-```bash
-kit config set --issue-provider linear --linear-workspace acme \
-  --linear-team-id 11111111-1111-4111-8111-111111111111 --dry-run --json
-# Remove --dry-run to apply configuration, then execute the returned next_actions.
-```
-
-The UUID is a placeholder. Add `--linear-project-id <verified-uuid>` for a project,
-or `--linear-project-id ''` to clear it. Existing target values are retained unless
-explicitly supplied. Switch back with `kit config set --issue-provider github`.
-Repeat applications are no-ops. Unknown providers, invalid/missing required targets,
-newer schemas and unsafe files fail before config writes. Only issue fields change;
-unrelated YAML values and comments remain. Root YAML merges and aliased or anchored issue settings fail
-without writes and need manual review to avoid changing other alias users.
-
-`--json` emits the non-secret issue settings, target, changed/dry-run state and
-`reconciliation_required: true` with explicit next actions. The setter does not
-silently migrate other files. Run the reported `kit reconcile --dry-run --diff`,
-then `kit reconcile`, in that target and review/deliver the changes. The existing
-reconcile target resolver protects primary checkouts by preparing/reusing its
-`kit-reconcile` worktree. Dry runs never prepare a worktree: their config preview
-uses the invoking checkout; a later primary-checkout write uses the canonical
-base/worktree and never copies unrelated working changes into it.
-
-### Installed Mint maintenance during reconcile
-
-Use `kit mint check` to inspect Mint and `kit mint update` for explicit installation
-or maintenance. Kit itself is installed with Go, upgraded with `kit upgrade`, and
-projects are created with `kit init`. Valid `kit reconcile` invocations (including
-feature-only, no-op and output-only runs) check installed local Mint and automatically update
-supported outdated installations to the latest official stable release, requiring
-at least v0.9.0. Interactive and noninteractive runs use the same policy with no
-confirmation prompt. Reconcile performs maintenance before managed-refresh writes;
-release lookup or update failure exits nonzero with actionable diagnostics.
-
-```bash
-kit mint check --json          # inspect local Mint
-kit mint update --dry-run      # preview an explicit installation or update
-kit mint update                # explicitly install or update Mint
-kit reconcile --dry-run --diff # preview local maintenance and repository changes
-```
-
-Missing Mint is skipped without a release lookup or installation. Install it only
-by explicitly running `kit mint update` when desired. Current or newer stable
-versions remain unchanged; there are no downgrades. Package-manager, unknown,
-symlink, development and unsafe installations remain untouched and need their
-owning installer or an explicitly selected supported Go-bin installation. Dry-run
-validates the plan without building/replacing the executable. Repeated runs are
-idempotent after a successful update. Diagnostics use stderr to preserve prompt
-stdout. Local executable maintenance never changes repository Go dependencies,
-action SHA pins, environment policy, activation gates or deployments. Tests use
-isolated fake installs; no global Mint installation is modified during validation.
-
-### Mint version checks and explicit local updates
-
-```bash
-kit mint check --json
-kit mint check --require-version v0.8.0 --json
-kit mint check --require-linear --json
-kit mint update --version v0.8.0 --dry-run --json
-kit mint update --version v0.8.0 --json
-```
-
-The first command only inspects the resolved `mint` executable's Go metadata and
-reads official published stable release metadata. It never installs or executes
-Mint. An outdated stable install is reported with `update_available`; missing or
-unsupported local installations and failed requirements exit nonzero. Network or
-rate-limit failures are errors, not evidence of compatibility. `--json` includes a
-report and error on operational failures. `--require-version` is a numeric local
-minimum, not proof of feature support; `--version` selects a published target.
-
-Local executable, repository `go.mod` dependency (including replacements), and
-`.github/workflows` Mint action refs are separate report fields. Pin comments are
-unverified version hints. SHA pins and repository compatibility are reported as
-`not_verified`; this command does not resolve their release ancestry or rewrite
-any dependency/workflow. Updating local Mint never updates Kit's embedded Mint
-renderer dependency or consumer CI pins. Review those separately in repository PRs.
-Symlinked pin files/directories fail rather than being read outside the repository.
-
-Mint currently publishes no binary assets. Explicit update uses its documented
-`go install github.com/jamesonstone/mint/cmd/mint@<published-tag>` source mechanism,
-with the official Go proxy and checksum database required. It stages under the
-verified Go bin, verifies module path/version/host platform, preserves ownership,
-group and mode, and replaces atomically only after a successful build. Existing
-installations must be verified user-owned Go-bin builds. Development/pseudo versions,
-downgrades, package-manager/custom/symlink paths, ambiguous ownership, unsafe
-permissions and unsupported systems fail clearly; no sudo, arbitrary installer or
-PATH changes occur. Initial install requires an existing safe Go bin already on
-PATH. The installed Go toolchain must support the target; no automatic Go upgrade.
-A failed build/verification leaves the previous Mint executable unchanged.
-`update --dry-run` validates the proposed update without building or installing.
-Omitting `--version` chooses the latest published stable release without downgrading.
-
-Linear CHANGELOG link support was released in Mint v0.9.0 from merged PR #33.
-The annotated tag resolves to `eac91490f772adbd2ab030cb6eba3910c1bca93c`, which
-contains the offline Linear footer parser. `--require-linear` now checks v0.9.0
-or newer for the local executable/update target. Existing consumer CI SHA pins
-remain separate and need their own verified release mapping. This capability
-covers explicit Linear links in `mint changelog`; release-state lightweight notes
-retain their existing subject-based format and do not fetch private ticket data.
