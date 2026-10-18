@@ -66,6 +66,13 @@ func printInitRefreshNotes(notes []string, opts initRefreshOptions) {
 }
 
 func printCurrentMintIncompleteNotes(root string, opts initRefreshOptions) error {
+	if opts.mintRelease != nil {
+		_, notes, err := planMintActionUpdates(root, nil, *opts.mintRelease)
+		if err != nil {
+			return err
+		}
+		printInitRefreshNotes(notes, initRefreshOptions{outputOnly: true})
+	}
 	if !opts.mintWorkflows && !mintSelectionRequested(opts.mintSelection) {
 		return nil
 	}
@@ -145,7 +152,7 @@ func planMintWorkflow(root string) (*initRefreshFileChange, error) {
 	if err != nil {
 		return nil, err
 	}
-	content = "# Scaffolded by Kit with Mint v0.9.0. This workflow is project owned.\n" + content
+	content = "# Scaffolded by Kit. This workflow is project owned.\n" + content
 	return newMintPipelineFileChange(root, path, "", content, instructionFileCreated), nil
 }
 

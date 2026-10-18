@@ -30,7 +30,7 @@ func renderMintReleasePipeline(defaultBranch string) []byte {
 	if err != nil {
 		return nil
 	} // The fixed scalar/map schema cannot fail encoding.
-	header := "# Scaffolded by Kit with Mint v0.9.0. This workflow is project owned.\n" +
+	header := "# Scaffolded by Kit. This workflow is project owned.\n" +
 		"# Publishes tags and GitHub Releases only; it does not build or deploy the application.\n" +
 		"# Enriched Linear/GitHub changelog is retained as an artifact; published release notes stay subject based.\n"
 	return append([]byte(header), data...)

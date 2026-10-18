@@ -84,14 +84,25 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this directory is inside the Kit project at %s; run Kit commands there (use `kit reconcile` to update it) instead of creating a nested project", parent)
 	}
 
-	mintChanges, mintNotes, err := planInitMintIntegration(cwd, initMint, initMintSelection)
-	if err != nil {
-		return err
-	}
 	deliveryCfg := defaultInitConfig()
 	if err := selectInitIssueProvider(cmd, deliveryCfg); err != nil {
 		return err
 	}
+
+	mintRelease, err := lookupMintActionRelease()
+	if err != nil {
+		return fmt.Errorf("verify latest Mint Action release (no files changed): %w", err)
+	}
+	mintChanges, mintNotes, err := planInitMintIntegration(cwd, initMint, initMintSelection)
+	if err != nil {
+		return err
+	}
+	mintChanges, updateNotes, err := planMintActionUpdates(cwd, mintChanges, mintRelease)
+	if err != nil {
+		return err
+	}
+	mintNotes = append(mintNotes, updateNotes...)
+
 	deliveryPaths := projectInitDeliveryPaths(deliveryCfg)
 	for _, change := range mintChanges {
 		deliveryPaths = append(deliveryPaths, change.relativePath)

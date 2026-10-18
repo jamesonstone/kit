@@ -19,7 +19,7 @@ func TestMintControllerSkipsAutomaticPublication(t *testing.T) {
 	if len(changes) != 1 || changes[0].relativePath != ".github/workflows/control.yaml" || len(notes) != 0 {
 		t.Fatalf("changes=%+v notes=%v", changes, notes)
 	}
-	if !strings.Contains(changes[0].after, "# Scaffolded by Kit with Mint v0.9.0") || !strings.Contains(changes[0].after, "jamesonstone/mint@"+mintPipelineActionRef) {
+	if !strings.Contains(changes[0].after, "# Scaffolded by Kit.") || !strings.Contains(changes[0].after, "jamesonstone/mint@"+mintPipelineActionRef) {
 		t.Fatal("controller version/pin differs from pipeline")
 	}
 	if strings.Contains(changes[0].after, "command: release-publish") {

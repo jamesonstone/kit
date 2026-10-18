@@ -57,7 +57,7 @@ kit reconcile --mint                    # create a missing controller
 
 Kit uses the embedded Mint v0.9.0 renderer to generate repository Actions for
 promotion, hotfix, rollback, resume, observation and reconciliation. It uses the
-policy's environment names and adapter workflow names. Existing controllers,
+policy's environment names and adapter workflow names. Existing controller structure,
 policies and adapters stay project owned, even with `--force`. No registry,
 provider or production environment is assumed. Package and artifact projects
 retain their existing publication workflows. Scaffolding keeps the
@@ -66,7 +66,7 @@ isolation, adapter manifests, runtime configuration identities and verified
 baselines before enabling that gate.
 
 `kit init` adds a pinned Mint release starter when no workflows exist. Existing
-workflows stay intact, including any existing Mint integration. To add release
+workflow structure and Mint integration are preserved. To add release
 metadata, an enriched changelog and artifact retention to an existing job, select
 its placement explicitly:
 
@@ -81,22 +81,15 @@ workflow. Use `kit reconcile --mint-workflows --dry-run --diff` to preview the
 scaffold plan for an existing project. Kit adds files and preparation steps;
 Mint and the project own release policy and the use of generated outputs.
 
-For local tooling:
+During init and reconcile, Kit refreshes supported `jamesonstone/mint` Action
+references to the latest verified published stable release. Stable version tags
+remain tags; full commit SHA pins become the verified release commit SHA. Custom
+refs are preserved with a diagnostic. A failed release lookup reports an error
+rather than guessing a reference. Preview with `kit reconcile --dry-run --diff`;
+dry runs do not write files. Kit does not manage the local Mint executable.
 
-```bash
-kit mint check --json
-kit mint check --require-linear --json
-kit mint update --dry-run
-kit mint update
-```
-
-Check is read-only. Explicit updates use published releases and a verified
-user-owned Go-bin installation. Reconcile also updates supported installed Mint;
-missing Mint is skipped. Dry runs preview without installing, and newer versions
-are never downgraded. Local updates leave repository dependencies and CI pins
-unchanged. Mint v0.9.0 supports explicit Linear links in generated changelogs;
-private ticket details are not fetched and published release notes keep their
-subject-based format.
+Mint v0.9.0 supports explicit Linear links in generated changelogs. Private ticket
+details are not fetched, and published release notes keep their subject-based format.
 
 Diagnose without changing anything:
 
@@ -161,7 +154,6 @@ Review committed text and link visibility before publication.
 | Bootstrap and memory | `kit init`, `kit spec` |
 | Rules | `kit rules add\|list\|view` |
 | Validation and maintenance | `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check\|set`, `kit aws verify` |
-| Mint tooling | `kit mint check\|update` |
 | Local usage | `kit usage [report\|status\|refresh\|clear\|enable\|disable]` |
 | Utilities | `kit upgrade`, `kit version`, `kit completion` |
 

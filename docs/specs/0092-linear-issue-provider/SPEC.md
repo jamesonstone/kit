@@ -72,18 +72,26 @@ Removed the trigger parser, remote-HEAD query/bounds framework, publisher detect
 release-owner flag, handoff heuristics and adoption assessments. No adapter framework
 replaces them. Existing pre-PR controller scaffolding remains available.
 
-Explicit kit mint check/update and ordinary installed-only reconcile upkeep remain
-as separately requested. Missing Mint is skipped by reconcile without network or
-installation; only explicit update can install it. Supported outdated Go-bin tools
-update; current/newer tools are preserved. Unsupported ownership/dev/symlink cases
-fail safely; dry runs do not install. No repository/CI pin changes follow from local
-maintenance. The redundant proposed kit install command was removed before merge.
+Every init/reconcile command resolves the latest official stable published Mint
+release and its immutable commit, checking required Action inputs. It refreshes
+parsed official Mint uses scalars: stable tags remain tags; full SHA pins remain
+SHA pins. Custom branch/expression refs and unsupported scalar encodings are
+preserved with explicit unknown-currentness diagnostics. Other actions, inputs,
+comments and workflow settings remain unchanged. Planned scaffolding is refreshed
+in the same atomic batch, with no stale release fallback. Lookup failure stops
+before writes; dry runs report the plan. Feature-scoped reconcile refreshes Action
+refs only, alongside its existing feature report.
+
+This supersedes all earlier local-binary maintenance: internal/minttool, local
+check/update commands, inventory, install/update and associated tests are removed.
+Kit never inspects, installs or updates a developer's local Mint binary. The Actions
+runner executes Mint; its release lifecycle remains Mint/project owned.
 
 ## VALIDATION
 
 Keep representative provider defaults/config/switching, custom-template/config
 preservation, identifier/footer instructions, dry-run/no-write/failure boundaries,
-backend version decisions, file edit safety and real mixed-history changelog tests.
+workflow ref refresh, file edit safety and real mixed-history changelog tests.
 Removed redundant command matrices, copied input maps and now-obsolete trigger,
 remote and publication-policy tests. One resolve step-ID assertion remains because
 Actions output references depend on it; the integration fixture supplies its own ID.

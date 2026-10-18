@@ -45,16 +45,33 @@ func mintField(node *yaml.Node, key string) *yaml.Node {
 	}
 	return nil
 }
+
+// Only job/step uses fields are Action references; similarly named inputs are not.
+func mintActionMappings(workflow *yaml.Node) []*yaml.Node {
+	jobs := mintField(workflow, "jobs")
+	if jobs == nil || jobs.Kind != yaml.MappingNode {
+		return nil
+	}
+	var mappings []*yaml.Node
+	for i := 1; i < len(jobs.Content); i += 2 {
+		job := jobs.Content[i]
+		mappings = append(mappings, job)
+		if steps := mintField(job, "steps"); steps != nil && steps.Kind == yaml.SequenceNode {
+			mappings = append(mappings, steps.Content...)
+		}
+	}
+	return mappings
+}
+
 func mintUses(node *yaml.Node) bool {
-	if node == nil {
-		return false
-	}
-	if value := mintField(node, "uses"); value != nil && strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@") {
-		return true
-	}
-	for _, child := range node.Content {
-		if mintUses(child) {
-			return true
+	for _, mapping := range mintActionMappings(node) {
+		if value := mintField(mapping, "uses"); value != nil {
+			if value.Kind == yaml.AliasNode && value.Alias != nil {
+				value = value.Alias
+			}
+			if strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@") {
+				return true
+			}
 		}
 	}
 	return false

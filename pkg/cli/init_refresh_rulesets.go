@@ -12,6 +12,18 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/legacy"
 )
 
+type initRefreshRegistryError struct {
+	err error
+}
+
+func (e *initRefreshRegistryError) Error() string {
+	return fmt.Sprintf("failed to refresh Kit ruleset registry: %v", e.err)
+}
+
+func (e *initRefreshRegistryError) Unwrap() error {
+	return e.err
+}
+
 func planRefreshInitRulesets(
 	ctx context.Context,
 	projectRoot string,

@@ -59,19 +59,15 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
   observations are separate evidence; do not write apparent live versions into
   policy or treat an old observation as current runtime truth.
 
-### Local Mint tooling
-
-- `kit mint check` inspects local Mint; `kit mint update` explicitly installs or
-  updates a supported user-owned Go-bin installation from published releases.
-- Valid `kit reconcile` runs maintain supported installed Mint, requiring at
-  least v0.9.0. Missing Mint is skipped; newer versions are never downgraded.
-  `--dry-run` previews without installing. Local updates do not change repository
-  dependencies, action pins or deployment state.
-
 ### Kit workflow scaffolding
 
 - `kit init` adds the pinned Mint starter when no workflows exist. Existing
-  workflows and existing Mint integrations are preserved.
+  workflow structure and Mint integrations are preserved.
+- Init and reconcile refresh supported Mint Action stable tags and full commit SHA
+  pins to the latest verified published stable release, preserving the reference
+  format. Custom refs remain unchanged with a diagnostic. Release lookup failures
+  are explicit; never guess a replacement. Preview with `--dry-run --diff` without
+  writing files. Kit does not install or maintain the local Mint executable.
 - For additive release preparation in an existing job, provide `--mint-workflow`,
   `--mint-job` and `--mint-before-step`. Without placement, Kit reports the needed
   selection without creating a diagnostic workflow. Preview with `--dry-run --diff`.
@@ -83,10 +79,11 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
   followed by `kit reconcile --mint` (existing project) can create a missing
   controller from an existing schema 2 deployment `.mint.yaml` with
   `authorization: repository-write` and reviewed build/deploy/observe adapters.
-  Kit embeds the published Mint v0.9.0 parser and renderer; generation works
-  offline and does not require installing or executing Mint in the project.
-- Existing controllers, adapters and policies remain project owned, even under
-  `--force`. Package/artifact policies retain their publication workflows.
+  Kit embeds the published Mint v0.9.0 parser and renderer; rendering runs
+  locally without installing or executing Mint in the project.
+- Existing controller structure, adapters and policies remain project owned, even
+  under `--force`; only supported action references are refreshed. Package/artifact
+  policies retain their publication workflows.
   Generation keeps the activation gate; complete adapter integration and verified
   baselines before enabling it. Scaffolding does not prove activation or deployment.
 - Candidate producers must isolate selected source execution in credential-free

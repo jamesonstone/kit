@@ -43,10 +43,9 @@ In the primary checkout, reconcile applies changes in a linked worktree on
 branch kit-reconcile (created or reused) and prints where to review them.
 Use --dry-run --diff to preview without writing anything.
 
-Installed local Mint is checked and supported outdated Go-bin installs update
-automatically, including noninteractive runs. --dry-run previews without installing.
-Missing Mint is skipped; unsupported installs require their owning installer.
-Repository dependencies and CI pins are unchanged by local maintenance.
+Mint Action references in repository workflows are refreshed to the latest verified
+stable release. Local Mint binaries and unrelated action pins are never changed.
+Release lookup failures stop before writes; --dry-run previews workflow updates.
 
 Use --mint-workflows to plan Mint Actions integration. Existing jobs need explicit
 --mint-workflow, --mint-job and --mint-before-step placement.
@@ -113,14 +112,14 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if err := runMintLifecycle(cmd, reconcileDryRun); err != nil {
-		return err
+	mintRelease, err := lookupMintActionRelease()
+	if err != nil {
+		return fmt.Errorf("verify latest Mint Action release (no files changed): %w", err)
 	}
 
-	applyFiles := feat == nil
 	var deliverySnapshot []managedFileDeliverySnapshot
-	if applyFiles {
-		opts := initRefreshOptions{mintWorkflows: reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection), mintSelection: reconcileMintSelection, force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint}
+	{
+		opts := initRefreshOptions{mintRelease: &mintRelease, mintOnly: feat != nil, mintWorkflows: reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection), mintSelection: reconcileMintSelection, force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint}
 		upToDate, err := reconcileHasNoChanges(projectRoot, opts)
 		if err != nil {
 			return err
@@ -128,6 +127,15 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		target, err := resolveReconcileTarget(cmd.OutOrStdout(), projectRoot, reconcileDryRun, upToDate)
 		if err != nil {
 			return err
+		}
+		if feat != nil && !sameResolvedPath(target.projectRoot, projectRoot) {
+			targetCfg, err := config.Load(target.projectRoot)
+			if err != nil {
+				return err
+			}
+			if _, err := loadFeatureWithState(targetCfg.SpecsPath(target.projectRoot), targetCfg, args[0]); err != nil {
+				return fmt.Errorf("requested feature is unavailable in reconcile target; no workflow updates applied: %w", err)
+			}
 		}
 		if target.current {
 			if err := printCurrentMintIncompleteNotes(projectRoot, opts); err != nil {
@@ -139,6 +147,8 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 			}
 		} else if deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
 			force:         reconcileForce,
+			mintRelease:   &mintRelease,
+			mintOnly:      feat != nil,
 			mint:          reconcileMint,
 			mintWorkflows: reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection),
 			mintSelection: reconcileMintSelection,
@@ -155,6 +165,12 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		projectRoot = target.projectRoot
 		if cfg, err = config.Load(projectRoot); err != nil {
 			return fmt.Errorf("failed to reload config after reconcile: %w", err)
+		}
+		if feat != nil {
+			feat, err = loadFeatureWithState(cfg.SpecsPath(projectRoot), cfg, args[0])
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if reconcileDryRun {

@@ -14,6 +14,8 @@ import (
 const constitutionBaselineHeading = templates.ConstitutionBaselineHeading
 
 type initRefreshOptions struct {
+	mintRelease   *mintActionRelease
+	mintOnly      bool
 	mint          bool
 	mintWorkflows bool
 	mintSelection mintPipelineSelection
@@ -42,18 +44,6 @@ type initRefreshPlan struct {
 	changes []initRefreshFileChange
 	notes   []string
 	stats   initRefreshStats
-}
-
-type initRefreshRegistryError struct {
-	err error
-}
-
-func (e *initRefreshRegistryError) Error() string {
-	return fmt.Sprintf("failed to refresh Kit ruleset registry: %v", e.err)
-}
-
-func (e *initRefreshRegistryError) Unwrap() error {
-	return e.err
 }
 
 func runInitRefreshWithSnapshot(
@@ -103,6 +93,10 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 	if err := validateMintControllerOptions(opts.mint, opts.mintWorkflows, opts.mintSelection); err != nil {
 		return nil, err
 	}
+	if opts.mintOnly {
+		return planMintActionRefresh(projectRoot, *opts.mintRelease)
+	}
+
 	targets, err := normalizeInitRefreshTargets(opts.files)
 	if err != nil {
 		return nil, err
@@ -154,6 +148,11 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		}
 		changes = append(changes, *change)
 	}
+	changes, notes, err = refreshPlannedMintActions(projectRoot, opts.mintRelease, changes, notes)
+	if err != nil {
+		return nil, err
+	}
+
 	readmeChange, err := planRefreshReadmeFile(projectRoot, cfg, targets)
 	if err != nil {
 		return nil, err
