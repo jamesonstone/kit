@@ -46,6 +46,7 @@ func resetReconcileFlags(t *testing.T) {
 	t.Helper()
 	previousOutputOnly := reconcileOutputOnly
 	previousMint := reconcileMint
+	previousMintWorkflows, previousMintSelection := reconcileMintWorkflows, reconcileMintSelection
 	previousAll := reconcileAll
 	previousIncludeFiles := reconcileIncludeFiles
 	previousForce := reconcileForce
@@ -55,6 +56,7 @@ func resetReconcileFlags(t *testing.T) {
 	t.Cleanup(func() {
 		reconcileOutputOnly = previousOutputOnly
 		reconcileMint = previousMint
+		reconcileMintWorkflows, reconcileMintSelection = previousMintWorkflows, previousMintSelection
 		reconcileAll = previousAll
 		reconcileIncludeFiles = previousIncludeFiles
 		reconcileForce = previousForce
@@ -64,6 +66,7 @@ func resetReconcileFlags(t *testing.T) {
 	})
 	reconcileOutputOnly = false
 	reconcileMint = false
+	reconcileMintWorkflows, reconcileMintSelection = false, mintPipelineSelection{}
 	reconcileAll = false
 	reconcileIncludeFiles = false
 	reconcileForce = false

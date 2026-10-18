@@ -145,7 +145,11 @@ func scaffoldCodeRabbitConfig(projectRoot string, outputOnly bool) error {
 	return nil
 }
 
-func scaffoldPullRequestTemplate(projectRoot string, outputOnly bool) error {
+func scaffoldPullRequestTemplate(projectRoot string, outputOnly bool, configs ...*config.Config) error {
+	provider := "github"
+	if len(configs) > 0 {
+		provider = configs[0].Issues.EffectiveProvider()
+	}
 	path := filepath.Join(projectRoot, pullRequestTemplatePath)
 	if document.Exists(path) {
 		if !outputOnly {
@@ -154,7 +158,7 @@ func scaffoldPullRequestTemplate(projectRoot string, outputOnly bool) error {
 		return nil
 	}
 
-	if err := document.Write(path, templates.PullRequestTemplate); err != nil {
+	if err := document.Write(path, templates.BuildPullRequestTemplate(provider)); err != nil {
 		return fmt.Errorf("failed to create %s: %w", pullRequestTemplatePath, err)
 	}
 	if !outputOnly {

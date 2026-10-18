@@ -61,14 +61,29 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ### Kit workflow scaffolding
 
+- `kit init` adds the pinned Mint starter when no workflows exist. Existing
+  workflow structure and Mint integrations are preserved.
+- Init and reconcile refresh supported Mint Action stable tags and full commit SHA
+  pins to the latest verified published stable release, preserving the reference
+  format. Custom refs remain unchanged with a diagnostic. Release lookup failures
+  are explicit; never guess a replacement. Preview with `--dry-run --diff` without
+  writing files. Kit does not install or maintain the local Mint executable.
+- For additive release preparation in an existing job, provide `--mint-workflow`,
+  `--mint-job` and `--mint-before-step`. Without placement, Kit reports the needed
+  selection without creating a diagnostic workflow. Preview with `--dry-run --diff`.
+- Kit scaffolds files and preparation steps. Mint and the project own trigger,
+  permission, publication and runtime policy. Review how the project consumes the
+  generated release metadata and enriched changelog artifact before adoption.
+
 - `kit init --mint` (new Kit project) or `kit reconcile --mint --dry-run --diff`
   followed by `kit reconcile --mint` (existing project) can create a missing
   controller from an existing schema 2 deployment `.mint.yaml` with
   `authorization: repository-write` and reviewed build/deploy/observe adapters.
-  Kit embeds the published Mint v0.5.0 parser and renderer; generation works
-  offline and does not require installing or executing Mint in the project.
-- Existing controllers, adapters and policies remain project owned, even under
-  `--force`. Package/artifact policies retain their publication workflows.
+  Kit embeds the published Mint v0.9.0 parser and renderer; rendering runs
+  locally without installing or executing Mint in the project.
+- Existing controller structure, adapters and policies remain project owned, even
+  under `--force`; only supported action references are refreshed. Package/artifact
+  policies retain their publication workflows.
   Generation keeps the activation gate; complete adapter integration and verified
   baselines before enabling it. Scaffolding does not prove activation or deployment.
 - Candidate producers must isolate selected source execution in credential-free
@@ -140,7 +155,7 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ## Reference
 
-The [Mint v0.5.0 lifecycle and adapter contract](https://github.com/jamesonstone/mint/blob/b97969136d5a43d0982c46c6f185868db16d14bf/docs/references/environment-lifecycle.md)
+The [Mint v0.9.0 lifecycle and adapter contract](https://github.com/jamesonstone/mint/blob/eac91490f772adbd2ab030cb6eba3910c1bca93c/docs/references/environment-lifecycle.md)
 provides schema, workflow and manifest details. The project's pinned implementation
 and reviewed runbook determine its supported actions. Kit embeds this rule locally;
 reading it does not require a network fetch or grant deployment authority.

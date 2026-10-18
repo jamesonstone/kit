@@ -12,6 +12,7 @@ func withInitFlags(t *testing.T, run func()) {
 	t.Helper()
 
 	originalMint := initMint
+	originalMintSelection := initMintSelection
 	originalCopy := initCopy
 	originalOutputOnly := initOutputOnly
 	originalRefresh := initRefresh
@@ -22,6 +23,7 @@ func withInitFlags(t *testing.T, run func()) {
 
 	t.Cleanup(func() {
 		initMint = originalMint
+		initMintSelection = originalMintSelection
 		initCopy = originalCopy
 		initOutputOnly = originalOutputOnly
 		initRefresh = originalRefresh
@@ -32,6 +34,7 @@ func withInitFlags(t *testing.T, run func()) {
 	})
 
 	initMint = false
+	initMintSelection = mintPipelineSelection{}
 	initCopy = false
 	initOutputOnly = false
 	initRefresh = false

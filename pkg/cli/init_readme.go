@@ -41,7 +41,7 @@ func planRefreshReadmeFile(
 	after := before
 	owner, ownerType := "", ""
 	if repo, err := readmeGitHubRepository(projectRoot, cfg); err == nil {
-		badgeBlock := managedReadmeBadgeBlock(repo.Repository, readmeCIWorkflow(projectRoot), repo.Visibility)
+		badgeBlock := managedReadmeBadgeBlock(repo.Repository, readmeCIWorkflow(projectRoot), repo.Visibility, cfg.Issues.EffectiveProvider())
 		after = upsertReadmeBadgeBlock(after, repo.Repository, badgeBlock)
 		owner = readmeRepositoryOwner(repo.Repository)
 		ownerType = readmeGitHubOwnerType(projectRoot, owner)
@@ -70,7 +70,7 @@ func readmeRepositoryOwner(repository string) string {
 	return owner
 }
 
-func managedReadmeBadgeBlock(repository, workflowPath string, visibility string) string {
+func managedReadmeBadgeBlock(repository, workflowPath string, visibility string, providers ...string) string {
 	var badges []string
 	if !strings.EqualFold(visibility, "PRIVATE") {
 		badges = append(badges,
@@ -78,6 +78,15 @@ func managedReadmeBadgeBlock(repository, workflowPath string, visibility string)
 			readmeBadge("Open issues", "https://img.shields.io/github/issues/"+repository, "https://github.com/"+repository+"/issues"),
 			readmeBadge("Pull requests", "https://img.shields.io/github/issues-pr/"+repository, "https://github.com/"+repository+"/pulls"),
 		)
+	}
+	if len(providers) > 0 && providers[0] == "linear" {
+		filtered := badges[:0]
+		for _, badge := range badges {
+			if !strings.Contains(badge, "img.shields.io/github/issues/") {
+				filtered = append(filtered, badge)
+			}
+		}
+		badges = filtered
 	}
 	if workflowPath != "" {
 		workflowFile := filepath.Base(workflowPath)

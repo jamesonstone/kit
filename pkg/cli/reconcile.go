@@ -43,10 +43,19 @@ In the primary checkout, reconcile applies changes in a linked worktree on
 branch kit-reconcile (created or reused) and prints where to review them.
 Use --dry-run --diff to preview without writing anything.
 
-Use --mint to create a missing Mint v0.5.0 controller from an existing team-first
+Mint Action references in repository workflows are refreshed to the latest verified
+stable release. Local Mint binaries and unrelated action pins are never changed.
+Release lookup failures stop before writes; --dry-run previews workflow updates.
+
+Use --mint-workflows to plan Mint Actions integration. Existing jobs need explicit
+--mint-workflow, --mint-job and --mint-before-step placement.
+Existing Mint workflows remain project owned. Preview with --dry-run --diff.
+
+Use --mint to create a missing Mint v0.9.0 controller from an existing team-first
 schema 2 .mint.yaml and project-owned adapters. Existing controllers remain
 project owned, even with --force. This option supports --dry-run --diff and
 uses the same linked-worktree delivery path; it does not activate deployments.
+Do not combine --mint with --mint-workflows or Mint workflow selection flags.
 
 With a feature argument, audits only that feature's docs.`,
 	Args: cobra.MaximumNArgs(1),
@@ -64,12 +73,17 @@ func init() {
 	reconcileCmd.Flags().BoolVar(&reconcileDryRun, "dry-run", false, "preview Kit-managed file changes without writing files")
 	reconcileCmd.Flags().BoolVar(&reconcileDiff, "diff", false, "print planned file changes as a unified diff with --dry-run")
 	reconcileCmd.Flags().StringArrayVar(&reconcileRefreshFiles, "file", nil, "limit the file migration to one Kit-managed file; repeat for multiple files")
+	reconcileCmd.Flags().BoolVar(&reconcileMintWorkflows, "mint-workflows", false, "plan Mint installation in existing workflows or a safe release-state starter")
+	bindMintPipelineSelection(reconcileCmd, &reconcileMintSelection)
 	rootCmd.AddCommand(reconcileCmd)
 }
 
 func runReconcile(cmd *cobra.Command, args []string) error {
-	if reconcileMint && (len(args) > 0 || len(reconcileRefreshFiles) > 0) {
-		return fmt.Errorf("--mint applies to whole-project reconcile; do not combine it with a feature or --file")
+	if err := validateMintControllerOptions(reconcileMint, reconcileMintWorkflows, reconcileMintSelection); err != nil {
+		return err
+	}
+	if (reconcileMint || reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection)) && (len(args) > 0 || len(reconcileRefreshFiles) > 0) {
+		return fmt.Errorf("mint integration applies to whole-project reconcile; do not combine it with a feature or --file")
 	}
 	if reconcileAll && len(args) > 0 {
 		return fmt.Errorf("--all cannot be used with a feature argument")
@@ -98,10 +112,14 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	applyFiles := feat == nil
+	mintRelease, err := lookupMintActionRelease()
+	if err != nil {
+		return fmt.Errorf("verify latest Mint Action release (no files changed): %w", err)
+	}
+
 	var deliverySnapshot []managedFileDeliverySnapshot
-	if applyFiles {
-		opts := initRefreshOptions{force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint}
+	{
+		opts := initRefreshOptions{mintRelease: &mintRelease, mintOnly: feat != nil, mintWorkflows: reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection), mintSelection: reconcileMintSelection, force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint}
 		upToDate, err := reconcileHasNoChanges(projectRoot, opts)
 		if err != nil {
 			return err
@@ -110,18 +128,34 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		if feat != nil && !sameResolvedPath(target.projectRoot, projectRoot) {
+			targetCfg, err := config.Load(target.projectRoot)
+			if err != nil {
+				return err
+			}
+			if _, err := loadFeatureWithState(targetCfg.SpecsPath(target.projectRoot), targetCfg, args[0]); err != nil {
+				return fmt.Errorf("requested feature is unavailable in reconcile target; no workflow updates applied: %w", err)
+			}
+		}
 		if target.current {
+			if err := printCurrentMintIncompleteNotes(projectRoot, opts); err != nil {
+				return err
+			}
 			_, err := fmt.Fprintln(cmd.OutOrStdout(), "Kit-managed files are current; nothing to write.")
 			if err != nil {
 				return err
 			}
 		} else if deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
-			force:      reconcileForce,
-			mint:       reconcileMint,
-			dryRun:     reconcileDryRun,
-			diff:       reconcileDiff,
-			files:      reconcileRefreshFiles,
-			outputOnly: reconcileOutputOnly,
+			force:         reconcileForce,
+			mintRelease:   &mintRelease,
+			mintOnly:      feat != nil,
+			mint:          reconcileMint,
+			mintWorkflows: reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection),
+			mintSelection: reconcileMintSelection,
+			dryRun:        reconcileDryRun,
+			diff:          reconcileDiff,
+			files:         reconcileRefreshFiles,
+			outputOnly:    reconcileOutputOnly,
 		}); err != nil {
 			return err
 		}
@@ -131,6 +165,12 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 		projectRoot = target.projectRoot
 		if cfg, err = config.Load(projectRoot); err != nil {
 			return fmt.Errorf("failed to reload config after reconcile: %w", err)
+		}
+		if feat != nil {
+			feat, err = loadFeatureWithState(cfg.SpecsPath(projectRoot), cfg, args[0])
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if reconcileDryRun {

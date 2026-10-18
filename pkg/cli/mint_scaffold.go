@@ -11,8 +11,78 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const mintActionRef = "b97969136d5a43d0982c46c6f185868db16d14bf" // v0.5.0
+const mintActionRef = mintPipelineActionRef // Mint v0.9.0
 const mintPolicyPath = ".mint.yaml"
+
+func validateMintControllerOptions(controller, workflows bool, selection mintPipelineSelection) error {
+	if controller && (workflows || mintSelectionRequested(selection)) {
+		return fmt.Errorf("--mint cannot be combined with --mint-workflows or Mint workflow selection flags; select one scaffold at a time")
+	}
+	return nil
+}
+
+func planInitMintIntegration(root string, controller bool, selection mintPipelineSelection) ([]initRefreshFileChange, []string, error) {
+	if err := validateMintControllerOptions(controller, false, selection); err != nil {
+		return nil, nil, err
+	}
+	if !controller {
+		return planMintPipeline(root, selection)
+	}
+	change, err := planMintWorkflow(root)
+	if err != nil {
+		return nil, nil, err
+	}
+	return []initRefreshFileChange{*change}, nil, nil
+}
+
+func incompleteMintNotes(notes []string) []string {
+	var incomplete []string
+	for _, note := range notes {
+		if strings.Contains(note, "INCOMPLETE") {
+			incomplete = append(incomplete, note)
+		}
+	}
+	return incomplete
+}
+
+func appendMintIncompletePrompt(prompt string, notes []string) string {
+	if notes = incompleteMintNotes(notes); len(notes) > 0 {
+		prompt += "\n\n## Incomplete Mint integration\n\n- " + strings.Join(notes, "\n- ") + "\n"
+	}
+	return prompt
+}
+
+func printInitRefreshNotes(notes []string, opts initRefreshOptions) {
+	if opts.outputOnly {
+		notes = incompleteMintNotes(notes)
+	}
+	if len(notes) == 0 {
+		return
+	}
+	fmt.Println("\nNotes:")
+	for _, note := range notes {
+		fmt.Printf("   - %s\n", note)
+	}
+}
+
+func printCurrentMintIncompleteNotes(root string, opts initRefreshOptions) error {
+	if opts.mintRelease != nil {
+		_, notes, err := planMintActionUpdates(root, nil, *opts.mintRelease)
+		if err != nil {
+			return err
+		}
+		printInitRefreshNotes(notes, initRefreshOptions{outputOnly: true})
+	}
+	if !opts.mintWorkflows && !mintSelectionRequested(opts.mintSelection) {
+		return nil
+	}
+	_, notes, err := planMintPipeline(root, opts.mintSelection)
+	if err != nil {
+		return err
+	}
+	printInitRefreshNotes(notes, initRefreshOptions{outputOnly: true})
+	return nil
+}
 
 // planMintWorkflow uses the published renderer, without installing or running
 // project code. Policy and adapters remain project owned; only a missing
@@ -82,8 +152,8 @@ func planMintWorkflow(root string) (*initRefreshFileChange, error) {
 	if err != nil {
 		return nil, err
 	}
-	content = "# Scaffolded by Kit with Mint v0.5.0. This workflow is project owned.\n" + content
-	return newInitRefreshFileChange(root, path, "", content, instructionFileCreated), nil
+	content = "# Scaffolded by Kit. This workflow is project owned.\n" + content
+	return newMintPipelineFileChange(root, path, "", content, instructionFileCreated), nil
 }
 
 // Reject links before reads and writes, including linked parent directories.

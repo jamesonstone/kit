@@ -65,6 +65,9 @@ func Load(projectRoot string) (*Config, error) {
 	if err == nil && inspection.SchemaState == SchemaStateNewer {
 		return nil, fmt.Errorf("%s", inspection.Findings[0].Message)
 	}
+	if err == nil {
+		err = cfg.Issues.Validate()
+	}
 	return cfg, err
 }
 
