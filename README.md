@@ -83,7 +83,9 @@ v0.9.0, pinned to `eac91490f772adbd2ab030cb6eba3910c1bca93c`:
   retention before that step, preserving existing bytes and job configuration.
 - `existing` preserves the current publisher. Bind its version and changelog
   inputs to `steps.kit_mint_release.outputs.version_tag` and
-  `${{ runner.temp }}/kit-mint-CHANGELOG.md`; an unbound handoff remains INCOMPLETE.
+  `${{ runner.temp }}/kit-mint-CHANGELOG.md`; Kit reports the handoff as INCOMPLETE
+  and requires explicit review. Matching reference strings alone do not prove
+  consumption.
   Changelog generation is skipped when no new tag/commits exist; consumers must
   handle that case. Inspect custom scripts and publication semantics during review.
 - `mint` explicitly transfers publication to Mint after existing job steps succeed.

@@ -124,6 +124,11 @@ func TestMintPipelineAmbiguousSafeAdditive(t *testing.T) {
 			if err != nil || len(changes) != 1 || changes[0].relativePath != ".github/workflows/mint-check.yaml" || len(notes) == 0 {
 				t.Fatalf("%+v %v %v", changes, notes, err)
 			}
+			for _, flag := range []string{"--mint-workflow", "--mint-job", "--mint-before-step", "--mint-release-owner"} {
+				if !strings.Contains(strings.Join(notes, " "), flag) {
+					t.Fatalf("selection guidance missing %s: %v", flag, notes)
+				}
+			}
 			if strings.Contains(changes[0].after, "write") || strings.Contains(changes[0].after, "secrets.") || strings.Contains(changes[0].after, "release-publish") {
 				t.Fatal(changes[0].after)
 			}

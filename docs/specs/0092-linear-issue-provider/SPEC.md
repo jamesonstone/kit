@@ -327,3 +327,23 @@ lint (zero issues) passing, with only the existing nonblocking retired README
 advisory. Independent follow-up reviews found no remaining lifecycle or remote
 validation issues. No real installed tool, external test ticket, consumer pipeline
 or production system was changed. Hosted evidence belongs to the pushed head.
+
+## APPROVED SIMPLIFICATION
+
+Keep the implemented provider, workflow and installed-tool behavior, with four
+bounded cleanups: a fixed-policy installed-Mint lifecycle API and one shared
+minimum-version resolver; one issue-setting planner invoked independently for
+invoking and canonical delivery targets; removal of diagnostic-only workflow-name
+candidate guesses, the unused diagnostic renderer argument and substring-based
+handoff claims; and updater policy matrices kept in minttool while command tests
+focus on invocation, previews, errors, output, pins and repeated execution.
+
+Existing-owner handoffs now always require explicit review and report INCOMPLETE;
+matching reference strings do not prove that the existing publisher consumes the
+version and changelog. No workflow insertion, publication authority, YAML-preserving
+write, lock, ownership, missing-tool or reinspection safeguard is removed.
+
+Validation passed: focused and full Go tests, vet, build, lint, Mint-tool race tests,
+formatting and project checks (existing nonblocking retired README advisory).
+Independent reviews found no regressions in the updater, target planning or workflow
+cleanup. No global tool installation or consumer activation was performed.

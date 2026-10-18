@@ -107,13 +107,9 @@ func check(ctx context.Context, opts Options, b backend) (Report, error) {
 	} else if r.Installed.Status == "missing" {
 		r.UpdateAvailable = true
 	}
-	if opts.RequireLinear && LinearMinimumVersion == "" {
-		r.Compatibility = "unknown_unreleased"
-		return r, errors.New("linear compatibility has no verified published Mint minimum version")
-	}
-	required := opts.RequireVersion
-	if opts.RequireLinear && (required == "" || compare(LinearMinimumVersion, required) > 0) {
-		required = LinearMinimumVersion
+	required, err := minimumRequiredVersion(opts, &r)
+	if err != nil {
+		return r, err
 	}
 	if required != "" {
 		r.Compatibility = "incompatible"
@@ -139,21 +135,11 @@ func updatePlan(ctx context.Context, opts Options, b backend, preview bool) (Rep
 }
 
 func applyUpdatePlan(ctx context.Context, opts Options, b backend, preview bool, r Report) (Report, error) {
-	if opts.RequireLinear && LinearMinimumVersion == "" {
-		r.Compatibility = "unknown_unreleased"
-		return r, errors.New("linear compatibility has no verified published Mint minimum version")
-	}
-	required := opts.RequireVersion
-	if required != "" && !validVersion(required) {
-		return r, errors.New("required version must be a stable vX.Y.Z tag")
-	}
-	if opts.RequireLinear && (required == "" || compare(LinearMinimumVersion, required) > 0) {
-		required = LinearMinimumVersion
+	required, err := minimumRequiredVersion(opts, &r)
+	if err != nil {
+		return r, err
 	}
 	if required != "" {
-		if !validVersion(required) {
-			return r, errors.New("required version must be a stable vX.Y.Z tag")
-		}
 		if compare(r.Target, required) < 0 {
 			r.Compatibility = "incompatible"
 			return r, errors.New("target is below required Mint version")
@@ -193,6 +179,21 @@ func applyUpdatePlan(ctx context.Context, opts Options, b backend, preview bool,
 		r.Compatibility = "compatible"
 	}
 	return r, nil
+}
+
+func minimumRequiredVersion(opts Options, report *Report) (string, error) {
+	if opts.RequireLinear && LinearMinimumVersion == "" {
+		report.Compatibility = "unknown_unreleased"
+		return "", errors.New("linear compatibility has no verified published Mint minimum version")
+	}
+	required := opts.RequireVersion
+	if required != "" && !validVersion(required) {
+		return "", errors.New("required version must be a stable vX.Y.Z tag")
+	}
+	if opts.RequireLinear && (required == "" || compare(LinearMinimumVersion, required) > 0) {
+		required = LinearMinimumVersion
+	}
+	return required, nil
 }
 
 var stable = regexp.MustCompile(`^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$`)

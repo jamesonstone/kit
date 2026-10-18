@@ -77,13 +77,13 @@ func TestMintPublicationRequiresExistingAuthority(t *testing.T) {
 		}
 	})
 }
-func TestMintExistingConsumerHandoff(t *testing.T) {
+func TestMintExistingConsumerReferencesStillRequireReview(t *testing.T) {
 	root := t.TempDir()
 	path := ".github/workflows/deploy.yaml"
 	source := strings.Replace(pipelineDeploy, "echo original", "echo '${{ steps.kit_mint_release.outputs.version_tag }}' '${{ runner.temp }}/kit-mint-CHANGELOG.md'", 1)
 	writePipelineFixture(t, root, path, source)
 	changes, notes, err := planMintPipeline(root, mintPipelineSelection{workflow: path, job: "deploy", beforeStep: "deploy", releaseOwner: "existing"})
-	if err != nil || len(changes) != 1 || strings.Contains(strings.Join(notes, " "), "INCOMPLETE") || !strings.Contains(strings.Join(notes, " "), "references the resolved version") {
+	if err != nil || len(changes) != 1 || !strings.Contains(strings.Join(notes, " "), "INCOMPLETE publication handoff review") || !strings.Contains(strings.Join(notes, " "), "steps.kit_mint_release.outputs.version_tag") || !strings.Contains(strings.Join(notes, " "), "runner.temp/kit-mint-CHANGELOG.md") {
 		t.Fatalf("%+v %v %v", changes, notes, err)
 	}
 }

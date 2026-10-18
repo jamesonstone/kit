@@ -41,7 +41,7 @@ func runMintLifecycle(cmd *cobra.Command, preview bool) error {
 	}
 	ctx, cancel := context.WithTimeout(parent, mintCommandTimeout(!preview))
 	defer cancel()
-	report, err := maintainInstalledMint(ctx, minttool.Options{}, preview)
+	report, err := maintainInstalledMint(ctx, preview)
 	if err != nil {
 		return fmt.Errorf("mint local maintenance failed: %w; inspect `kit mint check --json` and update unsupported installs through their owning installer; repository/CI pins remain separate", err)
 	}

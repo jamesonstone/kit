@@ -90,58 +90,57 @@ func loadIssueSetting(root string) (*config.Config, error) {
 	return cfg, nil // permits repairing invalid issue settings without defaulting
 }
 
+type issueSettingPlan struct {
+	issues        config.IssueConfig
+	before, after []byte
+}
+
+func planIssueSetting(root string, cmd *cobra.Command) (issueSettingPlan, error) {
+	cfg, err := loadIssueSetting(root)
+	if err != nil {
+		return issueSettingPlan{}, err
+	}
+	desired, err := desiredIssueConfig(cmd, cfg.Issues)
+	if err != nil {
+		return issueSettingPlan{}, err
+	}
+	before, err := os.ReadFile(filepath.Join(root, config.ConfigFileName))
+	if err != nil {
+		return issueSettingPlan{}, err
+	}
+	after, err := config.PlanIssueConfig(before, desired)
+	return issueSettingPlan{issues: desired, before: before, after: after}, err
+}
+
 func runConfigSet(cmd *cobra.Command, _ []string) error {
 	root, err := config.FindProjectRoot()
 	if err != nil {
 		return err
 	}
-	cfg, err := loadIssueSetting(root)
-	if err != nil {
-		return err
-	}
-	desired, err := desiredIssueConfig(cmd, cfg.Issues)
-	if err != nil {
-		return err
-	}
-	before, err := os.ReadFile(filepath.Join(root, config.ConfigFileName))
-	if err != nil {
-		return err
-	}
-	after, err := config.PlanIssueConfig(before, desired)
+	plan, err := planIssueSetting(root, cmd)
 	if err != nil {
 		return err
 	}
 	dry, _ := cmd.Flags().GetBool("dry-run")
 	// Reuse canonical target safety; suppress prose so JSON stays a single object.
-	target, err := resolveConfigSetTarget(io.Discard, root, dry, bytes.Equal(before, after))
+	target, err := resolveConfigSetTarget(io.Discard, root, dry, bytes.Equal(plan.before, plan.after))
 	if err != nil {
 		return err
 	}
 	if target.projectRoot != root {
-		cfg, err = loadIssueSetting(target.projectRoot)
-		if err != nil {
-			return err
-		}
-		desired, err = desiredIssueConfig(cmd, cfg.Issues)
-		if err != nil {
-			return err
-		}
-		before, err = os.ReadFile(filepath.Join(target.projectRoot, config.ConfigFileName))
-		if err != nil {
-			return err
-		}
-		after, err = config.PlanIssueConfig(before, desired)
+		plan, err = planIssueSetting(target.projectRoot, cmd)
 		if err != nil {
 			return err
 		}
 	}
-	changed := !bytes.Equal(before, after)
+
+	changed := !bytes.Equal(plan.before, plan.after)
 	if !dry {
-		if err := config.ApplyIssueConfig(filepath.Join(target.projectRoot, config.ConfigFileName), before, after); err != nil {
+		if err := config.ApplyIssueConfig(filepath.Join(target.projectRoot, config.ConfigFileName), plan.before, plan.after); err != nil {
 			return err
 		}
 	}
-	report := configSetReport{Target: target.projectRoot, Worktree: target.worktree, DryRun: dry, Changed: changed, Issues: desired, ReconciliationRequired: true,
+	report := configSetReport{Target: target.projectRoot, Worktree: target.worktree, DryRun: dry, Changed: changed, Issues: plan.issues, ReconciliationRequired: true,
 		Next: []string{"cd " + shellQuoteArgument(target.projectRoot) + " && kit reconcile --dry-run --diff", "cd " + shellQuoteArgument(target.projectRoot) + " && kit reconcile"}}
 	structured, _ := cmd.Flags().GetBool("json")
 	if structured {
@@ -154,7 +153,7 @@ func runConfigSet(cmd *cobra.Command, _ []string) error {
 	if !changed {
 		verb = "Already configured"
 	}
-	if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s issue provider %s in %s\nConfiguration only; canonical reconciliation is required.\n", verb, desired.EffectiveProvider(), report.Target); err != nil {
+	if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s issue provider %s in %s\nConfiguration only; canonical reconciliation is required.\n", verb, plan.issues.EffectiveProvider(), report.Target); err != nil {
 		return err
 	}
 	for _, next := range report.Next {

@@ -10,11 +10,11 @@ import (
 // latest official stable release. Missing Mint is skipped without network reads.
 // Lifecycle maintenance always requires the released Linear-compatible minimum;
 // it never installs missing Mint or downgrades a newer local stable version.
-func MaintainInstalled(ctx context.Context, opts Options, preview bool) (Report, error) {
-	return maintainInstalled(ctx, opts, preview, systemBackend{})
+func MaintainInstalled(ctx context.Context, preview bool) (Report, error) {
+	return maintainInstalled(ctx, preview, systemBackend{})
 }
 
-func maintainInstalled(ctx context.Context, opts Options, preview bool, b backend) (Report, error) {
+func maintainInstalled(ctx context.Context, preview bool, b backend) (Report, error) {
 	installed, err := b.inspect(ctx)
 	r := Report{Installed: installed, VersionStatus: installed.Status, Compatibility: "not_applicable"}
 	if err != nil {
@@ -30,26 +30,16 @@ func maintainInstalled(ctx context.Context, opts Options, preview bool, b backen
 		r.VersionStatus = "development_or_unversioned"
 		return r, errors.New("mint maintenance preserved a development, pseudo-version or unversioned installation; select a published stable installation explicitly")
 	}
-	if opts.TargetVersion != "" {
-		return r, errors.New("mint lifecycle maintenance tracks latest stable; use explicit mint update to select a target")
-	}
-	if opts.RequireVersion != "" && !validVersion(opts.RequireVersion) {
-		return r, errors.New("required version must be a stable vX.Y.Z tag")
-	}
-	opts.RequireLinear = true
+	opts := Options{RequireLinear: true}
 	guard := installedBackend{backend: b, expected: installed}
 	r, err = check(ctx, Options{}, guard)
 	if err != nil {
 		return r, err
 	}
 	if compare(installed.Version, r.Target) > 0 {
-		required := LinearMinimumVersion
-		if required == "" {
-			r.Compatibility = "unknown_unreleased"
+		required, err := minimumRequiredVersion(opts, &r)
+		if err != nil {
 			return r, errors.New("mint lifecycle compatibility minimum has no verified release")
-		}
-		if opts.RequireVersion != "" && compare(opts.RequireVersion, required) > 0 {
-			required = opts.RequireVersion
 		}
 		if compare(installed.Version, required) < 0 {
 			r.Compatibility = "incompatible"

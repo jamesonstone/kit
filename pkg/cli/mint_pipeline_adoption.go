@@ -67,9 +67,6 @@ func mintNodeContains(node *yaml.Node, value string) bool {
 	}
 	return false
 }
-func mintHandoffReferences(step *yaml.Node) bool {
-	return mintNodeContains(step, "steps.kit_mint_release.outputs.version_tag") && mintNodeContains(step, "runner.temp") && mintNodeContains(step, "kit-mint-CHANGELOG.md")
-}
 func mintInsertionPoint(steps *yaml.Node, before string) (int, error) {
 	index := -1
 	checkout := -1

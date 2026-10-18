@@ -91,8 +91,8 @@ func TestConfigSetInvalidNoPartialWrites(t *testing.T) {
 func TestConfigSetUsesCanonicalDeliveryTarget(t *testing.T) {
 	root, target := t.TempDir(), t.TempDir()
 	setWorkingDirectory(t, root)
-	before := "schema_version: 2\ncustom: original\n"
-	other := "schema_version: 2\ncustom: target\n"
+	before := "schema_version: 2\ncustom: original\nissues:\n  provider: linear\n  linear: {workspace: source, team_id: 11111111-1111-4111-8111-111111111111}\n"
+	other := "schema_version: 2\ncustom: target\nissues:\n  provider: linear\n  linear: {workspace: target, team_id: 22222222-2222-4222-8222-222222222222}\n"
 	writeFile(t, filepath.Join(root, config.ConfigFileName), before)
 	writeFile(t, filepath.Join(target, config.ConfigFileName), other)
 	previous := resolveConfigSetTarget
@@ -103,9 +103,12 @@ func TestConfigSetUsesCanonicalDeliveryTarget(t *testing.T) {
 		}
 		return reconcileTarget{projectRoot: target, worktree: true}, nil
 	}
-	report, err := executeConfigSet(t, "--issue-provider", "linear", "--linear-workspace", "acme", "--linear-team-id", "11111111-1111-4111-8111-111111111111")
+	report, err := executeConfigSet(t, "--issue-provider", "linear", "--linear-project-id", "33333333-3333-4333-8333-333333333333")
 	if err != nil || report.Target != target || !report.Worktree {
 		t.Fatalf("%#v %v", report, err)
+	}
+	if report.Issues.Linear.Workspace != "target" || report.Issues.Linear.TeamID != "22222222-2222-4222-8222-222222222222" || report.Issues.Linear.ProjectID != "33333333-3333-4333-8333-333333333333" {
+		t.Fatalf("did not replan from canonical target: %+v", report.Issues)
 	}
 	if readFile(t, filepath.Join(root, config.ConfigFileName)) != before {
 		t.Fatal("primary changed")

@@ -17,28 +17,25 @@ import (
 
 func TestInstallInvokesInstalledMintMaintenance(t *testing.T) {
 	for _, tc := range []struct {
-		name, version, status string
-		preview, fail         bool
+		name, status  string
+		preview, fail bool
 	}{
-		{"old", "v0.8.0", "installed", false, false},
-		{"current", "v0.9.0", "installed", false, false},
-		{"newer", "v1.0.0", "installed", false, false},
-		{"missing", "", "missing", false, false},
-		{"unsupported", "v0.8.0", "unsupported", false, true},
-		{"failure", "v0.8.0", "installed", false, true},
-		{"preview", "v0.8.0", "installed", true, false},
+		{"invocation", "installed", false, false},
+		{"missing", "missing", false, false},
+		{"failure", "installed", false, true},
+		{"preview", "installed", true, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := t.TempDir()
 			setWorkingDirectory(t, root)
 			calls := 0
 			failure := errors.New("fixture Mint maintenance failure")
-			stubMintLifecycle(t, func(_ context.Context, opts minttool.Options, preview bool) (minttool.Report, error) {
+			stubMintLifecycle(t, func(_ context.Context, preview bool) (minttool.Report, error) {
 				calls++
-				if preview != tc.preview || opts != (minttool.Options{}) {
-					t.Fatalf("wrong maintenance request: %+v preview=%t", opts, preview)
+				if preview != tc.preview {
+					t.Fatalf("wrong maintenance request: preview=%t", preview)
 				}
-				r := minttool.Report{Installed: minttool.Installation{Version: tc.version, Status: tc.status}, Target: "v0.9.0"}
+				r := minttool.Report{Installed: minttool.Installation{Version: "v0.9.0", Status: tc.status}, Target: "v0.9.0"}
 				if tc.fail {
 					return r, failure
 				}
@@ -63,6 +60,9 @@ func TestInstallInvokesInstalledMintMaintenance(t *testing.T) {
 				if !tc.fail && diagnostics.Len() == 0 {
 					t.Fatal("maintenance omitted stderr diagnostics")
 				}
+				if tc.status == "missing" && !strings.Contains(diagnostics.String(), "kit mint update") {
+					t.Fatal("missing Mint omitted explicit installation guidance")
+				}
 			}
 			if calls != 2 {
 				t.Fatalf("repeat bypassed maintenance: calls=%d", calls)
@@ -81,10 +81,8 @@ func TestReconcileMaintainsMintBeforeWritesAndPreservesPins(t *testing.T) {
 		preview, fail bool
 		status        string
 	}{
-		{"old", false, false, "installed"}, {"current", false, false, "installed"},
-		{"newer", false, false, "installed"}, {"missing", false, false, "missing"},
+		{"invocation", false, false, "installed"}, {"missing", false, false, "missing"},
 		{"preview", true, false, "installed"}, {"failure", false, true, "installed"},
-		{"unsupported", false, true, "unsupported"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := mintLifecycleProject(t)
@@ -92,24 +90,17 @@ func TestReconcileMaintainsMintBeforeWritesAndPreservesPins(t *testing.T) {
 			reconcileOutputOnly = true
 			reconcileRefreshFiles = []string{config.ConfigFileName}
 			before := readFile(t, filepath.Join(root, config.ConfigFileName))
-			version := "v0.8.0"
-			switch tc.name {
-			case "current":
-				version = "v0.9.0"
-			case "newer":
-				version = "v0.10.0"
-			}
 			calls := 0
 			failure := errors.New("fixture maintenance unavailable")
-			stubMintLifecycle(t, func(_ context.Context, opts minttool.Options, preview bool) (minttool.Report, error) {
+			stubMintLifecycle(t, func(_ context.Context, preview bool) (minttool.Report, error) {
 				calls++
-				if opts != (minttool.Options{}) || preview != tc.preview {
-					t.Fatalf("wrong reconcile request %+v preview=%t", opts, preview)
+				if preview != tc.preview {
+					t.Fatalf("wrong reconcile request preview=%t", preview)
 				}
 				if readFile(t, filepath.Join(root, config.ConfigFileName)) != before {
 					t.Fatal("project write preceded maintenance")
 				}
-				r := minttool.Report{Installed: minttool.Installation{Status: tc.status, Version: version}, Target: "v0.9.0"}
+				r := minttool.Report{Installed: minttool.Installation{Status: tc.status, Version: "v0.9.0"}, Target: "v0.9.0"}
 				if tc.fail {
 					return r, failure
 				}
@@ -132,7 +123,7 @@ func TestReconcileMaintainsMintBeforeWritesAndPreservesPins(t *testing.T) {
 					t.Fatalf("current/repeated reconcile bypassed maintenance: calls=%d err=%v", calls, err)
 				}
 			}
-			if strings.Contains(out.String(), "Mint local") || strings.Contains(out.String(), "v0.8.0") {
+			if strings.Contains(out.String(), "Mint local") || strings.Contains(out.String(), "v0.9.0") {
 				t.Fatalf("output-only diagnostics entered stdout: %s", out.String())
 			}
 			if !tc.fail && diagnostics.Len() == 0 {
@@ -156,7 +147,7 @@ func TestFeatureReconcileAndInvalidInputsMintOrdering(t *testing.T) {
 	writeFile(t, filepath.Join(featurePath, "TASKS.md"), withFeatureFrontMatter(validTasks(), "tasks", "0001-sample"))
 	writeFile(t, filepath.Join(root, "docs/PROJECT_PROGRESS_SUMMARY.md"), validProgressSummary("0001", "sample"))
 	calls := 0
-	stubMintLifecycle(t, func(context.Context, minttool.Options, bool) (minttool.Report, error) {
+	stubMintLifecycle(t, func(context.Context, bool) (minttool.Report, error) {
 		calls++
 		return minttool.Report{Installed: minttool.Installation{Status: "missing"}}, nil
 	})

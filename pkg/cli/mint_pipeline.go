@@ -136,21 +136,7 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 		change := newMintPipelineFileChange(root, ".github/workflows/mint-release.yaml", "", string(content), instructionFileCreated)
 		return []initRefreshFileChange{*change}, []string{"Mint release-state pipeline added. Runtime deployment requires reviewed project adapters; no deployment is inferred."}, nil
 	}
-	var candidates []mintWorkflow
-	for _, workflow := range workflows {
-		name := workflow.path
-		if n := mintField(&workflow.node, "name"); n != nil {
-			name += " " + n.Value
-		}
-		name = strings.ToLower(name)
-		if strings.Contains(name, "deploy") || strings.Contains(name, "release") {
-			candidates = append(candidates, workflow)
-		}
-	}
 	diagnostic := "INCOMPLETE Mint pipeline configuration: publication ownership and insertion order require explicit selection."
-	if len(candidates) == 1 {
-		diagnostic += " Candidate: " + candidates[0].path + "."
-	}
 	diagnostic += " Preview --mint-workflow <path> --mint-job <id> --mint-before-step <id> --mint-release-owner existing|mint --dry-run --diff. Version checks are diagnostics only."
 
 	path := ".github/workflows/mint-check.yaml"
@@ -159,7 +145,7 @@ func planMintPipeline(root string, selection mintPipelineSelection) ([]initRefre
 			return nil, []string{diagnostic + " Existing mint-check.yaml preserved."}, nil
 		}
 	}
-	change := newMintPipelineFileChange(root, path, "", string(renderMintValidationPipeline(mintDefaultBranch(root))), instructionFileCreated)
+	change := newMintPipelineFileChange(root, path, "", string(renderMintValidationPipeline()), instructionFileCreated)
 	return []initRefreshFileChange{*change}, []string{diagnostic + " Added read-only tooling diagnostic; existing publishers/deploys unchanged."}, nil
 }
 

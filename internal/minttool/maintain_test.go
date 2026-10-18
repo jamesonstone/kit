@@ -60,10 +60,11 @@ func TestMaintainInstalledLifecycle(t *testing.T) {
 		{"old preview", "v0.8.0", "go-install", "installed", "v0.9.0", true, false, 0, 1, "outdated"},
 		{"missing preview", "", "none", "missing", "", true, false, 0, 0, "missing"},
 		{"below minimum", "v0.7.0", "go-install", "installed", "v0.8.0", false, true, 0, 1, "outdated"},
+		{"newer below minimum", "v0.8.0", "go-install", "installed", "v0.7.0", false, true, 0, 1, "newer"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			b := &lifecycleBackend{fakeBackend: fakeBackend{installed: Installation{Path: "/fixture/mint", Version: tt.version, Method: tt.method, Status: tt.status}, latest: tt.latest}}
-			r, err := maintainInstalled(context.Background(), Options{}, tt.preview, b)
+			r, err := maintainInstalled(context.Background(), tt.preview, b)
 			if (err != nil) != tt.wantErr || b.calls != tt.installs || b.releases != tt.releases || r.VersionStatus != tt.wantStatus {
 				t.Fatalf("report=%+v error=%v installs=%d releases=%d", r, err, b.calls, b.releases)
 			}
@@ -82,44 +83,32 @@ func TestMaintainInstalledRepeatabilityAndFailures(t *testing.T) {
 		return &lifecycleBackend{fakeBackend: fakeBackend{installed: Installation{Path: "/fixture/mint", Version: "v0.8.0", Method: "go-install", Status: "installed"}, latest: "v0.9.0"}}
 	}
 	b := newBackend()
-	if _, err := maintainInstalled(context.Background(), Options{}, false, b); err != nil {
+	if _, err := maintainInstalled(context.Background(), false, b); err != nil {
 		t.Fatal(err)
 	}
-	r, err := maintainInstalled(context.Background(), Options{}, false, b)
+	r, err := maintainInstalled(context.Background(), false, b)
 	if err != nil || r.Updated || b.calls != 1 {
 		t.Fatalf("repeat report=%+v err=%v installs=%d", r, err, b.calls)
 	}
 	b = newBackend()
 	b.failure = errors.New("build failed")
-	r, err = maintainInstalled(context.Background(), Options{}, false, b)
+	r, err = maintainInstalled(context.Background(), false, b)
 	if err == nil || r.Updated || r.Installed.Version != "v0.8.0" || b.installed.Version != "v0.8.0" {
 		t.Fatalf("failed update changed installation: %+v %v", r, err)
 	}
 	b = newBackend()
 	b.releaseError = errors.New("offline")
-	if _, err = maintainInstalled(context.Background(), Options{}, false, b); err == nil || b.calls != 0 {
+	if _, err = maintainInstalled(context.Background(), false, b); err == nil || b.calls != 0 {
 		t.Fatal("release failure installed")
-	}
-	b = newBackend()
-	if _, err = maintainInstalled(context.Background(), Options{TargetVersion: "v0.8.0"}, false, b); err == nil || b.releases != 0 {
-		t.Fatal("lifecycle accepted selected target")
 	}
 }
 
 func TestMaintainInstalledNeverRecreatesRemovedMint(t *testing.T) {
 	for _, disappearAt := range []int{2, 3, 4} {
 		b := &lifecycleBackend{fakeBackend: fakeBackend{installed: Installation{Path: "/fixture/mint", Version: "v0.8.0", Method: "go-install", Status: "installed"}, latest: "v0.9.0"}, disappearAt: disappearAt}
-		r, err := maintainInstalled(context.Background(), Options{}, false, b)
+		r, err := maintainInstalled(context.Background(), false, b)
 		if err == nil || r.Updated || b.calls != 0 {
 			t.Fatalf("removal at inspection%d recreated Mint: %+v %v installs=%d", disappearAt, r, err, b.calls)
 		}
-	}
-}
-
-func TestMaintainInstalledNewerStillChecksMinimum(t *testing.T) {
-	b := &lifecycleBackend{fakeBackend: fakeBackend{installed: Installation{Path: "/fixture/mint", Version: "v0.10.0", Method: "go-install", Status: "installed"}, latest: "v0.9.0"}}
-	r, err := maintainInstalled(context.Background(), Options{RequireVersion: "v0.11.0"}, false, b)
-	if err == nil || r.Compatibility != "incompatible" || b.calls != 0 {
-		t.Fatalf("%+v %v", r, err)
 	}
 }

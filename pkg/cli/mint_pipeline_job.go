@@ -41,10 +41,8 @@ func integrateMintJob(root string, workflow mintWorkflow, selection mintPipeline
 	note := "CONFIGURED Mint version resolution and enriched changelog artifact before step " + selection.beforeStep + "."
 	if selection.releaseOwner == "mint" {
 		note += " Mint owns publication after existing job steps succeed; no deployment trigger, permission or environment changed."
-	} else if mintHandoffReferences(steps.Content[index]) {
-		note += " Existing publisher references the resolved version and changelog file; publication ownership remains existing."
 	} else {
-		note += " INCOMPLETE publication handoff: bind the existing consumer to steps.kit_mint_release.outputs.version_tag and runner.temp/kit-mint-CHANGELOG.md; existing publisher was preserved."
+		note += " INCOMPLETE publication handoff review: verify or bind the existing consumer to steps.kit_mint_release.outputs.version_tag and runner.temp/kit-mint-CHANGELOG.md; existing publisher was preserved."
 	}
 	change := newMintPipelineFileChange(root, workflow.path, string(workflow.data), content, instructionFileUpdated)
 	return []initRefreshFileChange{*change}, []string{note}, nil
@@ -61,7 +59,7 @@ func mintComplexYAML(node *yaml.Node) bool {
 	}
 	return false
 }
-func renderMintValidationPipeline(_ string) []byte {
+func renderMintValidationPipeline() []byte {
 	return []byte(`# Scaffolded by Kit. Read-only Mint tooling check; no application code runs.
 name: Mint tooling
 on:
