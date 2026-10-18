@@ -48,7 +48,7 @@ func skipAutomaticConfigCheck(cmd *cobra.Command) bool {
 		return true
 	}
 	switch parts[1] {
-	case "init", "install", "mint", "capabilities", "config", "context", "aws", "health", "registry", "instructions", "usage", "upgrade", "version", "completion", "help":
+	case "init", "mint", "capabilities", "config", "context", "aws", "health", "registry", "instructions", "usage", "upgrade", "version", "completion", "help":
 		return true
 	default:
 		return false

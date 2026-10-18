@@ -10,30 +10,6 @@ import (
 
 var maintainInstalledMint = minttool.MaintainInstalled
 
-func init() { rootCmd.AddCommand(newInstallCommand()) }
-
-func newInstallCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "install", Short: "Check and update supported installed local tools",
-		Args: cobra.NoArgs, SilenceUsage: true,
-		Long: `Maintain optional local tools used by Kit. Currently checks installed Mint
-against official stable releases and updates supported user-owned Go-bin installs
-when older. Missing Mint is reported and never installed by this lifecycle command.
-Current/newer versions remain unchanged; unsupported installations need their owner.
-
-Updates run automatically, including noninteractive runs; --dry-run validates the
-proposed action without installing. Repository dependencies and CI pins are separate
-and never changed. This does not install/upgrade Kit or initialize a project; use
-Go installation, kit upgrade, or kit init for those existing responsibilities.`,
-	}
-	cmd.Flags().Bool("dry-run", false, "preview local tool maintenance without installing")
-	cmd.RunE = func(cmd *cobra.Command, _ []string) error {
-		preview, _ := cmd.Flags().GetBool("dry-run")
-		return runMintLifecycle(cmd, preview)
-	}
-	return cmd
-}
-
 func runMintLifecycle(cmd *cobra.Command, preview bool) error {
 	parent := cmd.Context()
 	if parent == nil {

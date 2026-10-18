@@ -285,20 +285,21 @@ reconcile target resolver protects primary checkouts by preparing/reusing its
 uses the invoking checkout; a later primary-checkout write uses the canonical
 base/worktree and never copies unrelated working changes into it.
 
-### Installed Mint maintenance at lifecycle commands
+### Installed Mint maintenance during reconcile
 
-`kit install` is the local-tool maintenance entry point. Kit itself is installed
-with Go, upgraded with `kit upgrade`, and projects are created with `kit init`.
-Both `kit install` and valid `kit reconcile` invocations (including feature-only,
-no-op and output-only runs) check installed local Mint and automatically update
+Use `kit mint check` to inspect Mint and `kit mint update` for explicit installation
+or maintenance. Kit itself is installed with Go, upgraded with `kit upgrade`, and
+projects are created with `kit init`. Valid `kit reconcile` invocations (including
+feature-only, no-op and output-only runs) check installed local Mint and automatically update
 supported outdated installations to the latest official stable release, requiring
 at least v0.9.0. Interactive and noninteractive runs use the same policy with no
 confirmation prompt. Reconcile performs maintenance before managed-refresh writes;
 release lookup or update failure exits nonzero with actionable diagnostics.
 
 ```bash
-kit install --dry-run          # read-only local maintenance preview
-kit install                    # maintain an already-installed optional Mint
+kit mint check --json          # inspect local Mint
+kit mint update --dry-run      # preview an explicit installation or update
+kit mint update                # explicitly install or update Mint
 kit reconcile --dry-run --diff # preview local maintenance and repository changes
 ```
 

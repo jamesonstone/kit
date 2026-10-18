@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -15,63 +14,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func TestInstallInvokesInstalledMintMaintenance(t *testing.T) {
-	for _, tc := range []struct {
-		name, status  string
-		preview, fail bool
-	}{
-		{"invocation", "installed", false, false},
-		{"missing", "missing", false, false},
-		{"failure", "installed", false, true},
-		{"preview", "installed", true, false},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			root := t.TempDir()
-			setWorkingDirectory(t, root)
-			calls := 0
-			failure := errors.New("fixture Mint maintenance failure")
-			stubMintLifecycle(t, func(_ context.Context, preview bool) (minttool.Report, error) {
-				calls++
-				if preview != tc.preview {
-					t.Fatalf("wrong maintenance request: preview=%t", preview)
-				}
-				r := minttool.Report{Installed: minttool.Installation{Version: "v0.9.0", Status: tc.status}, Target: "v0.9.0"}
-				if tc.fail {
-					return r, failure
-				}
-				return r, nil
-			})
-			for i := 0; i < 2; i++ {
-				cmd := newInstallCommand()
-				var out, diagnostics bytes.Buffer
-				cmd.SetOut(&out)
-				cmd.SetErr(&diagnostics)
-				cmd.SetArgs(nil)
-				if tc.preview {
-					cmd.SetArgs([]string{"--dry-run"})
-				}
-				err := cmd.Execute()
-				if (err != nil) != tc.fail || (tc.fail && !strings.Contains(err.Error(), failure.Error())) {
-					t.Fatalf("maintenance failure lost: %v", err)
-				}
-				if out.Len() != 0 {
-					t.Fatalf("maintenance polluted stdout: %s", out.String())
-				}
-				if !tc.fail && diagnostics.Len() == 0 {
-					t.Fatal("maintenance omitted stderr diagnostics")
-				}
-				if tc.status == "missing" && !strings.Contains(diagnostics.String(), "kit mint update") {
-					t.Fatal("missing Mint omitted explicit installation guidance")
-				}
-			}
-			if calls != 2 {
-				t.Fatalf("repeat bypassed maintenance: calls=%d", calls)
-			}
-			entries, err := os.ReadDir(root)
-			if err != nil || len(entries) != 0 {
-				t.Fatalf("install unexpectedly bootstrapped project: %v %v", entries, err)
-			}
-		})
+func TestMintMaintenanceCommandSurface(t *testing.T) {
+	if _, _, err := rootCmd.Find([]string{"install"}); err == nil {
+		t.Fatal("redundant install command remains registered")
+	}
+	for _, name := range []string{"check", "update"} {
+		cmd, _, err := rootCmd.Find([]string{"mint", name})
+		if err != nil || cmd.Name() != name {
+			t.Fatalf("mint %s unavailable: %v", name, err)
+		}
 	}
 }
 
@@ -128,6 +79,9 @@ func TestReconcileMaintainsMintBeforeWritesAndPreservesPins(t *testing.T) {
 			}
 			if !tc.fail && diagnostics.Len() == 0 {
 				t.Fatal("output-only lost maintenance diagnostics on stderr")
+			}
+			if tc.status == "missing" && !strings.Contains(diagnostics.String(), "kit mint update") {
+				t.Fatal("missing Mint omitted explicit installation guidance")
 			}
 			if readFile(t, filepath.Join(root, "go.mod")) != "module fixture\nrequire github.com/jamesonstone/mint v0.5.0\n" || readFile(t, filepath.Join(root, ".github/workflows/ci.yml")) != "# retained pin\njobs: {}\n" {
 				t.Fatal("local maintenance changed repository dependency/workflow pins")

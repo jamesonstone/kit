@@ -61,7 +61,7 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ### Local Mint tooling
 
-- `kit install` and valid `kit reconcile` runs check installed local Mint and
+- Valid `kit reconcile` runs check installed local Mint and
   automatically maintain supported stable user-owned Go-bin installs through the
   shared verified updater, including noninteractive runs. Require at least the
   verified v0.9.0 release; preserve current/newer versions without downgrading.

@@ -285,12 +285,10 @@ failures from the new trigger validation. No existing triggers are rewritten.
 
 ## AUTHORIZED LOCAL MINT LIFECYCLE MAINTENANCE
 
-Jameson requested installed Mint checks and appropriate updates from both
-`kit install` and `kit reconcile`. Current Kit has no install subcommand: users
-install Kit with Go, initialize repositories with init, and upgrade Kit with
-upgrade. Add a small local-tool maintenance install entry point without changing
-those responsibilities. Both it and every valid reconcile invocation reuse one
-installed-only maintenance policy in internal/minttool and its verified updater.
+Valid reconcile invocations reuse one installed-only maintenance policy in
+internal/minttool and its verified updater. Explicit local inspection and updates
+remain under `kit mint check|update`. Kit installation, upgrades and repository
+initialization retain their existing Go, upgrade and init responsibilities.
 
 Missing Mint is reported with an explicit installation action and is not installed.
 Supported stable older Go-bin installations update to an official stable release
@@ -314,7 +312,7 @@ Unfiltered push forms remain offline and retain the runtime default-branch guard
 Local bare-remotes reproduce stale local metadata and changed current defaults.
 
 Installed-only lifecycle maintenance reuses the existing staged updater. Focused
-policy and both command-entry tests pass for old/current/newer/missing/unsupported,
+policy and reconcile command-entry tests pass for old/current/newer/missing/unsupported,
 preview/failure, repeated execution and removal before installation. Full Go tests,
 vet, build and project checks passed after lifecycle integration. A test-only lint
 suggestion was corrected and lint then passed. Independent review found and fixed
@@ -352,3 +350,18 @@ Review also identified discarded canonical-target guidance in config set. Preser
 that notice in text and the optional JSON target_notice field; previews still plan
 in the invoking checkout without writes or worktree preparation. A regression test
 covers both output formats and unchanged configuration bytes.
+
+## REMOVE REDUNDANT INSTALL COMMAND
+
+Jameson approved removing the proposed kit install command from this unmerged PR.
+Its installed-only behavior overlaps reconcile upkeep and its name suggests initial
+installation even though missing Mint is skipped. Keep explicit inspection and
+installation/update under kit mint check|update, retain automatic installed-only
+maintenance on reconcile, and add no aliases or package-manager responsibilities.
+
+Testing is reduced by deleting the removed command's matrix, duplicate planner
+creation/repeat coverage (retained through reconcile), privileged-job variants
+that all take the same explicit-selection path, exact preparation input-map copies,
+and fresh-map/determinism implementation assertions. Keep the real mixed-history
+Resolve-to-Generate fixture, preparation action pins/authority, publication guards,
+config preservation and write/rollback boundaries, and backend version decisions.
