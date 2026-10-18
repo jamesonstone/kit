@@ -18,7 +18,7 @@ var reconcileMintWorkflows bool
 
 func bindMintPipelineSelection(cmd *cobra.Command, selection *mintPipelineSelection) {
 	cmd.Flags().StringVar(&selection.workflow, "mint-workflow", "", "existing workflow path for Mint preparation steps")
-	cmd.Flags().StringVar(&selection.job, "mint-job", "", "steps job in --mint-workflow (required when multiple jobs exist)")
+	cmd.Flags().StringVar(&selection.job, "mint-job", "", "steps job (required with --mint-workflow and --mint-before-step)")
 	cmd.Flags().StringVar(&selection.beforeStep, "mint-before-step", "", "existing step id before which to resolve version and generate changelog")
 }
 
