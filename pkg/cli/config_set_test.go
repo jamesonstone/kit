@@ -128,3 +128,32 @@ func TestConfigSetUsesCanonicalDeliveryTarget(t *testing.T) {
 		t.Fatal("failed target mutated")
 	}
 }
+
+func TestConfigSetPrimaryPreviewExplainsWriteTarget(t *testing.T) {
+	root := t.TempDir()
+	setWorkingDirectory(t, root)
+	stubReconcileWorktreeInspection(t, worktreeprep.Location{InsideGit: true, IsPrimary: true, Path: root})
+	original := "schema_version: 2\ncustom: keep\n"
+	writeFile(t, filepath.Join(root, config.ConfigFileName), original)
+	args := []string{"--issue-provider", "linear", "--linear-workspace", "acme", "--linear-team-id", "11111111-1111-4111-8111-111111111111", "--dry-run"}
+	report, err := executeConfigSet(t, args...)
+	if err != nil || !sameResolvedPath(report.Target, root) || report.Worktree || !report.DryRun {
+		t.Fatalf("%#v %v", report, err)
+	}
+	if !strings.Contains(report.TargetNotice, "Preview of this checkout") || !strings.Contains(report.TargetNotice, "kit-reconcile linked worktree") || !strings.Contains(report.TargetNotice, "are not included") {
+		t.Fatalf("missing preview target guidance: %q", report.TargetNotice)
+	}
+	cmd := newConfigSetCommand()
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+	cmd.SetArgs(args)
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), report.TargetNotice) {
+		t.Fatal(out.String())
+	}
+	if readFile(t, filepath.Join(root, config.ConfigFileName)) != original {
+		t.Fatal("preview wrote configuration")
+	}
+}

@@ -347,3 +347,8 @@ Validation passed: focused and full Go tests, vet, build, lint, Mint-tool race t
 formatting and project checks (existing nonblocking retired README advisory).
 Independent reviews found no regressions in the updater, target planning or workflow
 cleanup. No global tool installation or consumer activation was performed.
+
+Review also identified discarded canonical-target guidance in config set. Preserve
+that notice in text and the optional JSON target_notice field; previews still plan
+in the invoking checkout without writes or worktree preparation. A regression test
+covers both output formats and unchanged configuration bytes.

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/spf13/cobra"
@@ -14,6 +14,7 @@ import (
 
 type configSetReport struct {
 	Target                 string             `json:"target"`
+	TargetNotice           string             `json:"target_notice,omitempty"`
 	Worktree               bool               `json:"worktree"`
 	DryRun                 bool               `json:"dry_run"`
 	Changed                bool               `json:"changed"`
@@ -122,8 +123,9 @@ func runConfigSet(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 	dry, _ := cmd.Flags().GetBool("dry-run")
-	// Reuse canonical target safety; suppress prose so JSON stays a single object.
-	target, err := resolveConfigSetTarget(io.Discard, root, dry, bytes.Equal(plan.before, plan.after))
+	// Preserve target guidance without adding prose outside the JSON report.
+	var targetNotice bytes.Buffer
+	target, err := resolveConfigSetTarget(&targetNotice, root, dry, bytes.Equal(plan.before, plan.after))
 	if err != nil {
 		return err
 	}
@@ -140,11 +142,16 @@ func runConfigSet(cmd *cobra.Command, _ []string) error {
 			return err
 		}
 	}
-	report := configSetReport{Target: target.projectRoot, Worktree: target.worktree, DryRun: dry, Changed: changed, Issues: plan.issues, ReconciliationRequired: true,
+	report := configSetReport{Target: target.projectRoot, TargetNotice: strings.TrimSpace(targetNotice.String()), Worktree: target.worktree, DryRun: dry, Changed: changed, Issues: plan.issues, ReconciliationRequired: true,
 		Next: []string{"cd " + shellQuoteArgument(target.projectRoot) + " && kit reconcile --dry-run --diff", "cd " + shellQuoteArgument(target.projectRoot) + " && kit reconcile"}}
 	structured, _ := cmd.Flags().GetBool("json")
 	if structured {
 		return json.NewEncoder(cmd.OutOrStdout()).Encode(report)
+	}
+	if report.TargetNotice != "" {
+		if _, err := fmt.Fprintln(cmd.OutOrStdout(), report.TargetNotice); err != nil {
+			return err
+		}
 	}
 	verb := "Configured"
 	if dry {
