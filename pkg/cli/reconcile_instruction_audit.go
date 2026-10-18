@@ -16,7 +16,7 @@ import (
 func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFinding {
 	var findings []reconcileFinding
 	for _, relativePath := range instructionFiles(cfg) {
-		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, false)
+		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, false, cfg)
 		if err != nil {
 			return append(findings, newFinding(reconcileSeverityWarning, filepath.Join(projectRoot, relativePath), err.Error(), "inspect the file manually"))
 		}
@@ -27,7 +27,7 @@ func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFi
 		case plan.result == instructionFileCreated:
 			issue = "missing Kit-managed agent entry file"
 		case plan.result == instructionFileUpdated && strings.Contains(readFileOrEmpty(plan.absolutePath), templates.UniversalContractBeginMarker):
-			issue = "Kit-managed contract block differs from the current universal contract"
+			issue = "Kit-managed agent instructions differ from the current configuration"
 		case plan.result == instructionFileUpdated:
 			issue = "agent entry file predates the Kit-managed contract block"
 		default:

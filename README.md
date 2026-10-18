@@ -148,6 +148,14 @@ Keep the footer when squashing. Existing GitHub references remain supported.
 Mint reads explicit links offline; bare Linear identifiers cannot resolve a URL.
 Review committed text and link visibility before publication.
 
+## Shared Memory
+
+Notion shared-memory guidance is optional and disabled by default. Configure a
+destination and operating-guide reference with `kit init --shared-memory` or
+`kit config set --shared-memory`, then reconcile existing projects. Kit preserves
+custom instructions and MCP connections; it does not authenticate or sync memory.
+See [configuration examples](docs/commands.md#shared-memory).
+
 ## Command Surface
 
 | Area | Commands |

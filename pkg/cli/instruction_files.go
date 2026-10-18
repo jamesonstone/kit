@@ -82,6 +82,7 @@ func planInstructionArtifactWrite(
 	relativePath string,
 	mode instructionFileWriteMode,
 	force bool,
+	configs ...*config.Config,
 ) (instructionFileWritePlan, error) {
 	plan := instructionFileWritePlan{
 		relativePath: relativePath,
@@ -91,7 +92,7 @@ func planInstructionArtifactWrite(
 	if !document.Exists(plan.absolutePath) {
 		plan.content = instructionArtifactContent(relativePath)
 		plan.result = instructionFileCreated
-		return plan, nil
+		return planSharedMemoryInstructions(plan, configs)
 	}
 	plan.result = instructionFileSkipped
 	if mode == instructionFileWriteModeSkipExisting || filepath.ToSlash(relativePath) == templates.TestingReferencePath {
@@ -108,5 +109,5 @@ func planInstructionArtifactWrite(
 		plan.content = migration.content
 		plan.result = instructionFileUpdated
 	}
-	return plan, nil
+	return planSharedMemoryInstructions(plan, configs)
 }
