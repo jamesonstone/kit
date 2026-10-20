@@ -15,6 +15,7 @@
 | `agent-team-orchestration` | default | Safe, integrated, truthfully reported delegation using the host's native subagents. |
 | `aws-agent-toolkit-guidance` | default | Verified AWS identity, current AWS guidance and tools, and no secret exposure. |
 | `backend-service-architecture` | default | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |
+| `ci-outage` | default | Human-approved manual merge bypass, backed by full local validation on the exact head, when hosted CI cannot run because of an outage or billing. |
 | `constitution-curation` | default | Evidence-based promotion of project-wide invariants. |
 | `cross-repository-program-coordination` | default | One ledger and live-evidence reconciliation for multi-repository programs. |
 | `deadline-mode` | default | Narrowed validation under an explicit user deadline without weakening safety. |
@@ -22,7 +23,7 @@
 | `deployment-recovery` | default | Safe, bounded recovery of authorized releases and deployments through existing pipelines. |
 | `delivery` | default | Worktree lanes, human-owned pull requests, attribution, and commit conventions. |
 | `frontend-application-architecture` | default | Responsibility boundaries for frontend routes, state, data adapters, and UI. |
-| `github-pr-merge` | default | Explicit bounded merge authority, current `MERGE_READY` readiness, and the human-approved CI-outage bypass. |
+| `github-pr-merge` | default | Explicit bounded merge authority, and current `MERGE_READY` readiness. |
 | `infrastructure-change-approval` | default | One outline and one approval per infrastructure batch; deletion always confirmed. |
 | `mint-deployment-lifecycle` | default | Repository-native Mint releases, environment policy, immutable promotion and recovery evidence. |
 | `slack-read-only` | default | Slack is read-only; every write needs explicit message-specific approval. |
