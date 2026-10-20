@@ -22,7 +22,7 @@
 | `deployment-recovery` | default | Safe, bounded recovery of authorized releases and deployments through existing pipelines. |
 | `delivery` | default | Worktree lanes, human-owned pull requests, attribution, and commit conventions. |
 | `frontend-application-architecture` | default | Responsibility boundaries for frontend routes, state, data adapters, and UI. |
-| `github-pr-merge` | default | Explicit bounded merge authority and current `MERGE_READY` readiness. |
+| `github-pr-merge` | default | Explicit bounded merge authority, current `MERGE_READY` readiness, and the human-approved CI-outage bypass. |
 | `infrastructure-change-approval` | default | One outline and one approval per infrastructure batch; deletion always confirmed. |
 | `mint-deployment-lifecycle` | default | Repository-native Mint releases, environment policy, immutable promotion and recovery evidence. |
 | `slack-read-only` | default | Slack is read-only; every write needs explicit message-specific approval. |
