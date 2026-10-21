@@ -31,12 +31,12 @@ read_policy_default: conditional
 - Merge only under explicit human authorization naming the scope: a pull request, a task, or a bounded program with its repositories, bases, environments, and permitted actions. Delivery consent, approvals, passing checks, subagent assignment, or a ledger never create merge authority.
 - A bounded grant covers later in-scope pull requests and new heads. A commit SHA or head OID identifies readiness evidence only, never authorization; never request exact-head reauthorization. A changed in-scope head invalidates readiness, not standing authority.
 - Adding a repository, base, environment, actor, merge method, deployment workflow, or material effect is scope expansion and needs updated authority. A human pause, hold, or revocation stops the affected merges and their dependents until the human resumes them.
-- Never bypass branch protection, reviews, required checks, merge queues, or identity safeguards, and never use admin overrides.
+- Never bypass branch protection, reviews, required checks, merge queues, or identity safeguards, and never use admin overrides. The only exception is `ci-outage`, which takes precedence only for hosted required checks that could not run and never permits admin overrides.
 
 ### Readiness
 
 - Classify each pull request from current evidence as `MERGE_READY` (required checks and reviews passed on the current head, dependencies satisfied, repository policy satisfied, no excluded risk), `BLOCKED` (a gate failed or authority is missing, paused, or exceeded), or `UNKNOWN` (evidence missing, stale, or unattributable). Keep these words literal.
-- Only current `MERGE_READY` pull requests merge. Pending, missing, stale, or policy-ineligible skipped checks are not passing, and local tests do not replace required hosted checks.
+- Only current `MERGE_READY` pull requests merge. Pending, missing, stale, or policy-ineligible skipped checks are not passing, and local tests do not replace required hosted checks. The only exception is `ci-outage`: with the human's bypass approval, full local validation on the exact head stands in for hosted checks that could not run.
 - Use one complete current-state snapshot per merge wave. Wait with bounded backoff instead of repeated polling.
 
 ### Waves And Repair

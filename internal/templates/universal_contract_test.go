@@ -41,6 +41,15 @@ var criticalInvariants = map[string]string{
 	"evidence-based correction": "concrete operator friction or a demonstrated correctness or safety problem, report evidence",
 	"upstream correction":       "route the proposed correction upstream to Kit",
 	"provenance reviewed":       "Do not suppress unexpected drift or provenance and tampering concerns",
+	"ci outage not blocking":    "A hosted CI outage is not a blocker",
+	"ci outage scope":           "never when a check ran and failed",
+	"ci outage not passed":      "report the hosted checks as not run (never as passed)",
+	"ci bypass standing grant":  "The human's first bypass approval is a standing grant",
+	"ci outage cause":           "because of an outage or exhausted minutes or billing",
+	"ci outage check scope":     "replaces only hosted required checks that could not run",
+	"ci outage window":          "for later in-scope merges while the outage lasts",
+	"ci outage route":           "offer a manual bypass under `ci-outage`",
+	"ci bypass local evidence":  "full local validation in `docs/references/testing.md` on the exact head being merged",
 }
 
 func TestUniversalContractCarriesCriticalInvariants(t *testing.T) {

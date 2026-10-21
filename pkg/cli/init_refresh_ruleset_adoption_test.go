@@ -60,6 +60,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"agent-team-orchestration",
 		"aws-agent-toolkit-guidance",
 		"backend-service-architecture",
+		"ci-outage",
 		"constitution-curation",
 		"cross-repository-program-coordination",
 		"deadline-mode",
