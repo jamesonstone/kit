@@ -68,6 +68,9 @@ func Load(projectRoot string) (*Config, error) {
 	if err == nil {
 		err = cfg.Issues.Validate()
 	}
+	if err == nil {
+		err = cfg.SharedMemory.Validate()
+	}
 	return cfg, err
 }
 

@@ -85,6 +85,9 @@ func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
 		return nil, Inspection{}, fmt.Errorf("failed to parse %s: %w", ConfigFileName, err)
 	}
 	inspection.Findings = append(inspection.Findings, semanticFindings(cfg)...)
+	if err := cfg.SharedMemory.Validate(); err != nil {
+		inspection.Findings = append(inspection.Findings, Finding{Field: "shared_memory", Severity: FindingError, Message: err.Error()})
+	}
 	if err := cfg.Issues.Validate(); err != nil {
 		inspection.Findings = append(inspection.Findings, Finding{Field: "issues", Severity: FindingError, Message: err.Error()})
 	}

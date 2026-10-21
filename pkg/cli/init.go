@@ -62,6 +62,7 @@ func init() {
 	initCmd.Flags().BoolVar(&initCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	initCmd.Flags().BoolVar(&initOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
 	bindIssueProviderFlags(initCmd)
+	bindSharedMemoryFlags(initCmd)
 	bindMintPipelineSelection(initCmd, &initMintSelection)
 	rootCmd.AddCommand(initCmd)
 }
@@ -86,6 +87,11 @@ func runInit(cmd *cobra.Command, args []string) error {
 
 	deliveryCfg := defaultInitConfig()
 	if err := selectInitIssueProvider(cmd, deliveryCfg); err != nil {
+		return err
+	}
+
+	deliveryCfg.SharedMemory, err = desiredSharedMemory(cmd, deliveryCfg.SharedMemory)
+	if err != nil {
 		return err
 	}
 
@@ -183,7 +189,6 @@ func runInit(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// ensure docs directory exists
 	docsDir := filepath.Join(cwd, "docs")
 	if err := os.MkdirAll(docsDir, 0755); err != nil {
 		return fmt.Errorf("failed to create docs directory: %w", err)

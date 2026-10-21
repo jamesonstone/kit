@@ -194,7 +194,7 @@ func planRefreshInitInstructionArtifacts(
 		if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink != 0 && real[resolvedOrClean(path)] {
 			continue
 		}
-		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, opts.force)
+		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, opts.force, cfg)
 		if err != nil {
 			return nil, nil, false, err
 		}
