@@ -65,7 +65,7 @@ Read the named file under `docs/references/rules/` when its trigger applies; ski
 - Adding tests, configuring CI, or end-to-end, browser, or production validation: `testing-and-environment-validation.md`.
 - Backend routes, services, repositories, or adapters: `backend-service-architecture.md`; frontend routes, state flows, or components: `frontend-application-architecture.md`.
 - Work completes, stops, or is superseded; before a new lane or session end; or free disk space is low: `work-cleanup.md`.
-- Starting, restarting, or stopping a local environment, or opening a terminal for one: `local-runtime-lifecycle.md`.
+- Starting, restarting, or stopping a local environment, including for validation or post-merge checks, or opening a terminal for one: `local-runtime-lifecycle.md`.
 - Designing deletion or deleting persistent state: `deletion-safety.md`.
 - Infrastructure mutations or deployments: `infrastructure-change-approval.md`; AWS work: `aws-agent-toolkit-guidance.md`.
 - Any Slack write, or investigating a Slack link: `slack-read-only.md`.

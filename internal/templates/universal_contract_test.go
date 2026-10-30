@@ -45,6 +45,7 @@ var criticalInvariants = map[string]string{
 	"local runtime reuse":       "check before starting, then reuse it or stop it first",
 	"local runtime windows":     "Open no terminal windows for it unless the human asks",
 	"local runtime route":       "`local-runtime-lifecycle.md`",
+	"local runtime validation":  "including for validation or post-merge checks",
 	"ci outage not blocking":    "A hosted CI outage is not a blocker",
 	"ci outage scope":           "never when a check ran and failed",
 	"ci outage not passed":      "report the hosted checks as not run (never as passed)",

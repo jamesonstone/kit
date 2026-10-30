@@ -12,7 +12,7 @@ import (
 )
 
 // localRuntimeRoute is the contract line that routes local environment work to its rule.
-const localRuntimeRoute = "- Starting, restarting, or stopping a local environment, or opening a terminal for one: `local-runtime-lifecycle.md`.\n"
+const localRuntimeRoute = "- Starting, restarting, or stopping a local environment, including for validation or post-merge checks, or opening a terminal for one: `local-runtime-lifecycle.md`.\n"
 
 // localRuntimeRule returns the embedded local runtime rule.
 func localRuntimeRule(t *testing.T) registryRuleset {
