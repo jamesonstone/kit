@@ -42,6 +42,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 - When `.kit.yaml` sets `source_file_line_limit`, keep handwritten source and test files within it and split by responsibility; `kit check --project` enforces it.
 - Preserve language-native tests and pull-request checks; end-to-end suites supplement them. Run the project's validation before calling work complete, and fix relevant failures.
+- Run one local runtime per project: check before starting, then reuse it or stop it first. Open no terminal windows for it unless the human asks.
 - Parallelize independent investigation when it helps. Delegated agents never mutate Git or GitHub and never write overlapping files concurrently; the primary agent owns integration, validation, and the final report.
 - Resolve in-scope problems autonomously until the goal is complete or a genuine blocker remains; use current evidence to choose safe, bounded recovery.
 
@@ -69,6 +70,7 @@ Read the named file under `docs/references/rules/` when its trigger applies; ski
 - Adding tests, configuring CI, or end-to-end, browser, or production validation: `testing-and-environment-validation.md`.
 - Backend routes, services, repositories, or adapters: `backend-service-architecture.md`; frontend routes, state flows, or components: `frontend-application-architecture.md`.
 - Work completes, stops, or is superseded; before a new lane or session end; or free disk space is low: `work-cleanup.md`.
+- Starting, restarting, or stopping a local environment, including for validation or post-merge checks, or opening a terminal for one: `local-runtime-lifecycle.md`.
 - Designing deletion or deleting persistent state: `deletion-safety.md`.
 - Infrastructure mutations or deployments: `infrastructure-change-approval.md`; AWS work: `aws-agent-toolkit-guidance.md`.
 - Any Slack write, or investigating a Slack link: `slack-read-only.md`.
