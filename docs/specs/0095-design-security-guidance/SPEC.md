@@ -32,11 +32,11 @@ Use the existing installed-hash registry instead of a new policy engine or marke
 
 ## DISCOVERIES
 
-Fresh init runs the shared refresh planner after scaffolding; this lets canonical documents adopt installed hashes without a separate init ownership mechanism. File-target refresh must persist ownership metadata even when .kit.yaml was not explicitly selected. Existing linked-target guards and atomic writes remain authoritative.
+Fresh init runs the shared refresh planner after scaffolding; this lets canonical documents adopt installed hashes without a separate init ownership mechanism. File-target refresh must persist ownership metadata even when .kit.yaml was not explicitly selected. Existing linked-target guards and atomic writes remain authoritative. The self-hosted documents are also customizable: unlike generated agent blocks, project guidance is not pinned byte-for-byte by repository tests, which would prevent Kit from maintaining its own reporting policy independently of downstream defaults.
 
 ## VALIDATION
 
-Passed `gofmt -l .` (empty output), `git diff --check`, `make vet`, `make test` (complete Go suite), `make lint` (0 issues), `make build`, and `KIT_USAGE_DISABLED=1 bin/kit check --project`. The project check retains the pre-existing nonblocking advisory for the project-owned retired docs/references/README.md. Lifecycle tests cover fresh init, existing reporting-policy preservation, missing-file reconciliation, unmodified-default upgrades, customized documents, blanket versus targeted force, dry-run content/registry immutability, contextual references, registry status, project validation, linked-file safety, and template consistency. Hosted exact-head CI and review remain to be observed on the PR.
+Passed `gofmt -l .` (empty output), `git diff --check`, `make vet`, `make test` (complete Go suite), `make lint` (0 issues), `make build`, and `KIT_USAGE_DISABLED=1 bin/kit check --project`. The project check retains the pre-existing nonblocking advisory for the project-owned retired docs/references/README.md. Lifecycle tests cover fresh init, existing reporting-policy preservation, missing-file reconciliation, unmodified-default upgrades, customized documents, blanket versus targeted force, dry-run content/registry immutability, contextual references, registry status, project validation, linked-file safety. Hosted exact-head CI and review remain to be observed on the PR.
 
 ## OUTCOME
 
