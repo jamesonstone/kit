@@ -2,8 +2,7 @@ package templates
 
 import "strings"
 
-// TestingReferencePath is the one project-memory document Kit scaffolds besides
-// the Constitution: the project's own validation commands.
+// TestingReferencePath holds the project's own validation commands.
 const TestingReferencePath = "docs/references/testing.md"
 
 // TestingReference is the starter for TestingReferencePath.

@@ -33,6 +33,7 @@ Creates:
   - ~/.config/kit/.kit.yaml global configuration file
   - docs/CONSTITUTION.md
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
+  - DESIGN.md and SECURITY.md (project-customizable engineering guidance)
   - The core rules shipped with this Kit binary
 
 Mint Actions integration is planned automatically. Existing jobs need explicit

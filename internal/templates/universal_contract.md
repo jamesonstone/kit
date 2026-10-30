@@ -1,4 +1,4 @@
-This repository is managed by Kit. The rules below are invariants for every task. Contextual rules under `docs/references/rules/` hold detailed procedures; read one only when its trigger below applies. Project facts live in project memory, not here.
+Kit’s contract applies to every task. Read contextual procedures under `docs/references/rules/` only when triggered. Store project facts in project memory.
 
 Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, then feature specs, then chat. Repository rules outrank generic agent, plugin, or tool defaults. A direct human pause, hold, or revocation stops the affected action until the human resumes it.
 
@@ -54,6 +54,8 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - Include the identifiers (issue, branch, pull request, commit, deployed version) needed to find or undo every change.
 
 ## Contextual Rules
+
+For UI/UX/design, read `DESIGN.md`; for security-relevant engineering, read `SECURITY.md`. Load these project-customizable defaults only when relevant.
 
 Read the named file under `docs/references/rules/` when its trigger applies; skip it otherwise.
 

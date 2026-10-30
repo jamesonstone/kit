@@ -13,6 +13,16 @@ feature_naming:
 registry:
     schema_version: 1
     artifacts:
+        - kind: project-guidance
+          slug: DESIGN.md
+          path: DESIGN.md
+          installed_hash: sha256:7744800713dd0616135a46bd2333ccd77cd7820031743103748ed219ec33e6eb
+          state: managed
+        - kind: project-guidance
+          slug: SECURITY.md
+          path: SECURITY.md
+          installed_hash: sha256:418e6602983021cedc2434d76bad915f34b23f668ec467ff24e4a4f92e97b7a7
+          state: managed
         - kind: ruleset
           slug: agent-team-orchestration
           path: docs/references/rules/agent-team-orchestration.md

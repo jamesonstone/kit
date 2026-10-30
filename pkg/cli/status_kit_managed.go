@@ -133,9 +133,10 @@ func recordStatusManagedFileChanges(summary *statusKitManagedSummary, changes []
 
 func recordStatusLocalRegistry(projectRoot string, cfg *config.Config, summary *statusKitManagedSummary) {
 	for _, artifact := range cfg.Registry.Artifacts {
-		if artifact.Kind != rulesetKind {
+		if artifact.Kind != rulesetKind && artifact.Kind != projectGuidanceKind {
 			continue
 		}
+		kind := "registry-" + artifact.Kind
 		summary.Registry.Total++
 		path := artifact.Path
 		if path == "" {
@@ -145,7 +146,7 @@ func recordStatusLocalRegistry(projectRoot string, cfg *config.Config, summary *
 			summary.Registry.Missing++
 			summary.Items = append(summary.Items, statusKitManagedItem{
 				Path:   path,
-				Kind:   "registry-ruleset",
+				Kind:   kind,
 				State:  "missing",
 				Detail: "tracked in .kit.yaml but missing locally",
 			})
@@ -158,7 +159,7 @@ func recordStatusLocalRegistry(projectRoot string, cfg *config.Config, summary *
 			summary.Registry.LocalCustom++
 			summary.Items = append(summary.Items, statusKitManagedItem{
 				Path:   path,
-				Kind:   "registry-ruleset",
+				Kind:   kind,
 				State:  registryArtifactStateLocalCustom,
 				Detail: "local custom content is not registry-managed",
 			})
@@ -166,7 +167,7 @@ func recordStatusLocalRegistry(projectRoot string, cfg *config.Config, summary *
 			summary.Registry.Conflicts++
 			summary.Items = append(summary.Items, statusKitManagedItem{
 				Path:   path,
-				Kind:   "registry-ruleset",
+				Kind:   kind,
 				State:  registryArtifactStateConflict,
 				Detail: "registry refresh previously detected a conflict",
 			})

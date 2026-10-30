@@ -12,7 +12,7 @@ it writes only to a linked worktree), and `kit health` diagnoses.
 
 | Command | Why it exists |
 | --- | --- |
-| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. Refuses to run where `.kit.yaml` exists or inside an existing Kit project; use `kit reconcile`. Copies its setup prompt to the clipboard only at a terminal and prints it otherwise. |
+| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `DESIGN.md`, `SECURITY.md`, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. Refuses to run where `.kit.yaml` exists or inside an existing Kit project; use `kit reconcile`. Copies its setup prompt to the clipboard only at a terminal and prints it otherwise. |
 | `kit spec <feature>` | Allocates a worktree-safe feature number and scaffolds or adopts `docs/specs/<id>-<feature>/SPEC.md`. |
 
 ## Rules
@@ -62,3 +62,21 @@ the `--profile` and `--single-agent` flags, the reconcile agent prompt and its `
 `docs/PROJECT_PROGRESS_SUMMARY.md`. The universal contract and each rule's
 `Applies When` section replace workflow routing; hosts already expose their
 own tools, delegation, and command help.
+
+### Design and security document lifecycle
+
+`kit init` scaffolds canonical `DESIGN.md` and `SECURITY.md` without replacing
+existing policies. `kit reconcile` adds missing documents, updates unchanged
+Kit defaults, and preserves edited documents as project-owned. The existing
+`.kit.yaml` artifact registry supplies installed-hash evidence. Use
+`kit reconcile --dry-run --diff --file SECURITY.md` to preview, including any
+ownership metadata change. Customized documents require explicit
+`--force --file SECURITY.md` (or `DESIGN.md`) to accept Kit defaults; review the
+diff first. Whole-project `--force` preserves them.
+
+Agent instructions reference design guidance for UI/UX/design and security
+guidance for security-relevant engineering. The Constitution remains the source
+of project invariants; contextual rules provide procedures. `kit check --project`
+checks presence, readability, and a Markdown heading, and reports preserved
+customizations as nonblocking advisories. It does not certify design quality,
+security, reporting-channel availability, or runtime enforcement.

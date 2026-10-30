@@ -51,12 +51,15 @@ func instructionFiles(cfg *config.Config) []string {
 }
 
 // instructionArtifactPaths lists every instruction artifact Kit generates: the
-// agent entry files and the testing reference.
+// agent entry files, project guidance, and the testing reference.
 func instructionArtifactPaths(cfg *config.Config) []string {
-	return append(instructionFiles(cfg), templates.TestingReferencePath)
+	return append(instructionFiles(cfg), templates.TestingReferencePath, templates.DesignPath, templates.SecurityPath)
 }
 
 func instructionArtifactContent(relativePath string) string {
+	if content, ok := templates.ProjectGuidance(filepath.ToSlash(relativePath)); ok {
+		return content
+	}
 	if filepath.ToSlash(relativePath) == templates.TestingReferencePath {
 		return templates.TestingReference
 	}
@@ -64,7 +67,7 @@ func instructionArtifactContent(relativePath string) string {
 }
 
 func writeInstructionFileWithMode(projectRoot, relativePath string, mode instructionFileWriteMode) (instructionFileWriteResult, error) {
-	plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, false)
+	plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, false, nil)
 	if err != nil {
 		return "", err
 	}
@@ -82,6 +85,7 @@ func planInstructionArtifactWrite(
 	relativePath string,
 	mode instructionFileWriteMode,
 	force bool,
+	cfg *config.Config,
 ) (instructionFileWritePlan, error) {
 	plan := instructionFileWritePlan{
 		relativePath: relativePath,
@@ -100,6 +104,9 @@ func planInstructionArtifactWrite(
 	data, err := os.ReadFile(plan.absolutePath)
 	if err != nil {
 		return instructionFileWritePlan{}, fmt.Errorf("failed to read %s: %w", relativePath, err)
+	}
+	if _, ok := templates.ProjectGuidance(filepath.ToSlash(relativePath)); ok {
+		return planProjectGuidance(plan, string(data), force, cfg), nil
 	}
 	migration := migrateEntryFile(filepath.ToSlash(relativePath), string(data), force)
 	plan.converged = migration.converged

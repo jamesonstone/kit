@@ -194,7 +194,11 @@ func planRefreshInitInstructionArtifacts(
 		if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink != 0 && real[resolvedOrClean(path)] {
 			continue
 		}
-		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, opts.force)
+		force := opts.force
+		if _, guidance := templates.ProjectGuidance(relativePath); guidance {
+			force = force && len(targets) > 0 && targets[relativePath]
+		}
+		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, force, cfg)
 		if err != nil {
 			return nil, nil, false, err
 		}
