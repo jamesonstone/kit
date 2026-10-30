@@ -77,7 +77,7 @@ diff first. Whole-project `--force` preserves them.
 Agent instructions reference design guidance for UI/UX/design and security
 guidance for security-relevant engineering. The Constitution remains the source
 of project invariants; contextual rules provide procedures. `kit check --project`
-checks presence, readability, and a Markdown heading, and reports preserved
+checks presence, readability, and nonempty content, and reports preserved
 customizations as nonblocking advisories. It does not certify design quality,
 security, reporting-channel availability, or runtime enforcement.
 

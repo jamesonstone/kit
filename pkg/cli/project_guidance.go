@@ -81,8 +81,8 @@ func recordProjectGuidance(cfg *config.Config, path, content string) bool {
 	return true
 }
 
-// Validate presence, readability, and a Markdown heading only. Project policies
-// and vulnerability-reporting content need semantic review, not a policy engine.
+// Validate presence, readability, and nonempty content. Project-owned Markdown
+// needs no prescribed heading style; policy meaning belongs to semantic review.
 func auditProjectGuidance(projectRoot string, cfg *config.Config) []reconcileFinding {
 	var findings []reconcileFinding
 	for _, path := range []string{templates.DesignPath, securityPolicyPath(projectRoot)} {
@@ -97,8 +97,8 @@ func auditProjectGuidance(projectRoot string, cfg *config.Config) []reconcileFin
 			issue = "cannot read project guidance: " + err.Error()
 		default:
 			content := string(data)
-			if !hasMarkdownHeading(content) {
-				issue = "project guidance needs nonempty Markdown with a heading"
+			if strings.TrimSpace(content) == "" {
+				issue = "project guidance must not be empty"
 			} else {
 				plan := planProjectGuidance(instructionFileWritePlan{relativePath: path}, content, false, cfg)
 				if plan.result == instructionFileUpdated {
@@ -120,25 +120,4 @@ func auditProjectGuidance(projectRoot string, cfg *config.Config) []reconcileFin
 		}
 	}
 	return findings
-}
-
-// hasMarkdownHeading checks minimal ATX or Setext structure, not full Markdown syntax.
-func hasMarkdownHeading(content string) bool {
-	lines := strings.Split(content, "\n")
-	for index, rawLine := range lines {
-		line := strings.TrimSpace(rawLine)
-		title := strings.TrimLeft(line, "#")
-		if len(title) < len(line) && strings.HasPrefix(title, " ") && strings.TrimSpace(title) != "" {
-			return true
-		}
-		if index > 0 && isSetextUnderline(line) && strings.TrimSpace(lines[index-1]) != "" {
-			return true
-		}
-	}
-	return false
-}
-
-// isSetextUnderline recognizes a nonempty uniform equals or hyphen underline.
-func isSetextUnderline(line string) bool {
-	return line != "" && (strings.Trim(line, "=") == "" || strings.Trim(line, "-") == "")
 }

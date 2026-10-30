@@ -171,7 +171,9 @@ func TestProjectGuidanceAudit(t *testing.T) {
 	}{
 		{name: "missing", remove: true, blocking: true},
 		{name: "empty", content: "", blocking: true},
-		{name: "no-heading", content: "Project policy", blocking: true},
+		{name: "plain-markdown", content: "Project-owned reporting policy."},
+		{name: "whitespace", content: " \n\t", blocking: true},
+		{name: "markdown-separators", content: "---\n---\n"},
 		{name: "custom", content: "# Local policy\n\nPrivate reporting follows project policy.\n"},
 		{name: "setext-equals", content: "Security Policy\n===============\n"},
 		{name: "setext-single-equals", content: "Security Policy\n=\n"},
