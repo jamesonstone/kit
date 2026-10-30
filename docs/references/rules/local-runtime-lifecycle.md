@@ -43,7 +43,7 @@ read_policy_default: conditional
 ### No Terminal Windows From Agents
 
 - Start without opening terminal windows or tabs: `rungrid up --no-open`, or the manager's equivalent. Use a window-opening start, `rungrid open`, `rungrid resume`, or `rungrid attach` only when the human asks, and then only once.
-- A plain `rungrid up` opens a new window with every tab each time, even when it reuses a running runtime, and `rungrid down` closes none of them. Never run it in a loop, in a retry, or as a post-merge step.
+- A plain `rungrid up` can open a new window, and each window can outlive `rungrid down`. Older rungrid releases also leave a live client behind on every restart. Never run it in a loop, in a retry, or as a post-merge step.
 - Read service output with the manager's log command (`rungrid logs <service>`) or redirected log files, not with an attached terminal.
 
 ### Verify Teardown

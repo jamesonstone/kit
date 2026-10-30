@@ -79,7 +79,7 @@ var ruleInvariants = map[string][]string{
 	"local-runtime-lifecycle": {
 		"Run one runtime per project",
 		"Never start beside it",
-		"even when it reuses a running runtime",
+		"each window can outlive `rungrid down`",
 		"Never run it in a loop, in a retry, or as a post-merge step",
 		"Never kill by a broad name pattern",
 	},

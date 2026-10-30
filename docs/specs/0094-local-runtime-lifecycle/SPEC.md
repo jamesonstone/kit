@@ -19,7 +19,7 @@ The human's words: "ensure warp/rungrid instances are cleaned up before starting
 ## CONTEXT
 
 - The overnight run's post-merge step was `rungrid down` then `rungrid up`, repeated for each merged pull request.
-- In rungrid's source, `up` calls `warp.Open` whenever opening is enabled, and the first tab URI carries `new_window=true`. This happens even when `up` reuses a running runtime. `down` stops services and does not touch Warp. Each restart therefore leaves one full window of tabs, and each tab holds a live terminal session.
+- Each restart opened a new Warp window, and the old Overview client reconnected to the new runtime and kept repainting. jamesonstone/rungrid#76 fixes those defects, but older releases remain installed and a fresh start can still leave an idle window, so the rule stays necessary.
 - `rungrid up --no-open` and `--headless` open nothing.
 - `work-cleanup` said to stop what the work started, but only when work ends. No rule covered a start, and agents read contextual rules only when a trigger applies.
 
@@ -49,7 +49,7 @@ The human's words: "ensure warp/rungrid instances are cleaned up before starting
 
 ## DISCOVERIES
 
-- The root behavior is in rungrid: `up` opens a window for a runtime that is already running, and `down` leaves windows open. This rule limits agents only; a human's repeated `rungrid up` still stacks windows until rungrid changes.
+- The root defects were in rungrid and are fixed by jamesonstone/rungrid#76. This rule limits agents regardless of the installed release.
 
 ## VALIDATION
 
