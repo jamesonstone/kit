@@ -19,19 +19,20 @@ const (
 
 // Config represents the .kit.yaml configuration file.
 type Config struct {
-	SchemaVersion              int            `yaml:"schema_version"`
-	SpecsDir                   string         `yaml:"specs_dir"`
-	ConstitutionPath           string         `yaml:"constitution_path"`
-	SourceFileLineLimit        int            `yaml:"source_file_line_limit,omitempty"`
-	Agents                     []string       `yaml:"agents"`
-	InstructionScaffoldVersion int            `yaml:"instruction_scaffold_version"`
-	FeatureNaming              FeatureNaming  `yaml:"feature_naming"`
-	Registry                   RegistryConfig `yaml:"registry,omitempty"`
-	Health                     *HealthConfig  `yaml:"health,omitempty"`
-	Usage                      *UsageConfig   `yaml:"usage,omitempty"`
-	Issues                     IssueConfig    `yaml:"issues,omitempty"`
-	GitHub                     GitHubConfig   `yaml:"github,omitempty"`
-	AWS                        *AWSConfig     `yaml:"aws,omitempty"`
+	SchemaVersion              int                `yaml:"schema_version"`
+	SpecsDir                   string             `yaml:"specs_dir"`
+	ConstitutionPath           string             `yaml:"constitution_path"`
+	SourceFileLineLimit        int                `yaml:"source_file_line_limit,omitempty"`
+	Agents                     []string           `yaml:"agents"`
+	InstructionScaffoldVersion int                `yaml:"instruction_scaffold_version"`
+	FeatureNaming              FeatureNaming      `yaml:"feature_naming"`
+	Registry                   RegistryConfig     `yaml:"registry,omitempty"`
+	Health                     *HealthConfig      `yaml:"health,omitempty"`
+	Usage                      *UsageConfig       `yaml:"usage,omitempty"`
+	SharedMemory               SharedMemoryConfig `yaml:"shared_memory,omitempty"`
+	Issues                     IssueConfig        `yaml:"issues,omitempty"`
+	GitHub                     GitHubConfig       `yaml:"github,omitempty"`
+	AWS                        *AWSConfig         `yaml:"aws,omitempty"`
 }
 
 // UsageConfig controls local, private Kit command usage collection. A missing

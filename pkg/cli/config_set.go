@@ -13,14 +13,15 @@ import (
 )
 
 type configSetReport struct {
-	Target                 string             `json:"target"`
-	TargetNotice           string             `json:"target_notice,omitempty"`
-	Worktree               bool               `json:"worktree"`
-	DryRun                 bool               `json:"dry_run"`
-	Changed                bool               `json:"changed"`
-	Issues                 config.IssueConfig `json:"issues"`
-	ReconciliationRequired bool               `json:"reconciliation_required"`
-	Next                   []string           `json:"next_actions"`
+	Target                 string                    `json:"target"`
+	TargetNotice           string                    `json:"target_notice,omitempty"`
+	Worktree               bool                      `json:"worktree"`
+	DryRun                 bool                      `json:"dry_run"`
+	Changed                bool                      `json:"changed"`
+	SharedMemory           config.SharedMemoryConfig `json:"shared_memory"`
+	Issues                 config.IssueConfig        `json:"issues"`
+	ReconciliationRequired bool                      `json:"reconciliation_required"`
+	Next                   []string                  `json:"next_actions"`
 }
 
 var resolveConfigSetTarget = resolveReconcileTarget
@@ -29,9 +30,10 @@ func init() { configCmd.AddCommand(newConfigSetCommand()) }
 
 func newConfigSetCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "set", Short: "Set the repository issue provider and report canonical reconcile steps",
-		Long: `Set only repository issue-provider configuration, preserving unrelated YAML.
-Requires --issue-provider github or linear; never prompts or stores credentials.
+		Use: "set", Short: "Set repository integrations and report canonical reconcile steps",
+		Long: `Set repository issue-provider or optional shared-memory configuration, preserving unrelated YAML.
+Use --issue-provider github|linear or --shared-memory[=false]. Never stores credentials.
+Shared memory requires destination and guide HTTPS references when enabled.
 Linear needs a verified workspace slug and team UUID, with optional project UUID.
 Existing target fields are retained unless explicitly supplied; pass an empty
 --linear-project-id to clear the project. GitHub remains the omitted default.
@@ -43,10 +45,11 @@ checkout, while a primary-checkout write uses the canonical base/worktree.
 This command changes configuration only. The result explicitly reports the target
 and next actions: run kit reconcile --dry-run --diff, then kit reconcile there.
 Reconcile alone owns managed rule/template migration and preserves custom files.
---json reports only issue settings and next actions, never other config values.`,
+--json reports integration settings and next actions, never other config values.`,
 		Args: cobra.NoArgs, SilenceUsage: true, RunE: runConfigSet,
 	}
 	bindIssueProviderFlags(cmd)
+	bindSharedMemoryFlags(cmd)
 	cmd.Flags().Bool("dry-run", false, "preview issue settings without writing or preparing a worktree")
 	cmd.Flags().Bool("json", false, "emit structured settings, target, and reconcile next actions")
 	return cmd
@@ -93,6 +96,7 @@ func loadIssueSetting(root string) (*config.Config, error) {
 
 type issueSettingPlan struct {
 	issues        config.IssueConfig
+	memory        config.SharedMemoryConfig
 	before, after []byte
 }
 
@@ -101,7 +105,14 @@ func planIssueSetting(root string, cmd *cobra.Command) (issueSettingPlan, error)
 	if err != nil {
 		return issueSettingPlan{}, err
 	}
-	desired, err := desiredIssueConfig(cmd, cfg.Issues)
+	desired := cfg.Issues
+	if cmd.Flags().Changed("issue-provider") || cmd.Flags().Changed("linear-workspace") || cmd.Flags().Changed("linear-team-id") || cmd.Flags().Changed("linear-project-id") || !sharedMemoryFlagsChanged(cmd) {
+		desired, err = desiredIssueConfig(cmd, cfg.Issues)
+	}
+	memory, memoryErr := desiredSharedMemory(cmd, cfg.SharedMemory)
+	if memoryErr != nil {
+		return issueSettingPlan{}, memoryErr
+	}
 	if err != nil {
 		return issueSettingPlan{}, err
 	}
@@ -110,7 +121,10 @@ func planIssueSetting(root string, cmd *cobra.Command) (issueSettingPlan, error)
 		return issueSettingPlan{}, err
 	}
 	after, err := config.PlanIssueConfig(before, desired)
-	return issueSettingPlan{issues: desired, before: before, after: after}, err
+	if err == nil {
+		after, err = config.PlanSharedMemoryConfig(after, memory)
+	}
+	return issueSettingPlan{issues: desired, memory: memory, before: before, after: after}, err
 }
 
 func runConfigSet(cmd *cobra.Command, _ []string) error {
@@ -142,7 +156,7 @@ func runConfigSet(cmd *cobra.Command, _ []string) error {
 			return err
 		}
 	}
-	report := configSetReport{Target: target.projectRoot, TargetNotice: strings.TrimSpace(targetNotice.String()), Worktree: target.worktree, DryRun: dry, Changed: changed, Issues: plan.issues, ReconciliationRequired: true,
+	report := configSetReport{Target: target.projectRoot, TargetNotice: strings.TrimSpace(targetNotice.String()), Worktree: target.worktree, DryRun: dry, Changed: changed, Issues: plan.issues, SharedMemory: plan.memory, ReconciliationRequired: true,
 		Next: []string{"cd " + shellQuoteArgument(target.projectRoot) + " && kit reconcile --dry-run --diff", "cd " + shellQuoteArgument(target.projectRoot) + " && kit reconcile"}}
 	structured, _ := cmd.Flags().GetBool("json")
 	if structured {
@@ -160,7 +174,7 @@ func runConfigSet(cmd *cobra.Command, _ []string) error {
 	if !changed {
 		verb = "Already configured"
 	}
-	if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s issue provider %s in %s\nConfiguration only; canonical reconciliation is required.\n", verb, plan.issues.EffectiveProvider(), report.Target); err != nil {
+	if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s integrations (issue provider %s) in %s\nConfiguration only; canonical reconciliation is required.\n", verb, plan.issues.EffectiveProvider(), report.Target); err != nil {
 		return err
 	}
 	for _, next := range report.Next {

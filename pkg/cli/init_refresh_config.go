@@ -42,10 +42,15 @@ func initRefreshConfig(
 		inspection = currentInspection
 	}
 
+	if err := cfg.SharedMemory.Validate(); err != nil {
+		return nil, nil, err
+	}
+
 	// --force resets .kit.yaml only when it is named explicitly; a whole-project
 	// forced reconcile must never discard project configuration.
 	if configSelected && opts.force && len(targets) > 0 {
 		issues := cfg.Issues
+		memory := cfg.SharedMemory
 		aws := cfg.AWS
 		instructionVersion := cfg.InstructionScaffoldVersion
 		registry := cfg.Registry
@@ -55,6 +60,7 @@ func initRefreshConfig(
 			cfg.InstructionScaffoldVersion = instructionVersion
 		}
 		cfg.Issues = issues
+		cfg.SharedMemory = memory
 		cfg.AWS = aws
 		cfg.Registry = registry
 		after, err := marshalInitRefreshConfig(cfg)

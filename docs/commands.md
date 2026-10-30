@@ -62,3 +62,42 @@ the `--profile` and `--single-agent` flags, the reconcile agent prompt and its `
 `docs/PROJECT_PROGRESS_SUMMARY.md`. The universal contract and each rule's
 `Applies When` section replace workflow routing; hosts already expose their
 own tools, delegation, and command help.
+
+## Shared Memory
+
+Shared memory is repository-local and disabled when omitted. To enable it in a
+new project, pass `--shared-memory`, `--shared-memory-destination` and
+`--shared-memory-guide` to `kit init`. For an existing project:
+
+```bash
+kit config set --shared-memory \
+  --shared-memory-destination https://example.com/memory \
+  --shared-memory-guide https://example.com/operating-guide --dry-run --json
+# Remove --dry-run to save settings; follow the returned target and reconcile steps.
+```
+
+The corresponding `.kit.yaml` fields are:
+
+```yaml
+shared_memory:
+  enabled: true
+  provider: notion
+  destination: https://example.com/memory
+  guide: https://example.com/operating-guide
+```
+
+Replace these example references with reviewed non-secret HTTPS URLs. Destination
+and guide are references, not credentials; query parameters and user information
+are rejected. Consider repository visibility before committing private references.
+Kit does not fetch either URL or copy the guide. The destination can identify the
+Notion page or database the guide describes. Authentication and access grants
+must already be configured in the agent host through a separate setup process.
+
+Reconcile adds a short managed block to configured agent entry files (AGENTS,
+Claude, and Copilot by default), preserving surrounding project instructions and
+MCP settings. Missing access is reported by the agent and does not prevent local
+repository work. Repository memory remains authoritative for project facts.
+Use `kit config set --shared-memory=false`, then reconcile, to remove the optional
+block; references are retained for later opt-in. Repeated runs are idempotent.
+Ambiguous block markers fail without writing; repair them before reconciliation.
+No sync process, scheduler, credential management, or external agent is started.
