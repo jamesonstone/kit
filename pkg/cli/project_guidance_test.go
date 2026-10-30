@@ -173,6 +173,10 @@ func TestProjectGuidanceAudit(t *testing.T) {
 		{name: "empty", content: "", blocking: true},
 		{name: "no-heading", content: "Project policy", blocking: true},
 		{name: "custom", content: "# Local policy\n\nPrivate reporting follows project policy.\n"},
+		{name: "setext-equals", content: "Security Policy\n===============\n"},
+		{name: "setext-single-equals", content: "Security Policy\n=\n"},
+		{name: "setext-hyphens", content: "Security Policy\n---\n"},
+		{name: "setext-single-hyphen", content: "Security Policy\n-\n"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			path := filepath.Join(root, templates.SecurityPath)

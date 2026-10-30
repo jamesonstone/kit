@@ -122,13 +122,23 @@ func auditProjectGuidance(projectRoot string, cfg *config.Config) []reconcileFin
 	return findings
 }
 
+// hasMarkdownHeading checks minimal ATX or Setext structure, not full Markdown syntax.
 func hasMarkdownHeading(content string) bool {
-	for _, line := range strings.Split(content, "\n") {
-		line = strings.TrimSpace(line)
+	lines := strings.Split(content, "\n")
+	for index, rawLine := range lines {
+		line := strings.TrimSpace(rawLine)
 		title := strings.TrimLeft(line, "#")
 		if len(title) < len(line) && strings.HasPrefix(title, " ") && strings.TrimSpace(title) != "" {
 			return true
 		}
+		if index > 0 && isSetextUnderline(line) && strings.TrimSpace(lines[index-1]) != "" {
+			return true
+		}
 	}
 	return false
+}
+
+// isSetextUnderline recognizes a nonempty uniform equals or hyphen underline.
+func isSetextUnderline(line string) bool {
+	return line != "" && (strings.Trim(line, "=") == "" || strings.Trim(line, "-") == "")
 }

@@ -144,3 +144,28 @@ func TestSecurityPolicyPrecedence(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+func TestMarkdownGuidanceHeadingForms(t *testing.T) {
+	for _, test := range []struct {
+		content string
+		want    bool
+	}{
+		{"# Security Policy\n", true},
+		{"Security Policy\n=\n", true},
+		{"Security Policy\n===============\n", true},
+		{"Security Policy\n-\n", true},
+		{"Security Policy\n---\n", true},
+		{"Security Policy\n\n---\n", false},
+		{"Security Policy\n=-\n", false},
+		{"Security Policy\n- -\n", false},
+		{"---\n", false},
+		{"", false},
+		{"Plain text\n", false},
+	} {
+		t.Run(test.content, func(t *testing.T) {
+			if got := hasMarkdownHeading(test.content); got != test.want {
+				t.Fatalf("heading detection %v, want %v", got, test.want)
+			}
+		})
+	}
+}
