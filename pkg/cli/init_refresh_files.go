@@ -198,6 +198,12 @@ func planRefreshInitInstructionArtifacts(
 		if _, guidance := templates.ProjectGuidance(relativePath); guidance {
 			force = force && len(targets) > 0 && targets[relativePath]
 		}
+		if policy := preserveSecurityPolicy(projectRoot, relativePath, force); policy != "" {
+			if initRefreshTargetMatches(targets, relativePath) {
+				notes = append(notes, "preserved project-owned security policy at "+policy)
+			}
+			continue
+		}
 		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, force, cfg)
 		if err != nil {
 			return nil, nil, false, err

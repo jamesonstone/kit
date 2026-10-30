@@ -80,3 +80,9 @@ of project invariants; contextual rules provide procedures. `kit check --project
 checks presence, readability, and a Markdown heading, and reports preserved
 customizations as nonblocking advisories. It does not certify design quality,
 security, reporting-channel availability, or runtime enforcement.
+
+Existing security policies are discovered in `.github/SECURITY.md`, `SECURITY.md`,
+then `docs/SECURITY.md` order. Init and reconcile preserve a non-root policy
+without creating or registering a root placeholder. Agents read the first
+existing policy in that order. Explicit `--force --file SECURITY.md` can create
+or replace the root document; it never edits non-root policies.

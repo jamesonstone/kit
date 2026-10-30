@@ -92,6 +92,11 @@ func planInstructionArtifactWrite(
 		absolutePath: filepath.Join(projectRoot, filepath.FromSlash(relativePath)),
 		converged:    true,
 	}
+	if policy := preserveSecurityPolicy(projectRoot, relativePath, force); policy != "" {
+		plan.result = instructionFileSkipped
+		plan.note = "preserved project-owned security policy at " + policy
+		return plan, nil
+	}
 	if !document.Exists(plan.absolutePath) {
 		plan.content = instructionArtifactContent(relativePath)
 		plan.result = instructionFileCreated

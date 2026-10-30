@@ -234,7 +234,6 @@ func TestProjectGuidanceRegistryStatus(t *testing.T) {
 	}
 	custom := "# Private project policy\n"
 	writeFile(t, filepath.Join(root, templates.SecurityPath), custom)
-	recordProjectGuidance(cfg, templates.SecurityPath, custom)
 	summary = &statusKitManagedSummary{}
 	recordStatusLocalRegistry(root, cfg, summary)
 	if summary.Registry.LocalCustom != 1 || len(summary.Items) != 1 || summary.Items[0].Kind != "registry-project-guidance" {

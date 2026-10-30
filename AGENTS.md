@@ -60,7 +60,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 ## Contextual Rules
 
-For UI/UX/design, read `DESIGN.md`; for security-relevant engineering, read `SECURITY.md`. Load these project-customizable defaults only when relevant.
+For UI/UX/design, read `DESIGN.md`; for security-relevant engineering, read the first existing `.github/SECURITY.md`, `SECURITY.md`, or `docs/SECURITY.md`, in that order.
 
 Read the named file under `docs/references/rules/` when its trigger applies; skip it otherwise.
 

@@ -223,3 +223,9 @@ MIT
 ## Maintainers
 
 Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+
+Existing security policies are discovered in `.github/SECURITY.md`, `SECURITY.md`,
+then `docs/SECURITY.md` order. Init and reconcile preserve a non-root policy
+without creating or registering a root placeholder. Agents read the first
+existing policy in that order. Explicit `--force --file SECURITY.md` can create
+or replace the root document; it never edits non-root policies.

@@ -214,6 +214,9 @@ func requiredStructurePresent(projectRoot string, cfg *config.Config, registry [
 	}
 	for _, path := range required {
 		path = filepath.ToSlash(path)
+		if path == templates.SecurityPath {
+			path = securityPolicyPath(projectRoot)
+		}
 		switch result[path] {
 		case instructionFileRemoved:
 			return false

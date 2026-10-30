@@ -12,6 +12,39 @@ import (
 
 const projectGuidanceKind = "project-guidance"
 
+// securityPolicyPath follows conventional policy precedence and defaults to
+// the root location only when the project has no existing policy.
+func securityPolicyPath(projectRoot string) string {
+	for _, path := range []string{".github/SECURITY.md", templates.SecurityPath, "docs/SECURITY.md"} {
+		if _, err := os.Lstat(filepath.Join(projectRoot, filepath.FromSlash(path))); !os.IsNotExist(err) {
+			return path
+		}
+	}
+	return templates.SecurityPath
+}
+
+func preserveSecurityPolicy(projectRoot, path string, force bool) string {
+	if path == templates.SecurityPath && !force {
+		if policy := securityPolicyPath(projectRoot); policy != templates.SecurityPath {
+			return policy
+		}
+	}
+	return ""
+}
+
+// Inspect current bytes rather than a stale on-disk registry classification.
+func currentGuidanceState(projectRoot string, artifact config.RegistryArtifact) string {
+	data, err := os.ReadFile(filepath.Join(projectRoot, filepath.FromSlash(artifact.Path)))
+	if err != nil {
+		return "unknown"
+	}
+	canonical, ok := templates.ProjectGuidance(artifact.Path)
+	if ok && (string(data) == canonical || kitWroteUnmodified(artifact, contentHash(string(data)))) {
+		return registryArtifactStateManaged
+	}
+	return registryArtifactStateLocalCustom
+}
+
 // Whole-document ownership uses the same installed-hash evidence as rulesets.
 // Existing project policies are never adopted merely because their names match.
 func planProjectGuidance(plan instructionFileWritePlan, existing string, force bool, cfg *config.Config) instructionFileWritePlan {
@@ -52,7 +85,7 @@ func recordProjectGuidance(cfg *config.Config, path, content string) bool {
 // and vulnerability-reporting content need semantic review, not a policy engine.
 func auditProjectGuidance(projectRoot string, cfg *config.Config) []reconcileFinding {
 	var findings []reconcileFinding
-	for _, path := range []string{templates.DesignPath, templates.SecurityPath} {
+	for _, path := range []string{templates.DesignPath, securityPolicyPath(projectRoot)} {
 		absolute := filepath.Join(projectRoot, path)
 		data, err := os.ReadFile(absolute)
 		issue := ""
@@ -77,7 +110,11 @@ func auditProjectGuidance(projectRoot string, cfg *config.Config) []reconcileFin
 			}
 		}
 		if issue != "" {
-			finding := newFinding(reconcileSeverityWarning, absolute, issue, "preview with `kit reconcile --dry-run --diff --file "+path+"`; preserve project policy when reviewing")
+			fix := "preview with `kit reconcile --dry-run --diff --file " + path + "`; preserve project policy when reviewing"
+			if path != templates.DesignPath && path != templates.SecurityPath {
+				fix = "review this project-owned policy in place; Kit preserves it"
+			}
+			finding := newFinding(reconcileSeverityWarning, absolute, issue, fix)
 			finding.NonBlocking = nonBlocking
 			findings = append(findings, finding)
 		}

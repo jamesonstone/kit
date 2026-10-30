@@ -152,7 +152,11 @@ func recordStatusLocalRegistry(projectRoot string, cfg *config.Config, summary *
 			})
 			continue
 		}
-		switch artifact.State {
+		state := artifact.State
+		if artifact.Kind == projectGuidanceKind {
+			state = currentGuidanceState(projectRoot, artifact)
+		}
+		switch state {
 		case registryArtifactStateManaged:
 			summary.Registry.Managed++
 		case registryArtifactStateLocalCustom:
