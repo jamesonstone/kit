@@ -25,6 +25,7 @@
 | `frontend-application-architecture` | default | Responsibility boundaries for frontend routes, state, data adapters, and UI. |
 | `github-pr-merge` | default | Explicit bounded merge authority, and current `MERGE_READY` readiness. |
 | `infrastructure-change-approval` | default | One outline and one approval per infrastructure batch; deletion always confirmed. |
+| `local-runtime-lifecycle` | default | One local runtime per project: reuse or stop it before any start, restart only what changed, and open no terminal windows from agents. |
 | `mint-deployment-lifecycle` | default | Repository-native Mint releases, environment policy, immutable promotion and recovery evidence. |
 | `slack-read-only` | default | Slack is read-only; every write needs explicit message-specific approval. |
 | `testing-and-environment-validation` | default | Code-level tests primary, honest results, safe browser and production validation. |

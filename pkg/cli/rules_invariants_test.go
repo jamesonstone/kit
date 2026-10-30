@@ -76,6 +76,13 @@ var ruleInvariants = map[string][]string{
 		"Never let two agents write overlapping files concurrently",
 		"Report only real topology",
 	},
+	"local-runtime-lifecycle": {
+		"Run one runtime per project",
+		"Never start beside it",
+		"even when it reuses a running runtime",
+		"Never run it in a loop, in a retry, or as a post-merge step",
+		"Never kill by a broad name pattern",
+	},
 	"deadline-mode": {
 		"Only when the user explicitly declares a real deadline",
 		"Never weaken merge authority",
