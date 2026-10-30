@@ -20,6 +20,24 @@ supervise agents.
 [![Last commit](https://img.shields.io/github/last-commit/jamesonstone/kit)](https://github.com/jamesonstone/kit/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/kit)](https://github.com/jamesonstone/kit/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/kit)](https://github.com/jamesonstone/kit/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/kit)](https://github.com/jamesonstone/kit/releases)
 <!-- END KIT-MANAGED README BADGES -->
 
+## Design and security guidance
+
+`kit init` creates `DESIGN.md` for product design, interface quality, and usability,
+and `SECURITY.md` for security engineering and private vulnerability reporting.
+The universal contract points agents to them only for relevant work. The
+Constitution retains project invariants; contextual rules retain procedures.
+These documents guide decisions; code and infrastructure enforce runtime controls.
+
+Customize either document directly, including the project-owned reporting
+placeholders in `SECURITY.md`. `kit reconcile` creates missing documents and
+refreshes unchanged installed defaults using the existing artifact registry.
+Existing documents and any local edits are preserved and reported; generated
+agent instructions update independently. Preview with
+`kit reconcile --dry-run --diff`. Replacing customized guidance requires explicit
+`kit reconcile --force --file DESIGN.md` (or `SECURITY.md`); whole-project `--force`
+preserves these policies. The template creates no reporting channel, support
+range, response SLA, or security setting.
+
 ## How Kit Works
 
 Kit gives every coding agent one compact universal contract (rendered into
@@ -205,3 +223,9 @@ MIT
 ## Maintainers
 
 Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
+
+Existing security policies are discovered in `.github/SECURITY.md`, `SECURITY.md`,
+then `docs/SECURITY.md` order. Init and reconcile preserve a non-root policy
+without creating or registering a root placeholder. Agents read the first
+existing policy in that order. Explicit `--force --file SECURITY.md` can create
+or replace the root document; it never edits non-root policies.

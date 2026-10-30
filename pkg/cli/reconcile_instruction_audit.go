@@ -14,9 +14,9 @@ import (
 // agent entry files, plus retired Kit artifacts and legacy scaffold state. It
 // uses the same migration plan reconcile applies, so the two never disagree.
 func auditInstructionFiles(projectRoot string, cfg *config.Config) []reconcileFinding {
-	var findings []reconcileFinding
+	findings := auditProjectGuidance(projectRoot, cfg)
 	for _, relativePath := range instructionFiles(cfg) {
-		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, false)
+		plan, err := planInstructionArtifactWrite(projectRoot, relativePath, instructionFileWriteModeConverge, false, cfg)
 		if err != nil {
 			return append(findings, newFinding(reconcileSeverityWarning, filepath.Join(projectRoot, relativePath), err.Error(), "inspect the file manually"))
 		}

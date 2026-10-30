@@ -28,6 +28,8 @@ Reconcile:
     CLAUDE.md, and .github/copilot-instructions.md, keeping project guidance
     outside the block
   - updates unedited Kit sections of docs/CONSTITUTION.md and its baseline
+  - adds missing DESIGN.md and SECURITY.md, updates unchanged Kit defaults,
+    and preserves project policies unless --force --file explicitly selects them
   - updates shipped rules Kit installed and nobody edited
   - removes retired Kit files (docs/agents/, docs/references/workflows/,
     docs/PROJECT_PROGRESS_SUMMARY.md, retired rules) only when they are exactly

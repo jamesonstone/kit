@@ -195,13 +195,19 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 			entriesConverged = false
 		}
 	}
+	guidanceRegistryChanged := false
+	for _, change := range changes {
+		if !blocked[filepath.ToSlash(change.relativePath)] && recordProjectGuidance(cfg, change.relativePath, change.after) {
+			guidanceRegistryChanged = true
+		}
+	}
 	versionChanged := false
 	if entriesConverged && requiredStructurePresent(projectRoot, cfg, registry, changes) &&
 		initRefreshTargetMatches(targets, config.ConfigFileName) && cfg.InstructionScaffoldVersion != config.CurrentInstructionScaffoldVersion {
 		cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 		versionChanged = true
 	}
-	if configChange != nil || registryChanged || retiredRegistryChanged || versionChanged || initRefreshTargetMatches(targets, config.ConfigFileName) {
+	if configChange != nil || guidanceRegistryChanged || registryChanged || retiredRegistryChanged || versionChanged || initRefreshTargetMatches(targets, config.ConfigFileName) {
 		configChange, err = finalizeInitRefreshConfigChange(projectRoot, cfg, configChange)
 		if err != nil {
 			return nil, err
