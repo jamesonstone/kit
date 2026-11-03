@@ -59,12 +59,26 @@ func TestBuildReconcileReportProjectScopeFindsMissingInitScaffoldArtifacts(t *te
 	for _, check := range []string{
 		"missing Kit init scaffold artifact `.coderabbit.yaml`",
 		"missing Kit init scaffold artifact `.github/pull_request_template.md`",
-		"missing Kit init scaffold artifact `.github/ISSUE_TEMPLATE/issue.md`",
 		"missing Kit init scaffold artifact `.github/workflows/auto-assign.yml`",
 	} {
 		if !strings.Contains(issues, check) {
 			t.Fatalf("expected init scaffold finding %q, got %q", check, issues)
 		}
+	}
+	if strings.Contains(issues, issueTemplatePath) {
+		t.Fatalf("missing issue template is opt-in, got %q", issues)
+	}
+	enabled := true
+	cfg.Issues.IssueTemplate = &enabled
+	if err := config.Save(projectRoot, cfg); err != nil {
+		t.Fatal(err)
+	}
+	report, err = buildReconcileReport(projectRoot, cfg, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(findingsIssues(report.Findings), "missing Kit init scaffold artifact `.github/ISSUE_TEMPLATE/issue.md`") {
+		t.Fatal(findingsIssues(report.Findings))
 	}
 }
 

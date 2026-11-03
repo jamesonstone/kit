@@ -52,6 +52,8 @@ New project:
 
 ```bash
 kit init
+kit init --dry-run          # print the file plan and write nothing
+kit init --issue-template   # also add .github/ISSUE_TEMPLATE/issue.md
 kit spec my-feature
 # coding agent plans, implements, validates, and curates repository memory
 kit check --project

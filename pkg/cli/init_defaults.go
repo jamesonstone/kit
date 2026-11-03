@@ -7,19 +7,3 @@ func defaultInitConfig() *config.Config {
 	cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	return cfg
 }
-
-func projectInitDeliveryPaths(cfg *config.Config) []string {
-	paths := []string{
-		config.ConfigFileName,
-		gitignorePath,
-		makefilePath,
-		codeRabbitConfigPath,
-		pullRequestTemplatePath,
-		issueTemplatePath,
-		autoAssignWorkflowPath,
-		readmePath,
-		cfg.ConstitutionPath,
-	}
-	paths = append(paths, instructionArtifactPaths(cfg)...)
-	return paths
-}

@@ -8,8 +8,15 @@ import (
 // IssueConfig selects the repository's development tracker. Credentials never
 // belong here. An omitted provider means GitHub Issues for existing projects.
 type IssueConfig struct {
-	Provider string       `yaml:"provider,omitempty" json:"provider"`
-	Linear   LinearConfig `yaml:"linear,omitempty" json:"linear,omitempty"`
+	Provider      string       `yaml:"provider,omitempty" json:"provider"`
+	IssueTemplate *bool        `yaml:"issue_template,omitempty" json:"issue_template,omitempty"`
+	Linear        LinearConfig `yaml:"linear,omitempty" json:"linear,omitempty"`
+}
+
+// IssueTemplateEnabled reports an explicit opt-in. An omitted value stays off
+// so init does not install a GitHub issue template over an existing setup.
+func (c IssueConfig) IssueTemplateEnabled() bool {
+	return c.IssueTemplate != nil && *c.IssueTemplate
 }
 
 // LinearConfig stores verified, non-secret target identities. IDs avoid

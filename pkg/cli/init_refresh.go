@@ -14,16 +14,19 @@ import (
 const constitutionBaselineHeading = templates.ConstitutionBaselineHeading
 
 type initRefreshOptions struct {
-	mintRelease   *mintActionRelease
-	mintOnly      bool
-	mint          bool
-	mintWorkflows bool
-	mintSelection mintPipelineSelection
-	force         bool
-	dryRun        bool
-	diff          bool
-	files         []string
-	outputOnly    bool
+	mintRelease                *mintActionRelease
+	mintOnly                   bool
+	mint                       bool
+	mintWorkflows              bool
+	mintSelection              mintPipelineSelection
+	force                      bool
+	dryRun                     bool
+	diff                       bool
+	files                      []string
+	outputOnly                 bool
+	issueTemplate              bool
+	updateShippedIssueTemplate bool
+	seed                       *config.Config
 }
 
 type initRefreshStats struct {
@@ -44,49 +47,6 @@ type initRefreshPlan struct {
 	changes []initRefreshFileChange
 	notes   []string
 	stats   initRefreshStats
-}
-
-func runInitRefreshWithSnapshot(
-	projectRoot string,
-	opts initRefreshOptions,
-) ([]managedFileDeliverySnapshot, error) {
-	if !opts.outputOnly && !opts.dryRun {
-		fmt.Println("🔄 Refreshing Kit-managed project files...")
-	}
-
-	ctx := context.Background()
-	plan, err := buildInitRefreshPlan(ctx, projectRoot, opts)
-	if err != nil {
-		return nil, err
-	}
-	deliverySnapshot := managedFileDeliverySnapshotFromInitRefresh(projectRoot, plan.changes)
-
-	if opts.dryRun {
-		printInitRefreshDryRun(plan.changes, plan.stats, opts)
-		printInitRefreshNotes(plan.notes, opts)
-		return deliverySnapshot, nil
-	}
-
-	if err := applyInitRefreshFileChangesAtomically(plan.changes); err != nil {
-		return nil, err
-	}
-
-	if !opts.outputOnly {
-		fmt.Println("\n✅ Kit managed refresh complete!")
-		if plan.stats.changed() == 0 {
-			fmt.Println("   No Kit-managed project changes needed.")
-		}
-		fmt.Printf(
-			"   Created: %d, Updated: %d, Merged: %d, Removed: %d, Skipped: %d\n",
-			plan.stats.created,
-			plan.stats.updated,
-			plan.stats.merged,
-			plan.stats.removed,
-			plan.stats.skipped,
-		)
-	}
-	printInitRefreshNotes(plan.notes, opts)
-	return deliverySnapshot, nil
 }
 
 func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefreshOptions) (*initRefreshPlan, error) {

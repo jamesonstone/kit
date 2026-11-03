@@ -20,6 +20,9 @@ func withInitFlags(t *testing.T, run func()) {
 	originalDryRun := initDryRun
 	originalDiff := initDiff
 	originalRefreshFiles := initRefreshFiles
+	originalIssueTemplate := initIssueTemplate
+	originalPlanDryRun := initPlanDryRun
+	originalAllowOverwrite := initAllowOverwrite
 
 	t.Cleanup(func() {
 		initMint = originalMint
@@ -31,6 +34,9 @@ func withInitFlags(t *testing.T, run func()) {
 		initDryRun = originalDryRun
 		initDiff = originalDiff
 		initRefreshFiles = originalRefreshFiles
+		initIssueTemplate = originalIssueTemplate
+		initPlanDryRun = originalPlanDryRun
+		initAllowOverwrite = originalAllowOverwrite
 	})
 
 	initMint = false
@@ -42,6 +48,9 @@ func withInitFlags(t *testing.T, run func()) {
 	initDryRun = false
 	initDiff = false
 	initRefreshFiles = nil
+	initIssueTemplate = false
+	initPlanDryRun = false
+	initAllowOverwrite = false
 
 	run()
 }

@@ -21,6 +21,7 @@ func TestRunInit_AppendsMissingGitignoreEntries(t *testing.T) {
 
 	withInitFlags(t, func() {
 		initOutputOnly = true
+		initAllowOverwrite = true
 
 		_ = captureStdout(t, func() {
 			if err := runInitForTest(initCmd, nil); err != nil {

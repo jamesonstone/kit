@@ -78,40 +78,6 @@ func managedFileDeliverySnapshotFromInitRefresh(
 	return snapshot
 }
 
-func appendManagedFileDeliveryTransition(
-	snapshot []managedFileDeliverySnapshot,
-	relativePath string,
-	before string,
-	beforeExists bool,
-	after string,
-	afterExists bool,
-) []managedFileDeliverySnapshot {
-	relativePath = normalizeManagedFileDeliveryPath(relativePath)
-	if beforeExists == afterExists && before == after {
-		return snapshot
-	}
-
-	action := "update"
-	preCommandState := managedFileAbsentState
-	resultState := managedFileAbsentState
-	if beforeExists {
-		preCommandState = managedFileContentState(before)
-	} else {
-		action = "create"
-	}
-	if afterExists {
-		resultState = managedFileContentState(after)
-	} else {
-		action = "remove"
-	}
-	return append(snapshot, managedFileDeliverySnapshot{
-		Path:            relativePath,
-		Action:          action,
-		PreCommandState: preCommandState,
-		ResultState:     resultState,
-	})
-}
-
 func captureManagedFileDeliveryBaseline(
 	projectRoot string,
 	relativePaths []string,
@@ -137,38 +103,6 @@ func captureManagedFileDeliveryBaseline(
 		}
 	}
 	return baseline, nil
-}
-
-func managedFileDeliverySnapshotFromBaseline(
-	projectRoot string,
-	baseline map[string]managedFileDeliveryBaselineEntry,
-) ([]managedFileDeliverySnapshot, error) {
-	snapshot := make([]managedFileDeliverySnapshot, 0, len(baseline))
-	paths := make([]string, 0, len(baseline))
-	for relativePath := range baseline {
-		paths = append(paths, relativePath)
-	}
-	eligible := managedFileDeliveryEligiblePaths(projectRoot, paths)
-	for relativePath, before := range baseline {
-		if !eligible[normalizeManagedFileDeliveryPath(relativePath)] {
-			continue
-		}
-		after, afterExists, err := readManagedFileDeliveryState(
-			filepath.Join(projectRoot, filepath.FromSlash(relativePath)),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("failed to snapshot %s after command: %w", relativePath, err)
-		}
-		snapshot = appendManagedFileDeliveryTransition(
-			snapshot,
-			relativePath,
-			before.content,
-			before.exists,
-			after,
-			afterExists,
-		)
-	}
-	return snapshot, nil
 }
 
 func mergeManagedFileDeliverySnapshots(

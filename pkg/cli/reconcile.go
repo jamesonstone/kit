@@ -15,6 +15,7 @@ var reconcileIncludeFiles bool
 var reconcileForce bool
 var reconcileDryRun bool
 var reconcileDiff bool
+var reconcileIssueTemplate bool
 var reconcileRefreshFiles []string
 
 var reconcileCmd = &cobra.Command{
@@ -43,6 +44,18 @@ rules; sections Kit never wrote are always kept.
 
 In the primary checkout, reconcile applies changes in a linked worktree on
 branch kit-reconcile (created or reused) and prints where to review them.
+Before writing, reconcile lists every file it would create, overwrite, or skip
+and warns about existing issue templates, forms, and config.yml. Kit-owned
+updates still apply. Creating the opt-in issue template beside an existing
+issue setup asks first, or skips that file when the run is not interactive,
+unless --force is set.
+
+--issue-template opts in, records issues.issue_template: true, and creates the
+template when it is missing. A file that exactly matches a shipped Kit issue
+template keeps updating without that flag. Kit cannot list templates inherited
+from an organization .github repository. When gh can identify an organization
+owner, reconcile warns that a local template overrides them.
+
 Use --dry-run --diff to preview without writing anything.
 
 Mint Action references in repository workflows are refreshed to the latest verified
@@ -73,6 +86,7 @@ func init() {
 	_ = reconcileCmd.Flags().MarkHidden("include-files")
 	reconcileCmd.Flags().BoolVarP(&reconcileForce, "force", "f", false, "also replace edited Kit sections and edited shipped rules")
 	reconcileCmd.Flags().BoolVar(&reconcileDryRun, "dry-run", false, "preview Kit-managed file changes without writing files")
+	reconcileCmd.Flags().BoolVar(&reconcileIssueTemplate, "issue-template", false, "opt in to the GitHub issue template and record issues.issue_template: true")
 	reconcileCmd.Flags().BoolVar(&reconcileDiff, "diff", false, "print planned file changes as a unified diff with --dry-run")
 	reconcileCmd.Flags().StringArrayVar(&reconcileRefreshFiles, "file", nil, "limit the file migration to one Kit-managed file; repeat for multiple files")
 	reconcileCmd.Flags().BoolVar(&reconcileMintWorkflows, "mint-workflows", false, "plan Mint installation in existing workflows or a safe release-state starter")
@@ -121,7 +135,7 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 
 	var deliverySnapshot []managedFileDeliverySnapshot
 	{
-		opts := initRefreshOptions{mintRelease: &mintRelease, mintOnly: feat != nil, mintWorkflows: reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection), mintSelection: reconcileMintSelection, force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint}
+		opts := initRefreshOptions{mintRelease: &mintRelease, mintOnly: feat != nil, mintWorkflows: reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection), mintSelection: reconcileMintSelection, force: reconcileForce, files: reconcileRefreshFiles, mint: reconcileMint, issueTemplate: reconcileIssueTemplate, updateShippedIssueTemplate: true}
 		upToDate, err := reconcileHasNoChanges(projectRoot, opts)
 		if err != nil {
 			return err
@@ -140,24 +154,31 @@ func runReconcile(cmd *cobra.Command, args []string) error {
 			}
 		}
 		if target.current {
-			if err := printCurrentMintIncompleteNotes(projectRoot, opts); err != nil {
-				return err
-			}
-			_, err := fmt.Fprintln(cmd.OutOrStdout(), "Kit-managed files are current; nothing to write.")
+			reported, err := reportSuppressedIssueTemplate(cmd.OutOrStdout(), projectRoot, opts)
 			if err != nil {
 				return err
 			}
+			if !reported {
+				if err := printCurrentMintIncompleteNotes(projectRoot, opts); err != nil {
+					return err
+				}
+				if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Kit-managed files are current; nothing to write."); err != nil {
+					return err
+				}
+			}
 		} else if deliverySnapshot, err = runInitRefreshWithSnapshot(target.projectRoot, initRefreshOptions{
-			force:         reconcileForce,
-			mintRelease:   &mintRelease,
-			mintOnly:      feat != nil,
-			mint:          reconcileMint,
-			mintWorkflows: reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection),
-			mintSelection: reconcileMintSelection,
-			dryRun:        reconcileDryRun,
-			diff:          reconcileDiff,
-			files:         reconcileRefreshFiles,
-			outputOnly:    reconcileOutputOnly,
+			force:                      reconcileForce,
+			issueTemplate:              reconcileIssueTemplate,
+			updateShippedIssueTemplate: true,
+			mintRelease:                &mintRelease,
+			mintOnly:                   feat != nil,
+			mint:                       reconcileMint,
+			mintWorkflows:              reconcileMintWorkflows || mintSelectionRequested(reconcileMintSelection),
+			mintSelection:              reconcileMintSelection,
+			dryRun:                     reconcileDryRun,
+			diff:                       reconcileDiff,
+			files:                      reconcileRefreshFiles,
+			outputOnly:                 reconcileOutputOnly,
 		}); err != nil {
 			return err
 		}

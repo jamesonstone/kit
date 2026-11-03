@@ -126,7 +126,6 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 	}{
 		{relativePath: codeRabbitConfigPath, description: "CodeRabbit review configuration"},
 		{relativePath: pullRequestTemplatePath, description: "GitHub pull request template"},
-		{relativePath: issueTemplatePath, description: "GitHub issue template"},
 		{relativePath: autoAssignWorkflowPath, description: "GitHub issue and pull request auto-assignment workflow"},
 	} {
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(artifact.relativePath))
@@ -139,6 +138,17 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 			fmt.Sprintf("missing Kit init scaffold artifact `%s`", artifact.relativePath),
 			fmt.Sprintf("run `kit reconcile` to create the missing %s, then review it before committing", artifact.description),
 		))
+	}
+	if cfg, err := config.Load(projectRoot); err == nil && cfg.Issues.IssueTemplateEnabled() {
+		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(issueTemplatePath))
+		if !document.Exists(absolutePath) {
+			findings = append(findings, newFinding(
+				reconcileSeverityWarning,
+				absolutePath,
+				fmt.Sprintf("missing Kit init scaffold artifact `%s`", issueTemplatePath),
+				"run `kit reconcile` to create the missing GitHub issue template, then review it before committing",
+			))
+		}
 	}
 	return findings
 }

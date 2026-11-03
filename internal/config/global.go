@@ -9,6 +9,34 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// PlanGlobalConfig reports the global config path and whether a write would
+// create the file or add missing default keys. It does not create directories
+// or write.
+func PlanGlobalConfig(defaults *Config) (path string, create bool, update bool, err error) {
+	if defaults == nil {
+		defaults = Default()
+	}
+	path, err = GlobalConfigPath()
+	if err != nil {
+		return "", false, false, err
+	}
+	if _, err = os.Stat(path); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return path, true, false, nil
+		}
+		return "", false, false, fmt.Errorf("failed to stat %s: %w", path, err)
+	}
+	doc, err := readYAMLDocument(path, false)
+	if err != nil {
+		return "", false, false, err
+	}
+	update, err = appendMissingDefaultConfigFields(doc, defaults)
+	if err != nil {
+		return "", false, false, err
+	}
+	return path, false, update, nil
+}
+
 // PopulateGlobalConfig creates the global config file or appends missing default fields.
 func PopulateGlobalConfig(defaults *Config) (string, bool, error) {
 	if defaults == nil {

@@ -18,6 +18,9 @@ func initRefreshConfig(
 	targets map[string]bool,
 ) (*config.Config, *initRefreshFileChange, error) {
 	cfg := defaultInitConfig()
+	if opts.seed != nil {
+		cfg = opts.seed
+	}
 	configSelected := initRefreshTargetMatches(targets, config.ConfigFileName)
 	shouldTouchConfig := len(targets) == 0 || configSelected
 	path := filepath.Join(projectRoot, config.ConfigFileName)
@@ -57,6 +60,7 @@ func initRefreshConfig(
 		cfg.Issues = issues
 		cfg.AWS = aws
 		cfg.Registry = registry
+		enableIssueTemplateOptIn(cfg, opts)
 		after, err := marshalInitRefreshConfig(cfg)
 		if err != nil {
 			return nil, nil, err
@@ -68,6 +72,7 @@ func initRefreshConfig(
 		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, result), nil
 	}
 
+	enableIssueTemplateOptIn(cfg, opts)
 	configChanged := false
 	if inspection.NeedsSchemaMigration() {
 		cfg.SchemaVersion = config.CurrentSchemaVersion
@@ -97,6 +102,14 @@ func initRefreshConfig(
 	}
 
 	return cfg, nil, nil
+}
+
+func enableIssueTemplateOptIn(cfg *config.Config, opts initRefreshOptions) {
+	if cfg == nil || !opts.issueTemplate || cfg.Issues.IssueTemplateEnabled() {
+		return
+	}
+	enabled := true
+	cfg.Issues.IssueTemplate = &enabled
 }
 
 func finalizeInitRefreshConfigChange(projectRoot string, cfg *config.Config, planned *initRefreshFileChange) (*initRefreshFileChange, error) {

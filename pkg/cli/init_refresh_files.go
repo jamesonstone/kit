@@ -17,6 +17,9 @@ func planRefreshInitScaffoldFiles(
 	cfg *config.Config,
 	targets map[string]bool,
 ) ([]initRefreshFileChange, error) {
+	if cfg != nil && cfg.Issues.IssueTemplateEnabled() {
+		opts.issueTemplate = true
+	}
 	files := []struct {
 		relativePath     string
 		content          string
@@ -92,6 +95,9 @@ func planRefreshInitScaffoldFile(
 		}
 		return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileUpdated), nil
 	}
+	if relativePath == issueTemplatePath {
+		return planIssueTemplateScaffold(projectRoot, relativePath, exists, before, content, opts)
+	}
 	if exists && merge {
 		missing := missingGitignorePatterns(before)
 		if len(missing) == 0 {
@@ -114,6 +120,18 @@ func planRefreshInitScaffoldFile(
 		return *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped), nil
 	}
 	return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileCreated), nil
+}
+
+// planIssueTemplateScaffold creates the issue template only when opted in.
+// An exact shipped copy still updates when reconcile asks for that convergence.
+func planIssueTemplateScaffold(projectRoot, relativePath string, exists bool, before, content string, opts initRefreshOptions) (initRefreshFileChange, error) {
+	if exists && opts.updateShippedIssueTemplate && templates.IsShippedIssueTemplate(before) && before != content {
+		return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileUpdated), nil
+	}
+	if exists || !opts.issueTemplate {
+		return *newInitRefreshFileChange(projectRoot, relativePath, before, before, instructionFileSkipped), nil
+	}
+	return *newInitRefreshFileChange(projectRoot, relativePath, "", content, instructionFileCreated), nil
 }
 
 func planRefreshInitConstitution(projectRoot string, cfg *config.Config, targets map[string]bool, entriesConverged bool) (*initRefreshFileChange, error) {
