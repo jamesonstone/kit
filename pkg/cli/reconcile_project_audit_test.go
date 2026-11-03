@@ -44,7 +44,7 @@ func TestBuildReconcileReportProjectScopeFindsMissingInitScaffoldArtifacts(t *te
 	if err != nil {
 		t.Fatalf("config.Load() error = %v", err)
 	}
-	for _, relativePath := range []string{envPath, envrcPath, codeRabbitConfigPath, pullRequestTemplatePath, autoAssignWorkflowPath} {
+	for _, relativePath := range []string{envPath, envrcPath, codeRabbitConfigPath, pullRequestTemplatePath, issueTemplatePath, autoAssignWorkflowPath} {
 		if err := os.Remove(filepath.Join(projectRoot, relativePath)); err != nil {
 			t.Fatalf("os.Remove(%s) error = %v", relativePath, err)
 		}
@@ -59,6 +59,7 @@ func TestBuildReconcileReportProjectScopeFindsMissingInitScaffoldArtifacts(t *te
 	for _, check := range []string{
 		"missing Kit init scaffold artifact `.coderabbit.yaml`",
 		"missing Kit init scaffold artifact `.github/pull_request_template.md`",
+		"missing Kit init scaffold artifact `.github/ISSUE_TEMPLATE.md`",
 		"missing Kit init scaffold artifact `.github/workflows/auto-assign.yml`",
 	} {
 		if !strings.Contains(issues, check) {

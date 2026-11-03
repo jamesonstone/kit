@@ -161,5 +161,6 @@ func writeInitScaffoldArtifacts(t *testing.T, projectRoot string) {
 	writeFile(t, filepath.Join(projectRoot, envrcPath), templates.Envrc)
 	writeFile(t, filepath.Join(projectRoot, codeRabbitConfigPath), templates.CodeRabbitConfig)
 	writeFile(t, filepath.Join(projectRoot, pullRequestTemplatePath), templates.PullRequestTemplate)
+	writeFile(t, filepath.Join(projectRoot, issueTemplatePath), templates.IssueTemplate)
 	writeFile(t, filepath.Join(projectRoot, autoAssignWorkflowPath), templates.BuildAutoAssignWorkflow(nil))
 }

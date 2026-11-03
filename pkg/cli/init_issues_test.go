@@ -115,6 +115,25 @@ func TestLinearInitPersistsConfigurationAndTemplate(t *testing.T) {
 	})
 }
 
+func previousPullRequestTemplate() string {
+	return `## Description
+
+-
+
+## How to Test
+
+1.
+
+## Ticket
+
+Closes #[ticket number]
+`
+}
+
+func previousLinearPullRequestTemplate() string {
+	return strings.Replace(previousPullRequestTemplate(), "Closes #[ticket number]", "<!-- Full canonical Linear URL; preserve in the squash commit footer. Follow delivery for lifecycle. -->\n[Linear issue URL]", 1)
+}
+
 func TestReconcileSwitchesOnlyOwnedIssueTemplate(t *testing.T) {
 	root := t.TempDir()
 	github := templates.PullRequestTemplate
@@ -125,6 +144,8 @@ func TestReconcileSwitchesOnlyOwnedIssueTemplate(t *testing.T) {
 	}{
 		{"github to linear", github, linear, instructionFileUpdated},
 		{"linear to github", linear, github, instructionFileUpdated},
+		{"previous github", previousPullRequestTemplate(), github, instructionFileUpdated},
+		{"previous linear", previousLinearPullRequestTemplate(), linear, instructionFileUpdated},
 		{"custom", github + "\nCustom requirements\n", linear, instructionFileSkipped},
 		{"idempotent", linear, linear, instructionFileSkipped},
 	} {

@@ -245,6 +245,7 @@ func initRefreshKnownTargets(cfg *config.Config, registry []registryRuleset) map
 		makefilePath:                           true,
 		codeRabbitConfigPath:                   true,
 		pullRequestTemplatePath:                true,
+		issueTemplatePath:                      true,
 		autoAssignWorkflowPath:                 true,
 		readmePath:                             true,
 		cfg.ConstitutionPath:                   true,

@@ -27,7 +27,7 @@ Creates:
   - .env and .envrc local environment files
   - Makefile starter for canonical project commands
   - .coderabbit.yaml review configuration file
-  - .github/pull_request_template.md pull request template
+  - .github/pull_request_template.md and .github/ISSUE_TEMPLATE.md
   - .github/workflows/auto-assign.yml issue and pull request assignment workflow
   - README.md Kit-managed status badges and final Maintainers section
   - ~/.config/kit/.kit.yaml global configuration file
@@ -163,7 +163,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if err := scaffoldCodeRabbitConfig(cwd, initOutputOnly); err != nil {
 		return err
 	}
-	if err := scaffoldPullRequestTemplate(cwd, initOutputOnly, cfg); err != nil {
+	if err := scaffoldGitHubTemplates(cwd, initOutputOnly, cfg); err != nil {
 		return err
 	}
 	if err := scaffoldAutoAssignWorkflow(cwd, cfg, initOutputOnly); err != nil {

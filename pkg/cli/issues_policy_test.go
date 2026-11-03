@@ -29,6 +29,7 @@ func TestEmbeddedIssueProviderContract(t *testing.T) {
 		"already-authorized Linear", "do not install a connector", "Missing configuration, permission errors",
 		"Never choose the first name match", "A failed search is not an empty search", "uncertain write",
 		"original ask", "scope and exclusions", "acceptance criteria", "expected verification",
+		"Verified when", "fresh-context review", "did I miss anything?", "`Evidence`",
 		"complete Markdown as `description`", "human assignee ID", "Read back the returned identifier",
 		"authentication, permissions, transport, rate limits, GraphQL errors", "Never infer success from HTTP status alone",
 		"mark it completed only after", "verified workflow states", "ENG-123", "Refs: https://linear.app/",
