@@ -54,12 +54,8 @@ func TestRunInit_CreatesPullRequestTemplate(t *testing.T) {
 		if string(content) != templates.PullRequestTemplate {
 			t.Fatalf("%s content = %q, want %q", pullRequestTemplatePath, content, templates.PullRequestTemplate)
 		}
-		issue, err := os.ReadFile(filepath.Join(tempDir, issueTemplatePath))
-		if err != nil {
-			t.Fatalf("expected %s to be created: %v", issueTemplatePath, err)
-		}
-		if string(issue) != templates.IssueTemplate {
-			t.Fatalf("%s content = %q, want %q", issueTemplatePath, issue, templates.IssueTemplate)
+		if _, err := os.Stat(filepath.Join(tempDir, issueTemplatePath)); !os.IsNotExist(err) {
+			t.Fatalf("issue template must stay opt-in, stat err = %v", err)
 		}
 	})
 }

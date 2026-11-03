@@ -208,6 +208,10 @@ func reconcileHasNoChanges(projectRoot string, opts initRefreshOptions) (bool, e
 	if err != nil {
 		return false, err
 	}
+	plan.changes, _, err = gateReconcilePlan(projectRoot, plan.changes, opts.force, true)
+	if err != nil {
+		return false, err
+	}
 	return len(actionableRefreshChanges(projectRoot, plan.changes)) == 0, nil
 }
 

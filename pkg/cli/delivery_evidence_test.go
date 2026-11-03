@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -41,13 +42,22 @@ func TestDeliveryEvidenceCopiesMatchSources(t *testing.T) {
 
 func TestReconcileIssueTemplateCreateAndPreserve(t *testing.T) {
 	root := t.TempDir()
-	created, err := planRefreshInitScaffoldFile(root, initRefreshOptions{}, nil, issueTemplatePath, templates.IssueTemplate, false, false)
+	skipped, err := planRefreshInitScaffoldFile(root, initRefreshOptions{}, nil, issueTemplatePath, templates.IssueTemplate, false, false)
+	if err != nil || skipped.result != instructionFileSkipped || skipped.after != "" {
+		t.Fatalf("opt-in skip %#v %v", skipped, err)
+	}
+	created, err := planRefreshInitScaffoldFile(root, initRefreshOptions{issueTemplate: true}, nil, issueTemplatePath, templates.IssueTemplate, false, false)
 	if err != nil || created.result != instructionFileCreated || created.after != templates.IssueTemplate {
 		t.Fatalf("create %#v %v", created, err)
 	}
+	writeFile(t, root+"/"+issueTemplatePath, templates.IssueTemplate)
+	shipped, err := planRefreshInitScaffoldFile(root, initRefreshOptions{updateShippedIssueTemplate: true}, nil, issueTemplatePath, templates.IssueTemplate+"\n", false, false)
+	if err != nil || shipped.result != instructionFileUpdated || shipped.after != templates.IssueTemplate+"\n" {
+		t.Fatalf("shipped update %#v %v", shipped, err)
+	}
 	custom := templates.IssueTemplate + "\nCustom\n"
 	writeFile(t, root+"/"+issueTemplatePath, custom)
-	kept, err := planRefreshInitScaffoldFile(root, initRefreshOptions{}, nil, issueTemplatePath, templates.IssueTemplate, false, false)
+	kept, err := planRefreshInitScaffoldFile(root, initRefreshOptions{issueTemplate: true, updateShippedIssueTemplate: true}, nil, issueTemplatePath, templates.IssueTemplate, false, false)
 	if err != nil || kept.result != instructionFileSkipped || kept.after != custom {
 		t.Fatalf("preserve %#v %v", kept, err)
 	}
@@ -66,5 +76,31 @@ func TestDeliveryRegistryHashMatchesRule(t *testing.T) {
 	artifact, ok := cfg.RegistryArtifact(rulesetKind, "delivery")
 	if !ok || artifact.InstalledHash != hash {
 		t.Fatalf("delivery installed hash = %q, content hash = %q", artifact.InstalledHash, hash)
+	}
+}
+
+func TestSuppressedIssueTemplatePlanIsReported(t *testing.T) {
+	root := t.TempDir()
+	setupInitHome(t)
+	cfg := defaultInitConfig()
+	enabled := true
+	cfg.Issues.IssueTemplate = &enabled
+	if err := config.Save(root, cfg); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(root, ".github", "ISSUE_TEMPLATE", "config.yml"), "blank_issues_enabled: false\n")
+	var out bytes.Buffer
+	reported, err := reportSuppressedIssueTemplate(&out, root, initRefreshOptions{issueTemplate: true, updateShippedIssueTemplate: true})
+	if err != nil || !reported {
+		t.Fatalf("reported=%v err=%v\n%s", reported, err, out.String())
+	}
+	for _, want := range []string{
+		"skip .github/ISSUE_TEMPLATE/issue.md",
+		"existing issue template config: .github/ISSUE_TEMPLATE/config.yml",
+		"No files written.",
+	} {
+		if !strings.Contains(out.String(), want) {
+			t.Fatalf("missing %q\n%s", want, out.String())
+		}
 	}
 }

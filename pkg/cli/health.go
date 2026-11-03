@@ -92,6 +92,11 @@ func runHealth(cmd *cobra.Command, _ []string) error {
 		}
 		return err
 	}
+	plan.changes, _, err = gateReconcilePlan(projectRoot, plan.changes, false, true)
+	if err != nil {
+		return err
+	}
+	plan.stats = recountInitRefreshStats(plan.changes)
 	actionable := actionableRefreshChanges(projectRoot, plan.changes)
 	var pending initRefreshStats
 	for _, change := range actionable {

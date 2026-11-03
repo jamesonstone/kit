@@ -1,20 +1,15 @@
 package cli
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
-
 	"github.com/spf13/cobra"
-
-	"github.com/jamesonstone/kit/v3/internal/config"
-	"github.com/jamesonstone/kit/v3/internal/document"
-	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 var initMint bool
 var initCopy bool
 var initOutputOnly bool
+var initIssueTemplate bool
+var initPlanDryRun bool
+var initAllowOverwrite bool
 
 var initCmd = &cobra.Command{
 	Use:   "init",
@@ -27,7 +22,8 @@ Creates:
   - .env and .envrc local environment files
   - Makefile starter for canonical project commands
   - .coderabbit.yaml review configuration file
-  - .github/pull_request_template.md and .github/ISSUE_TEMPLATE/issue.md
+  - .github/pull_request_template.md pull request template
+  - .github/ISSUE_TEMPLATE/issue.md only with --issue-template
   - .github/workflows/auto-assign.yml issue and pull request assignment workflow
   - README.md Kit-managed status badges and final Maintainers section
   - ~/.config/kit/.kit.yaml global configuration file
@@ -35,6 +31,18 @@ Creates:
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
   - DESIGN.md and SECURITY.md (project-customizable engineering guidance)
   - The core rules shipped with this Kit binary
+
+Before it writes, init lists every file it would create, overwrite, or skip.
+It warns about existing files it would change and about existing issue
+templates, forms, and config.yml. An overwrite waits for confirmation. A
+non-interactive run skips that file unless --force is set. --dry-run prints
+the plan and writes nothing.
+
+--issue-template opts in and records issues.issue_template: true. Reconcile
+still updates a file that exactly matches a shipped Kit issue template.
+Kit cannot list issue templates inherited from an organization .github
+repository. When gh can identify an organization owner, init warns that a
+local template overrides those inherited templates.
 
 Mint Actions integration is planned automatically. Existing jobs need explicit
 --mint-workflow, --mint-job and --mint-before-step placement.
@@ -45,8 +53,10 @@ adapters. Existing workflows and activation gates are preserved.
 This controller scaffold cannot be
 combined with Mint workflow selection flags.
 
-Init is for projects that are not yet Kit projects. Existing files are
-preserved. In a project that already has .kit.yaml, run ` + "`kit reconcile`" + `
+Init is for projects that are not yet Kit projects. A change to an existing
+file waits for confirmation. A non-interactive run skips that change unless
+--force is set. Files Kit only fills in when they are missing stay as they are.
+In a project that already has .kit.yaml, run ` + "`kit reconcile`" + `
 instead: it brings any existing Kit project to the current structure.
 
 The generated Constitution starter is a valid bootstrap state. The prepared
@@ -62,235 +72,10 @@ func init() {
 	initCmd.Flags().BoolVar(&initMint, "mint", false, "scaffold Mint environment controls from an existing .mint.yaml and adapters")
 	initCmd.Flags().BoolVar(&initCopy, "copy", false, "copy prompt to clipboard even with --output-only")
 	initCmd.Flags().BoolVar(&initOutputOnly, "output-only", false, "output prompt text to stdout instead of copying it to the clipboard")
+	initCmd.Flags().BoolVar(&initIssueTemplate, "issue-template", false, "opt in to the GitHub issue template and record issues.issue_template: true")
+	initCmd.Flags().BoolVar(&initPlanDryRun, "dry-run", false, "print the file plan and write nothing")
+	initCmd.Flags().BoolVar(&initAllowOverwrite, "force", false, "write planned changes to existing files without confirmation")
 	bindIssueProviderFlags(initCmd)
 	bindMintPipelineSelection(initCmd, &initMintSelection)
 	rootCmd.AddCommand(initCmd)
-}
-
-func runInit(cmd *cobra.Command, args []string) error {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to get working directory: %w", err)
-	}
-	if config.Exists(cwd) {
-		return fmt.Errorf("%s already exists, so this is a Kit project; run `kit reconcile` to bring it to the current structure", config.ConfigFileName)
-	}
-	// Kit commands resolve the nearest ancestor .kit.yaml, so a project nested
-	// inside another would silently change which project they act on.
-	parent, err := ancestorKitProject(cwd)
-	if err != nil {
-		return err
-	}
-	if parent != "" {
-		return fmt.Errorf("this directory is inside the Kit project at %s; run Kit commands there (use `kit reconcile` to update it) instead of creating a nested project", parent)
-	}
-
-	deliveryCfg := defaultInitConfig()
-	if err := selectInitIssueProvider(cmd, deliveryCfg); err != nil {
-		return err
-	}
-
-	mintRelease, err := lookupMintActionRelease()
-	if err != nil {
-		return fmt.Errorf("verify latest Mint Action release (no files changed): %w", err)
-	}
-	mintChanges, mintNotes, err := planInitMintIntegration(cwd, initMint, initMintSelection)
-	if err != nil {
-		return err
-	}
-	mintChanges, updateNotes, err := planMintActionUpdates(cwd, mintChanges, mintRelease)
-	if err != nil {
-		return err
-	}
-	mintNotes = append(mintNotes, updateNotes...)
-
-	deliveryPaths := projectInitDeliveryPaths(deliveryCfg)
-	for _, change := range mintChanges {
-		deliveryPaths = append(deliveryPaths, change.relativePath)
-	}
-	deliveryBaseline, err := captureManagedFileDeliveryBaseline(
-		cwd,
-		deliveryPaths,
-	)
-	if err != nil {
-		return err
-	}
-
-	if !initOutputOnly {
-		fmt.Println("🎒 Initializing Kit project...")
-	}
-
-	cfg := deliveryCfg
-	if err := config.Save(cwd, cfg); err != nil {
-		return fmt.Errorf("failed to create .kit.yaml: %w", err)
-	}
-	if !initOutputOnly {
-		fmt.Println("  ✓ Created .kit.yaml")
-	}
-	if !initOutputOnly && streamsHaveInteractiveTerminal(os.Stdin, os.Stdout) {
-		inspectionCfg, inspection, err := config.LoadWithInspection(cwd)
-		if err != nil {
-			return err
-		}
-		changed, err := remediateProjectConfig(cwd, inspectionCfg, inspection, configRemediationOptions{
-			Interactive: true,
-			Input:       os.Stdin,
-			Output:      os.Stdout,
-		})
-		if err != nil {
-			return err
-		}
-		if changed {
-			cfg, err = config.Load(cwd)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	if err := populateGlobalConfig(initOutputOnly); err != nil {
-		return err
-	}
-	if err := scaffoldGitignore(cwd, initOutputOnly); err != nil {
-		return err
-	}
-	if err := scaffoldMakefile(cwd, initOutputOnly); err != nil {
-		return err
-	}
-	if err := scaffoldEnvFiles(cwd, initOutputOnly); err != nil {
-		return err
-	}
-	if err := scaffoldCodeRabbitConfig(cwd, initOutputOnly); err != nil {
-		return err
-	}
-	if err := scaffoldGitHubTemplates(cwd, initOutputOnly, cfg); err != nil {
-		return err
-	}
-	if err := scaffoldAutoAssignWorkflow(cwd, cfg, initOutputOnly); err != nil {
-		return err
-	}
-
-	if len(mintChanges) > 0 {
-		if err := applyInitRefreshFileChangesAtomically(mintChanges); err != nil {
-			return err
-		}
-	}
-
-	if !initOutputOnly {
-		for _, note := range mintNotes {
-			if _, err := fmt.Fprintln(cmd.OutOrStdout(), note); err != nil {
-				return err
-			}
-		}
-	}
-
-	// ensure docs directory exists
-	docsDir := filepath.Join(cwd, "docs")
-	if err := os.MkdirAll(docsDir, 0755); err != nil {
-		return fmt.Errorf("failed to create docs directory: %w", err)
-	}
-
-	// ensure specs directory exists
-	specsDir := cfg.SpecsPath(cwd)
-	if err := os.MkdirAll(specsDir, 0755); err != nil {
-		return fmt.Errorf("failed to create specs directory: %w", err)
-	}
-	if !initOutputOnly {
-		fmt.Println("  ✓ Created docs/specs/")
-	}
-
-	// create or merge CONSTITUTION.md
-	constitutionPath := cfg.ConstitutionAbsPath(cwd)
-	if document.Exists(constitutionPath) {
-		if !initOutputOnly {
-			fmt.Println("  ✓ docs/CONSTITUTION.md exists, merging...")
-		}
-		if err := document.MergeDocument(constitutionPath, templates.Constitution, document.TypeConstitution); err != nil {
-			return fmt.Errorf("failed to merge CONSTITUTION.md: %w", err)
-		}
-	} else {
-		if err := document.Write(constitutionPath, templates.Constitution); err != nil {
-			return fmt.Errorf("failed to create CONSTITUTION.md: %w", err)
-		}
-		if !initOutputOnly {
-			fmt.Println("  ✓ Created docs/CONSTITUTION.md")
-		}
-	}
-
-	// scaffold repository instruction files
-	for _, relativePath := range instructionArtifactPaths(cfg) {
-		result, err := writeInstructionFileWithMode(cwd, relativePath, instructionFileWriteModeSkipExisting)
-		if err != nil {
-			return err
-		}
-
-		switch result {
-		case instructionFileCreated:
-			if !initOutputOnly {
-				fmt.Printf("  ✓ Created %s\n", relativePath)
-			}
-		case instructionFileSkipped:
-			if !initOutputOnly {
-				fmt.Printf("  ✓ %s exists, skipping\n", relativePath)
-			}
-		}
-	}
-
-	refreshDeliverySnapshot, err := runInitRefreshWithSnapshot(cwd, initRefreshOptions{outputOnly: true})
-	if err != nil {
-		return err
-	}
-	initialDeliverySnapshot, err := managedFileDeliverySnapshotFromBaseline(cwd, deliveryBaseline)
-	if err != nil {
-		return err
-	}
-	deliverySnapshot := mergeManagedFileDeliverySnapshots(
-		initialDeliverySnapshot,
-		refreshDeliverySnapshot,
-	)
-
-	if !initOutputOnly {
-		fmt.Println("\n✅ Kit project initialized!")
-	}
-
-	// output easy-to-copy instruction for coding agents
-	constitutionRelPath := cfg.ConstitutionPath
-	constitutionFullPath := filepath.Join(cwd, constitutionRelPath)
-	prompt := buildProjectInitPrompt(cwd, constitutionFullPath, deliverySnapshot)
-	prompt = appendMintIncompletePrompt(prompt, mintNotes)
-
-	if err := outputPromptWithClipboardDefault(prompt, initOutputOnly, initCopy); err != nil {
-		return err
-	}
-
-	if !initOutputOnly {
-		printNumberedNextSteps([]string{
-			initPromptNextStep(),
-			"Keep the starter Constitution unchanged until implemented evidence supports durable project-wide rules",
-			"Run `kit spec <feature-name>` to create your first feature",
-		})
-	}
-
-	return nil
-}
-
-// ancestorKitProject returns the nearest ancestor directory holding .kit.yaml.
-// An ancestor that cannot be inspected is an error, never "no project".
-func ancestorKitProject(dir string) (string, error) {
-	for parent := filepath.Dir(dir); parent != dir; dir, parent = parent, filepath.Dir(parent) {
-		path := filepath.Join(parent, config.ConfigFileName)
-		if _, err := os.Stat(path); err == nil {
-			return parent, nil
-		} else if !os.IsNotExist(err) {
-			return "", fmt.Errorf("cannot check %s for an existing Kit project: %w", path, err)
-		}
-	}
-	return "", nil
-}
-
-func initPromptNextStep() string {
-	if promptCopiedByDefault(initOutputOnly, initCopy) {
-		return "Paste the copied prompt into your agent to review repository evidence and populate only verified Makefile targets"
-	}
-	return "Give the prompt above to your agent to review repository evidence and populate only verified Makefile targets"
 }

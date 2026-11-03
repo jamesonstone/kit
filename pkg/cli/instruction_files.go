@@ -66,20 +66,6 @@ func instructionArtifactContent(relativePath string) string {
 	return templates.InstructionEntryFile(relativePath)
 }
 
-func writeInstructionFileWithMode(projectRoot, relativePath string, mode instructionFileWriteMode) (instructionFileWriteResult, error) {
-	plan, err := planInstructionArtifactWrite(projectRoot, relativePath, mode, false, nil)
-	if err != nil {
-		return "", err
-	}
-	if plan.result == instructionFileSkipped {
-		return instructionFileSkipped, nil
-	}
-	if err := document.Write(plan.absolutePath, plan.content); err != nil {
-		return "", fmt.Errorf("failed to write %s: %w", plan.relativePath, err)
-	}
-	return plan.result, nil
-}
-
 func planInstructionArtifactWrite(
 	projectRoot,
 	relativePath string,

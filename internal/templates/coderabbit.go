@@ -84,6 +84,24 @@ func IsShippedPullRequestTemplate(content string) bool {
 	return false
 }
 
+// historicalIssueTemplates are exact Kit-owned issue templates from earlier
+// releases. Reconcile replaces only these, never a project edit.
+var historicalIssueTemplates []string
+
+// IsShippedIssueTemplate reports whether content is an exact Kit-owned issue
+// template, including earlier releases.
+func IsShippedIssueTemplate(content string) bool {
+	if content == IssueTemplate {
+		return true
+	}
+	for _, historical := range historicalIssueTemplates {
+		if content == historical {
+			return true
+		}
+	}
+	return false
+}
+
 func renderPullRequestTemplate(base, provider string) string {
 	if provider == "linear" {
 		return strings.Replace(base, "Closes #[ticket number]", "<!-- Full canonical Linear URL; preserve in the squash commit footer. Follow delivery for lifecycle. -->\n[Linear issue URL]", 1)

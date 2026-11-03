@@ -56,3 +56,23 @@ func TestIssueProviderConfiguration(t *testing.T) {
 		t.Fatalf("missing target must be reported: %v %v", err, inspection)
 	}
 }
+
+func TestIssueTemplateOptInRoundTrip(t *testing.T) {
+	if (IssueConfig{}).IssueTemplateEnabled() {
+		t.Fatal("omitted issue_template must stay off")
+	}
+	enabled, disabled := true, false
+	if !(IssueConfig{IssueTemplate: &enabled}).IssueTemplateEnabled() || (IssueConfig{IssueTemplate: &disabled}).IssueTemplateEnabled() {
+		t.Fatal("explicit issue_template bool")
+	}
+	root := t.TempDir()
+	cfg := Default()
+	cfg.Issues.IssueTemplate = &enabled
+	if err := Save(root, cfg); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := Load(root)
+	if err != nil || !loaded.Issues.IssueTemplateEnabled() {
+		t.Fatalf("%v %#v", err, loaded)
+	}
+}
