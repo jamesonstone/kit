@@ -17,6 +17,7 @@ const envrcPath = ".envrc"
 const makefilePath = "Makefile"
 const autoAssignWorkflowPath = ".github/workflows/auto-assign.yml"
 const pullRequestTemplatePath = ".github/pull_request_template.md"
+const issueTemplatePath = ".github/ISSUE_TEMPLATE/issue.md"
 const gitignorePath = ".gitignore"
 
 func scaffoldGitignore(projectRoot string, outputOnly bool) error {
@@ -143,6 +144,17 @@ func scaffoldCodeRabbitConfig(projectRoot string, outputOnly bool) error {
 		fmt.Printf("  ✓ Created %s\n", codeRabbitConfigPath)
 	}
 	return nil
+}
+
+func scaffoldGitHubTemplates(projectRoot string, outputOnly bool, configs ...*config.Config) error {
+	if err := scaffoldPullRequestTemplate(projectRoot, outputOnly, configs...); err != nil {
+		return err
+	}
+	return scaffoldIssueTemplate(projectRoot, outputOnly)
+}
+
+func scaffoldIssueTemplate(projectRoot string, outputOnly bool) error {
+	return scaffoldFileIfMissing(projectRoot, issueTemplatePath, templates.IssueTemplate, outputOnly)
 }
 
 func scaffoldPullRequestTemplate(projectRoot string, outputOnly bool, configs ...*config.Config) error {

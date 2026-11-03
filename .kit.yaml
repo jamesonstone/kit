@@ -66,7 +66,7 @@ registry:
         - kind: ruleset
           slug: delivery
           path: docs/references/rules/delivery.md
-          installed_hash: sha256:a58544639d2f5d602f4feb10efc954f49a3e6a67082c309217cbd8d132f7b9fa
+          installed_hash: sha256:a876549b62fdeff1d4105a0ac9af8a82bcab3e46a51218beeedaa26824e1125d
           state: managed
         - kind: ruleset
           slug: deployment-recovery

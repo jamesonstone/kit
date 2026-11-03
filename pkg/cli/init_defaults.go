@@ -15,6 +15,7 @@ func projectInitDeliveryPaths(cfg *config.Config) []string {
 		makefilePath,
 		codeRabbitConfigPath,
 		pullRequestTemplatePath,
+		issueTemplatePath,
 		autoAssignWorkflowPath,
 		readmePath,
 		cfg.ConstitutionPath,

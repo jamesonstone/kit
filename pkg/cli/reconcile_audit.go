@@ -126,6 +126,7 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 	}{
 		{relativePath: codeRabbitConfigPath, description: "CodeRabbit review configuration"},
 		{relativePath: pullRequestTemplatePath, description: "GitHub pull request template"},
+		{relativePath: issueTemplatePath, description: "GitHub issue template"},
 		{relativePath: autoAssignWorkflowPath, description: "GitHub issue and pull request auto-assignment workflow"},
 	} {
 		absolutePath := filepath.Join(projectRoot, filepath.FromSlash(artifact.relativePath))

@@ -29,6 +29,7 @@ func planRefreshInitScaffoldFiles(
 		{relativePath: makefilePath, content: templates.Makefile, preserveExisting: true},
 		{relativePath: codeRabbitConfigPath, content: templates.CodeRabbitConfig},
 		{relativePath: pullRequestTemplatePath, content: templates.BuildPullRequestTemplate(cfg.Issues.EffectiveProvider())},
+		{relativePath: issueTemplatePath, content: templates.IssueTemplate},
 	}
 
 	var changes []initRefreshFileChange
@@ -104,10 +105,9 @@ func planRefreshInitScaffoldFile(
 			instructionFileMerged,
 		), nil
 	}
-	// Only exact shipped PR templates prove Kit ownership. Switching providers
-	// must converge those without forcing replacement of project-owned content.
-	if exists && relativePath == pullRequestTemplatePath && before != content &&
-		(before == templates.PullRequestTemplate || before == templates.BuildPullRequestTemplate("linear")) {
+	// Exact shipped PR templates, including earlier releases, prove Kit ownership.
+	// Switching providers converges those without replacing project-owned content.
+	if exists && relativePath == pullRequestTemplatePath && before != content && templates.IsShippedPullRequestTemplate(before) {
 		return *newInitRefreshFileChange(projectRoot, relativePath, before, content, instructionFileUpdated), nil
 	}
 	if exists {

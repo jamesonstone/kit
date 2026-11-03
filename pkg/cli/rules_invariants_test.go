@@ -19,6 +19,10 @@ var ruleInvariants = map[string][]string{
 		"Assign every created or reused issue and pull request to the human",
 		"Never commit to the default or a protected branch, force-push, or rewrite pushed history",
 		"Stage explicit paths only",
+		"Verified when",
+		"fresh-context review",
+		"no prior context",
+		"did I miss anything?",
 	},
 	"github-pr-merge": {
 		"Merge only under explicit human authorization",
