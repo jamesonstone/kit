@@ -1,3 +1,8 @@
+---
+name: Issue
+about: Describe the work and fill Verified when before an agent starts.
+---
+
 ## Description
 
 -

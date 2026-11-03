@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -15,7 +17,13 @@ func TestDeliveryEvidenceCopiesMatchSources(t *testing.T) {
 	if got := readRepositoryFile(t, issueTemplatePath); got != templates.IssueTemplate {
 		t.Fatal("checked-in issue template drifted from the scaffold source")
 	}
-	for _, want := range []string{"## Verified when", "before an agent starts", "- Done:", "- Out of scope:", "- Evidence: passing test, screenshot, log, or trace", "- Hypothesis or expected answer (optional):"} {
+	if !strings.HasPrefix(issueTemplatePath, ".github/ISSUE_TEMPLATE/") || strings.HasSuffix(issueTemplatePath, "ISSUE_TEMPLATE.md") {
+		t.Fatalf("issue template path %s uses the retired single-file location", issueTemplatePath)
+	}
+	if _, err := os.Stat(filepath.Join("..", "..", ".github", "ISSUE_TEMPLATE.md")); !os.IsNotExist(err) {
+		t.Fatal("retired .github/ISSUE_TEMPLATE.md must not exist")
+	}
+	for _, want := range []string{"name: Issue", "about:", "## Verified when", "before an agent starts", "- Done:", "- Out of scope:", "- Evidence: passing test, screenshot, log, or trace", "- Hypothesis or expected answer (optional):"} {
 		if !strings.Contains(templates.IssueTemplate, want) {
 			t.Errorf("issue template missing %q", want)
 		}

@@ -17,7 +17,7 @@ const envrcPath = ".envrc"
 const makefilePath = "Makefile"
 const autoAssignWorkflowPath = ".github/workflows/auto-assign.yml"
 const pullRequestTemplatePath = ".github/pull_request_template.md"
-const issueTemplatePath = ".github/ISSUE_TEMPLATE.md"
+const issueTemplatePath = ".github/ISSUE_TEMPLATE/issue.md"
 const gitignorePath = ".gitignore"
 
 func scaffoldGitignore(projectRoot string, outputOnly bool) error {

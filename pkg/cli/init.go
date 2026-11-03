@@ -27,7 +27,7 @@ Creates:
   - .env and .envrc local environment files
   - Makefile starter for canonical project commands
   - .coderabbit.yaml review configuration file
-  - .github/pull_request_template.md and .github/ISSUE_TEMPLATE.md
+  - .github/pull_request_template.md and .github/ISSUE_TEMPLATE/issue.md
   - .github/workflows/auto-assign.yml issue and pull request assignment workflow
   - README.md Kit-managed status badges and final Maintainers section
   - ~/.config/kit/.kit.yaml global configuration file

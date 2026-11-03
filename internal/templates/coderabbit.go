@@ -9,7 +9,12 @@ const CodeRabbitConfig = `reviews:
     - "!CLAUDE.md"
 `
 
-const IssueTemplate = `## Description
+const IssueTemplate = `---
+name: Issue
+about: Describe the work and fill Verified when before an agent starts.
+---
+
+## Description
 
 -
 

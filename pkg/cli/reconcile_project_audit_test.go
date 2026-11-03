@@ -59,7 +59,7 @@ func TestBuildReconcileReportProjectScopeFindsMissingInitScaffoldArtifacts(t *te
 	for _, check := range []string{
 		"missing Kit init scaffold artifact `.coderabbit.yaml`",
 		"missing Kit init scaffold artifact `.github/pull_request_template.md`",
-		"missing Kit init scaffold artifact `.github/ISSUE_TEMPLATE.md`",
+		"missing Kit init scaffold artifact `.github/ISSUE_TEMPLATE/issue.md`",
 		"missing Kit init scaffold artifact `.github/workflows/auto-assign.yml`",
 	} {
 		if !strings.Contains(issues, check) {
