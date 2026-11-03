@@ -15,7 +15,7 @@ func TestDeliveryEvidenceCopiesMatchSources(t *testing.T) {
 	if got := readRepositoryFile(t, issueTemplatePath); got != templates.IssueTemplate {
 		t.Fatal("checked-in issue template drifted from the scaffold source")
 	}
-	for _, want := range []string{"## Verified when", "before an agent starts", "- Done:", "- Out of scope:", "- Evidence: passing test, screenshot, log, or trace", "- Hypothesis (optional):"} {
+	for _, want := range []string{"## Verified when", "before an agent starts", "- Done:", "- Out of scope:", "- Evidence: passing test, screenshot, log, or trace", "- Hypothesis or expected answer (optional):"} {
 		if !strings.Contains(templates.IssueTemplate, want) {
 			t.Errorf("issue template missing %q", want)
 		}
