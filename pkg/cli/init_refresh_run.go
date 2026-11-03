@@ -20,9 +20,9 @@ func runInitRefreshWithSnapshot(
 		return nil, err
 	}
 	surfaces := issueTemplateSurfaces(projectRoot)
-	org := orgIssueTemplateWarning(projectRoot, plan.changes)
 	askFirst := !opts.dryRun && streamsHaveInteractiveTerminal(os.Stdin, os.Stdout)
 	if askFirst {
+		org := orgIssueTemplateWarning(projectRoot, plan.changes)
 		if err := printPrewritePlan(os.Stdout, plan.changes, nil); err != nil {
 			return nil, err
 		}
@@ -40,6 +40,7 @@ func runInitRefreshWithSnapshot(
 	}
 	plan.stats = recountInitRefreshStats(plan.changes)
 	if !askFirst {
+		org := orgIssueTemplateWarning(projectRoot, plan.changes)
 		if err := printPrewritePlan(os.Stdout, plan.changes, notes); err != nil {
 			return nil, err
 		}

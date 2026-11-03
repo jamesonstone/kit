@@ -79,6 +79,32 @@ func TestDeliveryRegistryHashMatchesRule(t *testing.T) {
 	}
 }
 
+func TestSkippedIssueTemplateDoesNotWarnAboutOrganization(t *testing.T) {
+	root := t.TempDir()
+	setupInitHome(t)
+	setWorkingDirectory(t, root)
+	writeFile(t, filepath.Join(root, ".github", "ISSUE_TEMPLATE", "config.yml"), "blank_issues_enabled: false\n")
+	previous := readmeCommandRunner
+	t.Cleanup(func() { readmeCommandRunner = previous })
+	readmeCommandRunner = prewriteCommandRunner{}
+	var output string
+	withInitFlags(t, func() {
+		initPlanDryRun = true
+		initIssueTemplate = true
+		output = captureStdout(t, func() {
+			if err := runInitForTest(initCmd, nil); err != nil {
+				t.Fatal(err)
+			}
+		})
+	})
+	if strings.Contains(output, "organization") || strings.Contains(output, "cannot detect") {
+		t.Fatalf("skipped template write warned about organization templates:\n%s", output)
+	}
+	if !strings.Contains(output, "skip .github/ISSUE_TEMPLATE/issue.md") {
+		t.Fatal(output)
+	}
+}
+
 func TestSuppressedIssueTemplatePlanIsReported(t *testing.T) {
 	root := t.TempDir()
 	setupInitHome(t)

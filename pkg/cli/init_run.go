@@ -48,12 +48,12 @@ func runInit(cmd *cobra.Command, args []string) error {
 		out = os.Stderr
 	}
 	surfaces := issueTemplateSurfaces(cwd)
-	org := orgIssueTemplateWarning(cwd, plan.changes)
 	interactive := streamsHaveInteractiveTerminal(os.Stdin, os.Stdout)
 	askFirst := interactive && !initPlanDryRun
 	var notes map[string]string
 	var globalPath, globalAction, globalNote string
 	if askFirst {
+		org := orgIssueTemplateWarning(cwd, plan.changes)
 		if err := printInitProposal(out, cwd, deliveryCfg, plan.changes, surfaces, org); err != nil {
 			return err
 		}
@@ -68,6 +68,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 	plan.stats = recountInitRefreshStats(plan.changes)
 	if !askFirst {
+		org := orgIssueTemplateWarning(cwd, plan.changes)
 		if err := printPrewritePlan(out, plan.changes, notes); err != nil {
 			return err
 		}
