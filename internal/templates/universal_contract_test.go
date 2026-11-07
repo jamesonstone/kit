@@ -44,6 +44,7 @@ var criticalInvariants = map[string]string{
 	"one local runtime":         "Run one local runtime per project",
 	"local runtime reuse":       "check before starting, then reuse it or stop it first",
 	"local runtime windows":     "Open no terminal windows for it unless the human asks",
+	"shell environment route":   "`shell-environment.md`",
 	"local runtime route":       "`local-runtime-lifecycle.md`",
 	"local runtime validation":  "including for validation or post-merge checks",
 	"ci outage not blocking":    "A hosted CI outage is not a blocker",
