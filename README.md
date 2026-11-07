@@ -125,6 +125,21 @@ summary, retired rules) only when they are exactly as a Kit release generated
 them and committed to Git, and reports every file it keeps. From the primary
 checkout it writes to a `kit-reconcile` linked worktree for review.
 
+## Shell and project environments
+
+Kit ships a `shell-environment` rule for commands that depend on shell startup,
+PATH, version managers, or project activation. Each project records its command
+environment in `docs/references/testing.md` under Environment Preflights, or links
+existing environment documentation there. Keep the working directory, toolchain,
+activation, safe probes, and local/CI differences project-owned. Each team member
+keeps personal host settings in their own global agent instructions.
+
+New projects receive the rule through `kit init`. Existing projects receive it
+through `kit reconcile` after upgrading to a release that includes it; preview
+with `kit reconcile --dry-run --diff`. Edited references and customized rules
+stay preserved. Shell guidance does not change startup files, execution-host
+settings, or network permissions, and cannot guarantee host compliance.
+
 ## Issue Providers
 
 GitHub Issues is the default, including noninteractive init. Interactive init also

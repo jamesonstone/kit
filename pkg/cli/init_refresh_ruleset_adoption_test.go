@@ -70,6 +70,7 @@ func TestRunInitRefresh_InstallsMandatoryDownstreamRules(t *testing.T) {
 		"github-pr-merge",
 		"infrastructure-change-approval",
 		"local-runtime-lifecycle",
+		"shell-environment",
 		"slack-read-only",
 		"testing-and-environment-validation",
 	}

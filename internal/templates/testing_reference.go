@@ -30,6 +30,9 @@ const referencesTesting = `# Testing Reference
 
 ## Environment Preflights
 
+- Record the project command environment here, or link its existing environment reference
+- Specify the working directory, supported shells/hosts or container, toolchain versions, approved activation procedure, and harmless shell/tool verification commands
+- Record local versus CI differences and required variable names without values; resolve personal host configuration from each user's global instructions
 - Document exact local topology, target identity, deployed-version checks, dependencies, and timeouts
 - Document which environments are not applicable instead of creating artificial suites
 

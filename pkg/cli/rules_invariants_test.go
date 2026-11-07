@@ -80,6 +80,16 @@ var ruleInvariants = map[string][]string{
 		"Never let two agents write overlapping files concurrently",
 		"Report only real topology",
 	},
+	"shell-environment": {
+		"Use each team member's own approved host configuration",
+		"Preserve each script's declared interpreter",
+		"A `login=true` setting alone does not prove interactive startup",
+		"Use the live files through normal startup",
+		"Do not silently approve `.envrc`",
+		"Never dump `env`, `printenv`, shell state, startup-file contents, or credentials",
+		"Shell initialization cannot grant network, sandbox, filesystem, authentication, or service permissions",
+		"After an explicit policy denial, stop the denied action",
+	},
 	"local-runtime-lifecycle": {
 		"Run one runtime per project",
 		"Never start beside it",
