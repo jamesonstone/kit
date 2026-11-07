@@ -35,6 +35,7 @@ type configCheckReport struct {
 	CurrentSchemaVersion int                `json:"current_schema_version"`
 	SchemaState          config.SchemaState `json:"schema_state"`
 	Valid                bool               `json:"valid"`
+	Shell                string             `json:"shell"`
 	AWS                  configCheckAWS     `json:"aws"`
 	Findings             []config.Finding   `json:"findings"`
 }
@@ -102,6 +103,10 @@ func runConfigCheck(cmd *cobra.Command, args []string) error {
 
 func buildConfigCheckReport(cfg *config.Config, inspection config.Inspection) configCheckReport {
 	aws := configCheckAWS{}
+	shell := "user"
+	if cfg != nil {
+		shell = cfg.Shell.Source()
+	}
 	findings := inspection.Findings
 	if findings == nil {
 		findings = []config.Finding{}
@@ -118,6 +123,7 @@ func buildConfigCheckReport(cfg *config.Config, inspection config.Inspection) co
 		CurrentSchemaVersion: inspection.CurrentSchemaVersion,
 		SchemaState:          inspection.SchemaState,
 		Valid:                inspection.SchemaState == config.SchemaStateCurrent && !inspection.HasErrors(),
+		Shell:                shell,
 		AWS:                  aws,
 		Findings:             findings,
 	}
@@ -126,6 +132,11 @@ func buildConfigCheckReport(cfg *config.Config, inspection config.Inspection) co
 func printConfigCheckReport(out io.Writer, report configCheckReport) {
 	_, _ = fmt.Fprintln(out, "🔎 Checking .kit.yaml...")
 	_, _ = fmt.Fprintf(out, "  Schema: %s (configured=%d current=%d)\n", report.SchemaState, report.SchemaVersion, report.CurrentSchemaVersion)
+	if report.Shell == "command" {
+		_, _ = fmt.Fprintln(out, "  Shell: configured command prefix (resolved by execution host)")
+	} else {
+		_, _ = fmt.Fprintln(out, "  Shell: user environment (interactive login, resolved by execution host)")
+	}
 	switch {
 	case !report.AWS.Configured:
 		_, _ = fmt.Fprintln(out, "  AWS: not configured")

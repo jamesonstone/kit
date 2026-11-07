@@ -36,7 +36,7 @@ reported unless `--force` is used.
 | `kit health` | Read-only diagnosis for people and scheduled automation: reports what `kit reconcile` would change (`--diff` shows it), runs the project check, and exits non-zero only when that check fails. Never writes. |
 | `kit registry status` | Cheap read-only report of whether Kit-managed files and rules match this binary. |
 | `kit status` | Current feature and Kit-managed state. |
-| `kit config check` | Validates `.kit.yaml` and, interactively, repairs the AWS context. |
+| `kit config check` | Validates `.kit.yaml`, including optional `shell.command`, reports the shell source (`user` or `command`), and, interactively, repairs the AWS context. `--json` is read-only. Shell reporting does not execute the configured prefix or verify runtime readiness. |
 | `kit aws verify` | Verifies the configured AWS profile, account, and Region before AWS work. |
 
 ## Local Usage

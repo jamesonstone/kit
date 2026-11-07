@@ -82,6 +82,9 @@ var ruleInvariants = map[string][]string{
 	},
 	"shell-environment": {
 		"Use each team member's own approved host configuration",
+		"Read `.kit.yaml` `shell.command` first",
+		"child processes inherit only exported variables",
+		"it does not launch a shell",
 		"Preserve each script's declared interpreter",
 		"A `login=true` setting alone does not prove interactive startup",
 		"Use the live files through normal startup",
