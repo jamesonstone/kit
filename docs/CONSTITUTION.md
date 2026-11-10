@@ -22,6 +22,7 @@
 - `docs/specs/<feature>/SPEC.md` preserves material feature rationale, accepted plans, discoveries, validation, outcomes, and superseded decisions.
 - `docs/CONSTITUTION.md` contains current project-wide invariants, not feature inventories or transient plans.
 - `docs/references/` contains reusable repository-wide practices and evidence indices.
+- `docs/sops/<slug>/SOP.md` contains project-owned repeatable procedures. Agents create and perform them; SOPs do not confer authority or replace contextual rules.
 - Historical specifications remain historical evidence even when the commands or implementations they describe are retired.
 - Code-and-test-sufficient changes may make a justified `Repository Memory: not required` decision.
 
@@ -50,7 +51,8 @@
 
 - Rules ship inside the released binary (`rules.go` embeds `docs/references/rules/`); Kit never fetches rules or instructions at runtime. Unmodified installed rules update on refresh, locally edited rules are preserved and reported, and optional rules install only through `kit rules add`.
 - Retired rules stay listed in `pkg/cli/rules_retired.go` so historical references and legacy installs remain recognizable.
-- `kit init` scaffolds the universal contract, the Constitution starter, `DESIGN.md`, `SECURITY.md`, `docs/references/testing.md`, the core rules, and the developer-experience starter files for a project that is not yet a Kit project, preserving existing files. The GitHub issue template is opt-in (`--issue-template` or `issues.issue_template: true`). Reconcile still updates a copy that exactly matches a shipped Kit issue template.
+- `kit init` scaffolds the universal contract, the Constitution starter, `DESIGN.md`, `SECURITY.md`, `docs/references/testing.md`, `docs/sops/README.md`, the core rules, and the developer-experience starter files for a project that is not yet a Kit project, preserving existing files. The GitHub issue template is opt-in (`--issue-template` or `issues.issue_template: true`). Reconcile still updates a copy that exactly matches a shipped Kit issue template.
+- Init and reconcile create the SOP guide only when missing and preserve existing guide content even with force. Project SOPs remain outside Kit-managed ownership.
 - `internal/templates/universal_contract.md` is the single source of the agent contract; checked-in entry files must match it.
 - `kit init` and `kit reconcile` converge every supported Kit generation on one structure (`instruction_scaffold_version` 4). Legacy generations (scaffold 1, 2, pre-contract 3, and the transitional contract release) are migration inputs only; Kit never generates them.
 - Ownership of legacy files is decided by evidence, not filenames: installed registry state and `internal/legacy` fingerprints of every released Kit's generated output and rule history. Unedited Kit output is replaced or removed; edited, project, and ambiguous content is kept and reported.

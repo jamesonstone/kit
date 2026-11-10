@@ -13,7 +13,8 @@ code is more reliable than model judgment.
   `docs/references/rules/`; agents read a rule only when the contract's trigger
   for it applies.
 - Scaffolds project memory: `docs/CONSTITUTION.md`, `docs/specs/<feature>/SPEC.md`
-  (with worktree-safe numbering), and `docs/references/testing.md`.
+  (with worktree-safe numbering), `docs/references/testing.md`, and
+  `docs/sops/README.md` for agent-maintained, project-owned procedures.
 - Creates projects (`kit init`), migrates any existing Kit project to the
   current structure (`kit reconcile`), and diagnoses without writing
   (`kit health`, `kit check`, `kit registry status`).
@@ -38,3 +39,5 @@ code is more reliable than model judgment.
 | `docs/CONSTITUTION.md` | Demonstrated project-wide invariants |
 | `docs/specs/<feature>/SPEC.md` | Living feature rationale, plan, validation, and outcome |
 | `docs/references/testing.md` | The project's validation commands |
+| `docs/sops/README.md` | Project-owned SOP guide, created only when missing |
+| `docs/sops/<slug>/SOP.md` | Repeatable procedure created and performed by an agent under existing policy |
