@@ -6,6 +6,7 @@ import (
 )
 
 var protectedPaths = []string{
+	"guide",
 	"init",
 	"spec",
 	"usage",

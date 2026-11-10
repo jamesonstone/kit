@@ -10,18 +10,18 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 ## Changes And Delivery
 
-- Read repository-local `.kit.yaml` `issues` before ticket or delivery work. Omitted `issues.provider` means `github`; `linear` selects Linear exclusively. Follow `delivery` for target verification, ticket content, identifiers, and provider failures.
+- Before ticket or delivery work, read repository-local `.kit.yaml` `issues`. Omitted `issues.provider` means `github`; `linear` selects only Linear. Follow `delivery` for target verification, ticket content, identifiers, and provider failures.
 
-- Treat the clone's primary checkout as read-only for agent work, whatever its branch or cleanliness. The only exception is the fast-forward-only update of its default branch in `work-cleanup`. Make every repository change (code, tests, docs, specs, generated files, configuration) in a linked worktree at `~/worktrees/<owner>/<repository>/<issue-id>` on branch `<issue-id>` (`GH-<number>` for GitHub Issues; the returned identifier, such as `ENG-123`, for Linear), created from the freshly fetched default branch, and deliver it through a ready pull request.
-- Default to a new human-assigned issue, branch, worktree, and ready pull request without asking. Continue an existing lane only when the user explicitly directs it for the same work. Repair of an exact existing pull request (review, CI, base refresh, conflicts, ordered merges) reuses that pull request's head branch and never opens a coordinating or corrective pull request. Never ask the user to choose between lanes; ask only when implementation intent or a named target is materially ambiguous.
-- If the primary checkout holds changes you did not make through a gated lane, preserve them: do not stage, commit, push, stash, reset, clean, discard, or transfer them. The only exception is command-owned leftovers after their matching worktree pull request has merged, handled by `delivery`.
+- Treat the clone's primary checkout as read-only for agent work, regardless of branch or cleanliness. The only exception is the fast-forward-only update of its default branch in `work-cleanup`. Make every repository change in a linked worktree at `~/worktrees/<owner>/<repository>/<issue-id>` on branch `<issue-id>` (`GH-<number>` for GitHub Issues; the returned identifier, such as `ENG-123`, for Linear), from the freshly fetched default branch, and deliver it through a ready pull request.
+- Default to a new human-assigned issue, branch, worktree, and ready pull request without asking. Reuse a lane only on explicit user direction for that work. For exact pull-request repair (review, CI, base refresh, conflicts, ordered merges), reuse its head branch; never open coordinating or corrective pull requests. Never ask the user to choose between lanes; ask only about materially ambiguous implementation intent or targets.
+- Preserve primary-checkout changes made outside a gated lane: do not stage, commit, push, stash, reset, clean, discard, or transfer them. Only `delivery` handles command-owned leftovers after their matching worktree pull request merges.
 - Never commit directly to the default or a protected branch, force-push, rewrite pushed history, delete branches to clear a lane, or bypass branch protection, reviews, required checks, or merge queues. The only exception is the human-approved `ci-outage` bypass, which replaces only hosted required checks that could not run.
 - Never stage secrets or `.env` files, and never print secret values.
 - When work completes, stops, or is superseded, apply `work-cleanup` quietly: remove only what clear evidence shows a remote can restore, keep everything else, and never ask the human to approve a cleanup.
 
 ## Authorship
 
-- Only the human user is author, committer, and assignee. Never add agent co-author trailers, "generated with" credits, or bot identities to commits, issues, pull requests, or comments. Assign every created or reused issue and pull request to the human, for example with `--assignee @me` after confirming the authenticated `gh` account is the human's. Stop if the git identity is not the human's.
+- Only the human user is author, committer, and assignee. Never add agent co-author trailers, "generated with" credits, or bot identities to commits, issues, pull requests, or comments. Assign every created or reused issue and pull request to the human, for example with `--assignee @me` after verifying `gh` authenticates the human. Stop if the git identity is not the human's.
 
 ## Approval Boundaries
 
@@ -33,13 +33,17 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - Ask before any other outward-facing or irreversible action that is not already authorized.
 - When `.kit.yaml` enables AWS, run `kit aws verify` before the first AWS-dependent command and again before any AWS mutation, use the verified profile and Region explicitly, stop on a mismatch, and never fall back to other credentials.
 
+## Kit Functionality
+
+Start work with `kit guide` for commands and artifact instructions; `--json` gives structured output.
+
 ## Engineering
 
 - When `.kit.yaml` sets `source_file_line_limit`, keep handwritten source and test files within it and split by responsibility; `kit check --project` enforces it.
 - Preserve language-native tests and pull-request checks; end-to-end suites supplement them. Run the project's validation before calling work complete, and fix relevant failures.
 - Run one local runtime per project: check before starting, then reuse it or stop it first. Open no terminal windows for it unless the human asks.
-- Parallelize independent investigation when it helps. Delegated agents never mutate Git or GitHub and never write overlapping files concurrently; the primary agent owns integration, validation, and the final report.
-- Resolve in-scope problems autonomously until the goal is complete or a genuine blocker remains; use current evidence to choose safe, bounded recovery.
+- Parallelize independent investigation when useful. Delegated agents never mutate Git or GitHub and never write overlapping files concurrently; the primary agent owns integration, validation, and the final report.
+- Resolve in-scope problems autonomously until completion or a genuine blocker; use current evidence for safe, bounded recovery.
 
 ## Code Review Rules
 

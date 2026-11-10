@@ -148,6 +148,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if !initOutputOnly {
 		printNumberedNextSteps([]string{
 			initPromptNextStep(),
+			"Run `kit guide` to learn installed commands and repository artifact types",
 			"Keep the starter Constitution unchanged until implemented evidence supports durable project-wide rules",
 			"Run `kit spec <feature-name>` to create your first feature",
 		})

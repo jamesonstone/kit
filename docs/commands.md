@@ -8,6 +8,18 @@ One path per job: `kit init` creates a project, `kit reconcile` is the only
 command that migrates or repairs an existing one (and from the primary checkout
 it writes only to a linked worktree), and `kit health` diagnoses.
 
+## Functionality Guide
+
+`kit guide` explains the installed command tree and repository artifact types.
+It derives command descriptions, usage, examples, and visible flags from Cobra
+help, including nested commands. `kit guide --json` returns the same information
+as deterministic structured data. Both forms work outside a project without
+network access, configuration remediation, or usage recording.
+
+The agent contract and init onboarding point to this guide. It supplements
+focused `kit <command> --help`; it is not a second capability catalog or an
+execution engine.
+
 ## Bootstrap And Memory
 
 | Command | Why it exists |
@@ -20,7 +32,7 @@ it writes only to a linked worktree), and `kit health` diagnoses.
 | Command | Why it exists |
 | --- | --- |
 | `kit rules add` | Installs a rule shipped with this Kit version (for example the optional `readme-header-tagline` or `llms-txt`), or creates a project rule. |
-| `kit rules list` / `kit rules view <slug>` | Show installed and available rules. |
+| `kit rules list` / `kit rules view <slug>` | List installed local rules, or view one local or shipped rule by slug. |
 
 Rules ship inside the Kit binary. A released binary installs exactly the rules
 it was built and tested with; nothing is fetched from GitHub. Unmodified
