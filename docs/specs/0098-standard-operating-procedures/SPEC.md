@@ -5,8 +5,8 @@ workflow_version: 3
 phase: "deliver"
 feature:
   id: "0098"
-  slug: "active-workflows"
-  dir: "0098-active-workflows"
+  slug: "standard-operating-procedures"
+  dir: "0098-standard-operating-procedures"
 ---
 # SPEC
 
@@ -43,18 +43,21 @@ The user clarified that the LLM/coding agent is the execution engine, with workb
 - The original proposed workflow CLI, formal workflow metadata validator, and automatic lifecycle are superseded by the user’s narrower first-PR scope.
 - Public examples use generic workbook synchronization, not private endpoints, datasets, or production commands.
 - The follow-up discovery command can read conventional Markdown paths without a code dependency, allowing separate PRs against the default branch.
+- Keep spec number 0098. The slug is `standard-operating-procedures`, not the superseded `active-workflows` name. 0097 remains the shell-environment spec on the earlier branch.
 
 ## DISCOVERIES
 
-The existing universal contract is at its 1500-word limit. Add a short SOP route and compress equivalent surrounding prose without weakening invariants. A reconcile preview showed unrelated existing registry, README badge, and Mint pin updates; those are not part of this change.
+The universal contract is at its 1500-word limit. The SOP route stays in that one contract. Room came from redundant wording, not from paraphrasing policy: the contextual-rules intro repeated the opening "only when triggered" rule; "ready pull request" was already required by the delivery sentence; "in that order" repeats "the first existing"; the optional-rules sentence keeps the same obligation. Repair kinds, including ordered merges, stay in the contract. The `ENG-123` example stays. "State `repository memory: not required` once" no longer also says "in the final response." Headroom remains for the shell-environment route and the guide route. A reconcile preview showed unrelated registry, README badge, and Mint pin updates; those are not part of this change.
 
 ## VALIDATION
 
-Before implementation, baseline `go test ./... -count=1`, `go vet ./...`, `golangci-lint run ./...`, and formatting passed. Final validation passed: `gofmt -l .` produced no output; `make vet`; `make lint` reported 0 issues; `make test` passed all packages; `make build`; and `KIT_USAGE_DISABLED=1 ./bin/kit check --project`. The project check retains one existing nonblocking advisory for the project-owned `docs/references/README.md`. Focused SOP tests cover all supported migration generations, idempotency, preservation including force, targeted reconcile, dry-run/no-write behavior, symlink protection, missing-guide diagnostics, and template metadata/sections. `git diff --check` passed. A separate fresh-context reviewer inspected tracked and untracked changes, reran SOP tests, and found no concrete issues. No live workbook sync, production validation, hosted CI, or guarantee of agent compliance was tested.
+Before implementation, baseline `go test ./... -count=1`, `go vet ./...`, `golangci-lint run ./...`, and formatting passed. The original change passed `gofmt -l .`, `make vet`, `make lint` (0 issues), `make test`, `make build`, and `KIT_USAGE_DISABLED=1 ./bin/kit check --project`, with the existing nonblocking `docs/references/README.md` advisory. Focused SOP tests cover migration generations, idempotency, preservation including force, targeted reconcile, dry-run, symlink protection, missing-guide diagnostics, and template sections.
+
+Review repair, 2026-11-10: `gofmt -l .` printed nothing; `go vet ./...` passed; `go test ./... -count=1` passed (`pkg/cli` 34.603s), including `TestUniversalContractStaysSmall` (1485 words); `golangci-lint run ./...` reported 0 issues; `make build` passed; `KIT_USAGE_DISABLED=1 ./bin/kit check --project` exited 0 with the same nonblocking references advisory. Hosted CI was not yet rerun for this repair commit. No live workbook sync, production validation, or guarantee of agent compliance was tested.
 
 ## OUTCOME
 
-Implemented the project-owned SOP guide/template, create-once init/reconcile integration, missing-guide diagnostics, core contextual rule, and shared contract routing. All current documentation and generated entry files are aligned. The universal contract remains within 1500 words. The implementation adds no execution engine or command. LabCore inspection remained read-only; only a synthetic workbook outline appears in the public template. Work is ready for the required pre-PR summary; no PR has been created.
+Implemented the project-owned SOP guide/template, create-once init/reconcile integration, missing-guide diagnostics, core contextual rule, and shared contract routing. Generated entry files match the canonical contract. The contract keeps the SOP route under 1500 words by deleting redundant wording, not by paraphrasing policy. The spec directory is `0098-standard-operating-procedures`. The implementation adds no execution engine or command. LabCore inspection remained read-only; only a synthetic workbook outline appears in the public template.
 
 ## REPOSITORY MEMORY
 

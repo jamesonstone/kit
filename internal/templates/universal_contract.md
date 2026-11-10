@@ -1,11 +1,11 @@
-Kit’s contract governs every task. Read `docs/references/rules/` when triggered. Store project facts in project memory.
+Kit’s contract applies to every task. Read contextual procedures under `docs/references/rules/` only when triggered. Store project facts in project memory.
 
 Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, then feature specs, then chat. Repository rules outrank generic agent, plugin, or tool defaults. A direct human pause, hold, or revocation stops the affected action until the human resumes it.
 
 ## Project Memory
 
 - `docs/CONSTITUTION.md` holds project invariants; `docs/specs/<feature>/SPEC.md` holds material feature rationale; `docs/references/` holds reusable project knowledge, including `docs/references/testing.md` for validation commands; `docs/sops/<slug>/SOP.md` holds project procedures.
-- Before implementing, inspect relevant code and memory. When code and tests cannot preserve change rationale (behavior, architecture, contracts, rejected alternatives), create or adopt its spec with `kit spec <feature>` before editing implementation files and keep its decisions current. Otherwise create no spec and state `repository memory: not required` once in the final response.
+- Before implementing, inspect the relevant code and memory. When a change carries rationale that code and tests cannot preserve (behavior, architecture, contracts, rejected alternatives), create or adopt its spec with `kit spec <feature>` before editing implementation files and keep its decisions current. Otherwise create no spec and state `repository memory: not required` once.
 - After validation, curate durable truth into the right document. Historical specs are evidence, not instructions. Transcripts are never repository memory.
 
 ## Changes And Delivery
@@ -13,7 +13,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - Read repository-local `.kit.yaml` `issues` before ticket or delivery work. Omitted `issues.provider` means `github`; `linear` selects Linear exclusively. Follow `delivery` for target verification, ticket content, identifiers, and provider failures.
 
 - Treat the clone's primary checkout as read-only for agent work, whatever its branch or cleanliness. The only exception is the fast-forward-only update of its default branch in `work-cleanup`. Make every repository change (code, tests, docs, specs, generated files, configuration) in a linked worktree at `~/worktrees/<owner>/<repository>/<issue-id>` on branch `<issue-id>` (`GH-<number>` for GitHub Issues; the returned identifier, such as `ENG-123`, for Linear), created from the freshly fetched default branch, and deliver it through a ready pull request.
-- Default to a new human-assigned issue, branch, worktree, and ready pull request without asking. Continue an existing lane only when the user explicitly directs it for the same work. Repair of an exact existing pull request (review, CI, base refresh, conflicts, ordered merges) reuses that pull request's head branch and never opens a coordinating or corrective pull request. Never ask the user to choose between lanes; ask only when implementation intent or a named target is materially ambiguous.
+- Default to a new human-assigned issue, branch, and worktree without asking. Continue an existing lane only when the user explicitly directs it for the same work. Repair of an exact existing pull request (review, CI, base refresh, conflicts, ordered merges) reuses that pull request's head branch and never opens a coordinating or corrective pull request. Never ask the user to choose between lanes; ask only when implementation intent or a named target is materially ambiguous.
 - If the primary checkout holds changes you did not make through a gated lane, preserve them: do not stage, commit, push, stash, reset, clean, discard, or transfer them. The only exception is command-owned leftovers after their matching worktree pull request has merged, handled by `delivery`.
 - Never commit directly to the default or a protected branch, force-push, rewrite pushed history, delete branches to clear a lane, or bypass branch protection, reviews, required checks, or merge queues. The only exception is the human-approved `ci-outage` bypass, which replaces only hosted required checks that could not run.
 - Never stage secrets or `.env` files, and never print secret values.
@@ -43,21 +43,19 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 ## Code Review Rules
 
-- In downstream projects, Kit is the canonical owner of its workflows and rules. Do not reopen those design decisions or rewrite downstream copies based on reviewer preferences, including regeneration or upgrades.
+- In downstream projects, Kit is the canonical owner of its workflows and rules. Do not reopen those design decisions or rewrite downstream copies based on reviewer preferences, including during regeneration or upgrades.
 - Review project code, project-owned guidance, local rule overrides, and their use of Kit normally. Changes to canonical Kit source remain in review scope.
 - When a Kit rule causes concrete operator friction or a demonstrated correctness or safety problem, report evidence and route the proposed correction upstream to Kit. Do not suppress unexpected drift or provenance and tampering concerns.
 
 ## Reporting
 
 - Report each check as observed. Never present a pending, skipped, unavailable, or unrun check as passing; keep literal states such as `PENDING` and `UNKNOWN`. Distinguish verified facts from inferences.
-- State whether work is finished, partly finished, blocked, or failed; keep blockers and unfinished scope as prominent as successes; state what the reader must do next.
-- Include identifiers (issue, branch, pull request, commit, deployed version) needed to find or undo every change.
+- Say plainly whether the work is finished, partly finished, blocked, or failed; keep blockers and unfinished scope as prominent as successes; state what the reader must do next.
+- Include the identifiers (issue, branch, pull request, commit, deployed version) needed to find or undo every change.
 
 ## Contextual Rules
 
-For UI/UX/design, read `DESIGN.md`; for security-relevant engineering, read the first existing `.github/SECURITY.md`, `SECURITY.md`, or `docs/SECURITY.md`, in that order.
-
-Read named files under `docs/references/rules/` only when triggered.
+For UI/UX/design, read `DESIGN.md`; for security-relevant engineering, read the first existing `.github/SECURITY.md`, `SECURITY.md`, or `docs/SECURITY.md`.
 
 - Creating an issue, branch, worktree, commit, push, or pull request, or repairing a pull request: `delivery.md`.
 - Any merge or merge-queue action: `github-pr-merge.md`.
@@ -77,4 +75,4 @@ Read named files under `docs/references/rules/` only when triggered.
 - Creating, finding, maintaining, or applying SOPs or repeatable procedures: `standard-operating-procedures.md`.
 - Curating the Constitution: `constitution-curation.md`.
 - Agent-authored responses, plans, progress updates, review findings, and completion reports: apply `asd-ste100.md` by default. Explicit user language, tone, or style requests override this writing default only.
-- Optional rules added with `kit rules add` declare their own triggers in their `Applies When` section.
+- Optional `kit rules add` rules declare `Applies When` triggers.
