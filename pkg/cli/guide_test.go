@@ -90,6 +90,44 @@ func TestGuideOutsideProjectNeverRunsPreflightOrWrites(t *testing.T) {
 	}
 }
 
+func TestGuideRealRootBypassesConfigPreflight(t *testing.T) {
+	dir := t.TempDir()
+	setWorkingDirectory(t, dir)
+	t.Setenv("HOME", dir)
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, "config"))
+	t.Setenv("XDG_STATE_HOME", filepath.Join(dir, "state"))
+	if err := os.WriteFile(".kit.yaml", []byte("invalid: ["), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if rootCmd.PersistentPreRunE == nil {
+		t.Fatal("real root has no config preflight")
+	}
+	guideCmd, _, err := rootCmd.Find([]string{"guide"})
+	if err != nil || guideCmd.PersistentPreRunE == nil {
+		t.Fatal("guide must override the root preflight")
+	}
+	var b bytes.Buffer
+	previousOut, previousErr := rootCmd.OutOrStdout(), rootCmd.ErrOrStderr()
+	rootCmd.SetOut(&b)
+	rootCmd.SetErr(&b)
+	rootCmd.SetArgs([]string{"guide", "--json"})
+	t.Cleanup(func() {
+		rootCmd.SetOut(previousOut)
+		rootCmd.SetErr(previousErr)
+		rootCmd.SetArgs(nil)
+	})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(".kit.yaml")
+	if err != nil || string(data) != "invalid: [" {
+		t.Fatal("preflight changed config")
+	}
+	if !strings.Contains(b.String(), `"path": "kit guide"`) || !strings.Contains(b.String(), `"path": "kit inspect"`) {
+		t.Fatalf("real root guide missing live commands:\n%s", b.String())
+	}
+}
+
 func TestGuideDiscoveryRoutes(t *testing.T) {
 	var out bytes.Buffer
 	previous := rootCmd.OutOrStdout()
@@ -98,8 +136,8 @@ func TestGuideDiscoveryRoutes(t *testing.T) {
 	if err := renderRootHelp(rootCmd); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(out.String(), "guide") {
-		t.Fatal("root help missing guide")
+	if !strings.Contains(out.String(), "Coding agents: run `kit guide` first") {
+		t.Fatal("root help does not point agents at kit guide")
 	}
 	if !strings.Contains(buildProjectInitPrompt("/repo", "/repo/docs/CONSTITUTION.md"), "kit guide") {
 		t.Fatal("onboarding missing guide")

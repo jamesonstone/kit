@@ -32,7 +32,7 @@ const (
 	// instructionFileWriteModeSkipExisting only creates missing files.
 	instructionFileWriteModeSkipExisting instructionFileWriteMode = "skip-existing"
 	// instructionFileWriteModeConverge migrates existing entry files onto the
-	// managed contract block and leaves the project-owned testing reference alone.
+	// managed contract block and leaves project-owned reference starters alone.
 	instructionFileWriteModeConverge instructionFileWriteMode = "converge"
 )
 
@@ -51,12 +51,15 @@ func instructionFiles(cfg *config.Config) []string {
 }
 
 // instructionArtifactPaths lists every instruction artifact Kit generates: the
-// agent entry files, project guidance, and the testing reference.
+// agent entry files, project guidance, the testing reference, and the SOP guide.
 func instructionArtifactPaths(cfg *config.Config) []string {
-	return append(instructionFiles(cfg), templates.TestingReferencePath, templates.DesignPath, templates.SecurityPath)
+	return append(instructionFiles(cfg), templates.TestingReferencePath, templates.DesignPath, templates.SecurityPath, templates.SOPGuidePath)
 }
 
 func instructionArtifactContent(relativePath string) string {
+	if filepath.ToSlash(relativePath) == templates.SOPGuidePath {
+		return templates.SOPGuide
+	}
 	if content, ok := templates.ProjectGuidance(filepath.ToSlash(relativePath)); ok {
 		return content
 	}
@@ -89,7 +92,8 @@ func planInstructionArtifactWrite(
 		return plan, nil
 	}
 	plan.result = instructionFileSkipped
-	if mode == instructionFileWriteModeSkipExisting || filepath.ToSlash(relativePath) == templates.TestingReferencePath {
+	if mode == instructionFileWriteModeSkipExisting ||
+		filepath.ToSlash(relativePath) == templates.TestingReferencePath || filepath.ToSlash(relativePath) == templates.SOPGuidePath {
 		return plan, nil
 	}
 	data, err := os.ReadFile(plan.absolutePath)

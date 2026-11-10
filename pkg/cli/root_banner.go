@@ -18,6 +18,9 @@ const (
 
 func rootLong(style humanOutputStyle) string {
 	return rootBanner(style) + `
+Coding agents: run kit guide before choosing a command.
+The guide is derived from each command's Short, Long, and Example.
+
 Kit is a repository-local contract and validation tool for coding agents.
 It renders one universal agent contract, ships contextual rules with each
 release, and validates and converges Kit-managed project state.

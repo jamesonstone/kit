@@ -57,7 +57,8 @@ range, response SLA, or security setting.
 Kit gives every coding agent one compact universal contract (rendered into
 `AGENTS.md`, `CLAUDE.md`, and Copilot instructions), contextual rules that are
 read only when their trigger applies, and project memory in
-`docs/CONSTITUTION.md`, `docs/specs/`, and `docs/references/testing.md`. The
+`docs/CONSTITUTION.md`, `docs/specs/`, `docs/sops/`, and
+`docs/references/testing.md`. The
 binary ships the rules it was tested with and adds deterministic commands for
 bootstrap, validation, drift maintenance, spec allocation, and AWS identity
 checks. Agents plan, explore, and delegate with their own native tools.
@@ -139,6 +140,49 @@ summary, retired rules) only when they are exactly as a Kit release generated
 them and committed to Git, and reports every file it keeps. From the primary
 checkout it writes to a `kit-reconcile` linked worktree for review.
 
+## Standard Operating Procedures
+
+Kit scaffolds [a project-owned SOP guide](docs/sops/README.md). Agents create
+repeatable procedures at `docs/sops/<slug>/SOP.md` and follow the
+[SOP rules](docs/references/rules/standard-operating-procedures.md) to find,
+validate, apply, and maintain them under existing authorization. Init and
+reconcile create the guide only when missing; existing content is preserved,
+even with force. Agents perform the work; Kit adds no SOP command or executor.
+
+## Shell and project environments
+
+Kit ships a `shell-environment` rule for commands that depend on shell startup,
+PATH, version managers, or project activation. Each project records its command
+environment in `docs/references/testing.md` under Environment Preflights, or links
+existing environment documentation there. Keep the working directory, toolchain,
+activation, safe probes, and local/CI differences project-owned. Each team member
+keeps personal host settings in their own global agent instructions.
+
+An omitted `shell` setting uses each user's initialized interactive-login shell
+on the execution host. A project can specify an exact invocation in `.kit.yaml`:
+
+```yaml
+shell:
+  command: [zsh, -lic]
+```
+
+This is an executable/options prefix, not shell source. The agent appends its
+task command as one argument. `shell: {}` or `command: []` restores the user
+environment default. No variable or tilde expansion occurs in the prefix;
+keep personal paths and secrets out of shared configuration. Use the shell's
+own options, including its command-execution flag, for other shells or wrappers.
+Run `kit config check --json` to validate configuration and see `shell: user`
+or `shell: command`. These describe the configuration source, not a live shell.
+Kit does not launch the shell itself or change its own subprocess environment.
+Functions must run inside the initialized shell; only exported variables reach
+child processes. Explicit script and CI execution contracts remain authoritative.
+
+New projects receive the rule through `kit init`. Existing projects receive it
+through `kit reconcile` after upgrading to a release that includes it; preview
+with `kit reconcile --dry-run --diff`. Edited references and customized rules
+stay preserved. Shell guidance does not change startup files, execution-host
+settings, or network permissions, and cannot guarantee host compliance.
+
 ## Issue Providers
 
 GitHub Issues is the default, including noninteractive init. Interactive init also
@@ -186,14 +230,33 @@ Review committed text and link visibility before publication.
 
 | Area | Commands |
 | --- | --- |
+| Coding-agent entry | `kit guide` [`--json`] |
 | Bootstrap and memory | `kit init`, `kit spec` |
 | Rules | `kit rules add\|list\|view` |
+| Local guidance | `kit inspect [--path <directory>] [--json]` |
 | Validation and maintenance | `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check\|set`, `kit aws verify` |
 | Local usage | `kit usage [report\|status\|refresh\|clear\|enable\|disable]` |
 | Utilities | `kit upgrade`, `kit version`, `kit completion` |
 
 See the [command guide](docs/commands.md), the [v3 migration
 guide](docs/migration-v3.md), and the [release notes](docs/releases/v3.0.0.md).
+
+## Inspect local guidance
+
+Run `kit inspect` from a project or any nested directory. Use
+`kit inspect --path ../another-project --json` to select a different project
+without changing your working directory. The report lists current local rulesets,
+SOPs, agent entries, the Constitution, and design, security, testing, and SOP guides.
+It does not list shipped-but-uninstalled rules or historical specs.
+
+JSON schema version 1 contains `project_root`, config findings, ordered `entries`,
+and `errors`. Empty `findings` is `[]`. Each entry has a project-relative path, kind, state, and explicit
+`active` boolean. Rule and SOP metadata includes descriptions and status; SOPs
+also include an owner. Missing configured files are reported as `missing`.
+Invalid metadata and read failures preserve other findings and return a nonzero
+exit status. Unknown status is never active. Symlink guidance and paths outside
+the project are rejected. Inspect does not repair configuration, run instructions,
+write files, use the network, or record usage telemetry.
 
 ## Local Usage Data
 

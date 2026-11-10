@@ -24,8 +24,17 @@ execution engine.
 
 | Command | Why it exists |
 | --- | --- |
-| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `DESIGN.md`, `SECURITY.md`, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. The GitHub issue template is opt-in (`--issue-template` or `issues.issue_template: true`). Prints a create/overwrite/skip plan, warns about existing files and issue templates, forms, and `config.yml`, and asks before overwriting. A non-interactive run skips those files unless `--force`. `--dry-run` prints the plan and writes nothing. Refuses to run where `.kit.yaml` exists or inside an existing Kit project; use `kit reconcile`. Copies its setup prompt to the clipboard only at a terminal and prints it otherwise. |
+| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `DESIGN.md`, `SECURITY.md`, `docs/references/testing.md`, `docs/sops/README.md`, the core rules shipped with this binary, and the developer-experience starter files. The GitHub issue template is opt-in (`--issue-template` or `issues.issue_template: true`). Prints a create/overwrite/skip plan, warns about existing files and issue templates, forms, and `config.yml`, and asks before overwriting. A non-interactive run skips those files unless `--force`. `--dry-run` prints the plan and writes nothing. Refuses to run where `.kit.yaml` exists or inside an existing Kit project; use `kit reconcile`. Copies its setup prompt to the clipboard only at a terminal and prints it otherwise. |
 | `kit spec <feature>` | Allocates a worktree-safe feature number and scaffolds or adopts `docs/specs/<id>-<feature>/SPEC.md`. |
+
+### Project-owned SOPs
+
+Init and reconcile create `docs/sops/README.md` only when missing. Existing
+content is preserved even with `--force` or an explicit file selection. Agents
+create `docs/sops/<slug>/SOP.md` directly using [the guide](sops/README.md) and
+[SOP rules](references/rules/standard-operating-procedures.md). There is no SOP
+creation, execution, or project-directory discovery command in this change;
+use repository search and file reads. Kit does not validate SOP executability.
 
 ## Rules
 
@@ -43,12 +52,13 @@ reported unless `--force` is used.
 
 | Command | Why it exists |
 | --- | --- |
+| `kit inspect [--path <directory>] [--json]` | Lists current local rulesets, SOPs, and key project guidance. Starts in the current directory by default and finds the nearest containing Kit project. `--path` selects a project or nested directory without changing cwd. JSON schema version 1 preserves ordered entries, metadata, states, and errors. Invalid entries stay visible and produce a nonzero exit status. Paths outside the project and symlink guidance are rejected. Never repairs configuration, executes instructions, writes files, uses the network, or records telemetry. |
 | `kit check [feature]` / `kit check --project` | Validates spec front matter and relationships, duplicate feature numbers, rule documents, the managed contract block, and, when `.kit.yaml` sets `source_file_line_limit`, handwritten source-file length. Exits non-zero on blocking findings. |
 | `kit reconcile` | Migrates a project created by any Kit release to the current structure, then audits project documents. Keeps project and edited content, removes only unmodified retired Kit files that Git can restore, and reports what it kept. Prints the same create/overwrite/skip plan as init. `--issue-template` opts in to the GitHub issue template. An exact shipped copy keeps updating without that flag. From the primary checkout it writes to a `kit-reconcile` linked worktree. `--dry-run --diff` previews; `--force` also replaces edited Kit sections and edited shipped rules. Prints any remaining findings as severity, file, issue, and fix. Kit cannot list issue templates inherited from an organization `.github` repository. When `gh` can identify an organization owner, init and reconcile warn that a local template overrides those inherited templates. |
 | `kit health` | Read-only diagnosis for people and scheduled automation: reports what `kit reconcile` would change (`--diff` shows it), runs the project check, and exits non-zero only when that check fails. Never writes. |
 | `kit registry status` | Cheap read-only report of whether Kit-managed files and rules match this binary. |
 | `kit status` | Current feature and Kit-managed state. |
-| `kit config check` | Validates `.kit.yaml` and, interactively, repairs the AWS context. |
+| `kit config check` | Validates `.kit.yaml`, including optional `shell.command`, reports the shell source (`user` or `command`), and, interactively, repairs the AWS context. `--json` is read-only. Shell reporting does not execute the configured prefix or verify runtime readiness. |
 | `kit aws verify` | Verifies the configured AWS profile, account, and Region before AWS work. |
 
 ## Local Usage

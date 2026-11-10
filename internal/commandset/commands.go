@@ -17,6 +17,7 @@ var protectedPaths = []string{
 	"usage enable",
 	"usage disable",
 	"status",
+	"inspect",
 	"registry status",
 	"health",
 	"config check",

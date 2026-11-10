@@ -7,8 +7,9 @@ import (
 
 func newGuideCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "guide", Short: "Explain installed commands and repository artifact types for agents",
-		Long:              "Read the complete functionality guide derived from this binary's command help.\nIncludes nested commands, flags, examples, and repository artifact instructions.\nWorks outside a Kit project, without network access, configuration changes, or usage recording.",
+		Use:               "guide",
+		Short:             "Decide which installed command an agent should use",
+		Long:              "Run this before choosing a Kit command. When and why to use each command come from that command's Short, Long, and Example; this guide only renders them. Use kit <command> --help for one command. --json returns the same guide as data. Works outside a project, without network access, configuration changes, or usage recording.",
 		Example:           "  kit guide\n  kit guide --json\n  kit rules view delivery",
 		Args:              cobra.NoArgs,
 		PersistentPreRunE: func(*cobra.Command, []string) error { return nil },

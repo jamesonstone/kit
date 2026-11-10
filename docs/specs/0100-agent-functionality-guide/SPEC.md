@@ -31,7 +31,7 @@ Expose all visible installed commands, nested commands, usage, examples, flags a
 
 ## DECISIONS
 
-Use live Cobra help rather than a parallel command catalog. Keep artifact guidance separate from command metadata because artifacts are concepts, not executable commands. Include project SOP convention with draft/active/retired states and no execution engine. Do not copy pending inspect or SOP implementations. Use a dedicated contract section to avoid pending SOP clause edits. Compact equivalent delivery prose to leave room under the contract budget.
+Use live Cobra help rather than a parallel command catalog. Each command's Short, Long, and Example are the only when/why text; `kit guide` renders that metadata and does not keep a second list. Keep artifact guidance separate because artifacts are concepts, not commands. Do not paraphrase delivery, authorship, or engineering policy to free contract words. The contract route is only `Run kit guide`. Root help and `kit` with no arguments point agents there. `kit <command> --help` remains that command's own guidance.
 
 ## DISCOVERIES
 
@@ -40,6 +40,8 @@ Cobra lazily creates help and version flags, so the snapshot initializes both wi
 ## VALIDATION
 
 Passed: focused guide, artifact, template/adapter, and cleanup-marker tests; make vet; make lint (0 issues); make build; kit check --project; go test -race ./internal/guide -count=1; gofmt -l . (empty); git diff --check. Project check reports the existing nonblocking preserved docs/references/README.md compatibility advisory. Full go test ./... passed (pkg/cli 54.925s). A final four-word contract clarification restored repository-local scope, target verification and useful-only delegation; the affected template, adapter, guide and cleanup tests passed again afterward. Two separate binary guide JSON invocations were byte-identical and included root --version. Initial full runs found compressed cleanup marker mismatches; restored the exact markers and verified their focused test. No production or network validation applies to this local read-only command.
+
+Review repair after #283, #279, and #285 merged: reverted the delivery, authorship, and engineering paraphrases. The contract route is `Run kit guide` and the contract is 1,498 words. `kit` and `kit --help` point agents at `kit guide`. When/why stays in each command's Short, Long, and Example. `TestGuideRealRootBypassesConfigPreflight` runs the real root, including its preflight override, and sees `kit inspect`. Root help lists `guide` and `inspect` and not the retired names. Repair checks: `gofmt -l .` printed nothing; `go vet ./...` passed; `go test ./... -count=1` passed (`pkg/cli` 35.014s); `golangci-lint run ./...` reported 0 issues; `make build` passed; `KIT_USAGE_DISABLED=1 ./bin/kit check --project` exited 0 with the existing nonblocking references advisory. Hosted CI for this repair was not yet rerun.
 
 ## OUTCOME
 

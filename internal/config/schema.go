@@ -69,6 +69,11 @@ func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
 		return nil, Inspection{}, fmt.Errorf("failed to read %s: %w", ConfigFileName, err)
 	}
 
+	return ParseWithInspection(data)
+}
+
+// ParseWithInspection inspects config bytes without accessing or repairing files.
+func ParseWithInspection(data []byte) (*Config, Inspection, error) {
 	raw, inspection, err := inspectRawData(data)
 	if err != nil {
 		return nil, Inspection{}, fmt.Errorf("failed to inspect %s: %w", ConfigFileName, err)
@@ -87,6 +92,9 @@ func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
 	inspection.Findings = append(inspection.Findings, semanticFindings(cfg)...)
 	if err := cfg.Issues.Validate(); err != nil {
 		inspection.Findings = append(inspection.Findings, Finding{Field: "issues", Severity: FindingError, Message: err.Error()})
+	}
+	if err := cfg.Shell.Validate(); err != nil {
+		inspection.Findings = append(inspection.Findings, Finding{Field: "shell.command", Severity: FindingError, Message: err.Error()})
 	}
 	if cfg.AWS != nil && cfg.AWS.IsEnabled() && awsAccountIDPattern.MatchString(strings.TrimSpace(cfg.AWS.AccountID)) {
 		if raw.AWS != nil && !isQuotedYAMLString(&raw.AWS.AccountID) {
