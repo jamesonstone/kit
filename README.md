@@ -20,6 +20,20 @@ supervise agents.
 [![Last commit](https://img.shields.io/github/last-commit/jamesonstone/kit)](https://github.com/jamesonstone/kit/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/kit)](https://github.com/jamesonstone/kit/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/kit)](https://github.com/jamesonstone/kit/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/kit)](https://github.com/jamesonstone/kit/releases)
 <!-- END KIT-MANAGED README BADGES -->
 
+## Discover Kit functionality
+
+Run `kit guide` for the installed command tree, nested commands, usage, flags,
+examples, and artifact instructions. Use `kit guide --json` for deterministic
+structured output, or `kit <command> --help` for focused help. The guide works
+outside a project without network access, configuration changes, or usage writes.
+Command descriptions derive from the live CLI help, not a second catalog.
+
+The canonical agent contract and init onboarding direct coding agents to the
+guide. These discovery routes do not guarantee that an agent reads it. Artifact
+guidance includes the Constitution, living specs, contextual rules, references,
+and the project-owned `docs/sops/<slug>/SOP.md` convention. SOPs use draft, active,
+and retired states; the convention creates no command or execution engine.
+
 ## Design and security guidance
 
 `kit init` creates `DESIGN.md` for product design, interface quality, and usability,
@@ -216,6 +230,7 @@ Review committed text and link visibility before publication.
 
 | Area | Commands |
 | --- | --- |
+| Coding-agent entry | `kit guide` [`--json`] |
 | Bootstrap and memory | `kit init`, `kit spec` |
 | Rules | `kit rules add\|list\|view` |
 | Local guidance | `kit inspect [--path <directory>] [--json]` |

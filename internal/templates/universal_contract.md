@@ -33,6 +33,10 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - Ask before any other outward-facing or irreversible action that is not already authorized.
 - When `.kit.yaml` enables AWS, run `kit aws verify` before the first AWS-dependent command and again before any AWS mutation, use the verified profile and Region explicitly, stop on a mismatch, and never fall back to other credentials.
 
+## Kit Functionality
+
+Run `kit guide`.
+
 ## Engineering
 
 - When `.kit.yaml` sets `source_file_line_limit`, keep handwritten source and test files within it and split by responsibility; `kit check --project` enforces it.

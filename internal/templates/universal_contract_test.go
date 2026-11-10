@@ -12,6 +12,7 @@ import (
 // directly visible in the always-loaded contract. Markers pin meaning, not
 // surrounding prose; reword freely as long as each invariant stays stated.
 var criticalInvariants = map[string]string{
+	"functionality discovery":   "`kit guide`",
 	"human-only authorship":     "Only the human user is author, committer, and assignee",
 	"human assignee":            "Assign every created or reused issue and pull request to the human",
 	"primary checkout":          "Treat the clone's primary checkout as read-only",

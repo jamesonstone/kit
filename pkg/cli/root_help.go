@@ -9,7 +9,7 @@ import (
 )
 
 var commandOrder = map[string]int{
-	"init": 1, "spec": 2,
+	"guide": 0, "init": 1, "spec": 2,
 	"inspect": 9, "status": 10, "registry": 11, "health": 12,
 	"config": 14, "aws": 15, "check": 16,
 	"rules": 19, "reconcile": 20, "usage": 21,
@@ -22,7 +22,7 @@ type commandSection struct {
 }
 
 var rootCommandSections = []commandSection{
-	{title: "Agent Workflow", commands: []string{"init", "spec"}},
+	{title: "Agent Workflow", commands: []string{"guide", "init", "spec"}},
 	{title: "Inspect & Repair", commands: []string{"inspect", "status", "registry", "health", "config", "aws", "check", "rules", "reconcile", "usage"}},
 	{title: "Utilities", commands: []string{"upgrade", "version", "completion", "help"}},
 }
@@ -76,6 +76,9 @@ func renderRootHelp(cmd *cobra.Command) error {
 		return err
 	}
 	if _, err := fmt.Fprintf(out, "  %s [command]\n", cmd.CommandPath()); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(out, "\n  Coding agents: run `%s guide` first. It is derived from each command's help.\n  `%s <command> --help` shows that command. `%s guide --json` is the same guide as data.\n", cmd.CommandPath(), cmd.CommandPath(), cmd.CommandPath()); err != nil {
 		return err
 	}
 

@@ -43,8 +43,8 @@
 
 ### Supported Command Surface
 
-- User-facing paths: `kit init`, `kit spec`, `kit inspect`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check|set`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
-- A command exists only when it does deterministic work an agent cannot reproduce as safely or cheaply: bootstrap and managed-file convergence, validation, spec allocation, AWS identity verification, local guidance discovery, or usage evidence. Kit adds no prompt wrappers, context routers, capability catalogs, or orchestration commands.
+- User-facing paths: `kit guide`, `kit init`, `kit spec`, `kit inspect`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check|set`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
+- A command exists only when it does deterministic work an agent cannot reproduce as safely or cheaply: bootstrap and managed-file convergence, validation, spec allocation, AWS identity verification, local guidance discovery, usage evidence, or a derived command-help guide. Kit adds no prompt wrappers, context routers, parallel or manually duplicated capability catalogs, or orchestration commands. `kit guide` derives command information from the live command tree and authoritative help, not a second capability catalog. `kit inspect` reports current local guidance and does not repair it.
 - Removed command groups are absent, not hidden compatibility aliases.
 
 ### Rules, Initialization, Reconciliation, and Health
