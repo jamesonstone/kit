@@ -68,6 +68,19 @@ func TestShellConfigurationDefaultsAndOverrides(t *testing.T) {
 	}
 }
 
+func TestParseWithInspectionValidatesShellCommand(t *testing.T) {
+	_, inspection, err := ParseWithInspection([]byte("schema_version: 2\nshell:\n  command: ['']\n"))
+	if err != nil || !inspection.HasErrors() {
+		t.Fatalf("parser accepted an empty shell argument: err=%v findings=%+v", err, inspection.Findings)
+	}
+	for _, finding := range inspection.Findings {
+		if finding.Field == "shell.command" {
+			return
+		}
+	}
+	t.Fatal("ParseWithInspection omitted shell.command validation")
+}
+
 func TestShellConfigurationRejectsInvalidArguments(t *testing.T) {
 	for _, command := range [][]string{{""}, {"  "}, {"zsh", ""}, {"zsh", "line\nbreak"}, {"zsh", "nul\x00byte"}} {
 		root := t.TempDir()

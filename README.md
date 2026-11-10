@@ -226,6 +226,23 @@ Review committed text and link visibility before publication.
 See the [command guide](docs/commands.md), the [v3 migration
 guide](docs/migration-v3.md), and the [release notes](docs/releases/v3.0.0.md).
 
+## Inspect local guidance
+
+Run `kit inspect` from a project or any nested directory. Use
+`kit inspect --path ../another-project --json` to select a different project
+without changing your working directory. The report lists current local rulesets,
+SOPs, agent entries, the Constitution, and design, security, testing, and SOP guides.
+It does not list shipped-but-uninstalled rules or historical specs.
+
+JSON schema version 1 contains `project_root`, config findings, ordered `entries`,
+and `errors`. Empty `findings` is `[]`. Each entry has a project-relative path, kind, state, and explicit
+`active` boolean. Rule and SOP metadata includes descriptions and status; SOPs
+also include an owner. Missing configured files are reported as `missing`.
+Invalid metadata and read failures preserve other findings and return a nonzero
+exit status. Unknown status is never active. Symlink guidance and paths outside
+the project are rejected. Inspect does not repair configuration, run instructions,
+write files, use the network, or record usage telemetry.
+
 ## Local Usage Data
 
 Kit records minimal local command events by default so maintainers can identify
@@ -276,20 +293,3 @@ then `docs/SECURITY.md` order. Init and reconcile preserve a non-root policy
 without creating or registering a root placeholder. Agents read the first
 existing policy in that order. Explicit `--force --file SECURITY.md` can create
 or replace the root document; it never edits non-root policies.
-
-### Inspect local guidance
-
-Run `kit inspect` from a project or any nested directory. Use
-`kit inspect --path ../another-project --json` to select a different project
-without changing your working directory. The report lists current local rulesets,
-SOPs, agent entries, the Constitution, and design, security, testing, and SOP guides.
-It does not list shipped-but-uninstalled rules or historical specs.
-
-JSON schema version 1 contains `project_root`, config findings, ordered `entries`,
-and `errors`. Each entry has a project-relative path, kind, state, and explicit
-`active` boolean. Rule and SOP metadata includes descriptions and status; SOPs
-also include an owner. Missing configured files are reported as `missing`.
-Invalid metadata and read failures preserve other findings and return a nonzero
-exit status. Unknown status is never active. Symlink guidance and paths outside
-the project are rejected. Inspect does not repair configuration, run instructions,
-write files, use the network, or record usage telemetry.

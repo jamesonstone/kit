@@ -40,6 +40,7 @@ Rules list describes installed local rules; rules view can read a local or shipp
 - Reject all guidance symlinks, including links inside the project, to keep the read boundary explicit and simple.
 - Omit inspect telemetry rather than attribute an explicit target to the caller's cwd.
 - Report metadata verbatim only after successful YAML decoding; report unknown status as invalid and inactive.
+- Empty config findings encode as `[]`. `ParseWithInspection` validates `shell.command`, so file and byte parsers share that check.
 
 ## DISCOVERIES
 
@@ -55,6 +56,7 @@ Rules list describes installed local rules; rules view can read a local or shipp
 - `go test -race ./internal/guidance ./pkg/cli -run 'Test(Inspect|Metadata|Resolve)' -count=1` passed, including directory-type/FIFO and missing-reference regressions.
 - Final built-binary self-inspection and inspection of the independent SOP lane both passed with zero errors, including all three optional-scope shipped rules. Permission tests passed on the selected Mac.
 - Project check reports one nonblocking compatibility advisory for the pre-existing `docs/references/README.md` content.
+- Review repair after #279 merged: `kit inspect --json` emits `"findings": []` when empty; shell validation stays inside `ParseWithInspection`; inspect docs sit beside the Command Surface table; root help no longer lists retired command names. `gofmt -l .` printed nothing; `go vet ./...` passed; `go test ./... -count=1` passed (`pkg/cli` 34.946s); `golangci-lint run ./...` reported 0 issues; `make build` passed; `KIT_USAGE_DISABLED=1 ./bin/kit check --project` exited 0 with the existing nonblocking references advisory. Hosted CI for this repair was not yet rerun.
 
 ## OUTCOME
 

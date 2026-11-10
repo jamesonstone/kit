@@ -42,6 +42,9 @@ func TestInspectCommandExplicitPathBypassesCwdRepair(t *testing.T) {
 	if report.ProjectRoot != want {
 		t.Fatalf("wrong root %s", report.ProjectRoot)
 	}
+	if strings.Contains(out.String(), `"findings": null`) || !strings.Contains(out.String(), `"findings": []`) {
+		t.Fatalf("empty findings must be an array:\n%s", out.String())
+	}
 	after, _ := os.ReadFile(filepath.Join(cwd, ".kit.yaml"))
 	if !bytes.Equal(after, bad) {
 		t.Fatal("cwd config repaired")

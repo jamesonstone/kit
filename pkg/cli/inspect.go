@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/guidance"
 	"github.com/spf13/cobra"
 )
@@ -21,6 +22,9 @@ func newInspectCommand() *cobra.Command {
 			if jsonOutput {
 				if inspectErr != nil && len(report.Errors) == 0 {
 					report.Errors = append(report.Errors, inspectErr.Error())
+				}
+				if report.Config.Findings == nil {
+					report.Config.Findings = []config.Finding{}
 				}
 				encoder := json.NewEncoder(cmd.OutOrStdout())
 				encoder.SetIndent("", "  ")

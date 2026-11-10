@@ -9,11 +9,11 @@ import (
 )
 
 var commandOrder = map[string]int{
-	"init": 1, "spec": 2, "context": 3, "dispatch": 4,
-	"inspect": 9, "status": 10, "registry": 11, "health": 12, "capabilities": 13,
-	"config": 14, "aws": 15, "check": 16, "pr": 17, "improve": 18,
+	"init": 1, "spec": 2,
+	"inspect": 9, "status": 10, "registry": 11, "health": 12,
+	"config": 14, "aws": 15, "check": 16,
 	"rules": 19, "reconcile": 20, "usage": 21,
-	"instructions": 30, "upgrade": 31, "version": 32, "completion": 33, "help": 34,
+	"upgrade": 31, "version": 32, "completion": 33, "help": 34,
 }
 
 type commandSection struct {
@@ -22,9 +22,8 @@ type commandSection struct {
 }
 
 var rootCommandSections = []commandSection{
-	{title: "Agent Workflow", commands: []string{"init", "spec", "context", "dispatch"}},
-	{title: "Inspect & Repair", commands: []string{"inspect", "status", "registry", "health", "capabilities", "config", "aws", "check", "pr", "improve", "rules", "reconcile", "usage"}},
-	{title: "Instructions", commands: []string{"instructions"}},
+	{title: "Agent Workflow", commands: []string{"init", "spec"}},
+	{title: "Inspect & Repair", commands: []string{"inspect", "status", "registry", "health", "config", "aws", "check", "rules", "reconcile", "usage"}},
 	{title: "Utilities", commands: []string{"upgrade", "version", "completion", "help"}},
 }
 
