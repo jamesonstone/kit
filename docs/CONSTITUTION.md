@@ -43,8 +43,8 @@
 
 ### Supported Command Surface
 
-- User-facing paths: `kit init`, `kit spec`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check|set`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
-- A command exists only when it does deterministic work an agent cannot reproduce as safely or cheaply: bootstrap and managed-file convergence, validation, spec allocation, AWS identity verification, or usage evidence. Kit adds no prompt wrappers, context routers, capability catalogs, or orchestration commands.
+- User-facing paths: `kit init`, `kit spec`, `kit inspect`, `kit rules add|list|view`, `kit check`, `kit reconcile`, `kit health`, `kit registry status`, `kit status`, `kit config check|set`, `kit aws verify`, `kit usage report|status|refresh|clear|enable|disable`, `kit upgrade`, `kit version`, and `kit completion`.
+- A command exists only when it does deterministic work an agent cannot reproduce as safely or cheaply: bootstrap and managed-file convergence, validation, spec allocation, AWS identity verification, local guidance discovery, or usage evidence. Kit adds no prompt wrappers, context routers, capability catalogs, or orchestration commands.
 - Removed command groups are absent, not hidden compatibility aliases.
 
 ### Rules, Initialization, Reconciliation, and Health
@@ -68,7 +68,7 @@
 - Usage telemetry is local-only, best-effort, and enabled by default.
 - Events contain only schema version, timestamp, normalized command path, Kit version, exit outcome, elapsed time, anonymized project identity, and interactivity.
 - Never record arguments, command output, repository paths or names, file contents, environment values, secrets, or network identifiers.
-- Usage commands, `--help` lookups, unversioned development builds (no stamped version and no module version), test binaries, and processes with `KIT_USAGE_DISABLED=1` do not record.
+- `kit inspect`, usage commands, `--help` lookups, unversioned development builds (no stamped version and no module version), test binaries, and processes with `KIT_USAGE_DISABLED=1` do not record.
 - A global disable is absolute. A project may opt out but cannot override a global disable.
 - Retain at most 365 days, 16 MiB total, and 2 MiB per JSONL shard. Maintenance prunes complete oldest shards rather than partially truncating one.
 - `kit usage refresh`, `clear`, `enable`, and `disable` are the only maintenance and control surfaces for usage data.

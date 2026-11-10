@@ -40,7 +40,7 @@ func validateRulesetDocument(ruleset rulesetDocument, expectedSlug string) []str
 		issues = append(issues, "front matter read_policy_default must be must, conditional, evidence, or skip")
 	}
 	if !validRulesetRegistryScope(ruleset.Metadata.RegistryScope) {
-		issues = append(issues, "front matter registry_scope must be downstream or kit-maintainer when set")
+		issues = append(issues, "front matter registry_scope must be downstream or optional when set")
 	}
 	for _, section := range requiredRulesetSections() {
 		content, ok := ruleset.Sections[strings.ToUpper(section)]
