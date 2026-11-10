@@ -62,6 +62,7 @@ For UI/UX/design, read `DESIGN.md`; for security-relevant engineering, read the 
 - Hosted CI cannot start or run because of an outage or exhausted minutes or billing: `ci-outage.md`.
 - Following a release or deployment, including a missing or failed pipeline: `deployment-recovery.md`.
 - Mint adoption, releases, deployments, environment state, hotfix, roll-forward or rollback: `mint-deployment-lifecycle.md` when the project uses Mint.
+- Shell-dependent commands or environment mismatches: `shell-environment.md`.
 - Adding tests, configuring CI, or end-to-end, browser, or production validation: `testing-and-environment-validation.md`.
 - Backend routes, services, repositories, or adapters: `backend-service-architecture.md`; frontend routes, state flows, or components: `frontend-application-architecture.md`.
 - Work completes, stops, or is superseded; before a new lane or session end; or free disk space is low: `work-cleanup.md`.

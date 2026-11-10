@@ -28,6 +28,7 @@
 | `infrastructure-change-approval` | default | One outline and one approval per infrastructure batch; deletion always confirmed. |
 | `local-runtime-lifecycle` | default | One local runtime per project: reuse or stop it before any start, restart only what changed, and open no terminal windows from agents. |
 | `mint-deployment-lifecycle` | default | Repository-native Mint releases, environment policy, immutable promotion and recovery evidence. |
+| `shell-environment` | default | Project and user shell initialization, portable environment references, safe probes, and explicit permission boundaries. |
 | `slack-read-only` | default | Slack is read-only; every write needs explicit message-specific approval. |
 | `standard-operating-procedures` | default | Project-owned repeatable procedures: creation, discovery, authorized execution, recovery, and maintenance. |
 | `testing-and-environment-validation` | default | Code-level tests primary, honest results, safe browser and production validation. |
