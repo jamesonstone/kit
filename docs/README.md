@@ -19,6 +19,7 @@ repository evidence, and a reduced human maintenance surface.
 | Document | Purpose |
 | --- | --- |
 | [CONSTITUTION.md](CONSTITUTION.md) | Current project invariants and architecture. |
+| [sops/README.md](sops/README.md) | Project-owned repeatable procedures and a reusable SOP template. |
 | [references/README.md](references/README.md) | Rules index and reusable project references. |
 
 ## Feature History

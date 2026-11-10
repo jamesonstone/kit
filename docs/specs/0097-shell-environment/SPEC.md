@@ -48,7 +48,7 @@ Kit ships contextual rules, renders one contract into three agent entry files, a
 - Reuse the existing project-owned reference rather than add a competing environment schema or copy startup files.
 - Separate shell startup, project activation, authentication, and network policy. A wrapper is not a denied-action fallback.
 - Describe shell examples conditionally. Do not assume zsh for every user, CI runner, or operating system.
-- The contract's 1,500-word budget remains fixed. Shorten introductory prose without changing existing invariants to add the route.
+- The contract stays under 1,500 words. The shell route is one new trigger on the canonical contract. Do not paraphrase existing policy to make room.
 
 ## DISCOVERIES
 
@@ -66,7 +66,8 @@ All checks below were rerun after the shell-configuration extension and raw-argu
 - Passed `make build`, `./bin/kit config check --json`, `./bin/kit check --project`, and `./bin/kit check 0097-shell-environment`. Config-check output reports the default as `shell: user` and contains no findings.
 - The project check retains one nonblocking compatibility advisory for the customized references index.
 - Passed `git diff --check`. Fresh-context reviews covered the initial guidance and the complete configuration extension. A malformed-YAML argv finding was fixed and rechecked; no actionable findings remain.
-- Coverage includes fresh init, current and historical-generation reconcile, idempotence, preservation of edited rules/references and project guidance outside managed blocks, portability markers, omitted/null/empty defaults, exact override round trips, malformed argv, valid aliases, read-only config checks, argument redaction, and override preservation across reconciliation. The contract remains within its 1,500-word budget at 1,498 words.
+- Coverage includes fresh init, current and historical-generation reconcile, idempotence, preservation of edited rules/references and project guidance outside managed blocks, portability markers, omitted/null/empty defaults, exact override round trips, malformed argv, valid aliases, read-only config checks, argument redaction, and override preservation across reconciliation.
+- Review repair after #283 merged: the shell trigger was added to the canonical contract without paraphrasing its opening. README keeps the SOP section, then the shell section, then Issue Providers. `gofmt -l .` printed nothing; `go vet ./...` passed; `go test ./... -count=1` passed (`pkg/cli` 35.277s), including the 1,500-word test at 1,492 words; `golangci-lint run ./...` reported 0 issues; `make build` passed; `KIT_USAGE_DISABLED=1 ./bin/kit check --project` exited 0 with the existing nonblocking references advisory. Hosted CI for this head was not yet rerun.
 - Not validated: live downstream rollout, execution under every shell/operating system, or causation of an execution-host release regression. Hosted checks must be assessed on the published PR head; local results do not imply hosted success.
 
 ## OUTCOME

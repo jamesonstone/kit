@@ -12,8 +12,17 @@ it writes only to a linked worktree), and `kit health` diagnoses.
 
 | Command | Why it exists |
 | --- | --- |
-| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `DESIGN.md`, `SECURITY.md`, `docs/references/testing.md`, the core rules shipped with this binary, and the developer-experience starter files. The GitHub issue template is opt-in (`--issue-template` or `issues.issue_template: true`). Prints a create/overwrite/skip plan, warns about existing files and issue templates, forms, and `config.yml`, and asks before overwriting. A non-interactive run skips those files unless `--force`. `--dry-run` prints the plan and writes nothing. Refuses to run where `.kit.yaml` exists or inside an existing Kit project; use `kit reconcile`. Copies its setup prompt to the clipboard only at a terminal and prints it otherwise. |
+| `kit init` | Creates a new Kit project: `.kit.yaml`, the universal contract in `AGENTS.md`/`CLAUDE.md`/Copilot instructions, the Constitution starter, `DESIGN.md`, `SECURITY.md`, `docs/references/testing.md`, `docs/sops/README.md`, the core rules shipped with this binary, and the developer-experience starter files. The GitHub issue template is opt-in (`--issue-template` or `issues.issue_template: true`). Prints a create/overwrite/skip plan, warns about existing files and issue templates, forms, and `config.yml`, and asks before overwriting. A non-interactive run skips those files unless `--force`. `--dry-run` prints the plan and writes nothing. Refuses to run where `.kit.yaml` exists or inside an existing Kit project; use `kit reconcile`. Copies its setup prompt to the clipboard only at a terminal and prints it otherwise. |
 | `kit spec <feature>` | Allocates a worktree-safe feature number and scaffolds or adopts `docs/specs/<id>-<feature>/SPEC.md`. |
+
+### Project-owned SOPs
+
+Init and reconcile create `docs/sops/README.md` only when missing. Existing
+content is preserved even with `--force` or an explicit file selection. Agents
+create `docs/sops/<slug>/SOP.md` directly using [the guide](sops/README.md) and
+[SOP rules](references/rules/standard-operating-procedures.md). There is no SOP
+creation, execution, or project-directory discovery command in this change;
+use repository search and file reads. Kit does not validate SOP executability.
 
 ## Rules
 

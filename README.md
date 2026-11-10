@@ -43,7 +43,8 @@ range, response SLA, or security setting.
 Kit gives every coding agent one compact universal contract (rendered into
 `AGENTS.md`, `CLAUDE.md`, and Copilot instructions), contextual rules that are
 read only when their trigger applies, and project memory in
-`docs/CONSTITUTION.md`, `docs/specs/`, and `docs/references/testing.md`. The
+`docs/CONSTITUTION.md`, `docs/specs/`, `docs/sops/`, and
+`docs/references/testing.md`. The
 binary ships the rules it was tested with and adds deterministic commands for
 bootstrap, validation, drift maintenance, spec allocation, and AWS identity
 checks. Agents plan, explore, and delegate with their own native tools.
@@ -124,6 +125,15 @@ retired Kit files (`docs/agents/`, `docs/references/workflows/`, the progress
 summary, retired rules) only when they are exactly as a Kit release generated
 them and committed to Git, and reports every file it keeps. From the primary
 checkout it writes to a `kit-reconcile` linked worktree for review.
+
+## Standard Operating Procedures
+
+Kit scaffolds [a project-owned SOP guide](docs/sops/README.md). Agents create
+repeatable procedures at `docs/sops/<slug>/SOP.md` and follow the
+[SOP rules](docs/references/rules/standard-operating-procedures.md) to find,
+validate, apply, and maintain them under existing authorization. Init and
+reconcile create the guide only when missing; existing content is preserved,
+even with force. Agents perform the work; Kit adds no SOP command or executor.
 
 ## Shell and project environments
 
