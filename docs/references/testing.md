@@ -26,6 +26,9 @@
 
 ## Environment Preflights
 
+- Kit's Go commands are noninteractive and use the toolchain declared in `go.mod`; no personal interactive shell, service, or project activation is required for the hermetic suite
+- Run from the intended repository/worktree root; use `command -v go` and `go version` to verify the selected toolchain
+- If local tooling depends on personal shell initialization, use the current user's approved host configuration; do not copy it into this shared reference
 - Go version comes from `go.mod`
 - No services, databases, browsers, or cloud targets are required; production environments are not applicable
 

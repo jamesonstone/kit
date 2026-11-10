@@ -93,6 +93,9 @@ func ParseWithInspection(data []byte) (*Config, Inspection, error) {
 	if err := cfg.Issues.Validate(); err != nil {
 		inspection.Findings = append(inspection.Findings, Finding{Field: "issues", Severity: FindingError, Message: err.Error()})
 	}
+	if err := cfg.Shell.Validate(); err != nil {
+		inspection.Findings = append(inspection.Findings, Finding{Field: "shell.command", Severity: FindingError, Message: err.Error()})
+	}
 	if cfg.AWS != nil && cfg.AWS.IsEnabled() && awsAccountIDPattern.MatchString(strings.TrimSpace(cfg.AWS.AccountID)) {
 		if raw.AWS != nil && !isQuotedYAMLString(&raw.AWS.AccountID) {
 			inspection.Findings = append(inspection.Findings, Finding{
