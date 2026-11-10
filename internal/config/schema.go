@@ -69,6 +69,11 @@ func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
 		return nil, Inspection{}, fmt.Errorf("failed to read %s: %w", ConfigFileName, err)
 	}
 
+	return ParseWithInspection(data)
+}
+
+// ParseWithInspection inspects config bytes without accessing or repairing files.
+func ParseWithInspection(data []byte) (*Config, Inspection, error) {
 	raw, inspection, err := inspectRawData(data)
 	if err != nil {
 		return nil, Inspection{}, fmt.Errorf("failed to inspect %s: %w", ConfigFileName, err)
