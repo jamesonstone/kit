@@ -5,6 +5,7 @@
 - This directory holds durable repo-local references that are broader than one feature
 - `rules/<slug>.md` holds contextual rules shipped with the Kit binary; the universal contract's Contextual Rules section says when to read each one, and `kit rules list` is the live inventory
 - `testing.md` records Kit's validation commands
+- `../sops/README.md` introduces project-owned procedures at `docs/sops/<slug>/SOP.md`
 - Link these files from feature front matter references when they materially shape work
 
 ## Ruleset Index
@@ -28,6 +29,7 @@
 | `local-runtime-lifecycle` | default | One local runtime per project: reuse or stop it before any start, restart only what changed, and open no terminal windows from agents. |
 | `mint-deployment-lifecycle` | default | Repository-native Mint releases, environment policy, immutable promotion and recovery evidence. |
 | `slack-read-only` | default | Slack is read-only; every write needs explicit message-specific approval. |
+| `standard-operating-procedures` | default | Project-owned repeatable procedures: creation, discovery, authorized execution, recovery, and maintenance. |
 | `testing-and-environment-validation` | default | Code-level tests primary, honest results, safe browser and production validation. |
 | `work-cleanup` | default | Quiet removal of completed, remote-restorable worktrees and merged branches, closing of finished issues and pull requests, and a fast-forward-only update of the primary checkout's default branch; never asks the human to approve a cleanup. |
 | `context-evidence` | optional | Bounded context selection across all rules, source traceability, freshness, and recoverable handoffs. |

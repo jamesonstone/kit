@@ -10,6 +10,7 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/document"
 	"github.com/jamesonstone/kit/v3/internal/feature"
+	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
 type reconcileSeverity string
@@ -124,6 +125,7 @@ func auditInitScaffoldArtifacts(projectRoot string) []reconcileFinding {
 		relativePath string
 		description  string
 	}{
+		{relativePath: templates.SOPGuidePath, description: "SOP directory guide"},
 		{relativePath: codeRabbitConfigPath, description: "CodeRabbit review configuration"},
 		{relativePath: pullRequestTemplatePath, description: "GitHub pull request template"},
 		{relativePath: autoAssignWorkflowPath, description: "GitHub issue and pull request auto-assignment workflow"},
