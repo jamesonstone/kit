@@ -41,7 +41,7 @@ registry:
         - kind: ruleset
           slug: backend-service-architecture
           path: docs/references/rules/backend-service-architecture.md
-          installed_hash: sha256:40b79a158bf9b83f21445555dc07cdf58641817bbe034ede4c72530346b212f3
+          installed_hash: sha256:930680753a24a14f699c8de86f92ac8f8580bd32f0239ec4dfc0050a034d6a1c
           state: managed
         - kind: ruleset
           slug: constitution-curation

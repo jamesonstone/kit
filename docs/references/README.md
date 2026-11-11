@@ -15,7 +15,7 @@
 | `asd-ste100` | default | ASD-STE100 writing for agent explanations, with technical-content preservation and explicit style overrides. |
 | `agent-team-orchestration` | default | Safe, integrated, truthfully reported delegation using the host's native subagents. |
 | `aws-agent-toolkit-guidance` | default | Verified AWS identity, current AWS guidance and tools, and no secret exposure. |
-| `backend-service-architecture` | default | Responsibility boundaries for routes, controllers, services, repositories, and persistence adapters. |
+| `backend-service-architecture` | default | Responsibility boundaries for routes, controllers, services, repositories, persistence adapters, and process shutdown. |
 | `ci-outage` | default | Human-approved manual merge bypass, backed by full local validation on the exact head, when hosted CI cannot run because of an outage or billing. |
 | `constitution-curation` | default | Evidence-based promotion of project-wide invariants. |
 | `cross-repository-program-coordination` | default | One ledger and live-evidence reconciliation for multi-repository programs. |
