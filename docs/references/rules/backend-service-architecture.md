@@ -1,7 +1,7 @@
 ---
 kind: ruleset
 slug: backend-service-architecture
-description: Defines framework-aware route, controller, service, and repository boundaries for backend services and APIs.
+description: Defines framework-aware route, controller, service, and repository boundaries for backend services and APIs, and how a service stops.
 status: active
 registry_scope: downstream
 applies_to:
@@ -28,12 +28,14 @@ read_policy_default: must
 - Keep transport, request translation, business behavior, and persistence responsibilities explicit in backend services.
 - Make the default runtime flow easy to trace: route → controller → service → repository.
 - Preserve framework and language idioms without allowing business or persistence concerns to leak across boundaries.
+- Stop a running service on the platform's termination signal without dropping in-flight work or accepting new work during drain.
 
 ## Applies When
 
 - A Kit-managed project creates or changes an API, backend service, web service, HTTP or RPC route, controller or handler, application service, repository, persistence adapter, or external-service gateway.
 - A change moves responsibilities between transport, application, domain, or data-access code.
 - A backend feature introduces authorization, transactions, data mapping, caching, retries, or observable error behavior.
+- A long-running backend process stops on a platform signal, drains in-flight work, or exposes liveness and readiness checks.
 
 Load this rule before implementation for matching work even when the active feature does not link it explicitly.
 
@@ -91,6 +93,14 @@ This rule defines architectural roles, not mandatory directory or type names. Pr
 - Put validation at the narrowest correct boundary: structural input validation in the controller, business invariants in the service or domain, and storage constraints in the repository.
 - Make retry, idempotency, and concurrency behavior explicit in the service or gateway that owns the operation.
 
+### Process Lifecycle
+
+- Handle SIGTERM, and SIGINT when the process runs locally: stop accepting new work, fail readiness so traffic drains, let in-flight work finish, then exit 0.
+- Bound the drain with a deadline derived from the deployment target's termination grace period. Do not hard-code a duration. Exit before the platform's hard kill.
+- Close owned resources (listeners, pools, and consumers) in reverse order of startup.
+- When the service runs in a container, use an exec-form entrypoint, or a minimal init that forwards signals, so the signal reaches the application process.
+- Keep liveness and readiness separate. Liveness means the process can continue. Readiness means it can accept new work. Fail readiness during drain, and keep liveness healthy until the process exits.
+
 ### Testing
 
 - Test route registration and middleware wiring when configuration can regress.
@@ -98,6 +108,7 @@ This rule defines architectural roles, not mandatory directory or type names. Pr
 - Test services for business behavior, authorization, orchestration, and transaction decisions without real transport or storage.
 - Test repositories against the real storage boundary or a faithful integration fixture for queries, mapping, constraints, and concurrency semantics.
 - Add end-to-end coverage for critical paths across all layers.
+- Test process shutdown: a termination signal stops new work, readiness fails, and in-flight work finishes before the process exits.
 
 ### Framework-Aware Exceptions
 
@@ -116,6 +127,10 @@ This rule defines architectural roles, not mandatory directory or type names. Pr
 - Generic base controllers, base services, or base repositories that erase domain language and make behavior harder to trace.
 - Layers that only rename methods and add no ownership, translation, policy, or test seam.
 - One service or repository accumulating unrelated domains because it is convenient to inject everywhere.
+- A process that ignores SIGTERM, exits immediately, or drops in-flight work.
+- A shell-form container entrypoint that keeps the signal from reaching the application.
+- One health check used as both liveness and readiness, so a draining process is killed before in-flight work finishes.
+- A hard-coded shutdown timeout that ignores the deployment target's termination grace period.
 
 ## Verification
 
@@ -126,6 +141,7 @@ This rule defines architectural roles, not mandatory directory or type names. Pr
 - Confirm tests exercise every changed responsibility at the narrowest useful level plus an integration path when practical.
 - Confirm any collapsed roles or deviations are locally justified and do not hide business or persistence coupling.
 - Run the repository's format, unit, integration, contract, and API-schema checks for the affected service.
+- Prove the drain with a test, or by stopping the process or container while a request is in flight. Confirm new work is refused, in-flight work finishes within the grace deadline, and the process exits before the hard kill.
 
 ## Examples
 

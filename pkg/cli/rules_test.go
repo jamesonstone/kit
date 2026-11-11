@@ -64,6 +64,12 @@ func TestApplicationArchitectureRegistryRulesetsAreValid(t *testing.T) {
 				"Do not let routes or controllers call repositories directly",
 				"The service chooses the business transaction boundary",
 				"These names satisfy the rule when their responsibilities match",
+				"fail readiness so traffic drains",
+				"Do not hard-code a duration",
+				"termination grace period",
+				"exec-form entrypoint",
+				"Keep liveness and readiness separate",
+				"Prove the drain",
 			},
 		},
 		{
