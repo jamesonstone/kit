@@ -207,6 +207,9 @@ func decideGlobalConfigWrite(interactive, force, dryRun bool, in io.Reader, out 
 }
 
 func printInitSidePlan(out io.Writer, root string, cfg *config.Config, globalPath, globalAction, globalNote string) error {
+	if err := printIssueBranchPrefix(out, cfg.Issues.BranchPrefix()); err != nil {
+		return err
+	}
 	line := fmt.Sprintf("  %s %s", globalAction, globalPath)
 	if globalNote != "" {
 		line += " (" + globalNote + ")"

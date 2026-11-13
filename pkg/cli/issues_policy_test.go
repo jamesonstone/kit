@@ -28,6 +28,8 @@ func TestEmbeddedIssueProviderContract(t *testing.T) {
 		"omitted or `github`", "`linear` uses Linear only", "Never inherit an issue target from global",
 		"already-authorized Linear", "do not install a connector", "Missing configuration, permission errors",
 		"Never choose the first name match", "A failed search is not an empty search", "uncertain write",
+		"configured team's current key", "multiple teams", "--linear-team-key ENG",
+		"the returned issue identifier for the branch",
 		"original ask", "scope and exclusions", "acceptance criteria", "expected verification",
 		"Verified when", "fresh-context review", "did I miss anything?", "`Evidence`",
 		"complete Markdown as `description`", "human assignee ID", "Read back the returned identifier",

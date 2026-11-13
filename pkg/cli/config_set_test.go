@@ -37,20 +37,20 @@ func TestConfigSetTransitionsAndDryRun(t *testing.T) {
 	stubReconcileWorktreeInspection(t, worktreeprep.Location{})
 	original := "# keep comment\nschema_version: 2\ncustom: {preserve: yes}\n"
 	writeFile(t, filepath.Join(root, config.ConfigFileName), original)
-	args := []string{"--issue-provider", "linear", "--linear-workspace", "acme", "--linear-team-id", "11111111-1111-4111-8111-111111111111"}
+	args := []string{"--issue-provider", "linear", "--linear-workspace", "acme", "--linear-team-id", "11111111-1111-4111-8111-111111111111", "--linear-team-key", "LAB2"}
 	report, err := executeConfigSet(t, append(args, "--dry-run")...)
-	if err != nil || !report.Changed || !report.DryRun || len(report.Next) != 2 || !report.ReconciliationRequired {
+	if err != nil || !report.Changed || !report.DryRun || report.BranchPrefix != "LAB2-" || len(report.Next) != 2 || !report.ReconciliationRequired {
 		t.Fatalf("%#v %v", report, err)
 	}
 	if readFile(t, filepath.Join(root, config.ConfigFileName)) != original {
 		t.Fatal("dry run wrote")
 	}
 	report, err = executeConfigSet(t, args...)
-	if err != nil || !report.Changed {
+	if err != nil || !report.Changed || report.BranchPrefix != "LAB2-" {
 		t.Fatalf("%#v %v", report, err)
 	}
 	content := readFile(t, filepath.Join(root, config.ConfigFileName))
-	if !strings.Contains(content, "preserve: yes") || !strings.Contains(content, "# keep comment") {
+	if !strings.Contains(content, "preserve: yes") || !strings.Contains(content, "# keep comment") || !strings.Contains(content, "team_key: LAB2") {
 		t.Fatal(content)
 	}
 	report, err = executeConfigSet(t, args...)
@@ -58,7 +58,7 @@ func TestConfigSetTransitionsAndDryRun(t *testing.T) {
 		t.Fatalf("not repeatable: %#v %v", report, err)
 	}
 	report, err = executeConfigSet(t, "--issue-provider", "linear", "--linear-project-id", "22222222-2222-4222-8222-222222222222")
-	if err != nil || report.Issues.Linear.ProjectID == "" {
+	if err != nil || report.Issues.Linear.ProjectID == "" || report.BranchPrefix != "LAB2-" {
 		t.Fatalf("project: %#v %v", report, err)
 	}
 	report, err = executeConfigSet(t, "--issue-provider", "linear", "--linear-project-id", "")
@@ -67,9 +67,17 @@ func TestConfigSetTransitionsAndDryRun(t *testing.T) {
 	}
 	for _, provider := range []string{"github", "linear"} {
 		report, err = executeConfigSet(t, "--issue-provider", provider)
-		if err != nil || report.Issues.EffectiveProvider() != provider {
+		prefix := "LAB2-"
+		if provider == "github" {
+			prefix = "GH-"
+		}
+		if err != nil || report.Issues.EffectiveProvider() != provider || report.BranchPrefix != prefix {
 			t.Fatalf("%#v %v", report, err)
 		}
+	}
+	report, err = executeConfigSet(t, "--issue-provider", "linear", "--linear-team-id", "33333333-3333-4333-8333-333333333333")
+	if err != nil || report.BranchPrefix != "" || strings.Contains(readFile(t, filepath.Join(root, config.ConfigFileName)), "team_key") {
+		t.Fatalf("stale key after changing teams: %#v %v", report, err)
 	}
 }
 
@@ -78,7 +86,12 @@ func TestConfigSetInvalidNoPartialWrites(t *testing.T) {
 	setWorkingDirectory(t, root)
 	original := "schema_version: 2\ncustom: keep\n"
 	writeFile(t, filepath.Join(root, config.ConfigFileName), original)
-	for _, args := range [][]string{nil, {"--issue-provider", ""}, {"--issue-provider", "unknown"}, {"--issue-provider", "linear"}, {"--issue-provider", "github", "--linear-workspace", "acme"}} {
+	for _, args := range [][]string{
+		nil, {"--issue-provider", ""}, {"--issue-provider", "unknown"}, {"--issue-provider", "linear"},
+		{"--issue-provider", "github", "--linear-workspace", "acme"},
+		{"--issue-provider", "github", "--linear-team-key", "LAB2"},
+		{"--issue-provider", "linear", "--linear-workspace", "acme", "--linear-team-id", "11111111-1111-4111-8111-111111111111", "--linear-team-key", "LAB2-"},
+	} {
 		if _, err := executeConfigSet(t, args...); err == nil {
 			t.Fatalf("accepted %v", args)
 		}

@@ -48,6 +48,11 @@ func PlanIssueConfig(before []byte, issues IssueConfig) ([]byte, error) {
 		linear := findOrCreateMapping(node, "linear")
 		setTypedScalar(linear, "workspace", issues.Linear.Workspace, "!!str", 0)
 		setTypedScalar(linear, "team_id", issues.Linear.TeamID, "!!str", 0)
+		if issues.Linear.TeamKey == "" {
+			removeKey(linear, "team_key")
+		} else {
+			setTypedScalar(linear, "team_key", issues.Linear.TeamKey, "!!str", 0)
+		}
 		if issues.Linear.ProjectID == "" {
 			removeKey(linear, "project_id")
 		} else {

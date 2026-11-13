@@ -44,6 +44,10 @@ Kit cannot list issue templates inherited from an organization .github
 repository. When gh can identify an organization owner, init warns that a
 local template overrides those inherited templates.
 
+GitHub issue branches use GH-<number>. For Linear, look up the selected
+team's key in Linear and pass it with --linear-team-key (for example ENG).
+If a project has multiple teams, use the key of the team that owns the issues.
+
 Mint Actions integration is planned automatically. Existing jobs need explicit
 --mint-workflow, --mint-job and --mint-before-step placement.
 

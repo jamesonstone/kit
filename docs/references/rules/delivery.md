@@ -32,6 +32,7 @@ read_policy_default: conditional
 ### Issue provider and ticket parity
 
 - Configure with `kit config set --issue-provider github|linear` (Linear target flags match init), preview with `--dry-run --json`, and execute the reported canonical reconcile steps in the reported target. The setter changes only issue configuration; it does not migrate managed files or authenticate.
+- During Linear setup, use the authorized Linear connection to read the selected project's teams and the configured team's current key. A Linear project can have multiple teams. If the project has one eligible team, use that team. If several are eligible, use the verified configured or explicitly selected team. Ask for the team if the choice is ambiguous. For team-only work, read the selected team directly. Pass its exact key (for example, `--linear-team-key ENG`) with the verified target. Kit stores it as optional `issues.linear.team_key` and reports the configured branch prefix.
 - Read repository-local `.kit.yaml` `issues.provider`: omitted or `github` uses the existing GitHub Issues flow; `linear` uses Linear only. Provider selection does not change GitHub pull requests, reviews, protection, or release hosting. Never inherit an issue target from global configuration.
 - For GitHub, use the repository's existing `gh` or connected GitHub tools and human assignment. For Linear, use the host's already-authorized Linear connector or API capability. If unavailable, stop ticket writes and report the missing Linear capability; do not install a connector, configure credentials, broaden access, or fall back to GitHub.
 - Before a Linear write, verify the authenticated human, workspace URL slug (`issues.linear.workspace`), team UUID (`team_id`), and optional project UUID (`project_id`). Read the team and project to confirm workspace membership and that the project supports that team. Resolve the human's Linear assignee ID; GitHub logins are not Linear assignee IDs. Missing configuration, permission errors, target mismatch, or ambiguous lookup is a blocker. Never choose the first name match. An omitted project means explicitly team-only work.
@@ -47,7 +48,7 @@ read_policy_default: conditional
 - Continue an existing branch or pull request only when the user explicitly names it for the same work. Repair of an exact existing pull request always reuses that pull request's head branch; never open a coordinating or corrective pull request for scope-preserving work.
 - Never ask the user to choose between lanes. Ask only when implementation intent or a named target is materially ambiguous. Materially new scope gets its own lane.
 
-- `<issue-id>` is `GH-<number>` for GitHub Issues or the exact returned Linear identifier, such as `ENG-123`. Keep existing GitHub lane names and historical references valid. Switching providers applies to new work; finish an existing PR with its recorded original ticket/provider.
+- `<issue-id>` is `GH-<number>` for GitHub Issues or the exact returned Linear identifier, such as `ENG-123`. For a Linear target with a missing or stale stored team key, use the live team's key during verification and the returned issue identifier for the branch. Keep existing GitHub lane names and historical references valid. Switching providers applies to new work; finish an existing PR with its recorded original ticket/provider.
 
 ### Worktrees
 

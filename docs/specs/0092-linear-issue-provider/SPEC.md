@@ -38,12 +38,22 @@ client. Canonical instructions are embedded and reconciled. Mint reads Git histo
 Implement repository provider selection and canonical ticket guidance; consume
 Mint’s offline link support and add minimal, project-owned Actions scaffolding.
 
+For GH-288, resolve the Linear team key through the authorized agent connection
+during setup. Let init and config set store that key and report the branch prefix.
+For branch creation, use the full identifier from the ticket.
+
 ## DISCOVERIES
 
 Kit creates tickets through native-agent instructions. Mint needs explicit URL
 parsing from commit footers, without a new provider API or credential store.
 
 ## DECISIONS
+
+Linear assigns the issue prefix to the issue's team. A project can include
+multiple teams, so use the key of the selected team after verifying project
+membership. Store the key as optional setup metadata so existing configurations
+still work. Clear it when the workspace or team changes unless a replacement is
+provided. GitHub uses `GH-`. Kit's CLI stays offline for issue configuration.
 
 Native agent capabilities own ticket API operations, auth and lifecycle actions.
 Kit stores no credentials and adds no provider SDK or background issue service.
@@ -100,12 +110,19 @@ Run full Go tests, vet, build, lint, formatting and project checks before delive
 Independent correctness review and final-head hosted CI/review evidence belong on
 the live PR. An existing edited retired README advisory is nonblocking.
 
+GH-288 adds coverage for setup reports, a non-ENG key, existing keyless
+configuration, provider switching, and removing a stale key after a team
+change. Setup and branch guidance are covered without live Linear writes.
+
 ## OUTCOME
 
 Kit issue GH-264 / branch GH-264 / PR #265 remains open for review, with no merge
 authorized. Mint #33 merged under separate authorization and released v0.9.0.
 No global tool, live Linear workspace, consumer workflow or production system was
 changed. Real ticket execution needs an explicitly authorized test destination.
+
+GH-288 adds prefix configuration and agent setup guidance to Kit. Existing
+work uses the recorded ticket and branch. No downstream configuration was changed.
 
 ## REPOSITORY MEMORY
 

@@ -12,12 +12,13 @@ import (
 
 func TestInitIssueSelection(t *testing.T) {
 	for _, tc := range []struct {
-		name, input, want string
-		invalid           bool
+		name, input, want, prefix string
+		invalid                   bool
 	}{
-		{"default", "\n", "github", false}, {"explicit github", "1\n", "github", false},
-		{"linear", "2\nacme\n11111111-1111-4111-8111-111111111111\n\n", "linear", false},
-		{"unknown", "bogus\n", "", true}, {"missing config", "2\n\n\n\n", "", true}, {"EOF", "", "", true},
+		{"default", "\n", "github", "GH-", false}, {"explicit github", "1\n", "github", "GH-", false},
+		{"linear", "2\nacme\n11111111-1111-4111-8111-111111111111\n\nLAB2\n", "linear", "LAB2-", false},
+		{"linear without key", "2\nacme\n11111111-1111-4111-8111-111111111111\n\n\n", "linear", "", false},
+		{"unknown", "bogus\n", "", "", true}, {"missing config", "2\n\n\n\n\n", "", "", true}, {"EOF", "", "", "", true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var out bytes.Buffer
@@ -25,7 +26,7 @@ func TestInitIssueSelection(t *testing.T) {
 			if (err != nil) != tc.invalid {
 				t.Fatalf("error=%v", err)
 			}
-			if !tc.invalid && got.EffectiveProvider() != tc.want {
+			if !tc.invalid && (got.EffectiveProvider() != tc.want || got.BranchPrefix() != tc.prefix) {
 				t.Fatal(got)
 			}
 			if !strings.Contains(out.String(), "GitHub Issues (default)") || !strings.Contains(out.String(), "Linear") {
@@ -52,6 +53,21 @@ func TestNoninteractiveIssueFlags(t *testing.T) {
 		}
 		if !invalid && len(args) == 0 && cfg.Issues.EffectiveProvider() != "github" {
 			t.Fatal(cfg.Issues)
+		}
+	}
+}
+
+func TestInitDropsPrefilledKeyAfterChangingTeam(t *testing.T) {
+	initial := config.IssueConfig{Linear: config.LinearConfig{
+		Workspace: "acme", TeamID: "11111111-1111-4111-8111-111111111111", TeamKey: "LAB2",
+	}}
+	for _, tc := range []struct{ team, prefix string }{
+		{"", "LAB2-"},
+		{"22222222-2222-4222-8222-222222222222", ""},
+	} {
+		got, err := promptIssueProvider(strings.NewReader("2\n\n"+tc.team+"\n\n\n"), &bytes.Buffer{}, initial)
+		if err != nil || got.BranchPrefix() != tc.prefix {
+			t.Fatalf("team %q: %#v %v", tc.team, got, err)
 		}
 	}
 }
@@ -95,7 +111,7 @@ func TestLinearInitPersistsConfigurationAndTemplate(t *testing.T) {
 		bindIssueProviderFlags(cmd)
 		cmd.SetIn(strings.NewReader(""))
 		cmd.SetOut(&bytes.Buffer{})
-		args := []string{"--issue-provider", "linear", "--linear-workspace", "acme", "--linear-team-id", "11111111-1111-4111-8111-111111111111"}
+		args := []string{"--issue-provider", "linear", "--linear-workspace", "acme", "--linear-team-id", "11111111-1111-4111-8111-111111111111", "--linear-team-key", "LAB2"}
 		if err := cmd.ParseFlags(args); err != nil {
 			t.Fatal(err)
 		}
@@ -105,7 +121,7 @@ func TestLinearInitPersistsConfigurationAndTemplate(t *testing.T) {
 			}
 		})
 		cfg, err := config.Load(root)
-		if err != nil || cfg.Issues.EffectiveProvider() != "linear" || cfg.Issues.Linear.Workspace != "acme" {
+		if err != nil || cfg.Issues.EffectiveProvider() != "linear" || cfg.Issues.Linear.Workspace != "acme" || cfg.Issues.BranchPrefix() != "LAB2-" {
 			t.Fatalf("%#v %v", cfg, err)
 		}
 		template := readFile(t, root+"/"+pullRequestTemplatePath)

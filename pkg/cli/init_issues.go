@@ -14,15 +14,27 @@ func bindIssueProviderFlags(cmd *cobra.Command) {
 	cmd.Flags().String("issue-provider", "github", "development issue provider: github or linear (repository-local)")
 	cmd.Flags().String("linear-workspace", "", "verified Linear workspace URL slug (not a credential)")
 	cmd.Flags().String("linear-team-id", "", "verified Linear team UUID")
+	cmd.Flags().String("linear-team-key", "", "verified Linear team identifier for the branch prefix (for example ENG)")
 	cmd.Flags().String("linear-project-id", "", "verified Linear project UUID; omit for team-only work")
+}
+
+func printIssueBranchPrefix(out io.Writer, prefix string) error {
+	if prefix == "" {
+		prefix = "resolve from the selected Linear team"
+	}
+	_, err := fmt.Fprintf(out, "Branch prefix: %s\n", prefix)
+	return err
 }
 
 func selectInitIssueProvider(cmd *cobra.Command, cfg *config.Config) error {
 	provider, _ := cmd.Flags().GetString("issue-provider")
 	workspace, _ := cmd.Flags().GetString("linear-workspace")
 	team, _ := cmd.Flags().GetString("linear-team-id")
+	teamKey, _ := cmd.Flags().GetString("linear-team-key")
 	project, _ := cmd.Flags().GetString("linear-project-id")
-	selected := config.IssueConfig{Provider: provider, Linear: config.LinearConfig{Workspace: workspace, TeamID: team, ProjectID: project}}
+	selected := config.IssueConfig{Provider: provider, Linear: config.LinearConfig{
+		Workspace: workspace, TeamID: team, TeamKey: teamKey, ProjectID: project,
+	}}
 	if !cmd.Flags().Changed("issue-provider") && !initOutputOnly && streamsHaveInteractiveTerminal(cmd.InOrStdin(), cmd.OutOrStdout()) {
 		var err error
 		selected, err = promptIssueProvider(cmd.InOrStdin(), cmd.ErrOrStderr(), selected)
@@ -73,6 +85,7 @@ func promptIssueProvider(input io.Reader, out io.Writer, selected config.IssueCo
 	if selected.Provider != "linear" {
 		return selected, selected.Validate()
 	}
+	previous := selected.Linear
 	selected.Linear.Workspace, err = read("Verified Linear workspace URL slug: ", selected.Linear.Workspace)
 	if err != nil {
 		return selected, err
@@ -82,6 +95,16 @@ func promptIssueProvider(input io.Reader, out io.Writer, selected config.IssueCo
 		return selected, err
 	}
 	selected.Linear.ProjectID, err = read("Verified Linear project UUID (empty for team-only work): ", selected.Linear.ProjectID)
+	if err != nil {
+		return selected, err
+	}
+	keyPrompt := "Verified Linear team identifier (for example ENG, empty to leave unset): "
+	if previous.SameTeam(selected.Linear) && previous.TeamKey != "" {
+		keyPrompt = fmt.Sprintf("Verified Linear team identifier [%s]: ", previous.TeamKey)
+	} else {
+		selected.Linear.TeamKey = ""
+	}
+	selected.Linear.TeamKey, err = read(keyPrompt, selected.Linear.TeamKey)
 	if err != nil {
 		return selected, err
 	}
