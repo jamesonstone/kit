@@ -150,7 +150,11 @@ reconcile create the guide only when missing; existing content is preserved,
 even with force. Agents perform the work; Kit adds no SOP command or executor.
 
 Keep personal procedures at `docs/sops/local/<slug>/SOP.md` in the primary
-checkout. Init and reconcile add the directory to the root `.gitignore`.
+checkout. Init adds the ignore entry. Reconcile from the primary checkout
+adds it in the `kit-reconcile` worktree. Merge that change and update the
+primary checkout to receive the entry. Before writing, run
+`git check-ignore -- docs/sops/local/example/SOP.md` in the primary checkout
+with your intended path and confirm that Git reports it as ignored.
 Agents in linked worktrees find the same local files through the SOP rule.
 Local SOPs stay with this clone and need a separate backup.
 
