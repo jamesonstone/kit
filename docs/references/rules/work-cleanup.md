@@ -19,9 +19,9 @@ read_policy_default: conditional
 
 ## Purpose
 
-- Recover local disk space after work completes, without adding approvals, prompts, or alarming commands to the human's day.
-- Remove only what a remote can clearly restore. Keep everything else, and mention it once in the report.
-- Keep the primary checkout's default branch current with the remote after merges, with a fast-forward only.
+- Recover disk space after work completes.
+- Remove only what a remote can restore. Report what remains.
+- Fast-forward the primary checkout's default branch after merges.
 
 ## Applies When
 
@@ -63,7 +63,7 @@ Read this rule and run a sweep, without being asked, when one of these triggers 
 
 ### Leave alone
 
-- `KEEP_IN_USE`, `KEEP_UNCOMMITTED`, `KEEP_LOCAL_SECRETS`, `KEEP_UNPUSHED`, and `UNAVAILABLE` worktrees; orphan directories; stashes.
+- `KEEP_IN_USE`, `KEEP_UNCOMMITTED`, `KEEP_LOCAL_SECRETS`, `KEEP_LOCAL_SOPS`, `KEEP_UNPUSHED`, and `UNAVAILABLE` worktrees; orphan directories; stashes.
 - Remote branches and external tracker tickets outside this lane. GitHub can delete merged branches.
 - Published artifacts, shared documents, containers, volumes, cloud resources, transcripts, the trash, and other people's files.
 
@@ -87,6 +87,9 @@ fi
 if [ -n "$(git -C "$top" status --porcelain --untracked-files=all)" ]; then
   printf '%s\n' KEEP_UNCOMMITTED; exit 0
 fi
+local_sops=$(git -C "$top" ls-files --others --ignored --exclude-standard -- docs/sops/local/) ||
+  { printf '%s\n' UNAVAILABLE; exit 0; }
+if [ -n "$local_sops" ]; then printf '%s\n' KEEP_LOCAL_SOPS; exit 0; fi
 secrets=$(git -C "$top" ls-files --others --ignored --exclude-standard --directory |
   while IFS= read -r f; do
     case $f in (.env*|*/.env*) [ -L "$top/${f%/}" ] || printf '%s\n' "$f" ;; esac
@@ -130,7 +133,7 @@ elif [ "$branch" = "$base" ]; then
   if [ -n "$(git -C "$primary" status --porcelain --untracked-files=no)" ]; then
     printf '%s\n' KEEP_UNCOMMITTED; exit 0
   fi
-  git -C "$primary" merge --quiet --ff-only "$remote_head" >/dev/null 2>&1
+  git -C "$primary" merge --quiet --ff-only --no-overwrite-ignore "$remote_head" >/dev/null 2>&1
 else
   git -C "$primary" fetch --quiet "$remote" "$base:$base" 2>/dev/null
 fi && printf '%s\n' UPDATED || printf '%s\n' KEEP_REFUSED
@@ -140,5 +143,5 @@ fi && printf '%s\n' UPDATED || printf '%s\n' KEEP_REFUSED
 - `KEEP_DIVERGED`: the local default branch has commits that the remote does not have.
 - `KEEP_UNCOMMITTED`: the primary checkout is on the default branch and has tracked changes.
 - `KEEP_DETACHED`: the primary checkout has no branch, for example during a rebase or bisect.
-- `KEEP_REFUSED`: Git refused the fast-forward, for example because an untracked file would be overwritten or another worktree has the default branch.
+- `KEEP_REFUSED`: Git refused the fast-forward, for example because it would overwrite an untracked file, including an ignored local SOP.
 - `UNAVAILABLE`: the default branch, the local branch, or the remote is not available.

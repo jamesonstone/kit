@@ -52,7 +52,7 @@ func appendGitignorePatterns(content string, patterns []string) string {
 	if strings.TrimSpace(content) != "" {
 		builder.WriteString("\n\n")
 	}
-	builder.WriteString("# Kit local generated environment, cache, and scratch artifacts\n")
+	builder.WriteString("# Kit local environment, cache, scratch artifacts, and SOPs\n")
 	for _, pattern := range patterns {
 		builder.WriteString(pattern)
 		builder.WriteString("\n")

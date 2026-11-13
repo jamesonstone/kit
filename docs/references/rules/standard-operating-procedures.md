@@ -28,7 +28,7 @@ engine, authorization grant, or replacement for the universal contract.
 
 ### Find and read
 
-- Before planning or executing a matching task, inspect `docs/sops/README.md` and search `docs/sops/*/SOP.md` by slug, description, and applicability. Use normal repository search and file reads; no Kit discovery command is required.
+- Before planning or executing a matching task, inspect `docs/sops/README.md` and search `docs/sops/*/SOP.md` in the current checkout by slug, description, and applicability. Also search `docs/sops/local/*/SOP.md` in the primary checkout with the recipe below. Outside Git, use the project root for both searches.
 - Read the complete candidate SOP, its relevant authoritative references, and triggered rules before acting. Compare scope, status, prerequisites, and expected results with current source and environment evidence. A filename or historical spec alone does not establish applicability or runtime readiness.
 - Select an applicable `active` SOP. If multiple candidates conflict or the target remains ambiguous, resolve the conflict from current evidence or ask the smallest necessary question. Do not combine incompatible steps silently.
 - Treat `draft` and `retired` SOPs as reference material, not runnable instructions. An explicit suitable task may authorize validation or curation of those steps; verify them against current evidence and apply existing policy before acting. Do not silently reactivate a retired procedure.
@@ -36,7 +36,8 @@ engine, authorization grant, or replacement for the universal contract.
 ### Create and maintain
 
 - Create an SOP when the user requests one or an authorized task needs durable, repeatable operational guidance. A successful recurring task, repeated manual recovery, or a costly multi-step process can justify suggesting one. Do not turn every one-off task into an SOP.
-- Use `docs/sops/<slug>/SOP.md`, with a stable lowercase hyphenated slug. Keep supporting project-owned material beside it and link to authoritative implementation and validation references instead of duplicating them. Use the reusable template in `docs/sops/README.md`.
+- Use `docs/sops/<slug>/SOP.md` for shared procedures and `docs/sops/local/<slug>/SOP.md` in the primary checkout for procedures the user wants to keep on this machine. Use a stable lowercase hyphenated slug. Keep supporting material beside the SOP and use the reusable template in `docs/sops/README.md`.
+- In a Git checkout, verify each destination with `git check-ignore -- <path>` in the primary checkout before writing a local SOP or supporting file. If the check fails, report the tracked or unignored path and correct the ignore configuration through normal delivery before writing local content. Keep local files and their contents out of commits, pull requests, and shared evidence. Use sanitized outcome evidence when needed.
 - Include front matter `kind: sop`, `slug`, a useful `description`, `status: draft|active|retired` (select one value), and a responsible `owner`. Include Purpose, Applicability, Prerequisites, Procedure, Verification, and Recovery sections.
 - State the trigger, exclusions, supported targets, access and inputs, existing authorization boundaries, ordered steps, expected observations, stop conditions, completion evidence, and supported recovery. Use verifiable project commands or tool operations, not invented interfaces. Label placeholders and unresolved assumptions.
 - Start new or unverified procedures as `draft`. Set `active` only when the steps and prerequisites are supported by current implementation evidence and suitable validation; record the evidence and validation limits. Do not perform unsafe live validation merely to activate a document.
@@ -60,9 +61,24 @@ engine, authorization grant, or replacement for the universal contract.
 
 ### Evidence and upkeep
 
-- Record the SOP path and revision, date, sanitized operation reference when useful, actual verification results, deviations, and unresolved outcomes in the task's appropriate evidence record. Link protected evidence without copying its sensitive contents into repository documents.
+- Record the SOP path and revision in an evidence record with the same visibility as the SOP. Record the date, sanitized operation reference when useful, verification results, deviations, and unresolved outcomes. Link protected evidence only where the audience can access it.
 - Report completion only after the stated checks pass. Report unavailable or unrun checks as such. Feed verified corrections back into the SOP through the project's normal documentation delivery process.
-- Kit creates `docs/sops/README.md` when missing during init or reconcile. Existing guide content and SOP files remain project-owned, including during force operations. Kit does not refresh or execute project procedures.
+- Kit creates `docs/sops/README.md` when missing during init or reconcile and adds `/docs/sops/local/` to the root `.gitignore`. Existing guide content and SOP files remain project-owned, including during force operations. Create the local directory when you first save a local SOP.
+
+### Find local SOPs from a linked worktree
+
+Run from any checkout of the repository. Search the primary checkout
+explicitly because Git does not copy ignored files into linked worktrees.
+
+```sh
+primary=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
+if [ -n "$primary" ] && [ -d "$primary/docs/sops/local" ]; then
+  find "$primary/docs/sops/local" -mindepth 2 -maxdepth 2 -type f -name SOP.md -print
+fi
+```
+
+Read matching candidates from both locations. If their instructions conflict,
+surface the conflict before taking the affected action.
 
 ## Anti-Patterns
 

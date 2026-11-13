@@ -2,7 +2,9 @@ package cli
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -16,6 +18,9 @@ func assertSOPScaffold(t *testing.T, root string) {
 	t.Helper()
 	if got := readFile(t, filepath.Join(root, templates.SOPGuidePath)); got != templates.SOPGuide {
 		t.Fatal("installed SOP guide differs from its template")
+	}
+	if got := readFile(t, filepath.Join(root, ".gitignore")); !strings.Contains(got, "\n/docs/sops/local/\n") {
+		t.Fatal("init or reconcile omitted the local SOP ignore pattern")
 	}
 	cfg := loadMigratedConfig(t, root)
 	registry, err := embeddedRulesetRegistry(t.Context())
@@ -77,8 +82,10 @@ func TestSOPScaffoldPreservesProjectContent(t *testing.T) {
 	guide := "# Our procedures\n\nFollow the project-maintained index.\n"
 	procedurePath := filepath.Join(root, "docs/sops/workbook-sync/SOP.md")
 	procedure := "# Workbook sync\n\nProject-owned operating steps.\n"
+	localPath := filepath.Join(root, "docs/sops/local/workbook-sync/SOP.md")
 	writeFile(t, filepath.Join(root, templates.SOPGuidePath), guide)
 	writeFile(t, procedurePath, procedure)
+	writeFile(t, localPath, "# Local procedure\n")
 	for _, opts := range []initRefreshOptions{
 		{}, {force: true}, {force: true, files: []string{templates.SOPGuidePath}},
 	} {
@@ -95,7 +102,53 @@ func TestSOPScaffoldPreservesProjectContent(t *testing.T) {
 		if got := readFile(t, procedurePath); got != procedure {
 			t.Fatal("reconcile overwrote a project SOP")
 		}
+		if got := readFile(t, localPath); got != "# Local procedure\n" {
+			t.Fatal("reconcile overwrote a local SOP")
+		}
 	}
+}
+
+func TestLocalSOPDiscoveryFromLinkedWorktree(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX discovery recipe needs a shell")
+	}
+	root := filepath.Join(t.TempDir(), "primary with spaces")
+	lane := filepath.Join(t.TempDir(), "linked worktree")
+	if err := os.Mkdir(root, 0755); err != nil {
+		t.Fatal(err)
+	}
+	workCleanupGit(t, root, "init", "-b", "main")
+	writeFile(t, filepath.Join(root, ".gitignore"), templates.Gitignore)
+	shared := "docs/sops/shared/SOP.md"
+	local := "docs/sops/local/personal/SOP.md"
+	writeFile(t, filepath.Join(root, shared), "# Shared SOP\n")
+	writeFile(t, filepath.Join(root, local), "# Local SOP\n")
+	workCleanupGit(t, root, "check-ignore", "--", local)
+	workCleanupGit(t, root, "add", "--", ".gitignore", shared)
+	workCleanupGit(t, root, "-c", "user.name=Test User", "-c", "user.email=test@example.com", "commit", "-m", "fixture")
+	workCleanupGit(t, root, "worktree", "add", "--detach", lane, "HEAD")
+	assertFileDoesNotExist(t, filepath.Join(lane, local))
+	if readFile(t, filepath.Join(lane, shared)) != "# Shared SOP\n" {
+		t.Fatal("linked worktree lacks shared SOP")
+	}
+	registry, err := embeddedRulesetRegistry(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, rule := range registry {
+		if rule.Slug != sopRuleSlug {
+			continue
+		}
+		cmd := exec.Command("sh", "-c", contextEvidenceFence(t, rule.Content, "sh", 0))
+		cmd.Dir = lane
+		out, err := cmd.CombinedOutput()
+		want := filepath.Join(workCleanupGit(t, root, "rev-parse", "--show-toplevel"), local)
+		if err != nil || strings.TrimSpace(string(out)) != want {
+			t.Fatalf("discovery = %q, %v; want %q", out, err, want)
+		}
+		return
+	}
+	t.Fatal("SOP rule is not embedded")
 }
 
 func TestSOPScaffoldDryRunAndTargetedCreate(t *testing.T) {

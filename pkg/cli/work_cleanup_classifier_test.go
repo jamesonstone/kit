@@ -11,7 +11,7 @@ import (
 )
 
 // workCleanupStates lists every state the published classifier can print.
-var workCleanupStates = []string{"RECOVERABLE", "KEEP_IN_USE", "KEEP_UNCOMMITTED", "KEEP_LOCAL_SECRETS", "KEEP_UNPUSHED", "UNAVAILABLE"}
+var workCleanupStates = []string{"RECOVERABLE", "KEEP_IN_USE", "KEEP_UNCOMMITTED", "KEEP_LOCAL_SECRETS", "KEEP_LOCAL_SOPS", "KEEP_UNPUSHED", "UNAVAILABLE"}
 
 // workCleanupGit runs git in dir and fails the test on error.
 func workCleanupGit(t *testing.T, dir string, args ...string) string {
@@ -36,7 +36,7 @@ func workCleanupLane(t *testing.T) (primary, lane string) {
 	workCleanupGit(t, base, "clone", "-q", remote, primary)
 	workCleanupGit(t, primary, "config", "user.name", "Test User")
 	workCleanupGit(t, primary, "config", "user.email", "test@example.com")
-	writeFile(t, filepath.Join(primary, ".gitignore"), ".env\n.envrc\nnode_modules/\n")
+	writeFile(t, filepath.Join(primary, ".gitignore"), ".env\n.envrc\nnode_modules/\n/docs/sops/local/\n")
 	writeFile(t, filepath.Join(primary, "main.go"), "package main\n")
 	workCleanupGit(t, primary, "add", ".gitignore", "main.go")
 	workCleanupGit(t, primary, "commit", "-q", "-m", "base")
@@ -100,6 +100,14 @@ func TestWorkCleanupClassifierStates(t *testing.T) {
 		}},
 		{name: "ignored real env file", want: "KEEP_LOCAL_SECRETS", prepare: func(t *testing.T, _, lane string) string {
 			writeFile(t, filepath.Join(lane, ".env"), "TOKEN=fixture\n")
+			return lane
+		}},
+		{name: "ignored SOP content in worktree", want: "KEEP_LOCAL_SOPS", prepare: func(t *testing.T, _, lane string) string {
+			writeFile(t, filepath.Join(lane, "docs/sops/local/recovery/SOP.md"), "# Local recovery\n")
+			return lane
+		}},
+		{name: "local SOP in primary only", want: "RECOVERABLE", prepare: func(t *testing.T, primary, lane string) string {
+			writeFile(t, filepath.Join(primary, "docs/sops/local/recovery/SOP.md"), "# Local recovery\n")
 			return lane
 		}},
 		{name: "unpushed commit", want: "KEEP_UNPUSHED", prepare: func(t *testing.T, _, lane string) string {

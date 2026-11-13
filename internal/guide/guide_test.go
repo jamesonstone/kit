@@ -77,7 +77,7 @@ func TestArtifactsAndText(t *testing.T) {
 	if err := WriteText(&b, d); err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"docs/CONSTITUTION.md", "docs/specs/<feature>/SPEC.md", "docs/references/rules/<slug>.md", "docs/references/testing.md", "docs/sops/<slug>/SOP.md", "When present", "docs/sops/README.md", "docs/references/rules/standard-operating-procedures.md", "draft, active, and retired", "not a Kit creation command or execution engine", "existing authorization", "kit spec <feature>", "kit rules view <slug>"} {
+	for _, want := range []string{"docs/CONSTITUTION.md", "docs/specs/<feature>/SPEC.md", "docs/references/rules/<slug>.md", "docs/references/testing.md", "docs/sops/<slug>/SOP.md", "When present", "docs/sops/README.md", "docs/references/rules/standard-operating-procedures.md", "draft, active, and retired", "not a Kit creation command or execution engine", "existing authorization", "kit spec <feature>", "kit rules view <slug>", "git worktree list --porcelain", "docs/sops/local/*/SOP.md"} {
 		if !strings.Contains(b.String(), want) {
 			t.Errorf("missing %q", want)
 		}
