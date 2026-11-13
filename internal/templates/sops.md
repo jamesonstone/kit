@@ -4,6 +4,10 @@ Project-owned SOPs describe repeatable tasks for coding agents. Store each at
 `docs/sops/<slug>/SOP.md`. Start with the template below and replace every
 placeholder before activation. Use `draft`, `active`, or `retired` for `status`.
 
+Store local procedures at `docs/sops/local/<slug>/SOP.md` in the primary
+checkout. Git ignores this directory. From a linked worktree, use the
+discovery recipe in the SOP rules to read the same local copy.
+
 Read [the SOP rules](../references/rules/standard-operating-procedures.md) for
 creation, discovery, execution, authorization, and maintenance requirements.
 Kit creates this guide once during init or reconcile and preserves existing

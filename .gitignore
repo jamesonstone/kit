@@ -46,3 +46,6 @@ bin/
 .kit/temp/
 .kit/*.tmp
 .kit/*.lock
+
+# Kit local SOPs
+/docs/sops/local/

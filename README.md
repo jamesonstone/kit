@@ -149,6 +149,11 @@ validate, apply, and maintain them under existing authorization. Init and
 reconcile create the guide only when missing; existing content is preserved,
 even with force. Agents perform the work; Kit adds no SOP command or executor.
 
+Keep personal procedures at `docs/sops/local/<slug>/SOP.md` in the primary
+checkout. Init and reconcile add the directory to the root `.gitignore`.
+Agents in linked worktrees find the same local files through the SOP rule.
+Local SOPs stay with this clone and need a separate backup.
+
 ## Shell and project environments
 
 Kit ships a `shell-environment` rule for commands that depend on shell startup,

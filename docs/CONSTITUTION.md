@@ -22,7 +22,7 @@
 - `docs/specs/<feature>/SPEC.md` preserves material feature rationale, accepted plans, discoveries, validation, outcomes, and superseded decisions.
 - `docs/CONSTITUTION.md` contains current project-wide invariants, not feature inventories or transient plans.
 - `docs/references/` contains reusable repository-wide practices and evidence indices.
-- `docs/sops/<slug>/SOP.md` contains project-owned repeatable procedures. Agents create and perform them; SOPs do not confer authority or replace contextual rules.
+- `docs/sops/<slug>/SOP.md` contains shared repeatable procedures. User-requested local procedures live under the primary checkout's Git-ignored `docs/sops/local/`. Agents create and perform procedures within existing authorization.
 - Historical specifications remain historical evidence even when the commands or implementations they describe are retired.
 - Code-and-test-sufficient changes may make a justified `Repository Memory: not required` decision.
 

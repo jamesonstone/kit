@@ -8,7 +8,7 @@ import (
 // Gitignore is the default Kit-local ignore block for repositories initialized
 // with Kit. It intentionally does not ignore all of .kit/ so future tracked
 // schema, README, or fixture files remain possible.
-const Gitignore = `# Kit local generated environment, cache, and scratch artifacts
+const Gitignore = `# Kit local environment, cache, scratch artifacts, and SOPs
 .env
 .envrc
 .kit/cache/
@@ -16,6 +16,7 @@ const Gitignore = `# Kit local generated environment, cache, and scratch artifac
 .kit/temp/
 .kit/*.tmp
 .kit/*.lock
+/docs/sops/local/
 `
 
 const Envrc = `#!/bin/sh

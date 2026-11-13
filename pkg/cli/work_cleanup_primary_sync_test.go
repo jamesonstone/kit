@@ -138,6 +138,23 @@ func TestWorkCleanupPrimarySyncRunsFromPrimary(t *testing.T) {
 	}
 }
 
+func TestWorkCleanupPrimarySyncPreservesIgnoredLocalSOP(t *testing.T) {
+	primary, lane := workCleanupMergedLane(t)
+	path := "docs/sops/local/recovery/SOP.md"
+	const original = "# Personal recovery procedure\n"
+	writeFile(t, filepath.Join(primary, path), original)
+	writeFile(t, filepath.Join(lane, path), "# Incoming tracked content\n")
+	workCleanupGit(t, lane, "add", "-f", "--", path)
+	workCleanupGit(t, lane, "commit", "-q", "-m", "track conflicting file")
+	workCleanupGit(t, lane, "push", "-q", "origin", "HEAD:main")
+	if got := workCleanupSync(t, lane); got != "KEEP_REFUSED" {
+		t.Fatalf("sync = %q, want KEEP_REFUSED", got)
+	}
+	if got := readFile(t, filepath.Join(primary, path)); got != original {
+		t.Fatalf("primary SOP changed: %q", got)
+	}
+}
+
 // TestWorkCleanupPrimarySyncDocumentsStates checks the rule explains every sync state.
 func TestWorkCleanupPrimarySyncDocumentsStates(t *testing.T) {
 	content := workCleanupRule(t).Content

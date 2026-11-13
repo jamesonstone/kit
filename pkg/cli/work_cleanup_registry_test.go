@@ -125,7 +125,7 @@ func TestWorkCleanupContractRunsQuietly(t *testing.T) {
 		"apply `work-cleanup` quietly",
 		"remove only what clear evidence shows a remote can restore",
 		"never ask the human to approve a cleanup",
-		"The only exception is the fast-forward-only update of its default branch in `work-cleanup`",
+		"read-only except for the default-branch fast-forward in `work-cleanup` and user-requested local SOPs",
 		workCleanupRoute,
 	} {
 		if !strings.Contains(block, want) {
