@@ -185,14 +185,15 @@ settings, or network permissions, and cannot guarantee host compliance.
 
 ## Issue Providers
 
-GitHub Issues is the default, including noninteractive init. Interactive init also
-offers Linear. Use verified non-secret workspace/team identities for scripts:
+GitHub Issues is the default, including noninteractive init. GitHub issue
+branches use `GH-<issue number>`. Interactive init also offers Linear. Use
+verified non-secret workspace and team identities for scripts:
 
 ```bash
 kit init --issue-provider linear --linear-workspace acme \
-  --linear-team-id <verified-team-uuid>
+  --linear-team-id <verified-team-uuid> --linear-team-key ENG
 kit config set --issue-provider linear --linear-workspace acme \
-  --linear-team-id <verified-team-uuid> --dry-run --json
+  --linear-team-id <verified-team-uuid> --linear-team-key ENG --dry-run --json
 ```
 
 Remove `--dry-run` to apply configuration, then run the returned reconciliation
@@ -206,6 +207,7 @@ issues:
   linear:
     workspace: acme
     team_id: <verified-team-uuid>
+    team_key: ENG
     # project_id: <verified-project-uuid>
 ```
 
@@ -214,7 +216,12 @@ host's authorized capability, never `.kit.yaml`. Ticket creation and lifecycle
 updates follow Kit's agent instructions through that capability. Missing Linear
 access stops ticket operations; it never falls back to GitHub.
 
-Use `ENG-123` as the branch and conventional commit scope, with a full URL footer:
+During setup, the agent reads the verified Linear team's key through its
+authorized connection. For a project with multiple teams, the selected issue
+team supplies the key. `--linear-team-key` is optional for existing setups.
+`kit init` and `kit config set` report the configured branch prefix. Use the exact Linear
+issue identifier, such as `ENG-123`, as the branch and conventional commit
+scope, with a full URL footer:
 
 ```text
 feat(ENG-123): :sparkles: add invitations

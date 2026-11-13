@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 // IssueConfig selects the repository's development tracker. Credentials never
@@ -24,7 +25,13 @@ func (c IssueConfig) IssueTemplateEnabled() bool {
 type LinearConfig struct {
 	Workspace string `yaml:"workspace,omitempty" json:"workspace,omitempty"`
 	TeamID    string `yaml:"team_id,omitempty" json:"team_id,omitempty"`
+	TeamKey   string `yaml:"team_key,omitempty" json:"team_key,omitempty"`
 	ProjectID string `yaml:"project_id,omitempty" json:"project_id,omitempty"`
+}
+
+// SameTeam reports whether both targets identify the same workspace and team.
+func (c LinearConfig) SameTeam(other LinearConfig) bool {
+	return c.Workspace == other.Workspace && strings.EqualFold(c.TeamID, other.TeamID)
 }
 
 func (c IssueConfig) EffectiveProvider() string {
@@ -34,8 +41,23 @@ func (c IssueConfig) EffectiveProvider() string {
 	return c.Provider
 }
 
+// BranchPrefix reports the configured prefix. An empty value means the agent
+// must resolve the Linear team key. Linear's returned issue ID names the branch.
+func (c IssueConfig) BranchPrefix() string {
+	switch c.EffectiveProvider() {
+	case "github":
+		return "GH-"
+	case "linear":
+		if c.Linear.TeamKey != "" {
+			return c.Linear.TeamKey + "-"
+		}
+	}
+	return ""
+}
+
 var linearWorkspacePattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 var linearIDPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+var linearTeamKeyPattern = regexp.MustCompile(`^[A-Za-z0-9]+$`)
 
 // Validate checks local configuration only. Agents must verify these identities
 // and the active human's access with Linear before any ticket mutation.
@@ -49,6 +71,9 @@ func (c IssueConfig) Validate() error {
 		}
 		if !linearIDPattern.MatchString(c.Linear.TeamID) {
 			return fmt.Errorf("issues.linear.team_id must be a verified Linear team UUID")
+		}
+		if c.Linear.TeamKey != "" && !linearTeamKeyPattern.MatchString(c.Linear.TeamKey) {
+			return fmt.Errorf("issues.linear.team_key must be the Linear team identifier without a trailing hyphen")
 		}
 		if c.Linear.ProjectID != "" && !linearIDPattern.MatchString(c.Linear.ProjectID) {
 			return fmt.Errorf("issues.linear.project_id must be a verified Linear project UUID or omitted")

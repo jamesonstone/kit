@@ -36,6 +36,7 @@ func TestInitDryRunWritesNothing(t *testing.T) {
 	for _, want := range []string{
 		"Pre-write plan:",
 		"create .kit.yaml",
+		"Branch prefix: GH-",
 		"skip .github/ISSUE_TEMPLATE/issue.md (opt-in; pass --issue-template)",
 		"skip " + makefilePath,
 		"Warning: existing issue template config: .github/ISSUE_TEMPLATE/config.yml",

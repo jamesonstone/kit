@@ -119,6 +119,9 @@ func TestRunInit_OutputOnlyPrintsRawPromptAndSkipsDefaultCopy(t *testing.T) {
 		if strings.Contains(output, "Initializing Kit project") {
 			t.Fatalf("expected --output-only to suppress init status output, got %q", output)
 		}
+		if strings.Contains(output, "Branch prefix:") {
+			t.Fatalf("expected --output-only to suppress branch prefix output, got %q", output)
+		}
 		if strings.Contains(output, "Next steps") {
 			t.Fatalf("expected --output-only to suppress numbered next steps, got %q", output)
 		}
