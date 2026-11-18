@@ -40,7 +40,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 ## Kit Functionality
 
-Run `kit guide`.
+Run `kit guide` when you need to choose a Kit command.
 
 ## Engineering
 
