@@ -59,6 +59,13 @@ func TestPlanPluginEnabledOverridesMergedList(t *testing.T) {
 	if _, err := PlanPluginEnabled(aliased, nil); err == nil {
 		t.Fatal("accepted an aliased plugin merge")
 	}
+	anchored := []byte("schema_version: 2\nplugins:\n  enabled: &chosen [fixture]\ncustom: *chosen\n")
+	if _, err := PlanPluginEnabled(anchored, []string{"fixture", "other"}); err == nil {
+		t.Fatal("accepted an anchored enabled list that another key aliases")
+	}
+	if _, err := PlanPluginEnabled(anchored, nil); err == nil {
+		t.Fatal("accepted deletion of an anchored enabled list")
+	}
 }
 
 func TestPlanPluginEnabledRejectsBadIDs(t *testing.T) {
