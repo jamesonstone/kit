@@ -5,9 +5,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jamesonstone/kit/v3/internal/plugin"
 )
+
+const pluginManifestTempName = ".kit-plugin.yaml.tmp"
 
 // copyMissingPluginFiles copies a plugin directory from the invoking checkout
 // when the reconcile worktree has no manifest. git worktree add does not
@@ -47,14 +50,18 @@ func copyMissingPluginFiles(fromRoot, toRoot string) error {
 		} else if !os.IsNotExist(err) {
 			return err
 		}
-		if err := copyPluginTree(source, destination); err != nil {
+		if err := copyPluginTree(toRoot, source, destination); err != nil {
+			_ = os.Remove(filepath.Join(destination, pluginManifestTempName))
+			return err
+		}
+		if err := publishPluginManifest(toRoot, source, destination); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func copyPluginTree(fromDir, toDir string) error {
+func copyPluginTree(worktree, fromDir, toDir string) error {
 	return filepath.WalkDir(fromDir, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -63,7 +70,13 @@ func copyPluginTree(fromDir, toDir string) error {
 		if err != nil {
 			return err
 		}
+		if rel == plugin.ManifestName {
+			return nil
+		}
 		target := filepath.Join(toDir, rel)
+		if err := rejectWorktreeSymlink(worktree, target); err != nil {
+			return err
+		}
 		info, err := os.Lstat(path)
 		if err != nil {
 			return err
@@ -79,6 +92,53 @@ func copyPluginTree(fromDir, toDir string) error {
 		}
 		return copyRegularFile(path, target, info.Mode().Perm())
 	})
+}
+
+// publishPluginManifest renames the manifest into place only after the other
+// plugin files have been copied. A missing manifest is what the next call uses
+// to retry an interrupted transfer.
+func publishPluginManifest(worktree, fromDir, toDir string) error {
+	temp := filepath.Join(toDir, pluginManifestTempName)
+	manifest := filepath.Join(toDir, plugin.ManifestName)
+	if err := rejectWorktreeSymlink(worktree, temp); err != nil {
+		return err
+	}
+	if err := copyRegularFile(filepath.Join(fromDir, plugin.ManifestName), temp, 0o644); err != nil {
+		_ = os.Remove(temp)
+		return err
+	}
+	if err := os.Rename(temp, manifest); err != nil {
+		_ = os.Remove(temp)
+		return err
+	}
+	return nil
+}
+
+// rejectWorktreeSymlink stops before a write that would follow a symlink out of
+// the reconcile worktree. Components that do not exist yet are created later.
+func rejectWorktreeSymlink(worktree, full string) error {
+	rel, err := filepath.Rel(worktree, full)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return fmt.Errorf("%s escapes the worktree", full)
+	}
+	current := worktree
+	for _, part := range strings.Split(rel, string(filepath.Separator)) {
+		if part == "" || part == "." {
+			continue
+		}
+		current = filepath.Join(current, part)
+		info, err := os.Lstat(current)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("%s is a symlink", filepath.ToSlash(rel))
+		}
+	}
+	return nil
 }
 
 func copyRegularFile(from, to string, mode os.FileMode) (err error) {
