@@ -10,8 +10,6 @@ import (
 	"github.com/jamesonstone/kit/v3/internal/plugin"
 )
 
-const pluginManifestTempName = ".kit-plugin.yaml.tmp"
-
 // copyMissingPluginFiles copies a plugin directory from the invoking checkout
 // when the reconcile worktree has no manifest. git worktree add does not
 // populate a submodule, and Kit does not clone or fetch one.
@@ -51,7 +49,6 @@ func copyMissingPluginFiles(fromRoot, toRoot string) error {
 			return err
 		}
 		if err := copyPluginTree(toRoot, source, destination); err != nil {
-			_ = os.Remove(filepath.Join(destination, pluginManifestTempName))
 			return err
 		}
 		if err := publishPluginManifest(toRoot, source, destination); err != nil {
@@ -70,19 +67,22 @@ func copyPluginTree(worktree, fromDir, toDir string) error {
 		if err != nil {
 			return err
 		}
-		if rel == plugin.ManifestName {
-			return nil
-		}
-		target := filepath.Join(toDir, rel)
-		if err := rejectWorktreeSymlink(worktree, target); err != nil {
-			return err
-		}
 		info, err := os.Lstat(path)
 		if err != nil {
 			return err
 		}
 		if info.Mode()&os.ModeSymlink != 0 {
 			return fmt.Errorf("%s is a symlink", filepath.ToSlash(filepath.Join(plugin.RootDir, rel)))
+		}
+		if rel == plugin.ManifestName {
+			if !info.Mode().IsRegular() {
+				return fmt.Errorf("%s is not a regular file", plugin.ManifestName)
+			}
+			return nil
+		}
+		target := filepath.Join(toDir, rel)
+		if err := rejectWorktreeSymlink(worktree, target); err != nil {
+			return err
 		}
 		if info.IsDir() {
 			return os.MkdirAll(target, info.Mode().Perm())
@@ -98,20 +98,44 @@ func copyPluginTree(worktree, fromDir, toDir string) error {
 // plugin files have been copied. A missing manifest is what the next call uses
 // to retry an interrupted transfer.
 func publishPluginManifest(worktree, fromDir, toDir string) error {
-	temp := filepath.Join(toDir, pluginManifestTempName)
-	manifest := filepath.Join(toDir, plugin.ManifestName)
-	if err := rejectWorktreeSymlink(worktree, temp); err != nil {
+	source := filepath.Join(fromDir, plugin.ManifestName)
+	info, err := os.Lstat(source)
+	if err != nil {
 		return err
 	}
-	if err := copyRegularFile(filepath.Join(fromDir, plugin.ManifestName), temp, 0o644); err != nil {
-		_ = os.Remove(temp)
+	if info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular() {
+		return fmt.Errorf("%s is not a regular file", plugin.ManifestName)
+	}
+	if err := rejectWorktreeSymlink(worktree, toDir); err != nil {
 		return err
 	}
-	if err := os.Rename(temp, manifest); err != nil {
-		_ = os.Remove(temp)
+	if err := os.MkdirAll(toDir, 0o755); err != nil {
 		return err
 	}
-	return nil
+	tempFile, err := os.CreateTemp(toDir, ".kit-plugin-*.tmp")
+	if err != nil {
+		return err
+	}
+	tempName := tempFile.Name()
+	defer func() { _ = os.Remove(tempName) }()
+	input, err := os.Open(source)
+	if err != nil {
+		_ = tempFile.Close()
+		return err
+	}
+	defer func() { _ = input.Close() }()
+	if _, err := io.Copy(tempFile, input); err != nil {
+		_ = tempFile.Close()
+		return err
+	}
+	if err := tempFile.Chmod(info.Mode().Perm()); err != nil {
+		_ = tempFile.Close()
+		return err
+	}
+	if err := tempFile.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tempName, filepath.Join(toDir, plugin.ManifestName))
 }
 
 // rejectWorktreeSymlink stops before a write that would follow a symlink out of
