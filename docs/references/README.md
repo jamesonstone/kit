@@ -5,6 +5,7 @@
 - This directory holds durable repo-local references that are broader than one feature
 - `rules/<slug>.md` holds contextual rules shipped with the Kit binary; the universal contract's Contextual Rules section says when to read each one, and `kit rules list` is the live inventory
 - `testing.md` records Kit's validation commands
+- `plugins.md` records the opt-in plugin contract: discovery, the manifest, and how a block is enabled and removed
 - `../sops/README.md` introduces project-owned procedures at `docs/sops/<slug>/SOP.md`
 - Link these files from feature front matter references when they materially shape work
 

@@ -89,7 +89,7 @@ func planInstructionArtifactWrite(
 	if !document.Exists(plan.absolutePath) {
 		plan.content = instructionArtifactContent(relativePath)
 		plan.result = instructionFileCreated
-		return plan, nil
+		return applyPluginInstructionPlan(projectRoot, cfg, plan)
 	}
 	plan.result = instructionFileSkipped
 	if mode == instructionFileWriteModeSkipExisting ||
@@ -110,5 +110,5 @@ func planInstructionArtifactWrite(
 		plan.content = migration.content
 		plan.result = instructionFileUpdated
 	}
-	return plan, nil
+	return applyPluginInstructionPlan(projectRoot, cfg, plan)
 }

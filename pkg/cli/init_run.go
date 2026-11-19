@@ -30,6 +30,9 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if err := selectInitIssueProvider(cmd, deliveryCfg); err != nil {
 		return err
 	}
+	if err := selectInitPlugins(cmd, cwd, deliveryCfg); err != nil {
+		return err
+	}
 	if initIssueTemplate {
 		enabled := true
 		deliveryCfg.Issues.IssueTemplate = &enabled

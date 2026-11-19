@@ -13,15 +13,18 @@ import (
 )
 
 type configSetReport struct {
-	Target                 string             `json:"target"`
-	TargetNotice           string             `json:"target_notice,omitempty"`
-	Worktree               bool               `json:"worktree"`
-	DryRun                 bool               `json:"dry_run"`
-	Changed                bool               `json:"changed"`
-	Issues                 config.IssueConfig `json:"issues"`
-	BranchPrefix           string             `json:"branch_prefix,omitempty"`
-	ReconciliationRequired bool               `json:"reconciliation_required"`
-	Next                   []string           `json:"next_actions"`
+	Target                 string              `json:"target"`
+	TargetNotice           string              `json:"target_notice,omitempty"`
+	Worktree               bool                `json:"worktree"`
+	DryRun                 bool                `json:"dry_run"`
+	Changed                bool                `json:"changed"`
+	Issues                 config.IssueConfig  `json:"issues"`
+	BranchPrefix           string              `json:"branch_prefix,omitempty"`
+	ReconciliationRequired bool                `json:"reconciliation_required"`
+	Next                   []string            `json:"next_actions"`
+	Plugin                 string              `json:"plugin,omitempty"`
+	PluginEnabled          *bool               `json:"plugin_enabled,omitempty"`
+	Plugins                config.PluginConfig `json:"plugins,omitempty"`
 }
 
 var resolveConfigSetTarget = resolveReconcileTarget
@@ -30,9 +33,9 @@ func init() { configCmd.AddCommand(newConfigSetCommand()) }
 
 func newConfigSetCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "set", Short: "Set the repository issue provider and report canonical reconcile steps",
-		Long: `Set only repository issue-provider configuration, preserving unrelated YAML.
-Requires --issue-provider github or linear; never prompts or stores credentials.
+		Use: "set", Short: "Set the issue provider or one plugin and report canonical reconcile steps",
+		Long: `Set repository issue-provider configuration, or enable or disable one plugin, preserving unrelated YAML.
+Issue mode requires --issue-provider github or linear and never prompts or stores credentials.
 Linear needs a verified workspace slug and team UUID, with optional project UUID.
 Use --linear-team-key for the verified team's branch prefix (for example ENG).
 Existing target fields are retained unless explicitly supplied; pass an empty
@@ -47,10 +50,20 @@ checkout, while a primary-checkout write uses the canonical base/worktree.
 This command changes configuration only. The result explicitly reports the target
 and next actions: run kit reconcile --dry-run --diff, then kit reconcile there.
 Reconcile alone owns managed rule/template migration and preserves custom files.
---json reports only issue settings and next actions, never other config values.`,
+In issue mode, --json reports issue settings and next actions, not other config values.
+Plugin mode adds the plugin id and the enabled list.
+
+To enable or disable one plugin, pass --plugin <id> with --enable or --disable
+and without issue-provider flags. The plugin must already be at
+.kit/plugins/<id>/. --disable removes that id and drops plugins when the list
+is empty. That mode also changes configuration only and reports the same
+reconcile steps. Kit does not read the plugin config file.`,
 		Args: cobra.NoArgs, SilenceUsage: true, RunE: runConfigSet,
 	}
 	bindIssueProviderFlags(cmd)
+	cmd.Flags().String("plugin", "", "plugin id to enable or disable")
+	cmd.Flags().Bool("enable", false, "enable the plugin named by --plugin")
+	cmd.Flags().Bool("disable", false, "disable the plugin named by --plugin")
 	cmd.Flags().Bool("dry-run", false, "preview issue settings without writing or preparing a worktree")
 	cmd.Flags().Bool("json", false, "emit structured settings, target, and reconcile next actions")
 	return cmd
@@ -121,6 +134,16 @@ func planIssueSetting(root string, cmd *cobra.Command) (issueSettingPlan, error)
 }
 
 func runConfigSet(cmd *cobra.Command, _ []string) error {
+	pluginMode, err := pluginConfigSetMode(cmd)
+	if err != nil {
+		return err
+	}
+	if pluginMode {
+		if issueConfigSetRequested(cmd) {
+			return fmt.Errorf("set a plugin separately from the issue provider")
+		}
+		return runPluginConfigSet(cmd)
+	}
 	root, err := config.FindProjectRoot()
 	if err != nil {
 		return err

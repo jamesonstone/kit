@@ -20,6 +20,7 @@ code is more reliable than model judgment.
   (`kit health`, `kit check`, `kit registry status`).
 - Verifies AWS identity before AWS work (`kit aws verify`).
 - Keeps local, minimal usage evidence (`kit usage`).
+- Reconciles an opt-in plugin instruction block into the agent entry files when `.kit.yaml` lists that plugin.
 
 ## What Kit Deliberately Does Not Do
 
@@ -27,6 +28,7 @@ code is more reliable than model judgment.
 - Describe host tools, models, or delegation mechanics; hosts expose those.
 - Generate prompts that wrap user intent in orchestration boilerplate.
 - Fetch rules or instructions from the network at runtime.
+- Execute plugins, store plugin credentials, or read plugin config files.
 - Launch, supervise, or orchestrate agents, or call a model.
 
 ## Core Artifacts

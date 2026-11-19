@@ -61,6 +61,10 @@ reported unless `--force` is used.
 | `kit config check` | Validates `.kit.yaml`, including optional `shell.command`, reports the shell source (`user` or `command`), and, interactively, repairs the AWS context. `--json` is read-only. Shell reporting does not execute the configured prefix or verify runtime readiness. |
 | `kit aws verify` | Verifies the configured AWS profile, account, and Region before AWS work. |
 
+## Plugins
+
+Plugins are off unless `plugins.enabled` in `.kit.yaml` lists them. Kit discovers a plugin only at `.kit/plugins/<id>/kit-plugin.yaml`. `kit init --plugin <id>` records that id when the directory is already present. `kit config set --plugin <id> --enable` or `--disable` toggles it later, without changing the issue provider. `kit reconcile` adds, updates, or removes the instruction block after the universal contract. A disabled plugin leaves no block. Kit does not run plugin code, read the plugin config file, or use the network. The contract is [plugins.md](references/plugins.md).
+
 ## Local Usage
 
 | Command | Why it exists |

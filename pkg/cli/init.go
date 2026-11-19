@@ -48,6 +48,10 @@ GitHub issue branches use GH-<number>. For Linear, look up the selected
 team's key in Linear and pass it with --linear-team-key (for example ENG).
 If a project has multiple teams, use the key of the team that owns the issues.
 
+--plugin <id> records plugins.enabled for a plugin already at
+.kit/plugins/<id>/. Repeat it to enable more than one. With no --plugin,
+init leaves plugins off and writes the same instruction files as before.
+
 Mint Actions integration is planned automatically. Existing jobs need explicit
 --mint-workflow, --mint-job and --mint-before-step placement.
 
@@ -80,6 +84,7 @@ func init() {
 	initCmd.Flags().BoolVar(&initPlanDryRun, "dry-run", false, "print the file plan and write nothing")
 	initCmd.Flags().BoolVar(&initAllowOverwrite, "force", false, "write planned changes to existing files without confirmation")
 	bindIssueProviderFlags(initCmd)
+	initCmd.Flags().StringArray("plugin", nil, "enable a plugin already present at .kit/plugins/<id>/; repeat to enable more")
 	bindMintPipelineSelection(initCmd, &initMintSelection)
 	rootCmd.AddCommand(initCmd)
 }

@@ -117,10 +117,12 @@
 - Kit does not preserve every historical CLI path across major releases.
 - Kit does not keep legacy generators, legacy audits, or compatibility frameworks beyond the migration decoder.
 - Kit does not execute pull-request merges or silently overwrite project-owned content; coding agents may merge only under the exact active authorization contract.
+- Kit does not execute plugins, store plugin credentials, or fetch plugin files. An enabled plugin contributes only a reconciled instruction block.
 
 ## DEFINITIONS
 
 - **Universal contract** — Kit's single canonical agent contract, rendered into the Kit-managed block of each agent entry file.
+- **Plugin** — an opt-in instruction bundle at `.kit/plugins/<id>/`. It is off unless `plugins.enabled` lists its id. Reconcile copies its instruction block into agent entry files and does not read its config.
 - **Contextual rule** — a ruleset under `docs/references/rules/` that an agent reads only when the contract's trigger for it applies.
 - **Ruleset** — a durable Markdown policy artifact managed through the rules registry.
 - **Living spec** — a V3 `SPEC.md` maintained from accepted planning through actual outcome and repository-memory disposition.

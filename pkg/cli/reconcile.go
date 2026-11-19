@@ -28,6 +28,8 @@ Reconcile:
   - puts exactly one current Kit-managed contract block in AGENTS.md,
     CLAUDE.md, and .github/copilot-instructions.md, keeping project guidance
     outside the block
+  - adds, updates, and removes instruction blocks for plugins listed in
+    plugins.enabled, directly after that contract block
   - updates unedited Kit sections of docs/CONSTITUTION.md and its baseline
   - adds missing DESIGN.md and SECURITY.md, updates unchanged Kit defaults,
     and preserves project policies unless --force --file explicitly selects them

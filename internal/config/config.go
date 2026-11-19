@@ -31,6 +31,7 @@ type Config struct {
 	Usage                      *UsageConfig   `yaml:"usage,omitempty"`
 	Shell                      ShellConfig    `yaml:"shell,omitempty"`
 	Issues                     IssueConfig    `yaml:"issues,omitempty"`
+	Plugins                    PluginConfig   `yaml:"plugins,omitempty"`
 	GitHub                     GitHubConfig   `yaml:"github,omitempty"`
 	AWS                        *AWSConfig     `yaml:"aws,omitempty"`
 }
