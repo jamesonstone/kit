@@ -74,6 +74,14 @@ func TestLoadEnabledRejectsUnsafePlugins(t *testing.T) {
 	}
 }
 
+func TestLoadEnabledRejectsMarkerConfigPath(t *testing.T) {
+	root := t.TempDir()
+	writePlugin(t, root, "fixture", "schema_version: 1\nid: fixture\ninstructions: instructions.md\nconfig: KIT-PLUGIN.yaml\n", "ok\n")
+	if _, err := LoadEnabled(root, []string{"fixture"}); err == nil || !strings.Contains(err.Error(), "config path") {
+		t.Fatal(err)
+	}
+}
+
 func TestLoadEnabledRejectsSymlink(t *testing.T) {
 	root := t.TempDir()
 	dir := filepath.Join(root, RootDir, "fixture")

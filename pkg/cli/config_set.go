@@ -13,18 +13,18 @@ import (
 )
 
 type configSetReport struct {
-	Target                 string              `json:"target"`
-	TargetNotice           string              `json:"target_notice,omitempty"`
-	Worktree               bool                `json:"worktree"`
-	DryRun                 bool                `json:"dry_run"`
-	Changed                bool                `json:"changed"`
-	Issues                 config.IssueConfig  `json:"issues"`
-	BranchPrefix           string              `json:"branch_prefix,omitempty"`
-	ReconciliationRequired bool                `json:"reconciliation_required"`
-	Next                   []string            `json:"next_actions"`
-	Plugin                 string              `json:"plugin,omitempty"`
-	PluginEnabled          *bool               `json:"plugin_enabled,omitempty"`
-	Plugins                config.PluginConfig `json:"plugins,omitempty"`
+	Target                 string               `json:"target"`
+	TargetNotice           string               `json:"target_notice,omitempty"`
+	Worktree               bool                 `json:"worktree"`
+	DryRun                 bool                 `json:"dry_run"`
+	Changed                bool                 `json:"changed"`
+	Issues                 config.IssueConfig   `json:"issues"`
+	BranchPrefix           string               `json:"branch_prefix,omitempty"`
+	ReconciliationRequired bool                 `json:"reconciliation_required"`
+	Next                   []string             `json:"next_actions"`
+	Plugin                 string               `json:"plugin,omitempty"`
+	PluginEnabled          *bool                `json:"plugin_enabled,omitempty"`
+	Plugins                *config.PluginConfig `json:"plugins,omitempty"`
 }
 
 var resolveConfigSetTarget = resolveReconcileTarget

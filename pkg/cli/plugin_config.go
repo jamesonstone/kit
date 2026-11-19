@@ -50,9 +50,16 @@ type pluginSettingPlan struct {
 }
 
 func planPluginSetting(root string, cmd *cobra.Command) (pluginSettingPlan, error) {
-	cfg, err := loadIssueSetting(root)
+	before, err := os.ReadFile(filepath.Join(root, config.ConfigFileName))
 	if err != nil {
 		return pluginSettingPlan{}, err
+	}
+	cfg, inspection, err := config.ParseWithInspection(before)
+	if err != nil {
+		return pluginSettingPlan{}, err
+	}
+	if inspection.SchemaState == config.SchemaStateNewer {
+		return pluginSettingPlan{}, fmt.Errorf("upgrade Kit before editing a newer config schema")
 	}
 	id, _ := cmd.Flags().GetString("plugin")
 	enable, _ := cmd.Flags().GetBool("enable")
@@ -61,10 +68,6 @@ func planPluginSetting(root string, cmd *cobra.Command) (pluginSettingPlan, erro
 		return pluginSettingPlan{}, err
 	}
 	if _, err := plugin.LoadEnabled(root, next); err != nil {
-		return pluginSettingPlan{}, err
-	}
-	before, err := os.ReadFile(filepath.Join(root, config.ConfigFileName))
-	if err != nil {
 		return pluginSettingPlan{}, err
 	}
 	after, err := config.PlanPluginEnabled(before, next)
@@ -126,7 +129,7 @@ func runPluginConfigSet(cmd *cobra.Command) error {
 	report := configSetReport{
 		Target: target.projectRoot, TargetNotice: strings.TrimSpace(targetNotice.String()), Worktree: target.worktree,
 		DryRun: dry, Changed: changed, Issues: plan.issues, BranchPrefix: plan.issues.BranchPrefix(),
-		ReconciliationRequired: true, Plugin: plan.id, PluginEnabled: &enabled, Plugins: plan.plugins,
+		ReconciliationRequired: true, Plugin: plan.id, PluginEnabled: &enabled, Plugins: &plan.plugins,
 		Next: []string{
 			"cd " + shellQuoteArgument(target.projectRoot) + " && kit reconcile --dry-run --diff",
 			"cd " + shellQuoteArgument(target.projectRoot) + " && kit reconcile",

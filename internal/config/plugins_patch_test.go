@@ -42,6 +42,25 @@ func TestPlanPluginEnabledPreservesUnrelatedYAML(t *testing.T) {
 	}
 }
 
+func TestPlanPluginEnabledOverridesMergedList(t *testing.T) {
+	before := []byte("schema_version: 2\nplugins:\n  <<:\n    enabled: [fixture]\n  note: keep\n")
+	disabled, err := PlanPluginEnabled(before, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := Default()
+	if err := yaml.Unmarshal(disabled, cfg); err != nil {
+		t.Fatal(err)
+	}
+	if len(cfg.Plugins.Enabled) != 0 || !strings.Contains(string(disabled), "note: keep") {
+		t.Fatalf("merge override:\n%s\n%#v", disabled, cfg.Plugins.Enabled)
+	}
+	aliased := []byte("schema_version: 2\ndefaults: &defaults\n  enabled: [fixture]\nplugins:\n  <<: *defaults\n")
+	if _, err := PlanPluginEnabled(aliased, nil); err == nil {
+		t.Fatal("accepted an aliased plugin merge")
+	}
+}
+
 func TestPlanPluginEnabledRejectsBadIDs(t *testing.T) {
 	before := []byte("schema_version: 2\n")
 	for _, id := range []string{"", "Bad", "-no", "no-", "a--b", "1abc"} {

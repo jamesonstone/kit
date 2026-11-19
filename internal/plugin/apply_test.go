@@ -78,6 +78,27 @@ func TestApplyKeepsEnabledOrder(t *testing.T) {
 	}
 }
 
+func TestApplyPreservesContractEndingNewline(t *testing.T) {
+	end := templates.UniversalContractEndMarker
+	block := []Block{{ID: "fixture", Body: "Roster."}}
+	withNewline := "intro\n" + templates.UniversalContractBeginMarker + "\ncontract\n" + end + "\n"
+	withoutNewline := "intro\n" + templates.UniversalContractBeginMarker + "\ncontract\n" + end
+	for _, original := range []string{withNewline, withoutNewline} {
+		enabled, err := Apply(original, block)
+		if err != nil {
+			t.Fatal(err)
+		}
+		again, err := Apply(enabled, block)
+		if err != nil || again != enabled {
+			t.Fatalf("repeat changed EOF form %q\n%s", original, again)
+		}
+		disabled, err := Apply(enabled, nil)
+		if err != nil || disabled != original {
+			t.Fatalf("disable changed EOF form\noriginal %q\n got %q\n%v", original, disabled, err)
+		}
+	}
+}
+
 func TestApplyRejectsBrokenRegions(t *testing.T) {
 	base := templates.InstructionEntryFile("AGENTS.md")
 	broken := base + "\n<!-- BEGIN KIT-PLUGIN fixture -->\nno end\n"

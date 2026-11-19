@@ -116,6 +116,9 @@ func prepareReconcileWorktree(projectRoot string, location worktreeprep.Location
 	if err := linkEnvironmentFiles(filepath.Join(location.Path, relative), target.projectRoot); err != nil {
 		return reconcileTarget{}, err
 	}
+	if err := copyMissingPluginFiles(filepath.Join(location.Path, relative), target.projectRoot); err != nil {
+		return reconcileTarget{}, err
+	}
 	return target, nil
 }
 

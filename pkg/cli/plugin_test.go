@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -179,6 +181,44 @@ func TestInitPluginWritesBlock(t *testing.T) {
 	}
 	if !strings.Contains(content, templates.UniversalContractBlock()) {
 		t.Fatal("init dropped the contract")
+	}
+}
+
+func TestIssueConfigSetJSONOmitsPlugins(t *testing.T) {
+	root := t.TempDir()
+	setWorkingDirectory(t, root)
+	stubReconcileWorktreeInspection(t, worktreeprep.Location{})
+	writeFile(t, filepath.Join(root, config.ConfigFileName), "schema_version: 2\n")
+	cmd := newConfigSetCommand()
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+	cmd.SetErr(io.Discard)
+	cmd.SetArgs([]string{"--issue-provider", "github", "--json"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(out.String(), "plugins") {
+		t.Fatalf("issue JSON included plugins: %s", out.String())
+	}
+}
+
+func TestCopyMissingPluginFilesSkipsExistingManifest(t *testing.T) {
+	from := t.TempDir()
+	to := t.TempDir()
+	writeFixturePlugin(t, from, "from roster\n")
+	writeFixturePlugin(t, to, "keep roster\n")
+	if err := copyMissingPluginFiles(from, to); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(readFile(t, filepath.Join(to, plugin.RootDir, "fixture", "instructions.md")), "keep roster") {
+		t.Fatal("existing plugin was overwritten")
+	}
+	empty := t.TempDir()
+	if err := copyMissingPluginFiles(from, empty); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(readFile(t, filepath.Join(empty, plugin.RootDir, "fixture", plugin.ManifestName)), "id: fixture") {
+		t.Fatal("missing plugin was not copied")
 	}
 }
 

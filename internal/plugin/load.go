@@ -3,6 +3,7 @@ package plugin
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -86,6 +87,9 @@ func loadOne(projectRoot, id string) (Block, error) {
 		return Block{}, fmt.Errorf("plugin %s config: %w", id, err)
 	}
 	block.ConfigPath = path.Join(RootDir, id, configPath)
+	if strings.Contains(block.ConfigPath, "KIT-PLUGIN") || strings.Contains(block.ConfigPath, "KIT-MANAGED CONTRACT") {
+		return Block{}, fmt.Errorf("plugin %s config path is invalid", id)
+	}
 	return block, nil
 }
 
@@ -157,7 +161,12 @@ func readProjectFile(projectRoot, rel string, limit int) ([]byte, error) {
 			return nil, fmt.Errorf("%s is not a regular file", filepath.ToSlash(current))
 		}
 	}
-	data, err := root.ReadFile(rel)
+	file, err := root.Open(rel)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = file.Close() }()
+	data, err := io.ReadAll(io.LimitReader(file, int64(limit)+1))
 	if err != nil {
 		return nil, err
 	}

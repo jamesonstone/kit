@@ -25,22 +25,26 @@ func Apply(content string, blocks []Block) (string, error) {
 		return "", fmt.Errorf("plugin blocks require exactly one Kit-managed contract block")
 	}
 	markerAt := strings.Index(content, end)
-	lineEnd := markerAt + len(end)
-	if lineEnd < len(content) && content[lineEnd] == '\n' {
-		lineEnd++
-	}
-	prefix, suffix := content[:lineEnd], content[lineEnd:]
+	prefixEnd := markerAt + len(end)
+	prefix, suffix := content[:prefixEnd], content[prefixEnd:]
 	if strings.Contains(prefix, pluginBeginPrefix) || strings.Contains(prefix, pluginEndPrefix) {
 		return "", fmt.Errorf("plugin markers must sit immediately after the Kit-managed contract")
 	}
-	project, err := stripPluginRegion(suffix)
+	kept, err := stripOwnedPluginRegion(suffix)
 	if err != nil {
 		return "", err
 	}
 	if len(blocks) == 0 {
-		return prefix + project, nil
+		return prefix + kept, nil
 	}
-	return prefix + renderBlocks(blocks) + project, nil
+	// A newline that already ends the contract line stays in kept. The region
+	// supplies its own leading newline, which is the blank line after that
+	// ending, or the ending itself when the file stopped on the marker.
+	region := renderBlocks(blocks)
+	if strings.HasPrefix(kept, "\n") {
+		return prefix + kept[:1] + region + kept[1:], nil
+	}
+	return prefix + region + kept, nil
 }
 
 func validateBlocks(blocks []Block) error {
@@ -63,7 +67,7 @@ func validateBlocks(blocks []Block) error {
 		if strings.Contains(body, "KIT-PLUGIN") || strings.Contains(body, "KIT-MANAGED CONTRACT") {
 			return fmt.Errorf("plugin %s instructions contain a managed marker", block.ID)
 		}
-		if strings.Contains(block.ConfigPath, "\n") || strings.Contains(block.ConfigPath, "-->") {
+		if strings.Contains(block.ConfigPath, "\n") || strings.Contains(block.ConfigPath, "-->") || strings.Contains(block.ConfigPath, "KIT-PLUGIN") || strings.Contains(block.ConfigPath, "KIT-MANAGED CONTRACT") {
 			return fmt.Errorf("plugin %s config path is invalid", block.ID)
 		}
 	}
@@ -89,19 +93,37 @@ func renderBlocks(blocks []Block) string {
 	return out.String()
 }
 
-func stripPluginRegion(suffix string) (string, error) {
+// stripOwnedPluginRegion removes the plugin region Kit inserted after the
+// contract marker text. A newline that ended the contract line stays. A
+// newline Kit added because the file ended on the marker is removed with the
+// region.
+func stripOwnedPluginRegion(suffix string) (string, error) {
 	if !strings.Contains(suffix, pluginBeginPrefix) && !strings.Contains(suffix, pluginEndPrefix) {
 		return suffix, nil
 	}
-	rest := suffix
-	if strings.HasPrefix(rest, "\n") {
-		if _, ok := pluginIDFromBegin(firstLine(rest[1:])); ok {
-			rest = rest[1:]
+	if strings.HasPrefix(suffix, "\n") {
+		afterNewline := suffix[1:]
+		if _, ok := pluginIDFromBegin(firstLine(afterNewline)); ok {
+			rest, err := consumePluginBlocks(afterNewline)
+			return rest, err
+		}
+		if strings.HasPrefix(afterNewline, "\n") {
+			if _, ok := pluginIDFromBegin(firstLine(afterNewline[1:])); ok {
+				rest, err := consumePluginBlocks(afterNewline[1:])
+				if err != nil {
+					return "", err
+				}
+				return "\n" + rest, nil
+			}
 		}
 	}
-	if _, ok := pluginIDFromBegin(firstLine(rest)); !ok {
-		return "", fmt.Errorf("plugin markers must sit immediately after the Kit-managed contract")
+	if _, ok := pluginIDFromBegin(firstLine(suffix)); ok {
+		return consumePluginBlocks(suffix)
 	}
+	return "", fmt.Errorf("plugin markers must sit immediately after the Kit-managed contract")
+}
+
+func consumePluginBlocks(rest string) (string, error) {
 	for {
 		var err error
 		rest, err = consumePluginBlock(rest)
@@ -143,6 +165,9 @@ func consumePluginBlock(rest string) (string, error) {
 		}
 		if !found {
 			return "", fmt.Errorf("plugin block %s is missing its end marker", id)
+		}
+		if strings.HasPrefix(bodyLine, "<!-- Plugin config: ") && strings.HasSuffix(bodyLine, " -->") {
+			continue
 		}
 		if strings.Contains(bodyLine, "KIT-PLUGIN") || strings.Contains(bodyLine, "KIT-MANAGED CONTRACT") {
 			return "", fmt.Errorf("plugin block %s contains a managed marker", id)

@@ -1,6 +1,6 @@
 # Plugins
 
-A plugin adds one instruction block to the agent entry files. It is off until the project lists its id. Kit does not run plugin code, read the plugin config file, store credentials, or use the network. Issue tracking stays on `issues.provider` (GitHub by default, or Linear).
+A plugin adds one instruction block to the agent entry files. It is off until the project lists its id. Loading a plugin does not run plugin code, read the plugin config file, store credentials, or use the network. `kit reconcile` still looks up the latest Mint Action release before it writes. Issue tracking stays on `issues.provider` (GitHub by default, or Linear).
 
 ## Discovery
 
@@ -10,7 +10,7 @@ Kit loads an enabled plugin only from:
 .kit/plugins/<id>/kit-plugin.yaml
 ```
 
-`<id>` matches `^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$` and must equal the directory name. Copy or submodule the plugin repository so its root is that directory. Kit does not clone it and does not look in any other directory. A symlink is rejected.
+`<id>` matches `^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$` and must equal the directory name. Copy or submodule the plugin repository so its root is that directory. Kit does not clone it and does not look in any other directory. A symlink is rejected. A reconcile worktree does not populate a submodule. Kit copies the plugin directory from the checkout that already has it, and does not fetch it.
 
 ## Manifest
 

@@ -49,6 +49,8 @@ Add a small `internal/plugin` package that loads an enabled manifest and reconci
 
 Instruction entry planning is the single write path for init and reconcile. Applying plugins there keeps health, status, and reconcile on the same bytes. `internal/config/schema.go` is already at the 300-line limit, so plugin YAML edits live in their own file and reuse the existing node helpers.
 
+A file that ends on the contract marker, with no newline, keeps that ending when the plugin block is removed. A newline that already ended the marker line stays. `git worktree add` does not populate a submodule, so reconcile copies a missing plugin directory from the checkout that already has it and does not fetch it. Config set reads the config file once and plans from those bytes. A YAML merge that supplies `plugins.enabled` is overridden with an explicit empty list. An alias or anchor is rejected. Issue-mode JSON omits `plugins`.
+
 ## VALIDATION
 
 Observed on this branch before delivery:
@@ -61,6 +63,8 @@ Observed on this branch before delivery:
 - `./bin/kit check --project` exited 0. It reported one existing non-blocking advisory that `docs/references/README.md` is a retired Kit file kept because it is edited. That advisory was already non-blocking before this change.
 
 Hosted CI was not run locally. The follow-up repositories were not built.
+
+Review fixes on the same branch were checked the same way: `gofmt -l .` printed nothing, and `make vet`, `make test`, `make build`, `make lint`, and `./bin/kit check --project` exited 0. The README advisory was unchanged.
 
 ## OUTCOME
 

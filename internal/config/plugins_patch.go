@@ -36,19 +36,29 @@ func PlanPluginEnabled(before []byte, enabled []string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if root.Anchor != "" {
-		return nil, fmt.Errorf("anchored configuration root requires manual review before changing plugins")
+	if root.Anchor != "" || mappingMerges(root) {
+		return nil, fmt.Errorf("anchored or merged configuration root requires manual review before changing plugins")
 	}
 	for i := 0; i+1 < len(root.Content); i += 2 {
-		if root.Content[i].Value == "plugins" && root.Content[i+1].Kind != yaml.MappingNode {
+		if root.Content[i].Value != "plugins" {
+			continue
+		}
+		if root.Content[i+1].Kind != yaml.MappingNode {
 			return nil, fmt.Errorf("plugins must be a mapping")
+		}
+		if pluginNodeUnsafe(root.Content[i]) || pluginNodeUnsafe(root.Content[i+1]) {
+			return nil, fmt.Errorf("aliased or anchored plugin settings require manual review; no changes made")
 		}
 	}
 	if len(enabled) == 0 {
 		if plugins := findMapping(root, "plugins"); plugins != nil {
-			removeKey(plugins, "enabled")
-			if len(plugins.Content) == 0 {
-				removeKey(root, "plugins")
+			if mappingMerges(plugins) {
+				setStringSequence(plugins, "enabled", nil)
+			} else {
+				removeKey(plugins, "enabled")
+				if len(plugins.Content) == 0 {
+					removeKey(root, "plugins")
+				}
 			}
 		}
 	} else {
@@ -65,6 +75,33 @@ func PlanPluginEnabled(before []byte, enabled []string) ([]byte, error) {
 		return nil, err
 	}
 	return output.Bytes(), nil
+}
+
+func mappingMerges(node *yaml.Node) bool {
+	if node == nil {
+		return false
+	}
+	for i := 0; i+1 < len(node.Content); i += 2 {
+		if node.Content[i].Value == "<<" {
+			return true
+		}
+	}
+	return false
+}
+
+func pluginNodeUnsafe(node *yaml.Node) bool {
+	if node == nil {
+		return false
+	}
+	if node.Kind == yaml.AliasNode || node.Anchor != "" {
+		return true
+	}
+	for _, child := range node.Content {
+		if pluginNodeUnsafe(child) {
+			return true
+		}
+	}
+	return false
 }
 
 func findMapping(parent *yaml.Node, key string) *yaml.Node {

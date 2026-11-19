@@ -308,8 +308,10 @@ Plugins are off unless `.kit.yaml` lists them. A plugin is a manifest and an
 instruction file at `.kit/plugins/<id>/`. `kit reconcile` inserts that block
 after the universal contract and removes it when the plugin is disabled. With
 no plugin enabled, generated instruction files match a project that has never
-had one. Kit does not run plugin code, read plugin config, or contact a
-network. See [Plugins](docs/references/plugins.md).
+had one. Plugin loading does not run plugin code, read plugin config, or
+contact a network. `kit reconcile` still looks up the latest Mint Action
+release before it writes, with or without a plugin. See
+[Plugins](docs/references/plugins.md).
 
 ## Documentation
 
