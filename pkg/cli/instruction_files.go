@@ -87,7 +87,7 @@ func planInstructionArtifactWrite(
 		return plan, nil
 	}
 	if !document.Exists(plan.absolutePath) {
-		plan.content = entryAwareContent(relativePath, instructionArtifactContent(relativePath), cfg)
+		plan.content = entryAwareContent(projectRoot, relativePath, instructionArtifactContent(relativePath))
 		plan.result = instructionFileCreated
 		return plan, nil
 	}
@@ -113,7 +113,7 @@ func planInstructionArtifactWrite(
 		plan.result = instructionFileUpdated
 	}
 	if plan.converged {
-		next := entryAwareContent(relativePath, base, cfg)
+		next := entryAwareContent(projectRoot, relativePath, base)
 		if next != string(data) {
 			plan.content = next
 			if plan.result == instructionFileSkipped {
@@ -124,11 +124,15 @@ func planInstructionArtifactWrite(
 	return plan, nil
 }
 
-func entryAwareContent(relativePath, content string, cfg *config.Config) string {
-	if cfg == nil || !isAgentEntry(relativePath) {
+func entryAwareContent(projectRoot, relativePath, content string) string {
+	if !isAgentEntry(relativePath) {
 		return content
 	}
-	return templates.ApplyWorkLedgerNote(content, cfg.WorkLedger)
+	ledger, err := config.RepositoryWorkLedger(projectRoot)
+	if err != nil {
+		return content
+	}
+	return templates.ApplyWorkLedgerNote(content, ledger)
 }
 
 func isAgentEntry(relativePath string) bool {

@@ -28,7 +28,7 @@ GH-298 adds a separate Work ledger pointer paragraph for longer-running work. Th
 
 ## REQUIREMENTS
 
-- Default off. An omitted `work_ledger`, an omitted `provider`, or `provider: none` is a no-op.
+- Default off. Load `~/.kit/.kit.yaml` when it exists, then overlay the repository `.kit.yaml` key by key. A missing user file changes nothing. `work_ledger` uses the same keys in both files. An omitted `work_ledger`, an omitted `provider`, or `provider: none` is off.
 - One swappable adapter selected by `work_ledger.provider`. Implement `plane`. Reserve `linear`, `jira`, and `notion` without inventing their calls.
 - Plane configuration is non-secret: workspace URL slug, project identifier, optional project name, and state names. Omitted state names mean `Active`, `In review`, and `Done`.
 - Lifecycle when configured: at start, find or create the matching item, link the issue, set the configured active state, and apply `work_ledger.owner_label` when set. When the pull request opens, link it and set the configured in-review state. When it merges, set the configured done state. An already-open pull request stays in review.
@@ -48,7 +48,7 @@ Do not add a CLI setter, a network client, or a credential field.
 
 The adapter is a description the native agent executes. A Plane SDK or a Kit background sync would store or proxy credentials, which spec 0092 already rejected for tickets.
 
-`work_ledger.plane.project` is the project identifier, not the display title. Optional `name` carries the title when a repository sets it. Optional `work_ledger.owner_label` is the acting agent's label. Kit never chooses a person, workspace, project, ledger URL, or bot label. Shipped rules and the unconfigured contract use placeholders such as `<workspace>` and `<project>`. The agent contract gains a ledger note only when `work_ledger.provider` is set, and that note is rendered from the repository config. Guidance names the repository owner, not a person.
+`work_ledger.plane.project` is the project identifier, not the display title. Optional `name` carries the title when a repository sets it. Optional `work_ledger.owner_label` is the acting agent's label. Kit never chooses a person, workspace, project, ledger URL, or bot label. Shipped rules and the unconfigured contract use placeholders such as `<workspace>` and `<project>`. The agent contract gains a ledger note only when the repository `.kit.yaml` sets `work_ledger.provider`, rendered from that repository config. Optional user config lives only at `~/.kit/.kit.yaml`. It is never committed. Repository keys override user keys. A user-only `work_ledger` still loads at runtime and is not copied into the repository. Guidance names the repository owner, not a person. Examples stay placeholders. No ledger product URL is committed.
 
 Reserved provider names fail validation so a later adapter can occupy the same key without a silent no-op. Unknown names fail closed.
 

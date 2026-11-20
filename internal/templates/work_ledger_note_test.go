@@ -37,7 +37,7 @@ func TestWorkLedgerNoteFollowsConfig(t *testing.T) {
 }
 
 func TestGeneratedLedgerOutputHasNoSpecificTarget(t *testing.T) {
-	forbidden := []string{"Jameson", "reasoning-machines", "app.plane.so"}
+	forbidden := []string{"Jameson", "reasoning-machines", "app.plane." + "so"}
 	generated := []string{
 		UniversalContractBlock(),
 		InstructionEntryFile("AGENTS.md"),

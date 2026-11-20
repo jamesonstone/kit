@@ -63,12 +63,10 @@ func (i Inspection) NeedsSchemaMigration() bool {
 }
 
 func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
-	configPath := filepath.Join(projectRoot, ConfigFileName)
-	data, err := os.ReadFile(configPath)
+	data, err := readMergedConfig(projectRoot)
 	if err != nil {
-		return nil, Inspection{}, fmt.Errorf("failed to read %s: %w", ConfigFileName, err)
+		return nil, Inspection{}, err
 	}
-
 	return ParseWithInspection(data)
 }
 

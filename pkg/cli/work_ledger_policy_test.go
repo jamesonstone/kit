@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,8 +28,11 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 	}
 	for _, marker := range []string{
 		"### Work ledger hook",
-		"An omitted `work_ledger` or an omitted `provider` is off",
-		"`provider: none` is the same no-op",
+		"`~/.kit/.kit.yaml`",
+		"overrides the user file key by key",
+		"A missing user file changes nothing",
+		"never committed",
+		"`plane.states.in_review`",
 		"`plane` is implemented",
 		"`linear`, `jira`, and `notion` are reserved",
 		"does not call the ledger API",
@@ -39,7 +43,7 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 		"`<workspace>`",
 		"`<project>`",
 		"The repository owner supplies",
-		"only when `work_ledger.provider` is set",
+		"only when the repository `.kit.yaml` sets `work_ledger.provider`",
 		"configured active state (default `Active`)",
 		"configured in-review state (default `In review`)",
 		"Do not move that item back to the active state",
@@ -66,11 +70,36 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 		}
 		generated = append(generated, string(data))
 	}
-	for _, bad := range []string{"Jameson", "reasoning-machines", "app.plane.so"} {
+	needle := "app.plane." + "so"
+	for _, bad := range []string{"Jameson", "reasoning-machines", needle} {
 		for _, text := range generated {
 			if strings.Contains(text, bad) {
 				t.Errorf("generated ledger guidance contains %q", bad)
 			}
 		}
+	}
+	root := filepath.Join("..", "..")
+	err = filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			switch entry.Name() {
+			case ".git", "bin", "tmp":
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		data, readErr := os.ReadFile(path)
+		if readErr != nil {
+			return readErr
+		}
+		if strings.Contains(string(data), needle) {
+			t.Errorf("%s contains a Plane URL", path)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 }
