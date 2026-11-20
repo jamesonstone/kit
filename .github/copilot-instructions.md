@@ -24,6 +24,21 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - Never stage secrets or `.env` files, and never print secret values.
 - When work completes, stops, or is superseded, apply `work-cleanup` quietly: remove only what clear evidence shows a remote can restore, keep everything else, and never ask the human to approve a cleanup.
 
+## Work ledger
+
+Track longer-running work, anything the repository owner names, or anything you recommend tracking (with the owner's OK) in the repository's configured work ledger. Before you ping the owner about a task, find its item; if it's done or owned by another agent, don't ping. Create the item if it is missing. After you act, update the item's owner label, status (Active / In review / Done), and a one-line note. Tag it with your own agent label (`agent:<you>`). If you hand work to another agent, relabel the item and add a note. The ledger holds the current state.
+
+Read the ledger tool, workspace, project, rules link, and label convention from the `work_ledger` block in the repository `.kit.yaml`, then from `~/.kit/.kit.yaml`. Kit loads the user file alongside the repository file. The repository file wins. If neither configures a ledger, this rule is a no-op. `~/.kit/.kit.yaml` is never committed. Both files use this shape, with placeholders:
+
+```yaml
+work_ledger:
+  tool: <tool>
+  workspace: <workspace>
+  project: <project>
+  rules: <rules link>
+  label: <label convention>
+```
+
 ## Authorship
 
 - Only the human user is author, committer, and assignee. Never add agent co-author trailers, "generated with" credits, or bot identities to commits, issues, pull requests, or comments. Assign every created or reused issue and pull request to the human, for example with `--assignee @me` after confirming the authenticated `gh` account is the human's. Stop if the git identity is not the human's.
