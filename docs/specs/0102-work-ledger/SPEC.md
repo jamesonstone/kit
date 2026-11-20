@@ -31,7 +31,7 @@ GH-298 adds a separate Work ledger pointer paragraph for longer-running work. Th
 - Default off. An omitted `work_ledger`, an omitted `provider`, or `provider: none` is a no-op.
 - One swappable adapter selected by `work_ledger.provider`. Implement `plane`. Reserve `linear`, `jira`, and `notion` without inventing their calls.
 - Plane configuration is non-secret: workspace URL slug, project identifier, optional project name, and state names. Omitted state names mean `Active`, `In review`, and `Done`.
-- Lifecycle when configured: at start, find or create the matching item, link the issue, set Active, and apply `agent:<x>` (Grok Bots use `grokbot:<bot_name>`). When the pull request opens, link it and set In review. When it merges, set Done.
+- Lifecycle when configured: at start, find or create the matching item, link the issue, set the configured active state, and apply `work_ledger.owner_label` when set. When the pull request opens, link it and set the configured in-review state. When it merges, set the configured done state. An already-open pull request stays in review.
 - Kit stores no credentials, adds no ledger SDK, and does not call the ledger API. The native agent uses its already-authorized connector, such as the Plane MCP.
 - A missing connector or a ledger error is reported and does not by itself stop the ticket. A failed search is not an empty project.
 - Do not enable the ledger in this repository's `.kit.yaml`.
@@ -48,9 +48,7 @@ Do not add a CLI setter, a network client, or a credential field.
 
 The adapter is a description the native agent executes. A Plane SDK or a Kit background sync would store or proxy credentials, which spec 0092 already rejected for tickets.
 
-`work_ledger.plane.project` is the project identifier (`WL`), not the display title. Optional `name` carries the title (`Work Ledger`) when a repository wants it in the description. The example target workspace `reasoning-machines` is documentation and a test fixture, not a compiled-in default.
-
-Owner labels stay a rule, not a secret and not a stored identity. The agent supplies `agent:<x>` or `grokbot:<bot_name>`. The adapter rejects any other shape and does not invent a name.
+`work_ledger.plane.project` is the project identifier, not the display title. Optional `name` carries the title when a repository sets it. Optional `work_ledger.owner_label` is the acting agent's label. Kit never chooses a person, workspace, project, ledger URL, or bot label. Shipped rules and the unconfigured contract use placeholders such as `<workspace>` and `<project>`. The agent contract gains a ledger note only when `work_ledger.provider` is set, and that note is rendered from the repository config. Guidance names the repository owner, not a person.
 
 Reserved provider names fail validation so a later adapter can occupy the same key without a silent no-op. Unknown names fail closed.
 
@@ -85,7 +83,7 @@ No live Plane or GitHub ledger call was made. Adapter tests scan planned actions
 
 GH-300 adds optional `work_ledger` configuration and an offline adapter. Omitted configuration is a no-op. `plane` describes find-or-create, issue link, Active, and the owner label at start; find, pull-request link, and In review when the pull request opens; find and Done on merge. `linear`, `jira`, and `notion` are reserved. Kit stores no credentials and does not call a ledger API. The delivery rule and the universal contract tell native agents to perform those steps with their own connector. `work-cleanup` points a configured ledger at that Done step after a satisfying merge. This repository's ledger stays off.
 
-A fresh-context review of `abe9277` found no acceptance miss. The cleanup pointer is the one valid gap it named. Empty plan URLs stay allowed because the adapter describes the step. The agent supplies the real links. An unmerged close still has no ledger state. No live Plane project was called.
+A fresh-context review of `abe9277` found no acceptance miss. The cleanup pointer is the gap it named. A second read of the same diff, completed after that pointer landed, still found three instruction gaps: lifecycle bullets named only the default states, a start with an already-open pull request could move an item back to active, and the Plane description omitted the later find. Those three are corrected. Empty plan URLs stay allowed because the agent supplies the real links. An unmerged close still has no ledger state. No live Plane project was called.
 
 ## REPOSITORY MEMORY
 

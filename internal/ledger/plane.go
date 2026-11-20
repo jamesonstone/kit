@@ -7,7 +7,8 @@ import (
 )
 
 type plane struct {
-	cfg config.PlaneLedgerConfig
+	cfg        config.PlaneLedgerConfig
+	ownerLabel string
 }
 
 func (p plane) Provider() string { return "plane" }
@@ -19,24 +20,37 @@ func (p plane) Description() string {
 	if p.cfg.Name != "" {
 		project = fmt.Sprintf("%s (%s)", p.cfg.Name, p.cfg.Project)
 	}
-	return fmt.Sprintf("Plane work ledger in workspace %s, project %s. Kit stores no credentials and does not call Plane. The native agent uses its already-authorized connector. At start, find or create the matching item, link the issue, set status %s, and apply owner label agent:<x> (Grok Bots use grokbot:<bot_name>). When the pull request opens, link it and set status %s. On merge, set status %s.",
-		p.cfg.Workspace, project, states.Active, states.InReview, states.Done)
+	label := "the repository's work_ledger.owner_label when set"
+	if p.ownerLabel != "" {
+		label = p.ownerLabel
+	}
+	return fmt.Sprintf("Plane work ledger in workspace %s, project %s. Kit stores no credentials and does not call Plane. The native agent uses its already-authorized connector. The repository owner supplies the target. At start, find or create the matching item, link the issue, set status %s, and apply owner label %s. If a pull request is already open, find the item, link the pull request, and set status %s instead of %s. When the pull request opens, find the item, link it, and set status %s. Do not create a second item. On merge, find the item and set status %s.",
+		p.cfg.Workspace, project, states.Active, label, states.InReview, states.Active, states.InReview, states.Done)
 }
 
 func (p plane) Plan(phase Phase, item Item) ([]Action, error) {
-	if err := validateOwnerLabel(item.OwnerLabel); err != nil {
+	label, err := p.resolveLabel(item.OwnerLabel)
+	if err != nil {
 		return nil, err
 	}
 	states := p.cfg.States.Resolved()
 	base := Action{Provider: "plane", Workspace: p.cfg.Workspace, Project: p.cfg.Project}
 	switch phase {
 	case PhaseStart:
-		return []Action{
+		actions := []Action{
 			step(base, OpFindOrCreate, LinkIssue, item.IssueURL, "", "", findOrCreateSummary(item.Title)),
-			step(base, OpLink, LinkIssue, item.IssueURL, "", "", "Link the issue."),
-			step(base, OpSetState, "", "", states.Active, "", "Set status "+states.Active+"."),
-			step(base, OpLabel, "", "", "", item.OwnerLabel, "Apply owner label agent:<x>. Grok Bots use grokbot:<bot_name>."),
-		}, nil
+			step(base, OpLink, LinkIssue, item.IssueURL, "", "", "Link the issue on the item returned by the find or create."),
+		}
+		if item.PullURL != "" {
+			actions = append(actions,
+				step(base, OpLink, LinkPullRequest, item.PullURL, "", "", "Link the pull request on that same item."),
+				step(base, OpSetState, "", "", states.InReview, "", "Set status "+states.InReview+"."),
+			)
+		} else {
+			actions = append(actions, step(base, OpSetState, "", "", states.Active, "", "Set status "+states.Active+"."))
+		}
+		actions = append(actions, step(base, OpLabel, "", "", "", label, ownerLabelSummary(label)))
+		return actions, nil
 	case PhaseReview:
 		return []Action{
 			step(base, OpFind, LinkIssue, item.IssueURL, "", "", "Find the work item that links this issue. Do not create another."),
@@ -51,6 +65,27 @@ func (p plane) Plan(phase Phase, item Item) ([]Action, error) {
 	default:
 		return nil, fmt.Errorf("unknown work ledger phase %q", phase)
 	}
+}
+
+func (p plane) resolveLabel(supplied string) (string, error) {
+	if supplied != "" && p.ownerLabel != "" && supplied != p.ownerLabel {
+		return "", fmt.Errorf("owner label must match work_ledger.owner_label")
+	}
+	label := supplied
+	if label == "" {
+		label = p.ownerLabel
+	}
+	if err := validateOwnerLabel(label); err != nil {
+		return "", err
+	}
+	return label, nil
+}
+
+func ownerLabelSummary(label string) string {
+	if label == "" {
+		return "Apply work_ledger.owner_label when the repository sets one."
+	}
+	return "Apply owner label " + label + "."
 }
 
 func findOrCreateSummary(title string) string {

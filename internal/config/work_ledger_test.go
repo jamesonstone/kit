@@ -3,7 +3,7 @@ package config
 import "testing"
 
 func TestWorkLedgerConfiguration(t *testing.T) {
-	valid := WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Workspace: "reasoning-machines", Project: "WL", Name: "Work Ledger"}}
+	valid := WorkLedgerConfig{Provider: "plane", OwnerLabel: "agent:example", Plane: PlaneLedgerConfig{Workspace: "example-workspace", Project: "PROJ", Name: "Ledger"}}
 	for _, tc := range []struct {
 		name    string
 		cfg     WorkLedgerConfig
@@ -13,14 +13,15 @@ func TestWorkLedgerConfiguration(t *testing.T) {
 		{"omitted", WorkLedgerConfig{}, false, false},
 		{"none", WorkLedgerConfig{Provider: "none"}, false, false},
 		{"plane", valid, true, false},
-		{"missing workspace", WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Project: "WL"}}, true, true},
-		{"URL workspace", WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Workspace: "https://app.plane.so/reasoning-machines", Project: "WL"}}, true, true},
-		{"title as identifier", WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Workspace: "reasoning-machines", Project: "Work Ledger"}}, true, true},
+		{"missing workspace", WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Project: "PROJ"}}, true, true},
+		{"URL workspace", WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Workspace: "https://ledger.example/workspace", Project: "PROJ"}}, true, true},
+		{"title as identifier", WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Workspace: "example-workspace", Project: "Ledger Name"}}, true, true},
+		{"bad label", WorkLedgerConfig{Provider: "plane", OwnerLabel: "has spaces", Plane: PlaneLedgerConfig{Workspace: "example-workspace", Project: "PROJ"}}, true, true},
 		{"reserved linear", WorkLedgerConfig{Provider: "linear"}, true, true},
 		{"reserved jira", WorkLedgerConfig{Provider: "jira"}, true, true},
 		{"reserved notion", WorkLedgerConfig{Provider: "notion"}, true, true},
 		{"unknown", WorkLedgerConfig{Provider: "trello"}, true, true},
-		{"bad state", WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Workspace: "reasoning-machines", Project: "WL", States: PlaneLedgerStates{Active: "Active\nDone"}}}, true, true},
+		{"bad state", WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Workspace: "example-workspace", Project: "PROJ", States: PlaneLedgerStates{Active: "Active\nDone"}}}, true, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.cfg.Enabled() != tc.enabled {
@@ -44,7 +45,7 @@ func TestWorkLedgerConfiguration(t *testing.T) {
 func TestWorkLedgerRoundTrip(t *testing.T) {
 	root := t.TempDir()
 	cfg := Default()
-	cfg.WorkLedger = WorkLedgerConfig{Provider: "plane", Plane: PlaneLedgerConfig{Workspace: "reasoning-machines", Project: "WL", Name: "Work Ledger", States: PlaneLedgerStates{Active: "Active"}}}
+	cfg.WorkLedger = WorkLedgerConfig{Provider: "plane", OwnerLabel: "agent:example", Plane: PlaneLedgerConfig{Workspace: "example-workspace", Project: "PROJ", Name: "Ledger", States: PlaneLedgerStates{Active: "Active"}}}
 	if err := Save(root, cfg); err != nil {
 		t.Fatal(err)
 	}

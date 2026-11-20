@@ -9,11 +9,12 @@ import (
 
 func exampleConfig() config.WorkLedgerConfig {
 	return config.WorkLedgerConfig{
-		Provider: "plane",
+		Provider:   "plane",
+		OwnerLabel: "agent:example",
 		Plane: config.PlaneLedgerConfig{
-			Workspace: "reasoning-machines",
-			Project:   "WL",
-			Name:      "Work Ledger",
+			Workspace: "example-workspace",
+			Project:   "PROJ",
+			Name:      "Ledger",
 		},
 	}
 }
@@ -48,29 +49,39 @@ func TestPlaneAdapterLifecycle(t *testing.T) {
 		t.Fatalf("provider = %q enabled %v", adapter.Provider(), adapter.Enabled())
 	}
 	description := adapter.Description()
-	for _, want := range []string{"reasoning-machines", "Work Ledger (WL)", "does not call Plane", "agent:<x>", "grokbot:<bot_name>", "Active", "In review", "Done"} {
+	for _, want := range []string{"example-workspace", "Ledger (PROJ)", "does not call Plane", "agent:example", "repository owner", "Active", "In review", "Done", "find the item", "already open"} {
 		if !strings.Contains(description, want) {
 			t.Errorf("description missing %q", want)
 		}
 	}
-	item := Item{IssueURL: "https://github.com/acme/app/issues/300", Title: "ledger hook", PullURL: "https://github.com/acme/app/pull/301", OwnerLabel: "grokbot:kit"}
+	item := Item{IssueURL: "https://github.com/acme/app/issues/300", Title: "ledger hook", OwnerLabel: "agent:example"}
 	start, err := adapter.Plan(PhaseStart, item)
 	if err != nil {
 		t.Fatal(err)
 	}
 	assertOps(t, start, []string{OpFindOrCreate, OpLink, OpSetState, OpLabel})
-	if start[0].LinkURL != item.IssueURL || start[1].LinkKind != LinkIssue || start[2].State != "Active" || start[3].Label != "grokbot:kit" {
+	if start[0].LinkURL != item.IssueURL || start[1].LinkKind != LinkIssue || start[2].State != "Active" || start[3].Label != "agent:example" {
 		t.Fatalf("start = %#v", start)
 	}
-	if start[0].Workspace != "reasoning-machines" || start[0].Project != "WL" {
+	if start[0].Workspace != "example-workspace" || start[0].Project != "PROJ" {
 		t.Fatalf("target = %#v", start[0])
 	}
-	review, err := adapter.Plan(PhaseReview, item)
+	open := item
+	open.PullURL = "https://github.com/acme/app/pull/301"
+	resumed, err := adapter.Plan(PhaseStart, open)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertOps(t, resumed, []string{OpFindOrCreate, OpLink, OpLink, OpSetState, OpLabel})
+	if resumed[2].LinkKind != LinkPullRequest || resumed[2].LinkURL != open.PullURL || resumed[3].State != "In review" {
+		t.Fatalf("open pull request start = %#v", resumed)
+	}
+	review, err := adapter.Plan(PhaseReview, open)
 	if err != nil {
 		t.Fatal(err)
 	}
 	assertOps(t, review, []string{OpFind, OpLink, OpSetState})
-	if review[0].LinkURL != item.IssueURL || review[1].LinkKind != LinkPullRequest || review[1].LinkURL != item.PullURL || review[2].State != "In review" {
+	if review[0].LinkURL != open.IssueURL || review[1].LinkKind != LinkPullRequest || review[1].LinkURL != open.PullURL || review[2].State != "In review" {
 		t.Fatalf("review = %#v", review)
 	}
 	done, err := adapter.Plan(PhaseDone, item)
@@ -101,8 +112,11 @@ func TestPlaneAdapterRejectsBadLabelAndUnknownPhase(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := adapter.Plan(PhaseStart, Item{OwnerLabel: "owner"}); err == nil {
-		t.Fatal("accepted a label outside agent:<x> and grokbot:<bot_name>")
+	if _, err := adapter.Plan(PhaseStart, Item{OwnerLabel: "not a label"}); err == nil {
+		t.Fatal("accepted an owner label with spaces")
+	}
+	if _, err := adapter.Plan(PhaseStart, Item{OwnerLabel: "other:agent"}); err == nil {
+		t.Fatal("accepted an owner label other than work_ledger.owner_label")
 	}
 	if _, err := adapter.Plan("later", Item{}); err == nil {
 		t.Fatal("unknown phase was accepted")

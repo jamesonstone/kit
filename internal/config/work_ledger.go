@@ -9,12 +9,14 @@ import (
 // WorkLedgerConfig selects an optional work-ledger adapter. Credentials never
 // belong here. An omitted provider is off and selects the no-op adapter.
 type WorkLedgerConfig struct {
-	Provider string            `yaml:"provider,omitempty" json:"provider,omitempty"`
-	Plane    PlaneLedgerConfig `yaml:"plane,omitempty" json:"plane,omitempty"`
+	Provider   string            `yaml:"provider,omitempty" json:"provider,omitempty"`
+	OwnerLabel string            `yaml:"owner_label,omitempty" json:"owner_label,omitempty"`
+	Plane      PlaneLedgerConfig `yaml:"plane,omitempty" json:"plane,omitempty"`
 }
 
 // PlaneLedgerConfig is the non-secret Plane target. Workspace is a URL slug.
-// Project is the project identifier, such as WL. Name is the optional title.
+// Project is the project identifier. Name is the optional title. Kit does not
+// supply either value.
 type PlaneLedgerConfig struct {
 	Workspace string            `yaml:"workspace,omitempty" json:"workspace,omitempty"`
 	Project   string            `yaml:"project,omitempty" json:"project,omitempty"`
@@ -57,6 +59,7 @@ func (s PlaneLedgerStates) Resolved() PlaneLedgerStates {
 var (
 	ledgerSlugPattern  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]*$`)
 	ledgerStatePattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9 .'_-]{0,63}$`)
+	ownerLabelPattern  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$`)
 )
 
 // Validate checks local configuration only. Agents verify the target with
@@ -66,7 +69,10 @@ func (c WorkLedgerConfig) Validate() error {
 	case "", "none":
 		return nil
 	case "plane":
-		return c.Plane.validate()
+		if err := c.Plane.validate(); err != nil {
+			return err
+		}
+		return validateOwnerLabel(c.OwnerLabel)
 	case "linear", "jira", "notion":
 		return fmt.Errorf("work_ledger.provider %q is reserved and not implemented", c.Provider)
 	default:
@@ -82,6 +88,13 @@ func appendIssueAndLedgerFindings(cfg *Config, findings []Finding) []Finding {
 		findings = append(findings, Finding{Field: "work_ledger", Severity: FindingError, Message: err.Error()})
 	}
 	return findings
+}
+
+func validateOwnerLabel(label string) error {
+	if label == "" || ownerLabelPattern.MatchString(label) {
+		return nil
+	}
+	return fmt.Errorf("work_ledger.owner_label must be a short label with no URL or spaces")
 }
 
 func (c PlaneLedgerConfig) validate() error {

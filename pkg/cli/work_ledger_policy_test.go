@@ -2,6 +2,8 @@ package cli
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -33,12 +35,15 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 		"Plane MCP",
 		"work_ledger.plane.workspace",
 		"work_ledger.plane.project",
-		"workspace `reasoning-machines`, project Work Ledger (`WL`)",
-		"set status Active",
-		"`agent:<x>`",
-		"`grokbot:<bot_name>`",
-		"set status In review",
-		"set status Done",
+		"work_ledger.owner_label",
+		"`<workspace>`",
+		"`<project>`",
+		"The repository owner supplies",
+		"only when `work_ledger.provider` is set",
+		"configured active state (default `Active`)",
+		"configured in-review state (default `In review`)",
+		"Do not move that item back to the active state",
+		"configured done state (default `Done`)",
 		"A failed search is not an empty project",
 		"do not by themselves stop the ticket",
 	} {
@@ -50,9 +55,22 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 		t.Fatal("work-cleanup does not route a configured ledger to Done")
 	}
 	contract := templates.UniversalContractBlock()
-	for _, marker := range []string{"`work_ledger`", "Omitted `work_ledger.provider` is off"} {
-		if !strings.Contains(contract, marker) {
-			t.Errorf("universal contract missing %q", marker)
+	if strings.Contains(contract, "BEGIN KIT-MANAGED WORK LEDGER") {
+		t.Fatal("unconfigured contract emitted a work ledger note")
+	}
+	generated := []string{delivery, cleanup, contract}
+	for _, path := range []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"} {
+		data, err := os.ReadFile(filepath.Join("..", "..", filepath.FromSlash(path)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		generated = append(generated, string(data))
+	}
+	for _, bad := range []string{"Jameson", "reasoning-machines", "app.plane.so"} {
+		for _, text := range generated {
+			if strings.Contains(text, bad) {
+				t.Errorf("generated ledger guidance contains %q", bad)
+			}
 		}
 	}
 }

@@ -10,7 +10,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 ## Changes And Delivery
 
-- Read repository-local `.kit.yaml` `issues` and `work_ledger` before ticket or delivery work. Omitted `issues.provider` means `github`; `linear` selects Linear exclusively. Omitted `work_ledger.provider` is off. Follow `delivery` for target verification, ticket content, identifiers, and provider failures.
+- Read repository-local `.kit.yaml` `issues` before ticket or delivery work. Omitted `issues.provider` means `github`; `linear` selects Linear exclusively. Follow `delivery` for target verification, ticket content, identifiers, and provider failures.
 
 - Treat the clone's primary checkout as read-only except for the default-branch fast-forward in `work-cleanup` and user-requested local SOPs under `docs/sops/local/`. Make every repository change in a linked worktree at `~/worktrees/<owner>/<repository>/<issue-id>` on branch `<issue-id>` (`GH-<number>` for GitHub Issues; the returned identifier, such as `ENG-123`, for Linear), created from the freshly fetched default branch, and deliver it through a ready pull request.
 - Default to a new human-assigned issue, branch, and worktree without asking. Continue an existing lane only when the user explicitly directs it for the same work. Repair of an exact existing pull request (review, CI, base refresh, conflicts, ordered merges) reuses that pull request's head branch and never opens a coordinating or corrective pull request. Never ask the user to choose between lanes; ask only when implementation intent or a named target is materially ambiguous.

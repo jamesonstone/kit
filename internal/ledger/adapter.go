@@ -72,7 +72,7 @@ func New(cfg config.WorkLedgerConfig) (Adapter, error) {
 	}
 	switch strings.TrimSpace(cfg.Provider) {
 	case "plane":
-		return plane{cfg: cfg.Plane}, nil
+		return plane{cfg: cfg.Plane, ownerLabel: strings.TrimSpace(cfg.OwnerLabel)}, nil
 	default:
 		return nil, fmt.Errorf("work_ledger.provider %q has no adapter", cfg.Provider)
 	}
@@ -102,11 +102,11 @@ func knownPhase(phase Phase) bool {
 	}
 }
 
-var ownerLabelPattern = regexp.MustCompile(`^(agent|grokbot):[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`)
+var suppliedLabelPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$`)
 
 func validateOwnerLabel(label string) error {
-	if label == "" || ownerLabelPattern.MatchString(label) {
+	if label == "" || suppliedLabelPattern.MatchString(label) {
 		return nil
 	}
-	return fmt.Errorf("owner label must match agent:<x> or grokbot:<bot_name>")
+	return fmt.Errorf("owner label must be a short label with no URL or spaces")
 }
