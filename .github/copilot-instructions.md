@@ -24,10 +24,6 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 - Never stage secrets or `.env` files, and never print secret values.
 - When work completes, stops, or is superseded, apply `work-cleanup` quietly: remove only what clear evidence shows a remote can restore, keep everything else, and never ask the human to approve a cleanup.
 
-## Work ledger
-
-Track longer-running work, anything Jameson names, or anything you recommend tracking (with his OK) in the work ledger, currently Plane: workspace `reasoning-machines`, project Work Ledger (`WL`). Before you ping him about a task, find its item; if it's done or owned by another agent, don't ping. After you act, update the item's status (Active / In review / Done), add a one-line note, and tag it with your label (`agent:<you>`; Grok Bots use `grokbot:<bot_name>`). The ledger holds the current state. Full rules: https://app.plane.so/reasoning-machines/wiki/25ffb5a9-86f3-4c65-af20-8aeb6279d9c4
-
 ## Authorship
 
 - Only the human user is author, committer, and assignee. Never add agent co-author trailers, "generated with" credits, or bot identities to commits, issues, pull requests, or comments. Assign every created or reused issue and pull request to the human, for example with `--assignee @me` after confirming the authenticated `gh` account is the human's. Stop if the git identity is not the human's.
@@ -92,3 +88,7 @@ For UI/UX/design, read `DESIGN.md`; for security-relevant engineering, read the 
 - Optional `kit rules add` rules declare `Applies When` triggers.
 
 <!-- END KIT-MANAGED CONTRACT -->
+
+## Work ledger
+
+Track longer-running work, anything the repository owner names, or anything you recommend tracking (with the owner's OK) in the work ledger, currently Plane: workspace `reasoning-machines`, project Work Ledger (`WL`). Before you ping the owner about a task, find its item; if it's done or owned by another agent, don't ping. After you act, update the item's status (Active / In review / Done), add a one-line note, and tag it with your label (`agent:<you>`; Grok Bots use `grokbot:<bot_name>`). The ledger holds the current state. Full rules: https://app.plane.so/reasoning-machines/wiki/25ffb5a9-86f3-4c65-af20-8aeb6279d9c4
