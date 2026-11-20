@@ -42,6 +42,17 @@ read_policy_default: conditional
 - Keep lifecycle intent equal: record progress and PR links on the selected ticket; mark it completed only after observing a satisfying merge. Use the team's verified workflow states for Linear, not guessed state names or GitHub closing keywords. Abandoned/superseded work gets a reason and replacement link, with the appropriate verified canceled state. No automatic state transition is implied by opening a PR.
 - Linear identifiers and URLs can reveal private metadata. Publish only commit/PR text approved for the repository's visibility; do not copy private ticket descriptions into public release notes. Mint preserves explicit issue links offline and does not fetch private content.
 
+### Work ledger hook
+
+- Read repository-local `.kit.yaml` `work_ledger` before ticket work. An omitted `work_ledger` or an omitted `provider` is off: do nothing. `provider: none` is the same no-op. Never inherit a ledger target from global configuration. This hook does not change the selected issue provider.
+- `work_ledger.provider` selects a swappable adapter. `plane` is implemented. `linear`, `jira`, and `notion` are reserved so a later adapter can use the same key; do not invent their calls. Any other provider is a blocker.
+- Kit stores no ledger credentials, adds no ledger SDK, and does not call the ledger API. The native agent performs the adapter's steps through its already-authorized connector (for Plane, the Plane MCP). If that connector is missing, report the skipped ledger write and continue the ticket. Do not install a connector, configure credentials, broaden access, or put secrets in the repository.
+- A `plane` adapter requires `work_ledger.plane.workspace` (URL slug) and `work_ledger.plane.project` (project identifier, such as `WL`). Optional `work_ledger.plane.name` is the project title, such as `Work Ledger`. State names come from `work_ledger.plane.states.active`, `in_review`, and `done`. Omitted state names mean `Active`, `In review`, and `Done`. Verify those states on the project before writing. One example target is workspace `reasoning-machines`, project Work Ledger (`WL`).
+- At ticket start: find the ledger item that already links this issue. If none, create one titled as the issue. Link the issue, set status Active, and apply the owner label `agent:<x>` (Grok Bots use `grokbot:<bot_name>`).
+- When the pull request opens: find the item that links this issue, link the pull request, and set status In review. Do not create a second item.
+- When that pull request merges: find the item that links this issue and set status Done. Do not create a second item. Do not set Done for an unmerged or closed-unmerged request.
+- A failed search is not an empty project. After an uncertain write, read the item back before creating another. Never invent an identifier. Ledger errors stop the ledger action and are reported as denied, pending, or uncertain. They do not by themselves stop the ticket.
+
 ### Lane
 
 - Default to a new lane without asking: reuse one strongly matching open issue or create one assigned to the human, then use branch `<issue-id>` in worktree `~/worktrees/<owner>/<repository>/<issue-id>`, and deliver through one ready pull request.

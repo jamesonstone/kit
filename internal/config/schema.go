@@ -90,9 +90,7 @@ func ParseWithInspection(data []byte) (*Config, Inspection, error) {
 		return nil, Inspection{}, fmt.Errorf("failed to parse %s: %w", ConfigFileName, err)
 	}
 	inspection.Findings = append(inspection.Findings, semanticFindings(cfg)...)
-	if err := cfg.Issues.Validate(); err != nil {
-		inspection.Findings = append(inspection.Findings, Finding{Field: "issues", Severity: FindingError, Message: err.Error()})
-	}
+	inspection.Findings = appendIssueAndLedgerFindings(cfg, inspection.Findings)
 	if err := cfg.Shell.Validate(); err != nil {
 		inspection.Findings = append(inspection.Findings, Finding{Field: "shell.command", Severity: FindingError, Message: err.Error()})
 	}

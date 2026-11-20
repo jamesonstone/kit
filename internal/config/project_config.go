@@ -69,6 +69,9 @@ func Load(projectRoot string) (*Config, error) {
 		err = cfg.Issues.Validate()
 	}
 	if err == nil {
+		err = cfg.WorkLedger.Validate()
+	}
+	if err == nil {
 		err = cfg.Shell.Validate()
 	}
 	return cfg, err
