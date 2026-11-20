@@ -2,6 +2,7 @@ package templates
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -148,38 +149,27 @@ func TestDeliveryRuleKeepsWorkLedgerBehavior(t *testing.T) {
 
 func TestNoCommittedFileNamesPlaneHost(t *testing.T) {
 	root := filepath.Join("..", "..")
-	forbidden := ownerLedgerForbidden()[2]
-	checked := 0
-	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if entry.IsDir() {
-			switch entry.Name() {
-			case ".git", "bin", "tmp":
-				return filepath.SkipDir
-			}
-			return nil
-		}
-		checked++
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		if strings.Contains(string(data), forbidden) {
-			rel, relErr := filepath.Rel(root, path)
-			if relErr != nil {
-				rel = path
-			}
-			t.Errorf("%s contains the ledger host", rel)
-		}
-		return nil
-	})
+	out, err := exec.Command("git", "-C", root, "ls-files", "-z").Output()
 	if err != nil {
 		t.Fatal(err)
 	}
+	forbidden := ownerLedgerForbidden()[2]
+	checked := 0
+	for _, name := range strings.Split(string(out), "\x00") {
+		if name == "" {
+			continue
+		}
+		checked++
+		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(name)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(data), forbidden) {
+			t.Errorf("%s contains the ledger host", name)
+		}
+	}
 	if checked == 0 {
-		t.Fatal("no files scanned")
+		t.Fatal("no committed files scanned")
 	}
 }
 
