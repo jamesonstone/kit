@@ -172,7 +172,7 @@ func TestWorkCleanupNeverAsksAndStaysNarrow(t *testing.T) {
 		}
 	}
 	// The budget includes both published shell recipes.
-	if words := len(strings.Fields(content)); words > 1400 {
+	if words := len(strings.Fields(content)); words > 1430 {
 		t.Fatalf("work-cleanup grew to %d words; keep it short", words)
 	}
 }

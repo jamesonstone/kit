@@ -87,7 +87,7 @@ func planInstructionArtifactWrite(
 		return plan, nil
 	}
 	if !document.Exists(plan.absolutePath) {
-		plan.content = instructionArtifactContent(relativePath)
+		plan.content = entryAwareContent(projectRoot, relativePath, instructionArtifactContent(relativePath))
 		plan.result = instructionFileCreated
 		return plan, nil
 	}
@@ -106,9 +106,40 @@ func planInstructionArtifactWrite(
 	migration := migrateEntryFile(filepath.ToSlash(relativePath), string(data), force)
 	plan.converged = migration.converged
 	plan.note = migration.note
-	if migration.content != string(data) {
+	base := string(data)
+	if migration.content != "" && migration.content != string(data) {
+		base = migration.content
 		plan.content = migration.content
 		plan.result = instructionFileUpdated
 	}
+	if plan.converged {
+		next := entryAwareContent(projectRoot, relativePath, base)
+		if next != string(data) {
+			plan.content = next
+			if plan.result == instructionFileSkipped {
+				plan.result = instructionFileUpdated
+			}
+		}
+	}
 	return plan, nil
+}
+
+func entryAwareContent(projectRoot, relativePath, content string) string {
+	if !isAgentEntry(relativePath) {
+		return content
+	}
+	ledger, err := config.RepositoryWorkLedger(projectRoot)
+	if err != nil {
+		return content
+	}
+	return templates.ApplyWorkLedgerNote(content, ledger)
+}
+
+func isAgentEntry(relativePath string) bool {
+	switch filepath.ToSlash(relativePath) {
+	case agentsMDPath, claudeMDPath, copilotInstructionsPath:
+		return true
+	default:
+		return false
+	}
 }

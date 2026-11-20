@@ -63,12 +63,10 @@ func (i Inspection) NeedsSchemaMigration() bool {
 }
 
 func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
-	configPath := filepath.Join(projectRoot, ConfigFileName)
-	data, err := os.ReadFile(configPath)
+	data, err := readMergedConfig(projectRoot)
 	if err != nil {
-		return nil, Inspection{}, fmt.Errorf("failed to read %s: %w", ConfigFileName, err)
+		return nil, Inspection{}, err
 	}
-
 	return ParseWithInspection(data)
 }
 
@@ -90,9 +88,7 @@ func ParseWithInspection(data []byte) (*Config, Inspection, error) {
 		return nil, Inspection{}, fmt.Errorf("failed to parse %s: %w", ConfigFileName, err)
 	}
 	inspection.Findings = append(inspection.Findings, semanticFindings(cfg)...)
-	if err := cfg.Issues.Validate(); err != nil {
-		inspection.Findings = append(inspection.Findings, Finding{Field: "issues", Severity: FindingError, Message: err.Error()})
-	}
+	inspection.Findings = appendIssueAndLedgerFindings(cfg, inspection.Findings)
 	if err := cfg.Shell.Validate(); err != nil {
 		inspection.Findings = append(inspection.Findings, Finding{Field: "shell.command", Severity: FindingError, Message: err.Error()})
 	}
