@@ -18,6 +18,12 @@ func TestReadmeDocumentsCurrentSurface(t *testing.T) {
 		"never records command arguments",
 		"365 days",
 		"16 MiB total",
+		"## Work ledger",
+		"https://plane.so",
+		"https://github.com/jamesonstone/kit/issues",
+		"`~/.kit/.kit.yaml`",
+		"<workspace>",
+		"<project>",
 	} {
 		if !strings.Contains(content, required) {
 			t.Errorf("README missing %q", required)

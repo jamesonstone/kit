@@ -242,6 +242,32 @@ Keep the footer when squashing. Existing GitHub references remain supported.
 Mint reads explicit links offline; bare Linear identifiers cannot resolve a URL.
 Review committed text and link visibility before publication.
 
+## Work ledger
+
+`work_ledger` is optional. When it is omitted, Kit does not sync a work ledger.
+
+[Plane](https://plane.so) is the only supported provider. `linear`, `jira`, and
+`notion` are reserved and fail validation for now. Open an issue at
+https://github.com/jamesonstone/kit/issues if you want support for another
+ledger tool.
+
+Configuration is read from the repository `.kit.yaml` and, when present, from
+`~/.kit/.kit.yaml`. A missing user file changes nothing. The repository file
+overrides the user file key by key. The user file is never committed. Use
+placeholders in examples. Kit stores no credentials and does not call the
+ledger API.
+
+```yaml
+work_ledger:
+  provider: plane
+  owner_label: <owner-label>
+  plane:
+    workspace: <workspace>
+    project: <project>
+```
+
+Omitted state names mean `Active`, `In review`, and `Done`.
+
 ## Command Surface
 
 | Area | Commands |
