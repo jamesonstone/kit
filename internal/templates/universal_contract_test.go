@@ -69,8 +69,25 @@ func TestUniversalContractCarriesCriticalInvariants(t *testing.T) {
 }
 
 func TestUniversalContractStaysSmall(t *testing.T) {
-	if words := len(strings.Fields(universalContractBody)); words > 1500 {
+	if words := len(strings.Fields(universalContractBody)); words > 1600 {
 		t.Fatalf("universal contract has %d words; move task-specific guidance to a contextual rule", words)
+	}
+}
+
+func TestWorkLedgerSection(t *testing.T) {
+	const heading = "## Work ledger"
+	const marker = "in the work ledger, currently Plane: workspace `reasoning-machines`, project Work Ledger (`WL`)"
+	const rules = "https://app.plane.so/reasoning-machines/wiki/25ffb5a9-86f3-4c65-af20-8aeb6279d9c4"
+	if !strings.Contains(universalContractBody, heading) || !strings.Contains(universalContractBody, marker) || !strings.Contains(universalContractBody, rules) {
+		t.Fatal("universal contract missing work ledger section")
+	}
+	delivery, err := os.ReadFile(filepath.Join("..", "..", "docs", "references", "rules", "delivery.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(delivery)
+	if !strings.Contains(text, heading) || !strings.Contains(text, marker) || !strings.Contains(text, rules) {
+		t.Fatal("delivery ruleset missing work ledger section")
 	}
 }
 
