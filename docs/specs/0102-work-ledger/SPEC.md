@@ -66,14 +66,16 @@ Running `kit reconcile --dry-run --diff` on a current checkout plans unrelated u
 
 PR #299 also changes the delivery registry hash. This branch changes that same hash because it edits `delivery.md` in a different section. The paragraphs do not overlap.
 
+A merge reads `github-pr-merge` and then `work-cleanup`. Cleanup already sends Linear state changes back to `delivery`. The ledger Done step now has the same pointer, so cleanup does not leave a configured item Active. An unmerged close still does not set Done. There is no canceled ledger state.
+
 ## VALIDATION
 
-From this worktree, after the final edit:
+From this worktree, after the cleanup pointer:
 
 - `gofmt -l .` printed nothing.
 - `make vet` (`go vet ./...`) passed.
-- `make test` (`go test -v ./...`) passed, including the no-op, Plane lifecycle, reserved providers, owner labels, config round trip, delivery hash, and embedded hook contract.
-- `make build` passed.
+- `make test` (`go test -v ./...`) passed, including the no-op, Plane lifecycle, reserved providers, owner labels, config round trip, delivery hash, cleanup hash, and embedded hook contract.
+- `make build` passed on the first head. The follow-up changed rules and tests only.
 - `KIT_USAGE_DISABLED=1 ./bin/kit check --project` passed. It reported one existing compatibility advisory for `docs/references/README.md`. That advisory does not block validation and was not changed here.
 - `make lint` (`golangci-lint` v2.11.0) reported 0 issues.
 
@@ -81,7 +83,9 @@ No live Plane or GitHub ledger call was made. Adapter tests scan planned actions
 
 ## OUTCOME
 
-GH-300 adds optional `work_ledger` configuration and an offline adapter. Omitted configuration is a no-op. `plane` describes find-or-create, issue link, Active, and the owner label at start; find, pull-request link, and In review when the pull request opens; find and Done on merge. `linear`, `jira`, and `notion` are reserved. Kit stores no credentials and does not call a ledger API. The delivery rule and the universal contract tell native agents to perform those steps with their own connector. This repository's ledger stays off.
+GH-300 adds optional `work_ledger` configuration and an offline adapter. Omitted configuration is a no-op. `plane` describes find-or-create, issue link, Active, and the owner label at start; find, pull-request link, and In review when the pull request opens; find and Done on merge. `linear`, `jira`, and `notion` are reserved. Kit stores no credentials and does not call a ledger API. The delivery rule and the universal contract tell native agents to perform those steps with their own connector. `work-cleanup` points a configured ledger at that Done step after a satisfying merge. This repository's ledger stays off.
+
+A fresh-context review of `abe9277` found no acceptance miss. The cleanup pointer is the one valid gap it named. Empty plan URLs stay allowed because the adapter describes the step. The agent supplies the real links. An unmerged close still has no ledger state. No live Plane project was called.
 
 ## REPOSITORY MEMORY
 

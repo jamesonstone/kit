@@ -55,6 +55,7 @@ Read this rule and run a sweep, without being asked, when one of these triggers 
 - For each completed worktree that is `RECOVERABLE`, run `git worktree remove <path>`. Then run `git branch -d <branch>`. If Git refuses, keep the branch; a branch uses almost no disk space.
 - Stop background processes, dev servers, watchers, and scheduled checks that the work started. Remove scratch files and directories that the work created in its own scratch location.
 - For Linear lanes, use `delivery` to verify targets and transition states, including after a provider switch. Never pass Linear IDs to `gh issue`. Report provider failures; stop that ticket action.
+- A configured `work_ledger` follows `delivery` after a satisfying merge and sets Done. An omitted ledger is a no-op. Do not set Done for an unmerged close.
 - Close GitHub issues and pull requests whose completion you observed. Close, never delete; the GitHub UI can reopen them.
   - Done: close a still-open lane issue as completed when the merged change satisfies it (`gh issue close <n> --reason completed`).
   - Abandoned or superseded: close the lane's open pull request and issue with one line of reason and a link to the superseding work, if any (`gh pr close <n> --comment "<reason>"` and `gh issue close <n> --reason "not planned" --comment "<reason>"`).

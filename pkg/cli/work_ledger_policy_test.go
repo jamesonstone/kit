@@ -14,10 +14,13 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var delivery string
+	var delivery, cleanup string
 	for _, rule := range registry {
-		if rule.Slug == "delivery" {
+		switch rule.Slug {
+		case "delivery":
 			delivery = rule.Content
+		case "work-cleanup":
+			cleanup = rule.Content
 		}
 	}
 	for _, marker := range []string{
@@ -42,6 +45,9 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 		if !strings.Contains(delivery, marker) {
 			t.Errorf("embedded delivery missing %q", marker)
 		}
+	}
+	if !strings.Contains(cleanup, "A configured `work_ledger` follows `delivery` after a satisfying merge and sets Done.") {
+		t.Fatal("work-cleanup does not route a configured ledger to Done")
 	}
 	contract := templates.UniversalContractBlock()
 	for _, marker := range []string{"`work_ledger`", "Omitted `work_ledger.provider` is off"} {
