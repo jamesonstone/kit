@@ -69,9 +69,13 @@ func TestUniversalContractCarriesCriticalInvariants(t *testing.T) {
 }
 
 func TestUniversalContractStaysSmall(t *testing.T) {
-	if words := len(strings.Fields(universalContractBody)); words > 1500 {
+	if words := len(strings.Fields(universalContractBody)); words > 1700 {
 		t.Fatalf("universal contract has %d words; move task-specific guidance to a contextual rule", words)
 	}
+}
+
+func ownerLedgerForbidden() []string {
+	return []string{"Jameson", "reasoning-machines", "app.plane." + "so"}
 }
 
 func TestGeneratedContractOmitsOwnerLedger(t *testing.T) {
@@ -80,11 +84,102 @@ func TestGeneratedContractOmitsOwnerLedger(t *testing.T) {
 		sources = append(sources, InstructionEntryFile(path))
 	}
 	for _, source := range sources {
-		for _, forbidden := range []string{"Jameson", "reasoning-machines", "app.plane.so", "## Work ledger"} {
+		for _, forbidden := range ownerLedgerForbidden() {
 			if strings.Contains(source, forbidden) {
 				t.Errorf("generated contract contains %q", forbidden)
 			}
 		}
+	}
+}
+
+func TestEmbeddedRulesOmitOwnerLedger(t *testing.T) {
+	dir := filepath.Join("..", "..", "docs", "references", "rules")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
+			continue
+		}
+		checked++
+		data, err := os.ReadFile(filepath.Join(dir, entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, forbidden := range ownerLedgerForbidden() {
+			if strings.Contains(string(data), forbidden) {
+				t.Errorf("%s contains %q", entry.Name(), forbidden)
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no embedded rule files scanned")
+	}
+}
+
+func TestDeliveryRuleKeepsWorkLedgerBehavior(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "docs", "references", "rules", "delivery.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		"find its item",
+		"don't ping",
+		"Active / In review / Done",
+		"one-line note",
+		"owner label",
+		"Create the item if it is missing",
+		"agent:<you>",
+		"relabel the item",
+		"work_ledger",
+		"~/.kit/.kit.yaml",
+		"this rule is a no-op",
+	} {
+		if !strings.Contains(string(data), want) {
+			t.Errorf("delivery rule missing %q", want)
+		}
+		if !strings.Contains(universalContractBody, want) {
+			t.Errorf("generated contract missing %q", want)
+		}
+	}
+}
+
+func TestNoCommittedFileNamesPlaneHost(t *testing.T) {
+	root := filepath.Join("..", "..")
+	forbidden := ownerLedgerForbidden()[2]
+	checked := 0
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			switch entry.Name() {
+			case ".git", "bin", "tmp":
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		checked++
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if strings.Contains(string(data), forbidden) {
+			rel, relErr := filepath.Rel(root, path)
+			if relErr != nil {
+				rel = path
+			}
+			t.Errorf("%s contains the ledger host", rel)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if checked == 0 {
+		t.Fatal("no files scanned")
 	}
 }
 
