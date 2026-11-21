@@ -2,7 +2,7 @@
 kit_metadata_version: 1
 artifact: "spec"
 workflow_version: 3
-phase: "ready"
+phase: "deliver"
 feature:
   id: "0104"
   slug: "substantive-review-followup"
@@ -39,11 +39,14 @@ The embedded GitHub template is also the basis of the Linear template. One histo
 
 ## VALIDATION
 
-Pending implementation.
+- Focused template and embedded-rule tests passed, including reconciliation of the previous GitHub and Linear templates and preservation of a customized previous template.
+- Build, vet, lint, gofmt, diff check, project check, and feature check passed. The project check reported the existing references compatibility advisory.
+- Full local tests hit `TestWorkLedgerRoundTrip` and `TestRunRegistryStatusReportsCurrentAfterRefreshConverges`. Both failures also reproduced on the unchanged base. GitHub CI will run against the published head.
+- Cold review at `97665d1` checked the complete rule, template, migration, and tests against GH-305 and found no actionable issues.
 
 ## OUTCOME
 
-Pending implementation.
+The embedded delivery rule requires a reviewed snapshot and follow-up only for substantive deltas. Kit's shipped and checked-in PR templates collect that evidence. Reconcile recognizes the previous evidence template by exact bytes for both providers.
 
 ## REPOSITORY MEMORY
 
