@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -14,9 +15,14 @@ import (
 
 func applyRegistryRulesetSelection(projectRoot string, entries []registrySelectorEntry) (registrySelectorSummary, error) {
 	var summary registrySelectorSummary
-	cfg, err := config.Load(projectRoot)
+	configPath := filepath.Join(projectRoot, config.ConfigFileName)
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return summary, fmt.Errorf("failed to load config: %w", err)
+		return summary, fmt.Errorf("failed to read project config: %w", err)
+	}
+	cfg, _, err := config.ParseForRepositoryWrite(data)
+	if err != nil {
+		return summary, fmt.Errorf("failed to load project config: %w", err)
 	}
 	configChanged := false
 	for _, entry := range entries {
@@ -69,7 +75,11 @@ func applyRegistryRulesetSelection(projectRoot string, entries []registrySelecto
 		}
 	}
 	if configChanged {
-		if err := config.Save(projectRoot, cfg); err != nil {
+		after, err := config.MarshalRepositoryConfig(cfg, data, false)
+		if err != nil {
+			return summary, fmt.Errorf("failed to encode registry state: %w", err)
+		}
+		if err := os.WriteFile(configPath, after, 0644); err != nil {
 			return summary, fmt.Errorf("failed to save registry state: %w", err)
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -15,29 +16,100 @@ func LoadGlobal() (*Config, bool, error) {
 		return nil, false, err
 	}
 
-	cfg, err := loadFile(configPath)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return Default(), false, nil
-		}
-		return nil, false, err
-	}
-
-	return cfg, true, nil
+	return loadOptionalConfig(configPath)
 }
 
-func loadFile(configPath string) (*Config, error) {
-	data, err := os.ReadFile(configPath)
+// LoadGlobalUsageEnabled preserves an explicit opt-out stored by older Kit
+// versions until the owner sets a value at the canonical path.
+func LoadGlobalUsageEnabled() (bool, error) {
+	cfg, _, err := LoadGlobal()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read %s: %w", configPath, err)
+		return false, err
+	}
+	if cfg.Usage != nil && cfg.Usage.Enabled != nil {
+		return cfg.IsUsageEnabled(), nil
 	}
 
-	cfg := Default()
-	if err := yaml.Unmarshal(data, cfg); err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %w", configPath, err)
+	cfg, err = loadLegacyGlobal()
+	if err != nil {
+		return false, err
+	}
+	return cfg.IsUsageEnabled(), nil
+}
+
+// LoadGlobalDefaultAssignees falls back to the old file for this setting only.
+// An explicitly empty list at the canonical path overrides the fallback.
+func LoadGlobalDefaultAssignees() (*[]string, error) {
+	path, err := GlobalConfigPath()
+	if err != nil {
+		return nil, err
+	}
+	cfg, found, err := loadOptionalConfig(path)
+	if err != nil {
+		return nil, err
+	}
+	if cfg.GitHub.DefaultAssignees != nil {
+		return cfg.GitHub.DefaultAssignees, nil
+	}
+	if found {
+		explicit, err := declaresDefaultAssignees(path)
+		if explicit || err != nil {
+			return nil, err
+		}
 	}
 
-	return cfg, nil
+	cfg, err = loadLegacyGlobal()
+	if err != nil {
+		return nil, err
+	}
+	return cfg.GitHub.DefaultAssignees, nil
+}
+
+// RepositoryDeclaresDefaultAssignees distinguishes an absent setting from a
+// null override, which clears the global default.
+func RepositoryDeclaresDefaultAssignees(projectRoot string) (bool, error) {
+	return declaresDefaultAssignees(filepath.Join(projectRoot, ConfigFileName))
+}
+
+func declaresDefaultAssignees(path string) (bool, error) {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	var raw map[string]any
+	if err := yaml.Unmarshal(data, &raw); err != nil {
+		return false, fmt.Errorf("failed to parse %s: %w", path, err)
+	}
+	github, present := raw["github"]
+	if github == nil {
+		return present, nil
+	}
+	fields, _ := github.(map[string]any)
+	_, present = fields["default_assignees"]
+	return present, nil
+}
+
+func loadLegacyGlobal() (*Config, error) {
+	dir, err := LocalDataDir()
+	if err != nil {
+		return nil, err
+	}
+	cfg, _, err := loadOptionalConfig(filepath.Join(dir, ConfigFileName))
+	return cfg, err
+}
+
+func loadOptionalConfig(path string) (*Config, bool, error) {
+	cfg, err := LoadConfigFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return Default(), false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+	return cfg, true, nil
 }
 
 func readYAMLDocument(configPath string, create bool) (*yaml.Node, error) {

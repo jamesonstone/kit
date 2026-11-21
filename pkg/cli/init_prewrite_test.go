@@ -175,7 +175,7 @@ func TestInitLeavesPartialGlobalConfigUnlessForce(t *testing.T) {
 	root := t.TempDir()
 	home := setupInitHome(t)
 	setWorkingDirectory(t, root)
-	globalPath := filepath.Join(home, ".config", "kit", config.ConfigFileName)
+	globalPath := filepath.Join(home, ".kit", config.ConfigFileName)
 	writeFile(t, globalPath, "schema_version: 2\n")
 	withInitFlags(t, func() {
 		initOutputOnly = true

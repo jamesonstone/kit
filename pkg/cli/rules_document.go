@@ -57,12 +57,9 @@ func buildRulesetOptimizationPrompt(projectRoot, path string, input rulesetAddIn
 		relPath = path
 	}
 	relPath = filepath.ToSlash(relPath)
-	referencesReadme := filepath.Join(projectRoot, "docs", "references", "README.md")
-	rlmPath := filepath.Join(projectRoot, "docs", "agents", "RLM.md")
-	initContractPath := filepath.Join(projectRoot, "docs", "specs", "0000_INIT_PROJECT.md")
 
 	var sb strings.Builder
-	sb.WriteString("Optimize this Kit durable ruleset for correctness, semantic clarity, and RLM just-in-time loading.\n\n")
+	sb.WriteString("Clarify this Kit ruleset for coding agents and make its trigger explicit.\n\n")
 	sb.WriteString("Ruleset file:\n")
 	sb.WriteString("- " + filepath.Join(projectRoot, filepath.FromSlash(relPath)) + "\n\n")
 	sb.WriteString("Creation context:\n")
@@ -72,10 +69,7 @@ func buildRulesetOptimizationPrompt(projectRoot, path string, input rulesetAddIn
 	sb.WriteString("- read_policy_default: " + input.ReadPolicyDefault + "\n\n")
 	sb.WriteString("Task:\n")
 	sb.WriteString("1. Read the ruleset file and treat the captured context as the human source of truth.\n")
-	sb.WriteString("2. Load only the Kit contract sections needed for this decision, starting with:\n")
-	sb.WriteString("   - " + referencesReadme + "\n")
-	sb.WriteString("   - " + rlmPath + "\n")
-	sb.WriteString("   - " + initContractPath + "\n")
+	sb.WriteString("2. Read the repository's agent instructions and the applicable sections of its Constitution. Use `kit rules list` to find related installed rules when needed.\n")
 	sb.WriteString("3. Rewrite or reorganize the ruleset so it is durable, concise, scan-friendly, and directly useful to coding agents.\n")
 	sb.WriteString("4. Preserve valid YAML front matter with `kind: ruleset`, `slug`, `status`, `applies_to`, and `read_policy_default`.\n")
 	sb.WriteString("5. Preserve these required sections exactly: `Purpose`, `Applies When`, `Rules`, `Anti-Patterns`, `Verification`, and `Examples`.\n")

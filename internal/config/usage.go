@@ -9,9 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// LoadConfigFile parses a project-shaped Kit config from an explicit path.
-// It is used for the global defaults file, which intentionally has no project
-// root or schema gate.
+// LoadConfigFile parses one Kit config file without applying an overlay.
+// Use it when the scope where a value is explicitly set matters.
 func LoadConfigFile(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {

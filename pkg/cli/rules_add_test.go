@@ -130,13 +130,21 @@ func TestRunRulesAddInteractiveCreatesRulesetAndCopiesOptimizationPrompt(t *test
 		}
 	}
 	for _, check := range []string{
-		"Optimize this Kit durable ruleset",
+		"Clarify this Kit ruleset for coding agents",
 		path,
 		"read_policy_default: conditional",
+		"repository's agent instructions",
+		"its Constitution",
+		"kit rules list",
 		"kit check --project",
 	} {
 		if !strings.Contains(copied, check) {
 			t.Fatalf("expected copied prompt to contain %q, got:\n%s", check, copied)
+		}
+	}
+	for _, retired := range []string{"RLM", "0000_INIT_PROJECT.md"} {
+		if strings.Contains(copied, retired) {
+			t.Errorf("copied prompt still references %q", retired)
 		}
 	}
 }

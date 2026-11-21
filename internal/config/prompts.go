@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 )
 
-const GlobalConfigDirName = "kit"
-
 func FindProjectRootOptional() (string, bool, error) {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -27,7 +25,26 @@ func FindProjectRootOptional() (string, bool, error) {
 	}
 }
 
-func GlobalConfigDir() (string, error) {
+// GlobalConfigPath returns the default settings file shared by Kit projects.
+func GlobalConfigPath() (string, error) {
+	home, err := homeDirectory()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".kit", ConfigFileName), nil
+}
+
+// LocalDataDir remains separate from configuration so existing usage records
+// stay in their original location.
+func LocalDataDir() (string, error) {
+	home, err := homeDirectory()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".config", "kit"), nil
+}
+
+func homeDirectory() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("failed to resolve home directory: %w", err)
@@ -35,15 +52,5 @@ func GlobalConfigDir() (string, error) {
 	if home == "" {
 		return "", fmt.Errorf("failed to resolve home directory: HOME is empty")
 	}
-
-	return filepath.Join(home, ".config", GlobalConfigDirName), nil
-}
-
-func GlobalConfigPath() (string, error) {
-	configDir, err := GlobalConfigDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(configDir, ConfigFileName), nil
+	return home, nil
 }

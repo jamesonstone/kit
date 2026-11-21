@@ -1,9 +1,7 @@
 package usage
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -11,7 +9,7 @@ import (
 )
 
 func Directory() (string, error) {
-	dir, err := config.GlobalConfigDir()
+	dir, err := config.LocalDataDir()
 	if err != nil {
 		return "", err
 	}
@@ -25,15 +23,11 @@ func EffectiveSettings(projectRoot string) (Settings, error) {
 		ProjectState:  "default-enabled",
 		ProjectRoot:   projectRoot,
 	}
-	globalPath, err := config.GlobalConfigPath()
+	globalEnabled, err := config.LoadGlobalUsageEnabled()
 	if err != nil {
 		return settings, err
 	}
-	if global, loadErr := config.LoadConfigFile(globalPath); loadErr == nil {
-		settings.GlobalEnabled = global.IsUsageEnabled()
-	} else if !errors.Is(loadErr, os.ErrNotExist) {
-		return settings, loadErr
-	}
+	settings.GlobalEnabled = globalEnabled
 	if !settings.GlobalEnabled {
 		settings.Enabled = false
 		settings.ProjectState = "suppressed-by-global"
@@ -42,7 +36,7 @@ func EffectiveSettings(projectRoot string) (Settings, error) {
 	if strings.TrimSpace(projectRoot) == "" {
 		return settings, nil
 	}
-	project, loadErr := config.Load(projectRoot)
+	project, loadErr := config.LoadConfigFile(filepath.Join(projectRoot, config.ConfigFileName))
 	if loadErr != nil {
 		return settings, loadErr
 	}

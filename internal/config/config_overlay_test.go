@@ -65,8 +65,26 @@ func TestWorkLedgerFromUserFileOnly(t *testing.T) {
 	if err != nil || inspection.HasErrors() || !cfg.WorkLedger.Enabled() || cfg.WorkLedger.Plane.Workspace != "example-workspace" {
 		t.Fatalf("user ledger: %v %v %#v", err, inspection, cfg)
 	}
-	if got, err := UserKitConfigPath(); err != nil || got != userPath {
+	if got, err := GlobalConfigPath(); err != nil || got != userPath {
 		t.Fatalf("path %q %v", got, err)
+	}
+}
+
+func TestGlobalVersionsDoNotMarkRepositoryAsMigrated(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	global, err := GlobalConfigPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Dir(global), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeTestConfig(t, filepath.Dir(global), "schema_version: 2\ninstruction_scaffold_version: 4\nspecs_dir: docs/custom\n")
+	root := t.TempDir()
+	writeTestConfig(t, root, "{}\n")
+	cfg, inspection, err := LoadWithInspection(root)
+	if err != nil || inspection.SchemaState != SchemaStateMissing || cfg.InstructionScaffoldVersion != 0 || cfg.SpecsDir != "docs/custom" {
+		t.Fatalf("global defaults hid repository migration state: cfg=%#v inspection=%+v err=%v", cfg, inspection, err)
 	}
 }
 

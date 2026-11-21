@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jamesonstone/kit/v3/internal/config"
 	"github.com/jamesonstone/kit/v3/internal/templates"
 )
 
@@ -101,5 +102,24 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestPublishedWorkLedgerExamplesUseTheConfigSchema(t *testing.T) {
+	for _, name := range []string{"README.md", "docs/references/rules/delivery.md"} {
+		content := readRepositoryFile(t, name)
+		_, sample, found := strings.Cut(content, "```yaml\nwork_ledger:\n")
+		if !found {
+			t.Fatalf("%s has no work ledger YAML example", name)
+		}
+		sample, _, found = strings.Cut(sample, "```")
+		if !found {
+			t.Fatalf("%s has an unclosed YAML example", name)
+		}
+		example := strings.NewReplacer("<workspace>", "example-workspace", "<project>", "WL", "<owner-label>", "agent:example").Replace(sample)
+		cfg, inspection, err := config.ParseWithInspection([]byte("schema_version: 2\nwork_ledger:\n" + example))
+		if err != nil || inspection.HasErrors() || !cfg.WorkLedger.Enabled() || cfg.WorkLedger.Plane.Project != "WL" {
+			t.Fatalf("%s example: cfg=%#v inspection=%+v err=%v", name, cfg, inspection, err)
+		}
 	}
 }

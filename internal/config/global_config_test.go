@@ -44,7 +44,7 @@ func TestFindProjectRootOptionalReturnsNotFoundWithoutError(t *testing.T) {
 	}
 }
 
-func TestGlobalConfigPathUsesDotConfigKit(t *testing.T) {
+func TestGlobalConfigPathUsesDotKit(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 
@@ -53,7 +53,7 @@ func TestGlobalConfigPathUsesDotConfigKit(t *testing.T) {
 		t.Fatalf("GlobalConfigPath() error = %v", err)
 	}
 
-	want := filepath.Join(home, ".config", "kit", ConfigFileName)
+	want := filepath.Join(home, ".kit", ConfigFileName)
 	if got != want {
 		t.Fatalf("GlobalConfigPath() = %q, want %q", got, want)
 	}
@@ -89,7 +89,7 @@ func TestPopulateGlobalConfigCreatesDefaults(t *testing.T) {
 	if !changed {
 		t.Fatal("PopulateGlobalConfig() changed = false, want true")
 	}
-	wantPath := filepath.Join(home, ".config", "kit", ConfigFileName)
+	wantPath := filepath.Join(home, ".kit", ConfigFileName)
 	if path != wantPath {
 		t.Fatalf("path = %q, want %q", path, wantPath)
 	}
@@ -103,5 +103,68 @@ func TestPopulateGlobalConfigCreatesDefaults(t *testing.T) {
 	}
 	if cfg.InstructionScaffoldVersion != CurrentInstructionScaffoldVersion {
 		t.Fatalf("InstructionScaffoldVersion = %d, want %d", cfg.InstructionScaffoldVersion, CurrentInstructionScaffoldVersion)
+	}
+}
+
+func TestLegacyGlobalConfigIsLimitedToExistingConsumers(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	legacyDir := filepath.Join(home, ".config", "kit")
+	if err := os.MkdirAll(legacyDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	const legacy = `usage:
+  enabled: false
+github:
+  default_assignees: [legacy-owner]
+shell:
+  command: [legacy-shell]
+work_ledger:
+  provider: plane
+  plane:
+    workspace: old-workspace
+    project: OLD
+`
+	writeTestConfig(t, legacyDir, legacy)
+
+	root := t.TempDir()
+	writeTestConfig(t, root, "schema_version: 2\n")
+	project, _, err := LoadWithInspection(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if project.WorkLedger.Enabled() || len(project.Shell.Command) != 0 || !project.IsUsageEnabled() {
+		t.Fatalf("legacy settings entered the project overlay: %#v", project)
+	}
+	enabled, err := LoadGlobalUsageEnabled()
+	if err != nil || enabled {
+		t.Fatalf("legacy opt-out = %v, err = %v", enabled, err)
+	}
+	assignees, err := LoadGlobalDefaultAssignees()
+	if err != nil || assignees == nil || len(*assignees) != 1 || (*assignees)[0] != "legacy-owner" {
+		t.Fatalf("legacy assignees = %v, err = %v", assignees, err)
+	}
+
+	globalDir := filepath.Join(home, ".kit")
+	if err := os.MkdirAll(globalDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeTestConfig(t, globalDir, "usage:\n  enabled: true\n")
+	assignees, err = LoadGlobalDefaultAssignees()
+	if err != nil || assignees == nil || len(*assignees) != 1 || (*assignees)[0] != "legacy-owner" {
+		t.Fatalf("missing canonical key lost legacy assignees: %v, %v", assignees, err)
+	}
+	enabled, err = LoadGlobalUsageEnabled()
+	if err != nil || !enabled {
+		t.Fatalf("canonical usage override = %v, err = %v", enabled, err)
+	}
+	writeTestConfig(t, globalDir, "github:\n  default_assignees: []\n")
+	assignees, err = LoadGlobalDefaultAssignees()
+	if err != nil || assignees == nil || len(*assignees) != 0 {
+		t.Fatalf("empty canonical list should override the legacy fallback: %v, %v", assignees, err)
+	}
+	got, err := os.ReadFile(filepath.Join(legacyDir, ConfigFileName))
+	if err != nil || string(got) != legacy {
+		t.Fatalf("legacy config changed: %v", err)
 	}
 }

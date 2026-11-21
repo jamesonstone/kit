@@ -35,7 +35,7 @@ func buildProjectInitPrompt(
 	makefileFullPath := filepath.Join(projectRoot, makefilePath)
 	return renderPromptDocument(func(doc *promptdoc.Document) {
 		doc.Paragraph(fmt.Sprintf("Initialize project memory and verified command entrypoints for the repository at %s.", projectRoot))
-		doc.Paragraph("Read `AGENTS.md`, then run `kit guide` for installed commands and artifact instructions.")
+		doc.Paragraph("Read `AGENTS.md`. Use `kit guide` when you need to find an installed command or an artifact path.")
 		doc.Paragraph("Constitution:")
 		doc.BulletList(
 			fmt.Sprintf("The generated starter at %s is a valid bootstrap Constitution", constitutionFullPath),

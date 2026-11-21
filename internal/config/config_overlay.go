@@ -10,20 +10,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// UserKitConfigFile is the optional user-level Kit config. It is not committed
-// and it is not ~/.config/kit/.kit.yaml. Repository .kit.yaml overrides it
-// key by key.
-const UserKitConfigFile = ".kit/.kit.yaml"
-
-// UserKitConfigPath returns $HOME/.kit/.kit.yaml. Kit never creates the file.
-func UserKitConfigPath() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil || home == "" {
-		return "", fmt.Errorf("failed to resolve HOME for the user Kit config")
-	}
-	return filepath.Join(home, filepath.FromSlash(UserKitConfigFile)), nil
-}
-
 // RepositoryWorkLedger reads only the repository .kit.yaml work_ledger key.
 // It ignores the user file so a user-level target is not written into the repo.
 func RepositoryWorkLedger(projectRoot string) (WorkLedgerConfig, error) {
@@ -47,16 +33,26 @@ func RepositoryWorkLedger(projectRoot string) (WorkLedgerConfig, error) {
 	return doc.WorkLedger, nil
 }
 
-func readMergedConfig(projectRoot string) ([]byte, error) {
+func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
 	data, err := os.ReadFile(filepath.Join(projectRoot, ConfigFileName))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read %s: %w", ConfigFileName, err)
+		return nil, Inspection{}, fmt.Errorf("failed to read %s: %w", ConfigFileName, err)
 	}
-	return applyUserConfigOverlay(data)
+	return ParseWithGlobalDefaults(data)
+}
+
+// ParseWithGlobalDefaults loads effective settings on top of a captured
+// repository file. Use the original bytes as the base for repository writes.
+func ParseWithGlobalDefaults(repo []byte) (*Config, Inspection, error) {
+	data, err := applyUserConfigOverlay(repo)
+	if err != nil {
+		return nil, Inspection{}, err
+	}
+	return ParseWithInspection(data)
 }
 
 func applyUserConfigOverlay(repo []byte) ([]byte, error) {
-	path, err := UserKitConfigPath()
+	path, err := GlobalConfigPath()
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +61,7 @@ func applyUserConfigOverlay(repo []byte) ([]byte, error) {
 		if errors.Is(err, os.ErrNotExist) {
 			return repo, nil
 		}
-		return nil, fmt.Errorf("failed to read %s: %w", UserKitConfigFile, err)
+		return nil, fmt.Errorf("failed to read global config: %w", err)
 	}
 	if len(bytes.TrimSpace(user)) == 0 {
 		return repo, nil
@@ -88,8 +84,13 @@ func overlayConfigYAML(user, repo []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	global := documentRoot(userDoc)
+	// These versions describe the actual repository file and its scaffold.
+	// Global defaults must not make an old project look migrated.
+	removeKey(global, "schema_version")
+	removeKey(global, "instruction_scaffold_version")
 	merged := &yaml.Node{Kind: yaml.DocumentNode}
-	merged.Content = []*yaml.Node{mergeYAMLNodes(documentRoot(userDoc), documentRoot(repoDoc))}
+	merged.Content = []*yaml.Node{mergeYAMLNodes(global, documentRoot(repoDoc))}
 	var buf bytes.Buffer
 	enc := yaml.NewEncoder(&buf)
 	enc.SetIndent(2)
