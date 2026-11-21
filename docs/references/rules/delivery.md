@@ -96,7 +96,10 @@ read_policy_default: conditional
 
 - Fill `Verified when` on the issue before implementation starts. State the definition of done, what is out of scope, the concrete evidence to show (a passing test, a screenshot, a log or trace), and an optional hypothesis or expected answer from the requester. Use the repository issue template when the provider is GitHub.
 - Fill the pull request `Evidence` section from the work that ran. Record the commands and their real output or excerpts. Record decisions and assumptions, including defaults chosen, scope calls, and conflicting requirements reinterpreted. For each check, name the property it verified. Name at least one thing that was not checked.
-- Before opening the pull request, run a fresh-context review. A second agent or subagent with no prior context on the work reads the diff cold against the issue's `Verified when` section and answers "did I miss anything?". Record that outcome in the pull request. Do not open the pull request without it.
+- Before opening the pull request, run a fresh-context review. A second agent or subagent with no prior context on the work reads the complete diff cold against the issue's `Verified when` section and answers "did I miss anything?". Do not open the pull request without this review.
+- In the pull request's Evidence section, record the reviewed commit or identifiable diff snapshot, its scope, and the outcome. Compare the current diff with the recorded review coverage before opening the pull request or pushing another change to it.
+- Require a focused independent follow-up for substantive changes after review. These include changes to behavior, permission boundaries, configuration precedence, managed-file ownership, acceptance criteria, or what a test considers a pass. Include affected behavior at the base when a rebase or conflict resolution changes it. The original independent reviewer may review the delta and its affected dependencies. Record the follow-up snapshot, scope, and outcome.
+- For minor edits, record the lead's diff check. Typos, formatting, and mechanical reviewer-requested fixes qualify when they leave meaning and behavior intact. For a base refresh, use the lead check only if the patch and relevant context are equivalent, and rerun the affected checks.
 
 ### Recovery
 
