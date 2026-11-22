@@ -242,6 +242,11 @@ func TestGlobalConfigWriteRefusesAnAliasOfFallback(t *testing.T) {
 	if err := os.Symlink(fallback, path); err != nil {
 		t.Fatal(err)
 	}
+	warnings := GlobalConfigLocationWarnings()
+	if len(warnings) != 1 || !strings.Contains(warnings[0].Message, "Create a separate canonical file") ||
+		!strings.Contains(warnings[0].Message, path) || !strings.Contains(warnings[0].Message, fallback) {
+		t.Fatalf("expected a migration warning for the aliased file, got %+v", warnings)
+	}
 	if _, err := GlobalConfigWritePath(); err == nil || !strings.Contains(err.Error(), "aliases fallback") {
 		t.Fatalf("expected an actionable alias error, got %v", err)
 	}

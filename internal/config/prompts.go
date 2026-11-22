@@ -65,15 +65,20 @@ func GlobalConfigLocationWarnings() []Finding {
 	if err != nil {
 		return nil
 	}
+	canonical := paths[0]
+	canonicalInfo, _ := os.Stat(canonical)
 	var warnings []Finding
 	for _, path := range paths[1:] {
 		info, err := os.Stat(path)
 		if err != nil || !info.Mode().IsRegular() {
 			continue
 		}
+		message := fmt.Sprintf("Legacy Kit config found at %s. Merge its settings into %s, keeping existing canonical values, then move the legacy file aside.", path, canonical)
+		if canonicalInfo != nil && os.SameFile(canonicalInfo, info) {
+			message = fmt.Sprintf("Canonical Kit config %s aliases legacy config %s. Create a separate canonical file with those settings before moving the legacy file aside.", canonical, path)
+		}
 		warnings = append(warnings, Finding{
-			Field: "global_config", Severity: FindingWarning,
-			Message: fmt.Sprintf("Legacy Kit config found at %s. Merge its settings into %s, keeping existing canonical values, then move the legacy file aside.", path, paths[0]),
+			Field: "global_config", Severity: FindingWarning, Message: message,
 		})
 	}
 	return warnings

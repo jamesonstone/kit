@@ -162,3 +162,31 @@ func TestProjectYAMLMergeOverridesGlobalDefaults(t *testing.T) {
 		})
 	}
 }
+
+func TestGlobalConfigPreservesStringScalarSpelling(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	xdg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+
+	for name, body := range map[string]string{
+		"plain": "specs_dir: 0123\n",
+		"alias": "local: &local\n  specs_dir: 0123\n<<: *local\n",
+	} {
+		t.Run(name, func(t *testing.T) {
+			repo, _, err := ParseWithInspection([]byte("schema_version: 2\n" + body))
+			if err != nil || repo.SpecsDir != "0123" {
+				t.Fatalf("repository config = %#v, %v", repo, err)
+			}
+
+			writeGlobalTestConfig(t, filepath.Join(xdg, "kit"), body)
+			global, found, err := LoadGlobal()
+			if err != nil || !found || global.SpecsDir != repo.SpecsDir {
+				t.Fatalf("global config = %#v, found = %v, error = %v", global, found, err)
+			}
+			effective, _, err := ParseWithGlobalDefaults([]byte("schema_version: 2\n"))
+			if err != nil || effective.SpecsDir != repo.SpecsDir {
+				t.Fatalf("effective config = %#v, %v", effective, err)
+			}
+		})
+	}
+}

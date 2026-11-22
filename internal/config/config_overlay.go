@@ -81,7 +81,7 @@ func applyUserConfigOverlay(repo []byte) ([]byte, error) {
 		if err := project.Decode(&expanded); err != nil {
 			return nil, fmt.Errorf("failed to resolve repository config: %w", err)
 		}
-		project, err = resolveProjectYAML(project, make(map[*yaml.Node]bool))
+		project, err = resolveConfigYAML(project, make(map[*yaml.Node]bool))
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve repository config: %w", err)
 		}
@@ -115,15 +115,27 @@ func loadGlobalConfigRoot(paths []string) (*yaml.Node, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to read global config %s: %w", path, err)
 		}
-		values := make(map[string]any)
-		if err := yaml.Unmarshal(data, &values); err != nil {
+		doc, err := parseYAMLDocument(data, "global config "+path)
+		if err != nil {
+			return nil, err
+		}
+		root := documentRoot(doc)
+		// Validate the mapping and check alias expansion limits without using
+		// the decoded values, which lose scalar spelling and quoting.
+		var values map[string]any
+		if err := root.Decode(&values); err != nil {
 			return nil, fmt.Errorf("failed to parse global config %s: %w", path, err)
 		}
-		var root yaml.Node
-		if err := root.Encode(values); err != nil {
-			return nil, fmt.Errorf("failed to encode global config %s: %w", path, err)
+		if root.Tag == "!!null" {
+			root = documentRoot(nil)
 		}
-		merged = mergeYAMLNodes(merged, &root)
+		if usesYAMLInheritance(root) {
+			root, err = resolveConfigYAML(root, make(map[*yaml.Node]bool))
+			if err != nil {
+				return nil, fmt.Errorf("failed to resolve global config %s: %w", path, err)
+			}
+		}
+		merged = mergeYAMLNodes(merged, root)
 	}
 	return merged, nil
 }
@@ -140,9 +152,9 @@ func usesYAMLInheritance(node *yaml.Node) bool {
 	return false
 }
 
-// Resolve merge keys before applying project precedence. Keep scalar syntax
-// so checks such as the quoted AWS account ID still see the project value.
-func resolveProjectYAML(node *yaml.Node, aliases map[*yaml.Node]bool) (*yaml.Node, error) {
+// Resolve merge keys before applying config precedence. Keep scalar syntax
+// so checks such as the quoted AWS account ID still see the configured value.
+func resolveConfigYAML(node *yaml.Node, aliases map[*yaml.Node]bool) (*yaml.Node, error) {
 	resolved := *node
 	resolved.Anchor = ""
 	switch node.Kind {
@@ -152,7 +164,7 @@ func resolveProjectYAML(node *yaml.Node, aliases map[*yaml.Node]bool) (*yaml.Nod
 			return nil, fmt.Errorf("invalid or cyclic YAML alias %q", node.Value)
 		}
 		aliases[target] = true
-		result, err := resolveProjectYAML(target, aliases)
+		result, err := resolveConfigYAML(target, aliases)
 		delete(aliases, target)
 		return result, err
 	case yaml.MappingNode:
@@ -168,7 +180,7 @@ func resolveProjectYAML(node *yaml.Node, aliases map[*yaml.Node]bool) (*yaml.Nod
 		resolved.Content = nil
 		for _, key := range keys {
 			field := fields[key]
-			value, err := resolveProjectYAML(&field, aliases)
+			value, err := resolveConfigYAML(&field, aliases)
 			if err != nil {
 				return nil, err
 			}
@@ -177,7 +189,7 @@ func resolveProjectYAML(node *yaml.Node, aliases map[*yaml.Node]bool) (*yaml.Nod
 	case yaml.SequenceNode:
 		resolved.Content = nil
 		for _, child := range node.Content {
-			value, err := resolveProjectYAML(child, aliases)
+			value, err := resolveConfigYAML(child, aliases)
 			if err != nil {
 				return nil, err
 			}

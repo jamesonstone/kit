@@ -106,7 +106,7 @@ read_policy_default: conditional
 
 Track longer-running work, anything the repository owner names, or anything you recommend tracking (with the owner's OK) in the repository's configured work ledger. Before you ping the owner about a task, find its item; if it's done or owned by another agent, don't ping. Create the item if it is missing. After you act, update the item's owner label, status (Active / In review / Done), and a one-line note. Tag it with your own agent label (`agent:<you>`). If you hand work to another agent, relabel the item and add a note. The ledger holds the current state.
 
-Use the same schema in global and repository `.kit.yaml` files. Repository keys override global defaults. If neither configures a provider, this rule is a no-op. Use the work ledger hook above to resolve the effective settings.
+Use the same schema in global and repository `.kit.yaml` files. Repository keys override global defaults. If the effective settings, including legacy global fallbacks, have no provider or set it to `none`, this rule is a no-op. Use the work ledger hook above to resolve the effective settings.
 
 ```yaml
 work_ledger:
