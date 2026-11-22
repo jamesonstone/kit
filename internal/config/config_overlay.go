@@ -128,8 +128,9 @@ func loadGlobalConfigRoot(paths []string) (*yaml.Node, error) {
 		}
 		if root.Tag == "!!null" {
 			root = documentRoot(nil)
-		}
-		if usesYAMLInheritance(root) {
+		} else {
+			// Decode keys before filtering repository-only fields. A tagged
+			// YAML key can have different source text and decoded values.
 			root, err = resolveConfigYAML(root, make(map[*yaml.Node]bool))
 			if err != nil {
 				return nil, fmt.Errorf("failed to resolve global config %s: %w", path, err)

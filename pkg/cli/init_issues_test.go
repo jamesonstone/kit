@@ -197,6 +197,7 @@ func TestProjectIssueScopeMatchesReconcileTemplate(t *testing.T) {
 	}{
 		{name: "omitted", global: globalIssues, provider: "github"},
 		{name: "global YAML merge", global: anchored, provider: "github"},
+		{name: "global tagged key", global: strings.Replace(globalIssues, "issues:", "!!binary aXNzdWVz:", 1), provider: "github"},
 		{name: "local Linear", global: globalIssues, project: "issues:\n  provider: linear\n  linear:\n    workspace: project-example\n    team_id: 22222222-2222-4222-8222-222222222222\n", provider: "linear", workspace: "project-example"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
