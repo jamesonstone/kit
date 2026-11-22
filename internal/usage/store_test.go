@@ -13,6 +13,7 @@ import (
 func TestRecordStoresMinimalPrivateEventAndReport(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", "")
 	projectRoot := filepath.Join(t.TempDir(), "secret-repository-name")
 	if err := os.MkdirAll(projectRoot, 0o755); err != nil {
 		t.Fatal(err)
@@ -57,6 +58,7 @@ func TestRecordStoresMinimalPrivateEventAndReport(t *testing.T) {
 
 func TestGlobalDisableSuppressesProjectEnable(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", "")
 	projectRoot := t.TempDir()
 	project := config.Default()
 	project.Usage = &config.UsageConfig{Enabled: boolPointer(true)}
@@ -86,6 +88,7 @@ func TestGlobalDisableSuppressesProjectEnable(t *testing.T) {
 
 func TestUsageCommandsDoNotRecordThemselves(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", "")
 	if err := Record(RecordInput{Command: "usage report"}); err != nil {
 		t.Fatal(err)
 	}

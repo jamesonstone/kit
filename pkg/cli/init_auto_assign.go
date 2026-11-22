@@ -17,7 +17,7 @@ func planRefreshAutoAssignWorkflowFile(
 	cfg *config.Config,
 	targets map[string]bool,
 ) (initRefreshFileChange, error) {
-	assignees, err := resolveAutoAssignAssignees(cfg)
+	assignees, err := resolveAutoAssignAssignees(projectRoot, cfg, opts.resetsProjectConfig(targets))
 	if err != nil {
 		return initRefreshFileChange{}, err
 	}
@@ -50,17 +50,23 @@ func planRefreshAutoAssignWorkflowFile(
 	return *newInitRefreshFileChange(projectRoot, autoAssignWorkflowPath, before, before, instructionFileSkipped), nil
 }
 
-func resolveAutoAssignAssignees(cfg *config.Config) ([]string, error) {
+func resolveAutoAssignAssignees(projectRoot string, cfg *config.Config, reset bool) ([]string, error) {
 	if cfg != nil && cfg.GitHub.DefaultAssignees != nil {
 		return normalizeAutoAssignAssignees(*cfg.GitHub.DefaultAssignees), nil
 	}
 
-	global, found, err := config.LoadGlobal()
+	if !reset {
+		explicit, err := config.RepositoryDeclaresDefaultAssignees(projectRoot)
+		if explicit || err != nil {
+			return nil, err
+		}
+	}
+	assignees, err := config.LoadGlobalDefaultAssignees()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load global Kit config for auto-assign assignees: %w", err)
 	}
-	if found && global.GitHub.DefaultAssignees != nil {
-		return normalizeAutoAssignAssignees(*global.GitHub.DefaultAssignees), nil
+	if assignees != nil {
+		return normalizeAutoAssignAssignees(*assignees), nil
 	}
 	return nil, nil
 }

@@ -66,7 +66,7 @@ registry:
         - kind: ruleset
           slug: delivery
           path: docs/references/rules/delivery.md
-          installed_hash: sha256:782f813b1a017aae35e848b437b517e066ad82ddf6a99675e46af747b5550bc4
+          installed_hash: sha256:a20120e5608eef2948eea4d0b8c53816f4818a650c1c4db3212ab0da8204c8f7
           state: managed
         - kind: ruleset
           slug: deployment-recovery
@@ -76,7 +76,7 @@ registry:
         - kind: ruleset
           slug: frontend-application-architecture
           path: docs/references/rules/frontend-application-architecture.md
-          installed_hash: sha256:31fafc0f1b1bf2690e88d6f713603f9eee178de14e4d1dffe880272523ee073c
+          installed_hash: sha256:7a277cddb2d9cd7b6efbb619c2e4d54b72d02448f5f4ed0e191a4d20fd3f2ec9
           state: managed
         - kind: ruleset
           slug: github-pr-merge

@@ -39,7 +39,12 @@ type Flag struct {
 // Build snapshots the current tree, including commands registered after startup.
 // It does not execute commands, inspect projects, or load configuration.
 func Build(root *cobra.Command) Document {
-	d := Document{SchemaVersion: 1, Instructions: "Read the repository's agent contract first. Use this guide to select installed commands and understand artifact types. Run kit <command> --help for focused help. Command descriptions come from this binary's live command tree; examples are instructions, not executed actions. Project authorization and contextual rules still apply. Paths below are defaults; project configuration can override supported paths. kit guide --json returns the same information as structured data.", Artifacts: artifacts(), Commands: []Command{}}
+	d := Document{
+		SchemaVersion: 1,
+		Instructions:  "Read your repository's agent instructions. Match the task to a command below, then use kit guide <command> for usage, flags, and examples. Use kit guide --json for full metadata. Artifact paths are defaults.",
+		Artifacts:     artifacts(),
+		Commands:      []Command{},
+	}
 	var visit func(*cobra.Command)
 	visit = func(cmd *cobra.Command) {
 		if cmd != root && (!cmd.IsAvailableCommand() && cmd.Name() != "help" || cmd.Hidden) {

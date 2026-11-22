@@ -11,6 +11,7 @@ import (
 
 func TestRefreshPrunesExpiredEventsAndPreservesCurrentEvents(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", "")
 	dir, _ := Directory()
 	if err := ensurePrivateDirectory(dir); err != nil {
 		t.Fatal(err)
@@ -85,6 +86,7 @@ func TestPruneTotalBytesRemovesOldestCompleteShards(t *testing.T) {
 
 func TestRecordMaintainsTotalStorageBoundAfterAppend(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", "")
 	dir, _ := Directory()
 	if err := ensurePrivateDirectory(dir); err != nil {
 		t.Fatal(err)
@@ -116,6 +118,7 @@ func TestRecordMaintainsTotalStorageBoundAfterAppend(t *testing.T) {
 
 func TestRefreshDryRunCreatesNoStorage(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", "")
 	dir, _ := Directory()
 	if _, err := Refresh(true); err != nil {
 		t.Fatal(err)

@@ -43,7 +43,8 @@ type Inspection struct {
 }
 
 type rawConfigInspection struct {
-	SchemaVersion *int `yaml:"schema_version"`
+	SchemaVersion *int                 `yaml:"schema_version"`
+	WorkLedger    map[string]yaml.Node `yaml:"work_ledger"`
 	AWS           *struct {
 		AccountID yaml.Node `yaml:"account_id"`
 	} `yaml:"aws"`
@@ -60,14 +61,6 @@ func (i Inspection) HasErrors() bool {
 
 func (i Inspection) NeedsSchemaMigration() bool {
 	return i.SchemaState == SchemaStateMissing || i.SchemaState == SchemaStateOlder
-}
-
-func LoadWithInspection(projectRoot string) (*Config, Inspection, error) {
-	data, err := readMergedConfig(projectRoot)
-	if err != nil {
-		return nil, Inspection{}, err
-	}
-	return ParseWithInspection(data)
 }
 
 // ParseWithInspection inspects config bytes without accessing or repairing files.
@@ -88,6 +81,7 @@ func ParseWithInspection(data []byte) (*Config, Inspection, error) {
 		return nil, Inspection{}, fmt.Errorf("failed to parse %s: %w", ConfigFileName, err)
 	}
 	inspection.Findings = append(inspection.Findings, semanticFindings(cfg)...)
+	inspection.Findings = appendLegacyWorkLedgerFinding(raw.WorkLedger, inspection.Findings)
 	inspection.Findings = appendIssueAndLedgerFindings(cfg, inspection.Findings)
 	if err := cfg.Shell.Validate(); err != nil {
 		inspection.Findings = append(inspection.Findings, Finding{Field: "shell.command", Severity: FindingError, Message: err.Error()})

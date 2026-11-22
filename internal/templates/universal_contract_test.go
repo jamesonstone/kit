@@ -120,29 +120,10 @@ func TestEmbeddedRulesOmitOwnerLedger(t *testing.T) {
 	}
 }
 
-func TestDeliveryRuleKeepsWorkLedgerBehavior(t *testing.T) {
-	data, err := os.ReadFile(filepath.Join("..", "..", "docs", "references", "rules", "delivery.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, want := range []string{
-		"find its item",
-		"don't ping",
-		"Active / In review / Done",
-		"one-line note",
-		"owner label",
-		"Create the item if it is missing",
-		"agent:<you>",
-		"relabel the item",
-		"work_ledger",
-		"~/.kit/.kit.yaml",
-		"this rule is a no-op",
-	} {
-		if !strings.Contains(string(data), want) {
-			t.Errorf("delivery rule missing %q", want)
-		}
-		if !strings.Contains(universalContractBody, want) {
-			t.Errorf("generated contract missing %q", want)
+func TestContractRoutesWorkLedgerToDelivery(t *testing.T) {
+	for _, marker := range []string{"work_ledger", "$XDG_CONFIG_HOME/kit/.kit.yaml", "delivery.md", "Repository keys override global defaults"} {
+		if !strings.Contains(universalContractBody, marker) {
+			t.Errorf("contract missing %q", marker)
 		}
 	}
 }

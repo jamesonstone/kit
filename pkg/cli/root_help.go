@@ -78,7 +78,7 @@ func renderRootHelp(cmd *cobra.Command) error {
 	if _, err := fmt.Fprintf(out, "  %s [command]\n", cmd.CommandPath()); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(out, "\n  Coding agents: run `%s guide` first. It is derived from each command's help.\n  `%s <command> --help` shows that command. `%s guide --json` is the same guide as data.\n", cmd.CommandPath(), cmd.CommandPath(), cmd.CommandPath()); err != nil {
+	if _, err := fmt.Fprintf(out, "\n  Coding agents: run `%s guide` to choose a command.\n  `%s guide <command>` retrieves its details. `%s guide --json` gives the full guide as data.\n", cmd.CommandPath(), cmd.CommandPath(), cmd.CommandPath()); err != nil {
 		return err
 	}
 

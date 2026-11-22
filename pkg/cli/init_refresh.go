@@ -168,7 +168,7 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		versionChanged = true
 	}
 	if configChange != nil || guidanceRegistryChanged || registryChanged || retiredRegistryChanged || versionChanged || initRefreshTargetMatches(targets, config.ConfigFileName) {
-		configChange, err = finalizeInitRefreshConfigChange(projectRoot, cfg, configChange)
+		configChange, err = finalizeInitRefreshConfigChange(projectRoot, cfg, configChange, opts.resetsProjectConfig(targets))
 		if err != nil {
 			return nil, err
 		}
