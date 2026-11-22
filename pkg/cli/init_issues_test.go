@@ -151,10 +151,32 @@ func previousLinearPullRequestTemplate() string {
 	return strings.Replace(previousPullRequestTemplate(), "Closes #[ticket number]", "<!-- Full canonical Linear URL; preserve in the squash commit footer. Follow delivery for lifecycle. -->\n[Linear issue URL]", 1)
 }
 
+const priorEvidencePullRequestTemplate = `## Description
+
+-
+
+## How to Test
+
+1.
+
+## Evidence
+
+- Commands: command and real output or excerpt
+- Decisions and assumptions: defaults, scope calls, conflicting requirements reinterpreted
+- Checks: for each check, the property it verified
+- Not checked:
+- Fresh-context review:
+
+## Ticket
+
+Closes #[ticket number]
+`
+
 func TestReconcileSwitchesOnlyOwnedIssueTemplate(t *testing.T) {
 	root := t.TempDir()
 	github := templates.PullRequestTemplate
 	linear := templates.BuildPullRequestTemplate("linear")
+	priorLinear := strings.Replace(priorEvidencePullRequestTemplate, "Closes #[ticket number]", "<!-- Full canonical Linear URL; preserve in the squash commit footer. Follow delivery for lifecycle. -->\n[Linear issue URL]", 1)
 	for _, tc := range []struct {
 		name, before, after string
 		want                instructionFileWriteResult
@@ -163,6 +185,9 @@ func TestReconcileSwitchesOnlyOwnedIssueTemplate(t *testing.T) {
 		{"linear to github", linear, github, instructionFileUpdated},
 		{"previous github", previousPullRequestTemplate(), github, instructionFileUpdated},
 		{"previous linear", previousLinearPullRequestTemplate(), linear, instructionFileUpdated},
+		{"prior evidence github", priorEvidencePullRequestTemplate, github, instructionFileUpdated},
+		{"prior evidence linear", priorLinear, linear, instructionFileUpdated},
+		{"custom prior evidence", priorEvidencePullRequestTemplate + "\nCustom review requirements\n", github, instructionFileSkipped},
 		{"custom", github + "\nCustom requirements\n", linear, instructionFileSkipped},
 		{"idempotent", linear, linear, instructionFileSkipped},
 	} {

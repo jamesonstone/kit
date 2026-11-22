@@ -23,6 +23,10 @@ var ruleInvariants = map[string][]string{
 		"fresh-context review",
 		"no prior context",
 		"did I miss anything?",
+		"Do not open the pull request without this review",
+		"reviewed commit or identifiable diff snapshot",
+		"Require a focused independent follow-up for substantive changes",
+		"For minor edits, record the lead's diff check",
 	},
 	"github-pr-merge": {
 		"Merge only under explicit human authorization",
