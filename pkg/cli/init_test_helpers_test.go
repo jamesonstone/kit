@@ -62,6 +62,7 @@ func setupInitHome(t *testing.T) string {
 
 	homeDir := t.TempDir()
 	t.Setenv("HOME", homeDir)
+	t.Setenv("XDG_CONFIG_HOME", "")
 	return homeDir
 }
 

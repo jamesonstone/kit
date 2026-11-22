@@ -28,7 +28,7 @@ read_policy_default: must
 
 - Keep navigation, feature orchestration, business behavior, data access, state, and presentation responsibilities explicit in frontend applications.
 - Prefer feature ownership and inward dependency direction over global folders organized only by technical type.
-- Complement the frontend prompt profile's visual and interaction guidance without duplicating it.
+- Complement the visual and interaction guidance in `DESIGN.md`.
 
 ## Applies When
 
@@ -105,7 +105,7 @@ This rule defines architectural roles, not mandatory directory, component, hook,
 - Test components for rendered states, accessibility semantics, and emitted events.
 - Test data adapters for serialization, authentication, error normalization, caching, and cancellation.
 - Add route or end-to-end coverage for critical user journeys across navigation, feature, and data boundaries.
-- Apply the frontend prompt profile separately when visual quality, responsive behavior, and interaction-state inspection matter.
+- Follow the repository's `DESIGN.md` when validating visual quality, responsive behavior, and interaction states.
 
 ### Framework-Aware Exceptions
 

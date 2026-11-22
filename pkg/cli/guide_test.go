@@ -128,6 +128,65 @@ func TestGuideRealRootBypassesConfigPreflight(t *testing.T) {
 	}
 }
 
+func TestGuideRetrievesExactVisibleCommand(t *testing.T) {
+	run := func(args ...string) (string, error) {
+		root := &cobra.Command{Use: "kit"}
+		group := &cobra.Command{Use: "future", Short: "Manage future tasks"}
+		leaf := &cobra.Command{
+			Use:     "show <target>",
+			Short:   "Show a target",
+			Long:    "Display target details",
+			Example: "kit future show example",
+			Run:     func(*cobra.Command, []string) { t.Fatal("guide executed the command") },
+		}
+		leaf.Flags().String("format", "text", "Select output format")
+		group.AddCommand(leaf, &cobra.Command{
+			Use:    "hidden",
+			Hidden: true,
+			Run:    func(*cobra.Command, []string) { t.Fatal("guide executed the command") },
+		})
+		root.AddCommand(newGuideCommand(), group)
+		var b bytes.Buffer
+		root.SetOut(&b)
+		root.SetErr(&b)
+		root.SetArgs(append([]string{"guide"}, args...))
+		err := root.Execute()
+		return b.String(), err
+	}
+
+	out, err := run("future", "show")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"# kit future show", "Display target details", "kit future show <target>", "kit future show example", "--format"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q in %s", want, out)
+		}
+	}
+	if strings.Contains(out, "Manage future tasks") || strings.Contains(out, "Repository artifacts") {
+		t.Fatalf("focused output includes unrelated guidance: %s", out)
+	}
+
+	out, err = run("kit", "future", "show", "--json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var d guide.Document
+	if err := json.Unmarshal([]byte(out), &d); err != nil {
+		t.Fatal(err)
+	}
+	if d.SchemaVersion != 1 || len(d.Artifacts) != 0 || len(d.Commands) != 1 || d.Commands[0].Path != "kit future show" {
+		t.Fatalf("unexpected scoped guide: %+v", d)
+	}
+
+	for _, name := range []string{"sh", "hidden"} {
+		_, err := run("future", name)
+		if err == nil || !strings.Contains(err.Error(), "Run kit guide to list command paths") {
+			t.Errorf("expected actionable error for %q, got %v", name, err)
+		}
+	}
+}
+
 func TestGuideDiscoveryRoutes(t *testing.T) {
 	var out bytes.Buffer
 	previous := rootCmd.OutOrStdout()
@@ -136,7 +195,7 @@ func TestGuideDiscoveryRoutes(t *testing.T) {
 	if err := renderRootHelp(rootCmd); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(out.String(), "Coding agents: run `kit guide` first") {
+	if !strings.Contains(out.String(), "Coding agents: run `kit guide` to choose a command") {
 		t.Fatal("root help does not point agents at kit guide")
 	}
 	if !strings.Contains(buildProjectInitPrompt("/repo", "/repo/docs/CONSTITUTION.md"), "kit guide") {

@@ -22,11 +22,13 @@ supervise agents.
 
 ## Discover Kit functionality
 
-Run `kit guide` for the installed command tree, nested commands, usage, flags,
-examples, and artifact instructions. Use `kit guide --json` for deterministic
-structured output, or `kit <command> --help` for focused help. The guide works
-outside a project without network access, configuration changes, or usage writes.
-Command descriptions derive from the live CLI help, not a second catalog.
+`kit guide` is the official command guide for coding agents. Start with its
+short index of commands and repository artifacts. Retrieve one command's usage,
+examples, and flags with `kit guide <command>`, for example
+`kit guide rules view`. Use `kit guide --json` for the complete structured catalog,
+or `kit guide <command> --json` for a single command. The guide derives its
+content from the live CLI and works outside a project without network access,
+configuration changes, or usage writes.
 
 The canonical agent contract and init onboarding direct coding agents to the
 guide. These discovery routes do not guarantee that an agent reads it. Artifact
@@ -251,11 +253,25 @@ Review committed text and link visibility before publication.
 https://github.com/jamesonstone/kit/issues if you want support for another
 ledger tool.
 
-Configuration is read from the repository `.kit.yaml` and, when present, from
-`~/.kit/.kit.yaml`. A missing user file changes nothing. The repository file
-overrides the user file key by key. The user file is never committed. Use
-placeholders in examples. Kit stores no credentials and does not call the
-ledger API.
+Kit reads and writes global configuration at `$XDG_CONFIG_HOME/kit/.kit.yaml`
+when `XDG_CONFIG_HOME` is absolute and nonempty. Otherwise it uses
+`~/.config/kit/.kit.yaml`. For unset global keys, Kit reads `~/.kit/.kit.yaml`
+and then `~/.config/kit/.kit.yaml` if it differs from the canonical path.
+Kit writes only to the canonical path and leaves fallback files in place. If
+that path aliases a fallback, use a separate file for canonical writes.
+Kit warns when it finds a fallback file. To clear the warning, merge any
+settings you want to keep into the canonical file, preserving values already
+set there. If the canonical config aliases the fallback, create a separate
+canonical file first. Then move the fallback file aside. `kit config check --json`
+includes the warning in its findings.
+
+The repository `.kit.yaml` uses the same schema and overrides global defaults
+key by key. A repository scalar, list, or explicit null replaces the global
+value at that key. Issue routing, the issue-template opt-in, and repository
+schema and scaffold versions come from the repository. Reconcile writes only
+repository-owned configuration. Generated README links use the repository's
+configured GitHub identity or its origin. Keep user config private. Kit stores no
+credentials and does not call the ledger API.
 
 ```yaml
 work_ledger:
@@ -266,13 +282,16 @@ work_ledger:
     project: <project>
 ```
 
-Omitted state names mean `Active`, `In review`, and `Done`.
+Omitted state names mean `Active`, `In review`, and `Done`. Set
+`work_ledger.provider: none` in a repository to turn off a global ledger there.
+`kit config check --json` identifies obsolete flat ledger keys. Update them
+to the schema above before running reconcile.
 
 ## Command Surface
 
 | Area | Commands |
 | --- | --- |
-| Coding-agent entry | `kit guide` [`--json`] |
+| Coding-agent entry | `kit guide [<command path>] [--json]` |
 | Bootstrap and memory | `kit init`, `kit spec` |
 | Rules | `kit rules add\|list\|view` |
 | Local guidance | `kit inspect [--path <directory>] [--json]` |

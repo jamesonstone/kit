@@ -13,11 +13,11 @@ const (
 )
 
 // WorkLedgerNote renders the agent-contract ledger note from repository
-// config. An omitted provider returns an empty string. The text uses only
+// config. Incomplete or disabled project config returns an empty string. The text uses only
 // configured values and never a person, workspace, project, URL, or bot label
 // of Kit's choosing.
 func WorkLedgerNote(cfg config.WorkLedgerConfig) string {
-	if !cfg.Enabled() {
+	if !cfg.Enabled() || cfg.Validate() != nil {
 		return ""
 	}
 	states := cfg.Plane.States.Resolved()
@@ -29,13 +29,13 @@ func WorkLedgerNote(cfg config.WorkLedgerConfig) string {
 	if strings.TrimSpace(cfg.OwnerLabel) != "" {
 		label = cfg.OwnerLabel
 	}
-	body := fmt.Sprintf("Provider `%s`. Workspace `%s`. Project `%s`. States: active `%s`, in review `%s`, done `%s`. Owner label: `%s`. The repository owner supplies this target. Follow `delivery` for the lifecycle. Kit stores no credentials and does not call the ledger API.",
+	body := fmt.Sprintf("Provider `%s`. Workspace `%s`. Project `%s`. States: active `%s`, in review `%s`, done `%s`. Owner label: `%s`. The repository owner supplies this target. Resolve the effective settings from both config files. Follow `delivery` for the lifecycle. Kit stores no credentials and does not call the ledger API.",
 		strings.TrimSpace(cfg.Provider), cfg.Plane.Workspace, project, states.Active, states.InReview, states.Done, label)
 	return workLedgerNoteBegin + "\n" + body + "\n" + workLedgerNoteEnd + "\n"
 }
 
 // ApplyWorkLedgerNote inserts or removes the ledger note on an agent entry
-// file. The note is present only when the provider is set.
+// file. The note requires a complete repository-owned target.
 func ApplyWorkLedgerNote(content string, cfg config.WorkLedgerConfig) string {
 	stripped := stripWorkLedgerNote(content)
 	note := WorkLedgerNote(cfg)

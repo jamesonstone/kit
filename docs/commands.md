@@ -10,15 +10,15 @@ it writes only to a linked worktree), and `kit health` diagnoses.
 
 ## Functionality Guide
 
-`kit guide` explains the installed command tree and repository artifact types.
-It derives command descriptions, usage, examples, and visible flags from Cobra
-help, including nested commands. `kit guide --json` returns the same information
-as deterministic structured data. Both forms work outside a project without
-network access, configuration remediation, or usage recording.
+Use `kit guide` as the official coding-agent command index. It lists installed
+command paths and repository artifact types. Retrieve detailed guidance for an
+exact command path with `kit guide reconcile` or `kit guide rules view`.
+`kit guide --json` returns the full schema v1 catalog. Add the command path
+to get a one-command JSON result.
 
-The agent contract and init onboarding point to this guide. It supplements
-focused `kit <command> --help`; it is not a second capability catalog or an
-execution engine.
+The guide derives command descriptions, usage, examples, and visible flags
+from Cobra. It works outside a project without network access, configuration
+remediation, or usage recording. `kit <command> --help` also remains available.
 
 ## Bootstrap And Memory
 

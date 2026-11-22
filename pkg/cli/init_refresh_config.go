@@ -23,9 +23,10 @@ func initRefreshConfig(
 	}
 	configSelected := initRefreshTargetMatches(targets, config.ConfigFileName)
 	shouldTouchConfig := len(targets) == 0 || configSelected
+	reset := opts.resetsProjectConfig(targets)
 	path := filepath.Join(projectRoot, config.ConfigFileName)
 	exists := config.Exists(projectRoot)
-	var before string
+	var before []byte
 	var inspection config.Inspection
 
 	if exists {
@@ -33,22 +34,32 @@ func initRefreshConfig(
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to read %s: %w", config.ConfigFileName, err)
 		}
-		before = string(data)
-		existing, currentInspection, err := config.LoadWithInspection(projectRoot)
+		before = data
+		existing, currentInspection, err := config.ParseForRepositoryWrite(data)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to load %s: %w", config.ConfigFileName, err)
 		}
-		if currentInspection.SchemaState == config.SchemaStateNewer {
-			return nil, nil, fmt.Errorf("%s", currentInspection.Findings[0].Message)
-		}
 		cfg = existing
 		inspection = currentInspection
+		if !reset {
+			cfg, _, err = config.ParseWithGlobalDefaults(data)
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to resolve effective config: %w", err)
+			}
+			cfg.SchemaVersion = existing.SchemaVersion
+			cfg.InstructionScaffoldVersion = existing.InstructionScaffoldVersion
+			cfg.Registry = existing.Registry
+			// Readme generation uses the repository identity. Auto-assign resolves
+			// user defaults separately, with explicit repository overrides.
+			cfg.GitHub = existing.GitHub
+		}
 	}
 
 	// --force resets .kit.yaml only when it is named explicitly; a whole-project
 	// forced reconcile must never discard project configuration.
-	if configSelected && opts.force && len(targets) > 0 {
+	if reset {
 		issues := cfg.Issues
+		ledger := cfg.WorkLedger
 		aws := cfg.AWS
 		instructionVersion := cfg.InstructionScaffoldVersion
 		registry := cfg.Registry
@@ -58,10 +69,11 @@ func initRefreshConfig(
 			cfg.InstructionScaffoldVersion = instructionVersion
 		}
 		cfg.Issues = issues
+		cfg.WorkLedger = ledger
 		cfg.AWS = aws
 		cfg.Registry = registry
 		enableIssueTemplateOptIn(cfg, opts)
-		after, err := marshalInitRefreshConfig(cfg)
+		after, err := marshalInitRefreshConfig(cfg, before, true)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -69,7 +81,7 @@ func initRefreshConfig(
 		if exists {
 			result = instructionFileUpdated
 		}
-		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, result), nil
+		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, string(before), after, result), nil
 	}
 
 	enableIssueTemplateOptIn(cfg, opts)
@@ -82,7 +94,7 @@ func initRefreshConfig(
 		cfg.InstructionScaffoldVersion = config.CurrentInstructionScaffoldVersion
 	}
 	if configChanged && shouldTouchConfig {
-		after, err := marshalInitRefreshConfig(cfg)
+		after, err := marshalInitRefreshConfig(cfg, before, false)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -90,15 +102,15 @@ func initRefreshConfig(
 		if !exists {
 			result = instructionFileCreated
 		}
-		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, result), nil
+		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, string(before), after, result), nil
 	}
 
 	if !exists && shouldTouchConfig {
-		after, err := marshalInitRefreshConfig(cfg)
+		after, err := marshalInitRefreshConfig(cfg, before, false)
 		if err != nil {
 			return nil, nil, err
 		}
-		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, instructionFileCreated), nil
+		return cfg, newInitRefreshFileChange(projectRoot, config.ConfigFileName, string(before), after, instructionFileCreated), nil
 	}
 
 	return cfg, nil, nil
@@ -112,31 +124,33 @@ func enableIssueTemplateOptIn(cfg *config.Config, opts initRefreshOptions) {
 	cfg.Issues.IssueTemplate = &enabled
 }
 
-func finalizeInitRefreshConfigChange(projectRoot string, cfg *config.Config, planned *initRefreshFileChange) (*initRefreshFileChange, error) {
-	before := ""
+func finalizeInitRefreshConfigChange(projectRoot string, cfg *config.Config, planned *initRefreshFileChange, reset bool) (*initRefreshFileChange, error) {
+	var before []byte
 	result := instructionFileCreated
 	if planned != nil {
-		before = planned.before
 		result = planned.result
+		if result != instructionFileCreated {
+			before = []byte(planned.before)
+		}
 	} else if config.Exists(projectRoot) {
 		data, err := os.ReadFile(filepath.Join(projectRoot, config.ConfigFileName))
 		if err != nil {
 			return nil, fmt.Errorf("failed to read %s: %w", config.ConfigFileName, err)
 		}
-		before = string(data)
+		before = data
 		result = instructionFileUpdated
 	}
 
-	after, err := marshalInitRefreshConfig(cfg)
+	after, err := marshalInitRefreshConfig(cfg, before, reset)
 	if err != nil {
 		return nil, err
 	}
 	// Rewrite only for a change in content, which includes dropping keys Kit
 	// no longer reads; formatting and comments alone never trigger a rewrite.
-	if before == after || (planned == nil && sameYAMLContent(before, after)) {
+	if string(before) == after || (planned == nil && sameYAMLContent(string(before), after)) {
 		return nil, nil
 	}
-	return newInitRefreshFileChange(projectRoot, config.ConfigFileName, before, after, result), nil
+	return newInitRefreshFileChange(projectRoot, config.ConfigFileName, string(before), after, result), nil
 }
 
 func sameYAMLContent(left, right string) bool {
@@ -147,8 +161,8 @@ func sameYAMLContent(left, right string) bool {
 	return stdreflect.DeepEqual(a, b)
 }
 
-func marshalInitRefreshConfig(cfg *config.Config) (string, error) {
-	data, err := yaml.Marshal(cfg)
+func marshalInitRefreshConfig(cfg *config.Config, before []byte, reset bool) (string, error) {
+	data, err := config.MarshalRepositoryConfig(cfg, before, reset)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal config: %w", err)
 	}

@@ -71,13 +71,43 @@ func TestBuildTracksLiveCommandsAndFlags(t *testing.T) {
 	}
 }
 
-func TestArtifactsAndText(t *testing.T) {
-	d := Build(&cobra.Command{Use: "kit"})
+func TestIndexListsCommandsAndArtifactPaths(t *testing.T) {
+	root := &cobra.Command{Use: "kit"}
+	root.AddCommand(&cobra.Command{
+		Use:   "example",
+		Short: "Find an example",
+		Long:  "Long details for example",
+		Run:   func(*cobra.Command, []string) {},
+	})
 	var b bytes.Buffer
-	if err := WriteText(&b, d); err != nil {
+	if err := WriteIndex(&b, Build(root)); err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"docs/CONSTITUTION.md", "docs/specs/<feature>/SPEC.md", "docs/references/rules/<slug>.md", "docs/references/testing.md", "docs/sops/<slug>/SOP.md", "When present", "docs/sops/README.md", "docs/references/rules/standard-operating-procedures.md", "draft, active, and retired", "not a Kit creation command or execution engine", "existing authorization", "kit spec <feature>", "kit rules view <slug>", "git worktree list --porcelain", "docs/sops/local/*/SOP.md"} {
+	for _, want := range []string{
+		"# Kit guide for coding agents", "kit guide <command>",
+		"- `kit example` — Find an example", "docs/CONSTITUTION.md",
+		"docs/specs/<feature>/SPEC.md", "docs/references/rules/<slug>.md",
+		"docs/sops/<slug>/SOP.md", "docs/sops/local/<slug>/SOP.md",
+	} {
+		if !strings.Contains(b.String(), want) {
+			t.Errorf("missing %q", want)
+		}
+	}
+	if strings.Contains(b.String(), "Long details for example") || strings.Contains(b.String(), "--help") {
+		t.Fatal("index included command details")
+	}
+}
+
+func TestFullGuideRetainsArtifactInstructions(t *testing.T) {
+	var b bytes.Buffer
+	if err := WriteJSON(&b, Build(&cobra.Command{Use: "kit"})); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		"docs/references/testing.md", "docs/sops/README.md",
+		"docs/references/rules/standard-operating-procedures.md", "draft, active, and retired",
+		"existing authorization", "git worktree list --porcelain", "docs/sops/local/*/SOP.md",
+	} {
 		if !strings.Contains(b.String(), want) {
 			t.Errorf("missing %q", want)
 		}

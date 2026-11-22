@@ -50,6 +50,7 @@ func TestRecordIsSuppressedUnderOtherPackagesTests(t *testing.T) {
 	t.Cleanup(func() { recordingInTests = true })
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", "")
 	t.Setenv(DisableEnv, "")
 	if err := Record(RecordInput{Command: "check", Version: "v3.1.0"}); err != nil {
 		t.Fatal(err)

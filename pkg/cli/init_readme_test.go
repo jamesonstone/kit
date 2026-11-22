@@ -166,3 +166,28 @@ func lastReadmeH2(content string) string {
 	}
 	return last
 }
+
+func TestReconcileReadmeUsesProjectIdentity(t *testing.T) {
+	home := setupInitHome(t)
+	writeFile(t, filepath.Join(home, ".config", "kit", config.ConfigFileName), "github:\n  repository: personal-example/other-repo\n")
+	withReadmeCommandRunner(t, fakeReadmeRunner{outputs: map[string][]byte{
+		"git remote get-url origin": []byte("git@github.com:project-example/widget.git\n"),
+		"gh repo view project-example/widget --json visibility -q .visibility": []byte("PUBLIC\n"),
+		"gh api users/project-example --jq .type":                              []byte("Organization\n"),
+	}})
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, config.ConfigFileName), "schema_version: 2\n")
+	plan, err := buildInitRefreshPlan(t.Context(), root, initRefreshOptions{dryRun: true, files: []string{readmePath}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, change := range plan.changes {
+		if change.relativePath == readmePath {
+			if !strings.Contains(change.after, "project-example/widget") || strings.Contains(change.after, "personal-example") {
+				t.Fatalf("README should identify origin without global repo details: %s", change.after)
+			}
+			return
+		}
+	}
+	t.Fatal("expected a README change")
+}

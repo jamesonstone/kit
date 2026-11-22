@@ -1,9 +1,12 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 // WorkLedgerConfig selects an optional work-ledger adapter. Credentials never
@@ -78,6 +81,28 @@ func (c WorkLedgerConfig) Validate() error {
 	default:
 		return fmt.Errorf("work_ledger.provider must be plane or omitted; got %q", c.Provider)
 	}
+}
+
+func appendLegacyWorkLedgerFinding(raw map[string]yaml.Node, findings []Finding) []Finding {
+	for _, key := range []string{"tool", "workspace", "project", "label", "rules"} {
+		if _, ok := raw[key]; ok {
+			return append(findings, Finding{
+				Field:    "work_ledger." + key,
+				Severity: FindingError,
+				Message:  "obsolete flat ledger keys: use work_ledger.provider, owner_label, and plane.workspace/plane.project in both config files; keep rules links in project guidance",
+			})
+		}
+	}
+	return findings
+}
+
+func (i Inspection) workLedgerFormatError() error {
+	for _, finding := range i.Findings {
+		if strings.HasPrefix(finding.Field, "work_ledger.") && finding.Severity == FindingError {
+			return errors.New(finding.Message)
+		}
+	}
+	return nil
 }
 
 func appendIssueAndLedgerFindings(cfg *Config, findings []Finding) []Finding {

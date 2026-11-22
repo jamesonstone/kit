@@ -87,6 +87,7 @@ func runConfigCheck(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	inspection.Findings = append(inspection.Findings, config.GlobalConfigLocationWarnings()...)
 	report := buildConfigCheckReport(cfg, inspection)
 	if configCheckJSON {
 		if err := outputJSON(cmd.OutOrStdout(), report); err != nil {

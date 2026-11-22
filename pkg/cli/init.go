@@ -26,7 +26,7 @@ Creates:
   - .github/ISSUE_TEMPLATE/issue.md only with --issue-template
   - .github/workflows/auto-assign.yml issue and pull request assignment workflow
   - README.md Kit-managed status badges and final Maintainers section
-  - ~/.config/kit/.kit.yaml global configuration file
+  - $XDG_CONFIG_HOME/kit/.kit.yaml global configuration file (default ~/.config/kit/.kit.yaml)
   - docs/CONSTITUTION.md
   - Repository instruction files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
   - DESIGN.md and SECURITY.md (project-customizable engineering guidance)

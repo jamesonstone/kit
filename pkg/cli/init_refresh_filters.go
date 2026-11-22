@@ -2,6 +2,8 @@ package cli
 
 import (
 	"path/filepath"
+
+	"github.com/jamesonstone/kit/v3/internal/config"
 )
 
 func initRefreshTargetMatches(targets map[string]bool, relativePath string) bool {
@@ -10,6 +12,10 @@ func initRefreshTargetMatches(targets map[string]bool, relativePath string) bool
 	}
 	_, ok := targets[filepath.ToSlash(relativePath)]
 	return ok
+}
+
+func (opts initRefreshOptions) resetsProjectConfig(targets map[string]bool) bool {
+	return opts.force && targets[config.ConfigFileName]
 }
 
 func (s *initRefreshStats) recordFileChange(change initRefreshFileChange) {

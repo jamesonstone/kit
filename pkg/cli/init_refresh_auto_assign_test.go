@@ -174,3 +174,40 @@ func TestPreserveNewerWorkflowActionPins(t *testing.T) {
 		})
 	}
 }
+
+func TestReconcileAutoAssignHonorsNullOverride(t *testing.T) {
+	for _, override := range []string{"github: null\n", "github:\n  default_assignees: null\n"} {
+		t.Run(strings.TrimSpace(override), func(t *testing.T) {
+			home := setupInitHome(t)
+			root := t.TempDir()
+			writeFile(t, filepath.Join(home, ".config", "kit", config.ConfigFileName), "github:\n  default_assignees: [global-example]\n")
+			writeFile(t, filepath.Join(root, config.ConfigFileName), "schema_version: 2\n"+override)
+			plan, err := buildInitRefreshPlan(t.Context(), root, initRefreshOptions{files: []string{autoAssignWorkflowPath}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(plan.changes) != 1 || strings.Contains(plan.changes[0].after, "global-example") {
+				t.Fatalf("workflow retained a global assignee after a project override: %+v", plan.changes)
+			}
+		})
+	}
+}
+
+func TestReconcileAutoAssignUsesPlannedConfigOnForceReset(t *testing.T) {
+	home := setupInitHome(t)
+	root := t.TempDir()
+	writeFile(t, filepath.Join(home, ".config", "kit", config.ConfigFileName), "github:\n  default_assignees: [global-example]\n")
+	writeFile(t, filepath.Join(root, config.ConfigFileName), "schema_version: 2\ngithub:\n  default_assignees: [project-example]\n")
+	opts := initRefreshOptions{force: true, files: []string{config.ConfigFileName, autoAssignWorkflowPath}}
+	plan, err := buildInitRefreshPlan(t.Context(), root, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := applyInitRefreshFileChangesAtomically(plan.changes); err != nil {
+		t.Fatal(err)
+	}
+	workflow := readFile(t, filepath.Join(root, autoAssignWorkflowPath))
+	if !strings.Contains(workflow, "global-example") || strings.Contains(workflow, "project-example") {
+		t.Fatalf("workflow does not match the settings after reset: %s", workflow)
+	}
+}

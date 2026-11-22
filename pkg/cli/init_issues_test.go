@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -180,4 +181,65 @@ func TestReconcileSwitchesOnlyOwnedIssueTemplate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProjectIssueScopeMatchesReconcileTemplate(t *testing.T) {
+	setupInitHome(t)
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	globalPath, err := config.GlobalConfigPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+	const globalIssues = "issues:\n  provider: linear\n  issue_template: true\n  linear:\n    workspace: global-example\n    team_id: 11111111-1111-4111-8111-111111111111\n"
+	anchored := "defaults: &defaults\n  " + strings.ReplaceAll(strings.TrimSuffix(globalIssues, "\n"), "\n", "\n  ") + "\n<<: *defaults\n"
+	for _, tc := range []struct {
+		name, global, project, provider, workspace string
+	}{
+		{name: "omitted", global: globalIssues, provider: "github"},
+		{name: "global YAML merge", global: anchored, provider: "github"},
+		{name: "global tagged key", global: strings.Replace(globalIssues, "issues:", "!!binary aXNzdWVz:", 1), provider: "github"},
+		{name: "local Linear", global: globalIssues, project: "issues:\n  provider: linear\n  linear:\n    workspace: project-example\n    team_id: 22222222-2222-4222-8222-222222222222\n", provider: "linear", workspace: "project-example"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			writeFile(t, globalPath, tc.global)
+			root := t.TempDir()
+			writeFile(t, filepath.Join(root, config.ConfigFileName), "schema_version: 2\n"+tc.project)
+			cfg, err := config.Load(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if cfg.Issues.EffectiveProvider() != tc.provider || cfg.Issues.Linear.Workspace != tc.workspace || cfg.Issues.IssueTemplateEnabled() {
+				t.Fatalf("load issue settings = %+v", cfg.Issues)
+			}
+			opts := initRefreshOptions{dryRun: true, files: []string{pullRequestTemplatePath, issueTemplatePath}}
+			plan, err := buildInitRefreshPlan(t.Context(), root, opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := templates.BuildPullRequestTemplate(tc.provider)
+			for _, change := range plan.changes {
+				switch change.relativePath {
+				case pullRequestTemplatePath:
+					if change.after != want {
+						t.Fatal("PR template disagrees with the repository issue provider")
+					}
+				case issueTemplatePath:
+					if change.result != instructionFileSkipped {
+						t.Fatal("inherited a global issue template opt-in")
+					}
+				}
+			}
+			if len(plan.changes) != 2 {
+				t.Fatalf("expected both template entries in plan, got %d", len(plan.changes))
+			}
+		})
+	}
+	t.Run("incomplete local target", func(t *testing.T) {
+		writeFile(t, globalPath, globalIssues)
+		root := t.TempDir()
+		writeFile(t, filepath.Join(root, config.ConfigFileName), "schema_version: 2\nissues:\n  provider: linear\n")
+		if _, err := config.Load(root); err == nil || !strings.Contains(err.Error(), "issues.linear.workspace") {
+			t.Fatalf("incomplete repository target = %v", err)
+		}
+	})
 }

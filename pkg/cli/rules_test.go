@@ -79,7 +79,7 @@ func TestApplicationArchitectureRegistryRulesetsAreValid(t *testing.T) {
 				"Prefer feature ownership and inward dependency direction",
 				"Keep compile-time dependencies pointing inward",
 				"Do not let shared components fetch feature data",
-				"Apply the frontend prompt profile separately",
+				"Follow the repository's `DESIGN.md`",
 			},
 		},
 	}

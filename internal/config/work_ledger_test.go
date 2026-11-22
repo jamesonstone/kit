@@ -1,6 +1,9 @@
 package config
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestWorkLedgerConfiguration(t *testing.T) {
 	valid := WorkLedgerConfig{Provider: "plane", OwnerLabel: "agent:example", Plane: PlaneLedgerConfig{Workspace: "example-workspace", Project: "PROJ", Name: "Ledger"}}
@@ -43,6 +46,8 @@ func TestWorkLedgerConfiguration(t *testing.T) {
 }
 
 func TestWorkLedgerRoundTrip(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", "")
 	root := t.TempDir()
 	cfg := Default()
 	cfg.WorkLedger = WorkLedgerConfig{Provider: "plane", OwnerLabel: "agent:example", Plane: PlaneLedgerConfig{Workspace: "example-workspace", Project: "PROJ", Name: "Ledger", States: PlaneLedgerStates{Active: "Active"}}}
@@ -67,5 +72,20 @@ func TestWorkLedgerRoundTrip(t *testing.T) {
 	}
 	if _, err := Load(root); err == nil {
 		t.Fatal("Load accepted an invalid work ledger")
+	}
+}
+
+func TestFlatWorkLedgerConfigReportsRepair(t *testing.T) {
+	flat := []byte("schema_version: 2\nwork_ledger:\n  tool: plane\n  workspace: example\n  project: WL\n")
+	cfg, inspection, err := ParseWithInspection(flat)
+	if err != nil || !inspection.HasErrors() || cfg.WorkLedger.Enabled() {
+		t.Fatalf("parse legacy example: enabled=%v inspection=%+v err=%v", cfg.WorkLedger.Enabled(), inspection, err)
+	}
+	err = inspection.workLedgerFormatError()
+	if err == nil || !strings.Contains(err.Error(), "work_ledger.provider") {
+		t.Fatalf("expected migration guidance, got %v", err)
+	}
+	if _, _, err := ParseForRepositoryWrite(flat); err == nil {
+		t.Fatal("repository rewrite would discard the obsolete keys")
 	}
 }
