@@ -1,5 +1,5 @@
 # Kit-managed auto-assignment workflow.
-# Update github.default_assignees in .kit.yaml or ~/.kit/.kit.yaml, then run kit reconcile.
+# Update github.default_assignees in .kit.yaml or $XDG_CONFIG_HOME/kit/.kit.yaml (default ~/.config/kit/.kit.yaml), then run kit reconcile.
 # Configured maintainers are always included; the issue or pull request initiator is added automatically.
 name: Auto assign
 

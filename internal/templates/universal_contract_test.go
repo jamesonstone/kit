@@ -121,7 +121,7 @@ func TestEmbeddedRulesOmitOwnerLedger(t *testing.T) {
 }
 
 func TestContractRoutesWorkLedgerToDelivery(t *testing.T) {
-	for _, marker := range []string{"work_ledger", "~/.kit/.kit.yaml", "delivery.md", "Repository keys override global defaults"} {
+	for _, marker := range []string{"work_ledger", "$XDG_CONFIG_HOME/kit/.kit.yaml", "delivery.md", "Repository keys override global defaults"} {
 		if !strings.Contains(universalContractBody, marker) {
 			t.Errorf("contract missing %q", marker)
 		}

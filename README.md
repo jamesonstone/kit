@@ -253,15 +253,20 @@ Review committed text and link visibility before publication.
 https://github.com/jamesonstone/kit/issues if you want support for another
 ledger tool.
 
-Global configuration lives in `~/.kit/.kit.yaml`. Each repository has its own
-`.kit.yaml` with the same schema. Repository keys override global defaults.
-Mappings merge by key. A repository scalar, list, or explicit null replaces
-the global value at that key. Each repository records its own schema and
-instruction scaffold versions. Reconcile writes repository-owned configuration.
-Keep the global file private. Existing usage and auto-assignment preferences
-in `~/.config/kit/.kit.yaml` are fallback values for those two settings until
-you set them in the canonical file. Kit stores no credentials and does not call the
-ledger API.
+Kit reads and writes global configuration at `$XDG_CONFIG_HOME/kit/.kit.yaml`
+when `XDG_CONFIG_HOME` is absolute and nonempty. Otherwise it uses
+`~/.config/kit/.kit.yaml`. For unset global keys, Kit reads `~/.kit/.kit.yaml`
+and then `~/.config/kit/.kit.yaml` if it differs from the canonical path.
+Kit writes only to the canonical path and leaves fallback files in place. If
+that path aliases a fallback, use a separate file for canonical writes.
+
+The repository `.kit.yaml` uses the same schema and overrides global defaults
+key by key. A repository scalar, list, or explicit null replaces the global
+value at that key. Issue routing, the issue-template opt-in, and repository
+schema and scaffold versions come from the repository. Reconcile writes only
+repository-owned configuration. Generated README links use the repository's
+configured GitHub identity or its origin. Keep user config private. Kit stores no
+credentials and does not call the ledger API.
 
 ```yaml
 work_ledger:

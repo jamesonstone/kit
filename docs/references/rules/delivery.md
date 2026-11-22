@@ -44,7 +44,7 @@ read_policy_default: conditional
 
 ### Work ledger hook
 
-- Load global Kit configuration from `~/.kit/.kit.yaml` and project configuration from the repository `.kit.yaml`. Both files use the same schema. The global file is optional and is never committed. A missing user file changes nothing. The repository file overrides the user file key by key: mappings merge, and a repository scalar, list, or explicit null replaces that key. Keep global values out of repository config and generated ledger notes. Keep secrets out of both files.
+- Load global Kit configuration from `$XDG_CONFIG_HOME/kit/.kit.yaml` when `XDG_CONFIG_HOME` is absolute and nonempty. Otherwise use `~/.config/kit/.kit.yaml`. Read unset global keys from `~/.kit/.kit.yaml`, then from `~/.config/kit/.kit.yaml` if that path differs from the canonical file. The user files are optional and are never committed. A missing user file changes nothing. The repository `.kit.yaml` uses the same schema and overrides the user file key by key. Mappings merge. A repository scalar, list, or explicit null replaces the global value at that key. Keep global values out of repository config and generated ledger notes. Keep secrets out of both scopes.
 - Resolve `work_ledger` from that merged configuration. The keys are the same in both files: `provider`, `owner_label`, `plane.workspace`, `plane.project`, `plane.name`, `plane.states.active`, `plane.states.in_review`, and `plane.states.done`. An omitted `work_ledger`, an omitted `provider`, or `provider: none` is off. This hook does not change the selected issue provider.
 - `work_ledger.provider` selects a swappable adapter. `plane` is implemented. `linear`, `jira`, and `notion` are reserved so a later adapter can use the same key; do not invent their calls. Any other provider is a blocker.
 - Kit stores no ledger credentials, adds no ledger SDK, and does not call the ledger API. The native agent performs the adapter's steps through its already-authorized connector (for Plane, the Plane MCP). If that connector is missing, report the skipped ledger write and continue the ticket. Do not install a connector, configure credentials, broaden access, or put secrets in the repository.
@@ -106,7 +106,7 @@ read_policy_default: conditional
 
 Track longer-running work, anything the repository owner names, or anything you recommend tracking (with the owner's OK) in the repository's configured work ledger. Before you ping the owner about a task, find its item; if it's done or owned by another agent, don't ping. Create the item if it is missing. After you act, update the item's owner label, status (Active / In review / Done), and a one-line note. Tag it with your own agent label (`agent:<you>`). If you hand work to another agent, relabel the item and add a note. The ledger holds the current state.
 
-Use the same schema in global `~/.kit/.kit.yaml` and repository `.kit.yaml`. Repository keys override global defaults. If neither configures a provider, this rule is a no-op. Use the work ledger hook above to resolve the effective settings.
+Use the same schema in global and repository `.kit.yaml` files. Repository keys override global defaults. If neither configures a provider, this rule is a no-op. Use the work ledger hook above to resolve the effective settings.
 
 ```yaml
 work_ledger:

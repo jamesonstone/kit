@@ -49,8 +49,9 @@ func initRefreshConfig(
 			cfg.SchemaVersion = existing.SchemaVersion
 			cfg.InstructionScaffoldVersion = existing.InstructionScaffoldVersion
 			cfg.Registry = existing.Registry
-			cfg.Issues = existing.Issues
-			cfg.GitHub.DefaultAssignees = existing.GitHub.DefaultAssignees
+			// Readme generation uses the repository identity. Auto-assign resolves
+			// user defaults separately, with explicit repository overrides.
+			cfg.GitHub = existing.GitHub
 		}
 	}
 

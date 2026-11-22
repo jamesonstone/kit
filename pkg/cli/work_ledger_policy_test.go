@@ -29,7 +29,7 @@ func TestEmbeddedWorkLedgerHook(t *testing.T) {
 	}
 	for _, marker := range []string{
 		"### Work ledger hook",
-		"`~/.kit/.kit.yaml`",
+		"`$XDG_CONFIG_HOME/kit/.kit.yaml`",
 		"overrides the user file key by key",
 		"A missing user file changes nothing",
 		"never committed",

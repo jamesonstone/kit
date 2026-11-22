@@ -10,55 +10,52 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// LoadGlobal resolves canonical settings and their legacy fallbacks.
 func LoadGlobal() (*Config, bool, error) {
-	configPath, err := GlobalConfigPath()
+	paths, err := globalConfigPaths()
 	if err != nil {
 		return nil, false, err
 	}
-
-	return loadOptionalConfig(configPath)
+	root, err := loadGlobalConfigRoot(paths)
+	if err != nil {
+		return nil, false, err
+	}
+	cfg := Default()
+	if root == nil {
+		return cfg, false, nil
+	}
+	if err := root.Decode(cfg); err != nil {
+		return nil, false, fmt.Errorf("failed to decode global Kit config: %w", err)
+	}
+	return cfg, true, nil
 }
 
-// LoadGlobalUsageEnabled preserves an explicit opt-out stored by older Kit
-// versions until the owner sets a value at the canonical path.
+// LoadGlobalUsageEnabled keeps an existing global opt-out until a higher
+// priority file explicitly sets usage.enabled.
 func LoadGlobalUsageEnabled() (bool, error) {
-	cfg, _, err := LoadGlobal()
+	paths, err := globalConfigPaths()
 	if err != nil {
 		return false, err
 	}
-	if cfg.Usage != nil && cfg.Usage.Enabled != nil {
-		return cfg.IsUsageEnabled(), nil
-	}
-
-	cfg, err = loadLegacyGlobal()
-	if err != nil {
-		return false, err
-	}
-	return cfg.IsUsageEnabled(), nil
-}
-
-// LoadGlobalDefaultAssignees falls back to the old file for this setting only.
-// An explicitly empty list at the canonical path overrides the fallback.
-func LoadGlobalDefaultAssignees() (*[]string, error) {
-	path, err := GlobalConfigPath()
-	if err != nil {
-		return nil, err
-	}
-	cfg, found, err := loadOptionalConfig(path)
-	if err != nil {
-		return nil, err
-	}
-	if cfg.GitHub.DefaultAssignees != nil {
-		return cfg.GitHub.DefaultAssignees, nil
-	}
-	if found {
-		explicit, err := declaresDefaultAssignees(path)
-		if explicit || err != nil {
-			return nil, err
+	for _, path := range paths {
+		cfg, err := LoadConfigFile(path)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return false, err
+		}
+		if cfg.Usage != nil && cfg.Usage.Enabled != nil {
+			return cfg.IsUsageEnabled(), nil
 		}
 	}
+	return true, nil
+}
 
-	cfg, err = loadLegacyGlobal()
+// LoadGlobalDefaultAssignees resolves the setting across user config files.
+// Explicit null and empty lists mask lower-priority file values.
+func LoadGlobalDefaultAssignees() (*[]string, error) {
+	cfg, _, err := LoadGlobal()
 	if err != nil {
 		return nil, err
 	}
@@ -90,26 +87,6 @@ func declaresDefaultAssignees(path string) (bool, error) {
 	fields, _ := github.(map[string]any)
 	_, present = fields["default_assignees"]
 	return present, nil
-}
-
-func loadLegacyGlobal() (*Config, error) {
-	dir, err := LocalDataDir()
-	if err != nil {
-		return nil, err
-	}
-	cfg, _, err := loadOptionalConfig(filepath.Join(dir, ConfigFileName))
-	return cfg, err
-}
-
-func loadOptionalConfig(path string) (*Config, bool, error) {
-	cfg, err := LoadConfigFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return Default(), false, nil
-	}
-	if err != nil {
-		return nil, false, err
-	}
-	return cfg, true, nil
 }
 
 func readYAMLDocument(configPath string, create bool) (*yaml.Node, error) {

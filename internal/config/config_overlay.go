@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"gopkg.in/yaml.v3"
 )
@@ -52,45 +53,41 @@ func ParseWithGlobalDefaults(repo []byte) (*Config, Inspection, error) {
 }
 
 func applyUserConfigOverlay(repo []byte) ([]byte, error) {
-	path, err := GlobalConfigPath()
+	paths, err := globalConfigPaths()
 	if err != nil {
 		return nil, err
 	}
-	user, err := os.ReadFile(path)
+	global, err := loadGlobalConfigRoot(paths)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return repo, nil
-		}
-		return nil, fmt.Errorf("failed to read global config: %w", err)
+		return nil, err
 	}
-	if len(bytes.TrimSpace(user)) == 0 {
+	if global == nil {
 		return repo, nil
-	}
-	merged, err := overlayConfigYAML(user, repo)
-	if err != nil {
-		return nil, err
-	}
-	return merged, nil
-}
-
-// overlayConfigYAML deep-merges mappings. A repository scalar or sequence
-// replaces the user value for that key. Absent repository keys keep the user value.
-func overlayConfigYAML(user, repo []byte) ([]byte, error) {
-	userDoc, err := parseYAMLDocument(user, "user Kit config")
-	if err != nil {
-		return nil, err
 	}
 	repoDoc, err := parseYAMLDocument(repo, ConfigFileName)
 	if err != nil {
 		return nil, err
 	}
-	global := documentRoot(userDoc)
-	// These versions describe the actual repository file and its scaffold.
-	// Global defaults must not make an old project look migrated.
+	// Versions describe the actual repository file and its scaffold. The issue
+	// provider and target belong to the repository's delivery workflow.
 	removeKey(global, "schema_version")
 	removeKey(global, "instruction_scaffold_version")
+	removeKey(global, "issues")
+	project := documentRoot(repoDoc)
+	if usesYAMLInheritance(project) {
+		// Decode once with YAML's alias expansion checks before expanding
+		// nodes ourselves to retain scalar style.
+		var expanded map[string]any
+		if err := project.Decode(&expanded); err != nil {
+			return nil, fmt.Errorf("failed to resolve repository config: %w", err)
+		}
+		project, err = resolveProjectYAML(project, make(map[*yaml.Node]bool))
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve repository config: %w", err)
+		}
+	}
 	merged := &yaml.Node{Kind: yaml.DocumentNode}
-	merged.Content = []*yaml.Node{mergeYAMLNodes(global, documentRoot(repoDoc))}
+	merged.Content = []*yaml.Node{mergeYAMLNodes(global, project)}
 	var buf bytes.Buffer
 	enc := yaml.NewEncoder(&buf)
 	enc.SetIndent(2)
@@ -99,9 +96,95 @@ func overlayConfigYAML(user, repo []byte) ([]byte, error) {
 		return nil, fmt.Errorf("failed to encode merged Kit config: %w", err)
 	}
 	if err := enc.Close(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to encode merged Kit config: %w", err)
 	}
 	return buf.Bytes(), nil
+}
+
+// loadGlobalConfigRoot reads low-priority files first so each higher-priority
+// file overrides defaults key by key. Resolve YAML aliases within the file
+// where they are declared before combining independent documents.
+func loadGlobalConfigRoot(paths []string) (*yaml.Node, error) {
+	var merged *yaml.Node
+	for i := len(paths) - 1; i >= 0; i-- {
+		path := paths[i]
+		data, err := os.ReadFile(path)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to read global config %s: %w", path, err)
+		}
+		values := make(map[string]any)
+		if err := yaml.Unmarshal(data, &values); err != nil {
+			return nil, fmt.Errorf("failed to parse global config %s: %w", path, err)
+		}
+		var root yaml.Node
+		if err := root.Encode(values); err != nil {
+			return nil, fmt.Errorf("failed to encode global config %s: %w", path, err)
+		}
+		merged = mergeYAMLNodes(merged, &root)
+	}
+	return merged, nil
+}
+
+func usesYAMLInheritance(node *yaml.Node) bool {
+	if node.Kind == yaml.AliasNode || node.Tag == "!!merge" {
+		return true
+	}
+	for _, child := range node.Content {
+		if usesYAMLInheritance(child) {
+			return true
+		}
+	}
+	return false
+}
+
+// Resolve merge keys before applying project precedence. Keep scalar syntax
+// so checks such as the quoted AWS account ID still see the project value.
+func resolveProjectYAML(node *yaml.Node, aliases map[*yaml.Node]bool) (*yaml.Node, error) {
+	resolved := *node
+	resolved.Anchor = ""
+	switch node.Kind {
+	case yaml.AliasNode:
+		target := node.Alias
+		if target == nil || aliases[target] {
+			return nil, fmt.Errorf("invalid or cyclic YAML alias %q", node.Value)
+		}
+		aliases[target] = true
+		result, err := resolveProjectYAML(target, aliases)
+		delete(aliases, target)
+		return result, err
+	case yaml.MappingNode:
+		var fields map[string]yaml.Node
+		if err := node.Decode(&fields); err != nil {
+			return nil, err
+		}
+		keys := make([]string, 0, len(fields))
+		for key := range fields {
+			keys = append(keys, key)
+		}
+		slices.Sort(keys)
+		resolved.Content = nil
+		for _, key := range keys {
+			field := fields[key]
+			value, err := resolveProjectYAML(&field, aliases)
+			if err != nil {
+				return nil, err
+			}
+			resolved.Content = append(resolved.Content, &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: key}, value)
+		}
+	case yaml.SequenceNode:
+		resolved.Content = nil
+		for _, child := range node.Content {
+			value, err := resolveProjectYAML(child, aliases)
+			if err != nil {
+				return nil, err
+			}
+			resolved.Content = append(resolved.Content, value)
+		}
+	}
+	return &resolved, nil
 }
 
 func parseYAMLDocument(data []byte, name string) (*yaml.Node, error) {

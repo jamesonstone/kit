@@ -176,7 +176,7 @@ func TestRunInit_PopulatesGlobalConfig(t *testing.T) {
 			}
 		})
 
-		configPath := filepath.Join(homeDir, ".kit", config.ConfigFileName)
+		configPath := filepath.Join(homeDir, ".config", "kit", config.ConfigFileName)
 		if _, err := os.Stat(configPath); err != nil {
 			t.Fatalf("expected global config at %s: %v", configPath, err)
 		}

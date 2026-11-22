@@ -47,6 +47,7 @@ func TestWorkLedgerConfiguration(t *testing.T) {
 
 func TestWorkLedgerRoundTrip(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", "")
 	root := t.TempDir()
 	cfg := Default()
 	cfg.WorkLedger = WorkLedgerConfig{Provider: "plane", OwnerLabel: "agent:example", Plane: PlaneLedgerConfig{Workspace: "example-workspace", Project: "PROJ", Name: "Ledger", States: PlaneLedgerStates{Active: "Active"}}}

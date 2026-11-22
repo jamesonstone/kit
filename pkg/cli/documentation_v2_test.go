@@ -21,7 +21,7 @@ func TestReadmeDocumentsCurrentSurface(t *testing.T) {
 		"## Work ledger",
 		"https://plane.so",
 		"https://github.com/jamesonstone/kit/issues",
-		"`~/.kit/.kit.yaml`",
+		"`$XDG_CONFIG_HOME/kit/.kit.yaml`",
 		"<workspace>",
 		"<project>",
 	} {

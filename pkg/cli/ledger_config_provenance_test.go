@@ -33,7 +33,7 @@ func TestReconcilePreservesGlobalLedgerProvenance(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			home := setupInitHome(t)
-			globalPath := filepath.Join(home, ".kit", config.ConfigFileName)
+			globalPath := filepath.Join(home, ".config", "kit", config.ConfigFileName)
 			writeFile(t, globalPath, globalLedgerForTest)
 			root := t.TempDir()
 			projectPath := filepath.Join(root, config.ConfigFileName)
@@ -103,7 +103,7 @@ func assertPlanOmitsGlobalLedger(t *testing.T, changes []initRefreshFileChange) 
 
 func TestInstallRuleKeepsGlobalLedgerOutOfRegistryWrite(t *testing.T) {
 	home := setupInitHome(t)
-	writeFile(t, filepath.Join(home, ".kit", config.ConfigFileName), globalLedgerForTest)
+	writeFile(t, filepath.Join(home, ".config", "kit", config.ConfigFileName), globalLedgerForTest)
 	root := t.TempDir()
 	path := filepath.Join(root, config.ConfigFileName)
 	writeFile(t, path, "schema_version: 2\nwork_ledger:\n  owner_label: ''\n  plane:\n    project: REPO\n")
@@ -126,7 +126,7 @@ func TestInstallRuleKeepsGlobalLedgerOutOfRegistryWrite(t *testing.T) {
 
 func TestReconcilePreservesAndPlansFromInheritedProjectSettings(t *testing.T) {
 	home := setupInitHome(t)
-	globalPath := filepath.Join(home, ".kit", config.ConfigFileName)
+	globalPath := filepath.Join(home, ".config", "kit", config.ConfigFileName)
 	writeFile(t, globalPath, "specs_dir: docs/custom\nconstitution_path: policy/CONSTITUTION.md\nshell:\n  command: [example-shell]\n")
 	root := t.TempDir()
 	path := filepath.Join(root, config.ConfigFileName)

@@ -54,7 +54,7 @@ func EffectiveSettings(projectRoot string) (Settings, error) {
 func SetEnabled(scope, projectRoot string, enabled bool) (string, error) {
 	switch scope {
 	case "global":
-		path, err := config.GlobalConfigPath()
+		path, err := config.GlobalConfigWritePath()
 		if err != nil {
 			return "", err
 		}

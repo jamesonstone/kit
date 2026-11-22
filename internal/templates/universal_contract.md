@@ -23,7 +23,7 @@ Precedence: `docs/CONSTITUTION.md`, then this contract and contextual rules, the
 
 Track longer-running work, anything the repository owner names, or anything you recommend tracking (with the owner's OK) in the repository's configured work ledger. Before you ping the owner about a task, find its item; if it's done or owned by another agent, don't ping. Create the item if it is missing. After you act, update the item's owner label, status (Active / In review / Done), and a one-line note. Tag it with your own agent label (`agent:<you>`). If you hand work to another agent, relabel the item and add a note. The ledger holds the current state.
 
-Global `~/.kit/.kit.yaml` and repository `.kit.yaml` share one schema. Repository keys override global defaults. Resolve `work_ledger` using the example and lifecycle in `delivery.md`. If neither configures a provider, this rule is a no-op. Keep personal defaults in the global file.
+Global `$XDG_CONFIG_HOME/kit/.kit.yaml` (default `~/.config/kit/.kit.yaml`) and repository `.kit.yaml` share one schema. Repository keys override global defaults. Resolve `work_ledger` using the example and lifecycle in `delivery.md`. If neither configures a provider, this rule is a no-op. Keep personal defaults in the global file.
 
 ## Authorship
 

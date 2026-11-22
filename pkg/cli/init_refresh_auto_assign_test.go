@@ -180,7 +180,7 @@ func TestReconcileAutoAssignHonorsNullOverride(t *testing.T) {
 		t.Run(strings.TrimSpace(override), func(t *testing.T) {
 			home := setupInitHome(t)
 			root := t.TempDir()
-			writeFile(t, filepath.Join(home, ".kit", config.ConfigFileName), "github:\n  default_assignees: [global-example]\n")
+			writeFile(t, filepath.Join(home, ".config", "kit", config.ConfigFileName), "github:\n  default_assignees: [global-example]\n")
 			writeFile(t, filepath.Join(root, config.ConfigFileName), "schema_version: 2\n"+override)
 			plan, err := buildInitRefreshPlan(t.Context(), root, initRefreshOptions{files: []string{autoAssignWorkflowPath}})
 			if err != nil {
@@ -196,7 +196,7 @@ func TestReconcileAutoAssignHonorsNullOverride(t *testing.T) {
 func TestReconcileAutoAssignUsesPlannedConfigOnForceReset(t *testing.T) {
 	home := setupInitHome(t)
 	root := t.TempDir()
-	writeFile(t, filepath.Join(home, ".kit", config.ConfigFileName), "github:\n  default_assignees: [global-example]\n")
+	writeFile(t, filepath.Join(home, ".config", "kit", config.ConfigFileName), "github:\n  default_assignees: [global-example]\n")
 	writeFile(t, filepath.Join(root, config.ConfigFileName), "schema_version: 2\ngithub:\n  default_assignees: [project-example]\n")
 	opts := initRefreshOptions{force: true, files: []string{config.ConfigFileName, autoAssignWorkflowPath}}
 	plan, err := buildInitRefreshPlan(t.Context(), root, opts)

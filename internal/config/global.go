@@ -9,94 +9,78 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// PlanGlobalConfig reports the global config path and whether a write would
-// create the file or add missing default keys. It does not create directories
-// or write.
+// PlanGlobalConfig reports the canonical config path and whether a write would
+// create the file or add missing default keys. It does not write.
 func PlanGlobalConfig(defaults *Config) (path string, create bool, update bool, err error) {
-	if defaults == nil {
-		defaults = Default()
-	}
-	path, err = GlobalConfigPath()
-	if err != nil {
-		return "", false, false, err
-	}
-	if _, err = os.Stat(path); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return path, true, false, nil
-		}
-		return "", false, false, fmt.Errorf("failed to stat %s: %w", path, err)
-	}
-	doc, err := readYAMLDocument(path, false)
-	if err != nil {
-		return "", false, false, err
-	}
-	update, err = appendMissingDefaultConfigFields(doc, defaults)
-	if err != nil {
-		return "", false, false, err
-	}
-	return path, false, update, nil
+	plan, err := planGlobalConfig(defaults)
+	return plan.path, plan.create, plan.update, err
 }
 
-// PopulateGlobalConfig creates the global config file or appends missing default fields.
+// PopulateGlobalConfig creates or fills in the canonical user config.
 func PopulateGlobalConfig(defaults *Config) (string, bool, error) {
-	if defaults == nil {
-		defaults = Default()
-	}
-
-	configPath, err := GlobalConfigPath()
+	plan, err := planGlobalConfig(defaults)
 	if err != nil {
 		return "", false, err
 	}
-	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
+	if !plan.create && !plan.update {
+		return plan.path, false, nil
+	}
+	dir := filepath.Dir(plan.path)
+	if err := os.MkdirAll(dir, 0700); err != nil {
 		return "", false, fmt.Errorf("failed to create global config directory: %w", err)
 	}
+	if err := writeYAMLDocument(plan.path, plan.doc); err != nil {
+		return "", false, err
+	}
+	return plan.path, true, nil
+}
 
-	if _, err := os.Stat(configPath); err != nil {
+type globalConfigPlan struct {
+	path   string
+	doc    *yaml.Node
+	create bool
+	update bool
+}
+
+func planGlobalConfig(defaults *Config) (globalConfigPlan, error) {
+	paths, err := globalConfigPaths()
+	if err != nil {
+		return globalConfigPlan{}, err
+	}
+	path := paths[0]
+	plan := globalConfigPlan{path: path}
+	doc, err := readYAMLDocument(path, false)
+	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			return "", false, fmt.Errorf("failed to stat %s: %w", configPath, err)
+			return plan, err
 		}
-		if err := writeConfigFile(configPath, defaults); err != nil {
-			return "", false, err
-		}
-		return configPath, true, nil
+		plan.create = true
+		doc = &yaml.Node{Kind: yaml.DocumentNode}
 	}
-
-	doc, err := readYAMLDocument(configPath, false)
+	plan.doc = doc
+	fallback, err := loadGlobalConfigRoot(paths[1:])
 	if err != nil {
-		return "", false, err
+		return plan, err
 	}
-
-	changed, err := appendMissingDefaultConfigFields(doc, defaults)
+	changed, err := appendMissingDefaultConfigFields(doc, defaults, fallback)
 	if err != nil {
-		return "", false, err
+		return plan, err
 	}
-	if !changed {
-		return configPath, false, nil
+	plan.update = changed && !plan.create
+	if plan.create || plan.update {
+		return plan, checkGlobalConfigWrite(paths)
 	}
-	if err := writeYAMLDocument(configPath, doc); err != nil {
-		return "", false, err
-	}
-
-	return configPath, true, nil
+	return plan, nil
 }
 
-func writeConfigFile(configPath string, cfg *Config) error {
-	data, err := yaml.Marshal(cfg)
-	if err != nil {
-		return fmt.Errorf("failed to marshal config: %w", err)
+func appendMissingDefaultConfigFields(doc *yaml.Node, defaults *Config, fallback *yaml.Node) (bool, error) {
+	if defaults == nil {
+		defaults = Default()
 	}
-	if err := os.WriteFile(configPath, data, 0644); err != nil {
-		return fmt.Errorf("failed to write %s: %w", configPath, err)
-	}
-	return nil
-}
-
-func appendMissingDefaultConfigFields(doc *yaml.Node, defaults *Config) (bool, error) {
 	defaultDoc, err := configDocument(defaults)
 	if err != nil {
 		return false, err
 	}
-
 	root, err := documentMapping(doc, "global config")
 	if err != nil {
 		return false, err
@@ -105,21 +89,21 @@ func appendMissingDefaultConfigFields(doc *yaml.Node, defaults *Config) (bool, e
 	if err != nil {
 		return false, err
 	}
+	// Resolve aliases when checking which settings already exist. Write back
+	// the original document to preserve its anchors and comments.
+	var configured map[string]yaml.Node
+	if err := root.Decode(&configured); err != nil {
+		return false, fmt.Errorf("failed to inspect existing global config: %w", err)
+	}
 	changed := false
-
 	for i := 0; i+1 < len(defaultRoot.Content); i += 2 {
 		key := defaultRoot.Content[i].Value
-		if mappingHasKey(root, key) {
+		if _, exists := configured[key]; exists || (fallback != nil && mappingHasKey(fallback, key)) {
 			continue
 		}
-		root.Content = append(
-			root.Content,
-			cloneYAMLNode(defaultRoot.Content[i]),
-			cloneYAMLNode(defaultRoot.Content[i+1]),
-		)
+		root.Content = append(root.Content, cloneYAMLNode(defaultRoot.Content[i]), cloneYAMLNode(defaultRoot.Content[i+1]))
 		changed = true
 	}
-
 	return changed, nil
 }
 
