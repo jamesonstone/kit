@@ -32,7 +32,7 @@ Separate effective config reads from repository config writes. Correct the publi
 
 ## DECISIONS
 
-Use the existing typed ledger schema at both scopes. Reject obsolete flat keys with guidance for correcting them. Use the Unix XDG configuration path for global settings. An absolute nonempty `XDG_CONFIG_HOME` selects the base directory. Otherwise use `~/.config`. Read compatibility defaults from `~/.kit/.kit.yaml`, then conventional `~/.config/kit/.kit.yaml` when distinct from the canonical path. Write only to the canonical file. Keep issue settings repository-local. Keep command detail retrievable by an exact command path and preserve schema v1 for the complete JSON catalog.
+Use the existing typed ledger schema at both scopes. Reject obsolete flat keys with guidance for correcting them. Use the Unix XDG configuration path for global settings. An absolute nonempty `XDG_CONFIG_HOME` selects the base directory. Otherwise use `~/.config`. Read compatibility defaults from `~/.kit/.kit.yaml`, then conventional `~/.config/kit/.kit.yaml` when distinct from the canonical path. Write only to the canonical file. Warn when a compatibility file still exists and show both paths for manual migration. Include the notice in config check findings. Keep issue settings repository-local. Keep command detail retrievable by an exact command path and preserve schema v1 for the complete JSON catalog.
 
 ## DISCOVERIES
 
@@ -45,6 +45,7 @@ The initial implementation selected `~/.kit/.kit.yaml`. The owner superseded tha
 - The built text guide returned 50 lines and 534 words. Focused JSON returned one command. The full schema v1 catalog returned 35 command entries and eight artifact entries.
 - Fresh-context review reproduced lost overrides, inherited path drift, and force-reset parity issues. Follow-up fixtures passed on the corrected source.
 - XDG follow-up fixtures cover path selection, layered fallbacks, usage opt-out and write isolation, YAML-merged settings, repository-local issue routing, and generated README identity.
+- Legacy-location fixtures verify a nonblocking JSON finding, stderr warnings with a custom XDG path, unchanged config files, and silence after migration. Full Go tests, vet, lint, build, project and feature checks passed after the warning change.
 - No live ledger API writes were used for config validation.
 
 ## OUTCOME

@@ -12,6 +12,7 @@ import (
 )
 
 func runAutomaticConfigCheck(cmd *cobra.Command, args []string) error {
+	warnAboutGlobalConfigLocation(cmd)
 	if skipAutomaticConfigCheck(cmd) {
 		return nil
 	}
@@ -40,6 +41,20 @@ func runAutomaticConfigCheck(cmd *cobra.Command, args []string) error {
 		Output:      cmd.ErrOrStderr(),
 	})
 	return err
+}
+
+func warnAboutGlobalConfigLocation(cmd *cobra.Command) {
+	parts := strings.Fields(cmd.CommandPath())
+	if len(parts) < 2 {
+		return
+	}
+	switch parts[1] {
+	case "config", "guide", "inspect", "upgrade", "version", "completion", "help":
+		return
+	}
+	for _, warning := range config.GlobalConfigLocationWarnings() {
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Warning: %s\n", warning.Message)
+	}
 }
 
 func skipAutomaticConfigCheck(cmd *cobra.Command) bool {

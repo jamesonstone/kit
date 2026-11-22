@@ -259,6 +259,10 @@ when `XDG_CONFIG_HOME` is absolute and nonempty. Otherwise it uses
 and then `~/.config/kit/.kit.yaml` if it differs from the canonical path.
 Kit writes only to the canonical path and leaves fallback files in place. If
 that path aliases a fallback, use a separate file for canonical writes.
+Kit warns when it finds a fallback file. To clear the warning, merge any
+settings you want to keep into the canonical file, preserving values already
+set there, then move the fallback file aside. `kit config check --json`
+includes the warning in its findings.
 
 The repository `.kit.yaml` uses the same schema and overrides global defaults
 key by key. A repository scalar, list, or explicit null replaces the global

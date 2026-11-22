@@ -58,6 +58,27 @@ func globalConfigPaths() ([]string, error) {
 	return paths, nil
 }
 
+// GlobalConfigLocationWarnings reports existing compatibility files outside
+// the canonical user config path. It reads no settings and changes no files.
+func GlobalConfigLocationWarnings() []Finding {
+	paths, err := globalConfigPaths()
+	if err != nil {
+		return nil
+	}
+	var warnings []Finding
+	for _, path := range paths[1:] {
+		info, err := os.Stat(path)
+		if err != nil || !info.Mode().IsRegular() {
+			continue
+		}
+		warnings = append(warnings, Finding{
+			Field: "global_config", Severity: FindingWarning,
+			Message: fmt.Sprintf("Legacy Kit config found at %s. Merge its settings into %s, keeping existing canonical values, then move the legacy file aside.", path, paths[0]),
+		})
+	}
+	return warnings
+}
+
 // GlobalConfigWritePath returns the canonical path after checking it is not
 // an alias for a fallback config file.
 func GlobalConfigWritePath() (string, error) {
