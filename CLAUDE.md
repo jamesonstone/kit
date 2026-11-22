@@ -94,3 +94,7 @@ For UI/UX/design, read `DESIGN.md`; for security-relevant engineering, read the 
 - Optional `kit rules add` rules declare `Applies When` triggers.
 
 <!-- END KIT-MANAGED CONTRACT -->
+
+## Kit Project Rules
+
+- When preparing or shipping a Kit feature, fix, refactor, tweak, or design change, read `docs/references/rules/project/harness-research-notes.md` for the companion research post.
