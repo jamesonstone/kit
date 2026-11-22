@@ -49,7 +49,7 @@
 
 ### Rules, Initialization, Reconciliation, and Health
 
-- Rules ship inside the released binary (`rules.go` embeds `docs/references/rules/`); Kit never fetches rules or instructions at runtime. Unmodified installed rules update on refresh, locally edited rules are preserved and reported, and optional rules install only through `kit rules add`.
+- Shared rules ship inside the released binary (`rules.go` embeds the top-level rule Markdown). Kit-only rules live under `docs/references/rules/project/`. Kit never fetches rules or instructions at runtime. Unmodified installed rules update on refresh, locally edited rules are preserved and reported, and optional rules install only through `kit rules add`.
 - Retired rules stay listed in `pkg/cli/rules_retired.go` so historical references and legacy installs remain recognizable.
 - `kit init` scaffolds the universal contract, the Constitution starter, `DESIGN.md`, `SECURITY.md`, `docs/references/testing.md`, `docs/sops/README.md`, the core rules, and the developer-experience starter files for a project that is not yet a Kit project, preserving existing files. The GitHub issue template is opt-in (`--issue-template` or `issues.issue_template: true`). Reconcile still updates a copy that exactly matches a shipped Kit issue template.
 - Init and reconcile create the SOP guide only when missing and preserve existing guide content even with force. Project SOPs remain outside Kit-managed ownership.
