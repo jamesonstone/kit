@@ -7,12 +7,18 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
 )
 
 type mintActionRelease struct{ Version, SHA string }
+
+// Mint v2 removed the deployment controller but retained the release primitives.
+func (release mintActionRelease) hasController() bool {
+	return strings.HasPrefix(release.Version, "v0.") || strings.HasPrefix(release.Version, "v1.")
+}
 
 var lookupMintActionRelease = latestMintActionRelease
 var mintActionHTTPClient = &http.Client{

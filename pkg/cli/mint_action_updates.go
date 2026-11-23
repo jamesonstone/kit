@@ -83,6 +83,10 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 				if key.Value != "uses" || value.Kind != yaml.ScalarNode || !strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@") {
 					continue
 				}
+				if !release.hasController() && mintLegacyCommand(node) {
+					notes = append(notes, "legacy or dynamic Mint command preserved; use a project-owned workflow to migrate its controller to "+release.Version)
+					continue
+				}
 				_, ref, _ := strings.Cut(value.Value, "@")
 				target := release.Version
 				switch {
@@ -144,6 +148,19 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 		source = source[:e.start] + e.value + source[e.end:]
 	}
 	return source, notes, nil
+}
+
+func mintLegacyCommand(step *yaml.Node) bool {
+	command := mintField(mintField(step, "with"), "command")
+	if command == nil {
+		return false
+	}
+	switch command.Value {
+	case "production-control", "deployment-control":
+		return true
+	default:
+		return strings.Contains(command.Value, "${{")
+	}
 }
 
 func planMintActionRefresh(root string, release mintActionRelease) (*initRefreshPlan, error) {

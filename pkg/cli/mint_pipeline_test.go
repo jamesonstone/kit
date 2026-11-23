@@ -64,10 +64,10 @@ func TestMintPipelineExistingDeployPreserved(t *testing.T) {
 	}
 	job := after["jobs"].(map[string]any)["deploy"].(map[string]any)
 	steps := job["steps"].([]any)
-	if len(steps) != 5 || strings.Contains(changes[0].after, "release-publish") {
+	if len(steps) != 7 || strings.Contains(changes[0].after, "release-publish") {
 		t.Fatal(changes[0].after)
 	}
-	job["steps"] = []any{steps[0], steps[4]}
+	job["steps"] = []any{steps[0], steps[6]}
 	if !reflectpkg.DeepEqual(before, after) {
 		t.Fatalf("original semantics changed: %#v", after)
 	}
@@ -129,6 +129,7 @@ func TestMintPipelineSelectionAndErrors(t *testing.T) {
 	for _, source := range []string{
 		strings.Replace(pipelineDeploy, "id: deploy", "id: different", 1),
 		strings.Replace(pipelineDeploy, "id: deploy", "id: kit_mint_release", 1),
+		strings.Replace(pipelineDeploy, "id: deploy", "id: kit_mint_latest", 1),
 		pipelineDeploy + "      - id: deploy\n        run: echo duplicate\n",
 	} {
 		writePipelineFixture(t, root, path, source)
@@ -187,7 +188,7 @@ func TestMintPipelineExplicitJobPreservesFollowingJob(t *testing.T) {
 		t.Fatal(err)
 	}
 	jobs := mintField(&doc, "jobs")
-	if len(mintField(mintField(jobs, "deploy"), "steps").Content) != 5 || len(mintField(mintField(jobs, "observe"), "steps").Content) != 1 {
+	if len(mintField(mintField(jobs, "deploy"), "steps").Content) != 7 || len(mintField(mintField(jobs, "observe"), "steps").Content) != 1 {
 		t.Fatal(changes[0].after)
 	}
 }

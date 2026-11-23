@@ -65,7 +65,7 @@ func mintActionMappings(workflow *yaml.Node) []*yaml.Node {
 
 func mintUses(node *yaml.Node) bool {
 	for _, mapping := range mintActionMappings(node) {
-		if value := mintField(mapping, "uses"); value != nil && strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@") {
+		if value := mintField(mapping, "uses"); value != nil && (value.Value == mintPipelineAction || strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@")) {
 			return true
 		}
 	}

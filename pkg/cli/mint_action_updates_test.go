@@ -11,10 +11,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var testMintRelease = mintActionRelease{Version: "v1.1.2", SHA: strings.Repeat("a", 40)}
+
 // Every package fixture stays offline; release transport is tested separately.
 func TestMain(m *testing.M) {
 	lookupMintActionRelease = func() (mintActionRelease, error) {
-		return mintActionRelease{Version: "v0.9.0", SHA: mintPipelineActionRef}, nil
+		return testMintRelease, nil
+	}
+	renderMintController = func(_ string, release mintActionRelease, _ string) (string, error) {
+		return "name: Mint environment control\njobs:\n  deploy:\n    steps:\n      - uses: jamesonstone/mint@" + release.SHA + "\n        with:\n          command: deployment-control\n", nil
 	}
 	os.Exit(m.Run())
 }
@@ -66,6 +71,29 @@ func TestMintActionUpdatePlanDryRunAndWrite(t *testing.T) {
 	}
 }
 
+func TestMintV2RefreshPreservesLegacyControllerCommands(t *testing.T) {
+	source := `on: workflow_dispatch
+jobs:
+  mint:
+    steps:
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: deployment-control}
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: production-control}
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: '${{ inputs.command }}'}
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: release-resolve}
+`
+	release := mintActionRelease{Version: "v2.0.0", SHA: strings.Repeat("b", 40)}
+	got, notes, err := refreshMintActionRefs(source, release)
+	last := strings.LastIndex(source, "v1.1.2")
+	want := source[:last] + release.Version + source[last+len("v1.1.2"):]
+	if err != nil || got != want || len(notes) != 3 {
+		t.Fatalf("%s\nnotes=%v err=%v", got, notes, err)
+	}
+}
+
 func TestMintReleaseFailureStopsInitBeforeWrites(t *testing.T) {
 	root := t.TempDir()
 	setWorkingDirectory(t, root)
@@ -83,7 +111,7 @@ func TestMintReleaseFailureStopsInitBeforeWrites(t *testing.T) {
 	}
 }
 
-func TestInitScaffoldUsesDiscoveredMintRelease(t *testing.T) {
+func TestInitScaffoldSelectsLatestMintWhenWorkflowRuns(t *testing.T) {
 	root := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, root)
@@ -100,7 +128,7 @@ func TestInitScaffoldUsesDiscoveredMintRelease(t *testing.T) {
 		})
 	})
 	got := readFile(t, filepath.Join(root, ".github/workflows/mint-release.yaml"))
-	if strings.Contains(got, mintPipelineActionRef) || strings.Count(got, "jamesonstone/mint@"+release.SHA) != 3 {
+	if strings.Contains(got, release.SHA) || !strings.Contains(got, "repos/jamesonstone/mint/releases/latest") || strings.Count(got, "uses: "+mintPipelineAction) != 3 {
 		t.Fatal(got)
 	}
 }

@@ -13,7 +13,7 @@ func TestMintPreparationStepsContracts(t *testing.T) {
 	}
 	for i, raw := range steps {
 		step := raw.(map[string]any)
-		wantAction := "jamesonstone/mint@" + mintPipelineActionRef
+		wantAction := mintPipelineAction
 		if i == 2 {
 			wantAction = "actions/upload-artifact@" + mintPipelineArtifactRef
 		}

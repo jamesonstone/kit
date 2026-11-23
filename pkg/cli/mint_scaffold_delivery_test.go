@@ -35,7 +35,7 @@ func TestReconcileMintFromPrimaryKeepsPolicyAndCheckoutUntouched(t *testing.T) {
 		t.Fatal("controller was written into primary")
 	}
 	linked := filepath.Join(worktrees, filepath.Base(root), reconcileBranch)
-	if !strings.Contains(readFile(t, filepath.Join(linked, path)), mintActionRef) {
+	if !strings.Contains(readFile(t, filepath.Join(linked, path)), testMintRelease.SHA) {
 		t.Fatal("linked worktree lacks Mint controller")
 	}
 	if readFile(t, filepath.Join(linked, mintPolicyPath)) != mintFixturePolicy {

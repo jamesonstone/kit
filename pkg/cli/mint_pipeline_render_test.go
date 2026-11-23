@@ -52,17 +52,22 @@ func TestMintReleasePipelineTrustAndPermissions(t *testing.T) {
 	if w.Concurrency.Group != "mint-release-${{ github.repository }}" || w.Concurrency.Cancel {
 		t.Fatal("release publisher concurrency is unsafe")
 	}
-	if len(j.Steps) != 5 || j.Steps[0].Uses != "actions/checkout@"+mintPipelineCheckoutRef || j.Steps[0].With["fetch-depth"] != 0 || j.Steps[0].With["ref"] != "${{ github.sha }}" {
+	if len(j.Steps) != 7 || j.Steps[0].Uses != "actions/checkout@"+mintPipelineCheckoutRef || j.Steps[0].With["fetch-depth"] != 0 || j.Steps[0].With["ref"] != "${{ github.sha }}" {
 		t.Fatalf("checkout: %+v", j.Steps)
 	}
+	if j.Steps[2].Uses != "actions/checkout@"+mintPipelineCheckoutRef || j.Steps[2].With["repository"] != "jamesonstone/mint" ||
+		j.Steps[2].With["ref"] != "${{ steps.kit_mint_latest.outputs.ref }}" ||
+		j.Steps[2].With["path"] != mintPipelineActionPath || j.Steps[2].With["persist-credentials"] != false {
+		t.Fatalf("Mint checkout: %+v", j.Steps[2])
+	}
 	for i, want := range []string{"release-resolve", "changelog", "", "release-publish"} {
-		if got := j.Steps[i+1].With["command"]; (want != "" && got != want) || got == "version" {
-			t.Fatalf("step %d command=%v", i+1, got)
+		if got := j.Steps[i+3].With["command"]; (want != "" && got != want) || got == "version" {
+			t.Fatalf("step %d command=%v", i+3, got)
 		}
 	}
-	m := j.Steps[4]
-	if m.Uses != "jamesonstone/mint@"+mintPipelineActionRef {
-		t.Fatalf("unpinned Mint: %s", m.Uses)
+	m := j.Steps[6]
+	if m.Uses != mintPipelineAction {
+		t.Fatalf("Mint local action: %s", m.Uses)
 	}
 	for key, want := range map[string]any{"command": "release-publish", "commitish": "${{ github.sha }}", "owner": "${{ github.repository_owner }}", "repo": "${{ github.event.repository.name }}", "github-token": "${{ github.token }}"} {
 		if m.With[key] != want {

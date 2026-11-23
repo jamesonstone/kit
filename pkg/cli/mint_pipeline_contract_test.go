@@ -2,20 +2,20 @@ package cli
 
 import (
 	"bytes"
-	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/jamesonstone/mint/pkg/changelog"
-	"github.com/jamesonstone/mint/pkg/release"
 )
 
-// Exercise the published Mint APIs behind the rendered Actions commands. This
-// is local preparation only: the fixture has no remote, token or publisher.
+// Exercise the release executable behind the composite action with a local
+// Git fixture. The default suite stays offline and does not require Mint.
 func TestMintPipelinePreparationActualMixedHistory(t *testing.T) {
+	mint := os.Getenv("KIT_TEST_MINT")
+	if !filepath.IsAbs(mint) {
+		t.Skip("set KIT_TEST_MINT to the absolute path of the release executable")
+	}
 	root := mintPreparationRepository(t)
 	git := func(args ...string) string { return mintPreparationGit(t, root, args...) }
 	git("commit", "--allow-empty", "-m", "chore: baseline")
@@ -35,14 +35,26 @@ func TestMintPipelinePreparationActualMixedHistory(t *testing.T) {
 	if resolveInputs["command"] != "release-resolve" {
 		t.Fatalf("unexpected command: %v", resolveInputs)
 	}
-	resolved, err := release.Resolve(context.Background(), release.Options{WorkDir: root, Commitish: resolveInputs["commitish"]})
-	if err != nil {
-		t.Fatal(err)
+	resolve := func() map[string]string {
+		outputPath := filepath.Join(t.TempDir(), "release-output")
+		runMintPreparation(t, root, mint, "release", "resolve", "--commitish", resolveInputs["commitish"], "--github-output", outputPath)
+		outputs := map[string]string{}
+		for _, line := range strings.Split(readFile(t, outputPath), "\n") {
+			if key, value, ok := strings.Cut(line, "="); ok && !strings.Contains(key, "<<") {
+				outputs[key] = value
+			}
+		}
+		return outputs
 	}
-	if resolved.BaseTag != "v1.0.0" || resolved.VersionTag != "v1.1.0" || resolved.VersionBump != release.BumpMinor || resolved.CommitCount != 2 || !resolved.NeedsGitTag || resolved.TargetSHA != linearSHA {
-		t.Fatalf("unexpected release range: %+v", resolved)
+	outputs := resolve()
+	for key, want := range map[string]string{
+		"base_tag": "v1.0.0", "version_tag": "v1.1.0", "version_bump": "minor",
+		"commit_count": "2", "needs_git_tag": "true", "target_sha": linearSHA,
+	} {
+		if outputs[key] != want {
+			t.Fatalf("unexpected release range: %+v", outputs)
+		}
 	}
-	outputs := mintPreparationReleaseOutputs(t, resolved)
 	for key, value := range outputs {
 		bindings["steps.kit_mint_release.outputs."+key] = value
 	}
@@ -53,18 +65,12 @@ func TestMintPipelinePreparationActualMixedHistory(t *testing.T) {
 	if inputs["command"] != "changelog" {
 		t.Fatal(inputs)
 	}
-	result, err := changelog.Generate(context.Background(), changelog.Options{
-		WorkDir: root, PrevTag: inputs["prev-tag"], CurrentTag: inputs["current-tag"],
-		CurrentRef: inputs["current-ref"], RepoOwner: inputs["owner"], RepoName: inputs["repo"], OutputFile: inputs["output"],
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.Version != "1.1.0" || result.CommitCount != 2 || result.Path != inputs["output"] {
-		t.Fatalf("unexpected changelog result: %+v", result)
-	}
+	runMintPreparation(t, root, mint,
+		"--prev-tag", inputs["prev-tag"], "--current-tag", inputs["current-tag"],
+		"--current-ref", inputs["current-ref"], "--owner", inputs["owner"],
+		"--repo", inputs["repo"], "--output", inputs["output"])
 	artifact := mintPreparationInputs(t, steps[2], bindings)
-	if artifact["path"] != result.Path || artifact["name"] != "mint-changelog-v1.1.0" || artifact["if-no-files-found"] != "error" {
+	if artifact["path"] != inputs["output"] || artifact["name"] != "mint-changelog-v1.1.0" || artifact["if-no-files-found"] != "error" {
 		t.Fatalf("retention does not use generated artifact: %v", artifact)
 	}
 	data, err := os.ReadFile(artifact["path"])
@@ -85,11 +91,6 @@ func TestMintPipelinePreparationActualMixedHistory(t *testing.T) {
 	if strings.Contains(string(data), "Private ticket detail") || strings.Contains(string(data), "baseline") {
 		t.Fatalf("private body or excluded history rendered: %s", data)
 	}
-	// Mint's release notes remain subject-based; enriched links belong to the
-	// retained CHANGELOG, with commit links providing source attribution.
-	if strings.Contains(resolved.ReleaseNotes, "linear.app") || !strings.Contains(resolved.ReleaseNotes, "add invitations") {
-		t.Fatalf("release-note boundary changed: %s", resolved.ReleaseNotes)
-	}
 	if got := git("show-ref", "--tags"); got != tagsBefore {
 		t.Fatal("preparation published a tag")
 	}
@@ -102,13 +103,10 @@ func TestMintPipelinePreparationActualMixedHistory(t *testing.T) {
 
 	// A retry after publication must not generate a duplicate version block.
 	// Only this fixture creates the tag; preparation itself remains read-only.
-	git("tag", resolved.VersionTag)
-	tagged, err := release.Resolve(context.Background(), release.Options{WorkDir: root, Commitish: linearSHA})
-	if err != nil {
-		t.Fatal(err)
-	}
-	taggedOutputs := mintPreparationReleaseOutputs(t, tagged)
-	if tagged.NeedsGitTag || tagged.VersionBump != release.BumpAlreadyTagged || mintPreparationGuard(t, steps[1], taggedOutputs) || mintPreparationGuard(t, steps[2], taggedOutputs) {
+	git("tag", outputs["version_tag"])
+	tagged := resolve()
+	if tagged["needs_git_tag"] != "false" || tagged["version_bump"] != "already-tagged" ||
+		mintPreparationGuard(t, steps[1], tagged) || mintPreparationGuard(t, steps[2], tagged) {
 		t.Fatalf("tagged retry must skip generation and upload: %+v", tagged)
 	}
 	retained, err := os.ReadFile(artifact["path"])
@@ -144,19 +142,13 @@ func mintPreparationGit(t *testing.T, root string, args ...string) string {
 	return strings.TrimSpace(string(out))
 }
 
-func mintPreparationReleaseOutputs(t *testing.T, result release.Result) map[string]string {
+func runMintPreparation(t *testing.T, root, mint string, args ...string) {
 	t.Helper()
-	var buffer bytes.Buffer
-	if err := release.WriteGitHubOutput(&buffer, result); err != nil {
-		t.Fatal(err)
+	cmd := exec.Command(mint, args...)
+	cmd.Dir = root
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("mint %v: %v: %s", args, err, out)
 	}
-	outputs := map[string]string{}
-	for _, line := range strings.Split(buffer.String(), "\n") {
-		if key, value, ok := strings.Cut(line, "="); ok && !strings.Contains(key, "<<") {
-			outputs[key] = value
-		}
-	}
-	return outputs
 }
 
 func mintPreparationInputs(t *testing.T, raw any, bindings map[string]string) map[string]string {

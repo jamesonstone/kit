@@ -58,18 +58,18 @@ owner, reconcile warns that a local template overrides them.
 
 Use --dry-run --diff to preview without writing anything.
 
-Mint Action references in repository workflows are refreshed to the latest verified
-stable release. Local Mint binaries and unrelated action pins are never changed.
-Release lookup failures stop before writes; --dry-run previews workflow updates.
+Compatible Mint Action references are refreshed to the latest stable release.
+Kit reports legacy controller refs when the latest release cannot run them.
+Release lookup failures stop before writes. Use --dry-run to preview.
 
 Use --mint-workflows to plan Mint Actions integration. Existing jobs need explicit
 --mint-workflow, --mint-job and --mint-before-step placement.
 Existing Mint workflows remain project owned. Preview with --dry-run --diff.
 
-Use --mint to create a missing Mint v0.9.0 controller from an existing team-first
-schema 2 .mint.yaml and project-owned adapters. Existing controllers remain
-project owned, even with --force. This option supports --dry-run --diff and
-uses the same linked-worktree delivery path; it does not activate deployments.
+Use --mint to create a missing controller with the published renderer while
+Mint v1 remains latest. This requires Go, a team-first schema 2 .mint.yaml and
+project-owned adapters. Existing controllers remain project owned, even with
+--force. This option supports --dry-run --diff.
 Do not combine --mint with --mint-workflows or Mint workflow selection flags.
 
 With a feature argument, audits only that feature's docs.`,
