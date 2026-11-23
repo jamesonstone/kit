@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
+	"regexp"
 	"strings"
 
-	"github.com/jamesonstone/mint/pkg/promotion"
 	"gopkg.in/yaml.v3"
 )
 
-const mintActionRef = mintPipelineActionRef // Mint v0.9.0
 const mintPolicyPath = ".mint.yaml"
 
 func validateMintControllerOptions(controller, workflows bool, selection mintPipelineSelection) error {
@@ -19,20 +17,6 @@ func validateMintControllerOptions(controller, workflows bool, selection mintPip
 		return fmt.Errorf("--mint cannot be combined with --mint-workflows or Mint workflow selection flags; select one scaffold at a time")
 	}
 	return nil
-}
-
-func planInitMintIntegration(root string, controller bool, selection mintPipelineSelection) ([]initRefreshFileChange, []string, error) {
-	if err := validateMintControllerOptions(controller, false, selection); err != nil {
-		return nil, nil, err
-	}
-	if !controller {
-		return planMintPipeline(root, selection)
-	}
-	change, err := planMintWorkflow(root)
-	if err != nil {
-		return nil, nil, err
-	}
-	return []initRefreshFileChange{*change}, nil, nil
 }
 
 func incompleteMintNotes(notes []string) []string {
@@ -84,22 +68,39 @@ func printCurrentMintIncompleteNotes(root string, opts initRefreshOptions) error
 	return nil
 }
 
-// planMintWorkflow uses the published renderer, without installing or running
-// project code. Policy and adapters remain project owned; only a missing
-// controller is scaffolded. Existing controllers are preserved even with force.
-func planMintWorkflow(root string) (*initRefreshFileChange, error) {
+// Plan only a missing v1 controller. Mint validates and renders the policy;
+// Kit checks ownership, link safety and callback collisions before invoking it.
+func planMintWorkflow(root string, release *mintActionRelease) (*initRefreshFileChange, error) {
 	data, err := readMintProjectFile(root, mintPolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("--mint requires an existing .mint.yaml: %w", err)
 	}
-	policy, err := promotion.ParsePolicy(data)
-	if err != nil {
-		return nil, err
+	var policy struct {
+		Schema          int    `yaml:"schema_version"`
+		Mode            string `yaml:"mode"`
+		Authorization   string `yaml:"authorization"`
+		ControlWorkflow string `yaml:"control_workflow"`
+		BuildWorkflow   string `yaml:"build_workflow"`
+		Environments    map[string]struct {
+			Scope               string `yaml:"scope"`
+			PromotionWorkflow   string `yaml:"promotion_workflow"`
+			ObservationWorkflow string `yaml:"observation_workflow"`
+			Configuration       string `yaml:"configuration_sha256"`
+		} `yaml:"environments"`
+	}
+	if err := yaml.Unmarshal(data, &policy); err != nil {
+		return nil, fmt.Errorf("read Mint policy: %w", err)
 	}
 	if policy.Schema != 2 || policy.Mode != "deployment" || policy.Authorization != "repository-write" {
 		return nil, fmt.Errorf("--mint requires a schema 2 deployment policy with authorization: repository-write; package/artifact projects retain their publication workflows")
 	}
-	path := (promotion.Config{ControlWorkflow: policy.ControlWorkflow}).ControlWorkflowPath()
+	path := policy.ControlWorkflow
+	if path == "" {
+		path = ".github/workflows/mint-recovery.yaml"
+	}
+	if !validMintWorkflowPath(path) {
+		return nil, fmt.Errorf("invalid Mint control_workflow %q", path)
+	}
 	before, err := readMintProjectFile(root, path)
 	if err == nil {
 		return newInitRefreshFileChange(root, path, string(before), string(before), instructionFileSkipped), nil
@@ -107,8 +108,15 @@ func planMintWorkflow(root string) (*initRefreshFileChange, error) {
 	if !os.IsNotExist(err) {
 		return nil, err
 	}
+	if release != nil && !release.hasController() {
+		return nil, fmt.Errorf("deployment controller unavailable in Mint %s; use project-owned deployment workflows", release.Version)
+	}
 	paths := map[string]bool{policy.BuildWorkflow: true}
+	var environment string
 	for name, env := range policy.Environments {
+		if environment == "" || name < environment {
+			environment = name
+		}
 		if env.Scope == "shared" && (env.PromotionWorkflow == "" || env.ObservationWorkflow == "" || env.Configuration == "") {
 			return nil, fmt.Errorf("environment %s needs reviewed promotion/observation adapters and configuration identity before scaffolding", name)
 		}
@@ -121,34 +129,13 @@ func planMintWorkflow(root string) (*initRefreshFileChange, error) {
 	if paths[path] {
 		return nil, fmt.Errorf("control_workflow must be separate from build, promotion and observation adapters")
 	}
-	ordered := make([]string, 0, len(paths))
-	for callback := range paths {
-		ordered = append(ordered, callback)
+	if err := checkMintCallbackNames(root, paths); err != nil {
+		return nil, err
 	}
-	sort.Strings(ordered)
-	names := make([]string, 0, len(ordered))
-	seenNames := map[string]bool{}
-	for _, callback := range ordered {
-		data, err := readMintProjectFile(root, callback)
-		if err != nil {
-			return nil, fmt.Errorf("read Mint adapter %s: %w", callback, err)
-		}
-		var workflow struct {
-			Name string `yaml:"name"`
-		}
-		if err := yaml.Unmarshal(data, &workflow); err != nil {
-			return nil, fmt.Errorf("parse Mint adapter %s: %w", callback, err)
-		}
-		if workflow.Name == "" {
-			workflow.Name = callback
-		}
-		if workflow.Name == "Mint environment control" || seenNames[workflow.Name] {
-			return nil, fmt.Errorf("mint callback names must be unique and separate from the environment controller")
-		}
-		seenNames[workflow.Name] = true
-		names = append(names, workflow.Name)
+	if release == nil {
+		return nil, fmt.Errorf("latest Mint release is required to render the controller")
 	}
-	content, err := promotion.RenderEnvironmentWorkflow(policy, mintActionRef, mintPolicyPath, names...)
+	content, err := renderMintController(root, *release, environment)
 	if err != nil {
 		return nil, err
 	}
@@ -156,9 +143,45 @@ func planMintWorkflow(root string) (*initRefreshFileChange, error) {
 	return newMintPipelineFileChange(root, path, "", content, instructionFileCreated), nil
 }
 
+func checkMintCallbackNames(root string, paths map[string]bool) error {
+	seenNames := map[string]bool{"Mint environment control": true}
+	for callback := range paths {
+		if !validMintWorkflowPath(callback) {
+			return fmt.Errorf("invalid Mint callback workflow path %q", callback)
+		}
+		data, err := readMintProjectFile(root, callback)
+		if err != nil {
+			return fmt.Errorf("read Mint adapter %s: %w", callback, err)
+		}
+		var workflow struct {
+			Name string `yaml:"name"`
+		}
+		if err := yaml.Unmarshal(data, &workflow); err != nil {
+			return fmt.Errorf("parse Mint adapter %s: %w", callback, err)
+		}
+		if workflow.Name == "" {
+			workflow.Name = callback
+		}
+		if strings.Contains(workflow.Name, "${{") {
+			return fmt.Errorf("mint callback name must not contain a GitHub Actions expression")
+		}
+		if seenNames[workflow.Name] {
+			return fmt.Errorf("mint callback names must be unique and separate from the environment controller")
+		}
+		seenNames[workflow.Name] = true
+	}
+	return nil
+}
+
+var mintWorkflowPath = regexp.MustCompile(`^\.github/workflows/[A-Za-z0-9_.-]+\.ya?ml$`)
+
+func validMintWorkflowPath(path string) bool {
+	return mintWorkflowPath.MatchString(path)
+}
+
 // Reject links before reads and writes, including linked parent directories.
 func readMintProjectFile(root, relative string) ([]byte, error) {
-	if !promotion.SafeRepositoryPath(relative) {
+	if relative != mintPolicyPath && !validMintWorkflowPath(relative) {
 		return nil, fmt.Errorf("unsafe Mint project path %q", relative)
 	}
 	path := root

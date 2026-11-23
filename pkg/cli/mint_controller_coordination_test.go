@@ -11,20 +11,18 @@ import (
 )
 
 func TestMintControllerSkipsAutomaticPublication(t *testing.T) {
+	setupInitHome(t)
 	root := mintFixture(t)
-	changes, notes, err := planInitMintIntegration(root, true, mintPipelineSelection{})
+	plan, err := buildInitRefreshPlan(context.Background(), root, initRefreshOptions{mint: true, mintRelease: &testMintRelease})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(changes) != 1 || changes[0].relativePath != ".github/workflows/control.yaml" || len(notes) != 0 {
-		t.Fatalf("changes=%+v notes=%v", changes, notes)
+	for _, change := range plan.changes {
+		if strings.HasSuffix(change.relativePath, "mint-release.yaml") || strings.Contains(change.after, "command: release-publish") {
+			t.Fatal("second publisher in environment controller")
+		}
 	}
-	if !strings.Contains(changes[0].after, "# Scaffolded by Kit.") || !strings.Contains(changes[0].after, "jamesonstone/mint@"+mintPipelineActionRef) {
-		t.Fatal("controller version/pin differs from pipeline")
-	}
-	if strings.Contains(changes[0].after, "command: release-publish") {
-		t.Fatal("second publisher in environment controller")
-	}
+
 }
 
 func TestMintControllerRejectsAllWorkflowSelections(t *testing.T) {
@@ -32,9 +30,6 @@ func TestMintControllerRejectsAllWorkflowSelections(t *testing.T) {
 		{workflow: ".github/workflows/deploy.yml"}, {job: "deploy"}, {beforeStep: "build"},
 	} {
 		root := t.TempDir()
-		if _, _, err := planInitMintIntegration(root, true, selection); err == nil {
-			t.Fatalf("controller accepted selection %+v", selection)
-		}
 		if _, err := buildInitRefreshPlan(context.Background(), root, initRefreshOptions{mint: true, mintSelection: selection}); err == nil {
 			t.Fatalf("refresh accepted selection %+v", selection)
 		}

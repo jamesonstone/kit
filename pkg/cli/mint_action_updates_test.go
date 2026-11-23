@@ -11,10 +11,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var testMintRelease = mintActionRelease{Version: "v1.1.2", SHA: strings.Repeat("a", 40)}
+
 // Every package fixture stays offline; release transport is tested separately.
 func TestMain(m *testing.M) {
 	lookupMintActionRelease = func() (mintActionRelease, error) {
-		return mintActionRelease{Version: "v0.9.0", SHA: mintPipelineActionRef}, nil
+		return testMintRelease, nil
+	}
+	renderMintController = func(_ string, release mintActionRelease, _ string) (string, error) {
+		return "name: Mint environment control\njobs:\n  deploy:\n    steps:\n      - uses: jamesonstone/mint@" + release.SHA + "\n        with:\n          command: deployment-control\n", nil
 	}
 	os.Exit(m.Run())
 }
@@ -66,6 +71,74 @@ func TestMintActionUpdatePlanDryRunAndWrite(t *testing.T) {
 	}
 }
 
+func TestMintV2RefreshPreservesIncompatibleCommandsAndInputs(t *testing.T) {
+	source := `on: workflow_dispatch
+jobs:
+  mint:
+    steps:
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: deployment-control}
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: production-control}
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: '${{ inputs.command }}'}
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: release-version-main, version-config: .mint.yaml}
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: none}
+      - uses: jamesonstone/mint@v1.1.2
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: changelog}
+  release:
+    steps:
+      - uses: jamesonstone/mint@v1.1.2
+        with: {command: release-resolve}
+`
+	release := mintActionRelease{Version: "v2.0.0", SHA: strings.Repeat("b", 40), inputs: map[string]any{"command": nil}}
+	got, notes, err := refreshMintActionRefs(source, release)
+	last := strings.LastIndex(source, "v1.1.2")
+	want := source[:last] + release.Version + source[last+len("v1.1.2"):]
+	if err != nil || got != want || len(notes) != 7 || !strings.Contains(notes[3], "version-config") || !strings.Contains(notes[4], "adapter usage") || !strings.Contains(notes[6], "this job has an incompatible Mint step") {
+		t.Fatalf("%s\nnotes=%v err=%v", got, notes, err)
+	}
+	current := strings.ReplaceAll(source, "v1.1.2", release.Version)
+	got, notes, err = refreshMintActionRefs(current, release)
+	if err != nil || got != current || len(notes) != 0 {
+		t.Fatalf("already current: %s\nnotes=%v err=%v", got, notes, err)
+	}
+}
+
+func TestMintJobKeepsRefsTogetherAfterAnInputIsRemoved(t *testing.T) {
+	const workflow = `on: workflow_dispatch
+jobs:
+  scoped:
+    steps:
+      - uses: jamesonstone/mint@OLD
+        with: {command: release-version-main, version-config: .mint.yaml}
+      - uses: jamesonstone/mint@OLD
+        with: {command: changelog}
+  release:
+    steps:
+      - uses: jamesonstone/mint@OLD
+        with: {command: release-resolve}
+`
+	for _, versions := range []struct{ old, latest string }{
+		{"v1.1.2", "v1.3.0"},
+		{"v2.0.0", "v2.1.0"},
+	} {
+		t.Run(versions.latest, func(t *testing.T) {
+			release := mintActionRelease{Version: versions.latest, inputs: map[string]any{"command": nil}}
+			input := strings.ReplaceAll(workflow, "OLD", versions.old)
+			compatible := strings.LastIndex(workflow, "OLD")
+			want := strings.ReplaceAll(workflow[:compatible], "OLD", versions.old) + versions.latest + workflow[compatible+len("OLD"):]
+			got, notes, err := refreshMintActionRefs(input, release)
+			if err != nil || got != want || len(notes) != 2 || !strings.Contains(notes[0], "version-config") {
+				t.Fatalf("%s\nnotes=%v err=%v", got, notes, err)
+			}
+		})
+	}
+}
+
 func TestMintReleaseFailureStopsInitBeforeWrites(t *testing.T) {
 	root := t.TempDir()
 	setWorkingDirectory(t, root)
@@ -83,7 +156,7 @@ func TestMintReleaseFailureStopsInitBeforeWrites(t *testing.T) {
 	}
 }
 
-func TestInitScaffoldUsesDiscoveredMintRelease(t *testing.T) {
+func TestInitScaffoldSelectsLatestMintWhenWorkflowRuns(t *testing.T) {
 	root := t.TempDir()
 	setupInitHome(t)
 	setWorkingDirectory(t, root)
@@ -100,7 +173,7 @@ func TestInitScaffoldUsesDiscoveredMintRelease(t *testing.T) {
 		})
 	})
 	got := readFile(t, filepath.Join(root, ".github/workflows/mint-release.yaml"))
-	if strings.Contains(got, mintPipelineActionRef) || strings.Count(got, "jamesonstone/mint@"+release.SHA) != 3 {
+	if strings.Contains(got, release.SHA) || !strings.Contains(got, "repos/jamesonstone/mint/releases/latest") || strings.Count(got, "uses: "+mintPipelineAction) != 3 {
 		t.Fatal(got)
 	}
 }

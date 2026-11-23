@@ -18,10 +18,13 @@ read_policy_default: conditional
 ## Purpose
 
 Build a version once, then promote its immutable artifact through the project's
-configured environments. Mint manages selection, review, history and release
-publication. Project workflows build, retain, deploy and verify the artifact.
+configured environments. Mint provides release primitives. Project workflows
+build, retain, deploy and verify the artifact. Mint v1 also supplies a
+deployment controller that manages selection, review and history. Mint v2
+leaves those operations to project workflows.
 
-Use repository Actions to request a release, hotfix, rollback or observation.
+In a v1 controller project, use repository Actions to request a release, hotfix,
+rollback or observation.
 A reviewed latest-following release has one PR that will track eligible builds
 until approval freezes its selection. Completion records the outcome on that
 same PR. Prefer a roll-forward release of corrected source when recovery is needed.
@@ -30,7 +33,7 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 - The project uses Mint and the task concerns release adoption, publication,
   deployment, environment state, hotfix, roll-forward, rollback or recovery.
-- A `.mint.yaml` file or a pinned Mint workflow is evidence of adoption;
+- A `.mint.yaml` file or a Mint workflow is evidence of adoption;
   the file's presence alone does not establish runtime activation.
 
 ## Rules
@@ -40,9 +43,10 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 - Inspect `.mint.yaml`, the installed or pinned Mint version, repository Actions,
   activation gates and the project's deployment runbook before choosing an action.
   Do not install Mint or change a non-Mint project's release system by inference.
-- Use the repository's published immutable Mint pin. Inspect that version's help
+- Determine the Mint release the workflow uses. Inspect that release's help
   and adapter contracts when needed; do not assume CLI or workflow inputs from a
-  different version. Schema 1 adapters remain supported by Mint v0.4.0; moving
+  different version. For the v1 controller, use the project’s reviewed pin.
+  Schema 1 adapters remain supported by Mint v0.4.0; moving
   their policy to schema 2 requires an adapter migration, not just a YAML rewrite.
 - Schema 2 supports project-owned environment names and counts. Use the explicit
   requested environment. An omitted environment may use `default_environment`
@@ -61,13 +65,14 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ### Kit workflow scaffolding
 
-- `kit init` adds the pinned Mint starter when no workflows exist. Existing
-  workflow structure and Mint integrations are preserved.
-- Init and reconcile refresh supported Mint Action stable tags and full commit SHA
-  pins to the latest verified published stable release, preserving the reference
-  format. Custom refs remain unchanged with a diagnostic. Release lookup failures
-  are explicit; never guess a replacement. Preview with `--dry-run --diff` without
-  writing files. Kit does not install or maintain the local Mint executable.
+- `kit init` adds the Mint release starter when no workflows exist. The
+  starter and new preparation steps resolve the latest stable GitHub Release
+  on each workflow run. They require Bash, GitHub CLI and a checkout at the
+  workspace root.
+- Init and reconcile refresh compatible static Mint tags and commit SHAs,
+  preserving their reference format. Kit reports and preserves refs when
+  the latest release lacks an action input or legacy controller command.
+  Use `--dry-run --diff` to preview. Release lookup failures stop before writes.
 - For additive release preparation in an existing job, provide `--mint-workflow`,
   `--mint-job` and `--mint-before-step`. Without placement, Kit reports the needed
   selection without creating a diagnostic workflow. Preview with `--dry-run --diff`.
@@ -75,23 +80,21 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
   permission, publication and runtime policy. Review how the project consumes the
   generated release metadata and enriched changelog artifact before adoption.
 
-- `kit init --mint` (new Kit project) or `kit reconcile --mint --dry-run --diff`
-  followed by `kit reconcile --mint` (existing project) can create a missing
-  controller from an existing schema 2 deployment `.mint.yaml` with
-  `authorization: repository-write` and reviewed build/deploy/observe adapters.
-  Kit embeds the published Mint v0.9.0 parser and renderer; rendering runs
-  locally without installing or executing Mint in the project.
-- Existing controller structure, adapters and policies remain project owned, even
-  under `--force`; only supported action references are refreshed. Package/artifact
-  policies retain their publication workflows.
-  Generation keeps the activation gate; complete adapter integration and verified
-  baselines before enabling it. Scaffolding does not prove activation or deployment.
+- While the latest stable release is Mint v1, `kit init --mint` or
+  `kit reconcile --mint` can create a missing controller from an existing
+  schema 2 deployment policy with `authorization: repository-write` and
+  reviewed build, promotion and observation adapters. Kit uses Go to run the
+  published v1 renderer and pins that release's action in the controller.
+- Existing controllers, adapters and policies remain project owned, even under
+  `--force`. When Mint v2 is latest, use project-owned deployment workflows
+  for new integrations. Existing v1 controller workflows need an explicit
+  migration. Generation does not activate deployment gates.
 - Candidate producers must isolate selected source execution in credential-free
   containers or an equivalent project-reviewed sandbox, without host mounts or
   shared trusted caches. Transfer completed artifacts to a fresh trusted publisher;
   do not rebuild or execute selected source after acquiring write/cloud credentials.
 
-### Repository-native operator paths
+### Mint v1 controller operator paths
 
 | Intent | Supported path |
 | --- | --- |
@@ -155,7 +158,7 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
 
 ## Reference
 
-The [Mint v0.9.0 lifecycle and adapter contract](https://github.com/jamesonstone/mint/blob/eac91490f772adbd2ab030cb6eba3910c1bca93c/docs/references/environment-lifecycle.md)
+The [Mint v1 lifecycle and adapter contract](https://github.com/jamesonstone/mint/blob/v1.1.2/docs/references/environment-lifecycle.md)
 provides schema, workflow and manifest details. The project's pinned implementation
 and reviewed runbook determine its supported actions. Kit embeds this rule locally;
 reading it does not require a network fetch or grant deployment authority.

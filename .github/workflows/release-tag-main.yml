@@ -23,6 +23,7 @@ jobs:
       next_tag: ${{ steps.select_tag.outputs.next_tag }}
       mode: ${{ steps.select_tag.outputs.mode }}
       head_sha: ${{ steps.select_tag.outputs.head_sha }}
+      mint_commit: ${{ steps.mint_checkout.outputs.commit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -56,9 +57,27 @@ jobs:
           printf '# %s\n\nKit %s release.\n' "${TAG}" "${TAG}" > "${notes_file}"
           echo "path=${notes_file}" >> "${GITHUB_OUTPUT}"
 
+      - name: Resolve latest stable Mint release
+        id: mint_latest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash internal/mintassets/resolve-release.sh
+
+      - name: Check out published Mint Action
+        id: mint_checkout
+        uses: actions/checkout@v5
+        with:
+          repository: jamesonstone/mint
+          ref: ${{ steps.mint_latest.outputs.ref }}
+          path: .git/kit-mint-action
+          persist-credentials: false
+
       - name: Create or reuse immutable release tag with Mint
         id: mint_tag
-        uses: jamesonstone/mint@b97969136d5a43d0982c46c6f185868db16d14bf # v0.5.0
+        uses: ./.git/kit-mint-action
+        env:
+          GOWORK: "off"
         with:
           command: release-tag
           release-tag: ${{ steps.select_tag.outputs.next_tag }}
@@ -129,9 +148,31 @@ jobs:
           printf '# %s\n\nKit %s release.\n' "${TAG}" "${TAG}" > "${notes_file}"
           echo "path=${notes_file}" >> "${GITHUB_OUTPUT}"
 
+      - name: Validate Mint release commit from tag job
+        id: mint_ref
+        shell: bash
+        env:
+          MINT_COMMIT: ${{ needs.prepare-release.outputs.mint_commit }}
+        run: |
+          if [[ ! "$MINT_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'The tag job did not return a valid Mint release commit.' >&2
+            exit 1
+          fi
+          printf 'commit=%s\n' "$MINT_COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Check out published Mint Action
+        uses: actions/checkout@v5
+        with:
+          repository: jamesonstone/mint
+          ref: ${{ steps.mint_ref.outputs.commit }}
+          path: .git/kit-mint-action
+          persist-credentials: false
+
       - name: Create or reuse GitHub Release with Mint
         id: mint_release
-        uses: jamesonstone/mint@b97969136d5a43d0982c46c6f185868db16d14bf # v0.5.0
+        uses: ./.git/kit-mint-action
+        env:
+          GOWORK: "off"
         with:
           command: github-release
           owner: ${{ github.repository_owner }}

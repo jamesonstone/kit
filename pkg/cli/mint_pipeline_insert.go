@@ -28,7 +28,7 @@ func insertMintStages(data []byte, steps *yaml.Node, index int) (string, error) 
 		}
 		end++
 	}
-	prep, err := mintIndentedSteps(mintReleasePreparationSteps(), prefix)
+	prep, err := mintIndentedSteps(append(mintLatestSteps(), mintReleasePreparationSteps()...), prefix)
 	if err != nil {
 		return "", err
 	}

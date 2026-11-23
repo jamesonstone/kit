@@ -21,7 +21,7 @@ func planInitProject(root string, cfg *config.Config, release mintActionRelease)
 	if initMint {
 		return plan, nil
 	}
-	mintChanges, mintNotes, err := planInitMintIntegration(root, false, initMintSelection)
+	mintChanges, mintNotes, err := planMintPipeline(root, initMintSelection)
 	if err != nil {
 		return nil, err
 	}

@@ -83,7 +83,7 @@ kit reconcile --dry-run --diff   # preview
 kit reconcile                    # migrate to the current structure
 ```
 
-Mint deployment project with an existing team-first schema 2 `.mint.yaml` and
+For a Mint v1 deployment project with a team-first schema 2 `.mint.yaml` and
 reviewed build, promotion and observation adapters:
 
 ```bash
@@ -92,17 +92,15 @@ kit reconcile --mint --dry-run --diff    # existing Kit project: preview
 kit reconcile --mint                    # create a missing controller
 ```
 
-Kit uses the embedded Mint v0.9.0 renderer to generate repository Actions for
-promotion, hotfix, rollback, resume, observation and reconciliation. It uses the
-policy's environment names and adapter workflow names. Existing controller structure,
-policies and adapters stay project owned, even with `--force`. No registry,
-provider or production environment is assumed. Package and artifact projects
-retain their existing publication workflows. Scaffolding keeps the
-`MINT_RELEASE_ENABLED` gate; it does not activate deployments. Review source-build
-isolation, adapter manifests, runtime configuration identities and verified
-baselines before enabling that gate.
+Kit runs the latest published v1 renderer with Go and uses that release's
+immutable action commit in the generated controller. The renderer uses the
+policy's environment names and adapter workflow names. Mint v2 leaves deployment
+orchestration to project workflows, so `--mint` reports that the controller
+scaffold is unavailable once v2 is the latest release. Existing controllers
+remain project owned. Controller scaffolding never activates a deployment.
 
-`kit init` adds a pinned Mint release starter when no workflows exist. Existing
+`kit init` adds a Mint release starter when no workflows exist. Each run
+resolves the latest stable GitHub Release and loads its Mint Action. Existing
 workflow structure and Mint integration are preserved. To add release
 metadata, an enriched changelog and artifact retention to an existing job, select
 its placement explicitly:
@@ -116,17 +114,19 @@ kit reconcile --mint-workflow .github/workflows/deploy.yaml \
 Without placement, Kit reports what to select; it does not add a diagnostic
 workflow. Use `kit reconcile --mint-workflows --dry-run --diff` to preview the
 scaffold plan for an existing project. Kit adds files and preparation steps;
-Mint and the project own release policy and the use of generated outputs.
+Mint and the project own release policy and the use of generated outputs. The
+added steps require Bash, GitHub CLI and a checkout at the workspace root.
+On a runner without `gh`, install it or add a setup step before Mint.
 
 During init and reconcile, Kit refreshes supported `jamesonstone/mint` Action
 references to the latest verified published stable release. Stable version tags
 remain tags; full commit SHA pins become the verified release commit SHA. Custom
-refs and workflows with shared YAML anchors/aliases are preserved with a diagnostic.
-A failed release lookup reports an error
-rather than guessing a reference. Preview with `kit reconcile --dry-run --diff`;
-dry runs do not write files. Kit does not manage the local Mint executable.
+refs, shared YAML anchors and aliases, and action commands or inputs
+unsupported by the latest release are preserved with a diagnostic. Lookup failures stop
+init and reconcile before writes. Preview with `kit reconcile --dry-run --diff`.
+Kit does not manage an installed Mint executable.
 
-Mint v0.9.0 supports explicit Linear links in generated changelogs. Private ticket
+Mint supports explicit Linear links in generated changelogs. Private ticket
 details are not fetched, and published release notes keep their subject-based format.
 
 Diagnose without changing anything:

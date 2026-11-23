@@ -51,10 +51,10 @@ If a project has multiple teams, use the key of the team that owns the issues.
 Mint Actions integration is planned automatically. Existing jobs need explicit
 --mint-workflow, --mint-job and --mint-before-step placement.
 
-Use --mint to scaffold a missing Mint v0.9.0 environment controller from an
-existing team-first schema 2 .mint.yaml and project-owned build/deploy/observe
-adapters. Existing workflows and activation gates are preserved.
-This controller scaffold cannot be
+New Mint release steps select the latest stable release on each workflow run.
+Use --mint to scaffold a missing controller with the published renderer while
+Mint v1 remains latest. This requires Go, a team-first schema 2 .mint.yaml and
+project-owned build, deployment and observation adapters. The flag cannot be
 combined with Mint workflow selection flags.
 
 Init is for projects that are not yet Kit projects. A change to an existing

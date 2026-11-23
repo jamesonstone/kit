@@ -166,6 +166,11 @@ func TestExternalReleasePublisherAcceptsOnlyV3Tags(t *testing.T) {
 	if quality < 0 || verify < 0 || quality > verify {
 		t.Error("external release quality gates must run before Mint verifies release state")
 	}
+	build := strings.Index(workflow, "Build artifacts with GoReleaser")
+	if build < 0 || build > verify {
+		t.Error("external release artifacts must build before Mint sets up its Go toolchain")
+	}
+
 }
 
 func TestReleaseWorkflowsParseAsYAML(t *testing.T) {
@@ -185,16 +190,26 @@ func TestReleaseWorkflowsParseAsYAML(t *testing.T) {
 
 func assertMintActionRefs(t *testing.T, workflow string, want int) {
 	t.Helper()
-	const exact = "uses: jamesonstone/mint@b97969136d5a43d0982c46c6f185868db16d14bf # v0.5.0"
-	if got := strings.Count(workflow, exact); got != want {
-		t.Errorf("workflow uses exact Mint v0.5.0 ref %d times, want %d", got, want)
+	if got := strings.Count(workflow, "uses: ./.git/kit-mint-action"); got != want {
+		t.Errorf("workflow uses the loaded Mint action %d times, want %d", got, want)
 	}
-	for _, line := range strings.Split(workflow, "\n") {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "uses: jamesonstone/mint@") && line != exact {
-			t.Errorf("workflow contains unsupported Mint action ref %q", line)
+	if got := strings.Count(workflow, "GOWORK: \"off\""); got != want {
+		t.Errorf("workflow isolates %d Mint builds from the project workspace, want %d", got, want)
+	}
+	if strings.Contains(workflow, "uses: jamesonstone/mint@") {
+		t.Error("workflow has a static Mint action reference")
+	}
+	for _, requirement := range []string{
+		"bash internal/mintassets/resolve-release.sh",
+		"repository: jamesonstone/mint",
+		"ref: ${{ steps.mint_latest.outputs.ref }}",
+		"persist-credentials: false",
+	} {
+		if !strings.Contains(workflow, requirement) {
+			t.Errorf("workflow missing %s", requirement)
 		}
 	}
+
 }
 
 func initRepository(t *testing.T) string {

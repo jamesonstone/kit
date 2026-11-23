@@ -63,17 +63,6 @@ jobs:
           printf '# %s\n\nKit %s release.\n' "${TAG}" "${TAG}" > "${notes_file}"
           echo "path=${notes_file}" >> "${GITHUB_OUTPUT}"
 
-      - name: Verify immutable release tag with Mint
-        id: mint_tag
-        uses: jamesonstone/mint@b97969136d5a43d0982c46c6f185868db16d14bf # v0.5.0
-        with:
-          command: release-tag
-          release-tag: ${{ github.ref_name }}
-          target-sha: ${{ steps.release_target.outputs.sha }}
-          release-notes-file: ${{ steps.release_notes.outputs.path }}
-          release-remote: origin
-          release-push: "false"
-
       - name: Setup GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -82,7 +71,7 @@ jobs:
           install-only: true
 
       - name: Build artifacts with GoReleaser
-        # Mint owns GitHub Release state; GoReleaser owns artifact production.
+        # Build with Kit's Go version before Mint adds its toolchain to PATH.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goreleaser release --clean --skip=publish --skip=announce
@@ -98,9 +87,40 @@ jobs:
             exit 1
           fi
 
+      - name: Resolve latest stable Mint release
+        id: mint_latest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash internal/mintassets/resolve-release.sh
+
+      - name: Check out published Mint Action
+        id: mint_checkout
+        uses: actions/checkout@v5
+        with:
+          repository: jamesonstone/mint
+          ref: ${{ steps.mint_latest.outputs.ref }}
+          path: .git/kit-mint-action
+          persist-credentials: false
+
+      - name: Verify immutable release tag with Mint
+        id: mint_tag
+        uses: ./.git/kit-mint-action
+        env:
+          GOWORK: "off"
+        with:
+          command: release-tag
+          release-tag: ${{ github.ref_name }}
+          target-sha: ${{ steps.release_target.outputs.sha }}
+          release-notes-file: ${{ steps.release_notes.outputs.path }}
+          release-remote: origin
+          release-push: "false"
+
       - name: Create or reuse GitHub Release with Mint
         id: mint_release
-        uses: jamesonstone/mint@b97969136d5a43d0982c46c6f185868db16d14bf # v0.5.0
+        uses: ./.git/kit-mint-action
+        env:
+          GOWORK: "off"
         with:
           command: github-release
           owner: ${{ github.repository_owner }}

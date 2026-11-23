@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/jamesonstone/kit/v3/internal/config"
-	"gopkg.in/yaml.v3"
 )
 
 const mintFixturePolicy = `schema_version: 2
@@ -42,36 +41,31 @@ func mintFixture(t *testing.T) string {
 	return root
 }
 
-func TestMintScaffoldUsesPublishedControllerAndProjectEnvironmentNames(t *testing.T) {
+func TestMintScaffoldPassesVerifiedReleaseToRenderer(t *testing.T) {
 	root := mintFixture(t)
-	change, err := planMintWorkflow(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, want := range []string{
-		"jamesonstone/mint@" + mintActionRef,
-		"command: deployment-control", "production-config: '.mint.yaml'",
-		"branches: ['trunk']", `options: ["preview","workstation"]`,
-		"promote, hotfix, rollback, resume, observe, reconcile",
-		"vars.MINT_RELEASE_ENABLED == 'true'", "persist-credentials: false",
-		`ref: ${{ github.event.repository.default_branch }}`,
-		`workflows: ["Build candidates","Deploy \\[preview\\]","Observe preview"]`,
-	} {
-		if !strings.Contains(change.after, want) {
-			t.Errorf("generated controller lacks %q", want)
+	previous := renderMintController
+	t.Cleanup(func() { renderMintController = previous })
+	release := mintActionRelease{Version: "v1.3.0", SHA: strings.Repeat("c", 40)}
+	renderMintController = func(dir string, got mintActionRelease, environment string) (string, error) {
+		if dir != root || got.Version != release.Version || got.SHA != release.SHA || environment != "preview" {
+			t.Fatalf("renderer got %q %+v %q", dir, got, environment)
 		}
+		return "name: Mint environment control\n", nil
 	}
-	for _, unsafe := range []string{"cache: true", "cache-from", "id-token: write", "hotfix_pr }}", "human_login"} {
-		if strings.Contains(change.after, unsafe) {
-			t.Errorf("controller contains %q", unsafe)
-		}
-	}
-	var workflow map[string]any
-	if err := yaml.Unmarshal([]byte(change.after), &workflow); err != nil {
-		t.Fatal(err)
+	change, err := planMintWorkflow(root, &release)
+	if err != nil || !strings.HasSuffix(change.after, "name: Mint environment control\n") {
+		t.Fatalf("plan=%+v err=%v", change, err)
 	}
 	if _, err := os.Stat(change.absolutePath); !os.IsNotExist(err) {
 		t.Fatal("planning wrote the controller")
+	}
+}
+
+func TestMintV2CannotScaffoldLegacyController(t *testing.T) {
+	root := mintFixture(t)
+	release := mintActionRelease{Version: "v2.0.0", SHA: strings.Repeat("b", 40)}
+	if change, err := planMintWorkflow(root, &release); change != nil || err == nil || !strings.Contains(err.Error(), "project-owned deployment workflows") {
+		t.Fatalf("plan=%+v err=%v", change, err)
 	}
 }
 
@@ -81,12 +75,11 @@ func TestMintScaffoldRejectsUnsupportedPoliciesAndMissingAdapters(t *testing.T) 
 		{"personal", "authorization: repository-write", "human_login: operator"},
 		{"missing observer", "    observation_workflow: .github/workflows/observe.yaml\n", ""},
 		{"missing adapter", "build.yaml", "absent.yaml"},
-		{"unsafe callback", "default_branch: trunk", "default_branch: ../outside"},
 	} {
 		t.Run(item.name, func(t *testing.T) {
 			root := mintFixture(t)
 			writeFile(t, filepath.Join(root, mintPolicyPath), strings.Replace(mintFixturePolicy, item.old, item.replacement, 1))
-			if _, err := planMintWorkflow(root); err == nil {
+			if _, err := planMintWorkflow(root, &testMintRelease); err == nil {
 				t.Fatal("invalid or incomplete policy accepted")
 			}
 		})
@@ -96,12 +89,14 @@ func TestMintScaffoldRejectsUnsupportedPoliciesAndMissingAdapters(t *testing.T) 
 func TestMintScaffoldPreservesExistingControllerAndAdapters(t *testing.T) {
 	root := mintFixture(t)
 	path := filepath.Join(root, ".github/workflows/control.yaml")
-	writeFile(t, path, "project-owned controller\n")
+	const controller = "jobs:\n  deploy:\n    steps:\n      - uses: jamesonstone/mint@v1.1.2\n        with: {command: deployment-control}\n"
+	writeFile(t, path, controller)
+	release := mintActionRelease{Version: "v2.0.0", SHA: strings.Repeat("b", 40)}
 	if err := config.Save(root, defaultInitConfig()); err != nil {
 		t.Fatal(err)
 	}
 	setupInitHome(t)
-	plan, err := buildInitRefreshPlan(context.Background(), root, initRefreshOptions{mint: true, force: true})
+	plan, err := buildInitRefreshPlan(context.Background(), root, initRefreshOptions{mint: true, mintRelease: &release, force: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +111,7 @@ func TestMintScaffoldPreservesExistingControllerAndAdapters(t *testing.T) {
 	if got := readFile(t, filepath.Join(root, mintPolicyPath)); got != mintFixturePolicy {
 		t.Fatal("policy was rewritten")
 	}
-	if got := readFile(t, path); got != "project-owned controller\n" {
+	if got := readFile(t, path); got != controller {
 		t.Fatal("controller was rewritten")
 	}
 }
@@ -134,7 +129,7 @@ func TestMintScaffoldNeverReadsOrWritesThroughLinks(t *testing.T) {
 			if err := os.Symlink(outside, path); err != nil {
 				t.Fatal(err)
 			}
-			if _, err := planMintWorkflow(root); err == nil {
+			if _, err := planMintWorkflow(root, &testMintRelease); err == nil {
 				t.Fatal("linked path accepted")
 			}
 			if readFile(t, outside) != "unchanged" {
@@ -172,14 +167,14 @@ func TestInitMintAndReconcileDryRunAndConvergence(t *testing.T) {
 		})
 	})
 	path := filepath.Join(root, ".github/workflows/control.yaml")
-	if !strings.Contains(readFile(t, path), mintActionRef) {
+	if !strings.Contains(readFile(t, path), testMintRelease.SHA) {
 		t.Fatal("init did not scaffold the published controller")
 	}
 	if err := os.Remove(path); err != nil {
 		t.Fatal(err)
 	}
 	captureStdout(t, func() {
-		if _, err := runInitRefreshWithSnapshot(root, initRefreshOptions{mint: true, dryRun: true, diff: true}); err != nil {
+		if _, err := runInitRefreshWithSnapshot(root, initRefreshOptions{mint: true, mintRelease: &testMintRelease, dryRun: true, diff: true}); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -196,12 +191,12 @@ func TestInitMintAndReconcileDryRunAndConvergence(t *testing.T) {
 		}
 	}
 	captureStdout(t, func() {
-		if _, err := runInitRefreshWithSnapshot(root, initRefreshOptions{mint: true}); err != nil {
+		if _, err := runInitRefreshWithSnapshot(root, initRefreshOptions{mint: true, mintRelease: &testMintRelease}); err != nil {
 			t.Fatal(err)
 		}
 	})
 	before := readFile(t, path)
-	change, err := planMintWorkflow(root)
+	change, err := planMintWorkflow(root, &testMintRelease)
 	if err != nil || change.result != instructionFileSkipped || change.after != before {
 		t.Fatalf("second generation did not preserve the controller: %v", err)
 	}
@@ -212,7 +207,7 @@ func TestMintScaffoldRejectsAmbiguousAndSelfReferencingCallbacks(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			root := mintFixture(t)
 			writeFile(t, filepath.Join(root, ".github/workflows/build.yaml"), "name: '"+name+"'\non: workflow_dispatch\njobs: {}\n")
-			if _, err := planMintWorkflow(root); err == nil {
+			if _, err := planMintWorkflow(root, &testMintRelease); err == nil {
 				t.Fatal("ambiguous, self-triggering or expression-bearing callback accepted")
 			}
 		})

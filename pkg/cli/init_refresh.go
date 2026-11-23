@@ -102,7 +102,7 @@ func buildInitRefreshPlan(ctx context.Context, projectRoot string, opts initRefr
 		}
 	}
 	if opts.mint {
-		change, err := planMintWorkflow(projectRoot)
+		change, err := planMintWorkflow(projectRoot, opts.mintRelease)
 		if err != nil {
 			return nil, err
 		}

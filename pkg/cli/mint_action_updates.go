@@ -76,64 +76,78 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 	var edits []edit
 	var notes []string
 	lines := strings.SplitAfter(source, "\n")
-	for _, node := range mintActionMappings(&doc) {
-		if node.Kind == yaml.MappingNode {
-			for i := 0; i+1 < len(node.Content); i += 2 {
-				key, value := node.Content[i], node.Content[i+1]
-				if key.Value != "uses" || value.Kind != yaml.ScalarNode || !strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@") {
-					continue
-				}
-				_, ref, _ := strings.Cut(value.Value, "@")
-				target := release.Version
-				switch {
-				case mintActionSHA.MatchString(ref):
-					target = release.SHA
-				case mintActionVersion.MatchString(ref):
-				default:
-					notes = append(notes, "custom reference "+ref+" preserved; currentness is unknown")
-					continue
-				}
-				if value.Style != 0 && value.Style != yaml.SingleQuotedStyle && value.Style != yaml.DoubleQuotedStyle {
-					notes = append(notes, "nonstandard uses scalar preserved")
-					continue
-				}
-				old := value.Value
-				replacement := strings.TrimSuffix(old, ref) + target
-				if value.Style == yaml.SingleQuotedStyle {
-					old = "'" + old + "'"
-					replacement = "'" + replacement + "'"
-				}
-				if value.Style == yaml.DoubleQuotedStyle {
-					old = "\"" + old + "\""
-					replacement = "\"" + replacement + "\""
-				}
-				line := value.Line - 1
-				if line < 0 || line >= len(lines) {
-					continue
-				}
-				runes := []rune(lines[line])
-				col := value.Column - 1
-				if col < 0 || col > len(runes) {
-					continue
-				}
-				start := len(string(runes[:col]))
-				if !strings.HasPrefix(lines[line][start:], old) {
-					notes = append(notes, "encoded uses scalar preserved")
-					continue
-				}
-				offset := start
-				for _, prior := range lines[:line] {
-					offset += len(prior)
-				}
-				edits = append(edits, edit{offset, offset + len(old), replacement})
-				// Refresh an exact conventional version annotation; preserve other comments.
-				tail := lines[line][start+len(old):]
-				trimmed := strings.TrimSpace(tail)
-				if strings.HasPrefix(trimmed, "# ") {
-					fields := strings.Fields(strings.TrimPrefix(trimmed, "# "))
-					if len(fields) > 0 && mintActionVersion.MatchString(fields[0]) {
-						pos := strings.Index(tail, fields[0])
-						edits = append(edits, edit{offset + len(old) + pos, offset + len(old) + pos + len(fields[0]), release.Version})
+	for _, job := range mintWorkflowJobs(&doc) {
+		mappings := mintJobActionMappings(job)
+		keepJobRefs := mintJobHasIncompatibleRef(mappings, release)
+		for _, node := range mappings {
+			if node.Kind == yaml.MappingNode {
+				for i := 0; i+1 < len(node.Content); i += 2 {
+					key, value := node.Content[i], node.Content[i+1]
+					if key.Value != "uses" || value.Kind != yaml.ScalarNode || !strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@") {
+						continue
+					}
+					_, ref, _ := strings.Cut(value.Value, "@")
+					target := release.Version
+					switch {
+					case mintActionSHA.MatchString(ref):
+						target = release.SHA
+					case mintActionVersion.MatchString(ref):
+					default:
+						notes = append(notes, "custom reference "+ref+" preserved; currentness is unknown")
+						continue
+					}
+					if ref != target {
+						if problem := mintIncompatibleStep(node, ref, release); problem != "" {
+							notes = append(notes, problem)
+							continue
+						}
+						if keepJobRefs {
+							notes = append(notes, "reference preserved because this job has an incompatible Mint step; migrate the job together before updating to "+release.Version)
+							continue
+						}
+					}
+					if value.Style != 0 && value.Style != yaml.SingleQuotedStyle && value.Style != yaml.DoubleQuotedStyle {
+						notes = append(notes, "nonstandard uses scalar preserved")
+						continue
+					}
+					old := value.Value
+					replacement := strings.TrimSuffix(old, ref) + target
+					if value.Style == yaml.SingleQuotedStyle {
+						old = "'" + old + "'"
+						replacement = "'" + replacement + "'"
+					}
+					if value.Style == yaml.DoubleQuotedStyle {
+						old = "\"" + old + "\""
+						replacement = "\"" + replacement + "\""
+					}
+					line := value.Line - 1
+					if line < 0 || line >= len(lines) {
+						continue
+					}
+					runes := []rune(lines[line])
+					col := value.Column - 1
+					if col < 0 || col > len(runes) {
+						continue
+					}
+					start := len(string(runes[:col]))
+					if !strings.HasPrefix(lines[line][start:], old) {
+						notes = append(notes, "encoded uses scalar preserved")
+						continue
+					}
+					offset := start
+					for _, prior := range lines[:line] {
+						offset += len(prior)
+					}
+					edits = append(edits, edit{offset, offset + len(old), replacement})
+					// Refresh an exact conventional version annotation; preserve other comments.
+					tail := lines[line][start+len(old):]
+					trimmed := strings.TrimSpace(tail)
+					if strings.HasPrefix(trimmed, "# ") {
+						fields := strings.Fields(strings.TrimPrefix(trimmed, "# "))
+						if len(fields) > 0 && mintActionVersion.MatchString(fields[0]) {
+							pos := strings.Index(tail, fields[0])
+							edits = append(edits, edit{offset + len(old) + pos, offset + len(old) + pos + len(fields[0]), release.Version})
+						}
 					}
 				}
 			}
@@ -144,6 +158,48 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 		source = source[:e.start] + e.value + source[e.end:]
 	}
 	return source, notes, nil
+}
+
+// Each Mint Action invocation installs to a shared runner path. Keep an
+// upgrade from overwriting the binary used by an incompatible step in that job.
+func mintJobHasIncompatibleRef(mappings []*yaml.Node, release mintActionRelease) bool {
+	for _, node := range mappings {
+		uses := mintField(node, "uses")
+		if uses == nil || !strings.HasPrefix(strings.ToLower(uses.Value), "jamesonstone/mint@") {
+			continue
+		}
+		_, ref, _ := strings.Cut(uses.Value, "@")
+		if ref == release.SHA || ref == release.Version {
+			continue
+		}
+		if mintIncompatibleStep(node, ref, release) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func mintIncompatibleStep(step *yaml.Node, ref string, release mintActionRelease) string {
+	inputs := mintField(step, "with")
+	if !release.hasController() && (!mintActionVersion.MatchString(ref) || (mintActionRelease{Version: ref}).hasController()) {
+		command := mintField(inputs, "command")
+		switch {
+		case command == nil || command.Value == "" || command.Value == "none" || command.Value == "version":
+			return "Mint installation step preserved; check downstream CLI or adapter usage before updating to " + release.Version
+		case command.Value == "production-control", command.Value == "deployment-control", strings.Contains(command.Value, "${{"):
+			return "legacy or dynamic Mint command preserved; migrate the workflow before updating to " + release.Version
+		}
+	}
+	if inputs == nil || inputs.Kind != yaml.MappingNode || release.inputs == nil {
+		return ""
+	}
+	for i := 0; i+1 < len(inputs.Content); i += 2 {
+		name := inputs.Content[i].Value
+		if _, ok := release.inputs[strings.ToLower(name)]; !ok {
+			return fmt.Sprintf("reference preserved because Mint %s lacks input %q; migrate the workflow before updating", release.Version, name)
+		}
+	}
+	return ""
 }
 
 func planMintActionRefresh(root string, release mintActionRelease) (*initRefreshPlan, error) {

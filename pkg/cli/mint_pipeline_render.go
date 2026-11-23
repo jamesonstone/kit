@@ -4,12 +4,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const mintPipelineActionRef = "eac91490f772adbd2ab030cb6eba3910c1bca93c" // Mint v0.9.0
 const mintPipelineCheckoutRef = "11d5960a326750d5838078e36cf38b85af677262"
 
 // The starter is project owned after generation. Existing workflows keep their settings.
 func renderMintReleasePipeline(defaultBranch string) []byte {
 	steps := []any{map[string]any{"name": "Check out the triggering commit", "uses": "actions/checkout@" + mintPipelineCheckoutRef, "with": map[string]any{"fetch-depth": 0, "ref": "${{ github.sha }}"}}}
+	steps = append(steps, mintLatestSteps()...)
 	steps = append(steps, mintReleasePreparationSteps()...)
 	steps = append(steps, mintReleasePublisherStep())
 	workflow := map[string]any{

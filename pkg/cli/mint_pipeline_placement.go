@@ -22,7 +22,7 @@ func mintInsertionPoint(steps *yaml.Node, before string) (int, error) {
 	ids := map[string]bool{}
 	for i, step := range steps.Content {
 		if id := mintField(step, "id"); id != nil {
-			if ids[id.Value] || id.Value == "kit_mint_release" || id.Value == "kit_mint_changelog" {
+			if ids[id.Value] || id.Value == "kit_mint_latest" || id.Value == "kit_mint_release" || id.Value == "kit_mint_changelog" {
 				return 0, fmt.Errorf("duplicate/reserved Mint step id %s", id.Value)
 			}
 			ids[id.Value] = true
