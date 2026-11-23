@@ -88,13 +88,17 @@ jobs:
         with: {command: none}
       - uses: jamesonstone/mint@v1.1.2
       - uses: jamesonstone/mint@v1.1.2
+        with: {command: changelog}
+  release:
+    steps:
+      - uses: jamesonstone/mint@v1.1.2
         with: {command: release-resolve}
 `
 	release := mintActionRelease{Version: "v2.0.0", SHA: strings.Repeat("b", 40), inputs: map[string]any{"command": nil}}
 	got, notes, err := refreshMintActionRefs(source, release)
 	last := strings.LastIndex(source, "v1.1.2")
 	want := source[:last] + release.Version + source[last+len("v1.1.2"):]
-	if err != nil || got != want || len(notes) != 6 || !strings.Contains(notes[3], "version-config") || !strings.Contains(notes[4], "adapter usage") {
+	if err != nil || got != want || len(notes) != 7 || !strings.Contains(notes[3], "version-config") || !strings.Contains(notes[4], "adapter usage") || !strings.Contains(notes[6], "this job still uses legacy Mint") {
 		t.Fatalf("%s\nnotes=%v err=%v", got, notes, err)
 	}
 	current := strings.ReplaceAll(source, "v1.1.2", release.Version)

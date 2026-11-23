@@ -46,31 +46,38 @@ func mintField(node *yaml.Node, key string) *yaml.Node {
 	return nil
 }
 
-// Only job/step uses fields are Action references; similarly named inputs are not.
-func mintActionMappings(workflow *yaml.Node) []*yaml.Node {
+func mintWorkflowJobs(workflow *yaml.Node) []*yaml.Node {
 	jobs := mintField(workflow, "jobs")
 	if jobs == nil || jobs.Kind != yaml.MappingNode {
 		return nil
 	}
-	var mappings []*yaml.Node
+	nodes := make([]*yaml.Node, 0, len(jobs.Content)/2)
 	for i := 1; i < len(jobs.Content); i += 2 {
-		job := jobs.Content[i]
-		mappings = append(mappings, job)
-		if steps := mintField(job, "steps"); steps != nil && steps.Kind == yaml.SequenceNode {
-			mappings = append(mappings, steps.Content...)
-		}
+		nodes = append(nodes, jobs.Content[i])
+	}
+	return nodes
+}
+
+// Only job/step uses fields are Action references; similarly named inputs are not.
+func mintJobActionMappings(job *yaml.Node) []*yaml.Node {
+	mappings := []*yaml.Node{job}
+	if steps := mintField(job, "steps"); steps != nil && steps.Kind == yaml.SequenceNode {
+		mappings = append(mappings, steps.Content...)
 	}
 	return mappings
 }
 
 func mintUses(node *yaml.Node) bool {
-	for _, mapping := range mintActionMappings(node) {
-		if value := mintField(mapping, "uses"); value != nil && (value.Value == mintPipelineAction || strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@")) {
-			return true
+	for _, job := range mintWorkflowJobs(node) {
+		for _, mapping := range mintJobActionMappings(job) {
+			if value := mintField(mapping, "uses"); value != nil && (value.Value == mintPipelineAction || strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@")) {
+				return true
+			}
 		}
 	}
 	return false
 }
+
 func mintWorkflows(root string) ([]mintWorkflow, error) {
 	for _, part := range []string{".github", ".github/workflows"} {
 		info, err := os.Lstat(filepath.Join(root, part))
