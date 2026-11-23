@@ -71,9 +71,6 @@ func printCurrentMintIncompleteNotes(root string, opts initRefreshOptions) error
 // Plan only a missing v1 controller. Mint validates and renders the policy;
 // Kit checks ownership, link safety and callback collisions before invoking it.
 func planMintWorkflow(root string, release *mintActionRelease) (*initRefreshFileChange, error) {
-	if release != nil && !release.hasController() {
-		return nil, fmt.Errorf("deployment controller unavailable in Mint %s; use project-owned deployment workflows", release.Version)
-	}
 	data, err := readMintProjectFile(root, mintPolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("--mint requires an existing .mint.yaml: %w", err)
@@ -110,6 +107,9 @@ func planMintWorkflow(root string, release *mintActionRelease) (*initRefreshFile
 	}
 	if !os.IsNotExist(err) {
 		return nil, err
+	}
+	if release != nil && !release.hasController() {
+		return nil, fmt.Errorf("deployment controller unavailable in Mint %s; use project-owned deployment workflows", release.Version)
 	}
 	paths := map[string]bool{policy.BuildWorkflow: true}
 	var environment string

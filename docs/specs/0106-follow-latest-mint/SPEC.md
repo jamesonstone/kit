@@ -32,7 +32,7 @@ Use GitHub's stable latest release, not an unreleased branch or a hardcoded majo
 
 ## DISCOVERIES
 
-GitHub Actions requires a literal step uses value. Mint does not publish a floating latest tag. A checkout inside the repository's Git metadata directory keeps the working tree clean and lets GitHub Actions load Mint by a literal local path. Mint v1.1.2 needs a newer Go toolchain than Kit. The renderer builds in a temporary standalone module so Go can select that toolchain even when the target project has no Go module. Workflow invocations turn off Go workspace discovery so a project go.work cannot absorb Mint's separate checkout. Both release publication paths build Kit artifacts before invoking Mint's toolchain setup. The v2 candidate removes version-config from the Action and keeps release-version-main. Reconcile compares inputs to the published Action to avoid dropping the component scope. A job that keeps legacy Mint also keeps its other Mint refs because the Action invocations share an installed binary on the runner.
+GitHub Actions requires a literal step uses value. Mint does not publish a floating latest tag. A checkout inside the repository's Git metadata directory keeps the working tree clean and lets GitHub Actions load Mint by a literal local path. Mint v1.1.2 needs a newer Go toolchain than Kit. The renderer builds in a temporary standalone module so Go can select that toolchain even when the target project has no Go module. Workflow invocations turn off Go workspace discovery so a project go.work cannot absorb Mint's separate checkout. Both release publication paths build Kit artifacts before invoking Mint's toolchain setup. The v2 candidate removes version-config from the Action and keeps release-version-main. Reconcile compares inputs to the published Action to avoid dropping the component scope. A job that keeps an incompatible Mint step also keeps its other Mint refs because the Action invocations share an installed binary on the runner.
 
 ## VALIDATION
 
@@ -40,7 +40,7 @@ Local validation covers the Go suite, vet, lint, build, project checks and workf
 
 ## OUTCOME
 
-Kit and newly scaffolded release steps follow the official latest stable Mint release at workflow runtime. Release selection uses no Kit configuration. The opt-in controller scaffold uses the resolved Mint release instead of a compiled dependency. Existing controllers and installation steps with ambiguous downstream adapter usage retain their references after Mint removes controller support, pending a project-owned migration.
+Kit and newly scaffolded release steps follow the official latest stable Mint release at workflow runtime. Release selection uses no Kit configuration. The opt-in controller scaffold uses the resolved Mint release instead of a compiled dependency. Existing controllers and installation steps with ambiguous downstream adapter usage retain their references after Mint removes controller support, pending a project-owned migration. Reconciliation with an existing controller can still plan other work after the latest release removes controller generation. A runner without GitHub CLI receives a setup diagnostic.
 
 ## REPOSITORY MEMORY
 

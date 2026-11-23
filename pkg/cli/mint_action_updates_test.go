@@ -98,13 +98,44 @@ jobs:
 	got, notes, err := refreshMintActionRefs(source, release)
 	last := strings.LastIndex(source, "v1.1.2")
 	want := source[:last] + release.Version + source[last+len("v1.1.2"):]
-	if err != nil || got != want || len(notes) != 7 || !strings.Contains(notes[3], "version-config") || !strings.Contains(notes[4], "adapter usage") || !strings.Contains(notes[6], "this job still uses legacy Mint") {
+	if err != nil || got != want || len(notes) != 7 || !strings.Contains(notes[3], "version-config") || !strings.Contains(notes[4], "adapter usage") || !strings.Contains(notes[6], "this job has an incompatible Mint step") {
 		t.Fatalf("%s\nnotes=%v err=%v", got, notes, err)
 	}
 	current := strings.ReplaceAll(source, "v1.1.2", release.Version)
 	got, notes, err = refreshMintActionRefs(current, release)
 	if err != nil || got != current || len(notes) != 0 {
 		t.Fatalf("already current: %s\nnotes=%v err=%v", got, notes, err)
+	}
+}
+
+func TestMintJobKeepsRefsTogetherAfterAnInputIsRemoved(t *testing.T) {
+	const workflow = `on: workflow_dispatch
+jobs:
+  scoped:
+    steps:
+      - uses: jamesonstone/mint@OLD
+        with: {command: release-version-main, version-config: .mint.yaml}
+      - uses: jamesonstone/mint@OLD
+        with: {command: changelog}
+  release:
+    steps:
+      - uses: jamesonstone/mint@OLD
+        with: {command: release-resolve}
+`
+	for _, versions := range []struct{ old, latest string }{
+		{"v1.1.2", "v1.3.0"},
+		{"v2.0.0", "v2.1.0"},
+	} {
+		t.Run(versions.latest, func(t *testing.T) {
+			release := mintActionRelease{Version: versions.latest, inputs: map[string]any{"command": nil}}
+			input := strings.ReplaceAll(workflow, "OLD", versions.old)
+			compatible := strings.LastIndex(workflow, "OLD")
+			want := strings.ReplaceAll(workflow[:compatible], "OLD", versions.old) + versions.latest + workflow[compatible+len("OLD"):]
+			got, notes, err := refreshMintActionRefs(input, release)
+			if err != nil || got != want || len(notes) != 2 || !strings.Contains(notes[0], "version-config") {
+				t.Fatalf("%s\nnotes=%v err=%v", got, notes, err)
+			}
+		})
 	}
 }
 

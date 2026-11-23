@@ -78,7 +78,7 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 	lines := strings.SplitAfter(source, "\n")
 	for _, job := range mintWorkflowJobs(&doc) {
 		mappings := mintJobActionMappings(job)
-		keepLegacy := mintJobKeepsLegacy(mappings, release)
+		keepJobRefs := mintJobHasIncompatibleRef(mappings, release)
 		for _, node := range mappings {
 			if node.Kind == yaml.MappingNode {
 				for i := 0; i+1 < len(node.Content); i += 2 {
@@ -97,12 +97,12 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 						continue
 					}
 					if ref != target {
-						if problem := mintIncompatibleStep(node, release); problem != "" {
+						if problem := mintIncompatibleStep(node, ref, release); problem != "" {
 							notes = append(notes, problem)
 							continue
 						}
-						if keepLegacy {
-							notes = append(notes, "reference preserved because this job still uses legacy Mint; migrate the job together before updating to "+release.Version)
+						if keepJobRefs {
+							notes = append(notes, "reference preserved because this job has an incompatible Mint step; migrate the job together before updating to "+release.Version)
 							continue
 						}
 					}
@@ -162,10 +162,7 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 
 // Each Mint Action invocation installs to a shared runner path. Keep an
 // upgrade from overwriting the binary used by an incompatible step in that job.
-func mintJobKeepsLegacy(mappings []*yaml.Node, release mintActionRelease) bool {
-	if release.hasController() {
-		return false
-	}
+func mintJobHasIncompatibleRef(mappings []*yaml.Node, release mintActionRelease) bool {
 	for _, node := range mappings {
 		uses := mintField(node, "uses")
 		if uses == nil || !strings.HasPrefix(strings.ToLower(uses.Value), "jamesonstone/mint@") {
@@ -175,19 +172,16 @@ func mintJobKeepsLegacy(mappings []*yaml.Node, release mintActionRelease) bool {
 		if ref == release.SHA || ref == release.Version {
 			continue
 		}
-		if mintActionVersion.MatchString(ref) && !(mintActionRelease{Version: ref}).hasController() {
-			continue
-		}
-		if mintIncompatibleStep(node, release) != "" {
+		if mintIncompatibleStep(node, ref, release) != "" {
 			return true
 		}
 	}
 	return false
 }
 
-func mintIncompatibleStep(step *yaml.Node, release mintActionRelease) string {
+func mintIncompatibleStep(step *yaml.Node, ref string, release mintActionRelease) string {
 	inputs := mintField(step, "with")
-	if !release.hasController() {
+	if !release.hasController() && (!mintActionVersion.MatchString(ref) || (mintActionRelease{Version: ref}).hasController()) {
 		command := mintField(inputs, "command")
 		switch {
 		case command == nil || command.Value == "" || command.Value == "none" || command.Value == "version":

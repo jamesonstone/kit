@@ -115,7 +115,8 @@ Without placement, Kit reports what to select; it does not add a diagnostic
 workflow. Use `kit reconcile --mint-workflows --dry-run --diff` to preview the
 scaffold plan for an existing project. Kit adds files and preparation steps;
 Mint and the project own release policy and the use of generated outputs. The
-added steps use Bash, GitHub CLI and a checkout at the workspace root.
+added steps require Bash, GitHub CLI and a checkout at the workspace root.
+On a runner without `gh`, install it or add a setup step before Mint.
 
 During init and reconcile, Kit refreshes supported `jamesonstone/mint` Action
 references to the latest verified published stable release. Stable version tags

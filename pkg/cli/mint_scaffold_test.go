@@ -89,12 +89,14 @@ func TestMintScaffoldRejectsUnsupportedPoliciesAndMissingAdapters(t *testing.T) 
 func TestMintScaffoldPreservesExistingControllerAndAdapters(t *testing.T) {
 	root := mintFixture(t)
 	path := filepath.Join(root, ".github/workflows/control.yaml")
-	writeFile(t, path, "project-owned controller\n")
+	const controller = "jobs:\n  deploy:\n    steps:\n      - uses: jamesonstone/mint@v1.1.2\n        with: {command: deployment-control}\n"
+	writeFile(t, path, controller)
+	release := mintActionRelease{Version: "v2.0.0", SHA: strings.Repeat("b", 40)}
 	if err := config.Save(root, defaultInitConfig()); err != nil {
 		t.Fatal(err)
 	}
 	setupInitHome(t)
-	plan, err := buildInitRefreshPlan(context.Background(), root, initRefreshOptions{mint: true, force: true})
+	plan, err := buildInitRefreshPlan(context.Background(), root, initRefreshOptions{mint: true, mintRelease: &release, force: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +111,7 @@ func TestMintScaffoldPreservesExistingControllerAndAdapters(t *testing.T) {
 	if got := readFile(t, filepath.Join(root, mintPolicyPath)); got != mintFixturePolicy {
 		t.Fatal("policy was rewritten")
 	}
-	if got := readFile(t, path); got != "project-owned controller\n" {
+	if got := readFile(t, path); got != controller {
 		t.Fatal("controller was rewritten")
 	}
 }

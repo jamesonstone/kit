@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -45,5 +46,17 @@ exit "$MOCK_STATUS"
 				t.Fatalf("output: %q, %v", data, err)
 			}
 		})
+	}
+}
+
+func TestResolveReleaseReportsMissingGitHubCLI(t *testing.T) {
+	bash, err := exec.LookPath("bash")
+	if err != nil {
+		t.Skip("workflow resolver requires Bash")
+	}
+	cmd := exec.Command(bash, "-c", ResolveRelease)
+	cmd.Env = append(cmd.Environ(), "PATH="+t.TempDir(), "BASH_ENV=")
+	if log, err := cmd.CombinedOutput(); err == nil || !strings.Contains(string(log), "GitHub CLI (gh) is required") {
+		t.Fatalf("resolver: %v, %s", err, log)
 	}
 }
