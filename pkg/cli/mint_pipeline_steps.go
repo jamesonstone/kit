@@ -37,12 +37,14 @@ func mintReleasePreparationSteps() []any {
 		map[string]any{
 			"name": "Resolve Mint release metadata", "id": "kit_mint_release",
 			"uses": mintPipelineAction,
+			"env":  map[string]string{"GOWORK": "off"},
 			"with": map[string]any{"command": "release-resolve", "commitish": "${{ github.sha }}"},
 		},
 		map[string]any{
 			"name": "Generate enriched Mint changelog", "id": "kit_mint_changelog",
 			"if":   mintPipelineNewRelease,
 			"uses": mintPipelineAction,
+			"env":  map[string]string{"GOWORK": "off"},
 			"with": map[string]any{
 				"command":     "changelog",
 				"prev-tag":    "${{ steps.kit_mint_release.outputs.base_tag }}",
@@ -70,6 +72,7 @@ func mintReleasePreparationSteps() []any {
 func mintReleasePublisherStep() map[string]any {
 	return map[string]any{
 		"name": "Publish immutable release state", "uses": mintPipelineAction,
+		"env": map[string]string{"GOWORK": "off"},
 		"with": map[string]any{
 			"command": "release-publish", "commitish": "${{ github.sha }}",
 			"owner": "${{ github.repository_owner }}", "repo": "${{ github.event.repository.name }}",

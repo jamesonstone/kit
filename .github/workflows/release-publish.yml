@@ -63,6 +63,30 @@ jobs:
           printf '# %s\n\nKit %s release.\n' "${TAG}" "${TAG}" > "${notes_file}"
           echo "path=${notes_file}" >> "${GITHUB_OUTPUT}"
 
+      - name: Setup GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          install-only: true
+
+      - name: Build artifacts with GoReleaser
+        # Build with Kit's Go version before Mint adds its toolchain to PATH.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goreleaser release --clean --skip=publish --skip=announce
+
+      - name: Validate GoReleaser artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(dist/*.tar.gz dist/*.zip dist/checksums.txt)
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No release artifacts found in dist/." >&2
+            exit 1
+          fi
+
       - name: Resolve latest stable Mint release
         id: mint_latest
         shell: bash
@@ -82,6 +106,8 @@ jobs:
       - name: Verify immutable release tag with Mint
         id: mint_tag
         uses: ./.git/kit-mint-action
+        env:
+          GOWORK: "off"
         with:
           command: release-tag
           release-tag: ${{ github.ref_name }}
@@ -90,33 +116,11 @@ jobs:
           release-remote: origin
           release-push: "false"
 
-      - name: Setup GoReleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          distribution: goreleaser
-          version: "~> v2"
-          install-only: true
-
-      - name: Build artifacts with GoReleaser
-        # Mint owns GitHub Release state; GoReleaser owns artifact production.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goreleaser release --clean --skip=publish --skip=announce
-
-      - name: Validate GoReleaser artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          files=(dist/*.tar.gz dist/*.zip dist/checksums.txt)
-          if [[ ${#files[@]} -eq 0 ]]; then
-            echo "No release artifacts found in dist/." >&2
-            exit 1
-          fi
-
       - name: Create or reuse GitHub Release with Mint
         id: mint_release
         uses: ./.git/kit-mint-action
+        env:
+          GOWORK: "off"
         with:
           command: github-release
           owner: ${{ github.repository_owner }}

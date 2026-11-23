@@ -76,6 +76,8 @@ jobs:
       - name: Create or reuse immutable release tag with Mint
         id: mint_tag
         uses: ./.git/kit-mint-action
+        env:
+          GOWORK: "off"
         with:
           command: release-tag
           release-tag: ${{ steps.select_tag.outputs.next_tag }}
@@ -169,6 +171,8 @@ jobs:
       - name: Create or reuse GitHub Release with Mint
         id: mint_release
         uses: ./.git/kit-mint-action
+        env:
+          GOWORK: "off"
         with:
           command: github-release
           owner: ${{ github.repository_owner }}

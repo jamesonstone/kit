@@ -120,8 +120,8 @@ added steps use Bash, GitHub CLI and a checkout at the workspace root.
 During init and reconcile, Kit refreshes supported `jamesonstone/mint` Action
 references to the latest verified published stable release. Stable version tags
 remain tags; full commit SHA pins become the verified release commit SHA. Custom
-refs, shared YAML anchors and aliases, and v1 controller commands unsupported
-by the latest release are preserved with a diagnostic. Lookup failures stop
+refs, shared YAML anchors and aliases, and action commands or inputs
+unsupported by the latest release are preserved with a diagnostic. Lookup failures stop
 init and reconcile before writes. Preview with `kit reconcile --dry-run --diff`.
 Kit does not manage an installed Mint executable.
 

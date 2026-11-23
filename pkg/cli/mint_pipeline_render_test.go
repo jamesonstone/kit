@@ -23,8 +23,9 @@ func TestMintReleasePipelineTrustAndPermissions(t *testing.T) {
 			If          string            `yaml:"if"`
 			Permissions map[string]string `yaml:"permissions"`
 			Steps       []struct {
-				Uses string         `yaml:"uses"`
-				With map[string]any `yaml:"with"`
+				Uses string            `yaml:"uses"`
+				With map[string]any    `yaml:"with"`
+				Env  map[string]string `yaml:"env"`
 			} `yaml:"steps"`
 		} `yaml:"jobs"`
 	}
@@ -61,6 +62,9 @@ func TestMintReleasePipelineTrustAndPermissions(t *testing.T) {
 		t.Fatalf("Mint checkout: %+v", j.Steps[2])
 	}
 	for i, want := range []string{"release-resolve", "changelog", "", "release-publish"} {
+		if step := j.Steps[i+3]; want != "" && (step.Uses != mintPipelineAction || step.Env["GOWORK"] != "off") {
+			t.Fatalf("Mint must build outside the project Go workspace: %+v", step)
+		}
 		if got := j.Steps[i+3].With["command"]; (want != "" && got != want) || got == "version" {
 			t.Fatalf("step %d command=%v", i+3, got)
 		}

@@ -20,7 +20,7 @@ Kit GH-309. The current Mint release is v1.1.2. Kit embeds a v0.9.0 controller r
 
 ## REQUIREMENTS
 
-Resolve the stable release at runtime in new release workflows and in Kit's own release jobs. Preserve existing project-owned workflow structure and reference formats. Refresh supported static release refs during init and reconcile. Keep controller-dependent action refs intact once upstream removes their commands. Fail explicitly on missing release or renderer support before writing files.
+Resolve the stable release at runtime in new release workflows and in Kit's own release jobs. Preserve existing project-owned workflow structure and reference formats. Refresh supported static release refs during init and reconcile. Keep existing action refs intact when the newer release removes their commands or inputs. Fail explicitly on missing release or renderer support before writing files.
 
 ## ACCEPTED PLAN
 
@@ -32,15 +32,15 @@ Use GitHub's stable latest release, not an unreleased branch or a hardcoded majo
 
 ## DISCOVERIES
 
-GitHub Actions requires a literal step uses value. Mint does not publish a floating latest tag. A checkout inside the repository's Git metadata directory keeps the working tree clean and lets GitHub Actions load Mint by a literal local path. Mint v1.1.2 needs a newer Go toolchain than Kit. The renderer builds in a temporary standalone module so Go can select that toolchain even when the target project has no Go module.
+GitHub Actions requires a literal step uses value. Mint does not publish a floating latest tag. A checkout inside the repository's Git metadata directory keeps the working tree clean and lets GitHub Actions load Mint by a literal local path. Mint v1.1.2 needs a newer Go toolchain than Kit. The renderer builds in a temporary standalone module so Go can select that toolchain even when the target project has no Go module. Workflow invocations turn off Go workspace discovery so a project go.work cannot absorb Mint's separate checkout. Both release publication paths build Kit artifacts before invoking Mint's toolchain setup. The v2 candidate removes version-config from the Action and keeps release-version-main. Reconcile compares inputs to the published Action to avoid dropping the component scope.
 
 ## VALIDATION
 
-Local validation covers the Go suite, vet, lint, build, project checks and workflow syntax. Release selection rejects nonstable and malformed tags and missing releases. A live read-only lookup selected v1.1.2 (2c3c3daa5e09425090781fde2d1ff64dceb6f9f6). A scratch init produced and linted the release starter. An explicit v1 init rendered a two-environment controller with the verified Mint commit, and a second reconcile dry run proposed zero changes. Release resolution and changelog generation passed against the published CLI on a synthetic Git history. A v2 release is not yet published, so compatibility with its controller removal is exercised with fixtures. Release publication and deployment were not run.
+Local validation covers the Go suite, vet, lint, build, project checks and workflow syntax. Release selection rejects nonstable and malformed tags and missing releases. Live read-only lookup selected v1.1.2, then v1.1.3 after Mint published it during review, without changing Kit. A scratch init produced and linted the release starter. An explicit v1 init rendered a two-environment controller with the verified Mint commit, and a second reconcile dry run proposed zero changes. Release resolution and changelog generation passed against the published CLI on a synthetic Git history. A v2 release is not yet published, so compatibility with its controller removal is exercised with fixtures. Release publication and deployment were not run.
 
 ## OUTCOME
 
-Kit and newly scaffolded release steps follow the official latest stable Mint release at workflow runtime. Release selection uses no Kit configuration. The opt-in controller scaffold uses the resolved Mint release instead of a compiled dependency. Existing controller workflows retain their references after Mint removes support, pending a project-owned migration.
+Kit and newly scaffolded release steps follow the official latest stable Mint release at workflow runtime. Release selection uses no Kit configuration. The opt-in controller scaffold uses the resolved Mint release instead of a compiled dependency. Existing controllers and installation steps with ambiguous downstream adapter usage retain their references after Mint removes controller support, pending a project-owned migration.
 
 ## REPOSITORY MEMORY
 

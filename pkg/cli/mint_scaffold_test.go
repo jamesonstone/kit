@@ -47,7 +47,7 @@ func TestMintScaffoldPassesVerifiedReleaseToRenderer(t *testing.T) {
 	t.Cleanup(func() { renderMintController = previous })
 	release := mintActionRelease{Version: "v1.3.0", SHA: strings.Repeat("c", 40)}
 	renderMintController = func(dir string, got mintActionRelease, environment string) (string, error) {
-		if dir != root || got != release || environment != "preview" {
+		if dir != root || got.Version != release.Version || got.SHA != release.SHA || environment != "preview" {
 			t.Fatalf("renderer got %q %+v %q", dir, got, environment)
 		}
 		return "name: Mint environment control\n", nil

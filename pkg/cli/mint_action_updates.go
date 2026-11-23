@@ -83,10 +83,6 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 				if key.Value != "uses" || value.Kind != yaml.ScalarNode || !strings.HasPrefix(strings.ToLower(value.Value), "jamesonstone/mint@") {
 					continue
 				}
-				if !release.hasController() && mintLegacyCommand(node) {
-					notes = append(notes, "legacy or dynamic Mint command preserved; use a project-owned workflow to migrate its controller to "+release.Version)
-					continue
-				}
 				_, ref, _ := strings.Cut(value.Value, "@")
 				target := release.Version
 				switch {
@@ -96,6 +92,12 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 				default:
 					notes = append(notes, "custom reference "+ref+" preserved; currentness is unknown")
 					continue
+				}
+				if ref != target {
+					if problem := mintIncompatibleStep(node, release); problem != "" {
+						notes = append(notes, problem)
+						continue
+					}
 				}
 				if value.Style != 0 && value.Style != yaml.SingleQuotedStyle && value.Style != yaml.DoubleQuotedStyle {
 					notes = append(notes, "nonstandard uses scalar preserved")
@@ -150,17 +152,27 @@ func refreshMintActionRefs(source string, release mintActionRelease) (string, []
 	return source, notes, nil
 }
 
-func mintLegacyCommand(step *yaml.Node) bool {
-	command := mintField(mintField(step, "with"), "command")
-	if command == nil {
-		return false
+func mintIncompatibleStep(step *yaml.Node, release mintActionRelease) string {
+	inputs := mintField(step, "with")
+	if !release.hasController() {
+		command := mintField(inputs, "command")
+		switch {
+		case command == nil || command.Value == "" || command.Value == "none" || command.Value == "version":
+			return "Mint installation step preserved; check downstream CLI or adapter usage before updating to " + release.Version
+		case command.Value == "production-control", command.Value == "deployment-control", strings.Contains(command.Value, "${{"):
+			return "legacy or dynamic Mint command preserved; migrate the workflow before updating to " + release.Version
+		}
 	}
-	switch command.Value {
-	case "production-control", "deployment-control":
-		return true
-	default:
-		return strings.Contains(command.Value, "${{")
+	if inputs == nil || inputs.Kind != yaml.MappingNode || release.inputs == nil {
+		return ""
 	}
+	for i := 0; i+1 < len(inputs.Content); i += 2 {
+		name := inputs.Content[i].Value
+		if _, ok := release.inputs[strings.ToLower(name)]; !ok {
+			return fmt.Sprintf("reference preserved because Mint %s lacks input %q; migrate the workflow before updating", release.Version, name)
+		}
+	}
+	return ""
 }
 
 func planMintActionRefresh(root string, release mintActionRelease) (*initRefreshPlan, error) {

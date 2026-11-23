@@ -166,6 +166,11 @@ func TestExternalReleasePublisherAcceptsOnlyV3Tags(t *testing.T) {
 	if quality < 0 || verify < 0 || quality > verify {
 		t.Error("external release quality gates must run before Mint verifies release state")
 	}
+	build := strings.Index(workflow, "Build artifacts with GoReleaser")
+	if build < 0 || build > verify {
+		t.Error("external release artifacts must build before Mint sets up its Go toolchain")
+	}
+
 }
 
 func TestReleaseWorkflowsParseAsYAML(t *testing.T) {
@@ -187,6 +192,9 @@ func assertMintActionRefs(t *testing.T, workflow string, want int) {
 	t.Helper()
 	if got := strings.Count(workflow, "uses: ./.git/kit-mint-action"); got != want {
 		t.Errorf("workflow uses the loaded Mint action %d times, want %d", got, want)
+	}
+	if got := strings.Count(workflow, "GOWORK: \"off\""); got != want {
+		t.Errorf("workflow isolates %d Mint builds from the project workspace, want %d", got, want)
 	}
 	if strings.Contains(workflow, "uses: jamesonstone/mint@") {
 		t.Error("workflow has a static Mint action reference")

@@ -70,8 +70,8 @@ same PR. Prefer a roll-forward release of corrected source when recovery is need
   on each workflow run. They require Bash, GitHub CLI and a checkout at the
   workspace root.
 - Init and reconcile refresh compatible static Mint tags and commit SHAs,
-  preserving their reference format. Kit reports custom refs and preserves
-  controller commands when the latest release no longer supports them.
+  preserving their reference format. Kit reports and preserves refs when
+  the latest release lacks an action input or legacy controller command.
   Use `--dry-run --diff` to preview. Release lookup failures stop before writes.
 - For additive release preparation in an existing job, provide `--mint-workflow`,
   `--mint-job` and `--mint-before-step`. Without placement, Kit reports the needed
